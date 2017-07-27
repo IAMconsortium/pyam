@@ -9,6 +9,5 @@ dependencies:
 test:
   override:
       # run coveralls on the first go-around
-      - echo $COVERALLS_REPO_TOKEN
-      - docker run -e COVERALLS_REPO_TOKEN pyam_analysis/pyam_analysis:latest /bin/bash -c "python2 -m  pytest tests --cov=pyam_analysis --cov-report term-missing --verbose --runslow && coveralls" 
-      - docker run -e COVERALLS_REPO_TOKEN pyam_analysis/pyam_analysis:latest /bin/bash -c "python3 -m  pytest tests --cov=pyam_analysis --cov-report term-missing --verbose --runslow"
+      - docker run pyam_analysis/pyam_analysis:latest /bin/bash -c "python2 -m  pytest tests"
+      - docker run pyam_analysis/pyam_analysis:latest /bin/bash -c "python3 -m  pytest tests"
