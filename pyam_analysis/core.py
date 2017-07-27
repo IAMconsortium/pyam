@@ -111,6 +111,8 @@ class IamDataFrame(object):
             see function select() for details
         aggregated: str, optional
             dataframe column which should be aggregated or counted
+        function: str
+            function for aggregation: count, mean, sum
         """
         if not aggregated:
             return pivot_has_elements(self.select(filters, index+columns),
@@ -122,6 +124,8 @@ class IamDataFrame(object):
                 df = df.groupby(index+columns, as_index=False).count()
             elif function == 'mean':
                 df = df.groupby(index+columns, as_index=False).mean().round(2)
+            elif function == 'sum':
+                df = df.groupby(index+columns, as_index=False).sum()
 
             df_pivot = df.pivot_table(values=aggregated, index=index,
                                       columns=columns, fill_value=0)
