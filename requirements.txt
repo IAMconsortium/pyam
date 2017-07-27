@@ -1,0 +1,9 @@
+pyam_analysis
+argparse
+numpy
+pandas
+pyyaml
+xlrd
+xlsxwriter
+matplotlib
+seaborn
