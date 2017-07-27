@@ -290,7 +290,7 @@ class IamDataFrame(object):
         ----------
         filters: dict, optional
             The following columns are available for filtering:
-             - 'model', 'scenario': takes a string or list of strings
+             - 'model', 'scenario', 'region': takes a string or list of strings
              - 'variable': takes a string or list of strings,
                 where ``*`` can be used as a wildcard
              - 'year': takes an integer, a list of integers or a range
@@ -307,7 +307,7 @@ class IamDataFrame(object):
         keep = np.array([True] * len(self.data))
 
         for col, values in filters.items():
-            if col in ['model', 'scenario']:
+            if col in ['model', 'scenario', 'region']:
                 keep_col = keep_col_match(self.data[col], values)
 
             elif col == 'variable':
