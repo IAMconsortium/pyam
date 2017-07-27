@@ -10,6 +10,7 @@ import warnings
 import re
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import seaborn as sns
 
 # ignore warnings
@@ -334,6 +335,55 @@ class IamDataFrame(object):
             return df.set_index(idx_cols)
         else:
             return df.reset_index(drop=True)
+
+    def plot_lines(self, filters={}, idx_cols=None, ret_ax=False):
+        """simple line plotting feature
+
+        Parameters
+        ----------
+        filters: dict, optional
+            filter by model, scenario, region, variable, or year
+            see function select() for details
+        idx_cols: str or list of strings, optional
+            list of index columns to display
+            (summing over non-selected columns)
+        ret_ax: boolean, optional (default: False)
+            flag whether to return the 'axes()' object of the plot
+        """
+        if not idx_cols:
+            idx_cols = iamc_idx_cols
+        df = self.pivot_table(['year'], idx_cols, filters, aggregated='value',
+                              function='sum', style=None)
+        plt.cla()
+        ax = plt.axes()
+
+        # drop index columns if it only has one level
+        # shift to title or y-axis (if unit) for more elegant figures
+        title = None
+        i = 0
+        for col in df.columns.names:
+            if len(df.columns.levels[i]) == 1:
+                level = str(df.columns.levels[i][0])
+                df.columns = df.columns.droplevel(i)
+                if col == 'unit':
+                    plt.ylabel(level)
+                elif title:
+                    title = '{} - {}: {}'.format(title, col, level)
+                else:
+                    title = '{}: {}'.format(col, level)
+            else:
+                i += 1
+
+        for (col, data) in df.iteritems():
+            data.plot()
+
+        ax.legend(loc='best', framealpha=0.0)
+        plt.title(title)
+        plt.xlabel('Years')
+        plt.show()
+
+        if ret_ax:
+            return ax
 
 # %% auxiliary function for reading data from snapshot file
 
