@@ -62,7 +62,11 @@ class IamDataFrame(object):
         # define a dataframe for categorization and other meta-data
         self.cat = self.data[['model', 'scenario']].drop_duplicates()\
             .set_index(['model', 'scenario'])
-        self.cat['category'] = np.nan
+        self.cat['category'] = 'uncategorized'
+
+        # define a dictionary for category-color mapping
+        self.cat_color = {}
+        self.col_count = 0
 
     def models(self, filters={}):
         """Get a list of models filtered by certain characteristics
@@ -197,14 +201,15 @@ class IamDataFrame(object):
         else:
             print("All models and scenarios satisfy the criteria")
 
-    def category(self, name, criteria=None, filters=None, comment=None,
-                 assign=True, display=list):
+    def category(self, name=None, criteria=None, filters=None, comment=None,
+                 assign=True, color=None, display=list):
         """Assign scenarios to a category according to specific criteria
 
         Parameters
         ----------
-        name: str
-            category name
+        name: str (optional)
+            category name - if None, return a dataframe or pivot table
+            of all categories mapped to models/scenarios
         criteria: dict
             dictionary with variables mapped to applicable checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
@@ -216,11 +221,22 @@ class IamDataFrame(object):
             a comment pertaining to the category
         assign: boolean (default True)
             assign categorization to data (if false, display only)
+        color: str
+            assign a color to this category
         display: str or None (default None)
             display style of scenarios assigned to this category (list, pivot)
             (no display if None)
         """
-        if name and not criteria:
+        if not name:
+            if display == 'list':
+                return self.cat
+            elif display == 'pivot':
+                cat = self.cat.reset_index()
+                cat = cat.pivot(index='model', columns='scenario',
+                                values='category')
+                return cat.style.apply(color_by_cat,
+                                       cat_col=self.cat_color, axis=None)
+        elif name and not criteria:
             df = pd.DataFrame(index=self.cat[self.cat.category == name].index)
             if display == 'list':
                 return df
@@ -238,6 +254,14 @@ class IamDataFrame(object):
                 # assign selected model/scenario to internal category mapping
                 if assign:
                     self.cat.loc[cat, 'category'] = name
+
+                # assign a color to this category for pivot tables and plots
+                if color:
+                    self.cat_color[name] = color
+                elif name not in self.cat_color:
+                    self.cat_color[name] = sns.color_palette("hls",
+                                                             8)[self.col_count]
+                    self.col_count += 1
 
                 # return the model/scenario as dataframe for visual output
                 if display:
