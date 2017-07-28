@@ -491,6 +491,20 @@ def keep_col_yr(col, yrs):
 # %% auxiliary functions for table and graph formatting
 
 
+def color_by_cat(cat_df, cat_col):
+    """
+    returns a dataframe with style attributes
+    """
+    attr = np.where(cat_df, '',
+                    'color: {0}; background-color: {0};'.format('lightgrey'))
+    attr = np.where(cat_df == 'uncategorized',
+                    'color: {0}; background-color: {0}'.format('white'), attr)
+    for c in cat_col:
+        attr = np.where(cat_df == c, 'color: {0}; background-color: {0}'
+                        .format(cat_col[c]), attr)
+    return pd.DataFrame(attr, index=cat_df.index, columns=cat_df.columns)
+
+
 def pivot_has_elements(df, index, columns):
     """
     returns a pivot table with existing index-columns combinations highlighted
