@@ -23,8 +23,8 @@ try:
 except:
     pass
 
-all_idx_cols = ['model', 'scenario', 'region', 'variable', 'year', 'unit']
 iamc_idx_cols = ['model', 'scenario', 'region', 'variable', 'unit']
+all_idx_cols = iamc_idx_cols + ['year']
 
 # %% class for working with IAMC-style timeseries data
 
@@ -247,6 +247,7 @@ class IamDataFrame(object):
                         return df
                     elif display == 'pivot':
                         return pivot_has_elements(df, 'model', 'scenario')
+
             else:
                 print("No scenario satisfies the criteria")
 
