@@ -97,8 +97,9 @@ class IamDataFrame(object):
         """
         return list(self.select(filters, ['variable']).variable)
 
-    def pivot_table(self, index, columns, filters={}, aggregated=None,
-                    function='count', style='highlight_not_max'):
+    def pivot_table(self, index, columns, filters={}, values=None,
+                    aggfunc='count', fill_value=None,
+                    style=None):
         """Returns a pivot table
 
         Parameters
@@ -110,26 +111,41 @@ class IamDataFrame(object):
         filters: dict, optional
             filter by model, scenario, region, variable, or year
             see function select() for details
-        aggregated: str, optional
-            dataframe column which should be aggregated or counted
-        function: str
-            function for aggregation: count, mean, sum
+        values: str, optional
+            dataframe column to aggregate or count
+        aggfunc: str or function, default 'count'
+            function used for aggregation,
+            accepts 'count', 'mean', and 'sum'
+        fill_value: scalar, default None
+            value to replace missing values with
+        style: str, default None
+            output style for dataframe formatting
+            accepts 'highlight_not_max', 'heat_map'
         """
-        if not aggregated:
+        if not values:
             return pivot_has_elements(self.select(filters, index+columns),
                                       index=index, columns=columns)
         else:
-            cols = index + columns + [aggregated]
+            cols = index + columns + [values]
             df = self.select(filters, cols)
-            if function == 'count':
-                df = df.groupby(index+columns, as_index=False).count()
-            elif function == 'mean':
-                df = df.groupby(index+columns, as_index=False).mean().round(2)
-            elif function == 'sum':
-                df = df.groupby(index+columns, as_index=False).sum()
 
-            df_pivot = df.pivot_table(values=aggregated, index=index,
-                                      columns=columns, fill_value=0)
+            # allow 'aggfunc' to be passed as string for easier user interface
+            if isinstance(aggfunc, str):
+                if aggfunc == 'count':
+                    df = df.groupby(index+columns, as_index=False).count()
+                    fill_value = 0
+                elif aggfunc == 'mean':
+                    df = df.groupby(index+columns, as_index=False).mean()\
+                                                                  .round(2)
+                    aggfunc = np.sum
+                    fill_value = ""
+                elif aggfunc == 'sum':
+                    aggfunc = np.sum
+                    fill_value = ""
+
+            df_pivot = df.pivot_table(values=values, index=index,
+                                      columns=columns, aggfunc=aggfunc,
+                                      fill_value=fill_value)
             if style == 'highlight_not_max':
                 return df_pivot.style.apply(highlight_not_max)
             if style == 'heat_map':
@@ -352,8 +368,8 @@ class IamDataFrame(object):
         """
         if not idx_cols:
             idx_cols = iamc_idx_cols
-        df = self.pivot_table(['year'], idx_cols, filters, aggregated='value',
-                              function='sum', style=None)
+        df = self.pivot_table(['year'], idx_cols, filters, values='value',
+                              aggfunc=np.sum, style=None)
         plt.cla()
         ax = plt.axes()
 
