@@ -337,7 +337,7 @@ class IamDataFrame(object):
             return df.reset_index(drop=True)
 
     def plot_lines(self, filters={}, idx_cols=None, ret_ax=False):
-        """simple line plotting feature
+        """Simple line plotting feature
 
         Parameters
         ----------
@@ -389,7 +389,7 @@ class IamDataFrame(object):
 
 
 def read_data(path=None, file=None, ext='csv', regions=None):
-    """Read data from a snapshot file in the IAMC format
+    """Read data from a snapshot file saved in the standard IAMC format
 
     Parameters
     ----------
