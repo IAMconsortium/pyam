@@ -227,24 +227,29 @@ class IamDataFrame(object):
             display style of scenarios assigned to this category (list, pivot)
             (no display if None)
         """
-        if not name:
+        # for returning a list or pivot table of all categories or one specific
+        if not criteria:
+            cat = self.cat.reset_index()
+            if name:
+                cat = cat[cat.category == name]
+            if filters:
+                for col in ['model', 'scenario']:
+                    if col in filters:
+                        print(col)
+                        cat = cat[keep_col_match(cat[col], filters[col])]
+            
             if display == 'list':
-                return self.cat
+                return cat.set_index(['model', 'scenario'])
             elif display == 'pivot':
-                cat = self.cat.reset_index()
                 cat = cat.pivot(index='model', columns='scenario',
                                 values='category')
                 return cat.style.apply(color_by_cat,
                                        cat_col=self.cat_color, axis=None)
-        elif name and not criteria:
-            df = pd.DataFrame(index=self.cat[self.cat.category == name].index)
-            if display == 'list':
-                return df
-            elif display == 'pivot':
-                return pivot_has_elements(df, 'model', 'scenario')
 
+        # when criteria are provided, use them to assign a new category
         else:
-            cat = self.cat.index.copy()
+            # TODO clear out existing assignments to that category?
+            cat = self.cat.index
             for var, check in criteria.items():
                 cat = cat.intersection(self.check(var, check,
                                                   filters).index)
