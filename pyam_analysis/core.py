@@ -276,6 +276,9 @@ class IamDataFrame(object):
                         return df
                     elif display == 'pivot':
                         return pivot_has_elements(df, 'model', 'scenario')
+                else:
+                    print("" + str(len(df)) + " scenarios categorized as '"
+                          + name + "'")
 
             else:
                 print("No scenario satisfies the criteria")
@@ -358,7 +361,12 @@ class IamDataFrame(object):
         keep = np.array([True] * len(self.data))
 
         for col, values in filters.items():
-            if col in ['model', 'scenario', 'region']:
+            if col == 'category':
+                cat = self.cat[keep_col_match(self.cat['category'], values)]
+                keep_col = self.data.set_index(['model', 'scenario'])\
+                    .index.isin(cat.index)
+
+            elif col in ['model', 'scenario', 'region']:
                 keep_col = keep_col_match(self.data[col], values)
 
             elif col == 'variable':
