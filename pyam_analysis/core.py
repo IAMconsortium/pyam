@@ -62,7 +62,7 @@ class IamDataFrame(object):
         # define a dataframe for categorization and other meta-data
         self.cat = self.data[['model', 'scenario']].drop_duplicates()\
             .set_index(['model', 'scenario'])
-        self.cat['category'] = 'uncategorized'
+        self.reset_category()
 
         # define a dictionary for category-color mapping
         self.cat_color = {}
@@ -279,6 +279,10 @@ class IamDataFrame(object):
 
             else:
                 print("No scenario satisfies the criteria")
+
+    def reset_category(self):
+        """Reset category assignment for all scenarios to 'uncategorized'"""
+        self.cat['category'] = 'uncategorized'
 
     def check(self, variable, check, filters=None, ret_true=True):
         """Check which model/scenarios satisfy specific criteria
