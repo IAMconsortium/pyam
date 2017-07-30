@@ -74,7 +74,7 @@ class IamDataFrame(object):
         Parameters
         ----------
         filters: dict, optional
-            filter by model, scenario, region, variable, or year
+            filter by model, scenario, region, variable, year, or category
             see function select() for details
         """
         return list(self.select(filters, ['model']).model)
@@ -85,7 +85,7 @@ class IamDataFrame(object):
         Parameters
         ----------
         filters: dict, optional
-            filter by model, scenario, region, variable, or year
+            filter by model, scenario, region, variable, year, or category
             see function select() for details
         """
         return list(self.select(filters, ['scenario']).scenario)
@@ -113,7 +113,7 @@ class IamDataFrame(object):
         columns: str or list of strings
             columns for Pivot table
         filters: dict, optional
-            filter by model, scenario, region, variable, or year
+            filter by model, scenario, region, variable, year, or category
             see function select() for details
         values: str, optional
             dataframe column to aggregate or count
@@ -164,7 +164,7 @@ class IamDataFrame(object):
         Parameters
         ----------
         filters: dict, optional
-            filter by model, scenario, region, variable, or year
+            filter by model, scenario, region, variable, year, or category
             see function select() for details
         """
         return self.select(filters).pivot_table(index=iamc_idx_cols,
@@ -179,7 +179,7 @@ class IamDataFrame(object):
             dictionary of variables mapped to a dictionary of checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
-            filter by model, scenario & region
+            filter by model, scenario, region, or category
             (variables & years are replaced by the other arguments)
             see function select() for details
         exclude: bool
@@ -214,7 +214,7 @@ class IamDataFrame(object):
             dictionary with variables mapped to applicable checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
-            filter by model, scenario & region
+            filter by model, scenario, region, or category
             (variables & years are replaced by args in criteria)
             see function select() for details
         comment: str
@@ -235,9 +235,8 @@ class IamDataFrame(object):
             if filters:
                 for col in ['model', 'scenario']:
                     if col in filters:
-                        print(col)
                         cat = cat[keep_col_match(cat[col], filters[col])]
-            
+
             if display == 'list':
                 return cat.set_index(['model', 'scenario'])
             elif display == 'pivot':
@@ -298,7 +297,7 @@ class IamDataFrame(object):
             dictionary with checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
-            filter by model, scenario & region
+            filter by model, scenario, region, or category
             (variables & years are replaced by arguments of 'check')
             see function select() for details
         ret_true: bool
@@ -344,6 +343,7 @@ class IamDataFrame(object):
         ----------
         filters: dict, optional
             The following columns are available for filtering:
+             - 'category': filter by category assignment in meta-data
              - 'model', 'scenario', 'region': takes a string or list of strings
              - 'variable': takes a string or list of strings,
                 where ``*`` can be used as a wildcard
@@ -400,7 +400,7 @@ class IamDataFrame(object):
         Parameters
         ----------
         filters: dict, optional
-            filter by model, scenario, region, variable, or year
+            filter by model, scenario, region, variable, year, or category
             see function select() for details
         idx_cols: str or list of strings, optional
             list of index columns to display
