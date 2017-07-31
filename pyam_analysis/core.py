@@ -256,16 +256,15 @@ class IamDataFrame(object):
         # when criteria are provided, use them to assign a new category
         else:
             # TODO clear out existing assignments to that category?
-            cat = self.cat.index
+            cat_idx = self.cat.index
             for var, check in criteria.items():
-                cat = cat.intersection(self.check(var, check,
-                                                  filters).index)
-
-            df = pd.DataFrame(index=cat)
+                cat_idx = cat_idx.intersection(self.check(var, check,
+                                                          filters).index)
+            df = pd.DataFrame(index=cat_idx)
             if len(df):
                 # assign selected model/scenario to internal category mapping
                 if assign:
-                    self.cat.loc[cat, 'category'] = name
+                    self.cat.loc[cat_idx, 'category'] = name
 
                 # assign a color to this category for pivot tables and plots
                 if color:
