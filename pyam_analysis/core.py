@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Initial version based on 
+Initial version based on
 https://github.com/iiasa/ceds_harmonization_analysis by Matt Gidden
 """
 
@@ -317,7 +317,7 @@ class IamDataFrame(object):
             filter by model, scenario, region, or category
             (variables & years are replaced by arguments of 'check')
             see function select() for details
-        ret_true: bool
+        ret_true: bool, default True
             if true, return models/scenarios passing the check;
             otherwise, return datatframe of all failed checks
         """
@@ -353,7 +353,7 @@ class IamDataFrame(object):
         else:
             return df[~is_true]
 
-    def select(self, filters={}, cols=None, idx_cols=None):
+    def select(self, filters={}, cols=None, idx_cols=None, exclude_cat=True):
         """Select a subset of the data (filter) and set an index
 
         Parameters
@@ -369,19 +369,25 @@ class IamDataFrame(object):
                 so ``range(2010,2015)`` is interpreted
                 as ``[2010, 2011, 2012, 2013, 2014]``)
         cols: string or list
-            Columns returned for the dataframe, duplicates are dropped
+            columns returned for the dataframe, duplicates are dropped
         idx_cols: string or list
-            Columns that are set as index of the returned dataframe
+            columns that are set as index of the returned dataframe
+        exclude_cat: boolean, default True
+            exclude all scenarios categorized as 'exclude'
         """
+        if exclude_cat:
+            cat_idx = self.cat[self.cat['category'] != 'exclude'].index
+            keep = return_index(self.data, ['model', 'scenario']).isin(cat_idx)
+        else:
+            keep = np.array([True] * len(self.data))
 
         # filter by columns and list of values
-        keep = np.array([True] * len(self.data))
-
         for col, values in filters.items():
             if col == 'category':
-                cat = self.cat[keep_col_match(self.cat['category'], values)]
-                keep_col = self.data.set_index(['model', 'scenario'])\
-                    .index.isin(cat.index)
+                cat_idx = self.cat[keep_col_match(self.cat['category'],
+                                                  values)].index
+                keep_col = return_index(self.data, ['model', 'scenario'])\
+                    .isin(cat_idx)
 
             elif col in ['model', 'scenario', 'region']:
                 keep_col = keep_col_match(self.data[col], values)
