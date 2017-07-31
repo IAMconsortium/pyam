@@ -62,7 +62,7 @@ class IamDataFrame(object):
         # define a dataframe for categorization and other meta-data
         self.cat = self.data[['model', 'scenario']].drop_duplicates()\
             .set_index(['model', 'scenario'])
-        self.reset_category()
+        self.reset_category(True)
 
         # define a dictionary for category-color mapping
         self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
