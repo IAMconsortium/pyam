@@ -65,7 +65,7 @@ class IamDataFrame(object):
         self.reset_category()
 
         # define a dictionary for category-color mapping
-        self.cat_color = {}
+        self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
         self.col_count = 0
 
     def models(self, filters={}):
