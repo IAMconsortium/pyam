@@ -219,11 +219,11 @@ class IamDataFrame(object):
             see function select() for details
         comment: str
             a comment pertaining to the category
-        assign: boolean (default True)
+        assign: boolean, default True
             assign categorization to data (if false, display only)
         color: str
             assign a color to this category
-        display: str or None (default None)
+        display: str or None, default None
             display style of scenarios assigned to this category (list, pivot)
             (no display if None)
         """
@@ -405,11 +405,11 @@ class IamDataFrame(object):
         idx_cols: str or list of strings, optional
             list of index columns to display
             (summing over non-selected columns)
-        color_by_cat: boolean, default: False
+        color_by_cat: boolean, default False
             use category coloring scheme, replace full legend by category
         save: str, optional
              filename for export of figure (as png)
-        ret_ax: boolean, optional, default: False
+        ret_ax: boolean, optional, default False
             return the 'axes()' object of the plot
         """
         if not idx_cols:
