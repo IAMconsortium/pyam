@@ -170,7 +170,7 @@ class IamDataFrame(object):
         return self.select(filters).pivot_table(index=iamc_idx_cols,
                                                 columns='year')['value']
 
-    def validate(self, criteria, filters={}, exclude=False):
+    def validate(self, criteria, filters={}, exclude=False, display='heatmap'):
         """Run validation checks on timeseries data
 
         Parameters
@@ -184,20 +184,26 @@ class IamDataFrame(object):
             see function select() for details
         exclude: bool
             models/scenarios failing the validation to be excluded from data
+        display: str or None, default 'heatmap'
+            display style of scenarios failing the validation (heatmap, list)
         """
         df = pd.DataFrame()
         for var, check in criteria.items():
             df = df.append(self.check(var, check,
                                       filters, ret_true=False))
         if len(df):
-            df.set_index(all_idx_cols, inplace=True)
             if exclude:
                 idx = return_index(df, ['model', 'scenario'])
                 self.cat.loc[idx, 'category'] = 'exclude'
 
-            print("These model/scenarios do not satisfy the criteria:")
-            cm = sns.light_palette("green", as_cmap=True)
-            return df.style.background_gradient(cmap=cm)
+            n = str(len(df))
+            print(n + " scenarios do not satisfy the criteria")
+            if display == 'heatmap':
+                df.set_index(all_idx_cols, inplace=True)
+                cm = sns.light_palette("green", as_cmap=True)
+                return df.style.background_gradient(cmap=cm)
+            elif display == 'list':
+                return df
         else:
             print("All models and scenarios satisfy the criteria")
 
@@ -238,7 +244,9 @@ class IamDataFrame(object):
                         cat = cat[keep_col_match(cat[col], filters[col])]
 
             if display == 'list':
-                return return_index(cat, ['category', 'model', 'scenario'])
+                return pd.DataFrame(
+                        index=return_index(cat,
+                                           ['category', 'model', 'scenario']))
             elif display == 'pivot':
                 cat = cat.pivot(index='model', columns='scenario',
                                 values='category')
