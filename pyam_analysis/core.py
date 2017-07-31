@@ -395,7 +395,7 @@ class IamDataFrame(object):
             return df.reset_index(drop=True)
 
     def plot_lines(self, filters={}, idx_cols=None, color_by_cat=False,
-                   ret_ax=False):
+                   save=None, ret_ax=False):
         """Simple line plotting feature
 
         Parameters
@@ -408,6 +408,8 @@ class IamDataFrame(object):
             (summing over non-selected columns)
         color_by_cat: boolean, default: False
             use category coloring scheme, replace full legend by category
+        save: str, optional
+             filename for export of figure (as png)
         ret_ax: boolean, optional, default: False
             return the 'axes()' object of the plot
         """
@@ -446,6 +448,8 @@ class IamDataFrame(object):
 
         plt.title(title)
         plt.xlabel('Years')
+        if save:
+            plt.savefig(save)
         plt.show()
 
         if ret_ax:
