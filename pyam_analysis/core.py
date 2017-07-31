@@ -276,8 +276,8 @@ class IamDataFrame(object):
                     elif display == 'pivot':
                         return pivot_has_elements(df, 'model', 'scenario')
                 else:
-                    print("" + str(len(df)) + " scenarios categorized as '"
-                          + name + "'")
+                    print("" + str(len(df)) + " scenarios categorized as '" +
+                          name + "'")
 
             else:
                 print("No scenario satisfies the criteria")
@@ -436,11 +436,10 @@ class IamDataFrame(object):
                 i += 1
 
         if color_by_cat:
-            for (col, data) in zip(df.iteritems(), colors):
-                color = cat_col[self.cat.loc[col[0], col[1]].category]
+            for (col, data) in df.iteritems():
+                color = self.cat_color[self.cat.loc[col[0:2]].category]
                 data.plot(color=color)
-                
-        else    
+        else:
             for (col, data) in df.iteritems():
                 data.plot()
             ax.legend(loc='best', framealpha=0.0)
