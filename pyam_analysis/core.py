@@ -69,7 +69,7 @@ class IamDataFrame(object):
         self.col_count = 0
 
     def models(self, filters={}):
-        """Get a list of models filtered by certain characteristics
+        """Get a list of models filtered by specific characteristics
 
         Parameters
         ----------
@@ -80,7 +80,7 @@ class IamDataFrame(object):
         return list(self.select(filters, ['model']).model)
 
     def scenarios(self, filters={}):
-        """Get a list of scenarios filtered by certain characteristics
+        """Get a list of scenarios filtered by specific characteristics
 
         Parameters
         ----------
@@ -91,7 +91,7 @@ class IamDataFrame(object):
         return list(self.select(filters, ['scenario']).scenario)
 
     def variables(self, filters={}):
-        """Get a list of variables filtered by certain characteristics
+        """Get a list of variables filtered by specific characteristics
 
         Parameters
         ----------
