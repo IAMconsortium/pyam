@@ -192,8 +192,8 @@ class IamDataFrame(object):
         if len(df):
             df.set_index(all_idx_cols, inplace=True)
             if exclude:
-                raise SystemError(
-                        'excluding model/scenarios not yet supported!')
+                idx = return_index(df, ['model', 'scenario'])
+                self.cat.loc[idx, 'category'] = 'exclude'
 
             print("These model/scenarios do not satisfy the criteria:")
             cm = sns.light_palette("green", as_cmap=True)
