@@ -124,7 +124,7 @@ class IamDataFrame(object):
             value to replace missing values with
         style: str, default None
             output style for dataframe formatting
-            accepts 'highlight_not_max', 'heat_map'
+            accepts 'highlight_not_max', 'heatmap'
         """
         if not values:
             return pivot_has_elements(self.select(filters, index+columns),
@@ -142,17 +142,17 @@ class IamDataFrame(object):
                     df = df.groupby(index+columns, as_index=False).mean()\
                                                                   .round(2)
                     aggfunc = np.sum
-                    fill_value = ""
+                    fill_value = 0 if style == 'heatmap' else ""
                 elif aggfunc == 'sum':
                     aggfunc = np.sum
-                    fill_value = ""
+                    fill_value = 0 if style == 'heatmap' else ""
 
             df_pivot = df.pivot_table(values=values, index=index,
                                       columns=columns, aggfunc=aggfunc,
                                       fill_value=fill_value)
             if style == 'highlight_not_max':
                 return df_pivot.style.apply(highlight_not_max)
-            if style == 'heat_map':
+            if style == 'heatmap':
                 cm = sns.light_palette("green", as_cmap=True)
                 return df_pivot.style.background_gradient(cmap=cm)
             else:
