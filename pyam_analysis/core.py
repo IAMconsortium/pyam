@@ -276,9 +276,8 @@ class IamDataFrame(object):
                     elif display == 'pivot':
                         return pivot_has_elements(df, 'model', 'scenario')
                 else:
-                    print("" + str(len(df)) + " scenarios categorized as '" +
-                          name + "'")
-
+                    n = str(len(df))
+                    print("" + n + " scenarios categorized as '" + name + "'")
             else:
                 print("No scenario satisfies the criteria")
 
