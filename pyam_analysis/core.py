@@ -289,9 +289,20 @@ class IamDataFrame(object):
             else:
                 print("No scenario satisfies the criteria")
 
-    def reset_category(self):
-        """Reset category assignment for all scenarios to 'uncategorized'"""
-        self.cat['category'] = 'uncategorized'
+    def reset_category(self, reset_exclude=False):
+        """Reset category assignment for all scenarios to 'uncategorized'
+
+        Parameters
+        ----------
+        reset_exclude: boolean, default False
+            reset the category for scenarios marked 'exclude
+        """
+        name = 'uncategorized'
+        if reset_exclude:
+            self.cat['category'] = name
+        else:
+            cat_idx = self.cat[self.cat['category'] != 'exclude'].index
+            self.cat.loc[cat_idx, 'category'] = name
 
     def check(self, variable, check, filters=None, ret_true=True):
         """Check which model/scenarios satisfy specific criteria
