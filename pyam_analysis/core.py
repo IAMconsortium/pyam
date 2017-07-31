@@ -238,7 +238,7 @@ class IamDataFrame(object):
                         cat = cat[keep_col_match(cat[col], filters[col])]
 
             if display == 'list':
-                return cat.set_index(['model', 'scenario'])
+                return return_index(cat, ['category', 'model', 'scenario'])
             elif display == 'pivot':
                 cat = cat.pivot(index='model', columns='scenario',
                                 values='category')
@@ -503,6 +503,11 @@ def read_data(path=None, file=None, ext='csv', regions=None):
     return df
 
 # %% auxiliary functions for data filtering
+
+
+def return_index(df, idx_cols):
+    """set and return an index for a dataframe"""
+    return df[idx_cols].set_index(idx_cols).index
 
 
 def keep_col_match(col, strings, pseudo_regex=False):
