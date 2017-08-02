@@ -353,7 +353,8 @@ class IamDataFrame(object):
         else:
             return df[~is_true]
 
-    def select(self, filters={}, cols=None, idx_cols=None, exclude_cat=True):
+    def select(self, filters={}, cols=None, idx_cols=None,
+               exclude_cat=['exclude']):
         """Select a subset of the data (filter) and set an index
 
         Parameters
@@ -372,11 +373,11 @@ class IamDataFrame(object):
             columns returned for the dataframe, duplicates are dropped
         idx_cols: string or list
             columns that are set as index of the returned dataframe
-        exclude_cat: boolean, default True
-            exclude all scenarios categorized as 'exclude'
+        exclude_cat: None or list of strings, default ['exclude']
+            exclude all scenarios from the listed categories
         """
         if exclude_cat:
-            cat_idx = self.cat[self.cat['category'] != 'exclude'].index
+            cat_idx = self.cat[~self.cat['category'].isin(exclude_cat)].index
             keep = return_index(self.data, ['model', 'scenario']).isin(cat_idx)
         else:
             keep = np.array([True] * len(self.data))
