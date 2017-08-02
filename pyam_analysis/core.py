@@ -31,7 +31,10 @@ all_idx_cols = iamc_idx_cols + ['year']
 
 class IamDataFrame(object):
     """This class is a wrapper for dataframes
-    following the IAMC data convention."""
+    following the IAMC data convention.
+    It provides a number of diagnostic features
+    (including validation of values, completeness of variables provided)
+    as well as a number of visualization and plotting tools."""
 
     def __init__(self, mp=None, path=None, file=None, ext='csv',
                  regions=None):
@@ -102,8 +105,7 @@ class IamDataFrame(object):
         return list(self.select(filters, ['variable']).variable)
 
     def pivot_table(self, index, columns, filters={}, values=None,
-                    aggfunc='count', fill_value=None,
-                    style=None):
+                    aggfunc='count', fill_value=None, style=None):
         """Returns a pivot table
 
         Parameters
@@ -123,7 +125,7 @@ class IamDataFrame(object):
         fill_value: scalar, default None
             value to replace missing values with
         style: str, default None
-            output style for dataframe formatting
+            output style for pivot table formatting
             accepts 'highlight_not_max', 'heatmap'
         """
         if not values:
@@ -185,7 +187,8 @@ class IamDataFrame(object):
         exclude: bool
             models/scenarios failing the validation to be excluded from data
         display: str or None, default 'heatmap'
-            display style of scenarios failing the validation (heatmap, list)
+            display style of scenarios failing the validation
+            (options: heatmap, list, df)
         """
         df = pd.DataFrame()
         for var, check in criteria.items():
@@ -194,17 +197,19 @@ class IamDataFrame(object):
         if len(df):
             n = str(len(df))
             print(n + " scenarios do not satisfy the criteria")
-            if display == 'heatmap':
-                df.set_index(all_idx_cols, inplace=True)
-                cm = sns.light_palette("green", as_cmap=True)
-                return df.style.background_gradient(cmap=cm)
-            elif display == 'list':
-                return df
+
+            if display:
+                if display == 'heatmap':
+                    df.set_index(all_idx_cols, inplace=True)
+                    cm = sns.light_palette("green", as_cmap=True)
+                    return df.style.background_gradient(cmap=cm)
+                else:
+                    return return_df(df, display, all_idx_cols)
         else:
             print("All models and scenarios satisfy the criteria")
 
     def category(self, name=None, criteria=None, filters=None, comment=None,
-                 assign=True, color=None, display=list):
+                 assign=True, color=None, display=None):
         """Assign scenarios to a category according to specific criteria
 
         Parameters
@@ -226,8 +231,8 @@ class IamDataFrame(object):
         color: str
             assign a color to this category
         display: str or None, default None
-            display style of scenarios assigned to this category (list, pivot)
-            (no display if None)
+            display style of scenarios assigned to this category
+            (list, pivot, df - no display if None)
         """
         # for returning a list or pivot table of all categories or one specific
         if not criteria:
@@ -239,12 +244,12 @@ class IamDataFrame(object):
                     if col in filters:
                         cat = cat[keep_col_match(cat[col], filters[col])]
 
-                cat = cat.pivot(index='model', columns='scenario',
-                                values='category')
-                return cat.style.apply(color_by_cat,
-                                       cat_col=self.cat_color, axis=None)
             if display:
                 if display == 'pivot':
+                    cat = cat.pivot(index='model', columns='scenario',
+                                    values='category')
+                    return cat.style.apply(color_by_cat,
+                                           cat_col=self.cat_color, axis=None)
                 else:
                     return return_df(cat, display,
                                      ['category', 'model', 'scenario'])
