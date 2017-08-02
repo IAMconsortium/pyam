@@ -372,7 +372,7 @@ class IamDataFrame(object):
         exclude_cat: None or list of strings, default ['exclude']
             exclude all scenarios from the listed categories
         """
-        if exclude_cat:
+        if exclude_cat is not None:
             idx = self._meta[~self._meta['category'].isin(exclude_cat)].index
             keep = return_index(self.data, ['model', 'scenario']).isin(idx)
         else:
@@ -403,13 +403,13 @@ class IamDataFrame(object):
         df = self.data[keep].copy()
 
         # select columns (and index columns), drop duplicates
-        if cols:
+        if cols is not None:
             if idx_cols:
                 cols = cols + idx_cols
             df = df[cols].drop_duplicates()
 
         # set (or reset) index
-        if idx_cols:
+        if idx_cols is not None:
             return df.set_index(idx_cols)
         else:
             return df.reset_index(drop=True)
@@ -460,7 +460,7 @@ class IamDataFrame(object):
                 df.columns = df.columns.droplevel(i)
                 if col == 'unit':
                     plt.ylabel(level)
-                elif title:
+                elif title is not None:
                     title = '{} - {}: {}'.format(title, col, level)
                 else:
                     title = '{}: {}'.format(col, level)
@@ -502,7 +502,7 @@ def read_data(path=None, file=None, ext='csv', regions=None):
     regions: list
         list of regions to be loaded from the database snapshot
     """
-    if path:
+    if path is not None:
         fname = '{}/{}.{}'.format(path, file, ext)
     else:
         fname = '{}.{}'.format(file, ext)
