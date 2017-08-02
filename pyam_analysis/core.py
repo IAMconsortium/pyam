@@ -198,7 +198,7 @@ class IamDataFrame(object):
             n = str(len(df))
             if exclude:
                 idx = return_index(df, ['model', 'scenario'])
-                self.cat.loc[idx, 'category'] = 'exclude'
+                self._meta.loc[idx, 'category'] = 'exclude'
                 print(n + " data points do not satisfy the criteria, " +
                       "categorized as 'exclude' in metadata")
             else:
