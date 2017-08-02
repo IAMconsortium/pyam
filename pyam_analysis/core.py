@@ -536,6 +536,16 @@ def read_data(path=None, file=None, ext='csv', regions=None):
 # %% auxiliary functions for data filtering
 
 
+def return_df(df, display, idx_cols):
+    """returns a dataframe with display options"""
+    if display == 'df':
+        return df.reset_index(drop=True)
+    elif display == 'list':
+        return df.set_index(idx_cols)
+    else:
+        warnings.warn("Display option '" + display + "' not supported!")
+
+
 def return_index(df, idx_cols):
     """set and return an index for a dataframe"""
     return df[idx_cols].set_index(idx_cols).index
