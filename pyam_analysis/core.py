@@ -192,10 +192,6 @@ class IamDataFrame(object):
             df = df.append(self.check(var, check,
                                       filters, ret_true=False))
         if len(df):
-            if exclude:
-                idx = return_index(df, ['model', 'scenario'])
-                self.cat.loc[idx, 'category'] = 'exclude'
-
             n = str(len(df))
             print(n + " scenarios do not satisfy the criteria")
             if display == 'heatmap':
