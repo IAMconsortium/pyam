@@ -217,6 +217,7 @@ class IamDataFrame(object):
     def category(self, name=None, criteria=None, filters={}, comment=None,
                  assign=True, color=None, display=None):
         """Assign scenarios to a category according to specific criteria
+        or display the category assignment
 
         Parameters
         ----------
