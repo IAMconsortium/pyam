@@ -575,13 +575,10 @@ def keep_col_yr(col, yrs):
     """
     matching of year columns for data filtering
     """
-
     if isinstance(yrs, int):
         return col == yrs
-
     elif isinstance(yrs, list) or isinstance(yrs, range):
         return col.isin(yrs)
-
     else:
         raise SystemError('filtering for years by ' + yrs + ' not supported,' +
                           'must be int, list or range')
