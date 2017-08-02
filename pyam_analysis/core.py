@@ -299,6 +299,36 @@ class IamDataFrame(object):
             cat_idx = self._meta[self._meta['category'] != 'exclude'].index
             self._meta.loc[cat_idx, 'category'] = name
 
+    def metadata(self, meta=None, name=None, filters={}, display='list'):
+        """Show metadata or add metadata information
+
+        Parameters
+        ----------
+        meta: dataframe or series, default None
+            if provided, adds columns to the metadata
+        name: str, default None
+            if df is series, name of new metadata column
+        filters: dict, optional
+            filter by model, scenario or category
+        display: str, default 'list'
+            accepts 'list' or 'df'
+        """
+        # if a dataframe or series is provided, add to metadata dataframe
+        if meta is not None:
+            if isinstance(meta, pd.Series):
+                meta.to_frame(name)
+            for name, series in meta.iteritems():
+                for idx, val in series.iteritems():
+                    self._meta.loc[idx, name] = val
+
+        # otherwise, return metadata
+        else:
+            meta = self._meta.reset_index()
+            for col, values in filters.items():
+                meta = meta[keep_col_match(meta[col], values)]
+
+            return return_df(meta, display, ['category', 'model', 'scenario'])
+
     def check(self, variable, check, filters=None, ret_true=True):
         """Check which model/scenarios satisfy specific criteria
 
