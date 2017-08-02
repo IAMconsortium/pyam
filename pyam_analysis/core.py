@@ -587,8 +587,8 @@ def return_index(df, idx_cols):
 
 def keep_col_match(col, strings, pseudo_regex=False):
     """
-    matching of model/scenario names and variables to pseudo-regex (optional)
-    for data filtering
+    matching of model/scenario names, variables, regions, and categories
+    to pseudo-regex (optional) for data filtering
     """
     keep_col = np.array([False] * len(col))
 
