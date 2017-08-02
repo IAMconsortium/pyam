@@ -196,7 +196,13 @@ class IamDataFrame(object):
                                       filters, ret_true=False))
         if len(df):
             n = str(len(df))
-            print(n + " scenarios do not satisfy the criteria")
+            if exclude:
+                idx = return_index(df, ['model', 'scenario'])
+                self.cat.loc[idx, 'category'] = 'exclude'
+                print(n + " data points do not satisfy the criteria, " +
+                      "categorized as 'exclude' in metadata")
+            else:
+                print(n + " data points do not satisfy the criteria")
 
             if display:
                 if display == 'heatmap':
