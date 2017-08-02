@@ -305,7 +305,8 @@ class IamDataFrame(object):
             self._meta.loc[cat_idx, 'category'] = name
 
     def metadata(self, meta=None, name=None, filters={},
-                 idx_cols=['model', 'scenario', 'category'], display='list'):
+                 idx_cols=['model', 'scenario', 'category'],
+                 exclude_cat=['exclude'], display='list'):
         """Show metadata or add metadata information
 
         Parameters
@@ -320,6 +321,8 @@ class IamDataFrame(object):
             columns that are set as index of the returned dataframe (if 'list')
         display: str, default 'list'
             accepts 'list' or 'df'
+        exclude_cat: None or list of strings, default ['exclude']
+            exclude all scenarios from the listed categories
         """
         # if a dataframe or series is provided, add to metadata dataframe
         if meta is not None:
@@ -332,6 +335,8 @@ class IamDataFrame(object):
         # otherwise, return metadata
         else:
             meta = self._meta.reset_index()
+            if exclude_cat is not None:
+                meta = meta[~meta['category'].isin(exclude_cat)]
             for col, values in filters.items():
                 meta = meta[keep_col_match(meta[col], values)]
             return return_df(meta, display, idx_cols)
