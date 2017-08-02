@@ -304,7 +304,8 @@ class IamDataFrame(object):
             cat_idx = self._meta[self._meta['category'] != 'exclude'].index
             self._meta.loc[cat_idx, 'category'] = name
 
-    def metadata(self, meta=None, name=None, filters={}, display='list'):
+    def metadata(self, meta=None, name=None, filters={},
+                 idx_cols=None, display='list'):
         """Show metadata or add metadata information
 
         Parameters
