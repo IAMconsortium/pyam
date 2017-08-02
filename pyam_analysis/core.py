@@ -239,15 +239,15 @@ class IamDataFrame(object):
                     if col in filters:
                         cat = cat[keep_col_match(cat[col], filters[col])]
 
-            if display == 'list':
-                return pd.DataFrame(
-                        index=return_index(cat,
-                                           ['category', 'model', 'scenario']))
-            elif display == 'pivot':
                 cat = cat.pivot(index='model', columns='scenario',
                                 values='category')
                 return cat.style.apply(color_by_cat,
                                        cat_col=self.cat_color, axis=None)
+            if display:
+                if display == 'pivot':
+                else:
+                    return return_df(cat, display,
+                                     ['category', 'model', 'scenario'])
 
         # when criteria are provided, use them to assign a new category
         else:
@@ -256,8 +256,7 @@ class IamDataFrame(object):
             for var, check in criteria.items():
                 cat_idx = cat_idx.intersection(self.check(var, check,
                                                           filters).index)
-            df = pd.DataFrame(index=cat_idx)
-            if len(df):
+            if len(cat_idx):
                 # assign selected model/scenario to internal category mapping
                 if assign:
                     self.cat.loc[cat_idx, 'category'] = name
@@ -270,17 +269,13 @@ class IamDataFrame(object):
                                                              8)[self.col_count]
                     self.col_count += 1
 
+                n = str(len(cat_idx))
+                print(n + " scenarios categorized as '" + name + "'")
+
                 # return the model/scenario as dataframe for visual output
                 if display:
-                    print("The following scenarios are categorized as '" +
-                          name + "':")
-                    if display == 'list':
-                        return df
-                    elif display == 'pivot':
-                        return pivot_has_elements(df, 'model', 'scenario')
-                else:
-                    n = str(len(df))
-                    print(n + " scenarios categorized as '" + name + "'")
+                    df = pd.DataFrame(index=cat_idx).reset_index()
+                    return return_df(df, display, ['model', 'scenario'])
             else:
                 print("No scenario satisfies the criteria")
 
