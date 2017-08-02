@@ -305,7 +305,7 @@ class IamDataFrame(object):
             self._meta.loc[cat_idx, 'category'] = name
 
     def metadata(self, meta=None, name=None, filters={},
-                 idx_cols=None, display='list'):
+                 idx_cols=['model', 'scenario', 'category'], display='list'):
         """Show metadata or add metadata information
 
         Parameters
@@ -316,6 +316,8 @@ class IamDataFrame(object):
             if df is series, name of new metadata column
         filters: dict, optional
             filter by model, scenario or category
+        idx_cols: list of str, default ['model', 'scenario', 'category']
+            columns that are set as index of the returned dataframe (if 'list')
         display: str, default 'list'
             accepts 'list' or 'df'
         """
@@ -332,8 +334,7 @@ class IamDataFrame(object):
             meta = self._meta.reset_index()
             for col, values in filters.items():
                 meta = meta[keep_col_match(meta[col], values)]
-
-            return return_df(meta, display, ['category', 'model', 'scenario'])
+            return return_df(meta, display, idx_cols)
 
     def check(self, variable, check, filters=None, ret_true=True):
         """Check which model/scenarios satisfy specific criteria
