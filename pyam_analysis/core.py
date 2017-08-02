@@ -214,7 +214,7 @@ class IamDataFrame(object):
         else:
             print("All models and scenarios satisfy the criteria")
 
-    def category(self, name=None, criteria=None, filters=None, comment=None,
+    def category(self, name=None, criteria=None, filters={}, comment=None,
                  assign=True, color=None, display=None):
         """Assign scenarios to a category according to specific criteria
 
@@ -245,10 +245,8 @@ class IamDataFrame(object):
             cat = self._meta.reset_index()
             if name:
                 cat = cat[cat.category == name]
-            if filters:
-                for col in ['model', 'scenario']:
-                    if col in filters:
-                        cat = cat[keep_col_match(cat[col], filters[col])]
+            for col, values in filters.items():
+                cat = cat[keep_col_match(cat[col], values)]
 
             if display:
                 if display == 'pivot':
