@@ -63,7 +63,7 @@ class IamDataFrame(object):
             self.data = read_data(path, file, ext, regions)
 
         # define a dataframe for categorization and other meta-data
-        self.cat = self.data[['model', 'scenario']].drop_duplicates()\
+        self._meta = self.data[['model', 'scenario']].drop_duplicates()\
             .set_index(['model', 'scenario'])
         self.reset_category(True)
 
@@ -236,7 +236,7 @@ class IamDataFrame(object):
         """
         # for returning a list or pivot table of all categories or one specific
         if not criteria:
-            cat = self.cat.reset_index()
+            cat = self._meta.reset_index()
             if name:
                 cat = cat[cat.category == name]
             if filters:
@@ -257,14 +257,14 @@ class IamDataFrame(object):
         # when criteria are provided, use them to assign a new category
         else:
             # TODO clear out existing assignments to that category?
-            cat_idx = self.cat.index
+            cat_idx = self._meta.index
             for var, check in criteria.items():
                 cat_idx = cat_idx.intersection(self.check(var, check,
                                                           filters).index)
             if len(cat_idx):
                 # assign selected model/scenario to internal category mapping
                 if assign:
-                    self.cat.loc[cat_idx, 'category'] = name
+                    self._meta.loc[cat_idx, 'category'] = name
 
                 # assign a color to this category for pivot tables and plots
                 if color:
@@ -294,10 +294,10 @@ class IamDataFrame(object):
         """
         name = 'uncategorized'
         if reset_exclude:
-            self.cat['category'] = name
+            self._meta['category'] = name
         else:
-            cat_idx = self.cat[self.cat['category'] != 'exclude'].index
-            self.cat.loc[cat_idx, 'category'] = name
+            cat_idx = self._meta[self._meta['category'] != 'exclude'].index
+            self._meta.loc[cat_idx, 'category'] = name
 
     def check(self, variable, check, filters=None, ret_true=True):
         """Check which model/scenarios satisfy specific criteria
@@ -373,16 +373,16 @@ class IamDataFrame(object):
             exclude all scenarios from the listed categories
         """
         if exclude_cat:
-            cat_idx = self.cat[~self.cat['category'].isin(exclude_cat)].index
-            keep = return_index(self.data, ['model', 'scenario']).isin(cat_idx)
+            idx = self._meta[~self._meta['category'].isin(exclude_cat)].index
+            keep = return_index(self.data, ['model', 'scenario']).isin(idx)
         else:
             keep = np.array([True] * len(self.data))
 
         # filter by columns and list of values
         for col, values in filters.items():
             if col == 'category':
-                cat_idx = self.cat[keep_col_match(self.cat['category'],
-                                                  values)].index
+                cat_idx = self._meta[keep_col_match(self._meta['category'],
+                                                    values)].index
                 keep_col = return_index(self.data, ['model', 'scenario'])\
                     .isin(cat_idx)
 
@@ -469,7 +469,7 @@ class IamDataFrame(object):
 
         if color_by_cat:
             for (col, data) in df.iteritems():
-                color = self.cat_color[self.cat.loc[col[0:2]].category]
+                color = self.cat_color[self._meta.loc[col[0:2]].category]
                 data.plot(color=color)
         else:
             for (col, data) in df.iteritems():
