@@ -320,7 +320,7 @@ class IamDataFrame(object):
         # if a dataframe or series is provided, add to metadata dataframe
         if meta is not None:
             if isinstance(meta, pd.Series):
-                meta.to_frame(name)
+                meta = meta.to_frame(name)
             for name, series in meta.iteritems():
                 for idx, val in series.iteritems():
                     self._meta.loc[idx, name] = val
