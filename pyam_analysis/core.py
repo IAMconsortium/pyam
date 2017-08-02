@@ -439,8 +439,18 @@ class IamDataFrame(object):
         """
         if not idx_cols:
             idx_cols = iamc_idx_cols
-        df = self.pivot_table(['year'], idx_cols, filters, values='value',
-                              aggfunc=np.sum, style=None)
+        cols = idx_cols + ['year', 'value']
+
+        # select data, drop 'uncategorized' if option color_by_cat is selected
+        if color_by_cat:
+            df = self.select(filters, cols,
+                             exclude_cat=['exclude', 'uncategorized'])
+        else:
+            df = self.select(filters, cols)
+
+        # pivot dataframe for use by matplotlib, start plot
+        df = df.pivot_table(values='value', index=['year'], columns=idx_cols,
+                            aggfunc=np.sum)
         plt.cla()
         ax = plt.axes()
 
