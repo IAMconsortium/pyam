@@ -555,7 +555,7 @@ def read_data(path=None, file=None, ext='csv', regions=None):
     # read from database snapshot csv
     if ext == 'csv':
         df = pd.read_csv(fname)
-        df = (df.rename(columns={c: str(c).lower() for c in df.columns}))
+        df = df.rename(columns={c: str(c).lower() for c in df.columns})
 
         # filter by selected regions
         if regions:
