@@ -1,4 +1,4 @@
-FROM gidden/aneris-base
+FROM gidden/python-base
 
 COPY . /pyam_analysis
 
