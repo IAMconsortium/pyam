@@ -657,7 +657,7 @@ def read_data(path=None, file=None, ext='csv', regions=None):
 # %% auxiliary functions for data filtering
 
 
-def return_df(df, display, idx_cols):
+def return_df(df, display, idx_cols=None):
     """returns a dataframe with display options"""
     if display == 'df':
         return df.reset_index(drop=True)
