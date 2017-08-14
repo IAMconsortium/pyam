@@ -64,15 +64,22 @@ class IamDataFrame(object):
         regions: list
             list of regions to be imported
         """
-        if ix is not None:
-            self.data = read_ix(ix, regions)
-        elif file and ext:
-            self.data = read_data(path, file, ext, regions)
+        # copy-constructor
+        if ix is not None and isinstance(ix, IamDataFrame):
+            self.data = ix.data
+            self._meta = ix._meta
 
-        # define a dataframe for categorization and other meta-data
-        self._meta = self.data[['model', 'scenario']].drop_duplicates()\
-            .set_index(['model', 'scenario'])
-        self.reset_category(True)
+        # read data from source
+        else:
+            if ix is not None:
+                self.data = read_ix(ix, regions)
+            elif file and ext:
+                self.data = read_data(path, file, ext, regions)
+
+            # define a dataframe for categorization and other meta-data
+            self._meta = self.data[['model', 'scenario']].drop_duplicates()\
+                .set_index(['model', 'scenario'])
+            self.reset_category(True)
 
         # define a dictionary for category-color mapping
         self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
