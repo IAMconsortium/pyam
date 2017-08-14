@@ -42,15 +42,15 @@ class IamDataFrame(object):
     (including validation of values, completeness of variables provided)
     as well as a number of visualization and plotting tools."""
 
-    def __init__(self, mp=None, path=None, file=None, ext='csv',
+    def __init__(self, ix=None, path=None, file=None, ext='csv',
                  regions=None):
         """Initialize an instance of an IamDataFrame
 
         Parameters
         ----------
-        mp: ixPlatform
-            an instance of an ix modeling platform (ixmp)
-            (if initializing from an ix platform)
+        ix: IxTimeseriesObject or IxDataStructure
+            an instance of an IxTimeseriesObject or IxDataStructure
+            (this option requires the ixmp package as a dependency)
         path: str
             the folder path where the data file is located
             (if reading in data from a snapshot csv or xlsx file)
@@ -63,8 +63,8 @@ class IamDataFrame(object):
         regions: list
             list of regions to be imported
         """
-        if mp:
-            raise SystemError('connection to ix platform not yet supported')
+        if ix is not None:
+            self.data = read_ix(ix, regions)
         elif file and ext:
             self.data = read_data(path, file, ext, regions)
 
@@ -534,6 +534,31 @@ class IamDataFrame(object):
             return ax
 
 # %% auxiliary function for reading data from snapshot file
+
+
+def read_ix(ix, regions=None):
+    """Read timeseries data from an ix object
+
+    Parameters
+    ----------
+    ix: IxTimeseriesObject or IxDataStructure
+        an instance of an IxTimeseriesObject or IxDataStructure
+        (this option requires the ixmp package as a dependency)
+    regions: list
+        list of regions to be loaded from the database snapshot
+    """
+    if not has_ix:
+        error = 'this option depends on the ixmp package'
+        raise SystemError(error)
+    if isinstance(ix, ixmp.ixDatastructure):
+        df = ix.timeseries()
+        df['model'] = ix.model
+        df['scenario'] = ix.scenario
+    else:
+        error = 'arg ' + ix + ' not recognized as valid ix object'
+        raise SystemError(error)
+
+    return df
 
 
 def read_data(path=None, file=None, ext='csv', regions=None):
