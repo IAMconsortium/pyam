@@ -77,8 +77,8 @@ class IamDataFrame(object):
                 self.data = read_data(path, file, ext, regions)
 
             # define a dataframe for categorization and other meta-data
-            self._meta = self.data[['model', 'scenario']].drop_duplicates()\
-                .set_index(['model', 'scenario'])
+            self._meta = return_index(self.data, ['model', 'scenario'],
+                                      drop_duplicates=True)
             self.reset_category(True)
 
         # define a dictionary for category-color mapping
@@ -113,16 +113,12 @@ class IamDataFrame(object):
             df = read_data(path, file, ext, regions)
 
         # check that model/scenario is not yet included in this IamDataFrame
-        mode_scen = ['model', 'scenario']
-        meta = df[mode_scen].drop_duplicates()
-        if new._meta.reset_index()[mode_scen].append(meta).duplicated().any():
-            raise SystemError('duplicate model/scenario in appended data')
+        meta = return_index(df, ['model', 'scenario'], drop_duplicates=True)
+        meta['category'] = 'uncategorized'
+        new._meta = new._meta.append(meta, verify_integrity=True)
 
         # add new timeseries to data and append to metadata
-        meta['category'] = 'uncategorized'
         new.data = new.data.append(df)
-        new._meta = new._meta.append(meta.set_index(['model', 'scenario']))
-
         return new
 
     def models(self, filters={}):
@@ -667,9 +663,12 @@ def return_df(df, display, idx_cols=None):
         warnings.warn("Display option '" + display + "' not supported!")
 
 
-def return_index(df, idx_cols):
+def return_index(df, idx_cols, drop_duplicates=False):
     """set and return an index for a dataframe"""
-    return df[idx_cols].set_index(idx_cols).index
+    if drop_duplicates:
+        return df[idx_cols].drop_duplicates().set_index(idx_cols)
+    else:
+        return df[idx_cols].set_index(idx_cols).index
 
 
 def keep_col_match(col, strings, pseudo_regex=False):
