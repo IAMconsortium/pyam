@@ -24,9 +24,7 @@ except Exception:
 
 # disable autoscroll in Jupyter notebooks
 try:
-    js_scroll = u'IPython.OutputArea.prototype._should_scroll = '
-    js_scroll += 'function(lines) { return false; }'
-    get_ipython().run_cell_magic(u'javascript', js_scroll)
+    get_ipython().run_cell_magic(u'javascript', u'IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }')
 except Exception:
     pass
 
