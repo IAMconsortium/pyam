@@ -85,6 +85,46 @@ class IamDataFrame(object):
         self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
         self.col_count = 0
 
+    def append(self, ix=None, path=None, file=None, ext='csv',  regions=None):
+        """Read timeseries data and append to IamDataFrame
+
+        Parameters
+        ----------
+        ix: IxTimeseriesObject or IxDataStructure
+            an instance of an IxTimeseriesObject or IxDataStructure
+            (this option requires the ixmp package as a dependency)
+        path: str
+            the folder path where the data file is located
+            (if reading in data from a snapshot csv or xlsx file)
+        file: str
+            the folder path where the data file is located
+            (if reading in data from a snapshot csv or xlsx file)
+        ext: str
+            snapshot file extension
+            (if reading in data from a snapshot csv or xlsx file)
+        regions: list
+            list of regions to be imported
+        """
+        new = IamDataFrame(ix=self)
+
+        if ix is not None:
+            df = read_ix(ix, regions)
+        elif file and ext:
+            df = read_data(path, file, ext, regions)
+
+        # check that model/scenario is not yet included in this IamDataFrame
+        mode_scen = ['model', 'scenario']
+        meta = df[mode_scen].drop_duplicates()
+        if new._meta.reset_index()[mode_scen].append(meta).duplicated().any():
+            raise SystemError('duplicate model/scenario in appended data')
+
+        # add new timeseries to data and append to metadata
+        meta['category'] = 'uncategorized'
+        new.data = new.data.append(df)
+        new._meta = new._meta.append(meta.set_index(['model', 'scenario']))
+
+        return new
+
     def models(self, filters={}):
         """Get a list of models filtered by specific characteristics
 
