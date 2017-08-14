@@ -10,8 +10,12 @@ import warnings
 import re
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+
+try:
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+except Exception:
+    pass
 
 # ignore warnings
 warnings.filterwarnings('ignore')
