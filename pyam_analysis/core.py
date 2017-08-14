@@ -627,7 +627,10 @@ def read_data(path=None, file=None, ext='csv', regions=None):
 
     # read from database snapshot csv
     if ext == 'csv':
-        df = pd.read_csv(fname)
+        try:
+            df = pd.read_csv(fname)
+        except UnicodeDecodeError:
+            df = pd.read_csv(fname, encoding='ISO-8859-1')
         df = df.rename(columns={c: str(c).lower() for c in df.columns})
 
         # filter by selected regions
