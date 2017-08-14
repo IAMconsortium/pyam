@@ -16,6 +16,12 @@ import seaborn as sns
 # ignore warnings
 warnings.filterwarnings('ignore')
 
+try:
+    import ixmp
+    has_ix = True
+except Exception:
+    has_ix = False
+
 # disable autoscroll in Jupyter notebooks
 try:
     get_ipython().run_cell_magic(u'javascript', u'',
