@@ -13,6 +13,7 @@ import pandas as pd
 
 try:
     import matplotlib.pyplot as plt
+    import mpld3
     import seaborn as sns
 except Exception:
     pass
@@ -33,6 +34,7 @@ try:
 except Exception:
     pass
 
+# default settings for column headers
 iamc_idx_cols = ['model', 'scenario', 'region', 'variable', 'unit']
 all_idx_cols = iamc_idx_cols + ['year']
 
@@ -510,7 +512,7 @@ class IamDataFrame(object):
             return df.reset_index(drop=True)
 
     def plot_lines(self, filters={}, idx_cols=None, color_by_cat=False,
-                   save=None, ret_ax=False):
+                   save=None, interactive_plots=True, return_ax=False):
         """Simple line plotting feature
 
         Parameters
@@ -525,9 +527,19 @@ class IamDataFrame(object):
             use category coloring scheme, replace full legend by category
         save: str, optional
              filename for export of figure (as png)
-        ret_ax: boolean, optional, default False
+        interactive_plots: boolean
+            use mpld3 for interactive plots (mouse-over)
+        return_ax: boolean, optional, default False
             return the 'axes()' object of the plot
+            (interactive_plots deactivated)
         """
+        if return_ax:
+            interactive_plots = False
+        if interactive_plots:
+            mpld3.enable_notebook()
+        else:
+            mpld3.disable_notebook()
+
         if not idx_cols:
             idx_cols = iamc_idx_cols
         cols = idx_cols + ['year', 'value']
@@ -562,22 +574,38 @@ class IamDataFrame(object):
             else:
                 i += 1
 
-        if color_by_cat:
-            for (col, data) in df.iteritems():
+        for (col, data) in df.iteritems():
+            if color_by_cat:
                 color = self.cat_color[self._meta.loc[col[0:2]].category]
-                data.plot(color=color)
-        else:
-            for (col, data) in df.iteritems():
-                data.plot()
-            ax.legend(loc='best', framealpha=0.0)
+                lines = ax.plot(data, color=color)
+            else:
+                lines = ax.plot(data)
+
+            if interactive_plots:
+                if isinstance(col, tuple):
+                    label = col[0]
+                    for i in range(1, len(col)):
+                        label = '{} - {}'.format(label, col[i])
+                else:
+                    label = col
+                tooltips = mpld3.plugins.LineLabelTooltip(lines[0], label)
+                mpld3.plugins.connect(plt.gcf(), tooltips)
+
+            # only show the legend if no more than 12 rows
+            if len(df) <= 12:
+                ax.legend(loc='best', framealpha=0.0)
 
         plt.title(title)
         plt.xlabel('Years')
         if save:
             plt.savefig(save)
-        plt.show()
 
-        if ret_ax:
+        if interactive_plots:
+            return mpld3.display()
+        else:
+            plt.show()
+
+        if return_ax:
             return ax
 
 # %% auxiliary function for reading data from snapshot file
