@@ -250,8 +250,9 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        criteria: dict
-            dictionary of variables mapped to a dictionary of checks
+        criteria: str or dict
+            string for variable name to be checked for existence
+            or dictionary of variables mapped to a dictionary of checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
             filter by model, scenario, region, or category
@@ -263,10 +264,21 @@ class IamDataFrame(object):
             display style of scenarios failing the validation
             (options: heatmap, list, df)
         """
-        df = pd.DataFrame()
-        for var, check in criteria.items():
-            df = df.append(self._check(var, check,
-                                       filters, ret_true=False))
+        # if criteria is a string, check that each scenario has this variable
+        if isinstance(criteria, str):
+            filters = filters.copy()
+            filters.update({'variable': criteria})
+            idx = self._select(filters, idx_cols=['model', 'scenario']).index
+            df = pd.DataFrame(index=self._meta.index)
+            df['keep'] = True
+            df.loc[idx, 'keep'] = False
+            df = df[df.keep].reset_index()[['model', 'scenario']]
+        # else, loop over dictionary and perform checks
+        else:
+            df = pd.DataFrame()
+            for var, check in criteria.items():
+                df = df.append(self._check(var, check,
+                                           filters, ret_true=False))
         if len(df):
             n = str(len(df))
 
