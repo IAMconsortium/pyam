@@ -73,6 +73,8 @@ class IamDataFrame(object):
         if ix is not None and isinstance(ix, IamDataFrame):
             self.data = ix.data
             self._meta = ix._meta
+            self.cat_color = ix.cat_color
+            self.col_count = ix.col_count
 
         # read data from source
         else:
@@ -86,9 +88,9 @@ class IamDataFrame(object):
                                       drop_duplicates=True)
             self.reset_category(True)
 
-        # define a dictionary for category-color mapping
-        self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
-        self.col_count = 0
+            # define a dictionary for category-color mapping
+            self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
+            self.col_count = 0
 
     def append(self, ix=None, path=None, file=None, ext='csv',  regions=None):
         """Read timeseries data and append to IamDataFrame
