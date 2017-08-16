@@ -148,7 +148,18 @@ class IamDataFrame(object):
         """
         return list(self.select(filters, ['scenario']).scenario)
 
-    def variables(self, filters={}):
+    def regions(self, filters={}):
+        """Get a list of regions filtered by specific characteristics
+
+        Parameters
+        ----------
+        filters: dict, optional
+            filter by model, scenario, region, variable, year, or category
+            see function select() for details
+        """
+        return list(self.select(filters, ['region']).region)
+
+    def variables(self, filters={}, include_units=False):
         """Get a list of variables filtered by specific characteristics
 
         Parameters
