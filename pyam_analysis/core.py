@@ -684,7 +684,7 @@ def read_data(path=None, file=None, ext='csv', regions=None):
 
         # filter by selected regions
         if regions:
-            df = df[df['region'].isin(regions)]
+            df = df[keep_col_match(df['region'],  regions)]
 
         # transpose dataframe by year column
         idx = iamc_idx_cols
