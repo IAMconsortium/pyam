@@ -133,9 +133,9 @@ class IamDataFrame(object):
         ----------
         filters: dict, optional
             filter by model, scenario, region, variable, year, or category
-            see function select() for details
+            see function _select() for details
         """
-        return list(self.select(filters, ['model']).model)
+        return list(self._select(filters, ['model']).model)
 
     def scenarios(self, filters={}):
         """Get a list of scenarios filtered by specific characteristics
@@ -144,9 +144,9 @@ class IamDataFrame(object):
         ----------
         filters: dict, optional
             filter by model, scenario, region, variable, year, or category
-            see function select() for details
+            see function _select() for details
         """
-        return list(self.select(filters, ['scenario']).scenario)
+        return list(self._select(filters, ['scenario']).scenario)
 
     def regions(self, filters={}):
         """Get a list of regions filtered by specific characteristics
@@ -155,9 +155,9 @@ class IamDataFrame(object):
         ----------
         filters: dict, optional
             filter by model, scenario, region, variable, year, or category
-            see function select() for details
+            see function _select() for details
         """
-        return list(self.select(filters, ['region']).region)
+        return list(self._select(filters, ['region']).region)
 
     def variables(self, filters={}, include_units=False):
         """Get a list of variables filtered by specific characteristics
@@ -166,14 +166,14 @@ class IamDataFrame(object):
         ----------
         filters: dict, optional
             filter by model, scenario, region, variable, or year
-            see function select() for details
+            see function _select() for details
         include_units: boolean, default False
             include the units
         """
         if include_units:
-            return self.select(filters, ['variable', 'unit'])
+            return self._select(filters, ['variable', 'unit'])
         else:
-            return list(self.select(filters, ['variable']).variable)
+            return list(self._select(filters, ['variable']).variable)
 
     def pivot_table(self, index, columns, filters={}, values=None,
                     aggfunc='count', fill_value=None, style=None):
@@ -187,7 +187,7 @@ class IamDataFrame(object):
             columns for Pivot table
         filters: dict, optional
             filter by model, scenario, region, variable, year, or category
-            see function select() for details
+            see function _select() for details
         values: str, optional
             dataframe column to aggregate or count
         aggfunc: str or function, default 'count'
@@ -200,11 +200,11 @@ class IamDataFrame(object):
             accepts 'highlight_not_max', 'heatmap'
         """
         if not values:
-            return pivot_has_elements(self.select(filters, index+columns),
+            return pivot_has_elements(self._select(filters, index+columns),
                                       index=index, columns=columns)
         else:
             cols = index + columns + [values]
-            df = self.select(filters, cols)
+            df = self._select(filters, cols)
 
             # allow 'aggfunc' to be passed as string for easier user interface
             if isinstance(aggfunc, str):
@@ -238,10 +238,10 @@ class IamDataFrame(object):
         ----------
         filters: dict, optional
             filter by model, scenario, region, variable, year, or category
-            see function select() for details
+            see function _select() for details
         """
-        return self.select(filters).pivot_table(index=iamc_idx_cols,
-                                                columns='year')['value']
+        return self._select(filters).pivot_table(index=iamc_idx_cols,
+                                                 columns='year')['value']
 
     def validate(self, criteria, filters={}, exclude=False, display='heatmap'):
         """Run validation checks on timeseries data
@@ -254,7 +254,7 @@ class IamDataFrame(object):
         filters: dict, optional
             filter by model, scenario, region, or category
             (variables & years are replaced by the other arguments)
-            see function select() for details
+            see function _select() for details
         exclude: bool
             models/scenarios failing the validation to be excluded from data
         display: str or None, default 'heatmap'
@@ -263,13 +263,15 @@ class IamDataFrame(object):
         """
         df = pd.DataFrame()
         for var, check in criteria.items():
-            df = df.append(self.check(var, check,
-                                      filters, ret_true=False))
+            df = df.append(self._check(var, check,
+                                       filters, ret_true=False))
         if len(df):
             n = str(len(df))
+
             if exclude:
                 idx = return_index(df, ['model', 'scenario'])
                 self._meta.loc[idx, 'category'] = 'exclude'
+
                 print(n + " data points do not satisfy the criteria, " +
                       "categorized as 'exclude' in metadata")
             else:
@@ -301,7 +303,7 @@ class IamDataFrame(object):
         filters: dict, optional
             filter by model, scenario, region, or category
             (variables & years are replaced by args in criteria)
-            see function select() for details
+            see function _select() for details
         comment: str
             a comment pertaining to the category
         assign: boolean, default True
@@ -336,12 +338,12 @@ class IamDataFrame(object):
             cat_idx = self._meta.index
             if criteria:
                 for var, check in criteria.items():
-                    cat_idx = cat_idx.intersection(self.check(var, check,
-                                                              filters).index)
+                    cat_idx = cat_idx.intersection(self._check(var, check,
+                                                               filters).index)
             # if criteria is empty, use all scenarios that satisfy 'filters'
             else:
-                filter_idx = self.select(filters,
-                                         idx_cols=['model', 'scenario']).index
+                filter_idx = self._select(filters,
+                                          idx_cols=['model', 'scenario']).index
                 cat_idx = cat_idx.intersection(filter_idx)
 
             if len(cat_idx):
@@ -422,7 +424,7 @@ class IamDataFrame(object):
                 meta = meta[keep_col_match(meta[col], values)]
             return return_df(meta, display, idx_cols)
 
-    def check(self, variable, check, filters=None, ret_true=True):
+    def _check(self, variable, check, filters=None, ret_true=True):
         """Check which model/scenarios satisfy specific criteria
 
         Parameters
@@ -435,7 +437,7 @@ class IamDataFrame(object):
         filters: dict, optional
             filter by model, scenario, region, or category
             (variables & years are replaced by arguments of 'check')
-            see function select() for details
+            see function _select() for details
         ret_true: bool, default True
             if true, return models/scenarios passing the check;
             otherwise, return datatframe of all failed checks
@@ -445,7 +447,7 @@ class IamDataFrame(object):
         if 'year' in check:
             filters['year'] = check['year']
         filters['variable'] = variable
-        df = self.select(filters)
+        df = self._select(filters)
 
         is_true = np.array([True] * len(df.value))
 
@@ -472,8 +474,8 @@ class IamDataFrame(object):
         else:
             return df[~is_true]
 
-    def select(self, filters={}, cols=None, idx_cols=None,
-               exclude_cat=['exclude']):
+    def _select(self, filters={}, cols=None, idx_cols=None,
+                exclude_cat=['exclude']):
         """Select a subset of the data (filter) and set an index
 
         Parameters
@@ -545,7 +547,7 @@ class IamDataFrame(object):
         ----------
         filters: dict, optional
             filter by model, scenario, region, variable, year, or category
-            see function select() for details
+            see function _select() for details
         idx_cols: str or list of strings, optional
             list of index columns to display
             (summing over non-selected columns)
@@ -572,10 +574,10 @@ class IamDataFrame(object):
 
         # select data, drop 'uncategorized' if option color_by_cat is selected
         if color_by_cat:
-            df = self.select(filters, cols,
-                             exclude_cat=['exclude', 'uncategorized'])
+            df = self._select(filters, cols,
+                              exclude_cat=['exclude', 'uncategorized'])
         else:
-            df = self.select(filters, cols)
+            df = self._select(filters, cols)
 
         # pivot dataframe for use by matplotlib, start plot
         df = df.pivot_table(values='value', index=['year'], columns=idx_cols,
