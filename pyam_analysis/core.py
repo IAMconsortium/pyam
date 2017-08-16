@@ -167,8 +167,13 @@ class IamDataFrame(object):
         filters: dict, optional
             filter by model, scenario, region, variable, or year
             see function select() for details
+        include_units: boolean, default False
+            include the units
         """
-        return list(self.select(filters, ['variable']).variable)
+        if include_units:
+            return self.select(filters, ['variable', 'unit'])
+        else:
+            return list(self.select(filters, ['variable']).variable)
 
     def pivot_table(self, index, columns, filters={}, values=None,
                     aggfunc='count', fill_value=None, style=None):
