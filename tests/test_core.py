@@ -71,7 +71,8 @@ def test_category_pass(test_ia):
     df = IamDataFrame(path='tests', file='testing_data', ext='csv')
     dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
     exp = pd.DataFrame(dct)[['model', 'scenario']]
-    obs = df.category('Testing', {'Primary Energy': {'up': 1}}, display='df')
+    obs = df.category('Testing', {'Primary Energy': {'up': 1}},
+                      color='red', display='df')
     npt.assert_array_equal(obs, exp)
     
     obs2 = df.category('Testing', display='df')
