@@ -291,13 +291,16 @@ class IamDataFrame(object):
             else:
                 print(n + " data points do not satisfy the criteria")
 
-            if display:
-                if display == 'heatmap':
-                    df.set_index(all_idx_cols, inplace=True)
-                    cm = sns.light_palette("green", as_cmap=True)
-                    return df.style.background_gradient(cmap=cm)
-                else:
-                    return return_df(df, display, all_idx_cols)
+            if isinstance(criteria, str):
+                return df
+            else:
+                if display:
+                    if display == 'heatmap':
+                        df.set_index(all_idx_cols, inplace=True)
+                        cm = sns.light_palette("green", as_cmap=True)
+                        return df.style.background_gradient(cmap=cm)
+                    else:
+                        return return_df(df, display, all_idx_cols)
         else:
             print("All models and scenarios satisfy the criteria")
 
