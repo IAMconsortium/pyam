@@ -358,7 +358,10 @@ class IamDataFrame(object):
                     self.col_count += 1
 
                 n = str(len(cat_idx))
-                print(n + " scenarios categorized as '" + name + "'")
+                if n > 1:
+                    print(n + " scenarios categorized as '" + name + "'")
+                else:
+                    print("1 scenario categorized as '" + name + "'")
 
                 # return the model/scenario as dataframe for visual output
                 if display:
