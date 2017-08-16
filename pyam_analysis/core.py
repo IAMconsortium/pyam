@@ -295,7 +295,7 @@ class IamDataFrame(object):
         name: str (optional)
             category name - if None, return a dataframe or pivot table
             of all categories mapped to models/scenarios
-        criteria: dict
+        criteria: dict, default None
             dictionary with variables mapped to applicable checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
@@ -313,7 +313,7 @@ class IamDataFrame(object):
             (list, pivot, df - no display if None)
         """
         # for returning a list or pivot table of all categories or one specific
-        if not criteria:
+        if criteria is None:
             cat = self._meta.reset_index()
             if name:
                 cat = cat[cat.category == name]
@@ -334,9 +334,16 @@ class IamDataFrame(object):
         else:
             # TODO clear out existing assignments to that category?
             cat_idx = self._meta.index
-            for var, check in criteria.items():
-                cat_idx = cat_idx.intersection(self.check(var, check,
-                                                          filters).index)
+            if criteria:
+                for var, check in criteria.items():
+                    cat_idx = cat_idx.intersection(self.check(var, check,
+                                                              filters).index)
+            # if criteria is empty, use all scenarios that satisfy 'filters'
+            else:
+                filter_idx = self.select(filters,
+                                         idx_cols=['model', 'scenario']).index
+                cat_idx = cat_idx.intersection(filter_idx)
+
             if len(cat_idx):
                 # assign selected model/scenario to internal category mapping
                 if assign:
