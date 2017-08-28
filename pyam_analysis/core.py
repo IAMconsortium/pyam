@@ -54,9 +54,9 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        ix: IxTimeseriesObject or IxDataStructure
-            an instance of an IxTimeseriesObject or IxDataStructure
-            (this option requires the ixmp package as a dependency)
+        ix: ixmp.IamScenario or ixmp.DataStructure
+            an instance of an IamScenario or DataStructure
+            (this option requires the 'ixmp' package as a dependency)
         path: str
             the folder path where the data file is located
             (if reading in data from a snapshot csv or xlsx file)
@@ -661,8 +661,8 @@ def read_ix(ix, regions=None):
 
     Parameters
     ----------
-    ix: IxTimeseriesObject or IxDataStructure
-        an instance of an IxTimeseriesObject or IxDataStructure
+    ix: IamScenario or DataStructure
+        an instance of an IamScenario or DataStructure
         (this option requires the ixmp package as a dependency)
     regions: list
         list of regions to be loaded from the database snapshot
@@ -670,13 +670,13 @@ def read_ix(ix, regions=None):
     if not has_ix:
         error = 'this option depends on the ixmp package'
         raise SystemError(error)
-    if isinstance(ix, ixmp.ixDatastructure):
+    if isinstance(ix, ixmp.IamScenario):
         df = ix.timeseries()
         df['model'] = ix.model
         df['scenario'] = ix.scenario
     else:
-        error = 'arg ' + ix + ' not recognized as valid ix object'
-        raise SystemError(error)
+        error = 'arg ' + ix + ' not recognized as valid ixmp class'
+        raise ValueError(error)
 
     return df
 
@@ -701,7 +701,7 @@ def read_data(path=None, file=None, ext='csv', regions=None):
         fname = '{}.{}'.format(file, ext)
 
     if not os.path.exists(fname):
-        raise SystemError("no snapshot file '" + fname + "' found!")
+        raise ValueError("no snapshot file '" + fname + "' found!")
 
     # read from database snapshot csv
     if ext == 'csv':
@@ -725,7 +725,7 @@ def read_data(path=None, file=None, ext='csv', regions=None):
         # drop NaN's
         df.dropna(inplace=True)
     else:
-        raise SystemError('file type ' + ext + ' is not supported')
+        raise ValueError('file type ' + ext + ' is not supported')
 
     return df
 
@@ -820,7 +820,7 @@ def highlight_has_element(val):
 
 def highlight_not_max(s):
     '''
-    highlight the maximum in a Series yellow.
+    highlight the maximum in a Series using yellow background
     '''
     is_max = s == s.max()
     return ['' if v else 'background-color: yellow' for v in is_max]
