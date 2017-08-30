@@ -13,9 +13,17 @@ import pandas as pd
 
 try:
     import matplotlib.pyplot as plt
+except IOError:
+    pass
+
+try:
     import mpld3
+except IOError:
+    pass
+
+try:
     import seaborn as sns
-except Exception:
+except IOError:
     pass
 
 # ignore warnings
@@ -24,7 +32,7 @@ warnings.filterwarnings('ignore')
 try:
     import ixmp
     has_ix = True
-except Exception:
+except IOError:
     has_ix = False
 
 # disable autoscroll in Jupyter notebooks
@@ -92,7 +100,7 @@ class IamDataFrame(object):
             self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
             self.col_count = 0
 
-    def append(self, ix=None, path=None, file=None, ext='csv',  regions=None):
+    def append(self, ix=None, path=None, file=None, ext='csv', regions=None):
         """Read timeseries data and append to IamDataFrame
 
         Parameters
@@ -202,7 +210,7 @@ class IamDataFrame(object):
             accepts 'highlight_not_max', 'heatmap'
         """
         if not values:
-            return pivot_has_elements(self._select(filters, index+columns),
+            return pivot_has_elements(self._select(filters, index + columns),
                                       index=index, columns=columns)
         else:
             cols = index + columns + [values]
@@ -211,11 +219,11 @@ class IamDataFrame(object):
             # allow 'aggfunc' to be passed as string for easier user interface
             if isinstance(aggfunc, str):
                 if aggfunc == 'count':
-                    df = df.groupby(index+columns, as_index=False).count()
+                    df = df.groupby(index + columns, as_index=False).count()
                     fill_value = 0
                 elif aggfunc == 'mean':
-                    df = df.groupby(index+columns, as_index=False).mean()\
-                                                                  .round(2)
+                    df = df.groupby(index + columns, as_index=False).mean()\
+                        .round(2)
                     aggfunc = np.sum
                     fill_value = 0 if style == 'heatmap' else ""
                 elif aggfunc == 'sum':
@@ -479,8 +487,8 @@ class IamDataFrame(object):
             # if assessing a criteria for one year only
             if ('year' in check) and isinstance(check['year'], int):
                 return df.loc[is_true, ['model', 'scenario', 'year']]\
-                              .drop_duplicates()\
-                              .set_index(['model', 'scenario'])
+                    .drop_duplicates()\
+                    .set_index(['model', 'scenario'])
             # if more than one year is filtered for, ensure that
             # the criteria are satisfied in every year
             else:
@@ -539,7 +547,7 @@ class IamDataFrame(object):
 
             else:
                 raise SystemError(
-                        'filter by column ' + col + ' not supported')
+                    'filter by column ' + col + ' not supported')
             keep = keep & keep_col
 
         df = self.data[keep].copy()
@@ -713,7 +721,7 @@ def read_data(path=None, file=None, ext='csv', regions=None):
 
         # filter by selected regions
         if regions:
-            df = df[keep_col_match(df['region'],  regions)]
+            df = df[keep_col_match(df['region'], regions)]
 
         # transpose dataframe by year column
         idx = iamc_idx_cols
