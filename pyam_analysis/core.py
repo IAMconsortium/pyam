@@ -13,17 +13,17 @@ import pandas as pd
 
 try:
     import matplotlib.pyplot as plt
-except IOError:
+except ImportError:
     pass
 
 try:
     import mpld3
-except IOError:
+except ImportError:
     pass
 
 try:
     import seaborn as sns
-except IOError:
+except ImportError:
     pass
 
 # ignore warnings
@@ -32,7 +32,7 @@ warnings.filterwarnings('ignore')
 try:
     import ixmp
     has_ix = True
-except IOError:
+except ImportError:
     has_ix = False
 
 # disable autoscroll in Jupyter notebooks
