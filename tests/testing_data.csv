@@ -1,0 +1,2 @@
+model,scenario,region,variable,unit,2005
+test_model,test_scenario,World,Primary Energy,EJ/y,1
