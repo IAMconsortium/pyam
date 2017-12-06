@@ -63,17 +63,17 @@ see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 Python dependencies
 -------------------
 
-0. `pandas` v0.21.0 or higher
-0. `Sphinx <http://sphinx-doc.org/>`_ v1.1.2 or higher
-0. `sphinxcontrib.bibtex`
-0. `sphinxcontrib-fulltoc`
-0. `matplotlib`
-0. `seaborn`
+1. `pandas` v1.21.0 or higher
+1. `Sphinx <http://sphinx-doc.org/>`_ v1.1.2 or higher
+1. `sphinxcontrib.bibtex`
+1. `sphinxcontrib-fulltoc`
+1. `matplotlib`
+1. `seaborn`
 
 Installation instructions
 -------------------------
 
-0. Fork this repository and clone the forked repository (`<user>/pyam-analysis`)
+1. Fork this repository and clone the forked repository (`<user>/pyam-analysis`)
    to your machine. To fork the repository, look for the fork icon in the top 
    right at [iiasa/pyam-analysis](https://github.com/iiasa/pyam-analysis).
    Add `iiasa/pyam-analysis` as `upstream` to your clone.
@@ -84,13 +84,14 @@ Installation instructions
    
 ### Windows Users
 
-0. Double click on `install.bat` in the local folder where you cloned your fork.
+1. Double click on `install.bat` in the local folder where you cloned your fork.
 
 ### *nix Users
 
-0. In a command prompt, execute the following command
+1. In a command prompt, execute the following command
 
     ```
+    pip install -r requirements.txt
     python setup.py install
     ```
 
