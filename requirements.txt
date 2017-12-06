@@ -1,0 +1,9 @@
+pyam_analysis
+argparse
+numpy
+pandas >=0.21.0
+pyyaml
+xlrd
+xlsxwriter
+matplotlib
+seaborn

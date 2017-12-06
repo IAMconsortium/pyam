@@ -1,0 +1,13 @@
+machine:
+  services:
+      - docker
+
+dependencies:
+  override:
+      - docker build -t pyam_analysis/pyam_analysis:latest .
+
+test:
+  override:
+      # run coveralls on the first go-around
+      - docker run pyam_analysis/pyam_analysis:latest /bin/bash -c "python2 -m  pytest tests"
+      - docker run pyam_analysis/pyam_analysis:latest /bin/bash -c "python3 -m  pytest tests"
