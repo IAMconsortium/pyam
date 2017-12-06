@@ -3,6 +3,7 @@
 ~*
 *csv
 *xlsx
+*png
 
 # Apple file system
 *.DS_STORE

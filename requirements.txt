@@ -1,7 +1,7 @@
 pyam_analysis
 argparse
 numpy
-pandas
+pandas >=0.21.0
 pyyaml
 xlrd
 xlsxwriter

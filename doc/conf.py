@@ -41,8 +41,7 @@ extensions = [
     'cloud_sptheme.ext.table_styling',
     'numpydoc',
     'nbsphinx',
-    'sphinxcontrib.programoutput',
-    'sphinx.ext.mathbase',
+    'sphinxcontrib.programoutput'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -61,8 +60,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyam_analysis'
-copyright = u'2016, Matthew Gidden'
-author = u'Matthew Gidden'
+copyright = u'2017, Daniel Huppmann, Matthew Gidden @ IIASA Energy Program'
+author = u'Daniel Huppmann, Matthew Gidden'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -145,7 +144,7 @@ html_theme = 'alabaster'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = '_static/logo.svg'
+# html_logo = '_static/logo.svg'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -155,7 +154,7 @@ html_logo = '_static/logo.svg'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -285,7 +284,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'pyam_analysis', u'pyam_analysis Documentation',
-     author, 'pyam_analysis', 'One line description of project.',
+     author, 'pyam_analysis', 'a Python toolkit for Integrated Assessment Modeling',
      'Miscellaneous'),
 ]
 
