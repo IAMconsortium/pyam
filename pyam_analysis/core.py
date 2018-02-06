@@ -73,7 +73,7 @@ class IamDataFrame(object):
     (including validation of values, completeness of variables provided)
     as well as a number of visualization and plotting tools."""
 
-    def __init__(self, data, regions=None):
+    def __init__(self, data, regions=None, **kwargs):
         """Initialize an instance of an IamDataFrame
 
         Parameters
@@ -98,7 +98,7 @@ class IamDataFrame(object):
             if has_ix and isinstance(data, ixmp.TimeSeries):
                 self.data = read_ix(data, regions)
             else:
-                self.data = read_data(data, regions)
+                self.data = read_data(data, regions, **kwargs)
 
             # define a dataframe for categorization and other meta-data
             self._meta = return_index(self.data, mod_scen,
@@ -743,10 +743,10 @@ class IamDataFrame(object):
         for col in df.columns.names:
             if isinstance(df.columns, pd.MultiIndex) \
                     and len(df.columns.levels[i]) == 1:
-                level = str(df.columns.levels[i][0])
+                level = u'{}'.format(df.columns.levels[i][0])
                 df.columns = df.columns.droplevel(i)
             elif isinstance(df.columns, pd.Index) and len(df.columns[i]) == 1:
-                level = str(df.columns[0])
+                level = u'{}'.format(df.columns[0])
                 df.columns = ['value']
             else:
                 i += 1
