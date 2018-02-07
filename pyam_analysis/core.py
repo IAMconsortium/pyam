@@ -4,6 +4,7 @@ Initial version based on
 https://github.com/iiasa/ceds_harmonization_analysis by Matt Gidden
 """
 
+import copy
 import os
 import warnings
 
@@ -613,35 +614,8 @@ class IamDataFrame(object):
         else:
             return df[~is_true]
 
-    def _select(self, filters={}, cols=None, idx_cols=None,
-                exclude_cat=['exclude']):
-        """Select a subset of the data (filter) and set an index
-
-        Parameters
-        ----------
-        filters: dict, optional
-            The following columns are available for filtering:
-             - 'category': filter by category assignment in metadata
-             - 'model', 'scenario', 'region': takes a string or list of strings
-             - 'variable': takes a string or list of strings,
-                where ``*`` can be used as a wildcard
-             - 'level': the maximum "depth" of IAM variables (number of '|')
-               (exluding the strings given in the 'variable' argument)
-             - 'year': takes an integer, a list of integers or a range
-                note that the last year of a range is not included,
-                so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-        cols: string or list
-            columns returned for the dataframe, duplicates are dropped
-        idx_cols: string or list
-            columns that are set as index of the returned dataframe
-        exclude_cat: None or list of strings, default ['exclude']
-            exclude all scenarios from the listed categories
-        """
-        if exclude_cat is not None:
-            idx = self._meta[~self._meta['category'].isin(exclude_cat)].index
-            keep = return_index(self.data, mod_scen).isin(idx)
-        else:
-            keep = np.array([True] * len(self.data))
+    def _filter_columns(self, filters):
+        keep = np.array([True] * len(self.data))
 
         # filter by columns and list of values
         for col, values in filters.items():
@@ -670,6 +644,52 @@ class IamDataFrame(object):
                 raise SystemError(
                     'filter by column ' + col + ' not supported')
             keep = keep & keep_col
+        return keep
+
+    def filter(self, filters={}):
+        keep = self._filter_columns(filters)
+        ret = copy.deepcopy(self)
+        ret.data = ret.data[keep]
+
+        idx = pd.MultiIndex.from_tuples(
+            pd.unique(zip(ret.data['model'], ret.data['scenario'])),
+            names=('model', 'scenario')
+        )
+        ret._meta = ret._meta.loc[idx]
+        return ret
+
+    def head(self, *args, **kwargs):
+        return self.data.head(*args, **kwargs)
+
+    def _select(self, filters={}, cols=None, idx_cols=None,
+                exclude_cat=['exclude']):
+        """Select a subset of the data (filter) and set an index
+
+        Parameters
+        ----------
+        filters: dict, optional
+            The following columns are available for filtering:
+             - 'category': filter by category assignment in metadata
+             - 'model', 'scenario', 'region': takes a string or list of strings
+             - 'variable': takes a string or list of strings,
+                where ``*`` can be used as a wildcard
+             - 'level': the maximum "depth" of IAM variables (number of '|')
+               (exluding the strings given in the 'variable' argument)
+             - 'year': takes an integer, a list of integers or a range
+                note that the last year of a range is not included,
+                so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
+        cols: string or list
+            columns returned for the dataframe, duplicates are dropped
+        idx_cols: string or list
+            columns that are set as index of the returned dataframe
+        exclude_cat: None or list of strings, default ['exclude']
+            exclude all scenarios from the listed categories
+        """
+        keep = self._filter_columns(filters)
+
+        if exclude_cat is not None:
+            idx = self._meta[~self._meta['category'].isin(exclude_cat)].index
+            keep &= return_index(self.data, mod_scen).isin(idx)
 
         df = self.data[keep].copy()
 
