@@ -551,8 +551,10 @@ class IamDataFrame(object):
         exclude_cat: None or list of strings, default []
             exclude all scenarios from the listed categories
         """
-        self.timeseries(filters, exclude_cat)\
-            .reset_index().to_excel(excel_writer, kwargs, index=False)
+        df = self.timeseries(filters, exclude_cat).reset_index()
+        df.columns = [str.title(i) if type(i) == str else i
+                      for i in df.columns]
+        df.to_excel(excel_writer, kwargs, index=False, sheet_name='data')
 
     def interpolate(self, year, exclude_cat=['exclude']):
         """Interpolate missing values in timeseries (linear interpolation)
