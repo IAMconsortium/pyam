@@ -538,7 +538,7 @@ class IamDataFrame(object):
             return return_df(meta, display, idx_cols)
 
     def to_excel(self, excel_writer, filters={}, exclude_cat=[], **kwargs):
-        """Write timeseries data to Excel
+        """Write timeseries data to Excel using the IAMC template convention
         (wrapper for `pandas.DataFrame.to_excel()`)
 
         Parameters
@@ -554,7 +554,13 @@ class IamDataFrame(object):
         df = self.timeseries(filters, exclude_cat).reset_index()
         df.columns = [str.title(i) if type(i) == str else i
                       for i in df.columns]
-        df.to_excel(excel_writer, kwargs, index=False, sheet_name='data')
+
+        defaults = {'sheet_name': 'data', 'index': False}
+        for key, value in defaults.items():
+            if key not in kwargs:
+                kwargs[key] = value
+
+        df.to_excel(excel_writer, **kwargs)
 
     def interpolate(self, year, exclude_cat=['exclude']):
         """Interpolate missing values in timeseries (linear interpolation)
