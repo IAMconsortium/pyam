@@ -509,7 +509,8 @@ class IamDataFrame(object):
         name: str, default None
             if df is series, name of new metadata column
         filters: dict, optional
-            filter by model, scenario or category
+            filter by model, scenario, region, variable, level, year, category
+            see function _select() for details
         idx_cols: list of str, default ['model', 'scenario']
             columns that are set as index of the returned dataframe (if 'list')
         exclude_cat: None or list of strings, default ['exclude']
