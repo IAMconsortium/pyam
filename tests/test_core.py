@@ -35,6 +35,15 @@ def test_variable_unit(test_ia):
     npt.assert_array_equal(test_ia.variables(include_units=True), exp)
 
 
+def test_timeseries(test_ia):
+    dct = {'model': ['test_model'] * 2, 'scenario': ['test_scenario'] * 2,
+           'years': [2005, 2010], 'value': [1, 6]}
+    exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
+                                        columns=['years'], values='value')
+    obs = test_ia.timeseries({'variable': 'Primary Energy'})
+    npt.assert_array_equal(obs, exp)
+
+
 def test_validate_pass(test_ia):
     assert test_ia.validate(criteria='Primary Energy', exclude=True) is None
 
