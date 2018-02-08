@@ -2,99 +2,54 @@ import pytest
 
 import matplotlib.pyplot as plt
 
-from testing_utils import test_ia
+from testing_utils import plot_idf
 
 
 @pytest.mark.mpl_image_compare
-def test_line_plot(test_ia):
+def test_line_plot(plot_idf):
     fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax)
+    plot_idf.line_plot(ax=ax)
     return fig
 
 
 @pytest.mark.mpl_image_compare
-def test_line_color_1(test_ia):
+def test_line_color(plot_idf):
     fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, color='model')
+    plot_idf.line_plot(ax=ax, color='model')
     return fig
 
 
 @pytest.mark.mpl_image_compare
-def test_line_plot_color_2(test_ia):
+def test_line_color_legend(plot_idf):
     fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, color='variable')
+    plot_idf.line_plot(ax=ax, color='model', legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare
-def test_line_plot_color_2_legend(test_ia):
+def test_line_marker_legend(plot_idf):
     fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, color='variable', legend=True)
+    plot_idf.line_plot(ax=ax, marker='model', legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare
-def test_line_color_1_legend(test_ia):
+def test_line_linestyle_legend(plot_idf):
     fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, color='model', legend=True)
-    return fig
-
-#
-
-
-@pytest.mark.mpl_image_compare
-def test_line_marker_1(test_ia):
-    fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, marker='model')
+    plot_idf.line_plot(ax=ax, linestyle='model', legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare
-def test_line_plot_marker_2(test_ia):
+def test_line_single_color(plot_idf):
     fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, marker='variable')
+    plot_idf.line_plot(ax=ax, color='b', linestyle='model', legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare
-def test_line_plot_marker_2_legend(test_ia):
+def test_line_filter_title(plot_idf):
     fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, marker='variable', legend=True)
-    return fig
-
-
-@pytest.mark.mpl_image_compare
-def test_line_marker_1_legend(test_ia):
-    fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, marker='model', legend=True)
-    return fig
-
-#
-
-
-@pytest.mark.mpl_image_compare
-def test_line_linestyle_1(test_ia):
-    fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, linestyle='model')
-    return fig
-
-
-@pytest.mark.mpl_image_compare
-def test_line_plot_linestyle_2(test_ia):
-    fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, linestyle='variable')
-    return fig
-
-
-@pytest.mark.mpl_image_compare
-def test_line_plot_linestyle_2_legend(test_ia):
-    fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, linestyle='variable', legend=True)
-    return fig
-
-
-@pytest.mark.mpl_image_compare
-def test_line_linestyle_1_legend(test_ia):
-    fig, ax = plt.subplots()
-    test_ia.line_plot(ax=ax, linestyle='model', legend=True)
+    plot_idf.filter({'variable': 'Primary Energy|Coal'}).line_plot(
+        ax=ax, color='model', marker='scenario', legend=True)
     return fig
