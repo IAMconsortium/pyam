@@ -59,7 +59,7 @@ def test_line_filter_title(plot_idf):
 
 @pytest.mark.mpl_image_compare
 def test_line_update_rc(plot_idf):
-    update = {'color': {'scenario': {'model1': 'cyan'}}}
+    update = {'color': {'model': {'test_model1': 'cyan'}}}
     plotting.run_control().update(update)
     fig, ax = plt.subplots()
     plot_idf.line_plot(ax=ax, color='model', legend=True)
