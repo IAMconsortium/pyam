@@ -16,6 +16,8 @@ import pyam_analysis as iam
 
 from pyam_analysis.utils import logger
 
+from pyam_analysis import plotting
+
 try:
     import matplotlib.pyplot as plt
     import matplotlib.lines as mlines
@@ -705,122 +707,25 @@ class IamDataFrame(object):
         else:
             return df.reset_index(drop=True)
 
-    def plot_lines(self, filters={}, idx_cols=None, color_by_cat=False,
-                   exclude_cat=['exclude'],
-                   save=None, interactive_plots=True, return_ax=False):
+    def as_pandas(self, with_metadata=False):
+        df = self.data
+        if with_metadata:
+            df = (df
+                  .set_index(['model', 'scenario'])
+                  .join(self.metadata())
+                  .reset_index()
+                  )
+        return df
+
+    def line_plot(self, *args, **kwargs):
         """Simple line plotting feature
 
         Parameters
         ----------
-        filters: dict, optional
-            filter by model, scenario, region, variable, level, year, category
-            see function _select() for details
-        idx_cols: str or list of strings, optional
-            list of index columns to display
-            (summing over non-selected columns)
-        color_by_cat: boolean, default False
-            use category coloring scheme, replace full legend by category
-        exclude_cat: list of strings, default ['exclude']
-            exclude all scenarios from the listed categories from validation
-        save: str, optional
-             filename for export of figure (as png)
-        interactive_plots: boolean
-            use mpld3 for interactive plots (mouse-over)
-        return_ax: boolean, optional, default False
-            return the 'axes()' object of the plot
-            (interactive_plots deactivated)
         """
-        if return_ax:
-            interactive_plots = False
-        if interactive_plots:
-            mpld3.enable_notebook()
-        else:
-            mpld3.disable_notebook()
-
-        if not idx_cols:
-            idx_cols = iamc_idx_cols
-        cols = idx_cols + ['year', 'value']
-
-        # select data
-        df = self._select(filters, cols, exclude_cat=exclude_cat)
-
-        # pivot dataframe for use by matplotlib, start plot
-        df = df.pivot_table(values='value', index=['year'], columns=idx_cols,
-                            aggfunc=np.sum)
-
-        # return None if filtered dataframe is empty
-        if df.empty:
-            logger().info("No scenarios satisfy the filters")
-            return None
-
-        plt.cla()
-        ax = plt.axes()
-
-        # drop index columns if it only has one level
-        # shift to title or y-axis (if unit) for more elegant figures
-        title = None
-        i = 0
-        for col in df.columns.names:
-            if isinstance(df.columns, pd.MultiIndex) \
-                    and len(df.columns.levels[i]) == 1:
-                level = u'{}'.format(df.columns.levels[i][0])
-                df.columns = df.columns.droplevel(i)
-            elif isinstance(df.columns, pd.Index) and len(df.columns[i]) == 1:
-                level = u'{}'.format(df.columns[0])
-                df.columns = ['value']
-            else:
-                i += 1
-                continue
-
-            if col == 'unit':
-                plt.ylabel(level)
-            elif title is not None:
-                title = '{} - {}: {}'.format(title, col, level)
-            else:
-                title = '{}: {}'.format(col, level)
-
-        for (col, data) in df.iteritems():
-            if color_by_cat:
-                color = self.cat_color[self._meta.loc[col[0:2]].category]
-                lines = ax.plot(data, color=color)
-            else:
-                lines = ax.plot(data)
-
-            if interactive_plots:
-                if isinstance(col, tuple):
-                    label = col[0]
-                    for i in range(1, len(col)):
-                        label = '{} - {}'.format(label, col[i])
-                else:
-                    label = col
-                tooltips = mpld3.plugins.LineLabelTooltip(lines[0], label)
-                mpld3.plugins.connect(plt.gcf(), tooltips)
-
-        # only show the legend if no more than 12 rows
-        # if not color_by_cat and df.shape[0] > 12:
-        #    ax.legend_.remove()
-
-        # show legend for categories (if color_by_cat)
-        if color_by_cat:
-            legend = []
-            for key, value in self.cat_color.items():
-                if key not in exclude_cat:
-                    legend.append(mlines.Line2D([], [],
-                                                color=value, label=key))
-            plt.legend(handles=legend)
-
-        plt.title(title)
-        plt.xlabel('Years')
-        if save:
-            plt.savefig(save)
-
-        if interactive_plots:
-            return mpld3.display()
-        else:
-            plt.show()
-
-        if return_ax:
-            return ax
+        df = self.as_pandas(with_metadata=True)
+        ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
+        return ax
 
 # %% auxiliary function for reading data from snapshot file
 
