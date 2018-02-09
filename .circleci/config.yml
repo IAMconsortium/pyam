@@ -30,6 +30,6 @@ jobs:
       - run:
           name: check artifacts
           command: ls /tmp/artifacts
-	  when: always
+          when: on_fail
       - store_artifacts:
           path: /tmp/artifacts
