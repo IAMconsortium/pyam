@@ -3,6 +3,10 @@
 Plotting tests are used as regression tests for plotting features. They can be
 run locally (see below) and are also run on CI.
 
+## Install Deps
+
+You have to install `pytest-mpl` to run the plotting tests.
+
 ## Tests Failing on CI?
 
 Make sure your local version of `matplotlib` and `seaborn` are the same as on
