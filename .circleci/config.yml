@@ -26,7 +26,9 @@ jobs:
           command: /bin/sh -c "ln -f -s ci/py3/Dockerfile Dockerfile && docker build -t pyam-analysis/pyam-analysis-py3:latest ."
       - run:
           name: Python3 Tests
-          command:  docker run pyam-analysis/pyam-analysis-py3:latest python3 -m pytest -v --mpl --mpl-results-path=/artifacts /pyam-analysis/tests
+          command:  |
+            docker run pyam-analysis/pyam-analysis-py3:latest python3 -m pytest -v --mpl --mpl-results-path=/artifacts /pyam-analysis/tests;
+            docker cp -r pyam-analysis/pyam-analysis-py3:/artifacts/* /artifacts/;
       - run:
           name: check artifacts
           command: ls /artifacts
