@@ -200,7 +200,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=False,
     # build legend handles and labels
     handles, labels = ax.get_legend_handles_labels()
     if legend_data != [''] * len(legend_data):
-        labels = list(set(tuple(legend_data)))
+        labels = sorted(list(set(tuple(legend_data))))
         idxs = [legend_data.index(d) for d in labels]
         handles = [handles[i] for i in idxs]
     if legend:
