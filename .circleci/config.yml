@@ -18,6 +18,7 @@ jobs:
       - run:
           name: Build Py2 Docker Image
           command: /bin/sh -c "ln -f -s ci/py2/Dockerfile Dockerfile && docker build -t pyam-analysis/pyam-analysis-py2:latest ."
+          when: always
       - run:
           name: Python2 Tests
           command:  docker run -v /ci-artifacts:/test-artifacts pyam-analysis/pyam-analysis-py2:latest python2 -m pytest -v --mpl --mpl-results-path=/test-artifacts /pyam-analysis/tests
@@ -25,6 +26,7 @@ jobs:
       - run:
           name: Build Py3 Docker Image
           command: /bin/sh -c "ln -f -s ci/py3/Dockerfile Dockerfile && docker build -t pyam-analysis/pyam-analysis-py3:latest ."
+          when: always
       - run:
           name: Python3 Tests
           command:  docker run -v /ci-artifacts:/test-artifacts pyam-analysis/pyam-analysis-py3:latest python3 -m pytest -v --mpl --mpl-results-path=/test-artifacts /pyam-analysis/tests
