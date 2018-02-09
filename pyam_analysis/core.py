@@ -654,7 +654,7 @@ class IamDataFrame(object):
         ret.data = ret.data[keep]
 
         idx = pd.MultiIndex.from_tuples(
-            pd.unique(zip(ret.data['model'], ret.data['scenario'])),
+            pd.unique(list(zip(ret.data['model'], ret.data['scenario']))),
             names=('model', 'scenario')
         )
         ret._meta = ret._meta.loc[idx]
