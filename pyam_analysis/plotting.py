@@ -8,8 +8,11 @@ import numpy as np
 
 from collections import defaultdict
 
+# line colors, markers, and styles that are cycled through when not
+# explicitly declared
 _DEFAULT_PROPS = None
 
+# user-defined defaults for various plot settings
 _RUN_CONTROL = None
 
 _RC_DEFAULTS = {
@@ -28,6 +31,7 @@ def isstr(x):
 
 
 def run_control():
+    """Global run control for determining user-defined defaults for plotting style"""
     global _RUN_CONTROL
     if _RUN_CONTROL is None:
         _RUN_CONTROL = RunControl()
@@ -35,6 +39,7 @@ def run_control():
 
 
 def _recursive_update(d, u):
+    """recursively update a dictionary d with a dictionary u"""
     for k, v in u.items():
         if isinstance(v, collections.Mapping):
             r = _recursive_update(d.get(k, {}), v)
@@ -69,6 +74,14 @@ class RunControl(collections.Mapping):
         self.store = _recursive_update(defaults, rc)
 
     def update(self, rc):
+        """Add additional run control parameters
+
+        Parameters
+        ----------
+        rc : string, file, dictionary, optional
+            a path to a YAML file, a file handle for a YAML file, or a 
+            dictionary describing run control configuration
+        """
         rc = self._load_yaml(rc)
         self.store = _recursive_update(self.store, rc)
 
@@ -123,6 +136,7 @@ class RunControl(collections.Mapping):
 
 
 def reset_default_props():
+    """Reset properties to initial cycle point"""
     global _DEFAULT_PROPS
     _DEFAULT_PROPS = {
         'color': itertools.cycle([x['color'] for x in plt.rcParams['axes.prop_cycle']]),
@@ -131,7 +145,15 @@ def reset_default_props():
     }
 
 
-def default_props(reset=True):
+def default_props(reset=False):
+    """Return current default properties
+
+    Parameters
+    ----------
+    reset : bool
+            if True, reset properties and return
+            default: False
+    """
     global _DEFAULT_PROPS
     if _DEFAULT_PROPS is None or reset:
         reset_default_props()
@@ -154,6 +176,37 @@ def reshape_line_plot(df, x, y):
 
 def line_plot(df, x='year', y='value', ax=None, legend=False,
               color=None, marker=None, linestyle=None, **kwargs):
+    """Plot data as lines with or without markers.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data to plot as a long-form data frame
+    x : str, optional
+        The column to use for x-axis values
+        default: year
+    y : str, optional
+        The column to use for y-axis values
+        default: value
+    ax : matplotlib.Axes, optional
+    legend : bool, optional
+        Include a legend
+        default: False
+    color : string, optional
+        A valid matplotlib color or column name. If a column name, common 
+        values will be provided the same color.
+        default: None
+    marker : string, optional
+        A valid matplotlib marker or column name. If a column name, common 
+        values will be provided the same marker.
+        default: None
+    linestyle : string, optional
+        A valid matplotlib linestyle or column name. If a column name, common 
+        values will be provided the same linestyle.
+        default: None
+    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+    """
+
     if ax is None:
         fig, ax = plt.subplots()
 

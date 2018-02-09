@@ -19,17 +19,6 @@ from pyam_analysis.utils import logger
 from pyam_analysis import plotting
 
 try:
-    import matplotlib.pyplot as plt
-    import matplotlib.lines as mlines
-except ImportError:
-    pass
-
-try:
-    import mpld3
-except ImportError:
-    pass
-
-try:
     import seaborn as sns
 except ImportError:
     pass
@@ -648,9 +637,28 @@ class IamDataFrame(object):
             keep = keep & keep_col
         return keep
 
-    def filter(self, filters={}):
+    def filter(self, filters, inplace=False):
+        """Return a filtered IamDataFrame (i.e., a subset of current data)
+
+        Parameters
+        ----------
+        filters: dict
+            The following columns are available for filtering:
+             - 'category': filter by category assignment in metadata
+             - 'model', 'scenario', 'region': takes a string or list of strings
+             - 'variable': takes a string or list of strings,
+                where ``*`` can be used as a wildcard
+             - 'level': the maximum "depth" of IAM variables (number of '|')
+               (exluding the strings given in the 'variable' argument)
+             - 'year': takes an integer, a list of integers or a range
+                note that the last year of a range is not included,
+                so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
+        inplace : bool, optional
+            if True, operate on this object, otherwise return a copy
+            default: False
+        """
         keep = self._filter_columns(filters)
-        ret = copy.deepcopy(self)
+        ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[keep]
 
         idx = pd.MultiIndex.from_tuples(
@@ -661,6 +669,7 @@ class IamDataFrame(object):
         return ret
 
     def head(self, *args, **kwargs):
+        """Identical to pd.DataFrame.head() operating on data"""
         return self.data.head(*args, **kwargs)
 
     def _select(self, filters={}, cols=None, idx_cols=None,
@@ -708,6 +717,14 @@ class IamDataFrame(object):
             return df.reset_index(drop=True)
 
     def as_pandas(self, with_metadata=False):
+        """Return this as a pd.DataFrame
+
+        Parameters
+        ----------
+        with_metadata : bool, optional
+           if True, join data existing metadata 
+           default: False
+        """
         df = self.data
         if with_metadata:
             df = (df
@@ -718,10 +735,9 @@ class IamDataFrame(object):
         return df
 
     def line_plot(self, *args, **kwargs):
-        """Simple line plotting feature
+        """Plot timeseries lines of existing data
 
-        Parameters
-        ----------
+        see pyam_analysis.plotting.line_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
