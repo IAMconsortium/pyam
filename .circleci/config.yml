@@ -12,7 +12,7 @@ jobs:
           command: pwd && ls
       - run:
           name: CIRCLE_ARTIFACTS
-          command: echo $CIRCLE_ARTIFACTS
+          command: echo $CIRCLE_ARTIFACTS && ls $CIRCLE_ARTIFACTS && mkdir $CIRCLE_ARTIFACTS && ls $CIRCLE_ARTIFACTS
       - run:
           name: Build Py2 Docker Image
           command: /bin/sh -c "ln -f -s ci/py2/Dockerfile Dockerfile && docker build -t pyam-analysis/pyam-analysis-py2:latest ."
