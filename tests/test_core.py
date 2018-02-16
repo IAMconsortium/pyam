@@ -90,7 +90,10 @@ def test_category_pass():
 
 
 def test_load_metadata(test_ia):
-    test_ia.load_metadata(os.path.join(here, 'testing_metadata.xlsx'))
+    with pytest.warns(Warning) as record:
+        test_ia.load_metadata(os.path.join(here, 'testing_metadata.xlsx'))
+    assert len(record) == 1
+
     obs = test_ia.metadata()
     dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
            'category': ['imported']}
