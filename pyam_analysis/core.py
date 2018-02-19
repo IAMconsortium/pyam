@@ -755,7 +755,7 @@ class IamDataFrame(object):
 # %% auxiliary function for reading data from snapshot file
 
 
-def read_ix(ix, regions=None):
+def read_ix(ix, regions=None, variables=None, units=None, years=None):
     """Read timeseries data from an ix object
 
     Parameters
@@ -765,20 +765,14 @@ def read_ix(ix, regions=None):
     regions: list
         list of regions to be loaded from the database snapshot
     """
-    if not has_ix:
-        error = 'this option depends on the ixmp package'
-        raise SystemError(error)
     if isinstance(ix, ixmp.TimeSeries):
-        df = ix.timeseries()
+        df = ix.timeseries(iamc=False, regions=regions, variables=variables,
+                           units=units, years=years)
         df['model'] = ix.model
         df['scenario'] = ix.scenario
     else:
         error = 'arg ' + ix + ' not recognized as valid ixmp class'
         raise ValueError(error)
-
-    # TODO this should be moved to the filters of the function ix.timeseries()
-    if regions is not None:
-        df = df[df.region.isin(regions)]
 
     return df
 
