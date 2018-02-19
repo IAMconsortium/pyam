@@ -70,36 +70,27 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        data: pyam-analyis.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario
-        or data file
-            an instance of an IamDataFrame, TimeSeries or Scenario
+        data: ixmp.TimeSeries, ixmp.Scenario or data file
+            an instance of an TimeSeries or Scenario
             (these two option require the 'ixmp' package as a dependency)
             or a file with IAMC-style data
         regions: list
             list of regions to be imported
         """
-        # copy-constructor
-        if isinstance(data, IamDataFrame):
-            self.data = data.data
-            self._meta = data._meta
-            self.cat_color = data.cat_color
-            self.col_count = data.col_count
-
-        # read data from source
+        # import data from pandas.DataFrame or read from source
+        if has_ix and isinstance(data, ixmp.TimeSeries):
+            self.data = read_ix(data, regions)
         else:
-            if has_ix and isinstance(data, ixmp.TimeSeries):
-                self.data = read_ix(data, regions)
-            else:
-                self.data = read_data(data, regions, **kwargs)
+            self.data = read_data(data, regions, **kwargs)
 
-            # define a dataframe for categorization and other meta-data
-            self._meta = return_index(self.data, mod_scen,
-                                      drop_duplicates=True)
-            self.reset_category(True)
+        # define a dataframe for categorization and other meta-data
+        self._meta = return_index(self.data, mod_scen,
+                                  drop_duplicates=True)
+        self.reset_category(True)
 
-            # define a dictionary for category-color mapping
-            self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
-            self.col_count = 0
+        # define a dictionary for category-color mapping
+        self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
+        self.col_count = 0
 
     def append(self, other, regions=None):
         """Read timeseries data and append to IamDataFrame
@@ -112,7 +103,7 @@ class IamDataFrame(object):
         regions: list
             list of regions to be imported
         """
-        new = IamDataFrame(data=self)
+        new = copy.deepcopy(self)
 
         if has_ix and isinstance(other, ixmp.TimeSeries):
             df = read_ix(other, regions)
