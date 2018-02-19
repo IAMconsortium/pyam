@@ -70,15 +70,16 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        data: ixmp.TimeSeries, ixmp.Scenario or data file
-            an instance of an TimeSeries or Scenario
-            (these two option require the 'ixmp' package as a dependency)
-            or a file with IAMC-style data
+        data: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
+            an instance of an TimeSeries or Scenario (requires `ixmp`),
+            or pandas.DataFrame or data file with IAMC-format data columns
         regions: list
             list of regions to be imported
         """
         # import data from pandas.DataFrame or read from source
-        if has_ix and isinstance(data, ixmp.TimeSeries):
+        if isinstance(data, pd.DataFrame):
+            self.data = format_data(data)
+        elif has_ix and isinstance(data, ixmp.TimeSeries):
             self.data = read_ix(data, regions)
         else:
             self.data = read_data(data, regions, **kwargs)
@@ -92,23 +93,25 @@ class IamDataFrame(object):
         self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
         self.col_count = 0
 
-    def append(self, other, regions=None):
-        """Read timeseries data and append to IamDataFrame
+    def append(self, other, regions=None, **kwargs):
+        """Import or read timeseries data and append to IamDataFrame
 
         Parameters
         ----------
-        data: ixmp.TimeSeries, ixmp.Scenario or data file
-            this option requires the 'ixmp' package as a dependency
-            or a file with IAMC-style data
+        other: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
+            an instance of an TimeSeries or Scenario (requires `ixmp`),
+            or pandas.DataFrame or data file with IAMC-format data columns
         regions: list
             list of regions to be imported
         """
         new = copy.deepcopy(self)
 
-        if has_ix and isinstance(other, ixmp.TimeSeries):
+        if isinstance(other, pd.DataFrame):
+            df = format_data(other)
+        elif has_ix and isinstance(other, ixmp.TimeSeries):
             df = read_ix(other, regions)
         elif os.path.isfile(other):
-            df = read_data(other, regions)
+            df = read_data(other, regions, **kwargs)
         else:
             raise ValueError("arg '{}' not recognized as valid source"
                              .format(other))
@@ -788,26 +791,40 @@ def read_data(fname, regions=None, *args, **kwargs):
     else:
         df = pd.read_excel(fname, *args, **kwargs)
 
-    df = df.rename(columns={c: str(c).lower() for c in df.columns})
+    return(format_data(df))
+
+
+def format_data(data, regions=None):
+    """Convert an imported dataframe and check all required columns
+
+    Parameters
+    ----------
+    data: pandas.DataFrame
+        dataframe to be converted to an IamDataFrame
+    regions: list
+        list of regions to be loaded from the database snapshot
+    """
+    # format columns to lower-case and check that all required columns exist
+    data = data.rename(columns={c: str(c).lower() for c in data.columns})
+    if not set(iamc_idx_cols).issubset(set(data.columns)):
+        missing = list(set(iamc_idx_cols) - set(data.columns))
+        raise ValueError("missing required columns {}!".format(missing))
 
     # filter by selected regions
     if regions:
-        df = df[keep_col_match(df['region'], regions)]
-
-    # transpose dataframe by year column
-    idx = iamc_idx_cols
+        data = data[keep_col_match(data['region'], regions)]
 
     # check whether data in IAMC style or year/value layout
-    if 'value' not in df.columns:
-        numcols = sorted(set(df.columns) - set(idx))
-        df = pd.melt(df, id_vars=idx, var_name='year',
-                     value_vars=numcols, value_name='value')
-    df.year = pd.to_numeric(df.year)
+    if 'value' not in data.columns:
+        numcols = sorted(set(data.columns) - set(iamc_idx_cols))
+        data = pd.melt(data, id_vars=iamc_idx_cols, var_name='year',
+                       value_vars=numcols, value_name='value')
+    data.year = pd.to_numeric(data.year)
 
     # drop NaN's
-    df.dropna(inplace=True)
+    data.dropna(inplace=True)
 
-    return df
+    return data
 
 
 # %% auxiliary functions for data filtering
