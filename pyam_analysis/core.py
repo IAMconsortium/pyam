@@ -65,7 +65,8 @@ class IamDataFrame(object):
     (including validation of values, completeness of variables provided)
     as well as a number of visualization and plotting tools."""
 
-    def __init__(self, data, regions=None, **kwargs):
+    def __init__(self, data, regions=None, variables=None, units=None,
+                 years=None, **kwargs):
         """Initialize an instance of an IamDataFrame
 
         Parameters
@@ -73,14 +74,21 @@ class IamDataFrame(object):
         data: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
             an instance of an TimeSeries or Scenario (requires `ixmp`),
             or pandas.DataFrame or data file with IAMC-format data columns
-        regions: list
-            list of regions to be imported
+        regions : list of strings
+            filter by regions
+        variables : list of strings
+            filter by variables (only with ixmp objects)
+        units : list of strings
+            filter by units (only with ixmp objects)
+        years : list of integers
+            filter by years (only with ixmp objects)
         """
         # import data from pandas.DataFrame or read from source
         if isinstance(data, pd.DataFrame):
             self.data = format_data(data)
         elif has_ix and isinstance(data, ixmp.TimeSeries):
-            self.data = read_ix(data, regions)
+            self.data = read_ix(data, regions=regions, variables=variables,
+                                units=units, years=years)
         else:
             self.data = read_data(data, regions, **kwargs)
 
@@ -93,7 +101,8 @@ class IamDataFrame(object):
         self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
         self.col_count = 0
 
-    def append(self, other, regions=None, **kwargs):
+    def append(self, other, regions=None, variables=None, units=None,
+               years=None, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
 
         Parameters
@@ -101,15 +110,22 @@ class IamDataFrame(object):
         other: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
             an instance of an TimeSeries or Scenario (requires `ixmp`),
             or pandas.DataFrame or data file with IAMC-format data columns
-        regions: list
-            list of regions to be imported
+        regions : list of strings
+            filter by regions
+        variables : list of strings
+            filter by variables (only with ixmp objects)
+        units : list of strings
+            filter by units (only with ixmp objects)
+        years : list of integers
+            filter by years (only with ixmp objects)
         """
         new = copy.deepcopy(self)
 
         if isinstance(other, pd.DataFrame):
             df = format_data(other)
         elif has_ix and isinstance(other, ixmp.TimeSeries):
-            df = read_ix(other, regions)
+            df = read_ix(other, regions=regions, variables=variables,
+                         units=units, years=years)
         elif os.path.isfile(other):
             df = read_data(other, regions, **kwargs)
         else:
@@ -724,9 +740,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        with_metadata : bool, optional
-           if True, join data existing metadata 
-           default: False
+        with_metadata : bool, default False
+           if True, join data with existing metadata
         """
         df = self.data
         if with_metadata:
