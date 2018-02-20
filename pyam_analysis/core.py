@@ -101,8 +101,8 @@ class IamDataFrame(object):
         self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
         self.col_count = 0
 
-    def append(self, other, regions=None, variables=None, units=None,
-               years=None, **kwargs):
+    def append(self, other, inplace=False, regions=None, variables=None,
+               units=None, years=None, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
 
         Parameters
@@ -111,6 +111,8 @@ class IamDataFrame(object):
         pandas.DataFrame or data file
             an IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
             or pandas.DataFrame or data file with IAMC-format data columns
+        inplace : bool, default False
+            if True, do operation inplace and return None
         regions : list of strings
             filter by regions
         variables : list of strings
@@ -145,7 +147,11 @@ class IamDataFrame(object):
 
         # add new data
         new.data = new.data.append(df).reset_index(drop=True)
-        return new
+
+        if inplace:
+            self = new
+        else:
+            return new
 
     def export_metadata(self, path):
         """Export metadata to Excel
