@@ -35,6 +35,15 @@ def test_variable_unit(test_ia):
     npt.assert_array_equal(test_ia.variables(include_units=True), exp)
 
 
+def test_timeseries(test_ia):
+    dct = {'model': ['test_model'] * 2, 'scenario': ['test_scenario'] * 2,
+           'years': [2005, 2010], 'value': [1, 6]}
+    exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
+                                        columns=['years'], values='value')
+    obs = test_ia.filter({'variable': 'Primary Energy'}).timeseries()
+    npt.assert_array_equal(obs, exp)
+
+
 def test_validate_pass(test_ia):
     assert test_ia.validate(criteria='Primary Energy', exclude=True) is None
 
@@ -81,7 +90,11 @@ def test_category_pass():
 
 
 def test_load_metadata(test_ia):
-    test_ia.load_metadata(os.path.join(here, 'testing_metadata.xlsx'))
+    with pytest.warns(Warning) as record:
+        test_ia.load_metadata(os.path.join(here, 'testing_metadata.xlsx'))
+    assert len(record) == 1
+    assert str(record[0].message) == 'overwriting 1 metadata entry'
+
     obs = test_ia.metadata()
     dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
            'category': ['imported']}
@@ -111,5 +124,5 @@ def test_interpolate():
            'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = df.timeseries({'variable': 'Primary Energy'})
+    obs = df.filter({'variable': 'Primary Energy'}).timeseries()
     npt.assert_array_equal(obs, exp)

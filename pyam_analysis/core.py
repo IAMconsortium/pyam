@@ -309,20 +309,11 @@ class IamDataFrame(object):
         else:
             return df_pivot
 
-    def timeseries(self, filters={}, exclude_cat=['exclude']):
+    def timeseries(self):
         """Returns a dataframe in the standard IAMC format
-
-        Parameters
-        ----------
-        filters: dict, optional
-            filter by model, scenario, region, variable, level, year, category
-            see function _select() for details
-        exclude_cat: list of strings, default ['exclude']
-            exclude all scenarios from the listed categories from validation
         """
-        return self._select(filters, exclude_cat=exclude_cat
-                            ).pivot_table(index=iamc_idx_cols,
-                                          columns='year')['value']
+        return self.data.pivot_table(index=iamc_idx_cols,
+                                   columns='year')['value']
 
     def validate(self, criteria, filters={}, exclude_cat=['exclude'],
                  exclude=False, silent=False, display='heatmap'):
@@ -509,7 +500,8 @@ class IamDataFrame(object):
         name: str, default None
             if df is series, name of new metadata column
         filters: dict, optional
-            filter by model, scenario or category
+            filter by model, scenario, region, variable, level, year, category
+            see function _select() for details
         idx_cols: list of str, default ['model', 'scenario']
             columns that are set as index of the returned dataframe (if 'list')
         exclude_cat: None or list of strings, default ['exclude']
@@ -535,6 +527,23 @@ class IamDataFrame(object):
             for col, values in filters.items():
                 meta = meta[keep_col_match(meta[col], values)]
             return return_df(meta, display, idx_cols)
+
+    def to_excel(self, excel_writer, sheet_name='data', index=False, **kwargs):
+        """Write timeseries data to Excel using the IAMC template convention
+        (wrapper for `pandas.DataFrame.to_excel()`)
+
+        Parameters
+        ----------
+        excel_writer: string or ExcelWriter object
+             file path or existing ExcelWriter
+        sheet_name: string, default 'data'
+            name of the sheet that will contain the (filtered) IamDataFrame
+        index: boolean, default False
+            write row names (index)
+        """
+        df = self.timeseries().reset_index()
+        df = df.rename(columns={c: str(c).title() for c in df.columns})
+        df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
 
     def interpolate(self, year, exclude_cat=['exclude']):
         """Interpolate missing values in timeseries (linear interpolation)
