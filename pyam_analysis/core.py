@@ -550,7 +550,7 @@ class IamDataFrame(object):
         index: boolean, default False
             write row names (index)
         """
-        df = self.timeseries().reset_index()
+        df = self.timeseries(index=False)
         df = df.rename(columns={c: str(c).title() for c in df.columns})
         df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
 
