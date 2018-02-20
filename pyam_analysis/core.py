@@ -149,7 +149,8 @@ class IamDataFrame(object):
         new.data = new.data.append(df).reset_index(drop=True)
 
         if inplace:
-            self = new
+            self.data = new.data
+            self._meta = new._meta
         else:
             return new
 
