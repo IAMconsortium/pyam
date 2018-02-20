@@ -49,7 +49,7 @@ def test_read_pandas():
     ia = IamDataFrame(df)
     assert ia.variables() == ['Primary Energy', 'Primary Energy|Coal']
 
-
+    
 def test_validate_pass(test_ia):
     assert test_ia.validate(criteria='Primary Energy', exclude=True) is None
 
