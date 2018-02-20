@@ -65,8 +65,7 @@ class IamDataFrame(object):
     (including validation of values, completeness of variables provided)
     as well as a number of visualization and plotting tools."""
 
-    def __init__(self, data, regions=None, variables=None, units=None,
-                 years=None, **kwargs):
+    def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame
 
         Parameters
@@ -74,21 +73,12 @@ class IamDataFrame(object):
         data: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
             an instance of an TimeSeries or Scenario (requires `ixmp`),
             or pandas.DataFrame or data file with IAMC-format data columns
-        regions : list of strings
-            filter by regions
-        variables : list of strings
-            filter by variables (only with ixmp objects)
-        units : list of strings
-            filter by units (only with ixmp objects)
-        years : list of integers
-            filter by years (only with ixmp objects)
         """
         # import data from pandas.DataFrame or read from source
         if isinstance(data, pd.DataFrame):
             self.data = format_data(data)
         elif has_ix and isinstance(data, ixmp.TimeSeries):
-            self.data = read_ix(data, regions=regions, variables=variables,
-                                units=units, years=years)
+            self.data = read_ix(data, **kwargs)
         else:
             self.data = read_data(data, **kwargs)
 
@@ -101,8 +91,7 @@ class IamDataFrame(object):
         self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
         self.col_count = 0
 
-    def append(self, other, inplace=False, regions=None, variables=None,
-               units=None, years=None, **kwargs):
+    def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
 
         Parameters
@@ -113,14 +102,6 @@ class IamDataFrame(object):
             or pandas.DataFrame or data file with IAMC-format data columns
         inplace : bool, default False
             if True, do operation inplace and return None
-        regions : list of strings
-            filter by regions
-        variables : list of strings
-            filter by variables (only with ixmp objects)
-        units : list of strings
-            filter by units (only with ixmp objects)
-        years : list of integers
-            filter by years (only with ixmp objects)
         """
         new = copy.deepcopy(self)
 
@@ -132,8 +113,7 @@ class IamDataFrame(object):
             if isinstance(other, pd.DataFrame):
                 df = format_data(other)
             elif has_ix and isinstance(other, ixmp.TimeSeries):
-                df = read_ix(other, regions=regions, variables=variables,
-                             units=units, years=years)
+                df = read_ix(other, **kwargs)
             elif os.path.isfile(other):
                 df = read_data(other, **kwargs)
             else:
@@ -777,7 +757,7 @@ class IamDataFrame(object):
 # %% auxiliary function for reading data from snapshot file
 
 
-def read_ix(ix, regions=None, variables=None, units=None, years=None):
+def read_ix(ix, **kwargs):
     """Read timeseries data from an ix object
 
     Parameters
@@ -788,8 +768,7 @@ def read_ix(ix, regions=None, variables=None, units=None, years=None):
         list of regions to be loaded from the database snapshot
     """
     if isinstance(ix, ixmp.TimeSeries):
-        df = ix.timeseries(iamc=False, regions=regions, variables=variables,
-                           units=units, years=years)
+        df = ix.timeseries(iamc=False, **kwargs)
         df['model'] = ix.model
         df['scenario'] = ix.scenario
     else:
