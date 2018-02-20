@@ -309,20 +309,11 @@ class IamDataFrame(object):
         else:
             return df_pivot
 
-    def timeseries(self, index=True):
+    def timeseries(self):
         """Returns a dataframe in the standard IAMC format
-
-        Parameters
-        ----------
-        index: boolean, default True
-            use IAMC columns as index (if True) or no index (if False)
         """
-        df = self.data.pivot_table(index=iamc_idx_cols,
+        return self.data.pivot_table(index=iamc_idx_cols,
                                    columns='year')['value']
-        if index is not True:
-            df.reset_index(inplace=True)
-
-        return df
 
     def validate(self, criteria, filters={}, exclude_cat=['exclude'],
                  exclude=False, silent=False, display='heatmap'):
@@ -550,7 +541,7 @@ class IamDataFrame(object):
         index: boolean, default False
             write row names (index)
         """
-        df = self.timeseries(index=False)
+        df = self.timeseries().reset_index()
         df = df.rename(columns={c: str(c).title() for c in df.columns})
         df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
 
