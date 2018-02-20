@@ -822,26 +822,26 @@ def read_data(fname, regions=None, *args, **kwargs):
     return(format_data(df))
 
 
-def format_data(data):
+def format_data(df):
     """Convert an imported dataframe and check all required columns"""
 
     # format columns to lower-case and check that all required columns exist
-    data = data.rename(columns={c: str(c).lower() for c in data.columns})
-    if not set(iamc_idx_cols).issubset(set(data.columns)):
-        missing = list(set(iamc_idx_cols) - set(data.columns))
+    df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
+    if not set(iamc_idx_cols).issubset(set(df.columns)):
+        missing = list(set(iamc_idx_cols) - set(df.columns))
         raise ValueError("missing required columns {}!".format(missing))
 
     # check whether data in IAMC style or year/value layout
-    if 'value' not in data.columns:
-        numcols = sorted(set(data.columns) - set(iamc_idx_cols))
-        data = pd.melt(data, id_vars=iamc_idx_cols, var_name='year',
-                       value_vars=numcols, value_name='value')
-    data.year = pd.to_numeric(data.year)
+    if 'value' not in df.columns:
+        numcols = sorted(set(df.columns) - set(iamc_idx_cols))
+        df = pd.melt(df, id_vars=iamc_idx_cols, var_name='year',
+                     value_vars=numcols, value_name='value')
+    df.year = pd.to_numeric(df.year)
 
     # drop NaN's
-    data.dropna(inplace=True)
+    df.dropna(inplace=True)
 
-    return data
+    return df
 
 
 # %% auxiliary functions for data filtering
