@@ -103,7 +103,7 @@ class IamDataFrame(object):
         inplace : bool, default False
             if True, do operation inplace and return None
         """
-        new = copy.deepcopy(self)
+        ret = copy.deepcopy(self) if not inplace else self
 
         if isinstance(other, IamDataFrame):
             df = other.data
@@ -122,17 +122,14 @@ class IamDataFrame(object):
             meta = return_index(df, mod_scen, drop_duplicates=True)
             meta['category'] = 'uncategorized'
 
-        # check that model/scenario is not yet included in this IamDataFrame
-        new._meta = new._meta.append(meta, verify_integrity=True)
+        # check that any model/scenario is not yet included in IamDataFrame
+        ret._meta = ret._meta.append(meta, verify_integrity=True)
 
         # add new data
-        new.data = new.data.append(df).reset_index(drop=True)
+        ret.data = ret.data.append(df).reset_index(drop=True)
 
-        if inplace:
-            self.data = new.data
-            self._meta = new._meta
-        else:
-            return new
+        if not inplace:
+            return ret
 
     def export_metadata(self, path):
         """Export metadata to Excel
