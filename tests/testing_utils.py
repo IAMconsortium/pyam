@@ -4,15 +4,18 @@ import pytest
 from pyam_analysis import IamDataFrame
 
 here = os.path.dirname(os.path.realpath(__file__))
+data_path = os.path.join(here, 'testing_data.csv')
+plot_path = os.path.join(here, 'plot_data.csv')
+IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
 
 
 @pytest.fixture(scope="session")
 def test_ia():
-    df = IamDataFrame(data='tests/testing_data.csv')
+    df = IamDataFrame(data=data_path)
     yield df
 
 
 @pytest.fixture(scope="session")
-def test_data_path():
-    pth = 'tests/testing_data.csv'
-    yield pth
+def plot_idf():
+    df = IamDataFrame(data=plot_path)
+    yield df
