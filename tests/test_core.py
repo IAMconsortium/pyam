@@ -44,6 +44,12 @@ def test_timeseries(test_ia):
     npt.assert_array_equal(obs, exp)
 
 
+def test_read_pandas():
+    df = pd.read_csv(data_path)
+    ia = IamDataFrame(df)
+    assert ia.variables() == ['Primary Energy', 'Primary Energy|Coal']
+
+    
 def test_validate_pass(test_ia):
     assert test_ia.validate(criteria='Primary Energy', exclude=True) is None
 

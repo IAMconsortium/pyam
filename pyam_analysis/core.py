@@ -65,71 +65,71 @@ class IamDataFrame(object):
     (including validation of values, completeness of variables provided)
     as well as a number of visualization and plotting tools."""
 
-    def __init__(self, data, regions=None, **kwargs):
+    def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame
 
         Parameters
         ----------
-        data: pyam-analyis.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario
-        or data file
-            an instance of an IamDataFrame, TimeSeries or Scenario
-            (these two option require the 'ixmp' package as a dependency)
-            or a file with IAMC-style data
-        regions: list
-            list of regions to be imported
+        data: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
+            an instance of an TimeSeries or Scenario (requires `ixmp`),
+            or pandas.DataFrame or data file with IAMC-format data columns
         """
-        # copy-constructor
-        if isinstance(data, IamDataFrame):
-            self.data = data.data
-            self._meta = data._meta
-            self.cat_color = data.cat_color
-            self.col_count = data.col_count
-
-        # read data from source
+        # import data from pandas.DataFrame or read from source
+        if isinstance(data, pd.DataFrame):
+            self.data = format_data(data)
+        elif has_ix and isinstance(data, ixmp.TimeSeries):
+            self.data = read_ix(data, **kwargs)
         else:
-            if has_ix and isinstance(data, ixmp.TimeSeries):
-                self.data = read_ix(data, regions)
-            else:
-                self.data = read_data(data, regions, **kwargs)
+            self.data = read_data(data, **kwargs)
 
-            # define a dataframe for categorization and other meta-data
-            self._meta = return_index(self.data, mod_scen,
-                                      drop_duplicates=True)
-            self.reset_category(True)
+        # define a dataframe for categorization and other meta-data
+        self._meta = return_index(self.data, mod_scen,
+                                  drop_duplicates=True)
+        self.reset_category(True)
 
-            # define a dictionary for category-color mapping
-            self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
-            self.col_count = 0
+        # define a dictionary for category-color mapping
+        self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
+        self.col_count = 0
 
-    def append(self, other, regions=None):
-        """Read timeseries data and append to IamDataFrame
+    def append(self, other, inplace=False, **kwargs):
+        """Import or read timeseries data and append to IamDataFrame
 
         Parameters
         ----------
-        data: ixmp.TimeSeries, ixmp.Scenario or data file
-            this option requires the 'ixmp' package as a dependency
-            or a file with IAMC-style data
-        regions: list
-            list of regions to be imported
+        other: pyam-analysis.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
+        pandas.DataFrame or data file
+            an IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
+            or pandas.DataFrame or data file with IAMC-format data columns
+        inplace : bool, default False
+            if True, do operation inplace and return None
         """
-        new = IamDataFrame(data=self)
+        ret = copy.deepcopy(self) if not inplace else self
 
-        if has_ix and isinstance(other, ixmp.TimeSeries):
-            df = read_ix(other, regions)
-        elif os.path.isfile(other):
-            df = read_data(other, regions)
+        if isinstance(other, IamDataFrame):
+            df = other.data
+            meta = other._meta
+            # TODO merge other.cat_color
         else:
-            raise ValueError("arg '{}' not recognized as valid source"
-                             .format(other))
+            if isinstance(other, pd.DataFrame):
+                df = format_data(other)
+            elif has_ix and isinstance(other, ixmp.TimeSeries):
+                df = read_ix(other, **kwargs)
+            elif os.path.isfile(other):
+                df = read_data(other, **kwargs)
+            else:
+                raise ValueError("arg '{}' not recognized as valid source"
+                                 .format(other))
+            meta = return_index(df, mod_scen, drop_duplicates=True)
+            meta['category'] = 'uncategorized'
 
-        # check that model/scenario is not yet included in this IamDataFrame
-        meta = return_index(df, mod_scen, drop_duplicates=True)
-        meta['category'] = 'uncategorized'
-        new._meta = new._meta.append(meta, verify_integrity=True)
+        # check that any model/scenario is not yet included in IamDataFrame
+        ret._meta = ret._meta.append(meta, verify_integrity=True)
 
         # add new data
-        new.data = new.data.append(df).reset_index(drop=True)
-        return new
+        ret.data = ret.data.append(df).reset_index(drop=True)
+
+        if not inplace:
+            return ret
 
     def export_metadata(self, path):
         """Export metadata to Excel
@@ -662,9 +662,8 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-        inplace : bool, optional
-            if True, operate on this object, otherwise return a copy
-            default: False
+        inplace : bool, default False
+            if True, do operation inplace and return None
         """
         keep = self._filter_columns(filters)
         ret = copy.deepcopy(self) if not inplace else self
@@ -675,7 +674,8 @@ class IamDataFrame(object):
             names=('model', 'scenario')
         )
         ret._meta = ret._meta.loc[idx]
-        return ret
+        if not inplace:
+            return ret
 
     def head(self, *args, **kwargs):
         """Identical to pd.DataFrame.head() operating on data"""
@@ -730,9 +730,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        with_metadata : bool, optional
-           if True, join data existing metadata 
-           default: False
+        with_metadata : bool, default False
+           if True, join data with existing metadata
         """
         df = self.data
         if with_metadata:
@@ -755,7 +754,7 @@ class IamDataFrame(object):
 # %% auxiliary function for reading data from snapshot file
 
 
-def read_ix(ix, regions=None):
+def read_ix(ix, **kwargs):
     """Read timeseries data from an ix object
 
     Parameters
@@ -765,34 +764,20 @@ def read_ix(ix, regions=None):
     regions: list
         list of regions to be loaded from the database snapshot
     """
-    if not has_ix:
-        error = 'this option depends on the ixmp package'
-        raise SystemError(error)
     if isinstance(ix, ixmp.TimeSeries):
-        df = ix.timeseries()
+        df = ix.timeseries(iamc=False, **kwargs)
         df['model'] = ix.model
         df['scenario'] = ix.scenario
     else:
         error = 'arg ' + ix + ' not recognized as valid ixmp class'
         raise ValueError(error)
 
-    # TODO this should be moved to the filters of the function ix.timeseries()
-    if regions is not None:
-        df = df[df.region.isin(regions)]
-
     return df
 
 
-def read_data(fname, regions=None, *args, **kwargs):
+def read_data(fname, *args, **kwargs):
     """Read data from a snapshot file saved in the standard IAMC format
     or a table with year/value columns
-
-    Parameters
-    ----------
-    fname: str
-        a file with IAMC-style data
-    regions: list
-        list of regions to be loaded from the database snapshot
     """
     if not os.path.exists(fname):
         raise ValueError("no data file '" + fname + "' found!")
@@ -803,19 +788,22 @@ def read_data(fname, regions=None, *args, **kwargs):
     else:
         df = pd.read_excel(fname, *args, **kwargs)
 
-    df = df.rename(columns={c: str(c).lower() for c in df.columns})
+    return format_data(df)
 
-    # filter by selected regions
-    if regions:
-        df = df[keep_col_match(df['region'], regions)]
 
-    # transpose dataframe by year column
-    idx = iamc_idx_cols
+def format_data(df):
+    """Convert an imported dataframe and check all required columns"""
+
+    # format columns to lower-case and check that all required columns exist
+    df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
+    if not set(iamc_idx_cols).issubset(set(df.columns)):
+        missing = list(set(iamc_idx_cols) - set(df.columns))
+        raise ValueError("missing required columns {}!".format(missing))
 
     # check whether data in IAMC style or year/value layout
     if 'value' not in df.columns:
-        numcols = sorted(set(df.columns) - set(idx))
-        df = pd.melt(df, id_vars=idx, var_name='year',
+        numcols = sorted(set(df.columns) - set(iamc_idx_cols))
+        df = pd.melt(df, id_vars=iamc_idx_cols, var_name='year',
                      value_vars=numcols, value_name='value')
     df.year = pd.to_numeric(df.year)
 
