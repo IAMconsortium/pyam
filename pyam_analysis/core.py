@@ -684,9 +684,8 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-        inplace : bool, optional
-            if True, operate on this object, otherwise return a copy
-            default: False
+        inplace : bool, default False
+            if True, do operation inplace and return None
         """
         keep = self._filter_columns(filters)
         ret = copy.deepcopy(self) if not inplace else self
@@ -697,7 +696,8 @@ class IamDataFrame(object):
             names=('model', 'scenario')
         )
         ret._meta = ret._meta.loc[idx]
-        return ret
+        if not inplace:
+            return ret
 
     def head(self, *args, **kwargs):
         """Identical to pd.DataFrame.head() operating on data"""
