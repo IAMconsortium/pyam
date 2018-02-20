@@ -309,20 +309,20 @@ class IamDataFrame(object):
         else:
             return df_pivot
 
-    def timeseries(self, filters={}, exclude_cat=['exclude']):
+    def timeseries(self, index=True):
         """Returns a dataframe in the standard IAMC format
 
         Parameters
         ----------
-        filters: dict, optional
-            filter by model, scenario, region, variable, level, year, category
-            see function _select() for details
-        exclude_cat: list of strings, default ['exclude']
-            exclude all scenarios from the listed categories from validation
+        index: boolean, default True
+            use IAMC columns as index (if True) or no index (if False)
         """
-        return self._select(filters, exclude_cat=exclude_cat
-                            ).pivot_table(index=iamc_idx_cols,
-                                          columns='year')['value']
+        df = self.data.pivot_table(index=iamc_idx_cols,
+                                   columns='year')['value']
+        if index is not True:
+            df.reset_index(inplace=True)
+
+        return df
 
     def validate(self, criteria, filters={}, exclude_cat=['exclude'],
                  exclude=False, silent=False, display='heatmap'):
