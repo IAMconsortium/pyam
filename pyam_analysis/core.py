@@ -90,7 +90,7 @@ class IamDataFrame(object):
             self.data = read_ix(data, regions=regions, variables=variables,
                                 units=units, years=years)
         else:
-            self.data = read_data(data, regions, **kwargs)
+            self.data = read_data(data, **kwargs)
 
         # define a dataframe for categorization and other meta-data
         self._meta = return_index(self.data, mod_scen,
@@ -135,7 +135,7 @@ class IamDataFrame(object):
                 df = read_ix(other, regions=regions, variables=variables,
                              units=units, years=years)
             elif os.path.isfile(other):
-                df = read_data(other, regions, **kwargs)
+                df = read_data(other, **kwargs)
             else:
                 raise ValueError("arg '{}' not recognized as valid source"
                                  .format(other))
@@ -799,16 +799,9 @@ def read_ix(ix, regions=None, variables=None, units=None, years=None):
     return df
 
 
-def read_data(fname, regions=None, *args, **kwargs):
+def read_data(fname, *args, **kwargs):
     """Read data from a snapshot file saved in the standard IAMC format
     or a table with year/value columns
-
-    Parameters
-    ----------
-    fname: str
-        a file with IAMC-style data
-    regions: list
-        list of regions to be loaded from the database snapshot
     """
     if not os.path.exists(fname):
         raise ValueError("no data file '" + fname + "' found!")
@@ -819,7 +812,7 @@ def read_data(fname, regions=None, *args, **kwargs):
     else:
         df = pd.read_excel(fname, *args, **kwargs)
 
-    return(format_data(df))
+    return format_data(df)
 
 
 def format_data(df):
