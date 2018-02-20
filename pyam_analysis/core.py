@@ -107,8 +107,9 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        other: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
-            an instance of an TimeSeries or Scenario (requires `ixmp`),
+        other: pyam-analysis.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
+        pandas.DataFrame or data file
+            an IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
             or pandas.DataFrame or data file with IAMC-format data columns
         regions : list of strings
             filter by regions
@@ -121,20 +122,25 @@ class IamDataFrame(object):
         """
         new = copy.deepcopy(self)
 
-        if isinstance(other, pd.DataFrame):
-            df = format_data(other)
-        elif has_ix and isinstance(other, ixmp.TimeSeries):
-            df = read_ix(other, regions=regions, variables=variables,
-                         units=units, years=years)
-        elif os.path.isfile(other):
-            df = read_data(other, regions, **kwargs)
+        if isinstance(other, IamDataFrame):
+            df = other.data
+            meta = other._meta
+            # TODO merge other.cat_color
         else:
-            raise ValueError("arg '{}' not recognized as valid source"
-                             .format(other))
+            if isinstance(other, pd.DataFrame):
+                df = format_data(other)
+            elif has_ix and isinstance(other, ixmp.TimeSeries):
+                df = read_ix(other, regions=regions, variables=variables,
+                             units=units, years=years)
+            elif os.path.isfile(other):
+                df = read_data(other, regions, **kwargs)
+            else:
+                raise ValueError("arg '{}' not recognized as valid source"
+                                 .format(other))
+            meta = return_index(df, mod_scen, drop_duplicates=True)
+            meta['category'] = 'uncategorized'
 
         # check that model/scenario is not yet included in this IamDataFrame
-        meta = return_index(df, mod_scen, drop_duplicates=True)
-        meta['category'] = 'uncategorized'
         new._meta = new._meta.append(meta, verify_integrity=True)
 
         # add new data
