@@ -40,7 +40,7 @@ def test_timeseries(test_ia):
            'years': [2005, 2010], 'value': [1, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_ia.timeseries({'variable': 'Primary Energy'})
+    obs = test_ia.filter({'variable': 'Primary Energy'}).timeseries()
     npt.assert_array_equal(obs, exp)
 
 
@@ -124,5 +124,5 @@ def test_interpolate():
            'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = df.timeseries({'variable': 'Primary Energy'})
+    obs = df.filter({'variable': 'Primary Energy'}).timeseries()
     npt.assert_array_equal(obs, exp)
