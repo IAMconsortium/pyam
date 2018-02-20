@@ -556,9 +556,8 @@ class IamDataFrame(object):
         index: boolean, default False
             write row names (index)
         """
-        df = self.timeseries(filters, exclude_cat).reset_index()
-        df.columns = [str.title(i) if type(i) == str else i
-                      for i in df.columns]
+        df = self.filter(filters, exclude_cat).timeseries().reset_index()
+        df = df.rename(columns={c: str(c).title() for c in df.columns})
         df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
 
     def interpolate(self, year, exclude_cat=['exclude']):
