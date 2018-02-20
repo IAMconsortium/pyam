@@ -822,25 +822,14 @@ def read_data(fname, regions=None, *args, **kwargs):
     return(format_data(df))
 
 
-def format_data(data, regions=None):
-    """Convert an imported dataframe and check all required columns
+def format_data(data):
+    """Convert an imported dataframe and check all required columns"""
 
-    Parameters
-    ----------
-    data: pandas.DataFrame
-        dataframe to be converted to an IamDataFrame
-    regions: list
-        list of regions to be loaded from the database snapshot
-    """
     # format columns to lower-case and check that all required columns exist
     data = data.rename(columns={c: str(c).lower() for c in data.columns})
     if not set(iamc_idx_cols).issubset(set(data.columns)):
         missing = list(set(iamc_idx_cols) - set(data.columns))
         raise ValueError("missing required columns {}!".format(missing))
-
-    # filter by selected regions
-    if regions:
-        data = data[keep_col_match(data['region'], regions)]
 
     # check whether data in IAMC style or year/value layout
     if 'value' not in data.columns:
