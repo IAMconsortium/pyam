@@ -49,7 +49,7 @@ def test_read_pandas():
     ia = IamDataFrame(df)
     assert ia.variables() == ['Primary Energy', 'Primary Energy|Coal']
 
-    
+
 def test_validate_pass(test_ia):
     assert test_ia.validate(criteria='Primary Energy', exclude=True) is None
 
@@ -60,7 +60,7 @@ def test_validate_fail(test_ia):
     exp = pd.DataFrame(dct)[['model', 'scenario']]
     npt.assert_array_equal(df.validate(criteria='Secondary Energy'), exp)
 
-    assert df.category('exclude', display='df').empty
+    assert df.metadata('exclude').empty
 
 
 def test_validate_exclude(test_ia):
@@ -73,13 +73,13 @@ def test_validate_exclude(test_ia):
 
     dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
     exp = pd.DataFrame(dct)[['model', 'scenario']]
-    obs = df.category('exclude', display='df')
+    obs = df.metadata('exclude')
     npt.assert_array_equal(obs[['model', 'scenario']], exp)
 
 
 def test_category_none(test_ia):
-    obs = test_ia.category('Testing', {'Primary Energy': {'up': 0.8}},
-                           display='df')
+    test_ia.category('Testing', {'Primary Energy': {'up': 0.8}})
+    obs = test_ia.metadata('Testing')
     assert obs is None
 
 
@@ -88,10 +88,10 @@ def test_category_pass():
     dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
     exp = pd.DataFrame(dct)[['model', 'scenario']]
     obs = df.category('Testing', {'Primary Energy': {'up': 10}},
-                      color='red', display='df')
+                      color='red')
     npt.assert_array_equal(obs, exp)
 
-    obs2 = df.category('Testing', display='df')
+    obs2 = df.metadta('Testing')
     npt.assert_array_equal(obs2[['model', 'scenario']], exp)
 
 
