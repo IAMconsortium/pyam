@@ -8,6 +8,7 @@ import copy
 import os
 import six
 import warnings
+import itertools
 
 import numpy as np
 import pandas as pd
@@ -358,36 +359,46 @@ class IamDataFrame(object):
             if true, return models/scenarios passing the check;
             otherwise, return datatframe of all failed checks
         """
-        print(self.data)
+        df = self.data
+        print(df)
 
         idxs = []
         for var, check in criteria.items():
+            pass_idx = []
             where_idx = []
-            where = self.data['variable'] == var
-            where_idx.append(set(where.index))
+            _df = df[df['variable'] == var]
+            where_idx.append(set(_df.index))
             for check_type, val in check.items():
-                pass_idx = []
                 print('foo')
                 print(var, check_type, val)
                 if check_type == 'up':
-                    pass_idx.append(
-                        set((self.data.loc[where, 'value'] <= val).index))
+                    pass_idx.append(set(_df.index[_df['value'] <= val]))
                 elif check_type == 'lo':
-                    pass_idx.append(
-                        set((self.data.loc[where, 'value'] > val).index))
+                    pass_idx.append(set(_df.index[_df['value'] > val]))
                 elif check_type == 'year':
-                    where_idx.append(
-                        set((self.data.loc[where, 'year'] == val).index))
+                    where_idx.append(set(_df.index[_df['year'] == val]))
+                else:
+                    raise ValueError(
+                        "Unknown checking type: {}".format(check_type))
+            where_idx = set.intersection(*where_idx)
+            pass_idx = set.intersection(*pass_idx)
+            print(where_idx)
+            print(pass_idx)
+            if passes:
+                idxs.append(tuple(where_idx & pass_idx))
+            else:
+                idxs.append(tuple(where_idx - pass_idx))
 
-                # not sure what to do here
+        idx = itertools.chain(idxs)
+        idx = df.index.isin(idx) if passes else ~df.index.isin(idx)
+        df = df.loc[idx]
 
         if exclude:
-            self.meta.loc[~pass_rows, 'exclude'] = True
+            idx = df[MIN_IDX].set_index(MIN_IDX).index
+            self.meta.loc[idx, 'exclude'] = True
 
-        ret_rows = pass_rows if passes else ~pass_rows
-        ret_idx = self.data.loc[ret_rows, MIN_IDX].set_index(MIN_IDX).index
-
-        return ret_idx
+        if not df.empty:
+            return df
 
     def _filter_columns(self, filters):
         keep = np.array([True] * len(self.data))

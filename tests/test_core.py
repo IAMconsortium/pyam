@@ -55,22 +55,27 @@ def test_read_pandas():
         'Primary Energy', 'Primary Energy|Coal']
 
 
-def test_validate_pass(test_ia):
+def test_validate_none(test_ia):
     obs = test_ia.validate({'Primary Energy': {'up': 10.0}}, exclude=True)
-    print(obs)
     assert obs is None
 
     # make sure that the passed validation is NOT marked as excluded
     assert list(test_ia['exclude']) == [False]
 
 
-def test_validate_fail(test_ia):
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
-    exp = pd.DataFrame(dct)[['model', 'scenario']]
-    obs = test_ia.validate(criteria='Secondary Energy')
-    npt.assert_array_equal(obs, exp)
+def test_validate_null(test_ia):
+    obs = test_ia.validate({'Secondary Energy': {'up': 10.0}}, exclude=True)
+    assert obs is None
 
     # make sure that the failed validation is NOT marked as excluded
+    assert list(test_ia['exclude']) == [False]
+
+
+def test_validate_some(test_ia):
+    obs = test_ia.validate({'Primary Energy': {'up': 5.0}}, exclude=False)
+    assert obs is not None
+
+    # make sure that the passed validation is NOT marked as excluded
     assert list(test_ia['exclude']) == [False]
 
 
