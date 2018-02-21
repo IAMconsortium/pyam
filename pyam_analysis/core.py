@@ -83,11 +83,13 @@ class IamDataFrame(object):
             self.data = read_data(data, **kwargs)
 
         # define a dataframe for categorization and other meta-data
-        self.meta = return_index(self.data, mod_scen,
-                                 drop_duplicates=True)
+        self.meta = pd.DataFrame(return_index(self.data, mod_scen,
+                                              drop_duplicates=True))
         self.reset_exclude()
 
     def __getitem__(self, key):
+        if isinstance(key, str):
+            key = [key]
         if set(key).issubset(self.meta.columns):
             return self.meta.__getitem__(key)
         else:
@@ -110,7 +112,6 @@ class IamDataFrame(object):
         if isinstance(other, IamDataFrame):
             df = other.data
             meta = other.meta
-            # TODO merge other.cat_color
         else:
             if isinstance(other, pd.DataFrame):
                 df = format_data(other)
@@ -122,7 +123,7 @@ class IamDataFrame(object):
                 raise ValueError("arg '{}' not recognized as valid source"
                                  .format(other))
             meta = return_index(df, mod_scen, drop_duplicates=True)
-            meta['category'] = 'uncategorized'
+            meta['exclude'] = False
 
         # check that any model/scenario is not yet included in IamDataFrame
         ret.meta = ret.meta.append(meta, verify_integrity=True)
@@ -163,7 +164,7 @@ class IamDataFrame(object):
         else:
             df = pd.read_excel(path, *args, **kwargs)
 
-        req_cols = ['model', 'scenario', 'category']
+        req_cols = ['model', 'scenario', 'exclude']
         if not set(req_cols).issubset(set(df.columns)):
             e = "metadata file '{}' does not have required columns ({})!"
             raise ValueError(e.format(path, req_cols))
@@ -177,12 +178,14 @@ class IamDataFrame(object):
                 ' see list of dropped scenarios below'
             e = 'entry' if len(diff == 1) else 'entries'
             warnings.warn(w.format(len(diff), e), Warning, stacklevel=0)
-            dropped = df.loc[diff, 'category']
+            dropped = df.loc[diff, 'exclude']
             df.drop(diff, inplace=True)
 
         # replace imported metadata for existing entries
-        overlap = self.meta.index.intersection(df.index)
-        conflict = ~(self.meta.loc[overlap].category == 'uncategorized')
+        meta = self.meta.drop('exclude')
+        overlap = meta.index.intersection(df.index)
+
+        conflict = ~(self.meta.ix[overlap] == 'uncategorized')
         count_conflict = sum(conflict)
         if count_conflict:
             w = 'overwriting {} metadata {}'
@@ -318,7 +321,7 @@ class IamDataFrame(object):
 
             if exclude:
                 idx = return_index(df, mod_scen)
-                self.meta.loc[idx, 'category'] = 'exclude'
+                self.meta.loc[idx, 'exclude'] = True
                 msg += ", categorized as 'exclude' in metadata"
 
             if not silent:
