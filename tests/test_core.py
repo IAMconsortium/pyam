@@ -56,7 +56,9 @@ def test_read_pandas():
 
 
 def test_validate_pass(test_ia):
-    assert test_ia.validate(criteria='Primary Energy', exclude=True) is None
+    obs = test_ia.validate({'Primary Energy': {'up': 10.0}}, exclude=True)
+    print(obs)
+    assert obs is None
 
     # make sure that the passed validation is NOT marked as excluded
     assert list(test_ia['exclude']) == [False]

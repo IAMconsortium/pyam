@@ -204,8 +204,6 @@ class IamDataFrame(object):
             see function 'filter()' for details
             filter by 'variable'/'year' is replaced by arguments of 'criteria'
             see function _check() for details
-        exclude_cat: list of strings, default ['exclude']
-            exclude all scenarios from the listed categories from validation
         exclude: bool, default False
             models/scenarios failing the validation to be excluded from data
         silent: bool, default False
@@ -348,49 +346,48 @@ class IamDataFrame(object):
         fill_values['year'] = year
         self.data = self.data.append(fill_values)
 
-    def _validate(self, criteria, passes=True):
+    def validate(self, criteria={}, passes=True, exclude=False):
         """Check which model/scenarios satisfy specific criteria
 
         Parameters
         ----------
-        variable: str
-            variable to be checked
         criteria: dict
             dictionary with variable keys and check values
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        filters: dict, optional
-            filter by model, scenario, region, variable, level, year, category
-            see function 'filter()' for details
-            filter by 'variable'/'year' are replaced by arguments of 'check'
         passes: bool, default True
             if true, return models/scenarios passing the check;
             otherwise, return datatframe of all failed checks
         """
-        is_true = np.array([True] * len(self.data))
+        print(self.data)
 
-        for check_type, val in check.items():
-            if check_type == 'up':
-                is_true = is_true & (
-                    self.data.loc['variable', var].value <= val)
+        idxs = []
+        for var, check in criteria.items():
+            where_idx = []
+            where = self.data['variable'] == var
+            where_idx.append(set(where.index))
+            for check_type, val in check.items():
+                pass_idx = []
+                print('foo')
+                print(var, check_type, val)
+                if check_type == 'up':
+                    pass_idx.append(
+                        set((self.data.loc[where, 'value'] <= val).index))
+                elif check_type == 'lo':
+                    pass_idx.append(
+                        set((self.data.loc[where, 'value'] > val).index))
+                elif check_type == 'year':
+                    where_idx.append(
+                        set((self.data.loc[where, 'year'] == val).index))
 
-            if check_type == 'lo':
-                is_true = is_true & (self.data.loc['variable', var] > val)
+                # not sure what to do here
 
-        if passes:
-            # if assessing a criteria for one year only
-            if ('year' in check) and isinstance(check['year'], int):
-                return df.loc[is_true, ['model', 'scenario', 'year']]\
-                    .drop_duplicates()\
-                    .set_index(MIN_IDX)
-            # if more than one year is filtered for, ensure that
-            # the criteria are satisfied in every year
-            else:
-                num_yr = len(df.year.drop_duplicates())
-                df_agg = df.loc[is_true, ['model', 'scenario', 'year']]\
-                    .groupby(MIN_IDX).count()
-                return pd.DataFrame(index=df_agg[df_agg.year == num_yr].index)
-        else:
-            return df[~is_true]
+        if exclude:
+            self.meta.loc[~pass_rows, 'exclude'] = True
+
+        ret_rows = pass_rows if passes else ~pass_rows
+        ret_idx = self.data.loc[ret_rows, MIN_IDX].set_index(MIN_IDX).index
+
+        return ret_idx
 
     def _filter_columns(self, filters):
         keep = np.array([True] * len(self.data))
