@@ -502,6 +502,100 @@ class IamDataFrame(object):
             keep = keep & keep_col
         return keep
 
+    def _select(self, filters={}, cols=None, idx_cols=None,
+                exclude_cat=['exclude']):
+        """Select a subset of the data (filter) and set an index
+
+        Parameters
+        ----------
+        filters: dict, optional
+            The following columns are available for filtering:
+             - 'category': filter by category assignment in metadata
+             - 'model', 'scenario', 'region': takes a string or list of strings
+             - 'variable': takes a string or list of strings,
+                where ``*`` can be used as a wildcard
+             - 'level': the maximum "depth" of IAM variables (number of '|')
+               (exluding the strings given in the 'variable' argument)
+             - 'year': takes an integer, a list of integers or a range
+                note that the last year of a range is not included,
+                so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
+        cols: string or list
+            columns returned for the dataframe, duplicates are dropped
+        idx_cols: string or list
+            columns that are set as index of the returned dataframe
+        exclude_cat: None or list of strings, default ['exclude']
+            exclude all scenarios from the listed categories
+        """
+        keep = self._filter_columns(filters)
+
+        if exclude_cat is not None:
+            idx = self._meta[~self._meta['category'].isin(exclude_cat)].index
+            keep &= return_index(self.data, mod_scen).isin(idx)
+
+        df = self.data[keep].copy()
+
+        # select columns (and index columns), drop duplicates
+        if cols is not None:
+            if idx_cols:
+                cols = cols + idx_cols
+            df = df[cols].drop_duplicates()
+
+        # set (or reset) index
+        if idx_cols is not None:
+            return df.set_index(idx_cols)
+        else:
+            return df.reset_index(drop=True)
+
+    def _check(self, variable, check, filters={}, ret_true=True):
+        """Check which model/scenarios satisfy specific criteria
+
+        Parameters
+        ----------
+        variable: str
+            variable to be checked
+        check: dict
+            dictionary with checks
+            ('up' and 'lo' for respective bounds, 'year' for years - optional)
+        filters: dict, optional
+            filter by model, scenario, region, variable, level, year, category
+            see function _select() for details
+            filter by 'variable'/'year' are replaced by arguments of 'check'
+        ret_true: bool, default True
+            if true, return models/scenarios passing the check;
+            otherwise, return datatframe of all failed checks
+        """
+        if not filters:
+            filters = {}
+        if 'year' in check:
+            filters['year'] = check['year']
+        filters['variable'] = variable
+        df = self._select(filters)
+
+        is_true = np.array([True] * len(df.value))
+
+        for check_type, val in check.items():
+            if check_type == 'up':
+                is_true = is_true & (df.value <= val)
+
+            if check_type == 'lo':
+                is_true = is_true & (df.value > val)
+
+        if ret_true:
+            # if assessing a criteria for one year only
+            if ('year' in check) and isinstance(check['year'], int):
+                return df.loc[is_true, ['model', 'scenario', 'year']]\
+                    .drop_duplicates()\
+                    .set_index(mod_scen)
+            # if more than one year is filtered for, ensure that
+            # the criteria are satisfied in every year
+            else:
+                num_yr = len(df.year.drop_duplicates())
+                df_agg = df.loc[is_true, ['model', 'scenario', 'year']]\
+                    .groupby(mod_scen).count()
+                return pd.DataFrame(index=df_agg[df_agg.year == num_yr].index)
+        else:
+            return df[~is_true]
+
     def filter(self, filters, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 

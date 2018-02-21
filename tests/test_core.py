@@ -34,8 +34,9 @@ def test_variable_depth(test_ia):
 def test_variable_unit(test_ia):
     dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
            'unit': ['EJ/y', 'EJ/y']}
-    exp = pd.DataFrame.from_dict(dct)[['variable', 'unit']]
-    npt.assert_array_equal(test_ia.variables(units=True), exp)
+    cols = ['variable', 'unit']
+    exp = pd.DataFrame.from_dict(dct)[cols]
+    npt.assert_array_equal(test_ia[cols].drop_duplicates(), exp)
 
 
 def test_timeseries(test_ia):
