@@ -143,7 +143,7 @@ class IamDataFrame(object):
             path/filename for xlsx file of metadata export
         """
         writer = pd.ExcelWriter(path)
-        meta = self.metadata(display='df')
+        meta = self.meta
         iam.utils.write_sheet(writer, 'metadata', meta)
         writer.save()
 
@@ -199,8 +199,7 @@ class IamDataFrame(object):
         if not diff.empty:
             return pd.DataFrame(dropped)
 
-    def pivot_table(self, index, columns, filters={}, values='value',
-                    exclude_cat=['exclude'],
+    def pivot_table(self, index, columns, values='value',
                     aggfunc='count', fill_value=None, style=None):
         """Returns a pivot table
 
@@ -210,9 +209,6 @@ class IamDataFrame(object):
             rows for Pivot table
         columns: str or list of strings
             columns for Pivot table
-        filters: dict, optional
-            filter by model, scenario, region, variable, level, year, category
-            see function _select() for details
         values: str, default 'value'
             dataframe column to aggregate or count
         exclude_cat: None or list of strings, default ['exclude']
@@ -231,20 +227,18 @@ class IamDataFrame(object):
         if isinstance(columns, str):
             columns = [columns]
 
-        cols = index + columns + [values]
-        df = self._select(filters, cols, exclude_cat=exclude_cat)
-
         # allow 'aggfunc' to be passed as string for easier user interface
         if isinstance(aggfunc, str):
             if aggfunc == 'count':
-                df = df.groupby(index + columns, as_index=False).count()
+                df = self.data.groupby(index + columns, as_index=False).count()
                 fill_value = 0
             elif aggfunc == 'mean':
-                df = df.groupby(index + columns, as_index=False).mean()\
+                df = self.data.groupby(index + columns, as_index=False).mean()\
                     .round(2)
                 aggfunc = np.sum
                 fill_value = 0 if style == 'heatmap' else ""
             elif aggfunc == 'sum':
+                df = self.data.copy()
                 aggfunc = np.sum
                 fill_value = 0 if style == 'heatmap' else ""
 
@@ -264,7 +258,7 @@ class IamDataFrame(object):
         return self.data.pivot_table(index=iamc_idx_cols,
                                      columns='year')['value']
 
-    def validate(self, criteria={}, filters={}, exclude_cat=['exclude'],
+    def validate(self, criteria={}, filters={},
                  exclude=False, silent=False, display='heatmap'):
         """Run validation checks on timeseries data
 
@@ -275,7 +269,7 @@ class IamDataFrame(object):
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
             filter by model, scenario, region, variable, level, year, category
-            see function _select() for details
+            see function 'filter()' for details
             filter by 'variable'/'year' is replaced by arguments of 'criteria'
             see function _check() for details
         exclude_cat: list of strings, default ['exclude']
@@ -288,20 +282,21 @@ class IamDataFrame(object):
             display style of scenarios failing the validation
             (options: heatmap, list, df)
         """
-        df = self.filter(filters)
-
-        # get dataframe of meta-data, filter by model, scenario, category
-        cols = ['model', 'scenario', 'category']
-        meta = self.metadata(filters=filtered_dict(filters, cols),
-                             exclude_cat=exclude_cat).index
+        # get filtered data and meta-data
+        df = self.data[self._filter_columns(filters)]
+        idx = pd.MultiIndex.from_tuples(
+            pd.unique(list(zip(df['model'], df['scenario']))),
+            names=('model', 'scenario')
+        )
+        meta = self.meta.loc[idx].index
         count = len(meta)
 
         # if criteria is a string, check that each scenario has this variable
         if isinstance(criteria, str):
             data_filters = filters.copy()
             data_filters.update({'variable': criteria})
-            idx = self._select(data_filters, exclude_cat=exclude_cat,
-                               idx_cols=mod_scen).index
+            idx = self.data[self._filter_columns(data_filters)]\
+                .set_index(mod_scen).index
 
             df = pd.DataFrame(index=meta)
             df['keep'] = True
@@ -356,7 +351,7 @@ class IamDataFrame(object):
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
             filter by model, scenario, region, variable, level, year, category
-            see function _select() for details
+            see function 'filter()' for details
             filter by 'variable'/'year' is replaced by arguments of 'criteria'
             see function _check() for details
         color: str
@@ -380,13 +375,14 @@ class IamDataFrame(object):
         self.meta.loc[cat_idx, name] = value
 
         # add plotting run control
-        for kind, arg in [('color', color), ('marker', marker), ('linestyle', linestyle)]:
+        for kind, arg in [('color', color), ('marker', marker),
+                          ('linestyle', linestyle)]:
             if arg:
                 plotting.run_control().update({kind: {name: {value: arg}}})
 
         n = len(cat_idx)
         s = 'scenario' if n == 1 else 'scenarios'
-        logger().info("{} {} categorized as '{}: {}'".format(n, s, name, value))
+        logger().info("{} {} categorized as {} '{}'".format(n, s, name, value))
 
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to 'uncategorized'
@@ -441,7 +437,7 @@ class IamDataFrame(object):
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
             filter by model, scenario, region, variable, level, year, category
-            see function _select() for details
+            see function 'filter()' for details
             filter by 'variable'/'year' are replaced by arguments of 'check'
         passes: bool, default True
             if true, return models/scenarios passing the check;
@@ -457,7 +453,7 @@ class IamDataFrame(object):
             if check_type == 'lo':
                 is_true = is_true & (self.data.loc['variable', var] > val)
 
-        if ret_true:
+        if passes:
             # if assessing a criteria for one year only
             if ('year' in check) and isinstance(check['year'], int):
                 return df.loc[is_true, ['model', 'scenario', 'year']]\
@@ -505,50 +501,6 @@ class IamDataFrame(object):
             keep = keep & keep_col
         return keep
 
-    def _select(self, filters={}, cols=None, idx_cols=None,
-                exclude_cat=['exclude']):
-        """Select a subset of the data (filter) and set an index
-
-        Parameters
-        ----------
-        filters: dict, optional
-            The following columns are available for filtering:
-             - 'category': filter by category assignment in metadata
-             - 'model', 'scenario', 'region': takes a string or list of strings
-             - 'variable': takes a string or list of strings,
-                where ``*`` can be used as a wildcard
-             - 'level': the maximum "depth" of IAM variables (number of '|')
-               (exluding the strings given in the 'variable' argument)
-             - 'year': takes an integer, a list of integers or a range
-                note that the last year of a range is not included,
-                so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-        cols: string or list
-            columns returned for the dataframe, duplicates are dropped
-        idx_cols: string or list
-            columns that are set as index of the returned dataframe
-        exclude_cat: None or list of strings, default ['exclude']
-            exclude all scenarios from the listed categories
-        """
-        keep = self._filter_columns(filters)
-
-        if exclude_cat is not None:
-            idx = self._meta[~self._meta['category'].isin(exclude_cat)].index
-            keep &= return_index(self.data, mod_scen).isin(idx)
-
-        df = self.data[keep].copy()
-
-        # select columns (and index columns), drop duplicates
-        if cols is not None:
-            if idx_cols:
-                cols = cols + idx_cols
-            df = df[cols].drop_duplicates()
-
-        # set (or reset) index
-        if idx_cols is not None:
-            return df.set_index(idx_cols)
-        else:
-            return df.reset_index(drop=True)
-
     def _check(self, variable, check, filters={}, ret_true=True):
         """Check which model/scenarios satisfy specific criteria
 
@@ -561,7 +513,7 @@ class IamDataFrame(object):
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
             filter by model, scenario, region, variable, level, year, category
-            see function _select() for details
+            see function 'filter()' for details
             filter by 'variable'/'year' are replaced by arguments of 'check'
         ret_true: bool, default True
             if true, return models/scenarios passing the check;
@@ -572,7 +524,7 @@ class IamDataFrame(object):
         if 'year' in check:
             filters['year'] = check['year']
         filters['variable'] = variable
-        df = self._select(filters)
+        df = self.data[self._filter_columns(filters)]
 
         is_true = np.array([True] * len(df.value))
 
@@ -606,7 +558,7 @@ class IamDataFrame(object):
         ----------
         filters: dict
             The following columns are available for filtering:
-             - 'category': filter by category assignment in metadata
+             - metadata columns: filter by category assignment in metadata
              - 'model', 'scenario', 'region': takes a string or list of strings
              - 'variable': takes a string or list of strings,
                 where ``*`` can be used as a wildcard
@@ -661,6 +613,11 @@ class IamDataFrame(object):
         keep = self._filter_columns(filters)
 
         if exclude_cat is not None:
+            for col, values in exclude_cat.items():
+                matches = ~keep_col_match(self.meta[col], values)
+                cat_idx = self.meta[matches].index
+                keep_col = return_index(self.data, mod_scen).isin(cat_idx)
+            
             idx = self.meta[~self.meta['category'].isin(exclude_cat)].index
             keep &= return_index(self.data, mod_scen).isin(idx)
 
@@ -690,7 +647,7 @@ class IamDataFrame(object):
         if with_metadata:
             df = (df
                   .set_index(['model', 'scenario'])
-                  .join(self.metadata())
+                  .join(self.meta)
                   .reset_index()
                   )
         return df
