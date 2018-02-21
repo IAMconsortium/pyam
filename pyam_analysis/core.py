@@ -51,9 +51,9 @@ except Exception:
 
 # %%  default settings for column headers
 
-mod_scen = ['model', 'scenario']
-iamc_idx_cols = ['model', 'scenario', 'region', 'variable', 'unit']
-all_idx_cols = iamc_idx_cols + ['year']
+MIN_IDX = ['model', 'scenario']
+IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
+MAX_IDX = IAMC_IDX + ['year']
 
 
 # %% class for working with IAMC-style timeseries data
@@ -81,10 +81,10 @@ class IamDataFrame(object):
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             self.data = read_ix(data, **kwargs)
         else:
-            self.data = read_data(data, **kwargs)
+            self.data = read_file(data, **kwargs)
 
         # define a dataframe for categorization and other meta-data
-        self.meta = pd.DataFrame(return_index(self.data, mod_scen,
+        self.meta = pd.DataFrame(return_index(self.data, MIN_IDX,
                                               drop_duplicates=True))
         self.reset_exclude()
 
@@ -109,27 +109,14 @@ class IamDataFrame(object):
         """
         ret = copy.deepcopy(self) if not inplace else self
 
-        if isinstance(other, IamDataFrame):
-            df = other.data
-            meta = other.meta
-        else:
-            if isinstance(other, pd.DataFrame):
-                df = format_data(other)
-            elif has_ix and isinstance(other, ixmp.TimeSeries):
-                df = read_ix(other, **kwargs)
-            elif os.path.isfile(other):
-                df = read_data(other, **kwargs)
-            else:
-                raise ValueError("arg '{}' not recognized as valid source"
-                                 .format(other))
-            meta = return_index(df, mod_scen, drop_duplicates=True)
-            meta['exclude'] = False
+        if not isinstance(other, IamDataFrame):
+            other = IamDataFrame(other)
 
         # check that any model/scenario is not yet included in IamDataFrame
-        ret.meta = ret.meta.append(meta, verify_integrity=True)
+        ret.meta = ret.meta.append(other.meta, verify_integrity=True)
 
         # add new data
-        ret.data = ret.data.append(df).reset_index(drop=True)
+        ret.data = ret.data.append(other.data).reset_index(drop=True)
 
         if not inplace:
             return ret
@@ -168,7 +155,7 @@ class IamDataFrame(object):
             e = "metadata file '{}' does not have required columns ({})!"
             raise ValueError(e.format(path, req_cols))
 
-        df.set_index(mod_scen, inplace=True)
+        df.set_index(MIN_IDX, inplace=True)
         self.meta = df.combine_first(self.meta)
 
     def pivot_table(self, index, columns, values='value',
@@ -214,24 +201,18 @@ class IamDataFrame(object):
                 aggfunc = np.sum
                 fill_value = 0 if style == 'heatmap' else ""
 
-        df_pivot = df.pivot_table(values=values, index=index, columns=columns,
-                                  aggfunc=aggfunc, fill_value=fill_value)
-        if style == 'highlight_not_max':
-            return df_pivot.style.apply(highlight_not_max)
-        if style == 'heatmap':
-            cm = sns.light_palette("green", as_cmap=True)
-            return df_pivot.style.background_gradient(cmap=cm)
-        else:
-            return df_pivot
+        df = df.pivot_table(values=values, index=index, columns=columns,
+                            aggfunc=aggfunc, fill_value=fill_value)
+        return df
 
     def timeseries(self):
         """Returns a dataframe in the standard IAMC format
         """
-        return self.data.pivot_table(index=iamc_idx_cols,
+        return self.data.pivot_table(index=IAMC_IDX,
                                      columns='year')['value']
 
     def validate(self, criteria={}, filters={},
-                 exclude=False, silent=False, display='heatmap'):
+                 exclude=False, silent=False):
         """Run validation checks on timeseries data
 
         Parameters
@@ -250,9 +231,6 @@ class IamDataFrame(object):
             models/scenarios failing the validation to be excluded from data
         silent: bool, default False
             if False, print a summary statement of validation
-        display: str or None, default 'heatmap'
-            display style of scenarios failing the validation
-            (options: heatmap, list, df)
         """
         # get filtered data and meta-data
         df = self.data[self._filter_columns(filters)]
@@ -268,13 +246,13 @@ class IamDataFrame(object):
             data_filters = filters.copy()
             data_filters.update({'variable': criteria})
             idx = self.data[self._filter_columns(data_filters)]\
-                .set_index(mod_scen).index
+                .set_index(MIN_IDX).index
 
             df = pd.DataFrame(index=meta)
             df['keep'] = True
             if len(idx):
                 df.loc[idx, 'keep'] = False
-            df = df[df.keep].reset_index()[mod_scen]
+            df = df[df.keep].reset_index()[MIN_IDX]
         # else, loop over dictionary and perform checks
         else:
             df = pd.DataFrame()
@@ -287,23 +265,15 @@ class IamDataFrame(object):
             msg = '{} data points do not satisfy the criteria (out of {} {})'
 
             if exclude:
-                idx = return_index(df, mod_scen)
+                idx = return_index(df, MIN_IDX)
                 self.meta.loc[idx, 'exclude'] = True
                 msg += ", categorized as 'exclude' in metadata"
 
             if not silent:
                 logger().info(msg.format(n, count, s))
 
-            if isinstance(criteria, str):
-                return df
-            else:
-                if display:
-                    if display == 'heatmap':
-                        df.set_index(all_idx_cols, inplace=True)
-                        cm = sns.light_palette("green", as_cmap=True)
-                        return df.style.background_gradient(cmap=cm)
-                    else:
-                        return return_df(df, display, all_idx_cols)
+            return df
+
         elif not silent:
             logger().info('{} scenarios satisfy the criteria'.format(count))
 
@@ -390,7 +360,7 @@ class IamDataFrame(object):
         exclude_cat: None or list of strings, default ['exclude']
              exclude all scenarios from the listed categories
         """
-        df = self.pivot_table(index=iamc_idx_cols, columns=['year'],
+        df = self.pivot_table(index=IAMC_IDX, columns=['year'],
                               values='value', aggfunc=np.sum)
         fill_values = df.apply(iam.fill_series, raw=False, axis=1, year=year)
         fill_values = fill_values.dropna().reset_index()
@@ -431,13 +401,13 @@ class IamDataFrame(object):
             if ('year' in check) and isinstance(check['year'], int):
                 return df.loc[is_true, ['model', 'scenario', 'year']]\
                     .drop_duplicates()\
-                    .set_index(mod_scen)
+                    .set_index(MIN_IDX)
             # if more than one year is filtered for, ensure that
             # the criteria are satisfied in every year
             else:
                 num_yr = len(df.year.drop_duplicates())
                 df_agg = df.loc[is_true, ['model', 'scenario', 'year']]\
-                    .groupby(mod_scen).count()
+                    .groupby(MIN_IDX).count()
                 return pd.DataFrame(index=df_agg[df_agg.year == num_yr].index)
         else:
             return df[~is_true]
@@ -448,24 +418,24 @@ class IamDataFrame(object):
         # filter by columns and list of values
         for col, values in filters.items():
             if col in self.meta.columns:
-                matches = keep_col_match(self.meta[col], values)
+                matches = pattern_match(self.meta[col], values)
                 cat_idx = self.meta[matches].index
-                keep_col = return_index(self.data, mod_scen).isin(cat_idx)
+                keep_col = return_index(self.data, MIN_IDX).isin(cat_idx)
 
             elif col in ['model', 'scenario', 'region']:
-                keep_col = keep_col_match(self.data[col], values)
+                keep_col = pattern_match(self.data[col], values)
 
             elif col == 'variable':
                 level = filters['level'] if 'level' in filters.keys() else None
-                keep_col = keep_col_match(self.data[col], values, True, level)
+                keep_col = pattern_match(self.data[col], values, True, level)
 
             elif col in ['year']:
-                keep_col = keep_col_yr(self.data[col], values)
+                keep_col = years_match(self.data[col], values)
 
             elif col in ['level']:
                 if 'variable' not in filters.keys():
-                    keep_col = keep_col_match(self.data['variable'], '*',
-                                              True, values)
+                    keep_col = pattern_match(self.data['variable'], '*',
+                                             pseudo_regex=True, level=values)
                 else:
                     continue
             else:
@@ -513,13 +483,13 @@ class IamDataFrame(object):
             if ('year' in check) and isinstance(check['year'], int):
                 return df.loc[is_true, ['model', 'scenario', 'year']]\
                     .drop_duplicates()\
-                    .set_index(mod_scen)
+                    .set_index(MIN_IDX)
             # if more than one year is filtered for, ensure that
             # the criteria are satisfied in every year
             else:
                 num_yr = len(df.year.drop_duplicates())
                 df_agg = df.loc[is_true, ['model', 'scenario', 'year']]\
-                    .groupby(mod_scen).count()
+                    .groupby(MIN_IDX).count()
                 return pd.DataFrame(index=df_agg[df_agg.year == num_yr].index)
         else:
             return df[~is_true]
@@ -609,7 +579,7 @@ def read_ix(ix, **kwargs):
     return df
 
 
-def read_data(fname, *args, **kwargs):
+def read_file(fname, *args, **kwargs):
     """Read data from a snapshot file saved in the standard IAMC format
     or a table with year/value columns
     """
@@ -630,14 +600,14 @@ def format_data(df):
 
     # format columns to lower-case and check that all required columns exist
     df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
-    if not set(iamc_idx_cols).issubset(set(df.columns)):
-        missing = list(set(iamc_idx_cols) - set(df.columns))
+    if not set(IAMC_IDX).issubset(set(df.columns)):
+        missing = list(set(IAMC_IDX) - set(df.columns))
         raise ValueError("missing required columns {}!".format(missing))
 
     # check whether data in IAMC style or year/value layout
     if 'value' not in df.columns:
-        numcols = sorted(set(df.columns) - set(iamc_idx_cols))
-        df = pd.melt(df, id_vars=iamc_idx_cols, var_name='year',
+        numcols = sorted(set(df.columns) - set(IAMC_IDX))
+        df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
                      value_vars=numcols, value_name='value')
     df.year = pd.to_numeric(df.year)
 
@@ -649,15 +619,12 @@ def format_data(df):
 
 # %% auxiliary functions for data filtering
 
-
-def return_df(df, display, idx_cols=None):
-    """returns a dataframe with display options"""
-    if display == 'df':
-        return df.reset_index(drop=True)
-    elif display == 'list':
-        return df.set_index(idx_cols)
-    else:
-        warnings.warn("Display option '" + display + "' not supported!")
+def style_df(df, style='heatmap'):
+    if style == 'highlight_not_max':
+        return df.style.apply(lambda s: ['' if v else 'background-color: yellow' for v in s == s.max()])
+    if style == 'heatmap':
+        cm = sns.light_palette("green", as_cmap=True)
+        return df.style.background_gradient(cmap=cm)
 
 
 def return_index(df, idx_cols, drop_duplicates=False):
@@ -668,14 +635,14 @@ def return_index(df, idx_cols, drop_duplicates=False):
         return df[idx_cols].set_index(idx_cols).index
 
 
-def keep_col_match(col, strings, pseudo_regex=False, level=None):
+def pattern_match(data, strings, pseudo_regex=False, level=None):
     """
     matching of model/scenario names, variables, regions, and categories
     to pseudo-regex (optional) for data filtering
     """
-    keep_col = np.array([False] * len(col))
+    matches = np.array([False] * len(data))
 
-    if isinstance(strings, str):
+    if isinstance(strings, six.string_types):
         strings = [strings]
 
     for s in strings:
@@ -683,82 +650,28 @@ def keep_col_match(col, strings, pseudo_regex=False, level=None):
         if pseudo_regex:
             regexp = regexp.replace('|', '\\|').replace('*', '.*') + "$"
         pattern = re.compile(regexp)
-        subset = filter(pattern.match, col)
+        subset = filter(pattern.match, data)
         # check for depth by counting '|' after excluding the filter string
         if pseudo_regex and level is not None:
             pipe = re.compile('\\|')
             regexp = str(s).replace('*', '')
             depth = [len(pipe.findall(c.replace(regexp, ''))) <= level
-                     for c in col]
-            keep_col = keep_col | (col.isin(subset) & depth)
+                     for c in data]
+            matches = matches | (data.isin(subset) & depth)
         else:
-            keep_col = keep_col | col.isin(subset)
+            matches = matches | data.isin(subset)
 
-    return keep_col
+    return matches
 
 
-def keep_col_yr(col, yrs):
+def years_match(data, years):
     """
     matching of year columns for data filtering
     """
-    if isinstance(yrs, int):
-        return col == yrs
-    elif isinstance(yrs, list) or isinstance(yrs, range):
-        return col.isin(yrs)
+    if isinstance(years, int):
+        return data == years
+    elif isinstance(years, list) or isinstance(years, range):
+        return data.isin(years)
     else:
-        raise ValueError('filtering for years by ' + yrs + ' not supported,' +
+        raise ValueError('filtering for years by ' + years + ' not supported,' +
                          'must be int, list or range')
-
-
-def filtered_dict(dct, keys={}):
-    """
-    sub-select a dictionary by list of keys
-    """
-    filtered_dict = {}
-    for key, values in dct.items():
-        if key in keys:
-            filtered_dict[key] = values
-    return filtered_dict
-
-
-# %% auxiliary functions for table and graph formatting
-
-def color_by_cat(cat_df, cat_col):
-    """
-    returns a dataframe with style attributes
-    """
-    attr = np.where(cat_df, '',
-                    'color: {0}; background-color: {0};'.format('lightgrey'))
-    attr = np.where(cat_df == 'uncategorized',
-                    'color: {0}; background-color: {0}'.format('white'), attr)
-    for c in cat_col:
-        attr = np.where(cat_df == c, 'color: {0}; background-color: {0}'
-                        .format(cat_col[c]), attr)
-    return pd.DataFrame(attr, index=cat_df.index, columns=cat_df.columns)
-
-
-def pivot_has_elements(df, index, columns):
-    """
-    returns a pivot table with existing index-columns combinations highlighted
-    """
-    df.reset_index(inplace=True)
-    df['has_elements'] = (np.array([True] * len(df)))
-    df_pivot = df.pivot_table(values='has_elements',
-                              index=index, columns=columns, fill_value='')
-    return df_pivot.style.applymap(highlight_has_element)
-
-
-def highlight_has_element(val):
-    """
-    highlights table cells green if value is True
-    """
-    color = 'green' if val else 'white'
-    return 'color: {0}; background-color: {0}'.format(color)
-
-
-def highlight_not_max(s):
-    '''
-    highlight the maximum in a Series using yellow background
-    '''
-    is_max = s == s.max()
-    return ['' if v else 'background-color: yellow' for v in is_max]
