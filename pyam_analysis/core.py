@@ -39,30 +39,6 @@ except ImportError:
     has_ix = False
 
 
-# %% treatment of warnings, formatting of Jupyter noteook output
-
-# formatting for warnings
-def custom_formatwarning(msg, category, filename, lineno, line=''):
-    # ignore everything except the message
-    return str(msg) + '\n'
-
-
-# in Jupyter notebooks: disable autoscroll, activate warnings
-try:
-    get_ipython().run_cell_magic(u'javascript', u'',
-                                 u'IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }')
-    warnings.simplefilter('default')
-    warnings.formatwarning = custom_formatwarning
-except Exception:
-    pass
-
-
-# %%  default settings for column headers
-
-
-# %% class for working with IAMC-style timeseries data
-
-
 class IamDataFrame(object):
     """This class is a wrapper for dataframes
     following the IAMC data convention.
