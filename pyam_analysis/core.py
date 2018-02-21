@@ -84,8 +84,7 @@ class IamDataFrame(object):
             self.data = read_file(data, **kwargs)
 
         # define a dataframe for categorization and other meta-data
-        self.meta = pd.DataFrame(return_index(self.data, MIN_IDX,
-                                              drop_duplicates=True))
+        self.meta = self.data[MIN_IDX].drop_duplicates().set_index(MIN_IDX)
         self.reset_exclude()
 
     def __getitem__(self, key):
@@ -265,7 +264,7 @@ class IamDataFrame(object):
             msg = '{} data points do not satisfy the criteria (out of {} {})'
 
             if exclude:
-                idx = return_index(df, MIN_IDX)
+                idx = df[MIN_IDX].set_index(MIN_IDX).index
                 self.meta.loc[idx, 'exclude'] = True
                 msg += ", categorized as 'exclude' in metadata"
 
@@ -420,7 +419,8 @@ class IamDataFrame(object):
             if col in self.meta.columns:
                 matches = pattern_match(self.meta[col], values)
                 cat_idx = self.meta[matches].index
-                keep_col = return_index(self.data, MIN_IDX).isin(cat_idx)
+                keep_col = self.data[MIN_IDX].set_index(
+                    MIN_IDX).index.isin(cat_idx)
 
             elif col in ['model', 'scenario', 'region']:
                 keep_col = pattern_match(self.data[col], values)
@@ -625,14 +625,6 @@ def style_df(df, style='heatmap'):
     if style == 'heatmap':
         cm = sns.light_palette("green", as_cmap=True)
         return df.style.background_gradient(cmap=cm)
-
-
-def return_index(df, idx_cols, drop_duplicates=False):
-    """set and return an index for a dataframe"""
-    if drop_duplicates:
-        return df[idx_cols].drop_duplicates().set_index(idx_cols)
-    else:
-        return df[idx_cols].set_index(idx_cols).index
 
 
 def pattern_match(data, strings, pseudo_regex=False, level=None):
