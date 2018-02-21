@@ -9,24 +9,24 @@ from numpy import testing as npt
 
 
 def test_model(test_ia):
-    assert test_ia['model'].model.unique() == ['test_model']
+    assert test_ia['model'].unique() == ['test_model']
 
 
 def test_scenario(test_ia):
-    assert test_ia['scenario'].scenario.unique() == ['test_scenario']
+    assert test_ia['scenario'].unique() == ['test_scenario']
 
 
 def test_region(test_ia):
-    assert test_ia['region'].region.unique() == ['World']
+    assert test_ia['region'].unique() == ['World']
 
 
 def test_variable(test_ia):
-    assert list(test_ia['variable'].variable.unique()) == ['Primary Energy',
-                                                           'Primary Energy|Coal']
+    assert list(test_ia['variable'].unique()) == ['Primary Energy',
+                                                  'Primary Energy|Coal']
 
 
 def test_variable_depth(test_ia):
-    obs = list(test_ia.filter({'level': 0})['variable'].variable.unique())
+    obs = list(test_ia.filter({'level': 0})['variable'].unique())
     exp = ['Primary Energy']
     assert obs == exp
 
@@ -51,7 +51,7 @@ def test_timeseries(test_ia):
 def test_read_pandas():
     df = pd.read_csv(data_path)
     ia = IamDataFrame(df)
-    assert list(ia['variable'].variable.unique()) == [
+    assert list(ia['variable'].unique()) == [
         'Primary Energy', 'Primary Energy|Coal']
 
 
@@ -59,7 +59,7 @@ def test_validate_pass(test_ia):
     assert test_ia.validate(criteria='Primary Energy', exclude=True) is None
 
     # make sure that the passed validation is NOT marked as excluded
-    assert list(test_ia['exclude'].exclude) == [False]
+    assert list(test_ia['exclude']) == [False]
 
 
 def test_validate_fail(test_ia):
@@ -67,9 +67,9 @@ def test_validate_fail(test_ia):
     exp = pd.DataFrame(dct)[['model', 'scenario']]
     obs = test_ia.validate(criteria='Secondary Energy')
     npt.assert_array_equal(obs, exp)
-    
+
     # make sure that the failed validation is NOT marked as excluded
-    assert list(test_ia['exclude'].exclude) == [False]
+    assert list(test_ia['exclude']) == [False]
 
 
 def test_validate_exclude(test_ia):
@@ -80,16 +80,15 @@ def test_validate_exclude(test_ia):
     exp = pd.DataFrame(dct)[['model', 'scenario']]
     npt.assert_array_equal(obs, exp)
 
-    exp = exp.set_index(['model', 'scenario'])
     exp['exclude'] = True
+    exp = exp.set_index(['model', 'scenario'])['exclude']
     obs = test_ia['exclude']
-    pd.testing.assert_frame_equal(obs, exp)
+    pd.testing.assert_series_equal(obs, exp)
 
 
 def test_category_none(test_ia):
     test_ia.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
     obs = test_ia['category'].values
-    print(obs)
     exp = [None]
     assert obs == exp
 
@@ -98,22 +97,18 @@ def test_category_pass():
     df = IamDataFrame(data=data_path)
     dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
            'category': ['Testing']}
-    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
+    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}})
     obs = df['category']
-    print(obs)
-    npt.assert_array_equal(obs, exp)
+    pd.testing.assert_series_equal(obs, exp)
+
 
 def test_load_metadata(test_ia):
-#    with pytest.warns(Warning) as record:
     test_ia.load_metadata(os.path.join(
-                here, 'testing_metadata.xlsx'), sheet_name='metadata')
-#    assert len(record) == 1
-#    assert str(record[0].message) == 'overwriting 1 metadata entry'
+        here, 'testing_metadata.xlsx'), sheet_name='metadata')
 
     obs = test_ia.meta
-    print(obs)
     dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
            'category': ['imported']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
@@ -123,8 +118,14 @@ def test_load_metadata(test_ia):
 def test_append():
     df = IamDataFrame(data=data_path)
     df2 = df.append(other=os.path.join(here, 'testing_data_2.csv'))
-    assert df['scenario'].scenario.unique() == ['test_scenario']
-    npt.assert_array_equal(df2['scenario'].scenario.unique(), ['test_scenario', 'append_scenario'])
+
+    obs = df['scenario'].unique()
+    exp = ['test_scenario']
+    npt.assert_array_equal(obs, exp)
+
+    obs = df2['scenario'].unique()
+    exp = ['test_scenario', 'append_scenario']
+    npt.assert_array_equal(obs, exp)
 
 
 def test_append_duplicates(test_ia):

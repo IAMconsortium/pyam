@@ -6,6 +6,7 @@ https://github.com/iiasa/ceds_harmonization_analysis by Matt Gidden
 
 import copy
 import os
+import six
 import warnings
 
 import re
@@ -88,9 +89,8 @@ class IamDataFrame(object):
         self.reset_exclude()
 
     def __getitem__(self, key):
-        if isinstance(key, str):
-            key = [key]
-        if set(key).issubset(self.meta.columns):
+        _key_check = [key] if isinstance(key, six.string_types) else key
+        if set(_key_check).issubset(self.meta.columns):
             return self.meta.__getitem__(key)
         else:
             return self.data.__getitem__(key)
@@ -618,7 +618,7 @@ class IamDataFrame(object):
                 matches = ~keep_col_match(self.meta[col], values)
                 cat_idx = self.meta[matches].index
                 keep_col = return_index(self.data, mod_scen).isin(cat_idx)
-            
+
             idx = self.meta[~self.meta['category'].isin(exclude_cat)].index
             keep &= return_index(self.data, mod_scen).isin(idx)
 
