@@ -190,6 +190,27 @@ class IamDataFrame(object):
         """
         self.meta['exclude'] = False
 
+
+    def metadata(self, meta, name=None):
+        """Add metadata columns as pandas Series or DataFrame
+
+        Parameters
+        ----------
+        meta: pandas.DataFrame or pandas.Series
+            adds columns to the metadata, index must be `['model', 'scenario']`
+        name: str
+            category column name (if not given by data series/column name)
+        """
+        if isinstance(meta, pd.Series):
+            meta = meta.to_frame(meta.name or name)
+
+        diff = meta.index.difference(self.meta.index)
+        if not diff.empty:
+            raise ValueError('adding metadata for non-existing scenarios {}!'
+                             .format(diff))
+
+        self.meta = meta.combine_first(self.meta)
+
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
         """Assign scenarios to a category according to specific criteria
