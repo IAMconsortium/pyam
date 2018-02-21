@@ -9,23 +9,26 @@ from numpy import testing as npt
 
 
 def test_model(test_ia):
-    assert test_ia.models() == ['test_model']
+    assert test_ia['model'].unique() == ['test_model']
 
 
 def test_scenario(test_ia):
-    assert test_ia.scenarios() == ['test_scenario']
+    assert test_ia['scenario'].unique() == ['test_scenario']
 
 
 def test_region(test_ia):
-    assert test_ia.regions() == ['World']
+    assert test_ia['region'].unique() == ['World']
 
 
 def test_variable(test_ia):
-    assert test_ia.variables() == ['Primary Energy', 'Primary Energy|Coal']
+    assert list(test_ia['variable'].unique()) == ['Primary Energy',
+                                                  'Primary Energy|Coal']
 
 
 def test_variable_depth(test_ia):
-    assert test_ia.variables({'level': 0}) == ['Primary Energy']
+    obs = list(test_ia.filter({'level': 0})['variable'].unique())
+    exp = ['Primary Energy']
+    assert obs == exp
 
 
 def test_variable_unit(test_ia):
@@ -47,7 +50,8 @@ def test_timeseries(test_ia):
 def test_read_pandas():
     df = pd.read_csv(data_path)
     ia = IamDataFrame(df)
-    assert ia.variables() == ['Primary Energy', 'Primary Energy|Coal']
+    assert list(ia['variable'].unique()) == [
+        'Primary Energy', 'Primary Energy|Coal']
 
 
 def test_validate_pass(test_ia):
