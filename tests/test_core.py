@@ -150,6 +150,38 @@ def test_load_metadata(test_df):
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
+def test_add_metadata_as_df(test_ia):
+    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
+           'meta_values': [0.3]}
+    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
+    test_ia.metadata(exp)
+    
+    obs = test_ia['meta_values']
+    pd.testing.assert_series_equal(obs['meta_values'], exp['meta_values']) 
+
+
+def test_add_metadata_as_series(test_ia):
+    idx = pd.MultiIndex(levels=[['test_model'], ['test_scenario']],
+                        labels=[[0], [0]], names=['model', 'scenario'])
+
+    s = pd.Series([0.4], idx)
+    test_ia.metadata(s, 'meta_series')
+
+    exp = s.to_frame('meta_series')
+    obs = test_ia['meta_series']
+    print(exp)
+    print(obs)
+    pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_add_metadata_fail(test_ia):
+    idx = pd.MultiIndex(levels=[['test_model', 'fail_model'],
+                                ['test_scenario', 'fail_scenario']],
+                        labels=[[0, 1], [0, 1]], names=['model', 'scenario'])
+    s = pd.Series([0.4, 0.5], idx)
+    pytest.raises(ValueError, test_ia.metadata, s)
+
+
 def test_append():
     df = IamDataFrame(data=data_path)
     df2 = df.append(other=os.path.join(here, 'testing_data_2.csv'))
