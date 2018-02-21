@@ -9,14 +9,22 @@ import os
 import six
 import warnings
 
-import re
 import numpy as np
 import pandas as pd
 
-import pyam_analysis as iam
 
-from pyam_analysis.utils import logger
-
+from pyam_analysis.utils import (
+    logger,
+    write_sheet,
+    read_ix,
+    read_file,
+    format_data,
+    pattern_match,
+    years_match,
+    MIN_IDX,
+    IAMC_IDX
+)
+from pyam_analysis.timeseries import fill_series
 from pyam_analysis import plotting
 
 try:
@@ -50,10 +58,6 @@ except Exception:
 
 
 # %%  default settings for column headers
-
-MIN_IDX = ['model', 'scenario']
-IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
-MAX_IDX = IAMC_IDX + ['year']
 
 
 # %% class for working with IAMC-style timeseries data
@@ -129,7 +133,7 @@ class IamDataFrame(object):
             path/filename for xlsx file of metadata export
         """
         writer = pd.ExcelWriter(path)
-        iam.utils.write_sheet(writer, 'metadata', self.meta)
+        write_sheet(writer, 'metadata', self.meta)
         writer.save()
 
     def load_metadata(self, path, *args, **kwargs):
@@ -361,7 +365,8 @@ class IamDataFrame(object):
         """
         df = self.pivot_table(index=IAMC_IDX, columns=['year'],
                               values='value', aggfunc=np.sum)
-        fill_values = df.apply(iam.fill_series, raw=False, axis=1, year=year)
+        fill_values = df.apply(fill_series,
+                               raw=False, axis=1, year=year)
         fill_values = fill_values.dropna().reset_index()
         fill_values = fill_values.rename(columns={0: "value"})
         fill_values['year'] = year
@@ -554,116 +559,3 @@ class IamDataFrame(object):
         df = self.as_pandas(with_metadata=True)
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
         return ax
-
-# %% auxiliary function for reading data from snapshot file
-
-
-def read_ix(ix, **kwargs):
-    """Read timeseries data from an ix object
-
-    Parameters
-    ----------
-    ix: ixmp.TimeSeries or ixmp.Scenario
-        this option requires the ixmp package as a dependency
-    regions: list
-        list of regions to be loaded from the database snapshot
-    """
-    if isinstance(ix, ixmp.TimeSeries):
-        df = ix.timeseries(iamc=False, **kwargs)
-        df['model'] = ix.model
-        df['scenario'] = ix.scenario
-    else:
-        error = 'arg ' + ix + ' not recognized as valid ixmp class'
-        raise ValueError(error)
-
-    return df
-
-
-def read_file(fname, *args, **kwargs):
-    """Read data from a snapshot file saved in the standard IAMC format
-    or a table with year/value columns
-    """
-    if not os.path.exists(fname):
-        raise ValueError("no data file '" + fname + "' found!")
-
-    # read from database snapshot csv or xlsx
-    if fname.endswith('csv'):
-        df = pd.read_csv(fname, *args, **kwargs)
-    else:
-        df = pd.read_excel(fname, *args, **kwargs)
-
-    return format_data(df)
-
-
-def format_data(df):
-    """Convert an imported dataframe and check all required columns"""
-
-    # format columns to lower-case and check that all required columns exist
-    df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
-    if not set(IAMC_IDX).issubset(set(df.columns)):
-        missing = list(set(IAMC_IDX) - set(df.columns))
-        raise ValueError("missing required columns {}!".format(missing))
-
-    # check whether data in IAMC style or year/value layout
-    if 'value' not in df.columns:
-        numcols = sorted(set(df.columns) - set(IAMC_IDX))
-        df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
-                     value_vars=numcols, value_name='value')
-    df.year = pd.to_numeric(df.year)
-
-    # drop NaN's
-    df.dropna(inplace=True)
-
-    return df
-
-
-# %% auxiliary functions for data filtering
-
-def style_df(df, style='heatmap'):
-    if style == 'highlight_not_max':
-        return df.style.apply(lambda s: ['' if v else 'background-color: yellow' for v in s == s.max()])
-    if style == 'heatmap':
-        cm = sns.light_palette("green", as_cmap=True)
-        return df.style.background_gradient(cmap=cm)
-
-
-def pattern_match(data, strings, pseudo_regex=False, level=None):
-    """
-    matching of model/scenario names, variables, regions, and categories
-    to pseudo-regex (optional) for data filtering
-    """
-    matches = np.array([False] * len(data))
-
-    if isinstance(strings, six.string_types):
-        strings = [strings]
-
-    for s in strings:
-        regexp = str(s)
-        if pseudo_regex:
-            regexp = regexp.replace('|', '\\|').replace('*', '.*') + "$"
-        pattern = re.compile(regexp)
-        subset = filter(pattern.match, data)
-        # check for depth by counting '|' after excluding the filter string
-        if pseudo_regex and level is not None:
-            pipe = re.compile('\\|')
-            regexp = str(s).replace('*', '')
-            depth = [len(pipe.findall(c.replace(regexp, ''))) <= level
-                     for c in data]
-            matches = matches | (data.isin(subset) & depth)
-        else:
-            matches = matches | data.isin(subset)
-
-    return matches
-
-
-def years_match(data, years):
-    """
-    matching of year columns for data filtering
-    """
-    if isinstance(years, int):
-        return data == years
-    elif isinstance(years, list) or isinstance(years, range):
-        return data.isin(years)
-    else:
-        raise ValueError('filtering for years by ' + years + ' not supported,' +
-                         'must be int, list or range')
