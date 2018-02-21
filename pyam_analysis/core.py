@@ -143,8 +143,7 @@ class IamDataFrame(object):
             path/filename for xlsx file of metadata export
         """
         writer = pd.ExcelWriter(path)
-        meta = self.meta
-        iam.utils.write_sheet(writer, 'metadata', meta)
+        iam.utils.write_sheet(writer, 'metadata', self.meta)
         writer.save()
 
     def load_metadata(self, path, *args, **kwargs):
@@ -170,33 +169,7 @@ class IamDataFrame(object):
             raise ValueError(e.format(path, req_cols))
 
         df.set_index(mod_scen, inplace=True)
-
-        # check for metadata import of entries not existing in the data
-#        diff = df.index.difference(self.meta.index)
-#        if not diff.empty:
-#            w = 'failing to import {} metadata {} for non-existing scenario,' \
-#                ' see list of dropped scenarios below'
-#            e = 'entry' if len(diff == 1) else 'entries'
-#            warnings.warn(w.format(len(diff), e), Warning, stacklevel=0)
-#            dropped = df.loc[diff, 'exclude']
-#            df.drop(diff, inplace=True)
-
-        # replace imported metadata for existing entries
-#        meta = self.meta.drop('exclude', axis=1)
-#        overlap = meta.index.intersection(df.index)
-#
-#        conflict = ~(self.meta.ix[overlap] == 'uncategorized')
-#        count_conflict = sum(conflict)
-#        if count_conflict:
-#            w = 'overwriting {} metadata {}'
-#            e = 'entry' if count_conflict == 1 else 'entries'
-#            warnings.warn(w.format(count_conflict, e), Warning, stacklevel=0)
-#
         self.meta = df.combine_first(self.meta)
-
-        # display imported model/scenario metadata for nonexisting data
-#        if not diff.empty:
-#            return pd.DataFrame(dropped)
 
     def pivot_table(self, index, columns, values='value',
                     aggfunc='count', fill_value=None, style=None):
@@ -221,15 +194,14 @@ class IamDataFrame(object):
             output style for pivot table formatting
             accepts 'highlight_not_max', 'heatmap'
         """
-        if isinstance(index, str):
-            index = [index]
-        if isinstance(columns, str):
-            columns = [columns]
+        index = [index] if isinstance(index, six.string_types) else index
+        columns = [columns] if isinstance(
+            columns, six.string_types) else columns
 
         df = self.data
 
         # allow 'aggfunc' to be passed as string for easier user interface
-        if isinstance(aggfunc, str):
+        if isinstance(aggfunc, six.string_types):
             if aggfunc == 'count':
                 df = self.data.groupby(index + columns, as_index=False).count()
                 fill_value = 0
@@ -586,55 +558,6 @@ class IamDataFrame(object):
     def head(self, *args, **kwargs):
         """Identical to pd.DataFrame.head() operating on data"""
         return self.data.head(*args, **kwargs)
-
-    def select(self, filters={}, cols=None, idx_cols=None,
-               exclude_cat=['exclude']):
-        """Select a subset of the data (filter) and set an index
-
-        Parameters
-        ----------
-        filters: dict, optional
-            The following columns are available for filtering:
-             - 'category': filter by category assignment in metadata
-             - 'model', 'scenario', 'region': takes a string or list of strings
-             - 'variable': takes a string or list of strings,
-                where ``*`` can be used as a wildcard
-             - 'level': the maximum "depth" of IAM variables (number of '|')
-               (exluding the strings given in the 'variable' argument)
-             - 'year': takes an integer, a list of integers or a range
-                note that the last year of a range is not included,
-                so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-        cols: string or list
-            columns returned for the dataframe, duplicates are dropped
-        idx_cols: string or list
-            columns that are set as index of the returned dataframe
-        exclude_cat: None or list of strings, default ['exclude']
-            exclude all scenarios from the listed categories
-        """
-        keep = self._filter_columns(filters)
-
-        if exclude_cat is not None:
-            for col, values in exclude_cat.items():
-                matches = ~keep_col_match(self.meta[col], values)
-                cat_idx = self.meta[matches].index
-                keep_col = return_index(self.data, mod_scen).isin(cat_idx)
-
-            idx = self.meta[~self.meta['category'].isin(exclude_cat)].index
-            keep &= return_index(self.data, mod_scen).isin(idx)
-
-        df = self.data[keep].copy()
-
-        # select columns (and index columns), drop duplicates
-        if cols is not None:
-            if idx_cols:
-                cols = cols + idx_cols
-            df = df[cols].drop_duplicates()
-
-        # set (or reset) index
-        if idx_cols is not None:
-            return df.set_index(idx_cols)
-        else:
-            return df.reset_index(drop=True)
 
     def as_pandas(self, with_metadata=False):
         """Return this as a pd.DataFrame
