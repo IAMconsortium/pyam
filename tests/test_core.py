@@ -88,41 +88,43 @@ def test_validate_exclude(test_ia):
 
 def test_category_none(test_ia):
     test_ia.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
-    obs = test_ia['category']
-    assert obs is None
+    obs = test_ia['category'].values
+    print(obs)
+    exp = [None]
+    assert obs == exp
 
 
 def test_category_pass():
     df = IamDataFrame(data=data_path)
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
-    exp = pd.DataFrame(dct)[['model', 'scenario']]
-    obs = df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}},
-                        color='red')
+    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
+           'category': ['Testing']}
+    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
+
+    df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}})
+    obs = df['category']
+    print(obs)
     npt.assert_array_equal(obs, exp)
 
-    obs2 = df.metadata('Testing')
-    npt.assert_array_equal(obs2[['model', 'scenario']], exp)
-
-
 def test_load_metadata(test_ia):
-    with pytest.warns(Warning) as record:
-        test_ia.load_metadata(os.path.join(
-            here, 'testing_metadata.xlsx'), sheet_name='metadata')
-    assert len(record) == 1
-    assert str(record[0].message) == 'overwriting 1 metadata entry'
+#    with pytest.warns(Warning) as record:
+    test_ia.load_metadata(os.path.join(
+                here, 'testing_metadata.xlsx'), sheet_name='metadata')
+#    assert len(record) == 1
+#    assert str(record[0].message) == 'overwriting 1 metadata entry'
 
-    obs = test_ia.metadata()
+    obs = test_ia.meta
+    print(obs)
     dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
            'category': ['imported']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
-    npt.assert_array_equal(obs, exp)
+    pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
 def test_append():
     df = IamDataFrame(data=data_path)
     df2 = df.append(other=os.path.join(here, 'testing_data_2.csv'))
-    assert df.scenarios() == ['test_scenario']
-    assert df2.scenarios() == ['test_scenario', 'append_scenario']
+    assert df['scenario'].scenario.unique() == ['test_scenario']
+    npt.assert_array_equal(df2['scenario'].scenario.unique(), ['test_scenario', 'append_scenario'])
 
 
 def test_append_duplicates(test_ia):

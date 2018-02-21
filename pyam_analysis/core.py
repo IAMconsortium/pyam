@@ -172,32 +172,31 @@ class IamDataFrame(object):
         df.set_index(mod_scen, inplace=True)
 
         # check for metadata import of entries not existing in the data
-        diff = df.index.difference(self.meta.index)
-        if not diff.empty:
-            w = 'failing to import {} metadata {} for non-existing scenario,' \
-                ' see list of dropped scenarios below'
-            e = 'entry' if len(diff == 1) else 'entries'
-            warnings.warn(w.format(len(diff), e), Warning, stacklevel=0)
-            dropped = df.loc[diff, 'exclude']
-            df.drop(diff, inplace=True)
+#        diff = df.index.difference(self.meta.index)
+#        if not diff.empty:
+#            w = 'failing to import {} metadata {} for non-existing scenario,' \
+#                ' see list of dropped scenarios below'
+#            e = 'entry' if len(diff == 1) else 'entries'
+#            warnings.warn(w.format(len(diff), e), Warning, stacklevel=0)
+#            dropped = df.loc[diff, 'exclude']
+#            df.drop(diff, inplace=True)
 
         # replace imported metadata for existing entries
-        meta = self.meta.drop('exclude')
-        overlap = meta.index.intersection(df.index)
-
-        conflict = ~(self.meta.ix[overlap] == 'uncategorized')
-        count_conflict = sum(conflict)
-        if count_conflict:
-            w = 'overwriting {} metadata {}'
-            e = 'entry' if count_conflict == 1 else 'entries'
-            warnings.warn(w.format(count_conflict, e), Warning, stacklevel=0)
-        self.meta.drop(overlap, inplace=True)
-
-        self.meta = self.meta.append(df)
+#        meta = self.meta.drop('exclude', axis=1)
+#        overlap = meta.index.intersection(df.index)
+#
+#        conflict = ~(self.meta.ix[overlap] == 'uncategorized')
+#        count_conflict = sum(conflict)
+#        if count_conflict:
+#            w = 'overwriting {} metadata {}'
+#            e = 'entry' if count_conflict == 1 else 'entries'
+#            warnings.warn(w.format(count_conflict, e), Warning, stacklevel=0)
+#
+        self.meta = df.combine_first(self.meta)
 
         # display imported model/scenario metadata for nonexisting data
-        if not diff.empty:
-            return pd.DataFrame(dropped)
+#        if not diff.empty:
+#            return pd.DataFrame(dropped)
 
     def pivot_table(self, index, columns, values='value',
                     aggfunc='count', fill_value=None, style=None):
@@ -227,6 +226,8 @@ class IamDataFrame(object):
         if isinstance(columns, str):
             columns = [columns]
 
+        df = self.data
+
         # allow 'aggfunc' to be passed as string for easier user interface
         if isinstance(aggfunc, str):
             if aggfunc == 'count':
@@ -238,7 +239,6 @@ class IamDataFrame(object):
                 aggfunc = np.sum
                 fill_value = 0 if style == 'heatmap' else ""
             elif aggfunc == 'sum':
-                df = self.data.copy()
                 aggfunc = np.sum
                 fill_value = 0 if style == 'heatmap' else ""
 
@@ -369,6 +369,8 @@ class IamDataFrame(object):
 
         if len(cat_idx) == 0:
             logger().info("No scenarios satisfy the criteria")
+            if name not in self.meta:
+                self.meta[name] = None
             return
 
         # update metadata dataframe
@@ -406,7 +408,7 @@ class IamDataFrame(object):
         df = df.rename(columns={c: str(c).title() for c in df.columns})
         df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
 
-    def interpolate(self, year, exclude_cat=['exclude']):
+    def interpolate(self, year):
         """Interpolate missing values in timeseries (linear interpolation)
 
         Parameters
@@ -417,8 +419,7 @@ class IamDataFrame(object):
              exclude all scenarios from the listed categories
         """
         df = self.pivot_table(index=iamc_idx_cols, columns=['year'],
-                              values='value', aggfunc=np.sum,
-                              exclude_cat=exclude_cat)
+                              values='value', aggfunc=np.sum)
         fill_values = df.apply(iam.fill_series, raw=False, axis=1, year=year)
         fill_values = fill_values.dropna().reset_index()
         fill_values = fill_values.rename(columns={0: "value"})
