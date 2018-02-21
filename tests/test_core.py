@@ -56,7 +56,8 @@ def test_read_pandas():
 
 
 def test_validate_none(test_ia):
-    obs = test_ia.validate({'Primary Energy': {'up': 10.0}}, exclude=True)
+    obs = test_ia.validate(
+        {'Primary Energy': {'up': 0.1}}, passes=True, exclude=True)
     assert obs is None
 
     # make sure that the passed validation is NOT marked as excluded
@@ -64,7 +65,8 @@ def test_validate_none(test_ia):
 
 
 def test_validate_null(test_ia):
-    obs = test_ia.validate({'Secondary Energy': {'up': 10.0}}, exclude=True)
+    obs = test_ia.validate(
+        {'Secondary Energy': {'up': 0.1}}, passes=True, exclude=True)
     assert obs is None
 
     # make sure that the failed validation is NOT marked as excluded
@@ -72,25 +74,50 @@ def test_validate_null(test_ia):
 
 
 def test_validate_some(test_ia):
-    obs = test_ia.validate({'Primary Energy': {'up': 5.0}}, exclude=False)
-    assert obs is not None
+    obs = test_ia.validate(
+        {'Primary Energy': {'up': 5.0}}, passes=True, exclude=False)
+    assert len(obs) == 1
+
+    obs = test_ia.validate(
+        {'Primary Energy': {'up': 5.0}}, passes=False, exclude=False)
+    assert len(obs) == 3
 
     # make sure that the passed validation is NOT marked as excluded
     assert list(test_ia['exclude']) == [False]
 
 
+def test_validate_year(test_ia):
+    print(test_ia.data)
+    obs = test_ia.validate(
+        {'Primary Energy': {'up': 5.0, 'year': 2005}}, passes=True, exclude=False)
+    assert obs is None
+
+    obs = test_ia.validate(
+        {'Primary Energy': {'up': 5.0, 'year': 2010}}, passes=True, exclude=False)
+    assert len(obs) == 1
+
+
 def test_validate_exclude(test_ia):
-    df = test_ia
-    obs = df.validate(criteria='Secondary Energy', exclude=True)
+    print(test_ia['exclude'])
+    obs = test_ia.validate(
+        {'Primary Energy': {'up': 5.0}}, passes=True, exclude=True)
+    print(test_ia.data)
+    print(obs)
+    print(test_ia['exclude'])
+    assert False
+    # exp =
 
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
-    exp = pd.DataFrame(dct)[['model', 'scenario']]
-    npt.assert_array_equal(obs, exp)
+    # df = test_ia
+    # obs = df.validate(criteria='Secondary Energy', exclude=True)
 
-    exp['exclude'] = True
-    exp = exp.set_index(['model', 'scenario'])['exclude']
-    obs = test_ia['exclude']
-    pd.testing.assert_series_equal(obs, exp)
+    # dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
+    # exp = pd.DataFrame(dct)[['model', 'scenario']]
+    # npt.assert_array_equal(obs, exp)
+
+    # exp['exclude'] = True
+    # exp = exp.set_index(['model', 'scenario'])['exclude']
+    # obs = test_ia['exclude']
+    # pd.testing.assert_series_equal(obs, exp)
 
 
 def test_category_none(test_ia):

@@ -360,7 +360,7 @@ class IamDataFrame(object):
             otherwise, return datatframe of all failed checks
         """
         df = self.data
-        print(df)
+        # print(df)
 
         idxs = []
         for var, check in criteria.items():
@@ -369,8 +369,8 @@ class IamDataFrame(object):
             _df = df[df['variable'] == var]
             where_idx.append(set(_df.index))
             for check_type, val in check.items():
-                print('foo')
-                print(var, check_type, val)
+                # print('foo')
+                # print(var, check_type, val)
                 if check_type == 'up':
                     pass_idx.append(set(_df.index[_df['value'] <= val]))
                 elif check_type == 'lo':
@@ -389,8 +389,11 @@ class IamDataFrame(object):
             else:
                 idxs.append(tuple(where_idx - pass_idx))
 
-        idx = itertools.chain(idxs)
+        # print('bar')
+        idx = list(itertools.chain(*idxs))
+        # print(idx)
         idx = df.index.isin(idx) if passes else ~df.index.isin(idx)
+        # print(idx)
         df = df.loc[idx]
 
         if exclude:
