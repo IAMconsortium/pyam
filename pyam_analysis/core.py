@@ -201,14 +201,16 @@ class IamDataFrame(object):
         name: str
             category column name (if not given by data series/column name)
         """
-        if isinstance(meta, pd.Series):
-            meta = meta.to_frame(meta.name or name)
+        if not meta.index.names == mod_scen:
+            raise ValueError("illegal index '{}'!".format(meta.index.names))
 
         diff = meta.index.difference(self.meta.index)
         if not diff.empty:
-            raise ValueError('adding metadata for non-existing scenarios {}!'
+            raise ValueError("adding metadata for non-existing scenarios '{}'!"
                              .format(diff))
 
+        if isinstance(meta, pd.Series):
+            meta = meta.to_frame(meta.name or name)
         self.meta = meta.combine_first(self.meta)
 
     def categorize(self, name, value, criteria,
