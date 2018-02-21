@@ -83,13 +83,9 @@ class IamDataFrame(object):
             self.data = read_data(data, **kwargs)
 
         # define a dataframe for categorization and other meta-data
-        self._meta = return_index(self.data, mod_scen,
-                                  drop_duplicates=True)
-        self.reset_category(True)
-
-        # define a dictionary for category-color mapping
-        self.cat_color = {'uncategorized': 'white', 'exclude': 'black'}
-        self.col_count = 0
+        self.meta = return_index(self.data, mod_scen,
+                                 drop_duplicates=True)
+        self.reset_exclude()
 
     def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
@@ -107,7 +103,7 @@ class IamDataFrame(object):
 
         if isinstance(other, IamDataFrame):
             df = other.data
-            meta = other._meta
+            meta = other.meta
             # TODO merge other.cat_color
         else:
             if isinstance(other, pd.DataFrame):
@@ -123,7 +119,7 @@ class IamDataFrame(object):
             meta['category'] = 'uncategorized'
 
         # check that any model/scenario is not yet included in IamDataFrame
-        ret._meta = ret._meta.append(meta, verify_integrity=True)
+        ret.meta = ret.meta.append(meta, verify_integrity=True)
 
         # add new data
         ret.data = ret.data.append(df).reset_index(drop=True)
@@ -141,13 +137,10 @@ class IamDataFrame(object):
         """
         writer = pd.ExcelWriter(path)
         meta = self.metadata(display='df')
-        iam.utils.write_sheet(writer, 'categories', meta)
-        colors = pd.DataFrame({'category': list(self.cat_color.keys()),
-                               'color': list(self.cat_color.values())})
-        iam.utils.write_sheet(writer, 'categories_color', colors)
+        iam.utils.write_sheet(writer, 'metadata', meta)
         writer.save()
 
-    def load_metadata(self, path, *args):
+    def load_metadata(self, path, *args, **kwargs):
         """Load metadata from previously exported instance of pyam_analysis
 
         Parameters
@@ -159,7 +152,11 @@ class IamDataFrame(object):
         if not os.path.exists(path):
             raise ValueError("no metadata file '" + path + "' found!")
 
-        df = pd.read_excel(path, sheet_name='categories', *args)
+        if path.endswith('csv'):
+            df = pd.read_csv(path, *args, **kwargs)
+        else:
+            df = pd.read_excel(path, *args, **kwargs)
+
         req_cols = ['model', 'scenario', 'category']
         if not set(req_cols).issubset(set(df.columns)):
             e = "metadata file '{}' does not have required columns ({})!"
@@ -168,7 +165,7 @@ class IamDataFrame(object):
         df.set_index(mod_scen, inplace=True)
 
         # check for metadata import of entries not existing in the data
-        diff = df.index.difference(self._meta.index)
+        diff = df.index.difference(self.meta.index)
         if not diff.empty:
             w = 'failing to import {} metadata {} for non-existing scenario,' \
                 ' see list of dropped scenarios below'
@@ -178,21 +175,16 @@ class IamDataFrame(object):
             df.drop(diff, inplace=True)
 
         # replace imported metadata for existing entries
-        overlap = self._meta.index.intersection(df.index)
-        conflict = ~(self._meta.loc[overlap].category == 'uncategorized')
+        overlap = self.meta.index.intersection(df.index)
+        conflict = ~(self.meta.loc[overlap].category == 'uncategorized')
         count_conflict = sum(conflict)
         if count_conflict:
             w = 'overwriting {} metadata {}'
             e = 'entry' if count_conflict == 1 else 'entries'
             warnings.warn(w.format(count_conflict, e), Warning, stacklevel=0)
-        self._meta.drop(overlap, inplace=True)
+        self.meta.drop(overlap, inplace=True)
 
-        self._meta = self._meta.append(df)
-
-        colors = pd.read_excel(path, sheet_name='categories_color', *args)
-        for i in colors.index:
-            row = colors.iloc[i]
-            self.cat_color[row['category']] = row['color']
+        self.meta = self.meta.append(df)
 
         # display imported model/scenario metadata for nonexisting data
         if not diff.empty:
@@ -231,7 +223,7 @@ class IamDataFrame(object):
         """
         return list(self._select(filters, ['region']).region)
 
-    def variables(self, filters={}, include_units=False):
+    def variables(self, filters={}, units=False):
         """Get a list of variables filtered by specific characteristics
 
         Parameters
@@ -239,10 +231,10 @@ class IamDataFrame(object):
         filters: dict, optional
             filter by model, scenario, region, variable, level, year, category
             see function _select() for details
-        include_units: boolean, default False
+        units: boolean, default False
             include the units
         """
-        if include_units:
+        if units:
             x = self._select(filters, ['variable', 'unit'])
             x.sort_values(by='variable')
         else:
@@ -313,7 +305,7 @@ class IamDataFrame(object):
         """Returns a dataframe in the standard IAMC format
         """
         return self.data.pivot_table(index=iamc_idx_cols,
-                                   columns='year')['value']
+                                     columns='year')['value']
 
     def validate(self, criteria, filters={}, exclude_cat=['exclude'],
                  exclude=False, silent=False, display='heatmap'):
@@ -371,7 +363,7 @@ class IamDataFrame(object):
 
             if exclude:
                 idx = return_index(df, mod_scen)
-                self._meta.loc[idx, 'category'] = 'exclude'
+                self.meta.loc[idx, 'category'] = 'exclude'
                 msg += ", categorized as 'exclude' in metadata"
 
             if not silent:
@@ -390,17 +382,18 @@ class IamDataFrame(object):
         elif not silent:
             logger().info('{} scenarios satisfy the criteria'.format(count))
 
-    def category(self, name=None, criteria=None, filters={}, comment=None,
-                 assign=True, color=None, display=None):
+    def categorize(self, name, value, criteria, filters={},
+                   color=None, marker=None, linestyle=None):
         """Assign scenarios to a category according to specific criteria
         or display the category assignment
 
         Parameters
         ----------
-        name: str (optional)
-            category name - if None, return a dataframe or pivot table
-            of all categories mapped to models/scenarios
-        criteria: dict, default None
+        name: str
+            category column name
+        value: str
+            category identifier
+        criteria: dict
             dictionary with variables mapped to applicable checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         filters: dict, optional
@@ -408,85 +401,39 @@ class IamDataFrame(object):
             see function _select() for details
             filter by 'variable'/'year' is replaced by arguments of 'criteria'
             see function _check() for details
-        comment: str
-            a comment pertaining to the category
-        assign: boolean, default True
-            assign categorization to data (if false, display only)
         color: str
-            assign a color to this category
-        display: str or None, default None
-            display style of scenarios assigned to this category
-            (list, pivot, df - no display if None)
+            assign a color to this category for plotting
+        marker: str
+            assign a marker to this category for plotting
+        linestyle: str
+            assign a linestyle to this category for plotting
         """
-        # for returning a list or pivot table of all categories or one specific
-        if criteria is None:
-            cat = self._meta.reset_index()
-            if name:
-                cat = cat[cat.category == name]
-            for col, values in filters.items():
-                cat = cat[keep_col_match(cat[col], values)]
+        # find all data that matches categorization
+        cat_idx = self.meta.index
+        for var, check in criteria.items():
+            cat_idx = cat_idx.intersection(self._check(var, check,
+                                                       filters).index)
 
-            if display is not None:
-                if display == 'pivot':
-                    cat = cat.pivot(index='model', columns='scenario',
-                                    values='category')
-                    return cat.style.apply(color_by_cat,
-                                           cat_col=self.cat_color, axis=None)
-                else:
-                    return return_df(cat, display,
-                                     ['category', 'model', 'scenario'])
+        if len(cat_idx) == 0:
+            logger().info("No scenarios satisfy the criteria")
+            return
 
-        # when criteria are provided, use them to assign a new category
-        else:
-            # TODO clear out existing assignments to that category?
-            cat_idx = self._meta.index
-            if criteria:
-                for var, check in criteria.items():
-                    cat_idx = cat_idx.intersection(self._check(var, check,
-                                                               filters).index)
-            # if criteria is empty, use all scenarios that satisfy 'filters'
-            else:
-                filter_idx = self._select(filters, idx_cols=mod_scen).index
-                cat_idx = cat_idx.intersection(filter_idx)
+        # update metadata dataframe
+        self.meta.loc[cat_idx, name] = value
 
-            if len(cat_idx):
-                # assign selected model/scenario to internal category mapping
-                if assign:
-                    self._meta.loc[cat_idx, 'category'] = name
+        # add plotting run control
+        for kind, arg in [('color', color), ('marker', marker), ('linestyle', linestyle)]:
+            if arg:
+                plotting.run_control().update({kind: {name: {value: arg}}})
 
-                # assign a color to this category for pivot tables and plots
-                if color:
-                    self.cat_color[name] = color
-                elif name not in self.cat_color:
-                    self.cat_color[name] = sns.color_palette("hls",
-                                                             8)[self.col_count]
-                    self.col_count += 1
+        n = len(cat_idx)
+        s = 'scenario' if n == 1 else 'scenarios'
+        logger().info("{} {} categorized as '{}: {}'".format(n, s, name, value))
 
-                n = len(cat_idx)
-                s = 'scenario' if n == 1 else 'scenarios'
-                logger().info("{} {} categorized as '{}'".format(n, s, name))
-
-                # return the model/scenario as dataframe for visual output
-                if display:
-                    df = pd.DataFrame(index=cat_idx).reset_index()
-                    return return_df(df, display, mod_scen)
-            else:
-                logger().info("No scenarios satisfy the criteria")
-
-    def reset_category(self, reset_exclude=False):
-        """Reset category assignment for all scenarios to 'uncategorized'
-
-        Parameters
-        ----------
-        reset_exclude: boolean, default False
-            reset the category for scenarios marked 'exclude
+    def reset_exclude(self):
+        """Reset exclusion assignment for all scenarios to 'uncategorized'
         """
-        name = 'uncategorized'
-        if reset_exclude:
-            self._meta['category'] = name
-        else:
-            cat_idx = self._meta[self._meta['category'] != 'exclude'].index
-            self._meta.loc[cat_idx, 'category'] = name
+        self.meta['exclude'] = False
 
     def metadata(self, meta=None, name=None, filters={},
                  idx_cols=['model', 'scenario'],
@@ -517,11 +464,11 @@ class IamDataFrame(object):
                 for idx, val in series.iteritems():
                     if len(idx) > 2:
                         idx = idx[0:2]
-                    self._meta.loc[idx, name] = val
+                    self.meta.loc[idx, name] = val
 
         # otherwise, return metadata
         else:
-            meta = self._meta.reset_index()
+            meta = self.meta.reset_index()
             if exclude_cat is not None:
                 meta = meta[~meta['category'].isin(exclude_cat)]
             for col, values in filters.items():
@@ -620,8 +567,8 @@ class IamDataFrame(object):
         # filter by columns and list of values
         for col, values in filters.items():
             if col == 'category':
-                cat_idx = self._meta[keep_col_match(self._meta['category'],
-                                                    values)].index
+                cat_idx = self.meta[keep_col_match(self.meta['category'],
+                                                   values)].index
                 keep_col = return_index(self.data, mod_scen).isin(cat_idx)
 
             elif col in ['model', 'scenario', 'region']:
@@ -673,7 +620,7 @@ class IamDataFrame(object):
             pd.unique(list(zip(ret.data['model'], ret.data['scenario']))),
             names=('model', 'scenario')
         )
-        ret._meta = ret._meta.loc[idx]
+        ret.meta = ret.meta.loc[idx]
         if not inplace:
             return ret
 
@@ -708,7 +655,7 @@ class IamDataFrame(object):
         keep = self._filter_columns(filters)
 
         if exclude_cat is not None:
-            idx = self._meta[~self._meta['category'].isin(exclude_cat)].index
+            idx = self.meta[~self.meta['category'].isin(exclude_cat)].index
             keep &= return_index(self.data, mod_scen).isin(idx)
 
         df = self.data[keep].copy()

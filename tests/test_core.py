@@ -1,6 +1,6 @@
 import os
 
-from pyam_analysis import IamDataFrame
+from pyam_analysis import IamDataFrame, plotting
 from testing_utils import test_ia, here, data_path
 
 import pytest
@@ -32,7 +32,7 @@ def test_variable_unit(test_ia):
     dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
            'unit': ['EJ/y', 'EJ/y']}
     exp = pd.DataFrame.from_dict(dct)[['variable', 'unit']]
-    npt.assert_array_equal(test_ia.variables(include_units=True), exp)
+    npt.assert_array_equal(test_ia.variables(units=True), exp)
 
 
 def test_timeseries(test_ia):
@@ -78,7 +78,7 @@ def test_validate_exclude(test_ia):
 
 
 def test_category_none(test_ia):
-    test_ia.category('Testing', {'Primary Energy': {'up': 0.8}})
+    test_ia.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
     obs = test_ia.metadata('Testing')
     assert obs is None
 
@@ -87,17 +87,18 @@ def test_category_pass():
     df = IamDataFrame(data=data_path)
     dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
     exp = pd.DataFrame(dct)[['model', 'scenario']]
-    obs = df.category('Testing', {'Primary Energy': {'up': 10}},
-                      color='red')
+    obs = df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}},
+                        color='red')
     npt.assert_array_equal(obs, exp)
 
-    obs2 = df.metadta('Testing')
+    obs2 = df.metadata('Testing')
     npt.assert_array_equal(obs2[['model', 'scenario']], exp)
 
 
 def test_load_metadata(test_ia):
     with pytest.warns(Warning) as record:
-        test_ia.load_metadata(os.path.join(here, 'testing_metadata.xlsx'))
+        test_ia.load_metadata(os.path.join(
+            here, 'testing_metadata.xlsx'), sheet_name='metadata')
     assert len(record) == 1
     assert str(record[0].message) == 'overwriting 1 metadata entry'
 
@@ -106,9 +107,6 @@ def test_load_metadata(test_ia):
            'category': ['imported']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
     npt.assert_array_equal(obs, exp)
-
-    # test importing category color assignment
-    assert test_ia.cat_color['imported'] == 'red'
 
 
 def test_append():
