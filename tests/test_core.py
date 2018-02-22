@@ -13,7 +13,7 @@ def test_model(test_df):
 
 
 def test_scenario(test_df):
-    assert test_df['scenario'].unique() == ['test_scenario']
+    assert list(test_df['scenario'].unique() == ['test_scenario', 'test_scenario2'])
 
 
 def test_region(test_df):
@@ -44,7 +44,8 @@ def test_timeseries(test_df):
            'years': [2005, 2010], 'value': [1, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_df.filter({'variable': 'Primary Energy'}).timeseries()
+    obs = test_df.filter({'variable': 'Primary Energy',
+                          'scenario': 'test_scenario'}).timeseries()
     npt.assert_array_equal(obs, exp)
 
 
@@ -59,9 +60,9 @@ def test_validate_none(test_df):
     obs = test_df.validate(
         {'Primary Energy': {'up': 10}}, exclude=True)
     assert obs is None
-    assert len(test_df.data) == 4  # data unchanged
+    assert len(test_df.data) == 6  # data unchanged
 
-    assert list(test_df['exclude']) == [False]  # none excluded
+    assert list(test_df['exclude']) == [False, False]  # none excluded
 
 
 def test_validate_null(test_df):
@@ -70,13 +71,13 @@ def test_validate_null(test_df):
 
 
 def test_validate_up(test_df):
-    obs = test_df.validate({'Primary Energy': {'up': 5.0}}, exclude=False)
+    obs = test_df.validate({'Primary Energy': {'up': 6.5}}, exclude=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
 
 
 def test_validate_lo(test_df):
-    obs = test_df.validate({'Primary Energy': {'lo': 5.0}}, exclude=False)
+    obs = test_df.validate({'Primary Energy': {'lo': 2.0}}, exclude=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2005
 
@@ -88,37 +89,38 @@ def test_validate_year(test_df):
 
     obs = test_df.validate({'Primary Energy': {'up': 5.0, 'year': 2010}},
                            exclude=False)
-    assert len(obs) == 1
+    assert len(obs) == 2
 
 
 def test_validate_exclude(test_df):
-    obs = test_df.validate({'Primary Energy': {'up': 5.0}}, exclude=True)
-    assert list(test_df['exclude']) == [True]  # one scenario in dataset
+    obs = test_df.validate({'Primary Energy': {'up': 6.0}}, exclude=True)
+    assert list(test_df['exclude']) == [False, True]
 
 
 def test_validate_top_level(test_df):
     obs = validate(test_df,
                    filters={'variable': 'Primary Energy'},
-                   criteria={'Primary Energy': {'up': 5.0}},
+                   criteria={'Primary Energy': {'up': 6.0}},
                    exclude=True)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
-    assert list(test_df['exclude']) == [True]  # one scenario in dataset
+    assert list(test_df['exclude']) == [False, True]
 
 
 def test_category_none(test_df):
     test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
     obs = test_df['category'].values
-    exp = [None]
-    assert obs == exp
+    exp = [None, None]
+    assert list(obs) == exp
 
 
 def test_category_pass(test_df):
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
-           'category': ['Testing']}
+    dct = {'model': ['test_model', 'test_model'],
+           'scenario': ['test_scenario', 'test_scenario2'],
+           'category': ['Testing', 'None']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}})
+    test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 6}})
     obs = test_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
