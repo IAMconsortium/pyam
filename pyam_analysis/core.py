@@ -75,6 +75,9 @@ class IamDataFrame(object):
         else:
             return self.data.__getitem__(key)
 
+    def __len__(self):
+        return self.data.__len__()
+
     def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
 
@@ -191,70 +194,6 @@ class IamDataFrame(object):
         return self.data.pivot_table(index=IAMC_IDX,
                                      columns='year')['value']
 
-    def validate(self, criteria={}, filters={},
-                 exclude=False, silent=False):
-        """Run validation checks on timeseries data
-
-        Parameters
-        ----------
-        criteria: dict, optional
-            dictionary of variables mapped to a dictionary of checks
-            ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        filters: dict, optional
-            filter by model, scenario, region, variable, level, year, category
-            see function 'filter()' for details
-            filter by 'variable'/'year' is replaced by arguments of 'criteria'
-            see function _check() for details
-        exclude: bool, default False
-            models/scenarios failing the validation to be excluded from data
-        silent: bool, default False
-            if False, print a summary statement of validation
-        """
-        # get filtered data and meta-data
-        df = self.data[self._filter_columns(filters)]
-        idx = pd.MultiIndex.from_tuples(
-            pd.unique(list(zip(df['model'], df['scenario']))),
-            names=('model', 'scenario')
-        )
-        meta = self.meta.loc[idx].index
-        count = len(meta)
-
-        # if criteria is a string, check that each scenario has this variable
-        if isinstance(criteria, str):
-            data_filters = filters.copy()
-            data_filters.update({'variable': criteria})
-            idx = self.data[self._filter_columns(data_filters)]\
-                .set_index(MIN_IDX).index
-
-            df = pd.DataFrame(index=meta)
-            df['keep'] = True
-            if len(idx):
-                df.loc[idx, 'keep'] = False
-            df = df[df.keep].reset_index()[MIN_IDX]
-        # else, loop over dictionary and perform checks
-        else:
-            df = pd.DataFrame()
-            for var, check in criteria.items():
-                df = df.append(self._check(var, check,
-                                           filters, ret_true=False))
-        if len(df):
-            n = len(df)
-            s = 'scenario' if count == 1 else 'scenarios'
-            msg = '{} data points do not satisfy the criteria (out of {} {})'
-
-            if exclude:
-                idx = df[MIN_IDX].set_index(MIN_IDX).index
-                self.meta.loc[idx, 'exclude'] = True
-                msg += ", categorized as 'exclude' in metadata"
-
-            if not silent:
-                logger().info(msg.format(n, count, s))
-
-            return df
-
-        elif not silent:
-            logger().info('{} scenarios satisfy the criteria'.format(count))
-
     def categorize(self, name, value, criteria, filters={},
                    color=None, marker=None, linestyle=None):
         """Assign scenarios to a category according to specific criteria
@@ -347,7 +286,7 @@ class IamDataFrame(object):
         fill_values['year'] = year
         self.data = self.data.append(fill_values)
 
-    def validate(self, criteria={}, passes=True, exclude=False):
+    def validate(self, criteria={}, exclude=False):
         """Check which model/scenarios satisfy specific criteria
 
         Parameters
@@ -355,45 +294,32 @@ class IamDataFrame(object):
         criteria: dict
             dictionary with variable keys and check values
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        passes: bool, default True
-            if true, return models/scenarios passing the check;
-            otherwise, return datatframe of all failed checks
+        exclude: bool, default False
+            if true, exclude models and scenarios failing validation from further analysis
         """
         df = self.data
-        # print(df)
 
         idxs = []
         for var, check in criteria.items():
-            pass_idx = []
+            fail_idx = []
             where_idx = []
             _df = df[df['variable'] == var]
             where_idx.append(set(_df.index))
             for check_type, val in check.items():
-                # print('foo')
-                # print(var, check_type, val)
                 if check_type == 'up':
-                    pass_idx.append(set(_df.index[_df['value'] <= val]))
+                    fail_idx.append(set(_df.index[_df['value'] > val]))
                 elif check_type == 'lo':
-                    pass_idx.append(set(_df.index[_df['value'] > val]))
+                    fail_idx.append(set(_df.index[_df['value'] < val]))
                 elif check_type == 'year':
                     where_idx.append(set(_df.index[_df['year'] == val]))
                 else:
                     raise ValueError(
                         "Unknown checking type: {}".format(check_type))
             where_idx = set.intersection(*where_idx)
-            pass_idx = set.intersection(*pass_idx)
-            print(where_idx)
-            print(pass_idx)
-            if passes:
-                idxs.append(tuple(where_idx & pass_idx))
-            else:
-                idxs.append(tuple(where_idx - pass_idx))
+            fail_idx = set.intersection(*fail_idx)
+            idxs.append(tuple(where_idx & fail_idx))
 
-        # print('bar')
-        idx = list(itertools.chain(*idxs))
-        # print(idx)
-        idx = df.index.isin(idx) if passes else ~df.index.isin(idx)
-        # print(idx)
+        idx = df.index.isin(list(itertools.chain(*idxs)))
         df = df.loc[idx]
 
         if exclude:
@@ -546,3 +472,33 @@ class IamDataFrame(object):
         df = self.as_pandas(with_metadata=True)
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
         return ax
+
+
+def validate(df, filters={}, criteria={}, exclude=False):
+    """Run validation checks on timeseries data
+
+    Parameters
+    ----------
+    filters: dict, optional
+        filter by model, scenario, region, variable, level, year, category
+        see function 'filter()' for details
+        filter by 'variable'/'year' is replaced by arguments of 'criteria'
+        see function _check() for details
+    criteria: dict, optional
+        dictionary of variables mapped to a dictionary of checks
+        ('up' and 'lo' for respective bounds, 'year' for years - optional)
+    exclude: bool, default False
+        models/scenarios failing the validation to be excluded from data
+    """
+    fdf = df.filter(filters)
+    vdf = fdf.validate(criteria=criteria, exclude=exclude)
+    df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+
+    if vdf is not None:
+        msg = '{} of {} data points to not satisfy the criteria'
+        logger().info(msg.format(len(vdf), len(fdf)))
+
+        if fdf.meta['exclude'].any():
+            logger().info('Non-valid scenarios will be excluded')
+
+    return vdf

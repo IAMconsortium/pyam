@@ -1,50 +1,50 @@
 import os
 
-from pyam_analysis import IamDataFrame, plotting
-from testing_utils import test_ia, here, data_path
+from pyam_analysis import IamDataFrame, plotting, validate
+from testing_utils import test_df, here, data_path
 
 import pytest
 import pandas as pd
 from numpy import testing as npt
 
 
-def test_model(test_ia):
-    assert test_ia['model'].unique() == ['test_model']
+def test_model(test_df):
+    assert test_df['model'].unique() == ['test_model']
 
 
-def test_scenario(test_ia):
-    assert test_ia['scenario'].unique() == ['test_scenario']
+def test_scenario(test_df):
+    assert test_df['scenario'].unique() == ['test_scenario']
 
 
-def test_region(test_ia):
-    assert test_ia['region'].unique() == ['World']
+def test_region(test_df):
+    assert test_df['region'].unique() == ['World']
 
 
-def test_variable(test_ia):
-    assert list(test_ia['variable'].unique()) == ['Primary Energy',
+def test_variable(test_df):
+    assert list(test_df['variable'].unique()) == ['Primary Energy',
                                                   'Primary Energy|Coal']
 
 
-def test_variable_depth(test_ia):
-    obs = list(test_ia.filter({'level': 0})['variable'].unique())
+def test_variable_depth(test_df):
+    obs = list(test_df.filter({'level': 0})['variable'].unique())
     exp = ['Primary Energy']
     assert obs == exp
 
 
-def test_variable_unit(test_ia):
+def test_variable_unit(test_df):
     dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
            'unit': ['EJ/y', 'EJ/y']}
     cols = ['variable', 'unit']
     exp = pd.DataFrame.from_dict(dct)[cols]
-    npt.assert_array_equal(test_ia[cols].drop_duplicates(), exp)
+    npt.assert_array_equal(test_df[cols].drop_duplicates(), exp)
 
 
-def test_timeseries(test_ia):
+def test_timeseries(test_df):
     dct = {'model': ['test_model'] * 2, 'scenario': ['test_scenario'] * 2,
            'years': [2005, 2010], 'value': [1, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_ia.filter({'variable': 'Primary Energy'}).timeseries()
+    obs = test_df.filter({'variable': 'Primary Energy'}).timeseries()
     npt.assert_array_equal(obs, exp)
 
 
@@ -55,74 +55,61 @@ def test_read_pandas():
         'Primary Energy', 'Primary Energy|Coal']
 
 
-def test_validate_none(test_ia):
-    obs = test_ia.validate(
-        {'Primary Energy': {'up': 0.1}}, passes=True, exclude=True)
+def test_validate_none(test_df):
+    obs = test_df.validate(
+        {'Primary Energy': {'up': 10}}, exclude=True)
+    assert obs is None
+    assert len(test_df.data) == 4  # data unchanged
+
+    assert list(test_df['exclude']) == [False]  # none excluded
+
+
+def test_validate_null(test_df):
+    obs = test_df.validate({'Secondary Energy': {'up': 10}}, exclude=True)
     assert obs is None
 
-    # make sure that the passed validation is NOT marked as excluded
-    assert list(test_ia['exclude']) == [False]
 
-
-def test_validate_null(test_ia):
-    obs = test_ia.validate(
-        {'Secondary Energy': {'up': 0.1}}, passes=True, exclude=True)
-    assert obs is None
-
-    # make sure that the failed validation is NOT marked as excluded
-    assert list(test_ia['exclude']) == [False]
-
-
-def test_validate_some(test_ia):
-    obs = test_ia.validate(
-        {'Primary Energy': {'up': 5.0}}, passes=True, exclude=False)
+def test_validate_up(test_df):
+    obs = test_df.validate({'Primary Energy': {'up': 5.0}}, exclude=False)
     assert len(obs) == 1
-
-    obs = test_ia.validate(
-        {'Primary Energy': {'up': 5.0}}, passes=False, exclude=False)
-    assert len(obs) == 3
-
-    # make sure that the passed validation is NOT marked as excluded
-    assert list(test_ia['exclude']) == [False]
+    assert obs['year'].values[0] == 2010
 
 
-def test_validate_year(test_ia):
-    print(test_ia.data)
-    obs = test_ia.validate(
-        {'Primary Energy': {'up': 5.0, 'year': 2005}}, passes=True, exclude=False)
+def test_validate_lo(test_df):
+    obs = test_df.validate({'Primary Energy': {'lo': 5.0}}, exclude=False)
+    assert len(obs) == 1
+    assert obs['year'].values[0] == 2005
+
+
+def test_validate_year(test_df):
+    obs = test_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
+                           exclude=False)
     assert obs is None
 
-    obs = test_ia.validate(
-        {'Primary Energy': {'up': 5.0, 'year': 2010}}, passes=True, exclude=False)
+    obs = test_df.validate({'Primary Energy': {'up': 5.0, 'year': 2010}},
+                           exclude=False)
     assert len(obs) == 1
 
 
-def test_validate_exclude(test_ia):
-    print(test_ia['exclude'])
-    obs = test_ia.validate(
-        {'Primary Energy': {'up': 5.0}}, passes=True, exclude=True)
-    print(test_ia.data)
-    print(obs)
-    print(test_ia['exclude'])
-    assert False
-    # exp =
-
-    # df = test_ia
-    # obs = df.validate(criteria='Secondary Energy', exclude=True)
-
-    # dct = {'model': ['test_model'], 'scenario': ['test_scenario']}
-    # exp = pd.DataFrame(dct)[['model', 'scenario']]
-    # npt.assert_array_equal(obs, exp)
-
-    # exp['exclude'] = True
-    # exp = exp.set_index(['model', 'scenario'])['exclude']
-    # obs = test_ia['exclude']
-    # pd.testing.assert_series_equal(obs, exp)
+def test_validate_exclude(test_df):
+    print(test_df['exclude'])
+    obs = test_df.validate({'Primary Energy': {'up': 5.0}}, exclude=True)
+    assert list(test_df['exclude']) == [True]  # one scenario in dataset
 
 
-def test_category_none(test_ia):
-    test_ia.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
-    obs = test_ia['category'].values
+def test_validate_top_level(test_df):
+    obs = validate(test_df,
+                   filters={'variable': 'Primary Energy'},
+                   criteria={'Primary Energy': {'up': 5.0}},
+                   exclude=True)
+    assert len(obs) == 1
+    assert obs['year'].values[0] == 2010
+    assert list(test_df['exclude']) == [True]  # one scenario in dataset
+
+
+def test_category_none(test_df):
+    test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
+    obs = test_df['category'].values
     exp = [None]
     assert obs == exp
 
@@ -138,11 +125,11 @@ def test_category_pass():
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_load_metadata(test_ia):
-    test_ia.load_metadata(os.path.join(
+def test_load_metadata(test_df):
+    test_df.load_metadata(os.path.join(
         here, 'testing_metadata.xlsx'), sheet_name='metadata')
 
-    obs = test_ia.meta
+    obs = test_df.meta
     dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
            'category': ['imported']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
@@ -162,8 +149,8 @@ def test_append():
     npt.assert_array_equal(obs, exp)
 
 
-def test_append_duplicates(test_ia):
-    pytest.raises(ValueError, test_ia.append,
+def test_append_duplicates(test_df):
+    pytest.raises(ValueError, test_df.append,
                   other=os.path.join(here, 'testing_data.csv'))
 
 
