@@ -1,3 +1,4 @@
 model,scenario,region,variable,unit,2005,2010
 test_model,test_scenario,World,Primary Energy,EJ/y,1,6
 test_model,test_scenario,World,Primary Energy|Coal,EJ/y,0.5,3
+test_model,test_scenario2,World,Primary Energy,EJ/y,2,7
