@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Initial version based on
-https://github.com/iiasa/ceds_harmonization_analysis by Matt Gidden
-"""
-
 import copy
 import os
 import six
@@ -13,6 +7,11 @@ import itertools
 import numpy as np
 import pandas as pd
 
+try:
+    import ixmp
+    has_ix = True
+except ImportError:
+    has_ix = False
 
 from pyam_analysis.utils import (
     logger,
@@ -28,24 +27,13 @@ from pyam_analysis.utils import (
 from pyam_analysis.timeseries import fill_series
 from pyam_analysis import plotting
 
-try:
-    import seaborn as sns
-except ImportError:
-    pass
-
-try:
-    import ixmp
-    has_ix = True
-except ImportError:
-    has_ix = False
-
 
 class IamDataFrame(object):
-    """This class is a wrapper for dataframes
-    following the IAMC data convention.
-    It provides a number of diagnostic features
-    (including validation of values, completeness of variables provided)
-    as well as a number of visualization and plotting tools."""
+    """This class is a wrapper for dataframes following the IAMC data convention.
+    It provides a number of diagnostic features (including validation of values,
+    completeness of variables provided) as well as a number of visualization and
+    plotting tools.
+    """
 
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame
@@ -78,6 +66,10 @@ class IamDataFrame(object):
     def __len__(self):
         return self.data.__len__()
 
+    def head(self, *args, **kwargs):
+        """Identical to pd.DataFrame.head() operating on data"""
+        return self.data.head(*args, **kwargs)
+
     def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
 
@@ -103,43 +95,6 @@ class IamDataFrame(object):
 
         if not inplace:
             return ret
-
-    def export_metadata(self, path):
-        """Export metadata to Excel
-
-        Parameters
-        ----------
-        path:
-            path/filename for xlsx file of metadata export
-        """
-        writer = pd.ExcelWriter(path)
-        write_sheet(writer, 'metadata', self.meta)
-        writer.save()
-
-    def load_metadata(self, path, *args, **kwargs):
-        """Load metadata from previously exported instance of pyam_analysis
-
-        Parameters
-        ----------
-        path:
-            xlsx file with metadata exported from an instance of pyam_analysis
-        """
-
-        if not os.path.exists(path):
-            raise ValueError("no metadata file '" + path + "' found!")
-
-        if path.endswith('csv'):
-            df = pd.read_csv(path, *args, **kwargs)
-        else:
-            df = pd.read_excel(path, *args, **kwargs)
-
-        req_cols = ['model', 'scenario', 'exclude']
-        if not set(req_cols).issubset(set(df.columns)):
-            e = "metadata file '{}' does not have required columns ({})!"
-            raise ValueError(e.format(path, req_cols))
-
-        df.set_index(META_IDX, inplace=True)
-        self.meta = df.combine_first(self.meta)
 
     def pivot_table(self, index, columns, values='value',
                     aggfunc='count', fill_value=None, style=None):
@@ -188,34 +143,6 @@ class IamDataFrame(object):
                             aggfunc=aggfunc, fill_value=fill_value)
         return df
 
-    def timeseries(self):
-        """Returns a dataframe in the standard IAMC format
-        """
-        return self.data.pivot_table(index=IAMC_IDX,
-                                     columns='year')['value']
-
-    def reset_exclude(self):
-        """Reset exclusion assignment for all scenarios to 'uncategorized'
-        """
-        self.meta['exclude'] = False
-
-    def to_excel(self, excel_writer, sheet_name='data', index=False, **kwargs):
-        """Write timeseries data to Excel using the IAMC template convention
-        (wrapper for `pandas.DataFrame.to_excel()`)
-
-        Parameters
-        ----------
-        excel_writer: string or ExcelWriter object
-             file path or existing ExcelWriter
-        sheet_name: string, default 'data'
-            name of the sheet that will contain the (filtered) IamDataFrame
-        index: boolean, default False
-            write row names (index)
-        """
-        df = self.timeseries().reset_index()
-        df = df.rename(columns={c: str(c).title() for c in df.columns})
-        df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
-
     def interpolate(self, year):
         """Interpolate missing values in timeseries (linear interpolation)
 
@@ -234,6 +161,34 @@ class IamDataFrame(object):
         fill_values = fill_values.rename(columns={0: "value"})
         fill_values['year'] = year
         self.data = self.data.append(fill_values)
+
+    def as_pandas(self, with_metadata=False):
+        """Return this as a pd.DataFrame
+
+        Parameters
+        ----------
+        with_metadata : bool, default False
+           if True, join data with existing metadata
+        """
+        df = self.data
+        if with_metadata:
+            df = (df
+                  .set_index(META_IDX)
+                  .join(self.meta)
+                  .reset_index()
+                  )
+        return df
+
+    def timeseries(self):
+        """Returns a dataframe in the standard IAMC format
+        """
+        return self.data.pivot_table(index=IAMC_IDX,
+                                     columns='year')['value']
+
+    def reset_exclude(self):
+        """Reset exclusion assignment for all scenarios to 'uncategorized'
+        """
+        self.meta['exclude'] = False
 
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
@@ -261,6 +216,13 @@ class IamDataFrame(object):
                           ('linestyle', linestyle)]:
             if arg:
                 plotting.run_control().update({kind: {name: {value: arg}}})
+
+        if criteria == 'uncategorized':
+            self.meta[name].fillna(value, inplace=True)
+            msg = "{} of {} scenarios are uncategorized."
+            logger().info(msg.format(np.sum(self.meta[name] == value),
+                                     len(self.meta)))
+            return  # EXIT FUNCTION
 
         # find all data that matches categorization
         idx = _meta_idx(_apply_criteria(self.data, criteria, inclusive=True))
@@ -332,26 +294,59 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def head(self, *args, **kwargs):
-        """Identical to pd.DataFrame.head() operating on data"""
-        return self.data.head(*args, **kwargs)
-
-    def as_pandas(self, with_metadata=False):
-        """Return this as a pd.DataFrame
+    def to_excel(self, excel_writer, sheet_name='data', index=False, **kwargs):
+        """Write timeseries data to Excel using the IAMC template convention
+        (wrapper for `pandas.DataFrame.to_excel()`)
 
         Parameters
         ----------
-        with_metadata : bool, default False
-           if True, join data with existing metadata
+        excel_writer: string or ExcelWriter object
+             file path or existing ExcelWriter
+        sheet_name: string, default 'data'
+            name of the sheet that will contain the (filtered) IamDataFrame
+        index: boolean, default False
+            write row names (index)
         """
-        df = self.data
-        if with_metadata:
-            df = (df
-                  .set_index(META_IDX)
-                  .join(self.meta)
-                  .reset_index()
-                  )
-        return df
+        df = self.timeseries().reset_index()
+        df = df.rename(columns={c: str(c).title() for c in df.columns})
+        df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
+
+    def export_metadata(self, path):
+        """Export metadata to Excel
+
+        Parameters
+        ----------
+        path:
+            path/filename for xlsx file of metadata export
+        """
+        writer = pd.ExcelWriter(path)
+        write_sheet(writer, 'metadata', self.meta, index=True)
+        writer.save()
+
+    def load_metadata(self, path, *args, **kwargs):
+        """Load metadata from previously exported instance of pyam_analysis
+
+        Parameters
+        ----------
+        path:
+            xlsx file with metadata exported from an instance of pyam_analysis
+        """
+
+        if not os.path.exists(path):
+            raise ValueError("no metadata file '" + path + "' found!")
+
+        if path.endswith('csv'):
+            df = pd.read_csv(path, *args, **kwargs)
+        else:
+            df = pd.read_excel(path, *args, **kwargs)
+
+        req_cols = ['model', 'scenario', 'exclude']
+        if not set(req_cols).issubset(set(df.columns)):
+            e = "metadata file '{}' does not have required columns ({})!"
+            raise ValueError(e.format(path, req_cols))
+
+        df.set_index(META_IDX, inplace=True)
+        self.meta = df.combine_first(self.meta)
 
     def line_plot(self, *args, **kwargs):
         """Plot timeseries lines of existing data

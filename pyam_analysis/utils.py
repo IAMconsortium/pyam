@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import itertools
 import string
@@ -10,8 +8,14 @@ import re
 import numpy as np
 import pandas as pd
 
+try:
+    import seaborn as sns
+except ImportError:
+    pass
+
 _LOGGER = None
 
+# common indicies
 META_IDX = ['model', 'scenario']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 
