@@ -150,36 +150,60 @@ def test_load_metadata(test_df):
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
-def test_add_metadata_as_df(test_ia):
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
-           'meta_values': [0.3]}
-    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
-    test_ia.metadata(exp)
-    
-    obs = test_ia['meta_values']
-    pd.testing.assert_series_equal(obs['meta_values'], exp['meta_values']) 
+def test_add_metadata_as_named_series(test_df): 
+    idx = pd.MultiIndex(levels=[['test_model'], ['test_scenario']], 
+                        labels=[[0], [0]], names=['model', 'scenario']) 
+     
+    s = pd.Series(data=[0.3], index=idx)
+    s.name = 'meta_values'
+    test_df.metadata(s)
+
+    idx = pd.MultiIndex(levels=[['test_model'], 
+                                ['test_scenario', 'test_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+    exp = pd.Series(data=[0.3, None], index=idx)
+    exp.name = 'meta_values'
+
+    obs = test_df['meta_values']
+    pd.testing.assert_series_equal(obs, exp)
 
 
-def test_add_metadata_as_series(test_ia):
-    idx = pd.MultiIndex(levels=[['test_model'], ['test_scenario']],
-                        labels=[[0], [0]], names=['model', 'scenario'])
-
-    s = pd.Series([0.4], idx)
-    test_ia.metadata(s, 'meta_series')
-
-    exp = s.to_frame('meta_series')
-    obs = test_ia['meta_series']
-    print(exp)
-    print(obs)
-    pd.testing.assert_frame_equal(obs, exp)
-
-
-def test_add_metadata_fail(test_ia):
+def test_add_metadata_index_fail(test_df):
     idx = pd.MultiIndex(levels=[['test_model', 'fail_model'],
                                 ['test_scenario', 'fail_scenario']],
                         labels=[[0, 1], [0, 1]], names=['model', 'scenario'])
     s = pd.Series([0.4, 0.5], idx)
-    pytest.raises(ValueError, test_ia.metadata, s)
+    pytest.raises(ValueError, test_df.metadata, s)
+
+
+def test_add_metadata_as_series(test_df):
+    s = pd.Series([0.3, 0.4])
+    test_df.metadata(s, 'meta_series')
+
+    idx = pd.MultiIndex(levels=[['test_model'],
+                                ['test_scenario', 'test_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+
+    exp = pd.Series(data=[0.3, 0.4], index=idx)
+    exp.name = 'meta_series'
+
+    obs = test_df['meta_series']
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_add_metadata_as_int(test_df):
+    test_df.metadata(3.2, 'meta_int')
+
+    idx = pd.MultiIndex(levels=[['test_model'], 
+                                ['test_scenario', 'test_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+
+    exp = pd.Series(data=[3.2, 3.2], index=idx)
+    exp.name = 'meta_int'
+
+    obs = test_df['meta_int']
+    pd.testing.assert_series_equal(obs, exp)
+
 
 
 def test_append():
