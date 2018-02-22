@@ -317,10 +317,9 @@ class IamDataFrame(object):
                         "Unknown checking type: {}".format(check_type))
             where_idx = set.intersection(*where_idx)
             fail_idx = set.intersection(*fail_idx)
-            idxs.append(tuple(where_idx & fail_idx))
+            idxs.append(where_idx & fail_idx)
 
-        idx = df.index.isin(list(itertools.chain(*idxs)))
-        df = df.loc[idx]
+        df = df.loc[itertools.chain(*idxs)]
 
         if exclude:
             idx = df[MIN_IDX].set_index(MIN_IDX).index
