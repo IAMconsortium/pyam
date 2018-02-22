@@ -176,6 +176,8 @@ def pattern_match(data, strings, level=None):
             elif level[-1] == '+':
                 level = int(level[:-1])
                 find_depth = lambda x: level <= x
+            else:
+                raise ValueError('Unknown level type: {}'.format(level))
 
             # determine depth
             pipe = re.compile('\\|')

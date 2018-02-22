@@ -64,6 +64,10 @@ def test_variable_depth_1_plus(test_df):
     assert obs == exp
 
 
+def test_variable_depth_raises(test_df):
+    pytest.raises(ValueError, test_df.filter, {'level': '1/'})
+
+
 def test_variable_unit(test_df):
     dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
            'unit': ['EJ/y', 'EJ/y']}
