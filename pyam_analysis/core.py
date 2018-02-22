@@ -196,22 +196,27 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        meta: pandas.DataFrame or pandas.Series
-            adds columns to the metadata, index must be `['model', 'scenario']`
+        meta: pandas.Series, list, int or str
+            column to be added to metadata
+            (by `['model', 'scenario']` index if possible)
         name: str
-            category column name (if not given by data series/column name)
+            category column name (if not given by data series name)
         """
-        if not meta.index.names == mod_scen:
-            raise ValueError("illegal index '{}'!".format(meta.index.names))
-
-        diff = meta.index.difference(self.meta.index)
-        if not diff.empty:
-            raise ValueError("adding metadata for non-existing scenarios '{}'!"
-                             .format(diff))
+        if isinstance(meta, pd.Series) and \
+                meta.index.names == ['model', 'scenario']:
+            diff = meta.index.difference(self.meta.index)
+            if not diff.empty:
+                error = "adding metadata for non-existing scenarios '{}'!"
+                raise ValueError(error.format(diff))
+            meta = meta.to_frame(meta.name or name)
+            self.meta = meta.combine_first(self.meta)
+            return  # EXIT FUNCTION
 
         if isinstance(meta, pd.Series):
-            meta = meta.to_frame(meta.name or name)
-        self.meta = meta.combine_first(self.meta)
+            name = meta.name or name
+            meta = meta.tolist()
+
+        self.meta[name] = meta
 
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
