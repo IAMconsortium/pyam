@@ -126,12 +126,13 @@ def test_category_pass(test_df):
 
 
 def test_category_top_level(test_df):
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
-           'category': ['Testing']}
+    dct = {'model': ['test_model', 'test_model'],
+           'scenario': ['test_scenario', 'test_scenario2'],
+           'category': ['Testing', 'None']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     categorize(test_df, 'category', 'Testing',
-               criteria={'Primary Energy': {'up': 10}},
+               criteria={'Primary Energy': {'up': 6}},
                filters={'variable': 'Primary Energy'})
     obs = test_df['category']
     pd.testing.assert_series_equal(obs, exp)
