@@ -12,9 +12,8 @@ import pandas as pd
 
 _LOGGER = None
 
-MIN_IDX = ['model', 'scenario']
+META_IDX = ['model', 'scenario']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
-MAX_IDX = IAMC_IDX + ['year']
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(zip(range(0, 702),

@@ -22,7 +22,7 @@ from pyam_analysis.utils import (
     format_data,
     pattern_match,
     years_match,
-    MIN_IDX,
+    META_IDX,
     IAMC_IDX
 )
 from pyam_analysis.timeseries import fill_series
@@ -65,7 +65,7 @@ class IamDataFrame(object):
             self.data = read_file(data, **kwargs)
 
         # define a dataframe for categorization and other meta-data
-        self.meta = self.data[MIN_IDX].drop_duplicates().set_index(MIN_IDX)
+        self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
 
     def __getitem__(self, key):
@@ -138,7 +138,7 @@ class IamDataFrame(object):
             e = "metadata file '{}' does not have required columns ({})!"
             raise ValueError(e.format(path, req_cols))
 
-        df.set_index(MIN_IDX, inplace=True)
+        df.set_index(META_IDX, inplace=True)
         self.meta = df.combine_first(self.meta)
 
     def pivot_table(self, index, columns, values='value',
@@ -194,57 +194,6 @@ class IamDataFrame(object):
         return self.data.pivot_table(index=IAMC_IDX,
                                      columns='year')['value']
 
-    def categorize(self, name, value, criteria, filters={},
-                   color=None, marker=None, linestyle=None):
-        """Assign scenarios to a category according to specific criteria
-        or display the category assignment
-
-        Parameters
-        ----------
-        name: str
-            category column name
-        value: str
-            category identifier
-        criteria: dict
-            dictionary with variables mapped to applicable checks
-            ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        filters: dict, optional
-            filter by model, scenario, region, variable, level, year, category
-            see function 'filter()' for details
-            filter by 'variable'/'year' is replaced by arguments of 'criteria'
-            see function _check() for details
-        color: str
-            assign a color to this category for plotting
-        marker: str
-            assign a marker to this category for plotting
-        linestyle: str
-            assign a linestyle to this category for plotting
-        """
-        # find all data that matches categorization
-        cat_idx = self.meta.index
-        for var, check in criteria.items():
-            cat_idx = cat_idx.intersection(self._check(var, check,
-                                                       filters).index)
-
-        if len(cat_idx) == 0:
-            logger().info("No scenarios satisfy the criteria")
-            if name not in self.meta:
-                self.meta[name] = None
-            return
-
-        # update metadata dataframe
-        self.meta.loc[cat_idx, name] = value
-
-        # add plotting run control
-        for kind, arg in [('color', color), ('marker', marker),
-                          ('linestyle', linestyle)]:
-            if arg:
-                plotting.run_control().update({kind: {name: {value: arg}}})
-
-        n = len(cat_idx)
-        s = 'scenario' if n == 1 else 'scenarios'
-        logger().info("{} {} categorized as {} '{}'".format(n, s, name, value))
-
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to 'uncategorized'
         """
@@ -286,130 +235,71 @@ class IamDataFrame(object):
         fill_values['year'] = year
         self.data = self.data.append(fill_values)
 
+    def categorize(self, name, value, criteria,
+                   color=None, marker=None, linestyle=None):
+        """Assign scenarios to a category according to specific criteria
+        or display the category assignment
+
+        Parameters
+        ----------
+        name: str
+            category column name
+        value: str
+            category identifier
+        criteria: dict
+            dictionary with variables mapped to applicable checks
+            ('up' and 'lo' for respective bounds, 'year' for years - optional)
+        color: str
+            assign a color to this category for plotting
+        marker: str
+            assign a marker to this category for plotting
+        linestyle: str
+            assign a linestyle to this category for plotting
+        """
+        # add plotting run control
+        for kind, arg in [('color', color), ('marker', marker),
+                          ('linestyle', linestyle)]:
+            if arg:
+                plotting.run_control().update({kind: {name: {value: arg}}})
+
+        # find all data that matches categorization
+        idx = _meta_idx(_apply_criteria(self.data, criteria, inclusive=True))
+
+        # update metadata dataframe
+        if len(idx) == 0:
+            if name not in self.meta:
+                self.meta[name] = None
+            logger().info("No scenarios satisfy the criteria")
+        else:
+            self.meta.loc[idx, name] = value
+            msg = "{} scenario(s) categorized as {} '{}'"
+            logger().info(msg.format(len(idx), name, value))
+
     def validate(self, criteria={}, exclude=False):
         """Check which model/scenarios satisfy specific criteria
 
         Parameters
         ----------
         criteria: dict
-            dictionary with variable keys and check values
+           dictionary with variable keys and check values
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         exclude: bool, default False
             if true, exclude models and scenarios failing validation from further analysis
         """
-        df = self.data
-
-        idxs = []
-        for var, check in criteria.items():
-            fail_idx = []
-            where_idx = []
-            _df = df[df['variable'] == var]
-            where_idx.append(set(_df.index))
-            for check_type, val in check.items():
-                if check_type == 'up':
-                    fail_idx.append(set(_df.index[_df['value'] > val]))
-                elif check_type == 'lo':
-                    fail_idx.append(set(_df.index[_df['value'] < val]))
-                elif check_type == 'year':
-                    where_idx.append(set(_df.index[_df['year'] == val]))
-                else:
-                    raise ValueError(
-                        "Unknown checking type: {}".format(check_type))
-            where_idx = set.intersection(*where_idx)
-            fail_idx = set.intersection(*fail_idx)
-            idxs.append(where_idx & fail_idx)
-
-        df = df.loc[itertools.chain(*idxs)]
+        df = _apply_criteria(self.data, criteria, inclusive=False)
 
         if exclude:
-            idx = df[MIN_IDX].set_index(MIN_IDX).index
+            idx = _meta_idx(df)
             self.meta.loc[idx, 'exclude'] = True
 
         if not df.empty:
+            msg = '{} of {} data points to not satisfy the criteria'
+            logger().info(msg.format(len(df), len(self.data)))
+
+            if exclude and len(idx) > 0:
+                logger().info('Non-valid scenarios will be excluded')
+
             return df
-
-    def _filter_columns(self, filters):
-        keep = np.array([True] * len(self.data))
-
-        # filter by columns and list of values
-        for col, values in filters.items():
-            if col in self.meta.columns:
-                matches = pattern_match(self.meta[col], values)
-                cat_idx = self.meta[matches].index
-                keep_col = self.data[MIN_IDX].set_index(
-                    MIN_IDX).index.isin(cat_idx)
-
-            elif col in ['model', 'scenario', 'region']:
-                keep_col = pattern_match(self.data[col], values)
-
-            elif col == 'variable':
-                level = filters['level'] if 'level' in filters.keys() else None
-                keep_col = pattern_match(self.data[col], values, True, level)
-
-            elif col in ['year']:
-                keep_col = years_match(self.data[col], values)
-
-            elif col in ['level']:
-                if 'variable' not in filters.keys():
-                    keep_col = pattern_match(self.data['variable'], '*',
-                                             pseudo_regex=True, level=values)
-                else:
-                    continue
-            else:
-                raise SystemError(
-                    'filter by column ' + col + ' not supported')
-            keep = keep & keep_col
-        return keep
-
-    def _check(self, variable, check, filters={}, ret_true=True):
-        """Check which model/scenarios satisfy specific criteria
-
-        Parameters
-        ----------
-        variable: str
-            variable to be checked
-        check: dict
-            dictionary with checks
-            ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        filters: dict, optional
-            filter by model, scenario, region, variable, level, year, category
-            see function 'filter()' for details
-            filter by 'variable'/'year' are replaced by arguments of 'check'
-        ret_true: bool, default True
-            if true, return models/scenarios passing the check;
-            otherwise, return datatframe of all failed checks
-        """
-        if not filters:
-            filters = {}
-        if 'year' in check:
-            filters['year'] = check['year']
-        filters['variable'] = variable
-        df = self.data[self._filter_columns(filters)]
-
-        is_true = np.array([True] * len(df.value))
-
-        for check_type, val in check.items():
-            if check_type == 'up':
-                is_true = is_true & (df.value <= val)
-
-            if check_type == 'lo':
-                is_true = is_true & (df.value > val)
-
-        if ret_true:
-            # if assessing a criteria for one year only
-            if ('year' in check) and isinstance(check['year'], int):
-                return df.loc[is_true, ['model', 'scenario', 'year']]\
-                    .drop_duplicates()\
-                    .set_index(MIN_IDX)
-            # if more than one year is filtered for, ensure that
-            # the criteria are satisfied in every year
-            else:
-                num_yr = len(df.year.drop_duplicates())
-                df_agg = df.loc[is_true, ['model', 'scenario', 'year']]\
-                    .groupby(MIN_IDX).count()
-                return pd.DataFrame(index=df_agg[df_agg.year == num_yr].index)
-        else:
-            return df[~is_true]
 
     def filter(self, filters, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
@@ -430,7 +320,7 @@ class IamDataFrame(object):
         inplace : bool, default False
             if True, do operation inplace and return None
         """
-        keep = self._filter_columns(filters)
+        keep = _apply_filters(self.data, self.meta, filters)
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[keep]
 
@@ -457,7 +347,7 @@ class IamDataFrame(object):
         df = self.data
         if with_metadata:
             df = (df
-                  .set_index(['model', 'scenario'])
+                  .set_index(META_IDX)
                   .join(self.meta)
                   .reset_index()
                   )
@@ -473,31 +363,111 @@ class IamDataFrame(object):
         return ax
 
 
-def validate(df, filters={}, criteria={}, exclude=False):
+def _meta_idx(data):
+    return data[META_IDX].set_index(META_IDX).index
+
+
+def _apply_filters(data, meta, filters):
+    keep = np.array([True] * len(data))
+
+    # filter by columns and list of values
+    for col, values in filters.items():
+        if col in meta.columns:
+            matches = pattern_match(meta[col], values)
+            cat_idx = meta[matches].index
+            keep_col = data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
+
+        elif col in ['model', 'scenario', 'region']:
+            keep_col = pattern_match(data[col], values)
+
+        elif col == 'variable':
+            level = filters['level'] if 'level' in filters.keys() else None
+            keep_col = pattern_match(data[col], values, True, level)
+
+        elif col in ['year']:
+            keep_col = years_match(data[col], values)
+
+        elif col in ['level']:
+            if 'variable' not in filters.keys():
+                keep_col = pattern_match(data['variable'], '*',
+                                         pseudo_regex=True, level=values)
+            else:
+                continue
+        else:
+            raise SystemError(
+                'filter by column ' + col + ' not supported')
+        keep = keep & keep_col
+    return keep
+
+
+def _apply_criteria(df, criteria, inclusive=True):
+    idxs = []
+    for var, check in criteria.items():
+        fail_idx = []
+        where_idx = []
+        _df = df[df['variable'] == var]
+        where_idx.append(set(_df.index))
+        up_op = _df['value'].__lt__ if inclusive else _df['value'].__gt__
+        lo_op = _df['value'].__gt__ if inclusive else _df['value'].__lt__
+        for check_type, val in check.items():
+            if check_type == 'up':
+                fail_idx.append(set(_df.index[up_op(val)]))
+            elif check_type == 'lo':
+                fail_idx.append(set(_df.index[lo_op(val)]))
+            elif check_type == 'year':
+                where_idx.append(set(_df.index[_df['year'] == val]))
+            else:
+                raise ValueError(
+                    "Unknown checking type: {}".format(check_type))
+        where_idx = set.intersection(*where_idx)
+        fail_idx = set.intersection(*fail_idx)
+        idxs.append(where_idx & fail_idx)
+
+    df = df.loc[itertools.chain(*idxs)]
+
+    return df
+
+
+def validate(df, *args, **kwargs):
     """Run validation checks on timeseries data
 
     Parameters
     ----------
+    df: IamDataFrame instance
+    args and kwargs: see IamDataFrame.validate() for details
     filters: dict, optional
         filter by model, scenario, region, variable, level, year, category
         see function 'filter()' for details
         filter by 'variable'/'year' is replaced by arguments of 'criteria'
-        see function _check() for details
-    criteria: dict, optional
-        dictionary of variables mapped to a dictionary of checks
-        ('up' and 'lo' for respective bounds, 'year' for years - optional)
-    exclude: bool, default False
-        models/scenarios failing the validation to be excluded from data
+        see function IamDataFrame.filter() for details
     """
+    filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
-    vdf = fdf.validate(criteria=criteria, exclude=exclude)
+    vdf = fdf.validate(*args, **kwargs)
     df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
-
-    if vdf is not None:
-        msg = '{} of {} data points to not satisfy the criteria'
-        logger().info(msg.format(len(vdf), len(fdf)))
-
-        if fdf.meta['exclude'].any():
-            logger().info('Non-valid scenarios will be excluded')
-
     return vdf
+
+
+def categorize(df, *args, **kwargs):
+    """Run validation checks on timeseries data
+
+    Parameters
+    ----------
+    df: IamDataFrame instance
+    args and kwargs: see IamDataFrame.categorize() for details
+    filters: dict, optional
+        filter by model, scenario, region, variable, level, year, category
+        see function 'filter()' for details
+        filter by 'variable'/'year' is replaced by arguments of 'criteria'
+        see function IamDataFrame.filter() for details
+    """
+    filters = kwargs.pop('filters', {})
+    fdf = df.filter(filters)
+    fdf.categorize(*args, **kwargs)
+
+    # update metadata
+    name = args[0]
+    if name in df.meta:
+        df.meta[name].update(fdf.meta[name])
+    else:
+        df.meta[name] = fdf.meta[name]

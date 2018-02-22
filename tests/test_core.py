@@ -1,6 +1,6 @@
 import os
 
-from pyam_analysis import IamDataFrame, plotting, validate
+from pyam_analysis import IamDataFrame, plotting, validate, categorize
 from testing_utils import test_df, here, data_path
 
 import pytest
@@ -92,7 +92,6 @@ def test_validate_year(test_df):
 
 
 def test_validate_exclude(test_df):
-    print(test_df['exclude'])
     obs = test_df.validate({'Primary Energy': {'up': 5.0}}, exclude=True)
     assert list(test_df['exclude']) == [True]  # one scenario in dataset
 
@@ -114,14 +113,25 @@ def test_category_none(test_df):
     assert obs == exp
 
 
-def test_category_pass():
-    df = IamDataFrame(data=data_path)
+def test_category_pass(test_df):
     dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
            'category': ['Testing']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}})
-    obs = df['category']
+    test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}})
+    obs = test_df['category']
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_category_top_level(test_df):
+    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
+           'category': ['Testing']}
+    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
+
+    categorize(test_df, 'category', 'Testing',
+               criteria={'Primary Energy': {'up': 10}},
+               filters={'variable': 'Primary Energy'})
+    obs = test_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
 
