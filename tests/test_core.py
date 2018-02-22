@@ -138,13 +138,14 @@ def test_category_top_level(test_df):
 
 
 def test_load_metadata(test_df):
+    dct = {'model': ['test_model'] * 2,
+           'scenario': ['test_scenario', 'test_scenario2'],
+           'category': ['imported', None]}
+    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
+
     test_df.load_metadata(os.path.join(
         here, 'testing_metadata.xlsx'), sheet_name='metadata')
-
-    obs = test_df.meta
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
-           'category': ['imported']}
-    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
+    obs = test_df.meta    
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
@@ -153,11 +154,11 @@ def test_append():
     df2 = df.append(other=os.path.join(here, 'testing_data_2.csv'))
 
     obs = df['scenario'].unique()
-    exp = ['test_scenario']
+    exp = ['test_scenario', 'test_scenario2']
     npt.assert_array_equal(obs, exp)
 
     obs = df2['scenario'].unique()
-    exp = ['test_scenario', 'append_scenario']
+    exp = ['test_scenario', 'test_scenario2', 'append_scenario']
     npt.assert_array_equal(obs, exp)
 
 
@@ -169,8 +170,10 @@ def test_append_duplicates(test_df):
 def test_interpolate():
     df = IamDataFrame(data=data_path)
     df.interpolate(2007)
-    dct = {'model': ['test_model'] * 3, 'scenario': ['test_scenario'] * 3,
-           'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
+    dct = {'model': ['test_model'] * 6, 
+           'scenario': ['test_scenario'] * 3 + ['test_scenario2'] * 3,
+           'years': [2005, 2007, 2010, 2005, 2007, 2010], 
+           'value': [1, 3, 6, 2, 4, 7]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
     obs = df.filter({'variable': 'Primary Energy'}).timeseries()
