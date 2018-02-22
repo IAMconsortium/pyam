@@ -167,9 +167,20 @@ def pattern_match(data, strings, level=None):
         subset = filter(pattern.match, data)
         # check for depth by counting '|' after excluding the filter string
         if level is not None:
+            # determine function for finding depth level =, >=, <= |s
+            if not isinstance(level, six.string_types):
+                find_depth = lambda x: level == x
+            elif level[-1] == '-':
+                level = int(level[:-1])
+                find_depth = lambda x: level >= x
+            elif level[-1] == '+':
+                level = int(level[:-1])
+                find_depth = lambda x: level <= x
+
+            # determine depth
             pipe = re.compile('\\|')
             regexp = str(s).replace('*', '')
-            depth = [len(pipe.findall(c.replace(regexp, ''))) <= level
+            depth = [find_depth(len(pipe.findall(c.replace(regexp, ''))))
                      for c in data]
             matches = matches | (data.isin(subset) & depth)
         else:
