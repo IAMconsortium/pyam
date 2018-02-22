@@ -225,7 +225,7 @@ class IamDataFrame(object):
             return  # EXIT FUNCTION
 
         # find all data that matches categorization
-        idx = _meta_idx(_apply_criteria(self.data, criteria, inclusive=True))
+        idx = _meta_idx(_apply_criteria(self.data, criteria, in_range=True))
 
         # update metadata dataframe
         if len(idx) == 0:
@@ -248,7 +248,7 @@ class IamDataFrame(object):
         exclude: bool, default False
             if true, exclude models and scenarios failing validation from further analysis
         """
-        df = _apply_criteria(self.data, criteria, inclusive=False)
+        df = _apply_criteria(self.data, criteria, in_range=False)
 
         if exclude:
             idx = _meta_idx(df)
@@ -395,15 +395,15 @@ def _apply_filters(data, meta, filters):
     return keep
 
 
-def _apply_criteria(df, criteria, inclusive=True):
+def _apply_criteria(df, criteria, in_range=True):
     idxs = []
     for var, check in criteria.items():
         fail_idx = []
         where_idx = []
         _df = df[df['variable'] == var]
         where_idx.append(set(_df.index))
-        up_op = _df['value'].__lt__ if inclusive else _df['value'].__gt__
-        lo_op = _df['value'].__gt__ if inclusive else _df['value'].__lt__
+        up_op = _df['value'].__le__ if in_range else _df['value'].__gt__
+        lo_op = _df['value'].__ge__ if in_range else _df['value'].__lt__
         for check_type, val in check.items():
             if check_type == 'up':
                 fail_idx.append(set(_df.index[up_op(val)]))
