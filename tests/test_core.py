@@ -7,7 +7,7 @@ from numpy import testing as npt
 
 from pyam_analysis import IamDataFrame, plotting, validate, categorize
 
-from testing_utils import here, test_df, TEST_DF
+from testing_utils import here, meta_df, test_df, TEST_DF
 
 
 def test_model(test_df):
@@ -172,3 +172,58 @@ def test_interpolate(test_df):
                                         columns=['years'], values='value')
     obs = test_df.filter({'variable': 'Primary Energy'}).timeseries()
     npt.assert_array_equal(obs, exp)
+
+
+def test_add_metadata_as_named_series(meta_df):
+    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario']],
+                        labels=[[0], [0]], names=['model', 'scenario'])
+
+    s = pd.Series(data=[0.3], index=idx)
+    s.name = 'meta_values'
+    meta_df.metadata(s)
+
+    idx = pd.MultiIndex(levels=[['a_model'],
+                                ['a_scenario', 'a_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+    exp = pd.Series(data=[0.3, None], index=idx)
+    exp.name = 'meta_values'
+
+    obs = meta_df['meta_values']
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_add_metadata_index_fail(meta_df):
+    idx = pd.MultiIndex(levels=[['a_model', 'fail_model'],
+                                ['a_scenario', 'fail_scenario']],
+                        labels=[[0, 1], [0, 1]], names=['model', 'scenario'])
+    s = pd.Series([0.4, 0.5], idx)
+    pytest.raises(ValueError, meta_df.metadata, s)
+
+
+def test_add_metadata_as_series(meta_df):
+    s = pd.Series([0.3, 0.4])
+    meta_df.metadata(s, 'meta_series')
+
+    idx = pd.MultiIndex(levels=[['a_model'],
+                                ['a_scenario', 'a_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+
+    exp = pd.Series(data=[0.3, 0.4], index=idx)
+    exp.name = 'meta_series'
+
+    obs = meta_df['meta_series']
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_add_metadata_as_int(meta_df):
+    meta_df.metadata(3.2, 'meta_int')
+
+    idx = pd.MultiIndex(levels=[['a_model'],
+                                ['a_scenario', 'a_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+
+    exp = pd.Series(data=[3.2, 3.2], index=idx)
+    exp.name = 'meta_int'
+
+    obs = meta_df['meta_int']
+    pd.testing.assert_series_equal(obs, exp)

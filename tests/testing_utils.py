@@ -23,6 +23,12 @@ def test_df():
     df = IamDataFrame(data=TEST_DF.iloc[:2])
     yield df
 
+
+@pytest.fixture(scope="function")
+def meta_df():
+    df = IamDataFrame(data=TEST_DF)
+    yield df
+
 PLOT_DF = pd.DataFrame([
     ['a_model', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 1, 6, 10],
     ['a_model', 'a_scenario', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3, 4],
