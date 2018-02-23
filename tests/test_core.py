@@ -1,19 +1,21 @@
 import os
-
-from pyam_analysis import IamDataFrame, plotting, validate, categorize
-from testing_utils import test_df, here, data_path
-
+import copy
 import pytest
+
 import pandas as pd
 from numpy import testing as npt
 
+from pyam_analysis import IamDataFrame, plotting, validate, categorize
+
+from testing_utils import here, test_df, TEST_DF
+
 
 def test_model(test_df):
-    assert test_df['model'].unique() == ['test_model']
+    assert test_df['model'].unique() == ['a_model']
 
 
 def test_scenario(test_df):
-    assert test_df['scenario'].unique() == ['test_scenario']
+    assert test_df['scenario'].unique() == ['a_scenario']
 
 
 def test_region(test_df):
@@ -40,7 +42,7 @@ def test_variable_unit(test_df):
 
 
 def test_timeseries(test_df):
-    dct = {'model': ['test_model'] * 2, 'scenario': ['test_scenario'] * 2,
+    dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario'] * 2,
            'years': [2005, 2010], 'value': [1, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
@@ -49,8 +51,7 @@ def test_timeseries(test_df):
 
 
 def test_read_pandas():
-    df = pd.read_csv(data_path)
-    ia = IamDataFrame(df)
+    ia = IamDataFrame(TEST_DF)
     assert list(ia['variable'].unique()) == [
         'Primary Energy', 'Primary Energy|Coal']
 
@@ -114,7 +115,7 @@ def test_category_none(test_df):
 
 
 def test_category_pass(test_df):
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
+    dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
            'category': ['Testing']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
@@ -124,7 +125,7 @@ def test_category_pass(test_df):
 
 
 def test_category_top_level(test_df):
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
+    dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
            'category': ['Testing']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
@@ -140,36 +141,34 @@ def test_load_metadata(test_df):
         here, 'testing_metadata.xlsx'), sheet_name='metadata')
 
     obs = test_df.meta
-    dct = {'model': ['test_model'], 'scenario': ['test_scenario'],
+    dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
            'category': ['imported']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
-def test_append():
-    df = IamDataFrame(data=data_path)
-    df2 = df.append(other=os.path.join(here, 'testing_data_2.csv'))
+def test_append(test_df):
+    df2 = test_df.append(other=os.path.join(here, 'testing_data_2.csv'))
 
-    obs = df['scenario'].unique()
-    exp = ['test_scenario']
+    obs = test_df['scenario'].unique()
+    exp = ['a_scenario']
     npt.assert_array_equal(obs, exp)
 
     obs = df2['scenario'].unique()
-    exp = ['test_scenario', 'append_scenario']
+    exp = ['a_scenario', 'append_scenario']
     npt.assert_array_equal(obs, exp)
 
 
 def test_append_duplicates(test_df):
-    pytest.raises(ValueError, test_df.append,
-                  other=os.path.join(here, 'testing_data.csv'))
+    other = copy.deepcopy(test_df)
+    pytest.raises(ValueError, test_df.append, other=other)
 
 
-def test_interpolate():
-    df = IamDataFrame(data=data_path)
-    df.interpolate(2007)
-    dct = {'model': ['test_model'] * 3, 'scenario': ['test_scenario'] * 3,
+def test_interpolate(test_df):
+    test_df.interpolate(2007)
+    dct = {'model': ['a_model'] * 3, 'scenario': ['a_scenario'] * 3,
            'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = df.filter({'variable': 'Primary Energy'}).timeseries()
+    obs = test_df.filter({'variable': 'Primary Energy'}).timeseries()
     npt.assert_array_equal(obs, exp)
