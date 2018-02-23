@@ -425,6 +425,22 @@ def _apply_filters(data, meta, filters):
 
 
 def _check_rows(rows, check, in_range=True, return_test=None):
+    """Check all rows to be in/out of a certain range and provide testing on return
+    values based on provided conditions
+
+    Parameters
+    ----------
+    rows: pd.DataFrame
+        data rows
+    check: dict
+        dictionary with possible values of "up", "lo", and "year"
+    in_range: bool, optional
+        check if values are inside or outside of provided range
+    return_test: str, optional
+        possible values:
+            - None: default, return all instances where checks pass
+            - equality: test if all values match checks, if not, return empty set
+    """
     check_idx = []
     where_idx = [set(rows.index)]
     up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
@@ -454,6 +470,7 @@ def _check_rows(rows, check, in_range=True, return_test=None):
 
 
 def _apply_criteria(df, criteria, **kwargs):
+    """Apply criteria individually to every model/scenario instance"""
     idxs = []
     for var, check in criteria.items():
         _df = df[df['variable'] == var]
