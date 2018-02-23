@@ -252,8 +252,9 @@ class IamDataFrame(object):
             return  # EXIT FUNCTION
 
         # find all data that matches categorization
-        idx = _meta_idx(_apply_criteria(
-            self.data, criteria, in_range=True, foo=False))
+        rows = _apply_criteria(self.data, criteria,
+                               in_range=True, return_test='equality')
+        idx = _meta_idx(rows)
 
         # update metadata dataframe
         if name not in self.meta:
@@ -276,7 +277,7 @@ class IamDataFrame(object):
         exclude: bool, default False
             if true, exclude models and scenarios failing validation from further analysis
         """
-        df = _apply_criteria(self.data, criteria, in_range=False, foo=True)
+        df = _apply_criteria(self.data, criteria, in_range=False)
 
         if exclude:
             idx = _meta_idx(df)
@@ -423,11 +424,12 @@ def _apply_filters(data, meta, filters):
     return keep
 
 
-def _check_rows(rows, check, in_range, foo):
+def _check_rows(rows, check, in_range=True, return_test=None):
     check_idx = []
     where_idx = [set(rows.index)]
     up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
     lo_op = rows['value'].__ge__ if in_range else rows['value'].__lt__
+
     for check_type, val in check.items():
         if check_type == 'up':
             check_idx.append(set(rows.index[up_op(val)]))
@@ -438,33 +440,27 @@ def _check_rows(rows, check, in_range, foo):
         else:
             raise ValueError(
                 "Unknown checking type: {}".format(check_type))
+
     where_idx = set.intersection(*where_idx)
     check_idx = set.intersection(*check_idx)
 
-    print(where_idx)
-    print(check_idx)
-    print(foo)
-    # print(where_idx - check_idx)
-
-    if foo:
+    if return_test is None:
         ret = where_idx & check_idx
+    elif return_test == 'equality':
+        ret = where_idx if where_idx == check_idx else set()
     else:
-        ret = where_idx if len(where_idx - check_idx) == 0 else set()
-    print(ret)
+        raise ValueError('Unknown return test: {}'.format(return_test))
     return ret
 
 
-def _apply_criteria(df, criteria, in_range=True, foo=True):
+def _apply_criteria(df, criteria, **kwargs):
     idxs = []
     for var, check in criteria.items():
         _df = df[df['variable'] == var]
-        for group in _df.groupby(['model', 'scenario']):
-            print('foo')
-            print(group[-1])
-            idxs.append(_check_rows(group[-1], check, in_range, foo=foo))
-
+        for group in _df.groupby(META_IDX):
+            grp_idxs = _check_rows(group[-1], check, **kwargs)
+            idxs.append(grp_idxs)
     df = df.loc[itertools.chain(*idxs)]
-
     return df
 
 
