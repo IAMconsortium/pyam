@@ -17,7 +17,7 @@ from pyam_analysis.utils import (
     logger,
     write_sheet,
     read_ix,
-    read_file,
+    read_files,
     format_data,
     pattern_match,
     years_match,
@@ -50,7 +50,7 @@ class IamDataFrame(object):
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             self.data = read_ix(data, **kwargs)
         else:
-            self.data = read_file(data, **kwargs)
+            self.data = read_files(data, **kwargs)
 
         # define a dataframe for categorization and other meta-data
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
