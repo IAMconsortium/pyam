@@ -243,9 +243,10 @@ def line_plot(df, x='year', y='value', ax=None, legend=False,
             if kind in props:
                 label = col[prop_idx[kind]]
                 pargs[key] = props[kind][label]
-                labels.append(label)
+                labels.append(repr(label).strip("'"))
             else:
                 pargs[key] = var
+
         legend_data.append(' '.join(labels))
         kwargs.update(pargs)
         data.plot(ax=ax, **kwargs)

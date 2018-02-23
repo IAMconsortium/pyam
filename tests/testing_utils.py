@@ -10,12 +10,12 @@ IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
 
 
 @pytest.fixture(scope="session")
-def test_ia():
+def test_df():
     df = IamDataFrame(data=data_path)
     yield df
 
 
 @pytest.fixture(scope="session")
-def plot_idf():
+def plot_df():
     df = IamDataFrame(data=plot_path)
     yield df
