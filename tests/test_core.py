@@ -2,6 +2,7 @@ import os
 import copy
 import pytest
 
+import numpy as np
 import pandas as pd
 from numpy import testing as npt
 
@@ -106,32 +107,66 @@ def test_validate_top_level(meta_df):
     assert list(meta_df['exclude']) == [False, True]
 
 
-def test_category_none(test_df):
-    test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
-    obs = test_df['category'].values
-    exp = [None]
-    assert obs == exp
+# def test_category_none(test_df):
+#     test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
+#     obs = test_df['category'].values
+#     exp = [None]
+#     assert obs == exp
 
 
-def test_category_pass(test_df):
-    dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
-           'category': ['Testing']}
+# def test_category_pass(test_df):
+#     dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
+#            'category': ['Testing']}
+#     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
+
+#     test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}})
+#     obs = test_df['category']
+#     pd.testing.assert_series_equal(obs, exp)
+
+
+# def test_category_top_level(test_df):
+#     dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
+#            'category': ['Testing']}
+#     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
+
+#     categorize(test_df, 'category', 'Testing',
+#                criteria={'Primary Energy': {'up': 10}},
+#                filters={'variable': 'Primary Energy'})
+#     obs = test_df['category']
+#     pd.testing.assert_series_equal(obs, exp)
+
+
+def test_category_none(meta_df):
+    meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
+    obs = meta_df['category'].values
+    # exp = [np.nan, np.nan]
+    # assert list(obs) == exp
+    assert np.isnan(obs).all()
+
+
+def test_category_pass(meta_df):
+    dct = {'model': ['a_model', 'a_model'],
+           'scenario': ['a_scenario', 'a_scenario2'],
+           'category': ['Testing', np.nan]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 10}})
-    obs = test_df['category']
+    meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 6}})
+    obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_category_top_level(test_df):
-    dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
-           'category': ['Testing']}
+def test_category_top_level(meta_df):
+    dct = {'model': ['a_model', 'a_model'],
+           'scenario': ['a_scenario', 'a_scenario2'],
+           'category': ['Testing', np.nan]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    categorize(test_df, 'category', 'Testing',
-               criteria={'Primary Energy': {'up': 10}},
+    categorize(meta_df, 'category', 'Testing',
+               criteria={'Primary Energy': {'up': 6}},
                filters={'variable': 'Primary Energy'})
-    obs = test_df['category']
+    obs = meta_df['category']
+    print(exp)
+    print(meta_df['category'])
     pd.testing.assert_series_equal(obs, exp)
 
 
@@ -184,7 +219,7 @@ def test_add_metadata_as_named_series(meta_df):
     idx = pd.MultiIndex(levels=[['a_model'],
                                 ['a_scenario', 'a_scenario2']],
                         labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
-    exp = pd.Series(data=[0.3, None], index=idx)
+    exp = pd.Series(data=[0.3, np.nan], index=idx)
     exp.name = 'meta_values'
 
     obs = meta_df['meta_values']

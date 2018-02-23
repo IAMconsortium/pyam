@@ -190,7 +190,6 @@ class IamDataFrame(object):
         """
         self.meta['exclude'] = False
 
-
     def metadata(self, meta, name=None):
         """Add metadata columns as pandas Series or DataFrame
 
@@ -253,12 +252,13 @@ class IamDataFrame(object):
             return  # EXIT FUNCTION
 
         # find all data that matches categorization
-        idx = _meta_idx(_apply_criteria(self.data, criteria, in_range=True))
+        idx = _meta_idx(_apply_criteria(
+            self.data, criteria, in_range=True, foo=False))
 
         # update metadata dataframe
+        if name not in self.meta:
+            self.meta[name] = np.nan
         if len(idx) == 0:
-            if name not in self.meta:
-                self.meta[name] = None
             logger().info("No scenarios satisfy the criteria")
         else:
             self.meta.loc[idx, name] = value
@@ -276,7 +276,7 @@ class IamDataFrame(object):
         exclude: bool, default False
             if true, exclude models and scenarios failing validation from further analysis
         """
-        df = _apply_criteria(self.data, criteria, in_range=False)
+        df = _apply_criteria(self.data, criteria, in_range=False, foo=True)
 
         if exclude:
             idx = _meta_idx(df)
@@ -423,28 +423,45 @@ def _apply_filters(data, meta, filters):
     return keep
 
 
-def _apply_criteria(df, criteria, in_range=True):
+def _check_rows(rows, check, in_range, foo):
+    check_idx = []
+    where_idx = [set(rows.index)]
+    up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
+    lo_op = rows['value'].__ge__ if in_range else rows['value'].__lt__
+    for check_type, val in check.items():
+        if check_type == 'up':
+            check_idx.append(set(rows.index[up_op(val)]))
+        elif check_type == 'lo':
+            check_idx.append(set(rows.index[lo_op(val)]))
+        elif check_type == 'year':
+            where_idx.append(set(rows.index[rows['year'] == val]))
+        else:
+            raise ValueError(
+                "Unknown checking type: {}".format(check_type))
+    where_idx = set.intersection(*where_idx)
+    check_idx = set.intersection(*check_idx)
+
+    print(where_idx)
+    print(check_idx)
+    print(foo)
+    # print(where_idx - check_idx)
+
+    if foo:
+        ret = where_idx & check_idx
+    else:
+        ret = where_idx if len(where_idx - check_idx) == 0 else set()
+    print(ret)
+    return ret
+
+
+def _apply_criteria(df, criteria, in_range=True, foo=True):
     idxs = []
     for var, check in criteria.items():
-        fail_idx = []
-        where_idx = []
         _df = df[df['variable'] == var]
-        where_idx.append(set(_df.index))
-        up_op = _df['value'].__le__ if in_range else _df['value'].__gt__
-        lo_op = _df['value'].__ge__ if in_range else _df['value'].__lt__
-        for check_type, val in check.items():
-            if check_type == 'up':
-                fail_idx.append(set(_df.index[up_op(val)]))
-            elif check_type == 'lo':
-                fail_idx.append(set(_df.index[lo_op(val)]))
-            elif check_type == 'year':
-                where_idx.append(set(_df.index[_df['year'] == val]))
-            else:
-                raise ValueError(
-                    "Unknown checking type: {}".format(check_type))
-        where_idx = set.intersection(*where_idx)
-        fail_idx = set.intersection(*fail_idx)
-        idxs.append(where_idx & fail_idx)
+        for group in _df.groupby(['model', 'scenario']):
+            print('foo')
+            print(group[-1])
+            idxs.append(_check_rows(group[-1], check, in_range, foo=foo))
 
     df = df.loc[itertools.chain(*idxs)]
 
