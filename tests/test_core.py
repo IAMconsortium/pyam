@@ -51,9 +51,8 @@ def test_timeseries(test_df):
 
 
 def test_read_pandas():
-    ia = IamDataFrame(TEST_DF)
-    assert list(ia['variable'].unique()) == [
-        'Primary Energy', 'Primary Energy|Coal']
+    ia = IamDataFrame(os.path.join(here, 'testing_data_2.csv'))
+    assert list(ia['variable'].unique()) == ['Primary Energy']
 
 
 def test_validate_none(test_df):
