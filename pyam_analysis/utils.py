@@ -145,7 +145,11 @@ def pattern_match(data, strings, pseudo_regex=False, level=None):
     for s in strings:
         regexp = str(s)
         if pseudo_regex:
-            regexp = regexp.replace('|', '\\|').replace('*', '.*') + "$"
+            regexp = (regexp
+                      .replace('|', '\\|')
+                      .replace('*', '.*')
+                      .replace('+', '.+')
+                      ) + "$"
         pattern = re.compile(regexp)
         subset = filter(pattern.match, data)
         # check for depth by counting '|' after excluding the filter string
