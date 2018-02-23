@@ -207,12 +207,12 @@ class IamDataFrame(object):
             if not diff.empty:
                 error = "adding metadata for non-existing scenarios '{}'!"
                 raise ValueError(error.format(diff))
-            meta = meta.to_frame(meta.name or name)
+            meta = meta.to_frame(name or meta.name)
             self.meta = meta.combine_first(self.meta)
             return  # EXIT FUNCTION
 
         if isinstance(meta, pd.Series):
-            name = meta.name or name
+            name = name or meta.name
             meta = meta.tolist()
 
         self.meta[name] = meta
