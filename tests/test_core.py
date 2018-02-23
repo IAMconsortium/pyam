@@ -55,55 +55,55 @@ def test_read_pandas():
     assert list(ia['variable'].unique()) == ['Primary Energy']
 
 
-def test_validate_none(test_df):
-    obs = test_df.validate(
+def test_validate_none(meta_df):
+    obs = meta_df.validate(
         {'Primary Energy': {'up': 10}}, exclude=True)
     assert obs is None
-    assert len(test_df.data) == 4  # data unchanged
+    assert len(meta_df.data) == 6  # data unchanged
 
-    assert list(test_df['exclude']) == [False]  # none excluded
+    assert list(meta_df['exclude']) == [False, False]  # none excluded
 
 
-def test_validate_null(test_df):
-    obs = test_df.validate({'Secondary Energy': {'up': 10}}, exclude=True)
+def test_validate_null(meta_df):
+    obs = meta_df.validate({'Secondary Energy': {'up': 10}}, exclude=True)
     assert obs is None
 
 
-def test_validate_up(test_df):
-    obs = test_df.validate({'Primary Energy': {'up': 5.0}}, exclude=False)
+def test_validate_up(meta_df):
+    obs = meta_df.validate({'Primary Energy': {'up': 6.5}}, exclude=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
 
 
-def test_validate_lo(test_df):
-    obs = test_df.validate({'Primary Energy': {'lo': 5.0}}, exclude=False)
+def test_validate_lo(meta_df):
+    obs = meta_df.validate({'Primary Energy': {'lo': 2.0}}, exclude=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2005
 
 
-def test_validate_year(test_df):
-    obs = test_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
+def test_validate_year(meta_df):
+    obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
                            exclude=False)
     assert obs is None
 
-    obs = test_df.validate({'Primary Energy': {'up': 5.0, 'year': 2010}},
+    obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2010}},
                            exclude=False)
-    assert len(obs) == 1
+    assert len(obs) == 2
 
 
-def test_validate_exclude(test_df):
-    obs = test_df.validate({'Primary Energy': {'up': 5.0}}, exclude=True)
-    assert list(test_df['exclude']) == [True]  # one scenario in dataset
+def test_validate_exclude(meta_df):
+    obs = meta_df.validate({'Primary Energy': {'up': 6.0}}, exclude=True)
+    assert list(meta_df['exclude']) == [False, True]
 
 
-def test_validate_top_level(test_df):
-    obs = validate(test_df,
+def test_validate_top_level(meta_df):
+    obs = validate(meta_df,
                    filters={'variable': 'Primary Energy'},
-                   criteria={'Primary Energy': {'up': 5.0}},
+                   criteria={'Primary Energy': {'up': 6.0}},
                    exclude=True)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
-    assert list(test_df['exclude']) == [True]  # one scenario in dataset
+    assert list(meta_df['exclude']) == [False, True]
 
 
 def test_category_none(test_df):
