@@ -23,21 +23,31 @@ def test_pattern_match_one():
     assert (obs == exp).all()
 
 
-def test_pattern_match_one_regex():
-    data = pd.Series(['foo', 'bar'])
-    values = ['f*']
+def test_pattern_match_str_regex():
+    data = pd.Series(['foo', 'foo2', 'bar'])
+    values = ['foo']
 
-    obs = utils.pattern_match(data, values, pseudo_regex=True)
-    exp = [True, False]
+    obs = utils.pattern_match(data, values)
+    exp = [True, False, False]
+
+    assert (obs == exp).all()
+
+
+def test_pattern_match_ast_regex():
+    data = pd.Series(['foo', 'foo2', 'bar'])
+    values = ['foo*']
+
+    obs = utils.pattern_match(data, values)
+    exp = [True, True, False]
 
     assert (obs == exp).all()
 
 
 def test_pattern_match_plus():
-    data = pd.Series(['foo+', '+bar', 'b+az'])
+    data = pd.Series(['foo', 'foo+', '+bar', 'b+az'])
     values = ['*+*']
 
-    obs = utils.pattern_match(data, values, pseudo_regex=True)
-    exp = [True, True, True]
+    obs = utils.pattern_match(data, values)
+    exp = [False, True, True, True]
 
     assert (obs == exp).all()
