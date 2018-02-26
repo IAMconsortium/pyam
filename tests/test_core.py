@@ -91,6 +91,7 @@ def test_read_pandas():
 
 
 def test_validate_none(meta_df):
+def test_validate_all_pass(meta_df):
     obs = meta_df.validate(
         {'Primary Energy': {'up': 10}}, exclude=True)
     assert obs is None
@@ -99,9 +100,13 @@ def test_validate_none(meta_df):
     assert list(meta_df['exclude']) == [False, False]  # none excluded
 
 
-def test_validate_null(meta_df):
-    obs = meta_df.validate({'Secondary Energy': {'up': 10}}, exclude=True)
-    assert obs is None
+def test_validate_nonexisting(meta_df):
+    obs = meta_df.validate({'Primary Energy|Coal': {'up': 2}}, exclude=True)
+    assert len(obs) == 1
+    assert obs['scenario'].values[0] == 'a_scenario'
+
+    assert list(meta_df['exclude']) == [True, False] # scenario with failed
+    # validation excluded, scenario with non-defined value passes validation
 
 
 def test_validate_up(meta_df):
