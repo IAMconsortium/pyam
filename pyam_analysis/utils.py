@@ -163,7 +163,7 @@ def find_depth(data, s, level):
     pipe = re.compile('\\|')
     regexp = str(s).replace('*', '')
     find_depth = lambda val: test(len(pipe.findall(val.replace(regexp, ''))))
-    return map(find_depth, data)
+    return list(map(find_depth, data))
 
 
 def pattern_match(data, strings, level=None):
@@ -181,12 +181,8 @@ def pattern_match(data, strings, level=None):
                   ) + "$"
         pattern = re.compile(regexp)
         subset = filter(pattern.match, data)
-        depth = [True] * len(data) if level is None else \
-            find_depth(data, s, level)
-        print(matches)
-        print(depth)
-        print(data.isin(subset))
-        matches = matches | (data.isin(subset) & depth)
+        depth = True if level is None else find_depth(data, s, level)
+        matches |= (data.isin(subset) & depth)
     return matches
 
 
