@@ -81,14 +81,13 @@ def read_ix(ix, **kwargs):
     regions: list
         list of regions to be loaded from the database snapshot
     """
-    if isinstance(ix, ixmp.TimeSeries):
-        df = ix.timeseries(iamc=False, **kwargs)
-        df['model'] = ix.model
-        df['scenario'] = ix.scenario
-    else:
+    if not isinstance(ix, ixmp.TimeSeries):
         error = 'arg ' + ix + ' not recognized as valid ixmp class'
         raise ValueError(error)
 
+    df = ix.timeseries(iamc=False, **kwargs)
+    df['model'] = ix.model
+    df['scenario'] = ix.scenario
     return df
 
 
@@ -131,7 +130,7 @@ def format_data(df):
         numcols = sorted(set(df.columns) - set(IAMC_IDX))
         df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
                      value_vars=numcols, value_name='value')
-    df.year = pd.to_numeric(df.year)
+    df['year'] = pd.to_numeric(df['year'])
 
     # drop NaN's
     df.dropna(inplace=True)
