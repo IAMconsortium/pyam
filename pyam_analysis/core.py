@@ -406,15 +406,14 @@ def _apply_filters(data, meta, filters):
 
         elif col == 'variable':
             level = filters['level'] if 'level' in filters.keys() else None
-            keep_col = pattern_match(data[col], values, True, level)
+            keep_col = pattern_match(data[col], values, level)
 
         elif col in ['year']:
             keep_col = years_match(data[col], values)
 
         elif col in ['level']:
             if 'variable' not in filters.keys():
-                keep_col = pattern_match(data['variable'], '*',
-                                         pseudo_regex=True, level=values)
+                keep_col = pattern_match(data['variable'], '*', level=values)
             else:
                 continue
         else:

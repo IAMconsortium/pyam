@@ -143,10 +143,10 @@ def style_df(df, style='heatmap'):
         return df.style.background_gradient(cmap=cm)
 
 
-def pattern_match(data, strings, pseudo_regex=False, level=None):
+def pattern_match(data, strings, level=None):
     """
     matching of model/scenario names, variables, regions, and categories
-    to pseudo-regex (optional) for data filtering
+    to pseudo-regex for filtering by columns (str)
     """
     matches = np.array([False] * len(data))
 
@@ -154,17 +154,15 @@ def pattern_match(data, strings, pseudo_regex=False, level=None):
         strings = [strings]
 
     for s in strings:
-        regexp = str(s)
-        if pseudo_regex:
-            regexp = (regexp
-                      .replace('|', '\\|')
-                      .replace('*', '.*')
-                      .replace('+', '\+')
-                      ) + "$"
+        regexp = (str(s)
+                  .replace('|', '\\|')
+                  .replace('*', '.*')
+                  .replace('+', '\+')
+                  ) + "$"
         pattern = re.compile(regexp)
         subset = filter(pattern.match, data)
         # check for depth by counting '|' after excluding the filter string
-        if pseudo_regex and level is not None:
+        if level is not None:
             pipe = re.compile('\\|')
             regexp = str(s).replace('*', '')
             depth = [len(pipe.findall(c.replace(regexp, ''))) <= level
