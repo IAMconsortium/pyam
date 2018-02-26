@@ -183,7 +183,10 @@ def pattern_match(data, strings, level=None):
         subset = filter(pattern.match, data)
         depth = [True] * len(data) if level is None else \
             find_depth(data, s, level)
-        matches |= (data.isin(subset) & depth)
+        print(matches)
+        print(depth)
+        print(data.isin(subset))
+        matches = matches | (data.isin(subset) & depth)
     return matches
 
 
