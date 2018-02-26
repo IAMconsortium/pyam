@@ -147,16 +147,33 @@ def style_df(df, style='heatmap'):
         return df.style.background_gradient(cmap=cm)
 
 
+def find_depth(data, s, level):
+    # determine function for finding depth level =, >=, <= |s
+    if not isinstance(level, six.string_types):
+        test = lambda x: level == x
+    elif level[-1] == '-':
+        level = int(level[:-1])
+        test = lambda x: level >= x
+    elif level[-1] == '+':
+        level = int(level[:-1])
+        test = lambda x: level <= x
+    else:
+        raise ValueError('Unknown level type: {}'.format(level))
+
+    # determine depth
+    pipe = re.compile('\\|')
+    regexp = str(s).replace('*', '')
+    find_depth = lambda val: test(len(pipe.findall(val.replace(regexp, ''))))
+    return map(find_depth, data)
+
+
 def pattern_match(data, strings, level=None):
     """
     matching of model/scenario names, variables, regions, and categories
     to pseudo-regex for filtering by columns (str)
     """
+    strings = [strings] if isinstance(strings, six.string_types) else strings
     matches = np.array([False] * len(data))
-
-    if isinstance(strings, six.string_types):
-        strings = [strings]
-
     for s in strings:
         regexp = (str(s)
                   .replace('|', '\\|')
@@ -165,29 +182,8 @@ def pattern_match(data, strings, level=None):
                   ) + "$"
         pattern = re.compile(regexp)
         subset = filter(pattern.match, data)
-        # check for depth by counting '|' after excluding the filter string
-        if level is not None:
-            # determine function for finding depth level =, >=, <= |s
-            if not isinstance(level, six.string_types):
-                find_depth = lambda x: level == x
-            elif level[-1] == '-':
-                level = int(level[:-1])
-                find_depth = lambda x: level >= x
-            elif level[-1] == '+':
-                level = int(level[:-1])
-                find_depth = lambda x: level <= x
-            else:
-                raise ValueError('Unknown level type: {}'.format(level))
-
-            # determine depth
-            pipe = re.compile('\\|')
-            regexp = str(s).replace('*', '')
-            depth = [find_depth(len(pipe.findall(c.replace(regexp, ''))))
-                     for c in data]
-            matches = matches | (data.isin(subset) & depth)
-        else:
-            matches = matches | data.isin(subset)
-
+        depth = True if level is None else find_depth(data, s, level)
+        matches |= (data.isin(subset) & depth)
     return matches
 
 
@@ -195,10 +191,5 @@ def years_match(data, years):
     """
     matching of year columns for data filtering
     """
-    if isinstance(years, int):
-        return data == years
-    elif isinstance(years, list) or isinstance(years, range):
-        return data.isin(years)
-    else:
-        raise ValueError('filtering for years by ' + years + ' not supported,' +
-                         'must be int, list or range')
+    years = [years] if isinstance(years, int) else years
+    return data.isin(years)
