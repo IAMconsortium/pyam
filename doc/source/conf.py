@@ -73,7 +73,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyam'
-copyright = u'2017, Daniel Huppmann, Matthew Gidden @ IIASA Energy Program'
+copyright = u'2017-2018, Daniel Huppmann, Matthew Gidden @ IIASA Energy Program'
 author = u'Daniel Huppmann, Matthew Gidden'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -100,7 +100,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['_themes/*']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -138,12 +138,12 @@ todo_include_todos = True
 
 sys.path.append(os.path.abspath('_themes'))
 html_theme_path = ['_themes']
-html_theme = 'alabaster'
+html_theme = 'kr'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -167,7 +167,7 @@ html_theme = 'alabaster'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['css']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -297,7 +297,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'pyam', u'pyam Documentation',
-     author, 'pyam', 'a Python toolkit for Integrated Assessment Modeling',
+     author, 'pyam_analysis', 'a Python toolkit for IAM scenario analysis and visualization',
      'Miscellaneous'),
 ]
 
