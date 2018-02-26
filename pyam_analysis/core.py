@@ -190,6 +190,33 @@ class IamDataFrame(object):
         """
         self.meta['exclude'] = False
 
+    def metadata(self, meta, name=None):
+        """Add metadata columns as pandas Series or DataFrame
+
+        Parameters
+        ----------
+        meta: pandas.Series, list, int or str
+            column to be added to metadata
+            (by `['model', 'scenario']` index if possible)
+        name: str
+            category column name (if not given by data series name)
+        """
+        if isinstance(meta, pd.Series) and \
+                meta.index.names == ['model', 'scenario']:
+            diff = meta.index.difference(self.meta.index)
+            if not diff.empty:
+                error = "adding metadata for non-existing scenarios '{}'!"
+                raise ValueError(error.format(diff))
+            meta = meta.to_frame(name or meta.name)
+            self.meta = meta.combine_first(self.meta)
+            return  # EXIT FUNCTION
+
+        if isinstance(meta, pd.Series):
+            name = name or meta.name
+            meta = meta.tolist()
+
+        self.meta[name] = meta
+
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
         """Assign scenarios to a category according to specific criteria
@@ -225,12 +252,14 @@ class IamDataFrame(object):
             return  # EXIT FUNCTION
 
         # find all data that matches categorization
-        idx = _meta_idx(_apply_criteria(self.data, criteria, inclusive=True))
+        rows = _apply_criteria(self.data, criteria,
+                               in_range=True, return_test='equality')
+        idx = _meta_idx(rows)
 
         # update metadata dataframe
+        if name not in self.meta:
+            self.meta[name] = np.nan
         if len(idx) == 0:
-            if name not in self.meta:
-                self.meta[name] = None
             logger().info("No scenarios satisfy the criteria")
         else:
             self.meta.loc[idx, name] = value
@@ -248,7 +277,7 @@ class IamDataFrame(object):
         exclude: bool, default False
             if true, exclude models and scenarios failing validation from further analysis
         """
-        df = _apply_criteria(self.data, criteria, inclusive=False)
+        df = _apply_criteria(self.data, criteria, in_range=False)
 
         if exclude:
             idx = _meta_idx(df)
@@ -395,31 +424,60 @@ def _apply_filters(data, meta, filters):
     return keep
 
 
-def _apply_criteria(df, criteria, inclusive=True):
+def _check_rows(rows, check, in_range=True, return_test=None):
+    """Check all rows to be in/out of a certain range and provide testing on return
+    values based on provided conditions
+
+    Parameters
+    ----------
+    rows: pd.DataFrame
+        data rows
+    check: dict
+        dictionary with possible values of "up", "lo", and "year"
+    in_range: bool, optional
+        check if values are inside or outside of provided range
+    return_test: str, optional
+        possible values:
+            - None: default, return all instances where checks pass
+            - equality: test if all values match checks, if not, return empty set
+    """
+    check_idx = []
+    where_idx = [set(rows.index)]
+    up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
+    lo_op = rows['value'].__ge__ if in_range else rows['value'].__lt__
+
+    for check_type, val in check.items():
+        if check_type == 'up':
+            check_idx.append(set(rows.index[up_op(val)]))
+        elif check_type == 'lo':
+            check_idx.append(set(rows.index[lo_op(val)]))
+        elif check_type == 'year':
+            where_idx.append(set(rows.index[rows['year'] == val]))
+        else:
+            raise ValueError(
+                "Unknown checking type: {}".format(check_type))
+
+    where_idx = set.intersection(*where_idx)
+    check_idx = set.intersection(*check_idx)
+
+    if return_test is None:
+        ret = where_idx & check_idx
+    elif return_test == 'equality':
+        ret = where_idx if where_idx == check_idx else set()
+    else:
+        raise ValueError('Unknown return test: {}'.format(return_test))
+    return ret
+
+
+def _apply_criteria(df, criteria, **kwargs):
+    """Apply criteria individually to every model/scenario instance"""
     idxs = []
     for var, check in criteria.items():
-        fail_idx = []
-        where_idx = []
         _df = df[df['variable'] == var]
-        where_idx.append(set(_df.index))
-        up_op = _df['value'].__lt__ if inclusive else _df['value'].__gt__
-        lo_op = _df['value'].__gt__ if inclusive else _df['value'].__lt__
-        for check_type, val in check.items():
-            if check_type == 'up':
-                fail_idx.append(set(_df.index[up_op(val)]))
-            elif check_type == 'lo':
-                fail_idx.append(set(_df.index[lo_op(val)]))
-            elif check_type == 'year':
-                where_idx.append(set(_df.index[_df['year'] == val]))
-            else:
-                raise ValueError(
-                    "Unknown checking type: {}".format(check_type))
-        where_idx = set.intersection(*where_idx)
-        fail_idx = set.intersection(*fail_idx)
-        idxs.append(where_idx & fail_idx)
-
+        for group in _df.groupby(META_IDX):
+            grp_idxs = _check_rows(group[-1], check, **kwargs)
+            idxs.append(grp_idxs)
     df = df.loc[itertools.chain(*idxs)]
-
     return df
 
 

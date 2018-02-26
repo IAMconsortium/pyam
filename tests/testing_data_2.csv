@@ -1,2 +1,2 @@
 model,scenario,region,variable,unit,2005
-test_model,append_scenario,World,Primary Energy,EJ/y,2
+a_model,append_scenario,World,Primary Energy,EJ/y,2
