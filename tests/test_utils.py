@@ -44,10 +44,10 @@ def test_pattern_match_ast_regex():
 
 
 def test_pattern_match_plus():
-    data = pd.Series(['foo+', '+bar', 'b+az'])
+    data = pd.Series(['foo', 'foo+', '+bar', 'b+az'])
     values = ['*+*']
 
-    obs = utils.pattern_match(data, values, pseudo_regex=True)
-    exp = [True, True, True]
+    obs = utils.pattern_match(data, values)
+    exp = [False, True, True, True]
 
     assert (obs == exp).all()
