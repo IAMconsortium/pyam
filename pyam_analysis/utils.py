@@ -162,8 +162,8 @@ def find_depth(data, s, level):
     # determine depth
     pipe = re.compile('\\|')
     regexp = str(s).replace('*', '')
-    find_depth = lambda val: test(len(pipe.findall(val.replace(regexp, ''))))
-    return list(map(find_depth, data))
+    apply_test = lambda val: test(len(pipe.findall(val.replace(regexp, ''))))
+    return list(map(apply_test, data))
 
 
 def pattern_match(data, strings, level=None):
