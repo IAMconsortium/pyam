@@ -253,7 +253,7 @@ class IamDataFrame(object):
 
         # find all data that matches categorization
         rows = _apply_criteria(self.data, criteria,
-                               in_range=True, return_test='equality')
+                               in_range=True, return_test='all')
         idx = _meta_idx(rows)
 
         # update metadata dataframe
@@ -423,7 +423,7 @@ def _apply_filters(data, meta, filters):
     return keep
 
 
-def _check_rows(rows, check, in_range=True, return_test=None):
+def _check_rows(rows, check, in_range=True, return_test='any'):
     """Check all rows to be in/out of a certain range and provide testing on return
     values based on provided conditions
 
@@ -437,8 +437,8 @@ def _check_rows(rows, check, in_range=True, return_test=None):
         check if values are inside or outside of provided range
     return_test: str, optional
         possible values:
-            - None: default, return all instances where checks pass
-            - equality: test if all values match checks, if not, return empty set
+            - 'any': default, return scenarios where check passes for any entry
+            - 'all': test if all values match checks, if not, return empty set
     """
     check_idx = []
     where_idx = [set(rows.index)]
@@ -459,9 +459,9 @@ def _check_rows(rows, check, in_range=True, return_test=None):
     where_idx = set.intersection(*where_idx)
     check_idx = set.intersection(*check_idx)
 
-    if return_test is None:
+    if return_test is 'any':
         ret = where_idx & check_idx
-    elif return_test == 'equality':
+    elif return_test == 'all':
         ret = where_idx if where_idx == check_idx else set()
     else:
         raise ValueError('Unknown return test: {}'.format(return_test))
