@@ -4,6 +4,8 @@ import string
 import logging
 import six
 import re
+import glob
+import itertools
 
 import numpy as np
 import pandas as pd
@@ -86,20 +88,29 @@ def read_ix(ix, **kwargs):
     return df
 
 
-def read_file(fname, *args, **kwargs):
+def read_files(fnames, *args, **kwargs):
     """Read data from a snapshot file saved in the standard IAMC format
     or a table with year/value columns
     """
-    if not os.path.exists(fname):
-        raise ValueError("no data file '" + fname + "' found!")
+    if isinstance(fnames, six.string_types):
+        fnames = [fnames]
 
-    # read from database snapshot csv or xlsx
-    if fname.endswith('csv'):
-        df = pd.read_csv(fname, *args, **kwargs)
-    else:
-        df = pd.read_excel(fname, *args, **kwargs)
+    fnames = itertools.chain(*[glob.glob(f) for f in fnames])
+    dfs = []
+    for fname in fnames:
+        logger().info('Reading {}'.format(fname))
+        if not os.path.exists(fname):
+            raise ValueError("no data file '" + fname + "' found!")
+        # read from database snapshot csv or xlsx
+        if fname.endswith('csv'):
+            df = pd.read_csv(fname, *args, **kwargs)
+        else:
+            df = pd.read_excel(fname, *args, **kwargs)
+        df.rename(columns={c: str(c).lower()
+                           for c in df.columns}, inplace=True)
+        dfs.append(df)
 
-    return format_data(df)
+    return format_data(pd.concat(dfs))
 
 
 def format_data(df):
