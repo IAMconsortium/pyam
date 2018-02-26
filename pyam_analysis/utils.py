@@ -148,7 +148,7 @@ def pattern_match(data, strings, pseudo_regex=False, level=None):
             regexp = (regexp
                       .replace('|', '\\|')
                       .replace('*', '.*')
-                      .replace('+', '.+')
+                      .replace('+', '\+')
                       ) + "$"
         pattern = re.compile(regexp)
         subset = filter(pattern.match, data)
