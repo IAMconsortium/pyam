@@ -9,7 +9,10 @@ import glob
 import numpy as np
 import pandas as pd
 
-import ixmp
+try:
+    import ixmp
+except ImportError:
+    pass
 
 try:
     import seaborn as sns
