@@ -181,7 +181,8 @@ def pattern_match(data, strings, level=None):
                   ) + "$"
         pattern = re.compile(regexp)
         subset = filter(pattern.match, data)
-        depth = True if level is None else find_depth(data, s, level)
+        depth = [True] * len(data) if level is None else \
+            find_depth(data, s, level)
         matches |= (data.isin(subset) & depth)
     return matches
 
