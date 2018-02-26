@@ -46,7 +46,7 @@ class IamDataFrame(object):
         """
         # import data from pandas.DataFrame or read from source
         if isinstance(data, pd.DataFrame):
-            self.data = format_data(data)
+            self.data = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             self.data = read_ix(data, **kwargs)
         else:
