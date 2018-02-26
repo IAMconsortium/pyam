@@ -5,10 +5,11 @@ import logging
 import six
 import re
 import glob
-import itertools
 
 import numpy as np
 import pandas as pd
+
+import ixmp
 
 try:
     import seaborn as sns
