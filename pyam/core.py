@@ -355,7 +355,7 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-        inplace : bool, default False
+        inplace: bool, default False
             if True, do operation inplace and return None
         """
         _keep = _apply_filters(self.data, self.meta, filters)
