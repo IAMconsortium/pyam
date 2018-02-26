@@ -63,12 +63,23 @@ class IamDataFrame(object):
         else:
             return self.data.__getitem__(key)
 
+    def __setitem__(self, key, value):
+        _key_check = [key] if isinstance(key, six.string_types) else key
+        if set(_key_check).issubset(self.meta.columns):
+            return self.meta.__setitem__(key, value)
+        else:
+            return self.data.__setitem__(key, value)
+
     def __len__(self):
         return self.data.__len__()
 
     def head(self, *args, **kwargs):
         """Identical to pd.DataFrame.head() operating on data"""
         return self.data.head(*args, **kwargs)
+
+    def tail(self, *args, **kwargs):
+        """Identical to pd.DataFrame.tail() operating on data"""
+        return self.data.tail(*args, **kwargs)
 
     def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame

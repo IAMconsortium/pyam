@@ -174,6 +174,37 @@ def reshape_line_plot(df, x, y):
     return df
 
 
+def region_plot(df, column='value', ax=None):
+    """Plot data on a map.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data to plot as a long-form data frame
+    column : str, optional
+        The column to use for x-axis values
+        default: value
+    ax : matplotlib.Axes, optional
+    kwargs : Additional arguments to pass to the geopandas.GeoDataFrame.plot() function
+    """
+    if ax is None:
+        fig, ax = plt.subplots()
+        ax.set_aspect('equal')
+
+    if len(df['year'].unique()) > 1:
+        raise ValueError('Can not plot multiple years in region_plot')
+
+    if len(df['variable'].unique()) > 1:
+        raise ValueError('Can not plot multiple variables in region_plot')
+
+    world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+    world.rename(columns={'iso_a3': 'region'}, inplace=True)
+
+    data = world.merge(df.data, on='region', how='right')
+    data.plot(column=column, ax=ax, **kwargs)
+    return ax
+
+
 def line_plot(df, x='year', y='value', ax=None, legend=False,
               color=None, marker=None, linestyle=None, **kwargs):
     """Plot data as lines with or without markers.
