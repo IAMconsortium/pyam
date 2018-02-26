@@ -46,7 +46,7 @@ class IamDataFrame(object):
         """
         # import data from pandas.DataFrame or read from source
         if isinstance(data, pd.DataFrame):
-            self.data = format_data(data)
+            self.data = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             self.data = read_ix(data, **kwargs)
         else:
@@ -408,10 +408,10 @@ def _apply_filters(data, meta, filters):
             level = filters['level'] if 'level' in filters.keys() else None
             keep_col = pattern_match(data[col], values, level)
 
-        elif col in ['year']:
+        elif col == 'year':
             keep_col = years_match(data[col], values)
 
-        elif col in ['level']:
+        elif col == 'level':
             if 'variable' not in filters.keys():
                 keep_col = pattern_match(data['variable'], '*', level=values)
             else:

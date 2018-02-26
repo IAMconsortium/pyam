@@ -81,14 +81,13 @@ def read_ix(ix, **kwargs):
     regions: list
         list of regions to be loaded from the database snapshot
     """
-    if isinstance(ix, ixmp.TimeSeries):
-        df = ix.timeseries(iamc=False, **kwargs)
-        df['model'] = ix.model
-        df['scenario'] = ix.scenario
-    else:
+    if not isinstance(ix, ixmp.TimeSeries):
         error = 'arg ' + ix + ' not recognized as valid ixmp class'
         raise ValueError(error)
 
+    df = ix.timeseries(iamc=False, **kwargs)
+    df['model'] = ix.model
+    df['scenario'] = ix.scenario
     return df
 
 
@@ -131,7 +130,7 @@ def format_data(df):
         numcols = sorted(set(df.columns) - set(IAMC_IDX))
         df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
                      value_vars=numcols, value_name='value')
-    df.year = pd.to_numeric(df.year)
+    df['year'] = pd.to_numeric(df['year'])
 
     # drop NaN's
     df.dropna(inplace=True)
@@ -147,16 +146,33 @@ def style_df(df, style='heatmap'):
         return df.style.background_gradient(cmap=cm)
 
 
+def find_depth(data, s, level):
+    # determine function for finding depth level =, >=, <= |s
+    if not isinstance(level, six.string_types):
+        test = lambda x: level == x
+    elif level[-1] == '-':
+        level = int(level[:-1])
+        test = lambda x: level >= x
+    elif level[-1] == '+':
+        level = int(level[:-1])
+        test = lambda x: level <= x
+    else:
+        raise ValueError('Unknown level type: {}'.format(level))
+
+    # determine depth
+    pipe = re.compile('\\|')
+    regexp = str(s).replace('*', '')
+    apply_test = lambda val: test(len(pipe.findall(val.replace(regexp, ''))))
+    return list(map(apply_test, data))
+
+
 def pattern_match(data, strings, level=None):
     """
     matching of model/scenario names, variables, regions, and categories
     to pseudo-regex for filtering by columns (str)
     """
+    strings = [strings] if isinstance(strings, six.string_types) else strings
     matches = np.array([False] * len(data))
-
-    if isinstance(strings, six.string_types):
-        strings = [strings]
-
     for s in strings:
         regexp = (str(s)
                   .replace('|', '\\|')
@@ -165,16 +181,8 @@ def pattern_match(data, strings, level=None):
                   ) + "$"
         pattern = re.compile(regexp)
         subset = filter(pattern.match, data)
-        # check for depth by counting '|' after excluding the filter string
-        if level is not None:
-            pipe = re.compile('\\|')
-            regexp = str(s).replace('*', '')
-            depth = [len(pipe.findall(c.replace(regexp, ''))) <= level
-                     for c in data]
-            matches = matches | (data.isin(subset) & depth)
-        else:
-            matches = matches | data.isin(subset)
-
+        depth = True if level is None else find_depth(data, s, level)
+        matches |= (data.isin(subset) & depth)
     return matches
 
 
@@ -182,10 +190,5 @@ def years_match(data, years):
     """
     matching of year columns for data filtering
     """
-    if isinstance(years, int):
-        return data == years
-    elif isinstance(years, list) or isinstance(years, range):
-        return data.isin(years)
-    else:
-        raise ValueError('filtering for years by ' + years + ' not supported,' +
-                         'must be int, list or range')
+    years = [years] if isinstance(years, int) else years
+    return data.isin(years)
