@@ -266,6 +266,32 @@ class IamDataFrame(object):
             msg = "{} scenario(s) categorized as {} '{}'"
             logger().info(msg.format(len(idx), name, value))
 
+    def require_variable(self, criteria, exclude=False):
+        """Check which model/scenarios have a required variable
+
+        Parameters
+        ----------
+        variable: dict
+            dictionary with required variable and other criteria (optional)
+        exclude: bool, default False
+            if true, flag scenarios missing required variable as `exclude=True`
+        """
+        keep = _apply_filters(self.data, self.meta, criteria)
+        idx = self.meta.index.difference(_meta_idx(self.data[keep]))
+
+        if len(idx) == 0:
+            logger().info('All scenarios have the required variable')
+            return
+
+        msg = '{} scenarios to not include required variables'
+
+        if exclude:
+            self.meta.loc[idx, 'exclude'] = True
+            msg = '{}, marked as `exclude=True` in metadata'
+
+        logger().info(msg.format(len(idx)))
+        return pd.DataFrame(index=idx).reset_index()
+
     def validate(self, criteria={}, exclude=False):
         """Check which model/scenarios satisfy specific criteria
 
