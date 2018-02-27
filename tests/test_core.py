@@ -9,7 +9,7 @@ from numpy import testing as npt
 from pyam_analysis import IamDataFrame, plotting, validate, categorize, \
     require_variable
 
-from testing_utils import here, meta_df, test_df, TEST_DF
+from testing_utils import here, meta_df, test_df, TEST_DF, TEST_DATA_DIR
 
 
 def test_model(test_df):
@@ -87,7 +87,7 @@ def test_timeseries(test_df):
 
 
 def test_read_pandas():
-    ia = IamDataFrame(os.path.join(here, 'testing_data_2.csv'))
+    ia = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
     assert list(ia['variable'].unique()) == ['Primary Energy']
 
 
@@ -200,7 +200,7 @@ def test_category_top_level(meta_df):
 
 def test_load_metadata(test_df):
     test_df.load_metadata(os.path.join(
-        here, 'testing_metadata.xlsx'), sheet_name='metadata')
+        TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='metadata')
 
     obs = test_df.meta
     dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
@@ -210,7 +210,8 @@ def test_load_metadata(test_df):
 
 
 def test_append(test_df):
-    df2 = test_df.append(other=os.path.join(here, 'testing_data_2.csv'))
+    df2 = test_df.append(other=os.path.join(
+        TEST_DATA_DIR, 'testing_data_2.csv'))
 
     obs = test_df['scenario'].unique()
     exp = ['a_scenario']

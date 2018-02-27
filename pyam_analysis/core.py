@@ -368,7 +368,15 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def to_excel(self, excel_writer, sheet_name='data', index=False, **kwargs):
+    def _to_file_format(self):
+        df = self.timeseries().reset_index()
+        df = df.rename(columns={c: str(c).title() for c in df.columns})
+        return df
+
+    def to_csv(self, path, index=False, **kwargs):
+        self._to_file_format().to_csv(path, index=index, **kwargs)
+
+    def to_excel(self, path=None, writer=None, sheet_name='data', index=False, **kwargs):
         """Write timeseries data to Excel using the IAMC template convention
         (wrapper for `pd.DataFrame.to_excel()`)
 
@@ -381,9 +389,12 @@ class IamDataFrame(object):
         index: boolean, default False
             write row names (index)
         """
-        df = self.timeseries().reset_index()
-        df = df.rename(columns={c: str(c).title() for c in df.columns})
-        df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
+        if (path is None and writer is None) or \
+           (path is not None and writer is not None):
+            raise ValueError('Only one of path and writer must have a value')
+        if writer is None:
+            writer = pd.ExcelWriter(path)
+        self._to_file_format().to_excel(writer, sheet_name=sheet_name, index=index, **kwargs)
 
     def export_metadata(self, path):
         """Export metadata to Excel
