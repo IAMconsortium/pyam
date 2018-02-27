@@ -90,7 +90,15 @@ def test_read_pandas():
     assert list(ia['variable'].unique()) == ['Primary Energy']
 
 
-def test_validate_none(meta_df):
+def test_require_variable(meta_df):
+    obs = meta_df.require_variable({'variable': 'Primary Energy|Coal'},
+                                   exclude=True)
+    print(obs)
+    assert len(obs) == 1
+    assert obs.loc[0, 'scenario'] == 'a_scenario2'
+
+    assert list(meta_df['exclude']) == [False, True]
+
 def test_validate_all_pass(meta_df):
     obs = meta_df.validate(
         {'Primary Energy': {'up': 10}}, exclude=True)
