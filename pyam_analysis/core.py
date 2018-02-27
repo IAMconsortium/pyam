@@ -300,9 +300,8 @@ class IamDataFrame(object):
         filters: dict
             The following columns are available for filtering:
              - metadata columns: filter by category assignment in metadata
-             - 'model', 'scenario', 'region': takes a string or list of strings
-             - 'variable': takes a string or list of strings,
-                where ``*`` can be used as a wildcard
+             - 'model', 'scenario', 'region', 'variable', 'unit':
+               string or list of strings, where ``*`` can be used as a wildcard
              - 'level': the maximum "depth" of IAM variables (number of '|')
                (exluding the strings given in the 'variable' argument)
              - 'year': takes an integer, a list of integers or a range
@@ -401,7 +400,7 @@ def _apply_filters(data, meta, filters):
             cat_idx = meta[matches].index
             keep_col = data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
 
-        elif col in ['model', 'scenario', 'region']:
+        elif col in ['model', 'scenario', 'region', 'unit']:
             keep_col = pattern_match(data[col], values)
 
         elif col == 'variable':
