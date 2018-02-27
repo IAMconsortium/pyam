@@ -63,6 +63,9 @@ def main():
             # list CLIs here
         ],
     }
+    package_data = {
+        'pyam_analysis': ['region_mappings/*'],
+    }
     cmdclass = {
         'install': Cmd,
     }
@@ -78,6 +81,7 @@ def main():
         "package_dir": pack_dir,
         "entry_points": entry_points,
         "cmdclass": cmdclass,
+        "package_data": package_data,
     }
     rtn = setup(**setup_kwargs)
 

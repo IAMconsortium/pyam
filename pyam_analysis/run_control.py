@@ -1,4 +1,5 @@
 import collections
+import os
 import yaml
 
 from pyam_analysis.utils import isstr
@@ -6,10 +7,18 @@ from pyam_analysis.utils import isstr
 # user-defined defaults for various plot settings
 _RUN_CONTROL = None
 
+# path to regional mapping files
+_REG_MAP_PATH = lambda x: os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), 'region_mappings', x)
+
+# defaults for run control
 _RC_DEFAULTS = {
     'color': {},
     'marker': {},
     'linestyle': {},
+    'region_mapping': {
+        'MESSAGE-GLOBIOM': _REG_MAP_PATH('message_regions.csv'),
+    }
 }
 
 
