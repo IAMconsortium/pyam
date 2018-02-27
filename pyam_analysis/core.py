@@ -258,8 +258,9 @@ class IamDataFrame(object):
             logger().info("No scenarios satisfy the criteria")
         else:
             self.meta.loc[idx, name] = value
-            msg = "{} scenario(s) categorized as {} '{}'"
-            logger().info(msg.format(len(idx), name, value))
+            msg = "{} scenario{} categorized as {}: '{}'"
+            logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
+                          name, value))
 
     def require_variable(self, variable, unit=None, year=None, exclude=False):
         """Check whether model/scenarios have a required variable
@@ -288,13 +289,13 @@ class IamDataFrame(object):
             logger().info('All scenarios have the required variable')
             return
 
-        msg = '{} scenarios to not include required variables'
+        msg = '{} scenario{} to not include required variables'
 
         if exclude:
             self.meta.loc[idx, 'exclude'] = True
-            msg = '{}, marked as `exclude=True` in metadata'
+            msg += ', marked as `exclude=True` in metadata'
 
-        logger().info(msg.format(len(idx)))
+        logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's'))
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude=False):
