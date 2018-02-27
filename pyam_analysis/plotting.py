@@ -2,11 +2,16 @@ import collections
 import itertools
 import os
 import yaml
+import cartopy
 
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
+import geopandas as gpd
 import numpy as np
 
 from collections import defaultdict
+from functools32 import lru_cache
 
 # line colors, markers, and styles that are cycled through when not
 # explicitly declared
@@ -14,6 +19,9 @@ _DEFAULT_PROPS = None
 
 # user-defined defaults for various plot settings
 _RUN_CONTROL = None
+
+# cache of shapefiles
+_SHPF_CACHE = {}
 
 _RC_DEFAULTS = {
     'color': {},
@@ -60,10 +68,10 @@ class RunControl(collections.Mapping):
         Parameters
         ----------
         rc : string, file, dictionary, optional
-            a path to a YAML file, a file handle for a YAML file, or a 
+            a path to a YAML file, a file handle for a YAML file, or a
             dictionary describing run control configuration
         defaults : string, file, dictionary, optional
-            a path to a YAML file, a file handle for a YAML file, or a 
+            a path to a YAML file, a file handle for a YAML file, or a
             dictionary describing **default** run control configuration
         """
         rc = rc or {}
@@ -79,7 +87,7 @@ class RunControl(collections.Mapping):
         Parameters
         ----------
         rc : string, file, dictionary, optional
-            a path to a YAML file, a file handle for a YAML file, or a 
+            a path to a YAML file, a file handle for a YAML file, or a
             dictionary describing run control configuration
         """
         rc = self._load_yaml(rc)
@@ -163,7 +171,7 @@ def default_props(reset=False):
 def reshape_line_plot(df, x, y):
     """Reshape data from long form to "plot form".
 
-    Plot form has x value as the index with one column for each line. 
+    Plot form has x value as the index with one column for each line.
     Each column has data points as values and all metadata as column headers.
     """
     idx = list(df.columns.drop(y))
@@ -174,7 +182,19 @@ def reshape_line_plot(df, x, y):
     return df
 
 
-def region_plot(df, column='value', ax=None):
+@lru_cache()
+def read_shapefile(fname, region_col=None, **kwargs):
+    gdf = gpd.read_file(fname, **kwargs)
+    if region_col is not None:
+        gdf = gdf.rename(columns={region_col: 'region'})
+    if 'region' not in gdf.columns:
+        raise IOError('Must provide a region column')
+    gdf['region'] = gdf['region'].str.upper()
+    return gdf
+
+
+def region_plot(df, column='value', crs=None, gdf=None, ax=None, add_features=True,
+                vmin=None, vmax=None, cmap=None, cbar=True):
     """Plot data on a map.
 
     Parameters
@@ -187,21 +207,46 @@ def region_plot(df, column='value', ax=None):
     ax : matplotlib.Axes, optional
     kwargs : Additional arguments to pass to the geopandas.GeoDataFrame.plot() function
     """
+    for col in ['model', 'scenario', 'year', 'variable']:
+        if len(df[col].unique()) > 1:
+            msg = 'Can not plot multiple {}s in region_plot'
+            raise ValueError(msg.format(col))
+
+    crs = crs or cartopy.crs.PlateCarree()
     if ax is None:
-        fig, ax = plt.subplots()
-        ax.set_aspect('equal')
+        fig, ax = plt.subplots(subplot_kw=dict(projection=crs))
+    elif not isinstance(ax, cartopy.mpl.geoaxes.GeoAxesSubplot):
+        msg = 'Must provide a cartopy axes object, not: {}'
+        raise ValueError(msg.format(type(ax)))
 
-    if len(df['year'].unique()) > 1:
-        raise ValueError('Can not plot multiple years in region_plot')
+    gdf = gdf or read_shapefile(gpd.datasets.get_path('naturalearth_lowres'),
+                                region_col='iso_a3')
+    data = gdf.merge(df, on='region', how='inner').to_crs(crs.proj4_init)
 
-    if len(df['variable'].unique()) > 1:
-        raise ValueError('Can not plot multiple variables in region_plot')
+    if add_features:
+        ax.add_feature(cartopy.feature.LAND)
+        ax.add_feature(cartopy.feature.OCEAN)
+        ax.add_feature(cartopy.feature.COASTLINE)
+        ax.add_feature(cartopy.feature.BORDERS)
 
-    world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-    world.rename(columns={'iso_a3': 'region'}, inplace=True)
+    vmin = vmin or data['value'].min()
+    vmax = vmax or data['value'].max()
+    norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    cmap = plt.get_cmap(cmap)
+    scalar_map = cmx.ScalarMappable(norm=norm, cmap=cmap)
+    for _, row in data.iterrows():
+        ax.add_geometries(
+            [row['geometry']],
+            crs,
+            facecolor=scalar_map.to_rgba(row['value']),
+            label=row['region']
+        )
 
-    data = world.merge(df.data, on='region', how='right')
-    data.plot(column=column, ax=ax, **kwargs)
+    if cbar:
+        scalar_map._A = []
+        # these are magic numbers that just seem to "work"
+        cb = plt.colorbar(scalar_map, fraction=0.022, pad=0.005)
+
     return ax
 
 
@@ -224,15 +269,15 @@ def line_plot(df, x='year', y='value', ax=None, legend=False,
         Include a legend
         default: False
     color : string, optional
-        A valid matplotlib color or column name. If a column name, common 
+        A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
         default: None
     marker : string, optional
-        A valid matplotlib marker or column name. If a column name, common 
+        A valid matplotlib marker or column name. If a column name, common
         values will be provided the same marker.
         default: None
     linestyle : string, optional
-        A valid matplotlib linestyle or column name. If a column name, common 
+        A valid matplotlib linestyle or column name. If a column name, common
         values will be provided the same linestyle.
         default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function

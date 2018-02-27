@@ -428,6 +428,15 @@ class IamDataFrame(object):
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
         return ax
 
+    def region_plot(self, *args, **kwargs):
+        """Plot regional data for a single model, scenario, variable, and year
+
+        see pyam_analysis.plotting.region_plot() for all available options
+        """
+        df = self.as_pandas(with_metadata=True)
+        ax = plotting.region_plot(df, *args, **kwargs)
+        return ax
+
 
 def _meta_idx(data):
     return data[META_IDX].set_index(META_IDX).index
