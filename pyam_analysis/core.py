@@ -17,6 +17,7 @@ from pyam_analysis.utils import (
     write_sheet,
     read_ix,
     read_files,
+    read_pandas,
     format_data,
     pattern_match,
     years_match,
@@ -428,14 +429,28 @@ class IamDataFrame(object):
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
         return ax
 
-    def region_plot(self, *args, **kwargs):
+    def region_plot(self, map_regions=False, map_col='iso', **kwargs):
         """Plot regional data for a single model, scenario, variable, and year
 
         see pyam_analysis.plotting.region_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
-        ax = plotting.region_plot(df, *args, **kwargs)
+        if map_regions:
+            fname = map_regions if os.path.exists(map_regions) else \
+                _registered_region_mapping(df['model'].unique()[0])
+
+            mapping = read_pandas(region_map)
+            df = (df
+                  .merge(mapping, on='region')
+                  .rename(columns={map_col: 'region', 'region': 'label'})
+                  )
+
+        ax = plotting.region_plot(df, **kwargs)
         return ax
+
+
+def _registered_region_mapping(model):
+    pass
 
 
 def _meta_idx(data):

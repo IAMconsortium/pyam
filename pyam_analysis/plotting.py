@@ -7,6 +7,7 @@ import cartopy
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
+import matplotlib.patches as mpatches
 import geopandas as gpd
 import numpy as np
 
@@ -194,7 +195,7 @@ def read_shapefile(fname, region_col=None, **kwargs):
 
 
 def region_plot(df, column='value', crs=None, gdf=None, ax=None, add_features=True,
-                vmin=None, vmax=None, cmap=None, cbar=True):
+                vmin=None, vmax=None, cmap=None, cbar=True, legend=False):
     """Plot data on a map.
 
     Parameters
@@ -234,18 +235,38 @@ def region_plot(df, column='value', crs=None, gdf=None, ax=None, add_features=Tr
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
     cmap = plt.get_cmap(cmap)
     scalar_map = cmx.ScalarMappable(norm=norm, cmap=cmap)
+    labels = []
+    handles = []
     for _, row in data.iterrows():
+        label = row['label'] if 'label' in row else row['region']
+        color = scalar_map.to_rgba(row['value'])
         ax.add_geometries(
             [row['geometry']],
             crs,
-            facecolor=scalar_map.to_rgba(row['value']),
-            label=row['region']
+            facecolor=color,
+            label=label,
         )
+        if label not in labels:
+            labels.append(label)
+            handle = mpatches.Rectangle((0, 0), 5, 5, facecolor=color)
+            handles.append(handle)
 
     if cbar:
-        scalar_map._A = []
-        # these are magic numbers that just seem to "work"
-        cb = plt.colorbar(scalar_map, fraction=0.022, pad=0.005)
+        scalar_map._A = []  # for some reason you have to clear this
+        if cbar is True:  # use some defaults
+            cbar = dict(
+                fraction=0.022,  # these are magic numbers
+                pad=0.005,       # that just seem to "work"
+            )
+        cb = plt.colorbar(scalar_map, **cbar)
+
+    if legend:
+        if legend is True:  # use some defaults
+            legend = dict(
+                bbox_to_anchor=(1.32, 0.5) if cbar else (1.2, 0.5),
+                loc='right',
+            )
+        ax.legend(handles, labels, **legend)
 
     return ax
 
