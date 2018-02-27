@@ -91,7 +91,7 @@ def test_read_pandas():
 
 
 def test_require_variable(meta_df):
-    obs = meta_df.require_variable({'variable': 'Primary Energy|Coal'},
+    obs = meta_df.require_variable(variable='Primary Energy|Coal',
                                    exclude=True)
     print(obs)
     assert len(obs) == 1

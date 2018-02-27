@@ -261,16 +261,26 @@ class IamDataFrame(object):
             msg = "{} scenario(s) categorized as {} '{}'"
             logger().info(msg.format(len(idx), name, value))
 
-    def require_variable(self, criteria, exclude=False):
-        """Check which model/scenarios have a required variable
+    def require_variable(self, variable, unit=None, year=None, exclude=False):
+        """Check whether model/scenarios have a required variable
 
         Parameters
         ----------
-        variable: dict
-            dictionary with required variable and other criteria (optional)
+        variable: str
+            required variable
+        unit: str, default None
+            name of unit (optional)
+        years: int or list, default None
+            years (optional)
         exclude: bool, default False
             flag scenarios missing the required variables as `exclude: True`
         """
+        criteria = {'variable': variable}
+        if unit:
+            criteria.update({'unit': unit})
+        if year:
+            criteria.update({'year': year})
+
         keep = _apply_filters(self.data, self.meta, criteria)
         idx = self.meta.index.difference(_meta_idx(self.data[keep]))
 
