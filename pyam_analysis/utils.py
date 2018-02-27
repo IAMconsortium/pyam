@@ -166,23 +166,26 @@ def find_depth(data, s, level):
     return list(map(apply_test, data))
 
 
-def pattern_match(data, strings, level=None):
+def pattern_match(data, values, level=None):
     """
     matching of model/scenario names, variables, regions, and categories
-    to pseudo-regex for filtering by columns (str)
+    to pseudo-regex for filtering by columns (str, int, bool)
     """
-    strings = [strings] if isinstance(strings, six.string_types) else strings
     matches = np.array([False] * len(data))
-    for s in strings:
-        regexp = (str(s)
-                  .replace('|', '\\|')
-                  .replace('*', '.*')
-                  .replace('+', '\+')
-                  ) + "$"
-        pattern = re.compile(regexp)
-        subset = filter(pattern.match, data)
-        depth = True if level is None else find_depth(data, s, level)
-        matches |= (data.isin(subset) & depth)
+    values = values if isinstance(values, list) else [values]
+    for s in values:
+        if isinstance(s, six.string_types):
+            regexp = (str(s)
+                      .replace('|', '\\|')
+                      .replace('*', '.*')
+                      .replace('+', '\+')
+                      ) + "$"
+            pattern = re.compile(regexp)
+            subset = filter(pattern.match, data)
+            depth = True if level is None else find_depth(data, s, level)
+            matches |= (data.isin(subset) & depth)
+        else:
+            matches |= data == s
     return matches
 
 
