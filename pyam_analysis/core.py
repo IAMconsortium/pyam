@@ -465,23 +465,21 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
             - 'any': default, return scenarios where check passes for any entry
             - 'all': test if all values match checks, if not, return empty set
     """
-    check_idx = []
-    where_idx = [set(rows.index)]
+    valid_checks = set(['up', 'lo', 'year'])
+    if not set(check.keys()).issubset(valid_checks):
+        msg = 'Unknown checking type: {}'
+        raise ValueError(msg.format(check.keys() - valid_checks))
+
+    where_idx = set(rows.index[rows['year'] == check['year']]) \
+        if 'year' in check else set(rows.index)
+
     up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
     lo_op = rows['value'].__ge__ if in_range else rows['value'].__lt__
 
-    for check_type, val in check.items():
-        if check_type == 'up':
-            check_idx.append(set(rows.index[up_op(val)]))
-        elif check_type == 'lo':
-            check_idx.append(set(rows.index[lo_op(val)]))
-        elif check_type == 'year':
-            where_idx.append(set(rows.index[rows['year'] == val]))
-        else:
-            raise ValueError(
-                "Unknown checking type: {}".format(check_type))
-
-    where_idx = set.intersection(*where_idx)
+    check_idx = []
+    for (bd, op) in [('up', up_op), ('lo', lo_op)]:
+        if bd in check:
+            check_idx.append(set(rows.index[op(check[bd])]))
     check_idx = set.intersection(*check_idx)
 
     if return_test is 'any':
