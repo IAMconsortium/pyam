@@ -9,7 +9,10 @@ import collections
 import numpy as np
 import pandas as pd
 
-from functools32 import lru_cache
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
 
 try:
     import ixmp

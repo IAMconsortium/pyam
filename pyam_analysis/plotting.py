@@ -10,12 +10,14 @@ import geopandas as gpd
 import numpy as np
 
 from collections import defaultdict
-from functools32 import lru_cache
+
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
 
 
-from pyam_analysis.run_control import (
-    run_control
-)
+from pyam_analysis.run_control import run_control
 
 # line colors, markers, and styles that are cycled through when not
 # explicitly declared
