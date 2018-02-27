@@ -146,9 +146,3 @@ def test_region_map_regions_legend():
         cbar=False,
     )
     return fig
-
-
-def test_region_axes_raises():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
-    fig, ax = plt.subplots(figsize=(10, 7))
-    pytest.raises(ValueError, df.region_plot, ax=ax)
