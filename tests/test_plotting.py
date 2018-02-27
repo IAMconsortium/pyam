@@ -86,20 +86,8 @@ def test_region_vmin_vmax():
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
     df.region_plot(
         ax=ax,
-        vmin=2,
-        vmax=4,
-    )
-    return fig
-
-
-@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
-def test_region_legend():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
-    fig, ax = plt.subplots(
-        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        legend=True,
+        vmin=0.2,
+        vmax=0.4,
     )
     return fig
 
@@ -142,5 +130,19 @@ def test_region_map_regions():
     df.region_plot(
         ax=ax,
         map_regions=True,
+    )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_region_map_regions_legend():
+    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_region_data.csv'))
+    fig, ax = plt.subplots(
+        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
+    df.region_plot(
+        ax=ax,
+        map_regions=True,
+        legend=True,
     )
     return fig

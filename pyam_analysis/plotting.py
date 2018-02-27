@@ -16,7 +16,6 @@ from functools32 import lru_cache
 from pyam_analysis.run_control import (
     run_control
 )
-from pyam_analysis.utils import isstr
 
 # line colors, markers, and styles that are cycled through when not
 # explicitly declared
@@ -105,6 +104,11 @@ def region_plot(df, column='value', crs=None, gdf=None, ax=None, add_features=Tr
     gdf = gdf or read_shapefile(gpd.datasets.get_path('naturalearth_lowres'),
                                 region_col='iso_a3')
     data = gdf.merge(df, on='region', how='inner').to_crs(crs.proj4_init)
+    if data.empty:  # help users with iso codes
+        df['region'] = df['region'].str.upper()
+        data = gdf.merge(df, on='region', how='inner').to_crs(crs.proj4_init)
+    if data.empty:
+        raise ValueError('No data to plot')
 
     if add_features:
         ax.add_feature(cartopy.feature.LAND)
