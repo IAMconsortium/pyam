@@ -23,9 +23,6 @@ from pyam_analysis.run_control import run_control
 # explicitly declared
 _DEFAULT_PROPS = None
 
-# cache of shapefiles
-_SHPF_CACHE = {}
-
 
 def reset_default_props():
     """Reset properties to initial cycle point"""
