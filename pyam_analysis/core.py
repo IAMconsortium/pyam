@@ -12,8 +12,10 @@ try:
 except ImportError:
     has_ix = False
 
+from pyam_analysis import plotting
+
+from pyam_analysis.logger import logger
 from pyam_analysis.utils import (
-    logger,
     write_sheet,
     read_ix,
     read_files,
@@ -26,7 +28,6 @@ from pyam_analysis.utils import (
     IAMC_IDX
 )
 from pyam_analysis.timeseries import fill_series
-from pyam_analysis import plotting
 
 
 class IamDataFrame(object):

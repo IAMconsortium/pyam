@@ -1,7 +1,6 @@
 import os
 import itertools
 import string
-import logging
 import six
 import re
 import glob
@@ -22,7 +21,7 @@ try:
 except ImportError:
     pass
 
-_LOGGER = None
+from pyam_analysis.logger import logger
 
 # common indicies
 META_IDX = ['model', 'scenario']
@@ -35,14 +34,12 @@ NUMERIC_TO_STR = dict(zip(range(0, 702),
                               string.ascii_uppercase, string.ascii_uppercase)]))
 
 
-def logger():
-    """Access global logger"""
-    global _LOGGER
-    if _LOGGER is None:
-        logging.basicConfig()
-        _LOGGER = logging.getLogger()
-        _LOGGER.setLevel('INFO')
-    return _LOGGER
+def isstr(x):
+    """Returns True if x is a string"""
+    try:
+        return isinstance(x, (str, unicode))
+    except NameError:
+        return isinstance(x, str)
 
 
 def write_sheet(writer, name, df, index=False):
