@@ -75,6 +75,7 @@ def test_region():
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
     df.region_plot(
         ax=ax,
+        cbar=False,
     )
     return fig
 
@@ -88,6 +89,7 @@ def test_region_vmin_vmax():
         ax=ax,
         vmin=0.2,
         vmax=0.4,
+        cbar=False,
     )
     return fig
 
@@ -100,6 +102,7 @@ def test_region_cmap():
     df.region_plot(
         ax=ax,
         cmap='magma_r',
+        cbar=False,
     )
     return fig
 
@@ -112,6 +115,7 @@ def test_region_crs():
     df.region_plot(
         ax=ax,
         crs=crs,
+        cbar=False,
     )
     return fig
 
@@ -130,6 +134,7 @@ def test_region_map_regions():
     df.region_plot(
         ax=ax,
         map_regions=True,
+        cbar=False,
     )
     return fig
 
@@ -144,5 +149,6 @@ def test_region_map_regions_legend():
         ax=ax,
         map_regions=True,
         legend=True,
+        cbar=False,
     )
     return fig
