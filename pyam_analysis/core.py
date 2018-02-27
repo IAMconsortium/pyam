@@ -1,7 +1,6 @@
 import copy
 import os
 import six
-import warnings
 import itertools
 
 import numpy as np
@@ -40,11 +39,11 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        data: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
+        data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
             an instance of an TimeSeries or Scenario (requires `ixmp`),
-            or pandas.DataFrame or data file with IAMC-format data columns
+            or pd.DataFrame or data file with IAMC-format data columns
         """
-        # import data from pandas.DataFrame or read from source
+        # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame):
             self.data = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
@@ -76,9 +75,9 @@ class IamDataFrame(object):
         Parameters
         ----------
         other: pyam-analysis.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
-        pandas.DataFrame or data file
+        pd.DataFrame or data file
             an IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
-            or pandas.DataFrame or data file with IAMC-format data columns
+            or pd.DataFrame or data file with IAMC-format data columns
         inplace : bool, default False
             if True, do operation inplace and return None
         """
@@ -108,8 +107,6 @@ class IamDataFrame(object):
             columns for Pivot table
         values: str, default 'value'
             dataframe column to aggregate or count
-        exclude_cat: None or list of strings, default ['exclude']
-            exclude all scenarios from the listed categories
         aggfunc: str or function, default 'count'
             function used for aggregation,
             accepts 'count', 'mean', and 'sum'
@@ -150,8 +147,6 @@ class IamDataFrame(object):
         ----------
         year: int
              year to be interpolated
-        exclude_cat: None or list of strings, default ['exclude']
-             exclude all scenarios from the listed categories
         """
         df = self.pivot_table(index=IAMC_IDX, columns=['year'],
                               values='value', aggfunc=np.sum)
@@ -186,16 +181,16 @@ class IamDataFrame(object):
                                      columns='year')['value']
 
     def reset_exclude(self):
-        """Reset exclusion assignment for all scenarios to 'uncategorized'
+        """Reset exclusion assignment for all scenarios to `exclude: False`
         """
         self.meta['exclude'] = False
 
     def metadata(self, meta, name=None):
-        """Add metadata columns as pandas Series or DataFrame
+        """Add metadata columns as pd.Series or list
 
         Parameters
         ----------
-        meta: pandas.Series, list, int or str
+        meta: pd.Series, list, int or str
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
         name: str
@@ -274,7 +269,7 @@ class IamDataFrame(object):
         variable: dict
             dictionary with required variable and other criteria (optional)
         exclude: bool, default False
-            if true, flag scenarios missing required variable as `exclude=True`
+            flag scenarios missing the required variables as `exclude: True`
         """
         keep = _apply_filters(self.data, self.meta, criteria)
         idx = self.meta.index.difference(_meta_idx(self.data[keep]))
@@ -301,7 +296,7 @@ class IamDataFrame(object):
            dictionary with variable keys and check values
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
         exclude: bool, default False
-            if true, exclude models and scenarios failing validation from further analysis
+            flag scenarios failing validation as `exclude: True`
         """
         df = _apply_criteria(self.data, criteria, in_range=False)
 
@@ -350,7 +345,7 @@ class IamDataFrame(object):
 
     def to_excel(self, excel_writer, sheet_name='data', index=False, **kwargs):
         """Write timeseries data to Excel using the IAMC template convention
-        (wrapper for `pandas.DataFrame.to_excel()`)
+        (wrapper for `pd.DataFrame.to_excel()`)
 
         Parameters
         ----------
