@@ -96,7 +96,7 @@ def read_files(fnames, *args, **kwargs):
     """Read data from a snapshot file saved in the standard IAMC format
     or a table with year/value columns
     """
-    if isinstance(fnames, six.string_types):
+    if isstr(fnames):
         fnames = [fnames]
 
     fnames = itertools.chain(*[glob.glob(f) for f in fnames])
@@ -149,7 +149,7 @@ def style_df(df, style='heatmap'):
 
 def find_depth(data, s, level):
     # determine function for finding depth level =, >=, <= |s
-    if not isinstance(level, six.string_types):
+    if not isstr(level):
         test = lambda x: level == x
     elif level[-1] == '-':
         level = int(level[:-1])
@@ -178,7 +178,7 @@ def pattern_match(data, values, level=None):
 
     values = values if isinstance(values, list) else [values]
     for s in values:
-        if isinstance(s, six.string_types):
+        if isstr(s):
             regexp = (str(s)
                       .replace('|', '\\|')
                       .replace('*', '.*')
