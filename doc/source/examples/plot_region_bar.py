@@ -1,7 +1,7 @@
 """
-====================
-Plot Timeseries Data
-====================
+====================================
+Plot Non-Variable Data as a Bar Plot
+====================================
 
 """
 import matplotlib.pyplot as plt
@@ -18,6 +18,6 @@ df = (df
 
 print(df.head())
 
-df.line_plot(color='region')
+df.bar_plot(bars='region', stacked=True)
 
 plt.show()
