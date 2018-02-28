@@ -528,6 +528,24 @@ def validate(df, *args, **kwargs):
     return vdf
 
 
+def require_variable(df, *args, **kwargs):
+    """Check whether all scenarios have a required variable
+
+    Parameters
+    ----------
+    df: IamDataFrame instance
+    args and kwargs: see IamDataFrame.require_variable() for details
+    filters: dict, optional
+        filter by data & metadata columns, see function 'filter()' for details
+    """
+
+    filters = kwargs.pop('filters', {})
+    fdf = df.filter(filters)
+    vdf = fdf.require_variable(*args, **kwargs)
+    df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+    return vdf
+
+
 def categorize(df, *args, **kwargs):
     """Assign scenarios to a category according to specific criteria
     or display the category assignment
