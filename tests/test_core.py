@@ -129,7 +129,7 @@ def test_validate_nonexisting(meta_df):
     assert len(obs) == 1
     assert obs['scenario'].values[0] == 'a_scenario'
 
-    assert list(meta_df['exclude']) == [True, False] # scenario with failed
+    assert list(meta_df['exclude']) == [True, False]  # scenario with failed
     # validation excluded, scenario with non-defined value passes validation
 
 
@@ -143,7 +143,7 @@ def test_validate_lo(meta_df):
     obs = meta_df.validate({'Primary Energy': {'lo': 2.0}}, exclude=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2005
-    
+
 
 def test_validate_year(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
@@ -186,7 +186,7 @@ def test_category_pass(meta_df):
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     meta_df.categorize('category', 'Testing', {'Primary Energy':
-        {'up': 6, 'year': 2010}})
+                                               {'up': 6, 'year': 2010}})
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 

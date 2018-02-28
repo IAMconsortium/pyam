@@ -275,7 +275,7 @@ class IamDataFrame(object):
             self.meta.loc[idx, name] = value
             msg = "{} scenario{} categorized as {}: '{}'"
             logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
-                          name, value))
+                                     name, value))
 
     def require_variable(self, variable, unit=None, year=None, exclude=False):
         """Check whether all scenarios have a required variable
@@ -370,6 +370,9 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
+    def col_apply(self, col, func):
+        self.data[col] = self.data[col].apply(func)
+
     def _to_file_format(self):
         """Return a dataframe suitable for writing to a file"""
         df = self.timeseries().reset_index()
@@ -450,6 +453,15 @@ class IamDataFrame(object):
         """
         df = self.as_pandas(with_metadata=True)
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
+        return ax
+
+    def bar_plot(self, *args, **kwargs):
+        """Plot timeseries bars of existing data
+
+        see pyam_analysis.plotting.bar_plot() for all available options
+        """
+        df = self.as_pandas(with_metadata=True)
+        ax = plotting.bar_plot(df, *args, **kwargs)
         return ax
 
     def region_plot(self, map_regions=False, map_col='iso', **kwargs):

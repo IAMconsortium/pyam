@@ -1,5 +1,6 @@
 import itertools
 import os
+import warnings
 
 try:
     import cartopy
@@ -54,12 +55,26 @@ def default_props(reset=False):
 
 
 def reshape_line_plot(df, x, y):
-    """Reshape data from long form to "plot form".
+    """Reshape data from long form to "line plot form".
 
-    Plot form has x value as the index with one column for each line.
+    Line plot form has x value as the index with one column for each line.
     Each column has data points as values and all metadata as column headers.
     """
     idx = list(df.columns.drop(y))
+    if df.duplicated(idx).any():
+        warnings.warn('Duplicated index found.')
+        df = df.drop_duplicates(idx, keep='last')
+    df = df.set_index(idx)[y].unstack(x).T
+    return df
+
+
+def reshape_bar_plot(df, x, y, bars):
+    """Reshape data from long form to "bar plot form".
+
+    Bar plot form has x value as the index with one column for bar grouping.
+    Table values come from y values.
+    """
+    idx = [bars, x]
     if df.duplicated(idx).any():
         warnings.warn('Duplicated index found.')
         df = df.drop_duplicates(idx, keep='last')
@@ -197,8 +212,67 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
     return ax
 
 
-def line_plot(df, x='year', y='value', ax=None, legend=False,
-              color=None, marker=None, linestyle=None, **kwargs):
+def bar_plot(df, x='year', y='value', bars='variable',
+             ax=None, orient='v', legend=True, title=True,
+             **kwargs):
+    for col in set(['model', 'scenario', 'year', 'variable']) - set([x, bars]):
+        if len(df[col].unique()) > 1:
+            msg = 'Can not plot multiple {}s in bar_plot with x={}, bars={}'
+            raise ValueError(msg.format(col, x, bars))
+
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    # long form to one column per bar group
+    _df = reshape_bar_plot(df, x, y, bars)
+
+    # explicitly get colors
+    defaults = default_props(reset=True)['color']
+    rc = run_control()
+    color = []
+    for key in _df.columns:
+        c = next(defaults)
+        if 'color' in rc and bars in rc['color'] and key in rc['color'][bars]:
+            c = rc['color'][bars][key]
+        color.append(c)
+
+    # plot data
+    kind = 'bar' if orient.startswith('v') else 'barh'
+    _df.plot(kind=kind, color=color, ax=ax, **kwargs)
+
+    # add legend
+    ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+    if not legend:
+        ax.legend_.remove()
+
+    # add default labels if possible
+    if orient == 'v':
+        ax.set_xlabel(x.capitalize())
+    else:
+        ax.set_ylabel(x.capitalize())
+    units = df['unit'].unique()
+    if len(units) == 1 and y == 'value':
+        if orient == 'v':
+            ax.set_ylabel(units[0])
+        else:
+            ax.set_xlabel(units[0])
+
+    # build a default title if possible
+    _title = []
+    for var in ['model', 'scenario', 'region', 'variable']:
+        values = df[var].unique()
+        if len(values) == 1:
+            _title.append('{}: {}'.format(var, values[0]))
+    if title and _title:
+        title = ' '.join(_title) if title is True else title
+        ax.set_title(title)
+
+    return ax
+
+
+def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
+              color=None, marker=None, linestyle=None,
+              **kwargs):
     """Plot data as lines with or without markers.
 
     Parameters
@@ -290,12 +364,12 @@ def line_plot(df, x='year', y='value', ax=None, legend=False,
         ax.set_ylabel(units[0])
 
     # build a default title if possible
-    title = []
+    _title = []
     for var in ['model', 'scenario', 'region', 'variable']:
         values = df.columns.get_level_values(var).unique()
         if len(values) == 1:
-            title.append('{}: {}'.format(var, values[0]))
-    if title:
-        ax.set_title(' '.join(title))
+            _title.append('{}: {}'.format(var, values[0]))
+    if title and _title:
+        ax.set_title(' '.join(_title))
 
     return ax, handles, labels

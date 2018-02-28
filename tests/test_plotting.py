@@ -9,7 +9,7 @@ except ImportError:
 
 import matplotlib.pyplot as plt
 
-from pyam_analysis import IamDataFrame, plotting
+from pyam_analysis import IamDataFrame, plotting, run_control
 
 from testing_utils import plot_df, IMAGE_BASELINE_DIR, TEST_DATA_DIR
 
@@ -17,19 +17,19 @@ from testing_utils import plot_df, IMAGE_BASELINE_DIR, TEST_DATA_DIR
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_line_plot(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax)
+    plot_df.line_plot(ax=ax, legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
+def test_line_no_legend(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, legend=False)
     return fig
 
 
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_line_color(plot_df):
-    fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, color='model')
-    return fig
-
-
-@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
-def test_line_color_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, color='model', legend=True)
     return fig
@@ -182,4 +182,67 @@ def test_region_map_regions_legend():
         legend=True,
         cbar=False,
     )
+    return fig
+
+
+def test_bar_plot_raises(plot_df):
+    pytest.raises(ValueError, plot_df.bar_plot)
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_bar_plot(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .bar_plot(ax=ax, bars='scenario')
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_bar_plot_h(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .bar_plot(ax=ax, bars='scenario',
+               orient='h')
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_bar_plot_stacked(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .bar_plot(ax=ax, bars='scenario',
+               stacked=True)
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_bar_plot_title(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .bar_plot(ax=ax, bars='scenario',
+               title='foo')
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_bar_plot_rc(plot_df):
+    run_control().update({'color': {'scenario': {'test_scenario': 'black'}}})
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .bar_plot(ax=ax, bars='scenario')
+     )
     return fig
