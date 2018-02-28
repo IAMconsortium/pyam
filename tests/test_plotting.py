@@ -94,6 +94,19 @@ def test_region_cbar():
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
     df.region_plot(
         ax=ax,
+        cbar=True,
+    )
+    return fig
+
+
+@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
+def test_region_cbar_args():
+    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
+    fig, ax = plt.subplots(
+        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
+    df.region_plot(
+        ax=ax,
         cbar={'extend': 'both'},
     )
     return fig
