@@ -268,12 +268,12 @@ def test_add_metadata_as_int(meta_df):
 
 
 def test_filter_by_metadata_bool(meta_df):
-    meta_df.metadata([True, False], 'exclude')
+    meta_df.metadata([True, False], name='exclude')
     obs = meta_df.filter({'exclude': True})
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def test_filter_by_metadata_int(meta_df):
-    meta_df.metadata([1, 2], 'value')
+    meta_df.metadata([1, 2], name='value')
     obs = meta_df.filter({'value': [1, 3]})
     assert obs['scenario'].unique() == 'a_scenario'
