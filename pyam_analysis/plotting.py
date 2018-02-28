@@ -89,7 +89,8 @@ def read_shapefile(fname, region_col=None, **kwargs):
 
 
 def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=True,
-                vmin=None, vmax=None, cmap=None, cbar=True, legend=False):
+                vmin=None, vmax=None, cmap=None, cbar=True, legend=False,
+                title=True):
     """Plot data on a map.
 
     Parameters
@@ -117,6 +118,8 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
     legend : bool or dictionary, optional, default: False
         Add a legend. If a dictionary is provided, it will be used as keyword 
         arguments in creating the legend.
+    title : bool or string, optional, default: True
+        Add a title.
     """
     for col in ['model', 'scenario', 'year', 'variable']:
         if len(df[col].unique()) > 1:
@@ -171,7 +174,7 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
         if cbar is True:  # use some defaults
             cbar = dict(
                 fraction=0.022,  # these are magic numbers
-                pad=0.005,       # that just seem to "work"
+                pad=0.02,       # that just seem to "work"
             )
         cb = plt.colorbar(scalar_map, **cbar)
 
@@ -182,6 +185,14 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
                 loc='right',
             )
         ax.legend(handles, labels, **legend)
+
+    if title:
+        var = df['variable'].unique()[0]
+        unit = df['unit'].unique()[0]
+        year = df['year'].unique()[0]
+        default_title = '{} ({}) in {}'.format(var, unit, year)
+        title = default_title if title is True else title
+        ax.set_title(title)
 
     return ax
 
