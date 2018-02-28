@@ -17,6 +17,7 @@ from pyam_analysis import plotting
 from pyam_analysis.logger import logger
 from pyam_analysis.run_control import run_control
 from pyam_analysis.utils import (
+    isstr,
     write_sheet,
     read_ix,
     read_files,
@@ -67,7 +68,7 @@ class IamDataFrame(object):
             return self.data.__getitem__(key)
 
     def __setitem__(self, key, value):
-        _key_check = [key] if isinstance(key, six.string_types) else key
+        _key_check = [key] if isstr(key) else key
         if set(_key_check).issubset(self.meta.columns):
             return self.meta.__setitem__(key, value)
         else:
@@ -370,12 +371,20 @@ class IamDataFrame(object):
             return ret
 
     def _to_file_format(self):
+        """Return a dataframe suitable for writing to a file"""
         df = self.timeseries().reset_index()
         df = df.rename(columns={c: str(c).title() for c in df.columns})
         return df
 
     def to_csv(self, path, index=False, **kwargs):
-        self._to_file_format().to_csv(path, index=index, **kwargs)
+        """Write data to a csv file
+
+        Parameters
+        ----------
+        index: boolean, default False
+            write row names (index)
+        """
+        self._to_file_format().to_csv(path, index=False, **kwargs)
 
     def to_excel(self, path=None, writer=None, sheet_name='data', index=False, **kwargs):
         """Write timeseries data to Excel using the IAMC template convention
@@ -402,7 +411,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path:
+        path: string
             path/filename for xlsx file of metadata export
         """
         writer = pd.ExcelWriter(path)
@@ -414,7 +423,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path:
+        path: string
             xlsx file with metadata exported from an instance of pyam_analysis
         """
 
@@ -447,6 +456,17 @@ class IamDataFrame(object):
         """Plot regional data for a single model, scenario, variable, and year
 
         see pyam_analysis.plotting.region_plot() for all available options
+
+        Parameters
+        ----------
+        map_regions: boolean or string, default False
+            Apply a mapping from existing regions to regions to plot. If True, 
+            the mapping will be searched in known locations (e.g., if 
+            registered with `run_control()`). If a path to a file is provided,
+            that file will be used. Files must have a "region" column of 
+            existing regions and a mapping column of regions to be mapped to.
+        map_col: string, default 'iso'
+            The column used to map new regions to. 
         """
         df = self.as_pandas(with_metadata=True)
         if map_regions:

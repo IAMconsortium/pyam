@@ -1,6 +1,11 @@
-import cartopy
 import pytest
 import os
+
+try:
+    import cartopy
+    has_cartopy = True
+except ImportError:
+    has_cartopy = False
 
 import matplotlib.pyplot as plt
 
@@ -68,6 +73,7 @@ def test_line_update_rc(plot_df):
     return fig
 
 
+@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_region():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -80,6 +86,7 @@ def test_region():
     return fig
 
 
+@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_region_cbar():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -92,6 +99,7 @@ def test_region_cbar():
     return fig
 
 
+@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_region_vmin_vmax():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -106,6 +114,7 @@ def test_region_vmin_vmax():
     return fig
 
 
+@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_region_cmap():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -119,6 +128,7 @@ def test_region_cmap():
     return fig
 
 
+@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_region_crs():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -132,6 +142,7 @@ def test_region_crs():
     return fig
 
 
+@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_region_map_regions():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_region_data.csv'))
@@ -145,6 +156,7 @@ def test_region_map_regions():
     return fig
 
 
+@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_region_map_regions_legend():

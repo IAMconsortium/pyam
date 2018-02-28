@@ -39,10 +39,7 @@ NUMERIC_TO_STR = dict(zip(range(0, 702),
 
 def isstr(x):
     """Returns True if x is a string"""
-    try:
-        return isinstance(x, (str, unicode))
-    except NameError:
-        return isinstance(x, str)
+    return isinstance(x, six.string_types)
 
 
 def write_sheet(writer, name, df, index=False):
@@ -97,6 +94,7 @@ def read_ix(ix, **kwargs):
 
 @lru_cache()
 def read_pandas(fname, *args, **kwargs):
+    """Read a file and return a pd.DataFrame"""
     if not os.path.exists(fname):
         raise ValueError("no data file '" + fname + "' found!")
     if fname.endswith('csv'):
@@ -206,10 +204,3 @@ def years_match(data, years):
     """
     years = [years] if isinstance(years, int) else years
     return data.isin(years)
-
-
-def isstr(s):
-    """
-    check if it's  string
-    """
-    return True if isinstance(s, six.string_types) else False

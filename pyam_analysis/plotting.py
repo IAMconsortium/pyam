@@ -1,6 +1,10 @@
 import itertools
 import os
-import cartopy
+
+try:
+    import cartopy
+except ImportError:
+    cartopy = None
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -65,6 +69,16 @@ def reshape_line_plot(df, x, y):
 
 @lru_cache()
 def read_shapefile(fname, region_col=None, **kwargs):
+    """Read a shapefile for use in regional plots. Shapefiles must have a 
+    column denoted as "region".
+
+    Parameters
+    ----------
+    fname : string
+        path to shapefile to be read by geopandas
+    region_col : string, default None
+        if provided, rename a column in the shapefile to "region"
+    """
     gdf = gpd.read_file(fname, **kwargs)
     if region_col is not None:
         gdf = gdf.rename(columns={region_col: 'region'})
@@ -74,7 +88,7 @@ def read_shapefile(fname, region_col=None, **kwargs):
     return gdf
 
 
-def region_plot(df, column='value', crs=None, gdf=None, ax=None, add_features=True,
+def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=True,
                 vmin=None, vmax=None, cmap=None, cbar=True, legend=False):
     """Plot data on a map.
 
@@ -82,11 +96,27 @@ def region_plot(df, column='value', crs=None, gdf=None, ax=None, add_features=Tr
     ----------
     df : pd.DataFrame
         Data to plot as a long-form data frame
-    column : str, optional
-        The column to use for x-axis values
-        default: value
+    column : string, optional, default: 'value'
+        The column to use for plotting values
     ax : matplotlib.Axes, optional
-    kwargs : Additional arguments to pass to the geopandas.GeoDataFrame.plot() function
+    crs : cartopy.crs, optional
+        The crs to plot, PlateCarree is used by default.
+    gdf : geopandas.GeoDataFrame, optional
+        The geometries to plot. The gdf must have a "region" column.
+    add_features : bool, optional, default: True
+        If true, add land, ocean, coastline, and border features.
+    vmin : numeric, optional
+        The minimum value to plot.
+    vmax : numeric, optional
+        The maximum value to plot.
+    cmap : string, optional
+        The colormap to use.
+    cbar : bool or dictionary, optional, default: True
+        Add a colorbar. If a dictionary is provided, it will be used as keyword 
+        arguments in creating the colorbar.
+    legend : bool or dictionary, optional, default: False
+        Add a legend. If a dictionary is provided, it will be used as keyword 
+        arguments in creating the legend.
     """
     for col in ['model', 'scenario', 'year', 'variable']:
         if len(df[col].unique()) > 1:
@@ -164,10 +194,10 @@ def line_plot(df, x='year', y='value', ax=None, legend=False,
     ----------
     df : pd.DataFrame
         Data to plot as a long-form data frame
-    x : str, optional
+    x : string, optional
         The column to use for x-axis values
         default: year
-    y : str, optional
+    y : string, optional
         The column to use for y-axis values
         default: value
     ax : matplotlib.Axes, optional
