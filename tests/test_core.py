@@ -169,7 +169,8 @@ def test_category_pass(meta_df):
            'category': ['Testing', np.nan]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 6}})
+    meta_df.categorize('category', 'Testing', {'Primary Energy':
+        {'up': 6, 'year': 2010}})
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
@@ -181,7 +182,7 @@ def test_category_top_level(meta_df):
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     categorize(meta_df, 'category', 'Testing',
-               criteria={'Primary Energy': {'up': 6}},
+               criteria={'Primary Energy': {'up': 6, 'year': 2010}},
                filters={'variable': 'Primary Energy'})
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
