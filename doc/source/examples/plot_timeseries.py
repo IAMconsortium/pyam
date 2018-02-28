@@ -4,8 +4,6 @@ Plot Timeseries Data
 ====================
 
 """
-import os
-
 import matplotlib.pyplot as plt
 import pyam_analysis as iam
 
