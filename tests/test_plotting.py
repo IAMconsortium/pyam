@@ -189,7 +189,7 @@ def test_bar_plot_raises(plot_df):
     pytest.raises(ValueError, plot_df.bar_plot)
 
 
-@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_bar_plot(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -200,7 +200,7 @@ def test_bar_plot(plot_df):
     return fig
 
 
-@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_bar_plot_h(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -212,7 +212,7 @@ def test_bar_plot_h(plot_df):
     return fig
 
 
-@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_bar_plot_stacked(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -224,7 +224,7 @@ def test_bar_plot_stacked(plot_df):
     return fig
 
 
-@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_bar_plot_title(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -236,7 +236,7 @@ def test_bar_plot_title(plot_df):
     return fig
 
 
-@pytest.mark.mpl_image_compare(style='ggplot', basebar_dir=IMAGE_BASELINE_DIR,
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_bar_plot_rc(plot_df):
     run_control().update({'color': {'scenario': {'test_scenario': 'black'}}})
