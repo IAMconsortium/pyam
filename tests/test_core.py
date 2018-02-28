@@ -35,6 +35,12 @@ def test_variable_depth_0(test_df):
     assert obs == exp
 
 
+def test_variable_depth_0_keep_false(test_df):
+    obs = list(test_df.filter({'level': 0}, keep=False)['variable'].unique())
+    exp = ['Primary Energy|Coal']
+    assert obs == exp
+
+
 def test_variable_depth_0_minus(test_df):
     obs = list(test_df.filter({'level': '0-'})['variable'].unique())
     exp = ['Primary Energy']

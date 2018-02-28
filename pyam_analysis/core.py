@@ -338,7 +338,7 @@ class IamDataFrame(object):
 
             return df
 
-    def filter(self, filters, inplace=False):
+    def filter(self, filters, keep=True, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
@@ -356,9 +356,10 @@ class IamDataFrame(object):
         inplace : bool, default False
             if True, do operation inplace and return None
         """
-        keep = _apply_filters(self.data, self.meta, filters)
+        _keep = _apply_filters(self.data, self.meta, filters)
+        _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
-        ret.data = ret.data[keep]
+        ret.data = ret.data[_keep]
 
         idx = pd.MultiIndex.from_tuples(
             pd.unique(list(zip(ret.data['model'], ret.data['scenario']))),
@@ -500,7 +501,8 @@ def _apply_filters(data, meta, filters):
         else:
             raise SystemError(
                 'filter by column ' + col + ' not supported')
-        keep = keep & keep_col
+        keep &= keep_col
+
     return keep
 
 
