@@ -263,7 +263,7 @@ class IamDataFrame(object):
                           name, value))
 
     def require_variable(self, variable, unit=None, year=None, exclude=False):
-        """Check whether model/scenarios have a required variable
+        """Check whether all scenarios have a required variable
 
         Parameters
         ----------
@@ -299,13 +299,13 @@ class IamDataFrame(object):
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude=False):
-        """Check which model/scenarios satisfy specific criteria
+        """Validate scenarios using criteria on timeseries values
 
         Parameters
         ----------
         criteria: dict
            dictionary with variable keys and check values
-            ('up' and 'lo' for respective bounds, 'year' for years - optional)
+            ('up' and 'lo' for respective bounds, 'year' for years)
         exclude: bool, default False
             flag scenarios failing validation as `exclude: True`
         """
@@ -511,17 +511,15 @@ def _apply_criteria(df, criteria, **kwargs):
 
 
 def validate(df, *args, **kwargs):
-    """Run validation checks on timeseries data
+    """Validate scenarios using criteria on timeseries values
 
     Parameters
     ----------
     df: IamDataFrame instance
     args and kwargs: see IamDataFrame.validate() for details
     filters: dict, optional
-        filter by model, scenario, region, variable, level, year, category
-        see function 'filter()' for details
-        filter by 'variable'/'year' is replaced by arguments of 'criteria'
-        see function IamDataFrame.filter() for details
+        filter by data & metadata columns, see function 'filter()' for details,
+        filtering by 'variable'/'year' is replaced by arguments of 'criteria'
     """
     filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
@@ -531,17 +529,16 @@ def validate(df, *args, **kwargs):
 
 
 def categorize(df, *args, **kwargs):
-    """Run validation checks on timeseries data
+    """Assign scenarios to a category according to specific criteria
+    or display the category assignment
 
     Parameters
     ----------
     df: IamDataFrame instance
     args and kwargs: see IamDataFrame.categorize() for details
     filters: dict, optional
-        filter by model, scenario, region, variable, level, year, category
-        see function 'filter()' for details
-        filter by 'variable'/'year' is replaced by arguments of 'criteria'
-        see function IamDataFrame.filter() for details
+        filter by data & metadata columns, see function 'filter()' for details,
+        filtering by 'variable'/'year' is replaced by arguments of 'criteria'
     """
     filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
