@@ -5,6 +5,7 @@ import logging
 import six
 import re
 import glob
+import collections
 
 import numpy as np
 import pandas as pd
@@ -95,7 +96,7 @@ def read_files(fnames, *args, **kwargs):
     """Read data from a snapshot file saved in the standard IAMC format
     or a table with year/value columns
     """
-    if isinstance(fnames, six.string_types):
+    if isstr(fnames):
         fnames = [fnames]
 
     fnames = itertools.chain(*[glob.glob(f) for f in fnames])
@@ -148,7 +149,7 @@ def style_df(df, style='heatmap'):
 
 def find_depth(data, s, level):
     # determine function for finding depth level =, >=, <= |s
-    if not isinstance(level, six.string_types):
+    if not isstr(level):
         test = lambda x: level == x
     elif level[-1] == '-':
         level = int(level[:-1])
@@ -166,23 +167,28 @@ def find_depth(data, s, level):
     return list(map(apply_test, data))
 
 
-def pattern_match(data, strings, level=None):
+def pattern_match(data, values, level=None):
     """
     matching of model/scenario names, variables, regions, and categories
-    to pseudo-regex for filtering by columns (str)
+    to pseudo-regex for filtering by columns (str, int, bool)
     """
-    strings = [strings] if isinstance(strings, six.string_types) else strings
     matches = np.array([False] * len(data))
-    for s in strings:
-        regexp = (str(s)
-                  .replace('|', '\\|')
-                  .replace('*', '.*')
-                  .replace('+', '\+')
-                  ) + "$"
-        pattern = re.compile(regexp)
-        subset = filter(pattern.match, data)
-        depth = True if level is None else find_depth(data, s, level)
-        matches |= (data.isin(subset) & depth)
+    if not isinstance(values, collections.Iterable) or isstr(values):
+        values = [values]
+
+    for s in values:
+        if isstr(s):
+            regexp = (str(s)
+                      .replace('|', '\\|')
+                      .replace('*', '.*')
+                      .replace('+', '\+')
+                      ) + "$"
+            pattern = re.compile(regexp)
+            subset = filter(pattern.match, data)
+            depth = True if level is None else find_depth(data, s, level)
+            matches |= (data.isin(subset) & depth)
+        else:
+            matches |= data == s
     return matches
 
 
@@ -192,3 +198,10 @@ def years_match(data, years):
     """
     years = [years] if isinstance(years, int) else years
     return data.isin(years)
+
+
+def isstr(s):
+    """
+    check if it's  string
+    """
+    return True if isinstance(s, six.string_types) else False

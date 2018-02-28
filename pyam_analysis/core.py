@@ -20,6 +20,7 @@ from pyam_analysis.utils import (
     format_data,
     pattern_match,
     years_match,
+    isstr,
     META_IDX,
     IAMC_IDX
 )
@@ -56,7 +57,7 @@ class IamDataFrame(object):
         self.reset_exclude()
 
     def __getitem__(self, key):
-        _key_check = [key] if isinstance(key, six.string_types) else key
+        _key_check = [key] if isstr(key) else key
         if set(_key_check).issubset(self.meta.columns):
             return self.meta.__getitem__(key)
         else:
@@ -116,14 +117,13 @@ class IamDataFrame(object):
             output style for pivot table formatting
             accepts 'highlight_not_max', 'heatmap'
         """
-        index = [index] if isinstance(index, six.string_types) else index
-        columns = [columns] if isinstance(
-            columns, six.string_types) else columns
+        index = [index] if isstr(index) else index
+        columns = [columns] if isstr(columns) else columns
 
         df = self.data
 
         # allow 'aggfunc' to be passed as string for easier user interface
-        if isinstance(aggfunc, six.string_types):
+        if isstr(aggfunc):
             if aggfunc == 'count':
                 df = self.data.groupby(index + columns, as_index=False).count()
                 fill_value = 0
