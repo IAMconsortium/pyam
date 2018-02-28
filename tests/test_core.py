@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 from numpy import testing as npt
 
-from pyam_analysis import IamDataFrame, plotting, validate, categorize
+from pyam_analysis import IamDataFrame, plotting, validate, categorize, \
+    require_variable
 
 from testing_utils import here, meta_df, test_df, TEST_DF
 
@@ -93,11 +94,20 @@ def test_read_pandas():
 def test_require_variable(meta_df):
     obs = meta_df.require_variable(variable='Primary Energy|Coal',
                                    exclude=True)
-    print(obs)
     assert len(obs) == 1
     assert obs.loc[0, 'scenario'] == 'a_scenario2'
 
     assert list(meta_df['exclude']) == [False, True]
+
+
+def test_require_variable_top_level(meta_df):
+    obs = require_variable(meta_df, variable='Primary Energy|Coal',
+                           exclude=True)
+    assert len(obs) == 1
+    assert obs.loc[0, 'scenario'] == 'a_scenario2'
+
+    assert list(meta_df['exclude']) == [False, True]
+
 
 def test_validate_all_pass(meta_df):
     obs = meta_df.validate(
