@@ -41,8 +41,18 @@ extensions = [
     'cloud_sptheme.ext.table_styling',
     'numpydoc',
     'nbsphinx',
-    'sphinxcontrib.programoutput'
+    'sphinxcontrib.programoutput',
+    'IPython.sphinxext.ipython_directive',
+    'IPython.sphinxext.ipython_console_highlighting',
+    'sphinx_gallery.gen_gallery',
 ]
+
+sphinx_gallery_conf = {
+    # path to your examples scripts
+    'examples_dirs': 'source/examples',
+    # path where to save gallery generated examples
+    'gallery_dirs': 'source/auto_examples'
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
