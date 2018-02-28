@@ -173,10 +173,9 @@ def pattern_match(data, values, level=None):
     to pseudo-regex for filtering by columns (str, int, bool)
     """
     matches = np.array([False] * len(data))
-    if not isinstance(values, collections.Iterable) and not isstr(values):
+    if not isinstance(values, collections.Iterable) or isstr(values):
         values = [values]
 
-    values = values if isinstance(values, list) else [values]
     for s in values:
         if isstr(s):
             regexp = (str(s)
