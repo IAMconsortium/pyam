@@ -478,6 +478,7 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
 
     where_idx = set(rows.index[rows['year'] == check['year']]) \
         if 'year' in check else set(rows.index)
+    rows = rows.loc[list(where_idx)]
 
     up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
     lo_op = rows['value'].__ge__ if in_range else rows['value'].__lt__
