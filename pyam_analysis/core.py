@@ -1,7 +1,6 @@
 import copy
 import os
 import six
-import warnings
 import itertools
 
 import numpy as np
@@ -40,11 +39,11 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        data: ixmp.TimeSeries, ixmp.Scenario, pandas.DataFrame or data file
+        data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
             an instance of an TimeSeries or Scenario (requires `ixmp`),
-            or pandas.DataFrame or data file with IAMC-format data columns
+            or pd.DataFrame or data file with IAMC-format data columns
         """
-        # import data from pandas.DataFrame or read from source
+        # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame):
             self.data = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
@@ -76,9 +75,9 @@ class IamDataFrame(object):
         Parameters
         ----------
         other: pyam-analysis.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
-        pandas.DataFrame or data file
+        pd.DataFrame or data file
             an IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
-            or pandas.DataFrame or data file with IAMC-format data columns
+            or pd.DataFrame or data file with IAMC-format data columns
         inplace : bool, default False
             if True, do operation inplace and return None
         """
@@ -108,8 +107,6 @@ class IamDataFrame(object):
             columns for Pivot table
         values: str, default 'value'
             dataframe column to aggregate or count
-        exclude_cat: None or list of strings, default ['exclude']
-            exclude all scenarios from the listed categories
         aggfunc: str or function, default 'count'
             function used for aggregation,
             accepts 'count', 'mean', and 'sum'
@@ -150,8 +147,6 @@ class IamDataFrame(object):
         ----------
         year: int
              year to be interpolated
-        exclude_cat: None or list of strings, default ['exclude']
-             exclude all scenarios from the listed categories
         """
         df = self.pivot_table(index=IAMC_IDX, columns=['year'],
                               values='value', aggfunc=np.sum)
@@ -186,16 +181,16 @@ class IamDataFrame(object):
                                      columns='year')['value']
 
     def reset_exclude(self):
-        """Reset exclusion assignment for all scenarios to 'uncategorized'
+        """Reset exclusion assignment for all scenarios to `exclude: False`
         """
         self.meta['exclude'] = False
 
     def metadata(self, meta, name=None):
-        """Add metadata columns as pandas Series or DataFrame
+        """Add metadata columns as pd.Series or list
 
         Parameters
         ----------
-        meta: pandas.Series, list, int or str
+        meta: pd.Series, list, int or str
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
         name: str
@@ -253,7 +248,7 @@ class IamDataFrame(object):
 
         # find all data that matches categorization
         rows = _apply_criteria(self.data, criteria,
-                               in_range=True, return_test='equality')
+                               in_range=True, return_test='all')
         idx = _meta_idx(rows)
 
         # update metadata dataframe
@@ -263,19 +258,56 @@ class IamDataFrame(object):
             logger().info("No scenarios satisfy the criteria")
         else:
             self.meta.loc[idx, name] = value
-            msg = "{} scenario(s) categorized as {} '{}'"
-            logger().info(msg.format(len(idx), name, value))
+            msg = "{} scenario{} categorized as {}: '{}'"
+            logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
+                          name, value))
+
+    def require_variable(self, variable, unit=None, year=None, exclude=False):
+        """Check whether all scenarios have a required variable
+
+        Parameters
+        ----------
+        variable: str
+            required variable
+        unit: str, default None
+            name of unit (optional)
+        years: int or list, default None
+            years (optional)
+        exclude: bool, default False
+            flag scenarios missing the required variables as `exclude: True`
+        """
+        criteria = {'variable': variable}
+        if unit:
+            criteria.update({'unit': unit})
+        if year:
+            criteria.update({'year': year})
+
+        keep = _apply_filters(self.data, self.meta, criteria)
+        idx = self.meta.index.difference(_meta_idx(self.data[keep]))
+
+        if len(idx) == 0:
+            logger().info('All scenarios have the required variable')
+            return
+
+        msg = '{} scenario{} to not include required variables'
+
+        if exclude:
+            self.meta.loc[idx, 'exclude'] = True
+            msg += ', marked as `exclude=True` in metadata'
+
+        logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's'))
+        return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude=False):
-        """Check which model/scenarios satisfy specific criteria
+        """Validate scenarios using criteria on timeseries values
 
         Parameters
         ----------
         criteria: dict
            dictionary with variable keys and check values
-            ('up' and 'lo' for respective bounds, 'year' for years - optional)
+            ('up' and 'lo' for respective bounds, 'year' for years)
         exclude: bool, default False
-            if true, exclude models and scenarios failing validation from further analysis
+            flag scenarios failing validation as `exclude: True`
         """
         df = _apply_criteria(self.data, criteria, in_range=False)
 
@@ -300,9 +332,8 @@ class IamDataFrame(object):
         filters: dict
             The following columns are available for filtering:
              - metadata columns: filter by category assignment in metadata
-             - 'model', 'scenario', 'region': takes a string or list of strings
-             - 'variable': takes a string or list of strings,
-                where ``*`` can be used as a wildcard
+             - 'model', 'scenario', 'region', 'variable', 'unit':
+               string or list of strings, where ``*`` can be used as a wildcard
              - 'level': the maximum "depth" of IAM variables (number of '|')
                (exluding the strings given in the 'variable' argument)
              - 'year': takes an integer, a list of integers or a range
@@ -325,7 +356,7 @@ class IamDataFrame(object):
 
     def to_excel(self, excel_writer, sheet_name='data', index=False, **kwargs):
         """Write timeseries data to Excel using the IAMC template convention
-        (wrapper for `pandas.DataFrame.to_excel()`)
+        (wrapper for `pd.DataFrame.to_excel()`)
 
         Parameters
         ----------
@@ -401,7 +432,7 @@ def _apply_filters(data, meta, filters):
             cat_idx = meta[matches].index
             keep_col = data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
 
-        elif col in ['model', 'scenario', 'region']:
+        elif col in ['model', 'scenario', 'region', 'unit']:
             keep_col = pattern_match(data[col], values)
 
         elif col == 'variable':
@@ -423,7 +454,7 @@ def _apply_filters(data, meta, filters):
     return keep
 
 
-def _check_rows(rows, check, in_range=True, return_test=None):
+def _check_rows(rows, check, in_range=True, return_test='any'):
     """Check all rows to be in/out of a certain range and provide testing on return
     values based on provided conditions
 
@@ -437,31 +468,30 @@ def _check_rows(rows, check, in_range=True, return_test=None):
         check if values are inside or outside of provided range
     return_test: str, optional
         possible values:
-            - None: default, return all instances where checks pass
-            - equality: test if all values match checks, if not, return empty set
+            - 'any': default, return scenarios where check passes for any entry
+            - 'all': test if all values match checks, if not, return empty set
     """
-    check_idx = []
-    where_idx = [set(rows.index)]
+    valid_checks = set(['up', 'lo', 'year'])
+    if not set(check.keys()).issubset(valid_checks):
+        msg = 'Unknown checking type: {}'
+        raise ValueError(msg.format(check.keys() - valid_checks))
+
+    where_idx = set(rows.index[rows['year'] == check['year']]) \
+        if 'year' in check else set(rows.index)
+    rows = rows.loc[list(where_idx)]
+
     up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
     lo_op = rows['value'].__ge__ if in_range else rows['value'].__lt__
 
-    for check_type, val in check.items():
-        if check_type == 'up':
-            check_idx.append(set(rows.index[up_op(val)]))
-        elif check_type == 'lo':
-            check_idx.append(set(rows.index[lo_op(val)]))
-        elif check_type == 'year':
-            where_idx.append(set(rows.index[rows['year'] == val]))
-        else:
-            raise ValueError(
-                "Unknown checking type: {}".format(check_type))
-
-    where_idx = set.intersection(*where_idx)
+    check_idx = []
+    for (bd, op) in [('up', up_op), ('lo', lo_op)]:
+        if bd in check:
+            check_idx.append(set(rows.index[op(check[bd])]))
     check_idx = set.intersection(*check_idx)
 
-    if return_test is None:
+    if return_test is 'any':
         ret = where_idx & check_idx
-    elif return_test == 'equality':
+    elif return_test == 'all':
         ret = where_idx if where_idx == check_idx else set()
     else:
         raise ValueError('Unknown return test: {}'.format(return_test))
@@ -481,17 +511,15 @@ def _apply_criteria(df, criteria, **kwargs):
 
 
 def validate(df, *args, **kwargs):
-    """Run validation checks on timeseries data
+    """Validate scenarios using criteria on timeseries values
 
     Parameters
     ----------
     df: IamDataFrame instance
     args and kwargs: see IamDataFrame.validate() for details
     filters: dict, optional
-        filter by model, scenario, region, variable, level, year, category
-        see function 'filter()' for details
-        filter by 'variable'/'year' is replaced by arguments of 'criteria'
-        see function IamDataFrame.filter() for details
+        filter by data & metadata columns, see function 'filter()' for details,
+        filtering by 'variable'/'year' is replaced by arguments of 'criteria'
     """
     filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
@@ -500,25 +528,42 @@ def validate(df, *args, **kwargs):
     return vdf
 
 
+def require_variable(df, *args, **kwargs):
+    """Check whether all scenarios have a required variable
+
+    Parameters
+    ----------
+    df: IamDataFrame instance
+    args and kwargs: see IamDataFrame.require_variable() for details
+    filters: dict, optional
+        filter by data & metadata columns, see function 'filter()' for details
+    """
+
+    filters = kwargs.pop('filters', {})
+    fdf = df.filter(filters)
+    vdf = fdf.require_variable(*args, **kwargs)
+    df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+    return vdf
+
+
 def categorize(df, *args, **kwargs):
-    """Run validation checks on timeseries data
+    """Assign scenarios to a category according to specific criteria
+    or display the category assignment
 
     Parameters
     ----------
     df: IamDataFrame instance
     args and kwargs: see IamDataFrame.categorize() for details
     filters: dict, optional
-        filter by model, scenario, region, variable, level, year, category
-        see function 'filter()' for details
-        filter by 'variable'/'year' is replaced by arguments of 'criteria'
-        see function IamDataFrame.filter() for details
+        filter by data & metadata columns, see function 'filter()' for details,
+        filtering by 'variable'/'year' is replaced by arguments of 'criteria'
     """
     filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
     fdf.categorize(*args, **kwargs)
 
     # update metadata
-    name = args[0]
+    name = args[0] if len(args) else kwargs['name']
     if name in df.meta:
         df.meta[name].update(fdf.meta[name])
     else:

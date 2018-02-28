@@ -6,7 +6,8 @@ import numpy as np
 import pandas as pd
 from numpy import testing as npt
 
-from pyam_analysis import IamDataFrame, plotting, validate, categorize
+from pyam_analysis import IamDataFrame, plotting, validate, categorize, \
+    require_variable
 
 from testing_utils import here, meta_df, test_df, TEST_DF
 
@@ -90,7 +91,25 @@ def test_read_pandas():
     assert list(ia['variable'].unique()) == ['Primary Energy']
 
 
-def test_validate_none(meta_df):
+def test_require_variable(meta_df):
+    obs = meta_df.require_variable(variable='Primary Energy|Coal',
+                                   exclude=True)
+    assert len(obs) == 1
+    assert obs.loc[0, 'scenario'] == 'a_scenario2'
+
+    assert list(meta_df['exclude']) == [False, True]
+
+
+def test_require_variable_top_level(meta_df):
+    obs = require_variable(meta_df, variable='Primary Energy|Coal',
+                           exclude=True)
+    assert len(obs) == 1
+    assert obs.loc[0, 'scenario'] == 'a_scenario2'
+
+    assert list(meta_df['exclude']) == [False, True]
+
+
+def test_validate_all_pass(meta_df):
     obs = meta_df.validate(
         {'Primary Energy': {'up': 10}}, exclude=True)
     assert obs is None
@@ -99,9 +118,13 @@ def test_validate_none(meta_df):
     assert list(meta_df['exclude']) == [False, False]  # none excluded
 
 
-def test_validate_null(meta_df):
-    obs = meta_df.validate({'Secondary Energy': {'up': 10}}, exclude=True)
-    assert obs is None
+def test_validate_nonexisting(meta_df):
+    obs = meta_df.validate({'Primary Energy|Coal': {'up': 2}}, exclude=True)
+    assert len(obs) == 1
+    assert obs['scenario'].values[0] == 'a_scenario'
+
+    assert list(meta_df['exclude']) == [True, False] # scenario with failed
+    # validation excluded, scenario with non-defined value passes validation
 
 
 def test_validate_up(meta_df):
@@ -114,7 +137,7 @@ def test_validate_lo(meta_df):
     obs = meta_df.validate({'Primary Energy': {'lo': 2.0}}, exclude=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2005
-
+    
 
 def test_validate_year(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
@@ -156,7 +179,8 @@ def test_category_pass(meta_df):
            'category': ['Testing', np.nan]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 6}})
+    meta_df.categorize('category', 'Testing', {'Primary Energy':
+        {'up': 6, 'year': 2010}})
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
@@ -168,7 +192,7 @@ def test_category_top_level(meta_df):
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     categorize(meta_df, 'category', 'Testing',
-               criteria={'Primary Energy': {'up': 6}},
+               criteria={'Primary Energy': {'up': 6, 'year': 2010}},
                filters={'variable': 'Primary Energy'})
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
