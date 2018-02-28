@@ -563,7 +563,7 @@ def categorize(df, *args, **kwargs):
     fdf.categorize(*args, **kwargs)
 
     # update metadata
-    name = args[0]
+    name = args[0] if len(args) else kwargs['name']
     if name in df.meta:
         df.meta[name].update(fdf.meta[name])
     else:
