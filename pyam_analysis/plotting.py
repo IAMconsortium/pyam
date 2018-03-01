@@ -37,8 +37,8 @@ def reset_default_props(**kwargs):
     global _DEFAULT_PROPS
     pcycle = plt.rcParams['axes.prop_cycle']
     _DEFAULT_PROPS = {
-        'color': itertools.cycle([x['color'] for x in pcycle]) if not kwargs
-        else itertools.cycle(_get_standard_colors(**kwargs)),
+        'color': itertools.cycle(_get_standard_colors(**kwargs))
+        if len(kwargs) > 0 else itertools.cycle([x['color'] for x in pcycle]),
         'marker': itertools.cycle(['o', 'x', '.', '+', '*']),
         'linestyle': itertools.cycle(['-', '--', '-.', ':']),
     }
@@ -138,8 +138,8 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
     legend : bool or dictionary, optional, default: False
         Add a legend. If a dictionary is provided, it will be used as keyword 
         arguments in creating the legend.
-    title : bool or string, optional, default: True
-        Add a title.
+    title : bool or string, optional
+        Display a default or custom title.
     """
     for col in ['model', 'scenario', 'year', 'variable']:
         if len(df[col].unique()) > 1:
@@ -220,6 +220,29 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
 def pie_plot(df, value='value', category='variable',
              ax=None, legend=False, title=True, cmap=None,
              **kwargs):
+    """Plot data as a bar chart.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data to plot as a long-form data frame
+    value : string, optional
+        The column to use for data values
+        default: value
+    category : string, optional
+        The column to use for labels
+        default: variable
+    ax : matplotlib.Axes, optional
+    legend : bool, optional
+        Include a legend
+        default: False
+    title : bool or string, optional
+        Display a default or custom title.
+    cmap : string, optional
+        A colormap to use.
+        default: None
+    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+    """
     for col in set(['model', 'scenario', 'year', 'variable']) - set([category]):
         if len(df[col].unique()) > 1:
             msg = 'Can not plot multiple {}s in pie_plot with value={}, category={}'
@@ -263,6 +286,35 @@ def pie_plot(df, value='value', category='variable',
 def bar_plot(df, x='year', y='value', bars='variable',
              ax=None, orient='v', legend=True, title=True, cmap=None,
              **kwargs):
+    """Plot data as a bar chart.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data to plot as a long-form data frame
+    x : string, optional
+        The column to use for x-axis values
+        default: year
+    y : string, optional
+        The column to use for y-axis values
+        default: value
+    bars: string, optional
+        The column to use for bar groupings
+        default: variable
+    ax : matplotlib.Axes, optional
+    orient : string, optional
+        Vertical or horizontal orientation.
+        default: variable
+    legend : bool, optional
+        Include a legend
+        default: False
+    title : bool or string, optional
+        Display a default or custom title.
+    cmap : string, optional
+        A colormap to use.
+        default: None
+    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+    """
     for col in set(['model', 'scenario', 'year', 'variable']) - set([x, bars]):
         if len(df[col].unique()) > 1:
             msg = 'Can not plot multiple {}s in bar_plot with x={}, bars={}'
@@ -338,6 +390,8 @@ def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
     legend : bool, optional
         Include a legend
         default: False
+    title : bool or string, optional
+        Display a default or custom title.
     color : string, optional
         A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
@@ -349,6 +403,9 @@ def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
     linestyle : string, optional
         A valid matplotlib linestyle or column name. If a column name, common
         values will be provided the same linestyle.
+        default: None
+    cmap : string, optional
+        A colormap to use.
         default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """

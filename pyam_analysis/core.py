@@ -370,8 +370,20 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def col_apply(self, col, func):
-        self.data[col] = self.data[col].apply(func)
+    def col_apply(self, col, func, *args, **kwargs):
+        """Apply a function to a column
+
+        Parameters
+        ----------
+        col: string
+            column in either data or metadata
+        func: functional
+            function to apply
+        """
+        if col in data:
+            self.data[col] = self.data[col].apply(func, *args, **kwargs)
+        else:
+            self.meta[col] = self.meta[col].apply(func, *args, **kwargs)
 
     def _to_file_format(self):
         """Return a dataframe suitable for writing to a file"""
