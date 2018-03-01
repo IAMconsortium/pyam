@@ -49,7 +49,7 @@ help:
 
 clean:
 	rm -rf $(BUILDDIR)/*
-	rm -rf auto_examples/*
+	rm -rf examples/*
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
