@@ -149,7 +149,7 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
     crs = crs or cartopy.crs.PlateCarree()
     if ax is None:
         fig, ax = plt.subplots(subplot_kw=dict(projection=crs))
-    elif not isinstance(ax, cartopy.plt.geoaxes.GeoAxesSubplot):
+    elif not isinstance(ax, cartopy.mpl.geoaxes.GeoAxesSubplot):
         msg = 'Must provide a cartopy axes object, not: {}'
         raise ValueError(msg.format(type(ax)))
 
