@@ -246,3 +246,37 @@ def test_bar_plot_rc(plot_df):
      .bar_plot(ax=ax, bars='scenario')
      )
     return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_pie_plot_labels(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model', 'year': 2010})
+     .pie_plot(ax=ax, category='scenario')
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_pie_plot_legend(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model', 'year': 2010})
+     .pie_plot(ax=ax, category='scenario', labels=None, legend=True)
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_pie_plot_other(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    run_control().update({'color': {'scenario': {'test_scenario': 'black'}}})
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model', 'year': 2010})
+     .pie_plot(ax=ax, category='scenario', cmap='viridis', title='foo')
+     )
+    return fig
