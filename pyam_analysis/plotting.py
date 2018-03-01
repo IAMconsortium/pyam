@@ -15,6 +15,7 @@ import geopandas as gpd
 import numpy as np
 
 from collections import defaultdict
+from contextlib import contextmanager
 
 try:
     from functools import lru_cache
@@ -24,22 +25,26 @@ except ImportError:
 
 from pyam_analysis.run_control import run_control
 
+from pandas.plotting._style import _get_standard_colors
+
 # line colors, markers, and styles that are cycled through when not
 # explicitly declared
 _DEFAULT_PROPS = None
 
 
-def reset_default_props():
+def reset_default_props(**kwargs):
     """Reset properties to initial cycle point"""
     global _DEFAULT_PROPS
+    pcycle = plt.rcParams['axes.prop_cycle']
     _DEFAULT_PROPS = {
-        'color': itertools.cycle([x['color'] for x in plt.rcParams['axes.prop_cycle']]),
+        'color': itertools.cycle([x['color'] for x in pcycle]) if not kwargs
+        else itertools.cycle(_get_standard_colors(**kwargs)),
         'marker': itertools.cycle(['o', 'x', '.', '+', '*']),
         'linestyle': itertools.cycle(['-', '--', '-.', ':']),
     }
 
 
-def default_props(reset=False):
+def default_props(reset=False, **kwargs):
     """Return current default properties
 
     Parameters
@@ -50,11 +55,8 @@ def default_props(reset=False):
     """
     global _DEFAULT_PROPS
     if _DEFAULT_PROPS is None or reset:
-        reset_default_props()
+        reset_default_props(**kwargs)
     return _DEFAULT_PROPS
-
-# i think this can be combined for all non-region plots, right?
-# add pie/area charts, others?
 
 
 def reshape_line_plot(df, x, y):
@@ -147,7 +149,7 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
     crs = crs or cartopy.crs.PlateCarree()
     if ax is None:
         fig, ax = plt.subplots(subplot_kw=dict(projection=crs))
-    elif not isinstance(ax, cartopy.mpl.geoaxes.GeoAxesSubplot):
+    elif not isinstance(ax, cartopy.plt.geoaxes.GeoAxesSubplot):
         msg = 'Must provide a cartopy axes object, not: {}'
         raise ValueError(msg.format(type(ax)))
 
@@ -216,7 +218,7 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
 
 
 def pie_plot(df, value='value', category='variable',
-             ax=None, legend=False, title=True,
+             ax=None, legend=False, title=True, cmap=None,
              **kwargs):
     for col in set(['model', 'scenario', 'year', 'variable']) - set([category]):
         if len(df[col].unique()) > 1:
@@ -233,11 +235,11 @@ def pie_plot(df, value='value', category='variable',
     _df = _df.abs()
 
     # explicitly get colors
-    defaults = default_props(reset=True)['color']
+    defaults = default_props(reset=True, num_colors=len(_df.index),
+                             colormap=cmap)['color']
     rc = run_control()
     color = []
-    for key in _df.index:
-        c = next(defaults)
+    for key, c in zip(_df.index, defaults):
         if 'color' in rc and \
            category in rc['color'] and \
            key in rc['color'][category]:
@@ -259,7 +261,7 @@ def pie_plot(df, value='value', category='variable',
 
 
 def bar_plot(df, x='year', y='value', bars='variable',
-             ax=None, orient='v', legend=True, title=True,
+             ax=None, orient='v', legend=True, title=True, cmap=None,
              **kwargs):
     for col in set(['model', 'scenario', 'year', 'variable']) - set([x, bars]):
         if len(df[col].unique()) > 1:
@@ -273,7 +275,8 @@ def bar_plot(df, x='year', y='value', bars='variable',
     _df = reshape_bar_plot(df, x, y, bars)
 
     # explicitly get colors
-    defaults = default_props(reset=True)['color']
+    defaults = default_props(reset=True, num_colors=len(_df.columns),
+                             colormap=cmap)['color']
     rc = run_control()
     color = []
     for key in _df.columns:
@@ -317,7 +320,7 @@ def bar_plot(df, x='year', y='value', bars='variable',
 
 
 def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
-              color=None, marker=None, linestyle=None,
+              color=None, marker=None, linestyle=None, cmap=None,
               **kwargs):
     """Plot data as lines with or without markers.
 
@@ -356,7 +359,8 @@ def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
     df = reshape_line_plot(df, x, y)  # long form to one column per line
 
     # determine color, marker, and linestyle for each line
-    defaults = default_props(reset=True)
+    defaults = default_props(reset=True, num_colors=len(df.columns),
+                             colormap=cmap)
     props = {}
     prop_idx = {}
     rc = run_control()
