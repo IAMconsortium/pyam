@@ -11,8 +11,13 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import matplotlib.patches as mpatches
-import geopandas as gpd
 import numpy as np
+
+try:
+    import geopandas as gpd
+except ImportError:
+    gpd = None
+
 
 from collections import defaultdict
 from contextlib import contextmanager
