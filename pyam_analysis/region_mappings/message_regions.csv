@@ -1,0 +1,248 @@
+iso,name,region
+ATG,Antigua and Barbuda,LAM
+DZA,Algeria,MEA
+AZE,Azerbaijan,FSU
+ALB,Albania,EEU
+ARM,Armenia,FSU
+AGO,Angola,AFR
+ASM,American Samoa,PAS
+ARG,Argentina,LAM
+AUS,Australia,PAO
+BHR,Bahrain,MEA
+BRB,Barbados,LAM
+BMU,Bermuda,LAM
+BHS,Bahamas,LAM
+BGD,Bangladesh,SAS
+BLZ,Belize,LAM
+BIH,Bosnia and Herzegovina,EEU
+BOL,Bolivia,LAM
+MMR,Burma,PAS
+BEN,Benin,AFR
+SLB,Solomon Islands,PAS
+BRA,Brazil,LAM
+BGR,Bulgaria,EEU
+BRN,Brunei Darussalam,PAS
+CAN,Canada,NAM
+KHM,Cambodia,CPA
+LKA,Sri Lanka,SAS
+COG,Congo,AFR
+COD,Democratic Republic of the Congo,AFR
+BDI,Burundi,AFR
+CHN,China,CPA
+AFG,Afghanistan,SAS
+BTN,Bhutan,SAS
+CHL,Chile,LAM
+CYM,Cayman Islands,LAM
+CMR,Cameroon,AFR
+TCD,Chad,AFR
+COM,Comoros,AFR
+COL,Colombia,LAM
+CRI,Costa Rica,LAM
+CAF,Central African Republic,AFR
+CUB,Cuba,LAM
+CPV,Cape Verde,AFR
+COK,Cook Islands,PAS
+CYP,Cyprus,WEU
+DNK,Denmark,WEU
+DJI,Djibouti,AFR
+DMA,Dominica,LAM
+DOM,Dominican Republic,LAM
+ECU,Ecuador,LAM
+EGY,Egypt,MEA
+IRL,Ireland,WEU
+GNQ,Equatorial Guinea,AFR
+EST,Estonia,EEU
+ERI,Eritrea,AFR
+SLV,El Salvador,LAM
+ETH,Ethiopia,AFR
+AUT,Austria,WEU
+CZE,Czech Republic,EEU
+GUF,French Guiana,LAM
+FIN,Finland,WEU
+FJI,Fiji,PAS
+FLK,Falkland Islands (Malvinas),LAM
+FSM,"Micronesia,  Federated States of",PAS
+PYF,French Polynesia,PAS
+FRA,France,WEU
+GMB,Gambia,AFR
+GAB,Gabon,AFR
+GEO,Georgia,FSU
+GHA,Ghana,AFR
+GRD,Grenada,LAM
+GRL,Greenland,NULL
+DEU,Germany,WEU
+GUM,Guam,NAM
+GRC,Greece,WEU
+GTM,Guatemala,LAM
+GIN,Guinea,AFR
+GUY,Guyana,LAM
+HTI,Haiti,LAM
+HND,Honduras,LAM
+HRV,Croatia,EEU
+HUN,Hungary,EEU
+ISL,Iceland,WEU
+IND,India,SAS
+IRN,Iran (Islamic Republic of),MEA
+ISR,Israel,MEA
+ITA,Italy,WEU
+CIV,Cote dIvoire,AFR
+IRQ,Iraq,MEA
+JPN,Japan,PAO
+JAM,Jamaica,LAM
+JOR,Jordan,MEA
+KEN,Kenya,AFR
+KGZ,Kyrgyzstan,FSU
+PRK,"Korea, Democratic Peoples Republic of",CPA
+KIR,Kiribati,PAS
+KOR,"Korea,  Republic of",PAS
+KWT,Kuwait,MEA
+KAZ,Kazakhstan,FSU
+LAO,Lao Peoples Democratic Republic,CPA
+LBN,Lebanon,MEA
+LVA,Latvia,EEU
+BLR,Belarus,FSU
+LTU,Lithuania,EEU
+LBR,Liberia,AFR
+SVK,Slovakia,EEU
+LIE,Liechtenstein,WEU
+LBY,Libyan Arab Jamahiriya,MEA
+MDG,Madagascar,AFR
+MTQ,Martinique,LAM
+MNG,Mongolia,CPA
+MSR,Montserrat,LAM
+MKD,The former Yugoslav Republic of Macedonia,EEU
+MLI,Mali,AFR
+MAR,Morocco,MEA
+MUS,Mauritius,AFR
+MRT,Mauritania,AFR
+MLT,Malta,WEU
+OMN,Oman,MEA
+MDV,Maldives,SAS
+MEX,Mexico,LAM
+MYS,Malaysia,PAS
+MOZ,Mozambique,AFR
+MWI,Malawi,AFR
+NCL,New Caledonia,PAS
+NIU,Niue,PAS
+NER,Niger,AFR
+ABW,Aruba,LAM
+AIA,Anguilla,LAM
+BEL,Belgium,WEU
+HKG,Hong Kong,CPA
+MNP,Northern Mariana Islands,PAS
+FRO,Faroe Islands,WEU
+AND,Andorra,WEU
+GIB,Gibraltar,WEU
+IMN,Isle of Man,WEU
+LUX,Luxembourg,WEU
+MAC,Macau,CPA
+MCO,Monaco,WEU
+PSE,Palestine,MEA
+MNE,Montenegro,EEU
+MYT,Mayotte,WEU
+ALA,Åland Islands,WEU
+NFK,Norfolk Island,WEU
+CCK,Cocos (Keeling) Islands,PAS
+ATA,Antarctica,NULL
+BVT,Bouvet Island,NULL
+ATF,French Southern and Antarctic Lands,NULL
+HMD,Heard Island and McDonald Islands,PAO
+IOT,British Indian Ocean Territory,WEU
+CXR,Christmas Island,PAO
+UMI,United States Minor Outlying Islands,NAM
+VUT,Vanuatu,PAS
+NGA,Nigeria,AFR
+NLD,Netherlands,WEU
+NOR,Norway,WEU
+NPL,Nepal,SAS
+NRU,Nauru,PAS
+SUR,Suriname,LAM
+NIC,Nicaragua,LAM
+NZL,New Zealand,PAO
+PRY,Paraguay,LAM
+PER,Peru,LAM
+PAK,Pakistan,SAS
+POL,Poland,EEU
+PAN,Panama,LAM
+PRT,Portugal,WEU
+PNG,Papua New Guinea,PAS
+GNB,Guinea-Bissau,AFR
+QAT,Qatar,MEA
+REU,Reunion,WEU
+ROU,Romania,EEU
+MDA,Republic of Moldova,FSU
+PHL,Philippines,PAS
+PRI,Puerto Rico,NAM
+RUS,Russia,FSU
+RWA,Rwanda,AFR
+SAU,Saudi Arabia,MEA
+KNA,Saint Kitts and Nevis,LAM
+SYC,Seychelles,AFR
+ZAF,South Africa,AFR
+LSO,Lesotho,AFR
+BWA,Botswana,AFR
+SEN,Senegal,AFR
+SVN,Slovenia,EEU
+SLE,Sierra Leone,AFR
+SGP,Singapore,PAS
+SOM,Somalia,AFR
+ESP,Spain,WEU
+LCA,Saint Lucia,LAM
+SDN,Sudan,MEA
+SWE,Sweden,WEU
+SYR,Syrian Arab Republic,MEA
+CHE,Switzerland,WEU
+TTO,Trinidad and Tobago,LAM
+THA,Thailand,PAS
+TJK,Tajikistan,FSU
+TKL,Tokelau,PAO
+TON,Tonga,PAS
+TGO,Togo,AFR
+STP,Sao Tome and Principe,AFR
+TUN,Tunisia,MEA
+TUR,Turkey,WEU
+TUV,Tuvalu,PAS
+TKM,Turkmenistan,FSU
+TZA,United Republic of Tanzania,AFR
+UGA,Uganda,AFR
+GBR,United Kingdom,WEU
+UKR,Ukraine,FSU
+USA,United States,NAM
+BFA,Burkina Faso,AFR
+URY,Uruguay,LAM
+UZB,Uzbekistan,FSU
+VCT,Saint Vincent and the Grenadines,LAM
+VEN,Venezuela,LAM
+VGB,British Virgin Islands,WEU
+VNM,Viet Nam,CPA
+VIR,United States Virgin Islands,NAM
+NAM,Namibia,AFR
+WLF,Wallis and Futuna Islands,WEU
+WSM,Samoa,PAS
+SWZ,Swaziland,AFR
+YEM,Yemen,MEA
+ZMB,Zambia,AFR
+ZWE,Zimbabwe,AFR
+IDN,Indonesia,PAS
+GLP,Guadeloupe,LAM
+ANT,Netherlands Antilles,LAM
+ARE,United Arab Emirates,MEA
+TLS,Timor-Leste,PAS
+PCN,Pitcairn Islands,WEU
+PLW,Palau,PAS
+MHL,Marshall Islands,PAS
+SPM,Saint Pierre and Miquelon,WEU
+SHN,Saint Helena,WEU
+SMR,San Marino,WEU
+TCA,Turks and Caicos Islands,LAM
+ESH,Western Sahara,AFR
+SRB,Serbia,EEU
+VAT,Holy See (Vatican City),WEU
+SJM,Svalbard,WEU
+MAF,Saint Martin,WEU
+BLM,Saint Barthelemy,WEU
+GGY,Guernsey,WEU
+JEY,Jersey,WEU
+SGS,South Georgia South Sandwich Islands,WEU
+TWN,Taiwan,PAS
+SSD,South Sudan,MEA

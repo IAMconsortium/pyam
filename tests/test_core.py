@@ -9,7 +9,7 @@ from numpy import testing as npt
 from pyam_analysis import IamDataFrame, plotting, validate, categorize, \
     require_variable
 
-from testing_utils import here, meta_df, test_df, TEST_DF
+from testing_utils import here, meta_df, test_df, TEST_DF, TEST_DATA_DIR
 
 
 def test_model(test_df):
@@ -32,6 +32,12 @@ def test_variable(test_df):
 def test_variable_depth_0(test_df):
     obs = list(test_df.filter({'level': 0})['variable'].unique())
     exp = ['Primary Energy']
+    assert obs == exp
+
+
+def test_variable_depth_0_keep_false(test_df):
+    obs = list(test_df.filter({'level': 0}, keep=False)['variable'].unique())
+    exp = ['Primary Energy|Coal']
     assert obs == exp
 
 
@@ -87,7 +93,7 @@ def test_timeseries(test_df):
 
 
 def test_read_pandas():
-    ia = IamDataFrame(os.path.join(here, 'testing_data_2.csv'))
+    ia = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
     assert list(ia['variable'].unique()) == ['Primary Energy']
 
 
@@ -123,7 +129,7 @@ def test_validate_nonexisting(meta_df):
     assert len(obs) == 1
     assert obs['scenario'].values[0] == 'a_scenario'
 
-    assert list(meta_df['exclude']) == [True, False] # scenario with failed
+    assert list(meta_df['exclude']) == [True, False]  # scenario with failed
     # validation excluded, scenario with non-defined value passes validation
 
 
@@ -137,7 +143,7 @@ def test_validate_lo(meta_df):
     obs = meta_df.validate({'Primary Energy': {'lo': 2.0}}, exclude=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2005
-    
+
 
 def test_validate_year(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
@@ -180,7 +186,7 @@ def test_category_pass(meta_df):
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     meta_df.categorize('category', 'Testing', {'Primary Energy':
-        {'up': 6, 'year': 2010}})
+                                               {'up': 6, 'year': 2010}})
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
@@ -200,7 +206,7 @@ def test_category_top_level(meta_df):
 
 def test_load_metadata(test_df):
     test_df.load_metadata(os.path.join(
-        here, 'testing_metadata.xlsx'), sheet_name='metadata')
+        TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='metadata')
 
     obs = test_df.meta
     dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
@@ -210,7 +216,8 @@ def test_load_metadata(test_df):
 
 
 def test_append(test_df):
-    df2 = test_df.append(other=os.path.join(here, 'testing_data_2.csv'))
+    df2 = test_df.append(other=os.path.join(
+        TEST_DATA_DIR, 'testing_data_2.csv'))
 
     obs = test_df['scenario'].unique()
     exp = ['a_scenario']

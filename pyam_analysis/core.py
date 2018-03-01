@@ -12,11 +12,16 @@ try:
 except ImportError:
     has_ix = False
 
+from pyam_analysis import plotting
+
+from pyam_analysis.logger import logger
+from pyam_analysis.run_control import run_control
 from pyam_analysis.utils import (
-    logger,
+    isstr,
     write_sheet,
     read_ix,
     read_files,
+    read_pandas,
     format_data,
     pattern_match,
     years_match,
@@ -25,7 +30,6 @@ from pyam_analysis.utils import (
     IAMC_IDX
 )
 from pyam_analysis.timeseries import fill_series
-from pyam_analysis import plotting
 
 
 class IamDataFrame(object):
@@ -63,12 +67,23 @@ class IamDataFrame(object):
         else:
             return self.data.__getitem__(key)
 
+    def __setitem__(self, key, value):
+        _key_check = [key] if isstr(key) else key
+        if set(_key_check).issubset(self.meta.columns):
+            return self.meta.__setitem__(key, value)
+        else:
+            return self.data.__setitem__(key, value)
+
     def __len__(self):
         return self.data.__len__()
 
     def head(self, *args, **kwargs):
         """Identical to pd.DataFrame.head() operating on data"""
         return self.data.head(*args, **kwargs)
+
+    def tail(self, *args, **kwargs):
+        """Identical to pd.DataFrame.tail() operating on data"""
+        return self.data.tail(*args, **kwargs)
 
     def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
@@ -237,7 +252,7 @@ class IamDataFrame(object):
         for kind, arg in [('color', color), ('marker', marker),
                           ('linestyle', linestyle)]:
             if arg:
-                plotting.run_control().update({kind: {name: {value: arg}}})
+                run_control().update({kind: {name: {value: arg}}})
 
         if criteria == 'uncategorized':
             self.meta[name].fillna(value, inplace=True)
@@ -260,7 +275,7 @@ class IamDataFrame(object):
             self.meta.loc[idx, name] = value
             msg = "{} scenario{} categorized as {}: '{}'"
             logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
-                          name, value))
+                                     name, value))
 
     def require_variable(self, variable, unit=None, year=None, exclude=False):
         """Check whether all scenarios have a required variable
@@ -324,7 +339,7 @@ class IamDataFrame(object):
 
             return df
 
-    def filter(self, filters, inplace=False):
+    def filter(self, filters, keep=True, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
@@ -342,9 +357,10 @@ class IamDataFrame(object):
         inplace : bool, default False
             if True, do operation inplace and return None
         """
-        keep = _apply_filters(self.data, self.meta, filters)
+        _keep = _apply_filters(self.data, self.meta, filters)
+        _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
-        ret.data = ret.data[keep]
+        ret.data = ret.data[_keep]
 
         idx = pd.MultiIndex.from_tuples(
             pd.unique(list(zip(ret.data['model'], ret.data['scenario']))),
@@ -354,7 +370,38 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def to_excel(self, excel_writer, sheet_name='data', index=False, **kwargs):
+    def col_apply(self, col, func, *args, **kwargs):
+        """Apply a function to a column
+
+        Parameters
+        ----------
+        col: string
+            column in either data or metadata
+        func: functional
+            function to apply
+        """
+        if col in data:
+            self.data[col] = self.data[col].apply(func, *args, **kwargs)
+        else:
+            self.meta[col] = self.meta[col].apply(func, *args, **kwargs)
+
+    def _to_file_format(self):
+        """Return a dataframe suitable for writing to a file"""
+        df = self.timeseries().reset_index()
+        df = df.rename(columns={c: str(c).title() for c in df.columns})
+        return df
+
+    def to_csv(self, path, index=False, **kwargs):
+        """Write data to a csv file
+
+        Parameters
+        ----------
+        index: boolean, default False
+            write row names (index)
+        """
+        self._to_file_format().to_csv(path, index=False, **kwargs)
+
+    def to_excel(self, path=None, writer=None, sheet_name='data', index=False, **kwargs):
         """Write timeseries data to Excel using the IAMC template convention
         (wrapper for `pd.DataFrame.to_excel()`)
 
@@ -367,16 +414,19 @@ class IamDataFrame(object):
         index: boolean, default False
             write row names (index)
         """
-        df = self.timeseries().reset_index()
-        df = df.rename(columns={c: str(c).title() for c in df.columns})
-        df.to_excel(excel_writer, sheet_name=sheet_name, index=index, **kwargs)
+        if (path is None and writer is None) or \
+           (path is not None and writer is not None):
+            raise ValueError('Only one of path and writer must have a value')
+        if writer is None:
+            writer = pd.ExcelWriter(path)
+        self._to_file_format().to_excel(writer, sheet_name=sheet_name, index=index, **kwargs)
 
     def export_metadata(self, path):
         """Export metadata to Excel
 
         Parameters
         ----------
-        path:
+        path: string
             path/filename for xlsx file of metadata export
         """
         writer = pd.ExcelWriter(path)
@@ -388,7 +438,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path:
+        path: string
             xlsx file with metadata exported from an instance of pyam_analysis
         """
 
@@ -415,6 +465,60 @@ class IamDataFrame(object):
         """
         df = self.as_pandas(with_metadata=True)
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
+        return ax
+
+    def bar_plot(self, *args, **kwargs):
+        """Plot timeseries bars of existing data
+
+        see pyam_analysis.plotting.bar_plot() for all available options
+        """
+        df = self.as_pandas(with_metadata=True)
+        ax = plotting.bar_plot(df, *args, **kwargs)
+        return ax
+
+    def pie_plot(self, *args, **kwargs):
+        """Plot a pie chart
+
+        see pyam_analysis.plotting.pie_plot() for all available options
+        """
+        df = self.as_pandas(with_metadata=True)
+        ax = plotting.pie_plot(df, *args, **kwargs)
+        return ax
+
+    def region_plot(self, map_regions=False, map_col='iso', **kwargs):
+        """Plot regional data for a single model, scenario, variable, and year
+
+        see pyam_analysis.plotting.region_plot() for all available options
+
+        Parameters
+        ----------
+        map_regions: boolean or string, default False
+            Apply a mapping from existing regions to regions to plot. If True, 
+            the mapping will be searched in known locations (e.g., if 
+            registered with `run_control()`). If a path to a file is provided,
+            that file will be used. Files must have a "region" column of 
+            existing regions and a mapping column of regions to be mapped to.
+        map_col: string, default 'iso'
+            The column used to map new regions to. 
+        """
+        df = self.as_pandas(with_metadata=True)
+        if map_regions:
+            if map_regions is True:
+                model = df['model'].unique()[0]
+                fname = run_control()['region_mapping'][model]
+            elif os.path.exists(map_regions):
+                fname = map_regions
+            else:
+                raise ValueError(
+                    'Unknown region mapping: {}'.format(map_regions))
+
+            mapping = read_pandas(fname)
+            df = (df
+                  .merge(mapping, on='region')
+                  .rename(columns={map_col: 'region', 'region': 'label'})
+                  )
+
+        ax = plotting.region_plot(df, **kwargs)
         return ax
 
 
@@ -450,7 +554,8 @@ def _apply_filters(data, meta, filters):
         else:
             raise SystemError(
                 'filter by column ' + col + ' not supported')
-        keep = keep & keep_col
+        keep &= keep_col
+
     return keep
 
 

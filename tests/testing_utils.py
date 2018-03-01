@@ -7,6 +7,7 @@ from pyam_analysis import IamDataFrame
 
 here = os.path.dirname(os.path.realpath(__file__))
 IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
+TEST_DATA_DIR = os.path.join(here, 'data')
 
 
 TEST_DF = pd.DataFrame([
@@ -47,5 +48,5 @@ def meta_df():
 
 @pytest.fixture(scope="session")
 def plot_df():
-    df = IamDataFrame(data=os.path.join(here, 'plot_data.csv'))
+    df = IamDataFrame(data=os.path.join(TEST_DATA_DIR, 'plot_data.csv'))
     yield df

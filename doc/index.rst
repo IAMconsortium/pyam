@@ -48,4 +48,5 @@ See `this guide`_ for guidelines on NumPy/SciPy Documentation conventions.
  
    source/IamDataFrame
    source/timeseries
+   source/examples/index
 

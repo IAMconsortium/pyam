@@ -64,11 +64,18 @@ Python dependencies
 -------------------
 
 0. `pandas` v0.21.0 or higher
+0. `matplotlib`
+0. `seaborn`
+0. `geopandas` (optional)
+0. `cartopy` (optional)
+
+Documentation Building Depedencies
+----------------------------------
+
 0. `Sphinx <http://sphinx-doc.org/>`_ v1.1.2 or higher
 0. `sphinxcontrib.bibtex`
 0. `sphinxcontrib-fulltoc`
-0. `matplotlib`
-0. `seaborn`
+0. `sphinx-gallery`
 
 Installation instructions
 -------------------------

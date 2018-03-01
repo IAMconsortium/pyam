@@ -1,0 +1,13 @@
+Model,Scenario,Region,Variable,Unit,2015
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,AFR,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.0336763562024
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,CPA,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.789019366289
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,EEU,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.0100767087431
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,FSU,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.0999954893386
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,LAM,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.024528839293
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,MEA,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.055586345231
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,NAM,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.0112865104686
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,PAO,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.0176177431532
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,PAS,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.0804704013735
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,SAS,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.0377479130688
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,WEU,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,0.0305512909744
+MESSAGE-GLOBIOM,SSP2-45-SPA2-V25,World,CEDS+|9+ Sectors|Emissions|BC|Energy Sector|Harmonized-DB,Mt BC/yr,1.19055696414
