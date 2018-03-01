@@ -464,6 +464,15 @@ class IamDataFrame(object):
         ax = plotting.bar_plot(df, *args, **kwargs)
         return ax
 
+    def pie_plot(self, *args, **kwargs):
+        """Plot a pie chart
+
+        see pyam_analysis.plotting.pie_plot() for all available options
+        """
+        df = self.as_pandas(with_metadata=True)
+        ax = plotting.pie_plot(df, *args, **kwargs)
+        return ax
+
     def region_plot(self, map_regions=False, map_col='iso', **kwargs):
         """Plot regional data for a single model, scenario, variable, and year
 

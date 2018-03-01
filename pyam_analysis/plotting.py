@@ -53,6 +53,9 @@ def default_props(reset=False):
         reset_default_props()
     return _DEFAULT_PROPS
 
+# i think this can be combined for all non-region plots, right?
+# add pie/area charts, others?
+
 
 def reshape_line_plot(df, x, y):
     """Reshape data from long form to "line plot form".
@@ -208,6 +211,49 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
         default_title = '{} ({}) in {}'.format(var, unit, year)
         title = default_title if title is True else title
         ax.set_title(title)
+
+    return ax
+
+
+def pie_plot(df, value='value', category='variable',
+             ax=None, legend=False, title=True,
+             **kwargs):
+    for col in set(['model', 'scenario', 'year', 'variable']) - set([category]):
+        if len(df[col].unique()) > 1:
+            msg = 'Can not plot multiple {}s in pie_plot with value={}, category={}'
+            raise ValueError(msg.format(col, value, category))
+
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    # get data, set negative values to explode
+    _df = df.groupby(category)[value].sum()
+    where = _df > 0
+    explode = tuple(0 if _ else 0.2 for _ in where)
+    _df = _df.abs()
+
+    # explicitly get colors
+    defaults = default_props(reset=True)['color']
+    rc = run_control()
+    color = []
+    for key in _df.index:
+        c = next(defaults)
+        if 'color' in rc and \
+           category in rc['color'] and \
+           key in rc['color'][category]:
+            c = rc['color'][category][key]
+        color.append(c)
+
+    # plot data
+    _df.plot(kind='pie', colors=color, ax=ax, explode=explode, **kwargs)
+
+    # add legend
+    ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5), labels=_df.index)
+    if not legend:
+        ax.legend_.remove()
+
+    # remove label
+    ax.set_ylabel('')
 
     return ax
 

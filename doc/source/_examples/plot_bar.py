@@ -17,6 +17,9 @@ df = df.filter({'variable': 'Emissions|CO2|*',
 
 print(df.head())
 
-df.bar_plot(stacked=True)
+fig, ax = plt.subplots()
 
+df.bar_plot(ax=ax, stacked=True)
+
+fig.subplots_adjust(bottom=0.4)
 plt.show()
