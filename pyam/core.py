@@ -86,6 +86,31 @@ class IamDataFrame(object):
         """Identical to pd.DataFrame.tail() operating on data"""
         return self.data.tail(*args, **kwargs)
 
+    def models(self):
+        """Get a list of models"""
+        return list(self.meta.index.levels[0])
+
+    def scenarios(self, filters={}):
+        """Get a list of scenarios"""
+        return list(self.meta.index.levels[1])
+
+    def regions(self):
+        """Get a list of regions"""
+        return list(self.data['region'].unique())
+
+    def variables(self, filters={}, include_units=False):
+        """Get a list of variables
+
+        Parameters
+        ----------
+        include_units: boolean, default False
+            include the units
+        """
+        if include_units:
+            return self.data[['variable', 'unit']].drop_duplicates()
+        else:
+            return list(self.data.variable.unique())
+
     def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
 

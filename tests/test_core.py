@@ -12,21 +12,31 @@ from pyam import IamDataFrame, plotting, validate, categorize, \
 from testing_utils import here, meta_df, test_df, reg_df, TEST_DF, TEST_DATA_DIR
 
 
-def test_model(test_df):
+def test_get_item(test_df):
     assert test_df['model'].unique() == ['a_model']
 
 
+def test_model(test_df):
+    assert test_df.models() == ['a_model']
+
+
 def test_scenario(test_df):
-    assert test_df['scenario'].unique() == ['a_scenario']
+    assert test_df.scenarios() == ['a_scenario']
 
 
 def test_region(test_df):
-    assert test_df['region'].unique() == ['World']
+    assert test_df.regions() == ['World']
 
 
 def test_variable(test_df):
-    assert list(test_df['variable'].unique()) == ['Primary Energy',
-                                                  'Primary Energy|Coal']
+    assert test_df.variables() == ['Primary Energy', 'Primary Energy|Coal']
+
+
+def test_variable_unit(test_df):
+    dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
+           'unit': ['EJ/y', 'EJ/y']}
+    exp = pd.DataFrame.from_dict(dct)[['variable', 'unit']]
+    npt.assert_array_equal(test_df.variables(include_units=True), exp)
 
 
 def test_variable_depth_0(test_df):
