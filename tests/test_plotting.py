@@ -9,9 +9,18 @@ except ImportError:
 
 import matplotlib.pyplot as plt
 
-from pyam_analysis import IamDataFrame, plotting, run_control
+from contextlib import contextmanager
+
+from pyam_analysis import IamDataFrame, plotting, run_control, reset_rc_defaults
 
 from testing_utils import plot_df, IMAGE_BASELINE_DIR, TEST_DATA_DIR
+
+
+@contextmanager
+def update_run_control(update):
+    run_control().update(update)
+    yield
+    reset_rc_defaults()
 
 
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
@@ -66,10 +75,9 @@ def test_line_filter_title(plot_df):
 
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_line_update_rc(plot_df):
-    update = {'color': {'model': {'test_model1': 'cyan'}}}
-    plotting.run_control().update(update)
-    fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, color='model', legend=True)
+    with update_run_control({'color': {'model': {'test_model1': 'cyan'}}}):
+        fig, ax = plt.subplots(figsize=(8, 8))
+        plot_df.line_plot(ax=ax, color='model', legend=True)
     return fig
 
 
@@ -239,12 +247,12 @@ def test_bar_plot_title(plot_df):
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_bar_plot_rc(plot_df):
-    run_control().update({'color': {'scenario': {'test_scenario': 'black'}}})
-    fig, ax = plt.subplots(figsize=(8, 8))
-    (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
-     .bar_plot(ax=ax, bars='scenario')
-     )
+    with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
+        fig, ax = plt.subplots(figsize=(8, 8))
+        (plot_df
+         .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+         .bar_plot(ax=ax, bars='scenario')
+         )
     return fig
 
 
@@ -274,11 +282,11 @@ def test_pie_plot_legend(plot_df):
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_pie_plot_other(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    run_control().update({'color': {'scenario': {'test_scenario': 'black'}}})
-    (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model', 'year': 2010})
-     .pie_plot(ax=ax, category='scenario', cmap='viridis', title='foo')
-     )
+    with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
+        (plot_df
+         .filter({'variable': 'Primary Energy', 'model': 'test_model', 'year': 2010})
+         .pie_plot(ax=ax, category='scenario', cmap='viridis', title='foo')
+         )
     return fig
 
 
@@ -297,9 +305,9 @@ def test_stack_plot(plot_df):
                                savefig_kwargs={'bbox_inches': 'tight'})
 def test_stack_plot_other(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    run_control().update({'color': {'scenario': {'test_scenario': 'black'}}})
-    (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
-     .stack_plot(ax=ax, stack='scenario', cmap='viridis', title='foo')
-     )
+    with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
+        (plot_df
+         .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+         .stack_plot(ax=ax, stack='scenario', cmap='viridis', title='foo')
+         )
     return fig
