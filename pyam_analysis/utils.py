@@ -71,7 +71,6 @@ def write_sheet(writer, name, df, index=False):
         worksheet.set_column(xls_col, width)
 
 
-@lru_cache()
 def read_ix(ix, **kwargs):
     """Read timeseries data from an ix object
 
@@ -83,7 +82,7 @@ def read_ix(ix, **kwargs):
         list of regions to be loaded from the database snapshot
     """
     if not isinstance(ix, ixmp.TimeSeries):
-        error = 'arg ' + ix + ' not recognized as valid ixmp class'
+        error = 'not recognized as valid ixmp class: {}'.format(ix)
         raise ValueError(error)
 
     df = ix.timeseries(iamc=False, **kwargs)
@@ -92,11 +91,10 @@ def read_ix(ix, **kwargs):
     return df
 
 
-@lru_cache()
 def read_pandas(fname, *args, **kwargs):
     """Read a file and return a pd.DataFrame"""
     if not os.path.exists(fname):
-        raise ValueError("no data file '" + fname + "' found!")
+        raise ValueError('no data file `{}` found!'.format(fname))
     if fname.endswith('csv'):
         df = pd.read_csv(fname, *args, **kwargs)
     else:
@@ -114,13 +112,11 @@ def read_files(fnames, *args, **kwargs):
     fnames = itertools.chain(*[glob.glob(f) for f in fnames])
     dfs = []
     for fname in fnames:
-        logger().info('Reading {}'.format(fname))
+        logger().info('Reading `{}`'.format(fname))
         df = read_pandas(fname, *args, **kwargs)
-        df.rename(columns={c: str(c).lower()
-                           for c in df.columns}, inplace=True)
-        dfs.append(df)
+        dfs.append(format_data(df))
 
-    return format_data(pd.concat(dfs))
+    return pd.concat(dfs)
 
 
 def format_data(df):
@@ -130,7 +126,7 @@ def format_data(df):
     df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
     if not set(IAMC_IDX).issubset(set(df.columns)):
         missing = list(set(IAMC_IDX) - set(df.columns))
-        raise ValueError("missing required columns {}!".format(missing))
+        raise ValueError("missing required columns `{}`!".format(missing))
 
     # check whether data in IAMC style or year/value layout
     if 'value' not in df.columns:
