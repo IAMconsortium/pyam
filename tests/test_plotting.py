@@ -79,10 +79,12 @@ def test_region():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
     fig, ax = plt.subplots(
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        cbar=False,
-    )
+    (df
+        .region_plot(
+            ax=ax,
+            cbar=False,
+        )
+     )
     return fig
 
 
@@ -92,10 +94,12 @@ def test_region_cbar():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
     fig, ax = plt.subplots(
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        cbar=True,
-    )
+    (df
+        .region_plot(
+            ax=ax,
+            cbar=True,
+        )
+     )
     return fig
 
 
@@ -105,10 +109,12 @@ def test_region_cbar_args():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
     fig, ax = plt.subplots(
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        cbar={'extend': 'both'},
-    )
+    (df
+        .region_plot(
+            ax=ax,
+            cbar={'extend': 'both'},
+        )
+     )
     return fig
 
 
@@ -118,12 +124,14 @@ def test_region_vmin_vmax():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
     fig, ax = plt.subplots(
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        vmin=0.2,
-        vmax=0.4,
-        cbar=False,
-    )
+    (df
+        .region_plot(
+            ax=ax,
+            vmin=0.2,
+            vmax=0.4,
+            cbar=False,
+        )
+     )
     return fig
 
 
@@ -133,11 +141,13 @@ def test_region_cmap():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
     fig, ax = plt.subplots(
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        cmap='magma_r',
-        cbar=False,
-    )
+    (df
+        .region_plot(
+            ax=ax,
+            cmap='magma_r',
+            cbar=False,
+        )
+     )
     return fig
 
 
@@ -147,11 +157,13 @@ def test_region_crs():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
     crs = cartopy.crs.Robinson()
     fig, ax = plt.subplots(subplot_kw={'projection': crs}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        crs=crs,
-        cbar=False,
-    )
+    (df
+        .region_plot(
+            ax=ax,
+            crs=crs,
+            cbar=False,
+        )
+     )
     return fig
 
 
@@ -161,11 +173,13 @@ def test_region_map_regions():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_region_data.csv'))
     fig, ax = plt.subplots(
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        map_regions=True,
-        cbar=False,
-    )
+    (df
+        .map_regions('iso')
+        .region_plot(
+            ax=ax,
+            cbar=False,
+        )
+     )
     return fig
 
 
@@ -176,12 +190,14 @@ def test_region_map_regions_legend():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_region_data.csv'))
     fig, ax = plt.subplots(
         subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    df.region_plot(
-        ax=ax,
-        map_regions=True,
-        legend=True,
-        cbar=False,
-    )
+    (df
+        .map_regions('iso')
+        .region_plot(
+            ax=ax,
+            legend=True,
+            cbar=False,
+        )
+     )
     return fig
 
 

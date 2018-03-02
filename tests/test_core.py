@@ -9,7 +9,7 @@ from numpy import testing as npt
 from pyam_analysis import IamDataFrame, plotting, validate, categorize, \
     require_variable
 
-from testing_utils import here, meta_df, test_df, TEST_DF, TEST_DATA_DIR
+from testing_utils import here, meta_df, test_df, reg_df, TEST_DF, TEST_DATA_DIR
 
 
 def test_model(test_df):
@@ -308,3 +308,40 @@ def test_filter_by_metadata_int(meta_df):
     meta_df.metadata([1, 2], name='value')
     obs = meta_df.filter({'value': [1, 3]})
     assert obs['scenario'].unique() == 'a_scenario'
+
+
+def _r5_regions_exp(df):
+    df = df.filter({'region': 'World'}, keep=False)
+    df['region'] = 'R5MAF'
+    return df.data.reset_index(drop=True)
+
+
+def test_map_regions_r5(reg_df):
+    obs = reg_df.map_regions('r5_region').data
+    exp = _r5_regions_exp(reg_df)
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_map_regions_r5_region_col(reg_df):
+    obs = reg_df.map_regions(
+        'r5_region', region_col='MESSAGE-GLOBIOM.REGION').data
+    exp = _r5_regions_exp(reg_df)
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_map_regions_r5_inplace(reg_df):
+    exp = _r5_regions_exp(reg_df)
+    reg_df.map_regions('r5_region', inplace=True)
+    obs = reg_df.data
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_map_regions_r5_agg(reg_df):
+    obs = reg_df.map_regions('r5_region', agg='sum').data
+
+    exp = _r5_regions_exp(reg_df)
+    grp = list(exp.columns)
+    grp.remove('value')
+    exp = exp.groupby(grp).sum().reset_index()
+    exp = exp[obs.columns]
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)

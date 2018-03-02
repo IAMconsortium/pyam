@@ -19,6 +19,15 @@ TEST_DF = pd.DataFrame([
 )
 
 
+REG_DF = pd.DataFrame([
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'MEA', 'Primary Energy', 'EJ/y', 1, 6],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'AFR', 'Primary Energy', 'EJ/y', 2, 7],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 3, 13],
+],
+    columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
+)
+
+
 @pytest.fixture(scope="function")
 def test_df():
     df = IamDataFrame(data=TEST_DF.iloc[:2])
@@ -28,6 +37,12 @@ def test_df():
 @pytest.fixture(scope="function")
 def meta_df():
     df = IamDataFrame(data=TEST_DF)
+    yield df
+
+
+@pytest.fixture(scope="function")
+def reg_df():
+    df = IamDataFrame(data=REG_DF)
     yield df
 
 # PLOT_DF = pd.DataFrame([
