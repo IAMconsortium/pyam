@@ -114,11 +114,9 @@ def read_files(fnames, *args, **kwargs):
     for fname in fnames:
         logger().info('Reading {}'.format(fname))
         df = read_pandas(fname, *args, **kwargs)
-        df.rename(columns={c: str(c).lower()
-                           for c in df.columns}, inplace=True)
-        dfs.append(df)
+        dfs.append(format_data(df))
 
-    return format_data(pd.concat(dfs))
+    return pd.concat(dfs)
 
 
 def format_data(df):
