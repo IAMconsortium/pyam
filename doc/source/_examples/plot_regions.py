@@ -14,10 +14,11 @@ df = iam.IamDataFrame(fname)
 df = (df
       .filter({'variable': 'Emissions|CO2', 'year': 2050})
       .filter({'region': 'World'}, keep=False)
+      .map_regions('iso')
       )
 
 print(df.head())
 
-df.region_plot(map_regions=True)
+df.region_plot()
 
 plt.show()
