@@ -280,3 +280,26 @@ def test_pie_plot_other(plot_df):
      .pie_plot(ax=ax, category='scenario', cmap='viridis', title='foo')
      )
     return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_stack_plot(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .stack_plot(ax=ax, stack='scenario')
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_stack_plot_other(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    run_control().update({'color': {'scenario': {'test_scenario': 'black'}}})
+    (plot_df
+     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .stack_plot(ax=ax, stack='scenario', cmap='viridis', title='foo')
+     )
+    return fig
