@@ -71,7 +71,6 @@ def write_sheet(writer, name, df, index=False):
         worksheet.set_column(xls_col, width)
 
 
-@lru_cache()
 def read_ix(ix, **kwargs):
     """Read timeseries data from an ix object
 
@@ -92,7 +91,6 @@ def read_ix(ix, **kwargs):
     return df
 
 
-@lru_cache()
 def read_pandas(fname, *args, **kwargs):
     """Read a file and return a pd.DataFrame"""
     if not os.path.exists(fname):
