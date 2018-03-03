@@ -17,7 +17,7 @@ _RC_DEFAULTS = {
     'marker': {},
     'linestyle': {},
     'region_mapping': {
-        'MESSAGE-GLOBIOM': _REG_MAP_PATH('message_regions.csv'),
+        'default': _REG_MAP_PATH('default_mapping.csv'),
     }
 }
 

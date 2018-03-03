@@ -485,39 +485,73 @@ class IamDataFrame(object):
         ax = plotting.pie_plot(df, *args, **kwargs)
         return ax
 
-    def region_plot(self, map_regions=False, map_col='iso', **kwargs):
+    def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
+                    region_col=None, inplace=False):
         """Plot regional data for a single model, scenario, variable, and year
 
         see pyam_analysis.plotting.region_plot() for all available options
 
         Parameters
         ----------
-        map_regions: boolean or string, default False
-            Apply a mapping from existing regions to regions to plot. If True, 
-            the mapping will be searched in known locations (e.g., if 
-            registered with `run_control()`). If a path to a file is provided,
-            that file will be used. Files must have a "region" column of 
-            existing regions and a mapping column of regions to be mapped to.
-        map_col: string, default 'iso'
-            The column used to map new regions to. 
+        map_col: string
+            The column used to map new regions to. Common examples include
+            iso and 5_region.
+        agg: string, optional
+            Perform a data aggregation. Options include: sum.
+        copy_col: string, optional
+            Copy the existing region data into a new column for later use.
+        fname: string, optional
+            Use a non-default region mapping file
+        region_col: string, optional
+            Use a non-default column name for regions to map from.
+        inplace : bool, default False
+            if True, do operation inplace and return None
+        """
+        model = self.data['model'].unique()
+        if len(model) > 1:
+            raise ValueError(
+                'map_regions only supports mapping for a single model')
+        model = model[0]
+
+        ret = copy.deepcopy(self) if not inplace else self
+        df = ret.data
+        columns_orderd = df.columns
+
+        # get mapping
+        fname = fname or run_control()['region_mapping']['default']
+        region_col = region_col or '{}.REGION'.format(model)
+        mapping = (read_pandas(fname)
+                   .rename(str.lower, axis='columns')
+                   .rename(columns={region_col.lower(): 'region'})
+                   )[['region', map_col]].dropna().drop_duplicates()
+
+        # merge data
+        if copy_col is not None:
+            df[copy_col] = df['region']
+        df = (df
+              .merge(mapping, on='region')
+              .drop('region', axis=1)
+              .rename(columns={map_col: 'region'})
+              )
+
+        # perform aggregations
+        if agg == 'sum':
+            df = df.groupby(IAMC_IDX + ['year']).sum().reset_index()
+
+        ret.data = (df
+                    .reindex(columns=columns_orderd)
+                    .sort_values('year')
+                    .reset_index(drop=True)
+                    )
+        if not inplace:
+            return ret
+
+    def region_plot(self, **kwargs):
+        """Plot regional data for a single model, scenario, variable, and year
+
+        see pyam_analysis.plotting.region_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
-        if map_regions:
-            if map_regions is True:
-                model = df['model'].unique()[0]
-                fname = run_control()['region_mapping'][model]
-            elif os.path.exists(map_regions):
-                fname = map_regions
-            else:
-                raise ValueError(
-                    'Unknown region mapping: {}'.format(map_regions))
-
-            mapping = read_pandas(fname)
-            df = (df
-                  .merge(mapping, on='region')
-                  .rename(columns={map_col: 'region', 'region': 'label'})
-                  )
-
         ax = plotting.region_plot(df, **kwargs)
         return ax
 
