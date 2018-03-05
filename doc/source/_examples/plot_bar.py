@@ -12,7 +12,7 @@ import pyam
 # Read in some example data
 
 fname = 'msg_input.csv'
-df = pyam.IamDataFrame(fname)
+df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
 print(df.head())
 
 ###############################
