@@ -517,7 +517,7 @@ class IamDataFrame(object):
         inplace : bool, default False
             if True, do operation inplace and return None
         """
-        models = self.data['model'].unique()
+        models = self.meta.index.get_level_values('model')
         fname = fname or run_control()['region_mapping']['default']
         mapping = read_pandas(fname).rename(str.lower, axis='columns')
 
