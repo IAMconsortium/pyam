@@ -38,8 +38,22 @@ MESSAGE V.4   AMPERE3-Base   World       Primary Energy  EJ/y      454.5     479
 ============  =============  ==========  ==============  ========  ========  ========  ========
 
 
-pyam documentation
-------------------
+License and source code repository
+----------------------------------
+
+The `pyam` package is licensed under an `APACHE 2.0 open-source license`_.
+See the `LICENSE`_ file included in this repository for the full text.
+The source code is available on `github.com/IAMconsortium/pyam`_.
+
+.. _`APACHE 2.0 open-source license`: http://www.apache.org/licenses/LICENSE-2.0
+
+.. _`LICENSE`: https://github.com/iiasa/message_ix/blob/master/LICENSE
+
+.. _`github.com/IAMconsortium/pyam`: https://github.com/IAMconsortium/pyam
+
+
+`pyam` documentation
+--------------------
 
 See `this guide`_ for guidelines on NumPy/SciPy Documentation conventions.
 
