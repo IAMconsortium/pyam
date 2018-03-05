@@ -149,7 +149,7 @@ def test_validate_both(meta_df):
     obs = meta_df.validate({'Primary Energy': {'lo': 2.0, 'up': 6.5}},
                            exclude=False)
     assert len(obs) == 2
-    assert obs['year'].values[0] == 2010
+    assert list(obs['year'].values) == [2005, 2010]
 
 
 def test_validate_year(meta_df):
