@@ -11,8 +11,8 @@ import pyam
 ###############################
 # Read in some example data
 
-fname = 'msg_input.csv'
-df = pyam.IamDataFrame(fname)
+fname = 'data.csv'
+df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
 
 ###############################
 # We generated a simple stacked bar chart as below
