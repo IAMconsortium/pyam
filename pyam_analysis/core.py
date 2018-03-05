@@ -27,7 +27,8 @@ from pyam_analysis.utils import (
     years_match,
     isstr,
     META_IDX,
-    IAMC_IDX
+    IAMC_IDX,
+    SORT_IDX,
 )
 from pyam_analysis.timeseries import fill_series
 
@@ -550,7 +551,7 @@ class IamDataFrame(object):
 
         ret.data = (df
                     .reindex(columns=columns_orderd)
-                    .sort_values(IAMC_IDX + ['year'])
+                    .sort_values(SORT_IDX)
                     .reset_index(drop=True)
                     )
         if not inplace:

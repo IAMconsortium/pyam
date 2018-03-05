@@ -323,9 +323,10 @@ def test_map_regions_r5(reg_df):
 
 
 def test_map_regions_r5_region_col(reg_df):
-    obs = reg_df.map_regions(
+    df = reg_df.filter({'model': 'MESSAGE-GLOBIOM'})
+    obs = df.map_regions(
         'r5_region', region_col='MESSAGE-GLOBIOM.REGION').data
-    exp = _r5_regions_exp(reg_df)
+    exp = _r5_regions_exp(df)
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
 
