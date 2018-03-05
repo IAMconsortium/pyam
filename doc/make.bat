@@ -1,4 +1,5 @@
 @ECHO OFF
+call include.mk
 
 REM Command file for Sphinx documentation
 

@@ -1,11 +1,6 @@
 # Makefile for Sphinx documentation
 #
-
-# You can set these variables from the command line.
-SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
-PAPER         =
-BUILDDIR      = build
+include include.mk
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)
@@ -181,15 +176,11 @@ pseudoxml:
 publish:
 	@echo
 	@echo "Updating $(DOCHTMLDIR) with current documentation."
-	test -d $(DOCREPODIR) || git clone $(DOCREPOURL) $(DOCREPONAME) && \
-	test ! -d $(TMPDOCDIR) || rm -r $(TMPDOCDIR) && \
-	mkdir -p $(TMPDOCDIR) && \
-	cp -r $(BUILDDIR)/html/* $(TMPDOCDIR) && \
-	cd $(DOCREPODIR) && git pull origin master && \
-	test ! -d $(DOCHTMLDIR) || rm -r $(DOCHTMLDIR) && \
-	mkdir -p $(DOCHTMLDIR) && mv $(TMPDOCDIR)/* $(DOCHTMLDIR) && \
-	rm -r $(TMPDOCDIR)/ && \
-	cd $(DOCREPODIR) && git add $(DOCHTMLDIR) && \
+	HERE="$(shell pwd)" \
+	test -d $(DOCREPODIR) || git clone $(DOCREPOURL) $(DOCREPODIR) && \
+	cd $(DOCREPODIR) && git pull origin master && rm -rf * && cd ../.. && \
+	rsync -a $(BUILDDIR)/html/* $(DOCREPODIR) && \
+	cd $(DOCREPODIR) && git add . && \
 	if [ -n "$$(git status $(DOCHTMLDIR) --porcelain)" ]; \
 	then git commit -m "updated $(DOCUPDATENAME) html" && git push origin master; \
 	fi
