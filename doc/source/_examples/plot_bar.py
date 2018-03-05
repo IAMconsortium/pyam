@@ -6,13 +6,13 @@ Plot Data as a Bar Plot
 """
 # sphinx_gallery_thumbnail_number = 3
 import matplotlib.pyplot as plt
-import pyam as iam
+import pyam
 
 ###############################
 # Read in some example data
 
 fname = 'msg_input.csv'
-df = iam.IamDataFrame(fname)
+df = pyam.IamDataFrame(fname)
 print(df.head())
 
 ###############################
