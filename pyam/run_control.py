@@ -3,7 +3,7 @@ import collections
 import os
 import yaml
 
-from pyam_analysis.utils import isstr
+from pyam.utils import isstr
 
 # user-defined defaults for various plot settings
 _RUN_CONTROL = None

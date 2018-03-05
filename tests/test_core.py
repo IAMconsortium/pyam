@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from numpy import testing as npt
 
-from pyam_analysis import IamDataFrame, plotting, validate, categorize, \
+from pyam import IamDataFrame, plotting, validate, categorize, \
     require_variable
 
 from testing_utils import here, meta_df, test_df, reg_df, TEST_DF, TEST_DATA_DIR

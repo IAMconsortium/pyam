@@ -6,7 +6,7 @@ Plot Data as a Stack Plot
 """
 # sphinx_gallery_thumbnail_number = 2
 import matplotlib.pyplot as plt
-import pyam_analysis as iam
+import pyam as iam
 
 ###############################
 # Read in some example data

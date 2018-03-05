@@ -1,4 +1,4 @@
-pyam_analysis
+pyam
 argparse
 numpy
 pandas >=0.21.0

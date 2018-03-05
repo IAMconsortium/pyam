@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from contextlib import contextmanager
 
-from pyam_analysis import IamDataFrame, plotting, run_control, reset_rc_defaults
+from pyam import IamDataFrame, plotting, run_control, reset_rc_defaults
 
 from testing_utils import plot_df, IMAGE_BASELINE_DIR, TEST_DATA_DIR
 

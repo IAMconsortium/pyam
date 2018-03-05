@@ -5,7 +5,7 @@ Plot Timeseries Data
 
 """
 import matplotlib.pyplot as plt
-import pyam_analysis as iam
+import pyam as iam
 
 fname = 'msg_input.csv'
 

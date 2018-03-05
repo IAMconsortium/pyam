@@ -12,11 +12,11 @@ try:
 except ImportError:
     has_ix = False
 
-from pyam_analysis import plotting
+from pyam import plotting
 
-from pyam_analysis.logger import logger
-from pyam_analysis.run_control import run_control
-from pyam_analysis.utils import (
+from pyam.logger import logger
+from pyam.run_control import run_control
+from pyam.utils import (
     isstr,
     write_sheet,
     read_ix,
@@ -30,7 +30,7 @@ from pyam_analysis.utils import (
     IAMC_IDX,
     SORT_IDX,
 )
-from pyam_analysis.timeseries import fill_series
+from pyam.timeseries import fill_series
 
 
 class IamDataFrame(object):
@@ -435,12 +435,12 @@ class IamDataFrame(object):
         writer.save()
 
     def load_metadata(self, path, *args, **kwargs):
-        """Load metadata from previously exported instance of pyam_analysis
+        """Load metadata from previously exported instance of pyam
 
         Parameters
         ----------
         path: string
-            xlsx file with metadata exported from an instance of pyam_analysis
+            xlsx file with metadata exported from an instance of pyam
         """
 
         if not os.path.exists(path):
@@ -462,7 +462,7 @@ class IamDataFrame(object):
     def line_plot(self, *args, **kwargs):
         """Plot timeseries lines of existing data
 
-        see pyam_analysis.plotting.line_plot() for all available options
+        see pyam.plotting.line_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
@@ -471,7 +471,7 @@ class IamDataFrame(object):
     def stack_plot(self, *args, **kwargs):
         """Plot timeseries stacks of existing data
 
-        see pyam_analysis.plotting.stack_plot() for all available options
+        see pyam.plotting.stack_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
         ax = plotting.stack_plot(df, *args, **kwargs)
@@ -480,7 +480,7 @@ class IamDataFrame(object):
     def bar_plot(self, *args, **kwargs):
         """Plot timeseries bars of existing data
 
-        see pyam_analysis.plotting.bar_plot() for all available options
+        see pyam.plotting.bar_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
         ax = plotting.bar_plot(df, *args, **kwargs)
@@ -489,7 +489,7 @@ class IamDataFrame(object):
     def pie_plot(self, *args, **kwargs):
         """Plot a pie chart
 
-        see pyam_analysis.plotting.pie_plot() for all available options
+        see pyam.plotting.pie_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
         ax = plotting.pie_plot(df, *args, **kwargs)
@@ -499,7 +499,7 @@ class IamDataFrame(object):
                     region_col=None, inplace=False):
         """Plot regional data for a single model, scenario, variable, and year
 
-        see pyam_analysis.plotting.region_plot() for all available options
+        see pyam.plotting.region_plot() for all available options
 
         Parameters
         ----------
@@ -560,7 +560,7 @@ class IamDataFrame(object):
     def region_plot(self, **kwargs):
         """Plot regional data for a single model, scenario, variable, and year
 
-        see pyam_analysis.plotting.region_plot() for all available options
+        see pyam.plotting.region_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
         ax = plotting.region_plot(df, **kwargs)

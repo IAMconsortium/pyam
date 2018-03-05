@@ -6,7 +6,7 @@ Plot Data as a Pie Chart
 """
 # sphinx_gallery_thumbnail_number = 3
 import matplotlib.pyplot as plt
-import pyam_analysis as iam
+import pyam as iam
 
 ###############################
 # Read in some example data

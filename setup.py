@@ -41,7 +41,7 @@ class Cmd(install):
     def run(self):
         install.run(self)
         dirs = [
-            'pyam_analysis.egg-info',
+            'pyam.egg-info',
             'build',
         ]
         for d in dirs:
@@ -53,10 +53,10 @@ def main():
     print(logo)
 
     packages = [
-        'pyam_analysis',
+        'pyam',
     ]
     pack_dir = {
-        'pyam_analysis': 'pyam_analysis',
+        'pyam': 'pyam',
     }
     entry_points = {
         'console_scripts': [
@@ -64,19 +64,19 @@ def main():
         ],
     }
     package_data = {
-        'pyam_analysis': ['region_mappings/*'],
+        'pyam': ['region_mappings/*'],
     }
     cmdclass = {
         'install': Cmd,
     }
     setup_kwargs = {
-        "name": "pyam_analysis",
+        "name": "pyam",
         "version": INFO['version'],
         "description": 'Analyze Integrated Assessment Model Results'
         'Trajectories',
         "author": 'Matthew Gidden & Daniel Huppmann',
         "author_email": 'matthew.gidden@gmail.com & huppmann@iiasa.ac.at',
-        "url": 'http://github.com/iiasa/pyam_analysis',
+        "url": 'http://github.com/iiasa/pyam',
         "packages": packages,
         "package_dir": pack_dir,
         "entry_points": entry_points,
