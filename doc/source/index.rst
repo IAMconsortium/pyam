@@ -5,7 +5,8 @@ Overview and scope
 ------------------
 
 The ``pyam`` package provides a range of diagnostic tools and functions  
-for analyzing and working with IAMC-format timeseries data. 
+for analyzing and working with Integrated Assessment scenarios
+following the IAMC timeseries data format.
 
 Features:
  - Summary of models, scenarios, variables, and regions included in a snapshot.
