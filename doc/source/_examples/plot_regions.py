@@ -9,7 +9,7 @@ import pyam
 
 fname = 'msg_input.csv'
 
-df = pyam.IamDataFrame(fname)
+df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
 
 df = (df
       .filter({'variable': 'Emissions|CO2', 'year': 2050})
