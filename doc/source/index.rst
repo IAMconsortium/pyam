@@ -5,16 +5,15 @@ Overview and scope
 ------------------
 
 The ``pyam`` package provides a range of diagnostic tools and functions  
-for analyzing and working with Integrated Assessment scenarios
-following the IAMC timeseries data format.
+for analyzing and working scenario data following the IAMC timeseries data format.
 
 Features:
  - Summary of models, scenarios, variables, and regions included in a snapshot.
- - Display of timeseries data as pandas.DataFrame 
+ - Display of timeseries data as `pandas.DataFrame`_
    with IAMC-specific filtering options.
- - Simple visualization and plotting functions.
- - Diagnostic checks for non-reported variables or timeseries data 
-   to identify outliers and potential reporting issues.
+ - Advanced visualization and plotting functions.
+ - Diagnostic checks for non-reported variables or timeseries valyes
+   to analyze and validate scenario data.
  - Categorization of scenarios according to timeseries data 
    or meta-identifiers for further analysis.
 
@@ -22,6 +21,9 @@ The package can be used with data that follows the data template convention
 of the `Integrated Assessment Modeling Consortium`_ (IAMC).
 An illustrative example is shown below; 
 see `data.ene.iiasa.ac.at/database`_ for more information.
+
+.. _`pandas.DataFrame`: 
+   https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 
 .. _`Integrated Assessment Modeling Consortium`:
    http://www.globalchange.umd.edu/iamc/
@@ -47,7 +49,7 @@ See `this guide`_ for guidelines on NumPy/SciPy Documentation conventions.
 .. toctree:: 
    :maxdepth: 2 
  
-   source/IamDataFrame
-   source/timeseries
-   source/examples/index
+   IamDataFrame
+   timeseries
+   examples/index
 
