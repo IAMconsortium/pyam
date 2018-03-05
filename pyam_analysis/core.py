@@ -27,7 +27,8 @@ from pyam_analysis.utils import (
     years_match,
     isstr,
     META_IDX,
-    IAMC_IDX
+    IAMC_IDX,
+    SORT_IDX,
 )
 from pyam_analysis.timeseries import fill_series
 
@@ -516,32 +517,33 @@ class IamDataFrame(object):
         inplace : bool, default False
             if True, do operation inplace and return None
         """
-        model = self.data['model'].unique()
-        if len(model) > 1:
-            raise ValueError(
-                'map_regions only supports mapping for a single model')
-        model = model[0]
+        models = self.meta.index.get_level_values('model')
+        fname = fname or run_control()['region_mapping']['default']
+        mapping = read_pandas(fname).rename(str.lower, axis='columns')
 
         ret = copy.deepcopy(self) if not inplace else self
-        df = ret.data
-        columns_orderd = df.columns
-
-        # get mapping
-        fname = fname or run_control()['region_mapping']['default']
-        region_col = region_col or '{}.REGION'.format(model)
-        mapping = (read_pandas(fname)
-                   .rename(str.lower, axis='columns')
-                   .rename(columns={region_col.lower(): 'region'})
-                   )[['region', map_col]].dropna().drop_duplicates()
+        _df = ret.data
+        columns_orderd = _df.columns
 
         # merge data
-        if copy_col is not None:
-            df[copy_col] = df['region']
-        df = (df
-              .merge(mapping, on='region')
-              .drop('region', axis=1)
-              .rename(columns={map_col: 'region'})
-              )
+        dfs = []
+        for model in models:
+            df = _df[_df['model'] == model]
+
+            _col = region_col or '{}.REGION'.format(model)
+            _map = mapping.rename(columns={_col.lower(): 'region'})
+            _map = _map[['region', map_col]].dropna().drop_duplicates()
+
+            if copy_col is not None:
+                df[copy_col] = df['region']
+
+            df = (df
+                  .merge(_map, on='region')
+                  .drop('region', axis=1)
+                  .rename(columns={map_col: 'region'})
+                  )
+            dfs.append(df)
+        df = pd.concat(dfs)
 
         # perform aggregations
         if agg == 'sum':
@@ -549,7 +551,7 @@ class IamDataFrame(object):
 
         ret.data = (df
                     .reindex(columns=columns_orderd)
-                    .sort_values('year')
+                    .sort_values(SORT_IDX)
                     .reset_index(drop=True)
                     )
         if not inplace:

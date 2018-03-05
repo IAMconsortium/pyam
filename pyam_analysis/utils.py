@@ -29,6 +29,7 @@ from pyam_analysis.logger import logger
 # common indicies
 META_IDX = ['model', 'scenario']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
+SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(zip(range(0, 702),
@@ -137,6 +138,9 @@ def format_data(df):
 
     # drop NaN's
     df.dropna(inplace=True)
+
+    # sort data
+    df.sort_values(SORT_IDX, inplace=True)
 
     return df
 

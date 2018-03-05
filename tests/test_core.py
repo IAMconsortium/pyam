@@ -323,9 +323,10 @@ def test_map_regions_r5(reg_df):
 
 
 def test_map_regions_r5_region_col(reg_df):
-    obs = reg_df.map_regions(
+    df = reg_df.filter({'model': 'MESSAGE-GLOBIOM'})
+    obs = df.map_regions(
         'r5_region', region_col='MESSAGE-GLOBIOM.REGION').data
-    exp = _r5_regions_exp(reg_df)
+    exp = _r5_regions_exp(df)
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
 
@@ -337,11 +338,12 @@ def test_map_regions_r5_inplace(reg_df):
 
 
 def test_map_regions_r5_agg(reg_df):
+    columns = reg_df.data.columns
     obs = reg_df.map_regions('r5_region', agg='sum').data
 
     exp = _r5_regions_exp(reg_df)
-    grp = list(exp.columns)
+    grp = list(columns)
     grp.remove('value')
     exp = exp.groupby(grp).sum().reset_index()
-    exp = exp[obs.columns]
+    exp = exp[columns]
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
