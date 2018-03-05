@@ -48,6 +48,7 @@ clean:
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	cp $(GHCONFIG) $(BUILDDIR)/html/_config.yml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
@@ -180,7 +181,7 @@ publish:
 	test -d $(DOCREPODIR) || git clone $(DOCREPOURL) $(DOCREPODIR) && \
 	cd $(DOCREPODIR) && git pull origin master && rm -rf * && cd ../.. && \
 	rsync -a $(BUILDDIR)/html/* $(DOCREPODIR) && \
-	cd $(DOCREPODIR) && git add . && \
+	cd $(DOCREPODIR) && touch .nojekyll && git add . && \
 	if [ -n "$$(git status $(DOCHTMLDIR) --porcelain)" ]; \
 	then git commit -m "updated $(DOCUPDATENAME) html" && git push origin master; \
 	fi
