@@ -29,6 +29,7 @@ except ImportError:
 
 
 from pyam.run_control import run_control
+from pyam.utils import requires_package
 
 from pandas.plotting._style import _get_standard_colors
 
@@ -92,6 +93,7 @@ def reshape_bar_plot(df, x, y, bars):
     return df
 
 
+@requires_package(gpd, 'Requires geopandas')
 @lru_cache()
 def read_shapefile(fname, region_col=None, **kwargs):
     """Read a shapefile for use in regional plots. Shapefiles must have a 
@@ -113,6 +115,8 @@ def read_shapefile(fname, region_col=None, **kwargs):
     return gdf
 
 
+@requires_package(gpd, 'Requires geopandas')
+@requires_package(cartopy, 'Requires cartopy')
 def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=True,
                 vmin=None, vmax=None, cmap=None, cbar=True, legend=False,
                 title=True):

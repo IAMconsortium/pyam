@@ -38,6 +38,26 @@ NUMERIC_TO_STR = dict(zip(range(0, 702),
                               string.ascii_uppercase, string.ascii_uppercase)]))
 
 
+def requires_package(pkg, msg, error_type=ImportError):
+    """Decorator when a function requires an optional dependency
+
+    Paramteres
+    ----------
+    func : decorated functional
+    pkg : imported package object
+    msg : string
+        Message to show to user with error_type
+    error type : python class
+    """
+    def _requires_package(func):
+        def wrapper(*args, **kwargs):
+            if pkg is None:
+                raise error_type(msg)
+            return func(*args, **kwargs)
+        return wrapper
+    return _requires_package
+
+
 def isstr(x):
     """Returns True if x is a string"""
     return isinstance(x, six.string_types)
