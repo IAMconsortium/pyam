@@ -3,4 +3,4 @@
 Examples
 ========
 
-Some examples of `pyam-analysis`'s tools, features, and plotting capabilities.
+Some examples of `pyam`'s tools, features, and plotting capabilities.

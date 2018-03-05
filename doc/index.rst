@@ -4,7 +4,7 @@ pyam: a Python toolkit for Integrated Assessment Modeling
 Overview and scope
 ------------------
 
-The ``pyam-analysis`` package provides a range of diagnostic tools and functions  
+The ``pyam`` package provides a range of diagnostic tools and functions  
 for analyzing and working with IAMC-format timeseries data. 
 
 Features:

@@ -91,7 +91,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        other: pyam-analysis.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
+        other: pyam.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
         pd.DataFrame or data file
             an IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
             or pd.DataFrame or data file with IAMC-format data columns

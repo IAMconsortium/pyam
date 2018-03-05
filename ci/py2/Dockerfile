@@ -1,5 +1,5 @@
 FROM gidden/python2-viz
 
-COPY . /pyam-analysis
+COPY . /pyam
 WORKDIR /
-RUN cd /pyam-analysis && python2 setup.py install 
+RUN cd /pyam && python2 setup.py install 

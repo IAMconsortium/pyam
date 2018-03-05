@@ -1,12 +1,12 @@
 pyam: a Python toolkit for Integrated Assessment Modeling
 =========================================================
 
-*The pyam-analysis package is still under heavy development; public and private APIs are subject to change.*
+*The pyam package is still under heavy development; public and private APIs are subject to change.*
 
 Overview and scope
 ------------------
 
-The ``pyam-analysis`` package provides a range of diagnostic tools and functions  
+The ``pyam`` package provides a range of diagnostic tools and functions  
 for analyzing and working with IAMC-format timeseries data. 
 
 Features:
@@ -56,7 +56,7 @@ License
 
 Copyright 2017 IIASA Energy Program
 
-The ``pyam-analysis`` package is licensed 
+The ``pyam`` package is licensed 
 under the Apache License, Version 2.0 (the "License");
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
@@ -80,10 +80,10 @@ Documentation Building Depedencies
 Installation instructions
 -------------------------
 
-0. Fork this repository and clone the forked repository (`<user>/pyam-analysis`)
+0. Fork this repository and clone the forked repository (`<user>/pyam`)
    to your machine. To fork the repository, look for the fork icon in the top 
-   right at [iiasa/pyam-analysis](https://github.com/iiasa/pyam-analysis).
-   Add `iiasa/pyam-analysis` as `upstream` to your clone.
+   right at [iiasa/pyam](https://github.com/iiasa/pyam).
+   Add `iiasa/pyam` as `upstream` to your clone.
 
    *We recommend* [GitKraken](https://www.gitkraken.com/) *for users*
    *who prefer a graphical user interface application*
