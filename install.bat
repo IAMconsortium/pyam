@@ -1,11 +1,7 @@
 
 python setup.py install
 
-chdir doc
-call make.bat html
-chdir ..
-
-py.test
+py.test tests
 
 pause
 exit
