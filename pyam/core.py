@@ -637,12 +637,11 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
     for (bd, op) in [('up', up_op), ('lo', lo_op)]:
         if bd in check:
             check_idx.append(set(rows.index[op(check[bd])]))
-    check_idx = set.intersection(*check_idx)
 
     if return_test is 'any':
-        ret = where_idx & check_idx
+        ret = where_idx & set.union(*check_idx)
     elif return_test == 'all':
-        ret = where_idx if where_idx == check_idx else set()
+        ret = where_idx if where_idx == set.intersection(*check_idx) else set()
     else:
         raise ValueError('Unknown return test: {}'.format(return_test))
     return ret
