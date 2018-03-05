@@ -28,7 +28,7 @@ except ImportError:
     from functools32 import lru_cache
 
 
-from pyam_analysis.run_control import run_control
+from pyam.run_control import run_control
 
 from pandas.plotting._style import _get_standard_colors
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# pyam_analysis documentation build configuration file, created by
+# pyam documentation build configuration file, created by
 # sphinx-quickstart on Tue Feb  9 09:59:03 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -19,7 +19,7 @@ import shlex
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('/home/gidden/.local/lib/python2.7/site-packages/pyam_analysis-0.0.1-py2.7.egg'))
+#sys.path.insert(0, os.path.abspath('/home/gidden/.local/lib/python2.7/site-packages/pyam-0.0.1-py2.7.egg'))
 
 # -- General configuration ------------------------------------------------
 
@@ -69,7 +69,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pyam_analysis'
+project = u'pyam'
 copyright = u'2017, Daniel Huppmann, Matthew Gidden @ IIASA Energy Program'
 author = u'Daniel Huppmann, Matthew Gidden'
 
@@ -227,7 +227,7 @@ html_theme = 'alabaster'
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pyam_analysisdoc'
+htmlhelp_basename = 'pyamdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -249,7 +249,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pyam_analysis.tex', u'pyam_analysis Documentation',
+    (master_doc, 'pyam.tex', u'pyam Documentation',
      u'\\_\\_authors\\_\\_', 'manual'),
 ]
 
@@ -279,7 +279,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pyam_analysis', u'pyam_analysis Documentation',
+    (master_doc, 'pyam', u'pyam Documentation',
      [author], 1)
 ]
 
@@ -293,8 +293,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pyam_analysis', u'pyam_analysis Documentation',
-     author, 'pyam_analysis', 'a Python toolkit for Integrated Assessment Modeling',
+    (master_doc, 'pyam', u'pyam Documentation',
+     author, 'pyam', 'a Python toolkit for Integrated Assessment Modeling',
      'Miscellaneous'),
 ]
 

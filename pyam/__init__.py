@@ -1,8 +1,8 @@
-from pyam_analysis.core import *
-from pyam_analysis.utils import *
-from pyam_analysis.timeseries import *
-from pyam_analysis.logger import *
-from pyam_analysis.run_control import *
+from pyam.core import *
+from pyam.utils import *
+from pyam.timeseries import *
+from pyam.logger import *
+from pyam.run_control import *
 
 
 # in Jupyter notebooks: disable autoscroll, activate warnings

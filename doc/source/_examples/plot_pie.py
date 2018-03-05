@@ -6,13 +6,13 @@ Plot Data as a Pie Chart
 """
 # sphinx_gallery_thumbnail_number = 3
 import matplotlib.pyplot as plt
-import pyam_analysis as iam
+import pyam
 
 ###############################
 # Read in some example data
 
 fname = 'msg_input.csv'
-df = iam.IamDataFrame(fname)
+df = pyam.IamDataFrame(fname)
 
 ###############################
 # We generated a simple stacked bar chart as below

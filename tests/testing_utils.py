@@ -3,7 +3,7 @@ import pytest
 
 import pandas as pd
 
-from pyam_analysis import IamDataFrame
+from pyam import IamDataFrame
 
 here = os.path.dirname(os.path.realpath(__file__))
 IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')

@@ -5,11 +5,11 @@ Plot Regional Data
 
 """
 import matplotlib.pyplot as plt
-import pyam_analysis as iam
+import pyam
 
 fname = 'msg_input.csv'
 
-df = iam.IamDataFrame(fname)
+df = pyam.IamDataFrame(fname)
 
 df = (df
       .filter({'variable': 'Emissions|CO2', 'year': 2050})

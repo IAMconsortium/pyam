@@ -1,4 +1,4 @@
-.. currentmodule:: pyam_analysis
+.. currentmodule:: pyam
 
 Auxiliary timeseries functions
 ==============================

@@ -24,7 +24,7 @@ try:
 except ImportError:
     pass
 
-from pyam_analysis.logger import logger
+from pyam.logger import logger
 
 # common indicies
 META_IDX = ['model', 'scenario']

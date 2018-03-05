@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pyam_analysis import utils
+from pyam import utils
 
 
 def test_pattern_match_none():
