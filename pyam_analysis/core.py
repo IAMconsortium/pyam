@@ -467,6 +467,15 @@ class IamDataFrame(object):
         ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
         return ax
 
+    def stack_plot(self, *args, **kwargs):
+        """Plot timeseries stacks of existing data
+
+        see pyam_analysis.plotting.stack_plot() for all available options
+        """
+        df = self.as_pandas(with_metadata=True)
+        ax = plotting.stack_plot(df, *args, **kwargs)
+        return ax
+
     def bar_plot(self, *args, **kwargs):
         """Plot timeseries bars of existing data
 

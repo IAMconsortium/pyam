@@ -288,6 +288,83 @@ def pie_plot(df, value='value', category='variable',
     return ax
 
 
+def stack_plot(df, x='year', y='value', stack='variable',
+               ax=None, legend=True, title=True, cmap=None,
+               **kwargs):
+    """Plot data as a stack chart.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data to plot as a long-form data frame
+    x : string, optional
+        The column to use for x-axis values
+        default: year
+    y : string, optional
+        The column to use for y-axis values
+        default: value
+    stack: string, optional
+        The column to use for stack groupings
+        default: variable
+    ax : matplotlib.Axes, optional
+    legend : bool, optional
+        Include a legend
+        default: False
+    title : bool or string, optional
+        Display a default or custom title.
+    cmap : string, optional
+        A colormap to use.
+        default: None
+    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+    """
+    for col in set(['model', 'scenario', 'year', 'variable']) - set([x, stack]):
+        if len(df[col].unique()) > 1:
+            msg = 'Can not plot multiple {}s in stack_plot with x={}, stack={}'
+            raise ValueError(msg.format(col, x, stack))
+
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    # long form to one column per bar group
+    _df = reshape_bar_plot(df, x, y, stack)
+
+    # explicitly get colors
+    defaults = default_props(reset=True, num_colors=len(_df.columns),
+                             colormap=cmap)['color']
+    rc = run_control()
+    colors = []
+    for key in _df.columns:
+        c = next(defaults)
+        if 'color' in rc and stack in rc['color'] and key in rc['color'][stack]:
+            c = rc['color'][stack][key]
+        colors.append(c)
+
+    ax.stackplot(_df.index, _df.T, labels=_df.columns, colors=colors, **kwargs)
+
+    # add legend
+    ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+    if not legend:
+        ax.legend_.remove()
+
+    # add default labels if possible
+    ax.set_xlabel(x.capitalize())
+    units = df['unit'].unique()
+    if len(units) == 1:
+        ax.set_ylabel(units[0])
+
+    # build a default title if possible
+    _title = []
+    for var in ['model', 'scenario', 'region', 'variable']:
+        values = df[var].unique()
+        if len(values) == 1:
+            _title.append('{}: {}'.format(var, values[0]))
+    if title and _title:
+        title = ' '.join(_title) if title is True else title
+        ax.set_title(title)
+
+    return ax
+
+
 def bar_plot(df, x='year', y='value', bars='variable',
              ax=None, orient='v', legend=True, title=True, cmap=None,
              **kwargs):

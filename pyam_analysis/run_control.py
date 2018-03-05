@@ -1,3 +1,4 @@
+import copy
 import collections
 import os
 import yaml
@@ -20,6 +21,12 @@ _RC_DEFAULTS = {
         'default': _REG_MAP_PATH('default_mapping.csv'),
     }
 }
+
+
+def reset_rc_defaults():
+    """Reset run control object to original defaults"""
+    global _RUN_CONTROL
+    _RUN_CONTROL = RunControl()
 
 
 def run_control():
@@ -59,7 +66,7 @@ class RunControl(collections.Mapping):
             dictionary describing **default** run control configuration
         """
         rc = rc or {}
-        defaults = defaults or _RC_DEFAULTS
+        defaults = defaults or copy.deepcopy(_RC_DEFAULTS)
 
         rc = self._load_yaml(rc)
         defaults = self._load_yaml(defaults)
