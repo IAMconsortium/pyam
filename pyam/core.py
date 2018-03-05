@@ -106,7 +106,8 @@ class IamDataFrame(object):
             include the units
         """
         if include_units:
-            return self.data[['variable', 'unit']].drop_duplicates()
+            return self.data[['variable', 'unit']].drop_duplicates()\
+                .reset_index(drop=True).sort_values('variable')
         else:
             return list(self.data.variable.unique())
 
