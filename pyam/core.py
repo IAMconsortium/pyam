@@ -97,7 +97,7 @@ class IamDataFrame(object):
         """Get a list of regions"""
         return list(self.data['region'].unique())
 
-    def variables(self, filters={}, include_units=False):
+    def variables(self, include_units=False):
         """Get a list of variables
 
         Parameters
