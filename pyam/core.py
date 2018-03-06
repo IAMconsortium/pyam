@@ -87,15 +87,15 @@ class IamDataFrame(object):
 
     def models(self):
         """Get a list of models"""
-        return list(self.meta.index.levels[0])
+        return pd.Series(self.meta.index.levels[0])
 
     def scenarios(self, filters={}):
         """Get a list of scenarios"""
-        return list(self.meta.index.levels[1])
+        return pd.Series(self.meta.index.levels[1])
 
     def regions(self):
         """Get a list of regions"""
-        return list(self.data['region'].unique())
+        return pd.Series(self.data['region'].unique(), name='region')
 
     def variables(self, include_units=False):
         """Get a list of variables
@@ -109,7 +109,7 @@ class IamDataFrame(object):
             return self.data[['variable', 'unit']].drop_duplicates()\
                 .reset_index(drop=True).sort_values('variable')
         else:
-            return list(self.data.variable.unique())
+            return pd.Series(self.data.variable.unique(), name='variable')
 
     def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame

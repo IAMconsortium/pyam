@@ -17,19 +17,24 @@ def test_get_item(test_df):
 
 
 def test_model(test_df):
-    assert test_df.models() == ['a_model']
+    pd.testing.assert_series_equal(test_df.models(),
+                                   pd.Series(data=['a_model'], name='model'))
 
 
 def test_scenario(test_df):
-    assert test_df.scenarios() == ['a_scenario']
+    exp = pd.Series(data=['a_scenario'], name='scenario')
+    pd.testing.assert_series_equal(test_df.scenarios(), exp)
+                                   
 
 
 def test_region(test_df):
-    assert test_df.regions() == ['World']
+    exp = pd.Series(data=['World'], name='region')
+    pd.testing.assert_series_equal(test_df.regions(), exp)
 
 
 def test_variable(test_df):
-    assert test_df.variables() == ['Primary Energy', 'Primary Energy|Coal']
+    exp = pd.Series(data=['Primary Energy', 'Primary Energy|Coal'], name='variable')
+    pd.testing.assert_series_equal(test_df.variables(), exp)
 
 
 def test_variable_unit(test_df):
