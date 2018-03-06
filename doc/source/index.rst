@@ -5,15 +5,15 @@ Overview and scope
 ------------------
 
 The ``pyam`` package provides a range of diagnostic tools and functions  
-for analyzing and working with IAMC-format timeseries data. 
+for analyzing and working scenario data following the IAMC timeseries data format.
 
 Features:
  - Summary of models, scenarios, variables, and regions included in a snapshot.
- - Display of timeseries data as pandas.DataFrame 
+ - Display of timeseries data as `pandas.DataFrame`_
    with IAMC-specific filtering options.
- - Simple visualization and plotting functions.
- - Diagnostic checks for non-reported variables or timeseries data 
-   to identify outliers and potential reporting issues.
+ - Advanced visualization and plotting functions.
+ - Diagnostic checks for non-reported variables or timeseries values
+   to analyze and validate scenario data.
  - Categorization of scenarios according to timeseries data 
    or meta-identifiers for further analysis.
 
@@ -21,6 +21,9 @@ The package can be used with data that follows the data template convention
 of the `Integrated Assessment Modeling Consortium`_ (IAMC).
 An illustrative example is shown below; 
 see `data.ene.iiasa.ac.at/database`_ for more information.
+
+.. _`pandas.DataFrame`: 
+   https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 
 .. _`Integrated Assessment Modeling Consortium`:
    http://www.globalchange.umd.edu/iamc/
@@ -35,8 +38,22 @@ MESSAGE V.4   AMPERE3-Base   World       Primary Energy  EJ/y      454.5     479
 ============  =============  ==========  ==============  ========  ========  ========  ========
 
 
-pyam documentation
-------------------
+License and source code repository
+----------------------------------
+
+The `pyam` package is licensed under an `APACHE 2.0 open-source license`_.
+See the `LICENSE`_ file included in this repository for the full text.
+The source code is available on `github.com/IAMconsortium/pyam`_.
+
+.. _`APACHE 2.0 open-source license`: http://www.apache.org/licenses/LICENSE-2.0
+
+.. _`LICENSE`: https://github.com/IAMconsortium/pyam/blob/master/LICENSE
+
+.. _`github.com/IAMconsortium/pyam`: https://github.com/IAMconsortium/pyam
+
+
+`pyam` documentation
+--------------------
 
 See `this guide`_ for guidelines on NumPy/SciPy Documentation conventions.
 
@@ -46,7 +63,7 @@ See `this guide`_ for guidelines on NumPy/SciPy Documentation conventions.
 .. toctree:: 
    :maxdepth: 2 
  
-   source/IamDataFrame
-   source/timeseries
-   source/examples/index
+   IamDataFrame
+   timeseries
+   examples/index
 

@@ -1,6 +1,5 @@
 import copy
 import os
-import six
 import itertools
 
 import numpy as np
@@ -34,10 +33,10 @@ from pyam.timeseries import fill_series
 
 
 class IamDataFrame(object):
-    """This class is a wrapper for dataframes following the IAMC data convention.
-    It provides a number of diagnostic features (including validation of values,
-    completeness of variables provided) as well as a number of visualization and
-    plotting tools.
+    """This class is a wrapper for dataframes following the IAMC format.
+    It provides a number of diagnostic features (including validation of data,
+    completeness of variables provided) as well as a number of visualization
+    and plotting tools.
     """
 
     def __init__(self, data, **kwargs):
@@ -57,7 +56,7 @@ class IamDataFrame(object):
         else:
             self.data = read_files(data, **kwargs)
 
-        # define a dataframe for categorization and other meta-data
+        # define a dataframe for categorization and other metadata indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
 
@@ -85,6 +84,32 @@ class IamDataFrame(object):
     def tail(self, *args, **kwargs):
         """Identical to pd.DataFrame.tail() operating on data"""
         return self.data.tail(*args, **kwargs)
+
+    def models(self):
+        """Get a list of models"""
+        return pd.Series(self.meta.index.levels[0])
+
+    def scenarios(self, filters={}):
+        """Get a list of scenarios"""
+        return pd.Series(self.meta.index.levels[1])
+
+    def regions(self):
+        """Get a list of regions"""
+        return pd.Series(self.data['region'].unique(), name='region')
+
+    def variables(self, include_units=False):
+        """Get a list of variables
+
+        Parameters
+        ----------
+        include_units: boolean, default False
+            include the units
+        """
+        if include_units:
+            return self.data[['variable', 'unit']].drop_duplicates()\
+                .reset_index(drop=True).sort_values('variable')
+        else:
+            return pd.Series(self.data.variable.unique(), name='variable')
 
     def append(self, other, inplace=False, **kwargs):
         """Import or read timeseries data and append to IamDataFrame
@@ -355,7 +380,7 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-        inplace : bool, default False
+        inplace: bool, default False
             if True, do operation inplace and return None
         """
         _keep = _apply_filters(self.data, self.meta, filters)
@@ -381,7 +406,7 @@ class IamDataFrame(object):
         func: functional
             function to apply
         """
-        if col in data:
+        if col in self.data:
             self.data[col] = self.data[col].apply(func, *args, **kwargs)
         else:
             self.meta[col] = self.meta[col].apply(func, *args, **kwargs)
@@ -402,7 +427,8 @@ class IamDataFrame(object):
         """
         self._to_file_format().to_csv(path, index=False, **kwargs)
 
-    def to_excel(self, path=None, writer=None, sheet_name='data', index=False, **kwargs):
+    def to_excel(self, path=None, writer=None, sheet_name='data', index=False,
+                 **kwargs):
         """Write timeseries data to Excel using the IAMC template convention
         (wrapper for `pd.DataFrame.to_excel()`)
 
@@ -420,7 +446,8 @@ class IamDataFrame(object):
             raise ValueError('Only one of path and writer must have a value')
         if writer is None:
             writer = pd.ExcelWriter(path)
-        self._to_file_format().to_excel(writer, sheet_name=sheet_name, index=index, **kwargs)
+        self._to_file_format().to_excel(writer, sheet_name=sheet_name,
+                                        index=index, **kwargs)
 
     def export_metadata(self, path):
         """Export metadata to Excel
@@ -605,8 +632,8 @@ def _apply_filters(data, meta, filters):
 
 
 def _check_rows(rows, check, in_range=True, return_test='any'):
-    """Check all rows to be in/out of a certain range and provide testing on return
-    values based on provided conditions
+    """Check all rows to be in/out of a certain range and provide testing on
+    return values based on provided conditions
 
     Parameters
     ----------

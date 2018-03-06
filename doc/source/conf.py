@@ -19,7 +19,7 @@ import shlex
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('/home/gidden/.local/lib/python2.7/site-packages/pyam-0.0.1-py2.7.egg'))
+#sys.path.insert(0, os.path.abspath('.'))
 
 # -- General configuration ------------------------------------------------
 
@@ -36,6 +36,9 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
+    'sphinxcontrib.fulltoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.napoleon',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'cloud_sptheme.ext.table_styling',
@@ -49,9 +52,9 @@ extensions = [
 
 sphinx_gallery_conf = {
     # path to your examples scripts
-    'examples_dirs': 'source/_examples',
+    'examples_dirs': '_examples',
     # path where to save gallery generated examples
-    'gallery_dirs': 'source/examples'
+    'gallery_dirs': 'examples'
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -70,7 +73,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyam'
-copyright = u'2017, Daniel Huppmann, Matthew Gidden @ IIASA Energy Program'
+copyright = u'2017-2018, Daniel Huppmann, Matthew Gidden @ IIASA Energy Program'
 author = u'Daniel Huppmann, Matthew Gidden'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -97,7 +100,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns = ['_themes/*']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -135,12 +138,12 @@ todo_include_todos = True
 
 sys.path.append(os.path.abspath('_themes'))
 html_theme_path = ['_themes']
-html_theme = 'alabaster'
+html_theme = 'kr'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -164,7 +167,7 @@ html_theme = 'alabaster'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['_static']
+html_static_path = ['css']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -294,7 +297,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'pyam', u'pyam Documentation',
-     author, 'pyam', 'a Python toolkit for Integrated Assessment Modeling',
+     author, 'pyam', 'a Python toolkit for IAM scenario analysis and visualization',
      'Miscellaneous'),
 ]
 
