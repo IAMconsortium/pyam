@@ -41,13 +41,12 @@ NUMERIC_TO_STR = dict(zip(range(0, 702),
 def requires_package(pkg, msg, error_type=ImportError):
     """Decorator when a function requires an optional dependency
 
-    Paramteres
+    Parameters
     ----------
-    func : decorated functional
     pkg : imported package object
     msg : string
         Message to show to user with error_type
-    error type : python class
+    error_type : python error class
     """
     def _requires_package(func):
         def wrapper(*args, **kwargs):
