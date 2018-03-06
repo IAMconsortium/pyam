@@ -297,7 +297,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'pyam', u'pyam Documentation',
-     author, 'pyam_analysis', 'a Python toolkit for IAM scenario analysis and visualization',
+     author, 'pyam', 'a Python toolkit for IAM scenario analysis and visualization',
      'Miscellaneous'),
 ]
 

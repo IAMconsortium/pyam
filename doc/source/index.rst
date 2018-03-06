@@ -12,7 +12,7 @@ Features:
  - Display of timeseries data as `pandas.DataFrame`_
    with IAMC-specific filtering options.
  - Advanced visualization and plotting functions.
- - Diagnostic checks for non-reported variables or timeseries valyes
+ - Diagnostic checks for non-reported variables or timeseries values
    to analyze and validate scenario data.
  - Categorization of scenarios according to timeseries data 
    or meta-identifiers for further analysis.
@@ -47,7 +47,7 @@ The source code is available on `github.com/IAMconsortium/pyam`_.
 
 .. _`APACHE 2.0 open-source license`: http://www.apache.org/licenses/LICENSE-2.0
 
-.. _`LICENSE`: https://github.com/iiasa/message_ix/blob/master/LICENSE
+.. _`LICENSE`: https://github.com/IAMconsortium/pyam/blob/master/LICENSE
 
 .. _`github.com/IAMconsortium/pyam`: https://github.com/IAMconsortium/pyam
 
