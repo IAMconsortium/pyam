@@ -270,6 +270,8 @@ class IamDataFrame(object):
                 raise ValueError(error.format(diff))
             meta = meta.to_frame(name or meta.name)
             self.meta = meta.combine_first(self.meta)
+            #  quickfix for pandas.combine_first(), issue #7509
+            self.meta['exclude'] = self.meta['exclude'].astype('bool')
             return  # EXIT FUNCTION
 
         if isinstance(meta, pd.Series):
