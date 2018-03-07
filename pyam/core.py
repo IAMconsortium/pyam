@@ -365,7 +365,7 @@ class IamDataFrame(object):
             self.meta.loc[idx, 'exclude'] = True
             msg += ', marked as `exclude=True` in metadata'
 
-        logger().info(msg.format(variable, i, '' if i == 1 else 's'))
+        logger().info(msg.format(i, '' if i == 1 else 's', variable))
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude=False):
@@ -628,7 +628,7 @@ class IamDataFrame(object):
 
 
 def _meta_idx(data):
-    return data[META_IDX].set_index(META_IDX).index
+    return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
 def _apply_filters(data, meta, filters):
