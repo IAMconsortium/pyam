@@ -263,7 +263,14 @@ class IamDataFrame(object):
             category column name (if not given by data series name)
         """
         if isinstance(meta, pd.Series) and \
-                meta.index.names == ['model', 'scenario']:
+                meta.index.names[0:2] == ['model', 'scenario']:
+            # reduce index dimentsions to model-scenario if necessary
+            if len(meta.index.names) > 2:
+                drop = list(range(2, len(meta.index.names)))
+                meta.index = meta.index.droplevel(drop)
+                if meta.index.duplicated():
+                    raise ValueError("non-unique ['model', 'scenario'] index!")
+            # check if trying to add model-scenario index not existing in self
             diff = meta.index.difference(self.meta.index)
             if not diff.empty:
                 error = "adding metadata for non-existing scenarios '{}'!"
