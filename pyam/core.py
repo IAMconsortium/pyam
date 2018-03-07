@@ -729,9 +729,10 @@ def validate(df, *args, **kwargs):
     """
     filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
-    vdf = fdf.validate(*args, **kwargs)
-    df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
-    return vdf
+    if len(fdf.data) > 0:
+        vdf = fdf.validate(*args, **kwargs)
+        df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+        return vdf
 
 
 def require_variable(df, *args, **kwargs):
@@ -744,12 +745,12 @@ def require_variable(df, *args, **kwargs):
     filters: dict, optional
         filter by data & metadata columns, see function 'filter()' for details
     """
-
     filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
-    vdf = fdf.require_variable(*args, **kwargs)
-    df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
-    return vdf
+    if len(fdf.data) > 0:
+        vdf = fdf.require_variable(*args, **kwargs)
+        df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+        return vdf
 
 
 def categorize(df, *args, **kwargs):
