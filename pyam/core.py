@@ -353,17 +353,19 @@ class IamDataFrame(object):
         keep = _apply_filters(self.data, self.meta, criteria)
         idx = self.meta.index.difference(_meta_idx(self.data[keep]))
 
-        if len(idx) == 0:
-            logger().info('All scenarios have the required variable')
+        i = len(idx)
+        if i == 0:
+            logger().info('All scenarios have the required variable `{}`'
+                          .format(variable))
             return
 
-        msg = '{} scenario{} to not include required variables'
+        msg = '{} scenario{} to not include required variable {}'
 
         if exclude:
             self.meta.loc[idx, 'exclude'] = True
             msg += ', marked as `exclude=True` in metadata'
 
-        logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's'))
+        logger().info(msg.format(variable, i, '' if i == 1 else 's'))
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude=False):
@@ -388,7 +390,8 @@ class IamDataFrame(object):
             logger().info(msg.format(len(df), len(self.data)))
 
             if exclude and len(idx) > 0:
-                logger().info('Non-valid scenarios will be excluded')
+                logger().info('{} non-valid scenarios will be excluded'
+                              .format(len(idx)))
 
             return df
 
