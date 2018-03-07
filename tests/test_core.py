@@ -9,7 +9,7 @@ from numpy import testing as npt
 from pyam import IamDataFrame, plotting, validate, categorize, \
     require_variable
 
-from testing_utils import here, meta_df, test_df, reg_df, TEST_DF, TEST_DATA_DIR
+from testing_utils import here, meta_df, test_df, reg_df, TEST_DATA_DIR
 
 
 def test_get_item(test_df):
@@ -24,7 +24,6 @@ def test_model(test_df):
 def test_scenario(test_df):
     exp = pd.Series(data=['a_scenario'], name='scenario')
     pd.testing.assert_series_equal(test_df.scenarios(), exp)
-                                   
 
 
 def test_region(test_df):
@@ -33,7 +32,8 @@ def test_region(test_df):
 
 
 def test_variable(test_df):
-    exp = pd.Series(data=['Primary Energy', 'Primary Energy|Coal'], name='variable')
+    exp = pd.Series(
+        data=['Primary Energy', 'Primary Energy|Coal'], name='variable')
     pd.testing.assert_series_equal(test_df.variables(), exp)
 
 
@@ -153,7 +153,7 @@ def test_validate_up(meta_df):
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
 
-    assert list(meta_df['exclude']) == [False, False] # assert none excluded
+    assert list(meta_df['exclude']) == [False, False]  # assert none excluded
 
 
 def test_validate_lo(meta_df):
