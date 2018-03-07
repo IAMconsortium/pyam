@@ -218,8 +218,12 @@ class IamDataFrame(object):
     def timeseries(self):
         """Returns a dataframe in the standard IAMC format
         """
-        return self.data.pivot_table(index=IAMC_IDX,
-                                     columns='year')['value']
+        return (
+            self.data
+            .pivot_table(index=IAMC_IDX, columns='year')
+            .value  # column name
+            .rename_axis(None, axis=1)
+        )
 
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to `exclude: False`
@@ -547,6 +551,7 @@ class IamDataFrame(object):
         models = self.meta.index.get_level_values('model')
         fname = fname or run_control()['region_mapping']['default']
         mapping = read_pandas(fname).rename(str.lower, axis='columns')
+        map_col = map_col.lower()
 
         ret = copy.deepcopy(self) if not inplace else self
         _df = ret.data
@@ -556,7 +561,6 @@ class IamDataFrame(object):
         dfs = []
         for model in models:
             df = _df[_df['model'] == model]
-
             _col = region_col or '{}.REGION'.format(model)
             _map = mapping.rename(columns={_col.lower(): 'region'})
             _map = _map[['region', map_col]].dropna().drop_duplicates()
