@@ -62,7 +62,7 @@ class IamDataFrame(object):
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
 
-        # all for user-defined
+        # execute user-defined code
         if 'exec' in run_control():
             self._execute_run_control()
 
