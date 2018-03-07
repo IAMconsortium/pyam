@@ -419,6 +419,9 @@ class IamDataFrame(object):
             pd.unique(list(zip(ret.data['model'], ret.data['scenario']))),
             names=('model', 'scenario')
         )
+        if len(idx) == 0:
+            logger().warning('Filtered IamDataFrame is empty!')
+
         ret.meta = ret.meta.loc[idx]
         if not inplace:
             return ret
