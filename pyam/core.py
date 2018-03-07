@@ -1,6 +1,8 @@
 import copy
-import os
+import importlib
 import itertools
+import os
+import sys
 
 import numpy as np
 import pandas as pd
@@ -60,6 +62,10 @@ class IamDataFrame(object):
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
 
+        # execute user-defined code
+        if 'exec' in run_control():
+            self._execute_run_control()
+
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
         if set(_key_check).issubset(self.meta.columns):
@@ -76,6 +82,21 @@ class IamDataFrame(object):
 
     def __len__(self):
         return self.data.__len__()
+
+    def _execute_run_control(self):
+        for module_block in run_control()['exec']:
+            fname = module_block['file']
+            functions = module_block['functions']
+
+            dirname = os.path.dirname(fname)
+            if dirname:
+                sys.path.append(dirname)
+
+            module = os.path.basename(fname).split('.')[0]
+            mod = importlib.import_module(module)
+            for func in functions:
+                f = getattr(mod, func)
+                f(self)
 
     def head(self, *args, **kwargs):
         """Identical to pd.DataFrame.head() operating on data"""
