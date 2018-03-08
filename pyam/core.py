@@ -585,6 +585,14 @@ class IamDataFrame(object):
         ax = plotting.pie_plot(df, *args, **kwargs)
         return ax
 
+    def scatter(self, *args, **kwargs):
+        """Plot a scatter chart
+
+        see pyam.plotting.scatter() for all available options
+        """
+        ax = plotting.scatter(self.meta, *args, **kwargs)
+        return ax
+
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
                     region_col=None, inplace=False):
         """Plot regional data for a single model, scenario, variable, and year
