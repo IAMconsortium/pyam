@@ -268,7 +268,7 @@ class IamDataFrame(object):
             if len(meta.index.names) > 2:
                 drop = list(range(2, len(meta.index.names)))
                 meta.index = meta.index.droplevel(drop)
-                if meta.index.duplicated():
+                if meta.index.duplicated().any():
                     raise ValueError("non-unique ['model', 'scenario'] index!")
             # check if trying to add model-scenario index not existing in self
             diff = meta.index.difference(self.meta.index)

@@ -277,8 +277,7 @@ def test_add_metadata_as_named_series(meta_df):
     s.name = 'meta_values'
     meta_df.metadata(s)
 
-    idx = pd.MultiIndex(levels=[['a_model'],
-                                ['a_scenario', 'a_scenario2']],
+    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario', 'a_scenario2']],
                         labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
     exp = pd.Series(data=[0.3, np.nan], index=idx)
     exp.name = 'meta_values'
@@ -287,7 +286,15 @@ def test_add_metadata_as_named_series(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_add_metadata_index_fail(meta_df):
+def test_add_metadata_non_unique_index_fail(meta_df):
+    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario'], ['a', 'b']],
+                        labels=[[0, 0], [0, 0], [0, 1]],
+                        names=['model', 'scenario', 'region'])
+    s = pd.Series([0.4, 0.5], idx)
+    pytest.raises(ValueError, meta_df.metadata, s)
+
+
+def test_add_metadata_non_existing_index_fail(meta_df):
     idx = pd.MultiIndex(levels=[['a_model', 'fail_model'],
                                 ['a_scenario', 'fail_scenario']],
                         labels=[[0, 1], [0, 1]], names=['model', 'scenario'])
