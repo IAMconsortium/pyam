@@ -360,8 +360,8 @@ class IamDataFrame(object):
         keep = _apply_filters(self.data, self.meta, criteria)
         idx = self.meta.index.difference(_meta_idx(self.data[keep]))
 
-        i = len(idx)
-        if i == 0:
+        n = len(idx)
+        if n == 0:
             logger().info('All scenarios have the required variable `{}`'
                           .format(variable))
             return
@@ -372,7 +372,7 @@ class IamDataFrame(object):
             self.meta.loc[idx, 'exclude'] = True
             msg += ', marked as `exclude=True` in metadata'
 
-        logger().info(msg.format(i, '' if i == 1 else 's', variable))
+        logger().info(msg.format(n, '' if n == 1 else 's', variable))
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude=False):
