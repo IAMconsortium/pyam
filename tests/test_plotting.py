@@ -86,7 +86,7 @@ def test_line_plot_1_var(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter({'model': 'test_model', 'scenario': 'test_scenario'})
-     .line_plot(x='Primary Energy', y='year', ax=ax, legend=True)
+     .line_plot(x='Primary Energy', y='year', ax=ax)
      )
     return fig
 
@@ -96,7 +96,7 @@ def test_line_plot_2_vars(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter({'model': 'test_model', 'scenario': 'test_scenario'})
-     .line_plot(x='Primary Energy|Coal', y='Primary Energy', ax=ax, legend=True)
+     .line_plot(x='Primary Energy|Coal', y='Primary Energy', ax=ax)
      )
     return fig
 
