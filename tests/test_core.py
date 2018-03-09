@@ -8,6 +8,8 @@ from numpy import testing as npt
 
 from pyam import IamDataFrame, plotting, validate, categorize, \
     require_variable
+from pyam.core import _meta_idx
+
 
 from testing_utils import here, meta_df, test_df, reg_df, TEST_DATA_DIR
 
@@ -110,6 +112,11 @@ def test_timeseries(test_df):
 def test_read_pandas():
     ia = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
     assert list(ia['variable'].unique()) == ['Primary Energy']
+
+
+def test_meta_idx(meta_df):
+    # assert that the `drop_duplicates()` in `_meta_idx()` returns right length
+    assert len(_meta_idx(meta_df.data)) == 2
 
 
 def test_require_variable(meta_df):
