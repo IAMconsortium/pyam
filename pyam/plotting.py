@@ -547,17 +547,19 @@ def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
         ax.legend(handles, labels)
 
     # add default labels if possible
-    ax.set_xlabel(x.capitalize())
+    ax.set_xlabel(x.title())
     units = df.columns.get_level_values('unit').unique()
-    if len(units) == 1:
-        ax.set_ylabel(units[0])
+    units_for_ylabel = len(units) == 1 and x == 'variable' and y == 'year'
+    ylabel = units[0] if units_for_ylabel else y
+    ax.set_ylabel(ylabel.title())
 
     # build a default title if possible
     _title = []
     for var in ['model', 'scenario', 'region', 'variable']:
-        values = df.columns.get_level_values(var).unique()
-        if len(values) == 1:
-            _title.append('{}: {}'.format(var, values[0]))
+        if var in df.columns:
+            values = df.columns.get_level_values(var).unique()
+            if len(values) == 1:
+                _title.append('{}: {}'.format(var, values[0]))
     if title and _title:
         ax.set_title(' '.join(_title))
 
