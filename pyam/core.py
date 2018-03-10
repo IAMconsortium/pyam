@@ -511,13 +511,32 @@ class IamDataFrame(object):
         df.set_index(META_IDX, inplace=True)
         self.meta = df.combine_first(self.meta)
 
-    def line_plot(self, *args, **kwargs):
+    def line_plot(self, x='year', y='value', **kwargs):
         """Plot timeseries lines of existing data
 
         see pyam.plotting.line_plot() for all available options
         """
         df = self.as_pandas(with_metadata=True)
-        ax, handles, labels = plotting.line_plot(df, *args, **kwargs)
+
+        # pivot data if asked for explicit variable name
+        variables = df['variable'].unique()
+        if x in variables or y in variables:
+            keep_vars = set([x, y]) & set(variables)
+            df = df[df['variable'].isin(keep_vars)]
+            idx = list(set(df.columns) - set(['value']))
+            df = (df
+                  .reset_index()
+                  .set_index(idx)
+                  .value  # df -> series
+                  .unstack(level='variable')  # keep_vars are columns
+                  .rename_axis(None, axis=1)  # rm column index name
+                  .reset_index()
+                  .set_index(META_IDX)
+                  )
+            if x != 'year' and y != 'year':
+                df = df.drop('year', axis=1)  # years causes NaNs
+
+        ax, handles, labels = plotting.line_plot(df, x=x, y=y, **kwargs)
         return ax
 
     def stack_plot(self, *args, **kwargs):
