@@ -529,7 +529,7 @@ class IamDataFrame(object):
                   .set_index(idx)
                   .value  # df -> series
                   .unstack(level='variable')  # keep_vars are columns
-                  .rename_axis(None, axis=1)  # nm column index name
+                  .rename_axis(None, axis=1)  # rm column index name
                   .reset_index()
                   .set_index(META_IDX)
                   )
