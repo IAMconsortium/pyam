@@ -276,9 +276,9 @@ def test_interpolate(test_df):
 
 
 def test_add_metadata_as_named_series(meta_df):
-    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario'], ['a_region']],
+    idx = pd.MultiIndex(levels=[['a_scenario'], ['a_model'], ['a_region']],
                         labels=[[0], [0], [0]],
-                        names=['model', 'scenario', 'region'])
+                        names=['scenario', 'model', 'region'])
 
     s = pd.Series(data=[0.3], index=idx)
     s.name = 'meta_values'
