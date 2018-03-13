@@ -338,6 +338,12 @@ def test_add_metadata_as_int(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
+def test_filter_by_metadata_str(meta_df):
+    meta_df.metadata(['testing', 'testing2'], name='category')
+    obs = meta_df.filter({'category': 'testing'})
+    assert obs['scenario'].unique() == 'a_scenario'
+    
+
 def test_filter_by_metadata_bool(meta_df):
     meta_df.metadata([True, False], name='exclude')
     obs = meta_df.filter({'exclude': True})
