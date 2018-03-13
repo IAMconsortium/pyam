@@ -590,7 +590,7 @@ class IamDataFrame(object):
 
         see pyam.plotting.scatter() for all available options
         """
-        ax = plotting.scatter(self.meta, *args, **kwargs)
+        ax = plotting.scatter(self.meta.reset_index(), *args, **kwargs)
         return ax
 
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
