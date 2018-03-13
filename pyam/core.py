@@ -260,22 +260,25 @@ class IamDataFrame(object):
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
         name: str
-            category column name (if not given by data series name)
+            category column name (if not given by meta pd.Series.name)
         """
         if isinstance(meta, pd.Series) and \
-                meta.index.names[0:2] == ['model', 'scenario']:
-            # reduce index dimentsions to model-scenario if necessary
-            if len(meta.index.names) > 2:
-                drop = list(range(2, len(meta.index.names)))
-                meta.index = meta.index.droplevel(drop)
-                if meta.index.duplicated().any():
-                    raise ValueError("non-unique ['model', 'scenario'] index!")
+                set(['model', 'scenario']).issubset(meta.index.names):
+            meta.name = meta.name or name
+            # reduce index dimentsions to model-scenario only
+            meta = (meta
+                    .reset_index()
+                    .loc[:, ['model', 'scenario', meta.name]]
+                    .set_index(['model', 'scenario'])
+                    )
+            # raise error if index is not unique
+            if meta.index.duplicated().any():
+                raise ValueError("non-unique ['model', 'scenario'] index!")
             # check if trying to add model-scenario index not existing in self
             diff = meta.index.difference(self.meta.index)
             if not diff.empty:
                 error = "adding metadata for non-existing scenarios '{}'!"
                 raise ValueError(error.format(diff))
-            meta = meta.to_frame(name or meta.name)
             self.meta = meta.combine_first(self.meta)
             #  quickfix for pandas.combine_first(), issue #7509
             self.meta['exclude'] = self.meta['exclude'].astype('bool')
