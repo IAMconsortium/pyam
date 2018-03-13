@@ -258,35 +258,6 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
     return ax
 
 
-def scatter(df, x, y, ax=None, legend=False, title=True, cmap=None,
-            x_caption=None, y_caption=None, **kwargs):
-    """Plot data as a scatter chart.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
-    value : string, optional
-        The column to use for data values
-        default: value
-    category : string, optional
-        The column to use for labels
-        default: variable
-    ax : matplotlib.Axes, optional
-    legend : bool, optional
-        Include a legend
-        default: False
-    title : bool or string, optional
-        Display a default or custom title.
-    cmap : string, optional
-        A colormap to use.
-        default: None
-    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
-    """
-    if ax is None:
-        fig, ax = plt.subplots()
-
-
 def pie_plot(df, value='value', category='variable',
              ax=None, legend=False, title=True, cmap=None,
              **kwargs):
@@ -518,7 +489,49 @@ def bar_plot(df, x='year', y='value', bars='variable',
     return ax
 
 
-def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
+def scatter(df, x, y, ax=None, legend=False, color=None, marker=True,
+            title=True, x_caption=None, y_caption=None, **kwargs):
+    """Plot data as a scatter chart.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data to plot as a long-form data frame
+    x : str
+        column to be plotted on the x-axis
+    y : str
+        column to be plotted on the y-axis
+    ax : matplotlib.Axes, optional
+    legend: boolean, optional
+        Include a legend
+        default: False
+    category : string, optional
+        The column to use for labels
+        default: variable
+    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+    """
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    props = assign_style_props(df, color=color, marker=marker)
+
+    # data preparation
+    group_cols = []
+    for kind in (color, marker):
+        group_cols += [kind] if kind is not None else []
+
+    if len(group_cols) == 0:
+        group_cols = ['model', 'scenario']
+
+    groups = df.groupby(group_cols)
+
+    for name, group in groups:
+        ax.plot(group[x], group[y], **kwargs)
+
+    return ax
+
+
+def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
               color=None, marker=None, linestyle=None, cmap=None,
               **kwargs):
     """Plot data as lines with or without markers.
