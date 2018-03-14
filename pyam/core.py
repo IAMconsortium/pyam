@@ -264,7 +264,7 @@ class IamDataFrame(object):
         """
         if isinstance(meta, pd.Series) and \
                 set(['model', 'scenario']).issubset(meta.index.names):
-            meta.name = meta.name or name
+            meta.name = name or meta.name
             # reduce index dimentsions to model-scenario only
             meta = (meta
                     .reset_index()
