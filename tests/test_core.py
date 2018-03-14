@@ -8,6 +8,8 @@ from numpy import testing as npt
 
 from pyam import IamDataFrame, plotting, validate, categorize, \
     require_variable
+from pyam.core import _meta_idx
+
 
 from testing_utils import here, meta_df, test_df, reg_df, TEST_DATA_DIR
 
@@ -110,6 +112,11 @@ def test_timeseries(test_df):
 def test_read_pandas():
     ia = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
     assert list(ia['variable'].unique()) == ['Primary Energy']
+
+
+def test_meta_idx(meta_df):
+    # assert that the `drop_duplicates()` in `_meta_idx()` returns right length
+    assert len(_meta_idx(meta_df.data)) == 2
 
 
 def test_require_variable(meta_df):
@@ -269,15 +276,15 @@ def test_interpolate(test_df):
 
 
 def test_add_metadata_as_named_series(meta_df):
-    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario']],
-                        labels=[[0], [0]], names=['model', 'scenario'])
+    idx = pd.MultiIndex(levels=[['a_scenario'], ['a_model'], ['a_region']],
+                        labels=[[0], [0], [0]],
+                        names=['scenario', 'model', 'region'])
 
     s = pd.Series(data=[0.3], index=idx)
     s.name = 'meta_values'
     meta_df.metadata(s)
 
-    idx = pd.MultiIndex(levels=[['a_model'],
-                                ['a_scenario', 'a_scenario2']],
+    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario', 'a_scenario2']],
                         labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
     exp = pd.Series(data=[0.3, np.nan], index=idx)
     exp.name = 'meta_values'
@@ -286,7 +293,15 @@ def test_add_metadata_as_named_series(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_add_metadata_index_fail(meta_df):
+def test_add_metadata_non_unique_index_fail(meta_df):
+    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario'], ['a', 'b']],
+                        labels=[[0, 0], [0, 0], [0, 1]],
+                        names=['model', 'scenario', 'region'])
+    s = pd.Series([0.4, 0.5], idx)
+    pytest.raises(ValueError, meta_df.metadata, s)
+
+
+def test_add_metadata_non_existing_index_fail(meta_df):
     idx = pd.MultiIndex(levels=[['a_model', 'fail_model'],
                                 ['a_scenario', 'fail_scenario']],
                         labels=[[0, 1], [0, 1]], names=['model', 'scenario'])
@@ -322,6 +337,12 @@ def test_add_metadata_as_int(meta_df):
     obs = meta_df['meta_int']
     pd.testing.assert_series_equal(obs, exp)
 
+
+def test_filter_by_metadata_str(meta_df):
+    meta_df.metadata(['testing', 'testing2'], name='category')
+    obs = meta_df.filter({'category': 'testing'})
+    assert obs['scenario'].unique() == 'a_scenario'
+    
 
 def test_filter_by_metadata_bool(meta_df):
     meta_df.metadata([True, False], name='exclude')

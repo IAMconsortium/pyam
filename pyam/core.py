@@ -260,16 +260,28 @@ class IamDataFrame(object):
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
         name: str
-            category column name (if not given by data series name)
+            category column name (if not given by meta pd.Series.name)
         """
         if isinstance(meta, pd.Series) and \
-                meta.index.names == ['model', 'scenario']:
+                set(['model', 'scenario']).issubset(meta.index.names):
+            meta.name = name or meta.name
+            # reduce index dimensions to model-scenario only
+            meta = (meta
+                    .reset_index()
+                    .loc[:, ['model', 'scenario', meta.name]]
+                    .set_index(['model', 'scenario'])
+                    )
+            # raise error if index is not unique
+            if meta.index.duplicated().any():
+                raise ValueError("non-unique ['model', 'scenario'] index!")
+            # check if trying to add model-scenario index not existing in self
             diff = meta.index.difference(self.meta.index)
             if not diff.empty:
                 error = "adding metadata for non-existing scenarios '{}'!"
                 raise ValueError(error.format(diff))
-            meta = meta.to_frame(name or meta.name)
             self.meta = meta.combine_first(self.meta)
+            #  quickfix for pandas.combine_first(), issue #7509
+            self.meta['exclude'] = self.meta['exclude'].astype('bool')
             return  # EXIT FUNCTION
 
         if isinstance(meta, pd.Series):
@@ -351,17 +363,19 @@ class IamDataFrame(object):
         keep = _apply_filters(self.data, self.meta, criteria)
         idx = self.meta.index.difference(_meta_idx(self.data[keep]))
 
-        if len(idx) == 0:
-            logger().info('All scenarios have the required variable')
+        n = len(idx)
+        if n == 0:
+            logger().info('All scenarios have the required variable `{}`'
+                          .format(variable))
             return
 
-        msg = '{} scenario{} to not include required variables'
+        msg = '{} scenario{} to not include required variable {}'
 
         if exclude:
             self.meta.loc[idx, 'exclude'] = True
             msg += ', marked as `exclude=True` in metadata'
 
-        logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's'))
+        logger().info(msg.format(n, '' if n == 1 else 's', variable))
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude=False):
@@ -386,7 +400,8 @@ class IamDataFrame(object):
             logger().info(msg.format(len(df), len(self.data)))
 
             if exclude and len(idx) > 0:
-                logger().info('Non-valid scenarios will be excluded')
+                logger().info('{} non-valid scenarios will be excluded'
+                              .format(len(idx)))
 
             return df
 
@@ -417,6 +432,9 @@ class IamDataFrame(object):
             pd.unique(list(zip(ret.data['model'], ret.data['scenario']))),
             names=('model', 'scenario')
         )
+        if len(idx) == 0:
+            logger().warning('Filtered IamDataFrame is empty!')
+
         ret.meta = ret.meta.loc[idx]
         if not inplace:
             return ret
@@ -639,7 +657,7 @@ class IamDataFrame(object):
 
 
 def _meta_idx(data):
-    return data[META_IDX].set_index(META_IDX).index
+    return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
 def _apply_filters(data, meta, filters):
@@ -743,9 +761,10 @@ def validate(df, *args, **kwargs):
     """
     filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
-    vdf = fdf.validate(*args, **kwargs)
-    df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
-    return vdf
+    if len(fdf.data) > 0:
+        vdf = fdf.validate(*args, **kwargs)
+        df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+        return vdf
 
 
 def require_variable(df, *args, **kwargs):
@@ -758,12 +777,12 @@ def require_variable(df, *args, **kwargs):
     filters: dict, optional
         filter by data & metadata columns, see function 'filter()' for details
     """
-
     filters = kwargs.pop('filters', {})
     fdf = df.filter(filters)
-    vdf = fdf.require_variable(*args, **kwargs)
-    df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
-    return vdf
+    if len(fdf.data) > 0:
+        vdf = fdf.require_variable(*args, **kwargs)
+        df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+        return vdf
 
 
 def categorize(df, *args, **kwargs):
