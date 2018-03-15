@@ -453,7 +453,7 @@ def bar_plot(df, x='year', y='value', bars='variable',
     return ax
 
 
-def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
+def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
               color=None, marker=None, linestyle=None, cmap=None,
               **kwargs):
     """Plot data as lines with or without markers.
@@ -470,8 +470,8 @@ def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
         default: value
     ax : matplotlib.Axes, optional
     legend : bool, optional
-        Include a legend
-        default: False
+        Include a legend (`None` displays legend only if less than 13 entries)
+        default: None
     title : bool or string, optional
         Display a default or custom title.
     color : string, optional
@@ -543,7 +543,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
         labels = sorted(list(set(tuple(legend_data))))
         idxs = [legend_data.index(d) for d in labels]
         handles = [handles[i] for i in idxs]
-    if legend:
+    if legend is None and len(labels) < 13 or legend is True:
         ax.legend(handles, labels)
 
     # add default labels if possible
