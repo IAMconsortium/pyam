@@ -336,7 +336,7 @@ class IamDataFrame(object):
             logger().info("No scenarios satisfy the criteria")
         else:
             self.meta.loc[idx, name] = value
-            msg = "{} scenario{} categorized as {}: '{}'"
+            msg = '{} scenario{} categorized as `{}: {}`'
             logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
                                      name, value))
 
@@ -369,13 +369,14 @@ class IamDataFrame(object):
                           .format(variable))
             return
 
-        msg = '{} scenario{} to not include required variable {}'
+        msg = '{} scenario does not include required variable `{}`' if n == 1 \
+            else '{} scenarios do not include required variable `{}`'
 
         if exclude:
             self.meta.loc[idx, 'exclude'] = True
-            msg += ', marked as `exclude=True` in metadata'
+            msg += ', marked as `exclude: True` in metadata'
 
-        logger().info(msg.format(n, '' if n == 1 else 's', variable))
+        logger().info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude=False):
@@ -400,8 +401,8 @@ class IamDataFrame(object):
             logger().info(msg.format(len(df), len(self.data)))
 
             if exclude and len(idx) > 0:
-                logger().info('{} non-valid scenarios will be excluded'
-                              .format(len(idx)))
+                logger().info('{} non-valid scenario{} will be excluded'
+                              .format(len(idx), '' if len(idx) == 1 else 's'))
 
             return df
 
