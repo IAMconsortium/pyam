@@ -342,7 +342,7 @@ def test_filter_by_metadata_str(meta_df):
     meta_df.metadata(['testing', 'testing2'], name='category')
     obs = meta_df.filter({'category': 'testing'})
     assert obs['scenario'].unique() == 'a_scenario'
-    
+
 
 def test_filter_by_metadata_bool(meta_df):
     meta_df.metadata([True, False], name='exclude')
@@ -392,4 +392,28 @@ def test_map_regions_r5_agg(reg_df):
     grp.remove('value')
     exp = exp.groupby(grp).sum().reset_index()
     exp = exp[columns]
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_48():
+    # tests fix for #48
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SSD', 'var', 'unit', 1, 6],
+        ['model', 'scen', 'SDN', 'var', 'unit', 2, 7],
+        ['model', 'scen', 'World', 'var', 'unit', 3, 13],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+
+    exp = _r5_regions_exp(df)
+    columns = df.data.columns
+    grp = list(columns)
+    grp.remove('value')
+    exp = exp.groupby(grp).sum().reset_index()
+    exp = exp[columns]
+
+    obs = df.map_regions('r5_region', region_col='iso', agg='sum').data
+
+    print(obs)
+    print(exp)
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
