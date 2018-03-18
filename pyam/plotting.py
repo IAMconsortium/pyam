@@ -531,7 +531,7 @@ def scatter(df, x, y, ax=None, legend=False, color=None, marker=True,
     return ax
 
 
-def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
+def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
               color=None, marker=None, linestyle=None, cmap=None,
               **kwargs):
     """Plot data as lines with or without markers.
@@ -569,7 +569,6 @@ def line_plot(df, x='year', y='value', ax=None, legend=True, title=True,
         default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
-    #
     if ax is None:
         fig, ax = plt.subplots()
 
