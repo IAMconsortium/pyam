@@ -607,7 +607,7 @@ class IamDataFrame(object):
         inplace : bool, default False
             if True, do operation inplace and return None
         """
-        models = self.meta.index.get_level_values('model')
+        models = self.meta.index.get_level_values('model').unique()
         fname = fname or run_control()['region_mapping']['default']
         mapping = read_pandas(fname).rename(str.lower, axis='columns')
         map_col = map_col.lower()
