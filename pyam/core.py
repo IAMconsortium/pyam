@@ -586,7 +586,7 @@ class IamDataFrame(object):
         return ax
 
     def scatter(self, *args, **kwargs):
-        """Plot a scatter chart
+        """Plot a scatter chart using metadata columns
 
         see pyam.plotting.scatter() for all available options
         """
