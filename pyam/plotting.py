@@ -489,7 +489,7 @@ def bar_plot(df, x='year', y='value', bars='variable',
     return ax
 
 
-def scatter(df, x, y, ax=None, legend=None, title=True,
+def scatter(df, x, y, ax=None, legend=None, title=None,
             color=None, marker='o', linestyle=None, cmap=None,
             groupby=['model', 'scenario'], **kwargs):
     """Plot data as a scatter chart.
@@ -507,12 +507,12 @@ def scatter(df, x, y, ax=None, legend=None, title=True,
         Include a legend (`None` displays legend only if less than 13 entries)
         default: None
     title : bool or string, optional
-        Display a default or custom title.
+        Display a custom title.
     color : string, optional
         A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
         default: None
-    marker : string, optional
+    marker : string
         A valid matplotlib marker or column name. If a column name, common
         values will be provided the same marker.
         default: 'o'
@@ -550,7 +550,10 @@ def scatter(df, x, y, ax=None, legend=None, title=True,
             else:
                 pargs[key] = var
 
-        legend_data.append(' '.join(labels))
+        if len(labels) > 0:
+            legend_data.append(' '.join(labels))
+        else:
+            legend_data.append(' '.join(name))
         kwargs.update(pargs)
         ax.plot(group[x], group[y], **kwargs)
 
