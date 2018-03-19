@@ -474,6 +474,48 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
+    def check_aggregate(self, var_total, var_sector=None, units=None,
+                        exclude=True, threshold=0.1, multiplier=1):
+        """Check whether the timeseries values match the aggregation
+        of sub-categories
+
+        Parameters
+        ----------
+        var_total: str
+            variable to be checked for matching aggregation of sub-categories
+        var_sector: list of str, default None
+            list of variables, defaults to all sub-categories of `var_total`
+        threshold: number, default 0.1
+            threshold for identifiying aggregate as `non-matching`
+            (to allow rounding errors)
+        multiplier: number, default 1
+            factor when comparing var_total and sum of var_sector
+        """
+        # default var_sector to all variables one level below `var_total`
+        if var_sector is None:
+            var_sector = self.filter({'variable': '{}|*'.format(var_total),
+                                      'level': 0}).variables()
+
+        df_total = _aggregate_by_variables(self.data, var_total, units)
+        df_sector = _aggregate_by_variables(self.data, var_sector, units)
+        n = len(df_total)
+
+        diff = df_total - multiplier * df_sector
+        diff = diff[abs(diff) > threshold]
+
+        if len(diff):
+            msg = '{} of {} data points are not aggregates of sub-categories'
+            logger().info(msg.format(len(diff), n))
+
+            if exclude:
+                idx = _meta_idx(diff.reset_index())
+                self.meta.loc[idx, 'exclude'] = True
+
+                logger().info('{} non-valid scenario{} will be excluded'
+                              .format(len(idx), '' if len(idx) == 1 else 's'))
+
+            return diff.unstack().rename_axis(None, axis=1)
+
     def filter(self, filters=None, keep=True, inplace=False, **kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
@@ -736,6 +778,17 @@ def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
+def _aggregate_by_variables(df, variables, units=None):
+    variables = [variables] if isstr(variables) else variables
+    df = df[df.variable.isin(variables)]
+
+    if units is not None:
+        units = [units] if isstr(units) else units
+        df = df[df.unit.isin(units)]
+
+    return df.groupby(['model', 'scenario', 'region', 'year']).sum()['value']
+
+
 def _apply_filters(data, meta, filters):
     keep = np.array([True] * len(data))
 
@@ -875,3 +928,23 @@ def categorize(df, name, value, criteria,
         df.meta[name].update(fdf.meta[name])
     else:
         df.meta[name] = fdf.meta[name]
+
+
+def check_aggregate(df, *args, **kwargs):
+    """Check whether the timeseries values match the aggregation
+    of sub-categories
+
+    Parameters
+    ----------
+    df: IamDataFrame instance
+    args and kwargs: see IamDataFrame.check_aggregate() for details
+    filters: dict, optional
+        filter by data & metadata columns, see function 'filter()' for details,
+        filtering by 'variable'/'year' is replaced by arguments of 'criteria'
+    """
+    filters = kwargs.pop('filters', {})
+    fdf = df.filter(filters)
+    if len(fdf.data) > 0:
+        vdf = fdf.check_aggregate(*args, **kwargs)
+        df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+        return vdf

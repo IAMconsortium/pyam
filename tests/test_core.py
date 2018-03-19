@@ -7,7 +7,7 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, plotting, validate, categorize, \
-    require_variable
+    require_variable, check_aggregate
 from pyam.core import _meta_idx
 
 
@@ -224,6 +224,30 @@ def test_validate_top_level(meta_df):
     assert obs['year'].values[0] == 2010
     assert list(meta_df['exclude']) == [False, True]
 
+
+def test_check_aggregate_fail(meta_df):
+    obs = meta_df.check_aggregate('Primary Energy')
+    print(obs)
+    assert len(obs.columns) == 2
+    assert obs.index.get_values()[0] == ('a_model', 'a_scenario', 'World')
+
+
+def test_check_aggregate_pass(meta_df):
+    # make data complete so that aggregtion-test passes
+    df = pd.DataFrame({'model': 'a_model', 'scenario': 'a_scenario',
+                       'region': 'World', 'variable': 'Primary Energy|Gas',
+                       'unit': 'EJ/y', 'year': [2005, 2010], 'value': [.5, 3]})
+    meta_df.data = meta_df.data.append(df, ignore_index=True)
+    obs = meta_df.check_aggregate('Primary Energy')
+    assert obs is None
+
+
+def test_check_aggregate_top_level(meta_df):
+    obs = check_aggregate(meta_df, filters={'year': 2005},
+                          var_total='Primary Energy', threshold=0.1)
+    assert len(obs.columns) == 1
+    assert obs.index.get_values()[0] == ('a_model', 'a_scenario', 'World')
+    
 
 def test_category_none(meta_df):
     meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
