@@ -347,3 +347,21 @@ def test_stack_plot_other(plot_df):
          .stack_plot(ax=ax, stack='scenario', cmap='viridis', title='foo')
          )
     return fig
+
+
+@pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR,
+                               savefig_kwargs={'bbox_inches': 'tight'})
+def test_scatter(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    pe = plot_df.filter({'variable': 'Primary Energy'}).timeseries()[2005]
+    pe.name = 'Primary'
+    plot_df.metadata(pe)
+    pec = plot_df.filter({'variable': 'Primary Energy|Coal'}).timeseries()[2005]
+    pec.name = 'Primary|Coal'
+    plot_df.metadata(pec)
+
+    with update_run_control({'color': {'model': {'test_model': 'red'}}}):
+        (plot_df
+         .scatter(ax=ax, x='Primary', y='Primary|Coal')
+         )
+    return fig
