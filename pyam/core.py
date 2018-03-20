@@ -475,7 +475,7 @@ class IamDataFrame(object):
             return ret
 
     def check_aggregate(self, var_total, var_sector=None, units=None,
-                        exclude=True, threshold=0.1, multiplier=1):
+                        exclude=False, threshold=0.1, multiplier=1):
         """Check whether the timeseries values match the aggregation
         of sub-categories
 

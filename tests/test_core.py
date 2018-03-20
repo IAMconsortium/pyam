@@ -226,7 +226,7 @@ def test_validate_top_level(meta_df):
 
 
 def test_check_aggregate_fail(meta_df):
-    obs = meta_df.check_aggregate('Primary Energy')
+    obs = meta_df.check_aggregate('Primary Energy', exclude=True)
     print(obs)
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == ('a_model', 'a_scenario', 'World')
