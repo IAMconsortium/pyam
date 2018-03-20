@@ -425,8 +425,7 @@ class IamDataFrame(object):
             logger().info(msg.format(len(df), len(self.data)))
 
             if exclude_on_fail and len(idx) > 0:
-                logger().info('{} non-valid scenario{} will be excluded'
-                              .format(len(idx), '' if len(idx) == 1 else 's'))
+                self._exclude(df)
 
             return df
 
@@ -508,13 +507,16 @@ class IamDataFrame(object):
             logger().info(msg.format(len(diff), n))
 
             if exclude:
-                idx = _meta_idx(diff.reset_index())
-                self.meta.loc[idx, 'exclude'] = True
-
-                logger().info('{} non-valid scenario{} will be excluded'
-                              .format(len(idx), '' if len(idx) == 1 else 's'))
+                self._exclude(diff.reset_index())
 
             return diff.unstack().rename_axis(None, axis=1)
+
+    def _exclude(self, df):
+        idx = _meta_idx(df)
+        self.meta.loc[idx, 'exclude'] = True
+
+        logger().info('{} non-valid scenario{} will be excluded'
+                      .format(len(idx), '' if len(idx) == 1 else 's'))
 
     def filter(self, filters=None, keep=True, inplace=False, **kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
