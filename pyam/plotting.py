@@ -18,7 +18,6 @@ try:
 except ImportError:
     gpd = None
 
-
 from collections import defaultdict
 from contextlib import contextmanager
 
@@ -27,7 +26,7 @@ try:
 except ImportError:
     from functools32 import lru_cache
 
-
+from pyam.utils import SORT_IDX
 from pyam.run_control import run_control
 
 from pandas.plotting._style import _get_standard_colors
@@ -248,7 +247,7 @@ def pie_plot(df, value='value', category='variable',
         default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
-    for col in set(['model', 'scenario', 'year', 'variable']) - set([category]):
+    for col in set(SORT_IDX) - set([category]):
         if len(df[col].unique()) > 1:
             msg = 'Can not plot multiple {}s in pie_plot with value={}, category={}'
             raise ValueError(msg.format(col, value, category))
@@ -317,7 +316,7 @@ def stack_plot(df, x='year', y='value', stack='variable',
         default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
-    for col in set(['model', 'scenario', 'year', 'variable']) - set([x, stack]):
+    for col in set(SORT_IDX) - set([x, stack]):
         if len(df[col].unique()) > 1:
             msg = 'Can not plot multiple {}s in stack_plot with x={}, stack={}'
             raise ValueError(msg.format(col, x, stack))
@@ -397,7 +396,7 @@ def bar_plot(df, x='year', y='value', bars='variable',
         default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
-    for col in set(['model', 'scenario', 'year', 'variable']) - set([x, bars]):
+    for col in set(SORT_IDX) - set([x, bars]):
         if len(df[col].unique()) > 1:
             msg = 'Can not plot multiple {}s in bar_plot with x={}, bars={}'
             raise ValueError(msg.format(col, x, bars))
