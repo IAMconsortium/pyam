@@ -333,11 +333,14 @@ class IamDataFrame(object):
 
         if len(idx) == 0:
             logger().info("No scenarios satisfy the criteria")
-        else:
-            self.meta.loc[idx, name] = value
-            msg = '{} scenario{} categorized as `{}: {}`'
-            logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
-                                     name, value))
+            return  # EXIT FUNCTION
+
+        # update metadata dataframe
+        self._add_meta_column(name, value)
+        self.meta.loc[idx, name] = value
+        msg = '{} scenario{} categorized as `{}: {}`'
+        logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
+                                 name, value))
 
     def _add_meta_column(self, name, value):
         """Add a metadata column, set to `uncategorized` if str else np.nan"""
