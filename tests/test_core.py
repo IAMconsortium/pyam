@@ -362,9 +362,8 @@ def test_add_metadata_as_str_by_index(meta_df):
 
     meta_df.metadata('foo', 'meta_str', idx)
 
-    exp = ['foo', None]
-    obs = meta_df['meta_str'].values
-    npt.assert_array_equal(obs, exp)
+    obs = meta_df['meta_str'].values[0]
+    npt.assert_array_equal(obs, 'foo')
 
 
 def test_filter_by_metadata_str(meta_df):
