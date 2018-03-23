@@ -220,9 +220,6 @@ def test_validate_top_level(meta_df):
 def test_category_none(meta_df):
     meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
     obs = meta_df['category'].values
-    # old usage when default was None
-    # exp = [np.nan, np.nan]
-    # assert list(obs) == exp
     assert np.isnan(obs).all()
 
 
@@ -353,11 +350,21 @@ def test_add_metadata_as_int(meta_df):
                                 ['a_scenario', 'a_scenario2']],
                         labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
 
-    exp = pd.Series(data=[3.2, 3.2], index=idx)
-    exp.name = 'meta_int'
+    exp = pd.Series(data=[3.2, 3.2], index=idx, name='meta_int')
 
     obs = meta_df['meta_int']
     pd.testing.assert_series_equal(obs, exp)
+
+
+def test_add_metadata_as_str_by_index(meta_df):
+    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario']],
+                        labels=[[0], [0]], names=['model', 'scenario'])
+
+    meta_df.metadata('foo', 'meta_str', idx)
+
+    exp = ['foo', None]
+    obs = meta_df['meta_str'].values
+    npt.assert_array_equal(obs, exp)
 
 
 def test_filter_by_metadata_str(meta_df):
