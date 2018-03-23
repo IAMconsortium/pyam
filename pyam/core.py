@@ -324,13 +324,6 @@ class IamDataFrame(object):
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
 
-        if criteria == 'uncategorized':
-            self.meta[name].fillna(value, inplace=True)
-            msg = "{} of {} scenarios are uncategorized."
-            logger().info(msg.format(np.sum(self.meta[name] == value),
-                                     len(self.meta)))
-            return  # EXIT FUNCTION
-
         # find all data that matches categorization
         rows = _apply_criteria(self.data, criteria,
                                in_range=True, return_test='all')
