@@ -125,8 +125,16 @@ def test_timeseries(test_df):
 
 
 def test_read_pandas():
-    ia = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
-    assert list(ia['variable'].unique()) == ['Primary Energy']
+    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
+    assert list(df.variables()) == ['Primary Energy']
+
+
+def test_filter_index(meta_df):
+    obs = meta_df.filter({'scenario': 'a_scenario2'}).index
+    exp = pd.MultiIndex(levels=[['a_model'], ['a_scenario2']],
+                        labels=[[0], [0]],
+                        names=['model', 'scenario'])
+    pd.testing.assert_index_equal(obs, exp)
 
 
 def test_meta_idx(meta_df):
