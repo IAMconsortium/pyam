@@ -267,37 +267,40 @@ class IamDataFrame(object):
         index: pd.MultiIndex
             index to be used for setting metadata column
         """
-        if index is not None:
-            meta = pd.Series(data=meta, index=index, name=name)
-        if isinstance(meta, pd.Series) and \
-                set(['model', 'scenario']).issubset(meta.index.names):
-            meta.name = name or meta.name
+        # create pd.Series from index and meta if provided
+        _meta = meta if index is None else pd.Series(data=meta, index=index)
+
+        # append by index of pd.Series if possible
+        if isinstance(_meta, pd.Series) and \
+                set(['model', 'scenario']).issubset(_meta.index.names):
+            _meta.name = name or _meta.name
             # reduce index dimensions to model-scenario only
-            meta = (meta
-                    .reset_index()
-                    .loc[:, ['model', 'scenario', meta.name]]
-                    .set_index(['model', 'scenario'])
-                    )
+            _meta = (_meta
+                     .reset_index()
+                     .loc[:, ['model', 'scenario', _meta.name]]
+                     .set_index(['model', 'scenario'])
+                     )
             # raise error if index is not unique
-            if meta.index.duplicated().any():
+            if _meta.index.duplicated().any():
                 raise ValueError("non-unique ['model', 'scenario'] index!")
             # check if trying to add model-scenario index not existing in self
-            diff = meta.index.difference(self.meta.index)
+            diff = _meta.index.difference(self.meta.index)
             if not diff.empty:
                 error = "adding metadata for non-existing scenarios '{}'!"
                 raise ValueError(error.format(diff))
 
             self._add_meta_column(name, meta)
-            self.meta = meta.combine_first(self.meta)
+            self.meta = _meta.combine_first(self.meta)
             #  quickfix for pandas.combine_first(), issue #7509
             self.meta['exclude'] = self.meta['exclude'].astype('bool')
             return  # EXIT FUNCTION
 
-        if isinstance(meta, pd.Series):
-            name = name or meta.name
-            meta = meta.tolist()
+        # append every other column type as list
+        if isinstance(_meta, pd.Series):
+            name = name or _meta.name
+            _meta = _meta.tolist()
 
-        self.meta[name] = meta
+        self.meta[name] = _meta
 
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
