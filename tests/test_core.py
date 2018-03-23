@@ -219,18 +219,17 @@ def test_validate_top_level(meta_df):
 
 def test_category_none(meta_df):
     meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
-    obs = meta_df['category'].values
-    assert np.isnan(obs).all()
+    assert 'category' not in meta_df.meta.columns
 
 
 def test_category_pass(meta_df):
     dct = {'model': ['a_model', 'a_model'],
            'scenario': ['a_scenario', 'a_scenario2'],
-           'category': ['Testing', np.nan]}
+           'category': ['foo', 'uncategorized']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    meta_df.categorize('category', 'Testing', {'Primary Energy':
-                                               {'up': 6, 'year': 2010}})
+    meta_df.categorize('category', 'foo', {'Primary Energy':
+        {'up': 6, 'year': 2010}})
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
@@ -238,7 +237,7 @@ def test_category_pass(meta_df):
 def test_category_top_level(meta_df):
     dct = {'model': ['a_model', 'a_model'],
            'scenario': ['a_scenario', 'a_scenario2'],
-           'category': ['Testing', np.nan]}
+           'category': ['Testing', 'uncategorized']}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     categorize(meta_df, 'category', 'Testing',
@@ -362,8 +361,8 @@ def test_add_metadata_as_str_by_index(meta_df):
 
     meta_df.metadata('foo', 'meta_str', idx)
 
-    obs = meta_df['meta_str'].values[0]
-    npt.assert_array_equal(obs, 'foo')
+    obs = meta_df['meta_str'].values
+    npt.assert_array_equal(obs, ['foo', 'uncategorized'])
 
 
 def test_filter_by_metadata_str(meta_df):
