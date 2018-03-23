@@ -347,7 +347,7 @@ class IamDataFrame(object):
 
     def _add_meta_column(self, name, value):
         """Add a metadata column, set to `uncategorized` if str else np.nan"""
-        if name not in self.meta:
+        if name is not None and name not in self.meta:
             self.meta[name] = 'uncategorized' if isstr(value) else np.nan
     def require_variable(self, variable, unit=None, year=None,
                          exclude_on_fail=False):
