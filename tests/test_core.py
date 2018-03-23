@@ -273,13 +273,13 @@ def test_append(test_df):
     df2 = test_df.append(other=os.path.join(
         TEST_DATA_DIR, 'testing_data_2.csv'))
 
-    obs = test_df['scenario'].unique()
-    exp = ['a_scenario']
-    npt.assert_array_equal(obs, exp)
+    # check that the new index is updated, but not the original one
+    obs = test_df.index.get_level_values(1)
+    npt.assert_array_equal(obs, ['a_scenario'])
 
-    obs = df2['scenario'].unique()
     exp = ['a_scenario', 'append_scenario']
-    npt.assert_array_equal(obs, exp)
+    obs2 = df2.index.get_level_values(1)
+    npt.assert_array_equal(obs2, exp)
 
 
 def test_append_duplicates(test_df):
