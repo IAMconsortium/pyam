@@ -254,7 +254,7 @@ class IamDataFrame(object):
         """
         self.meta['exclude'] = False
 
-    def metadata(self, meta, name=None):
+    def metadata(self, meta, name=None, index=None):
         """Add metadata columns as pd.Series or list
 
         Parameters
@@ -264,7 +264,11 @@ class IamDataFrame(object):
             (by `['model', 'scenario']` index if possible)
         name: str
             category column name (if not given by meta pd.Series.name)
+        index: pd.MultiIndex
+            index to be used for setting metadata column
         """
+        if index is not None:
+            meta = pd.Series(data=meta, index=index, name=name)
         if isinstance(meta, pd.Series) and \
                 set(['model', 'scenario']).issubset(meta.index.names):
             meta.name = name or meta.name
