@@ -286,6 +286,8 @@ class IamDataFrame(object):
             if not diff.empty:
                 error = "adding metadata for non-existing scenarios '{}'!"
                 raise ValueError(error.format(diff))
+
+            self._add_meta_column(name, meta)
             self.meta = meta.combine_first(self.meta)
             #  quickfix for pandas.combine_first(), issue #7509
             self.meta['exclude'] = self.meta['exclude'].astype('bool')
@@ -329,9 +331,6 @@ class IamDataFrame(object):
                                in_range=True, return_test='all')
         idx = _meta_idx(rows)
 
-        # update metadata dataframe
-        if name not in self.meta:
-            self.meta[name] = np.nan
         if len(idx) == 0:
             logger().info("No scenarios satisfy the criteria")
         else:
@@ -340,6 +339,10 @@ class IamDataFrame(object):
             logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
                                      name, value))
 
+    def _add_meta_column(self, name, value):
+        """Add a metadata column, set to `uncategorized` if str else np.nan"""
+        if name not in self.meta:
+            self.meta[name] = 'uncategorized' if isstr(value) else np.nan
     def require_variable(self, variable, unit=None, year=None,
                          exclude_on_fail=False):
         """Check whether all scenarios have a required variable
