@@ -3,6 +3,8 @@ pyam: a Python toolkit for Integrated Assessment Modeling
 
 *The pyam package is still under heavy development; public and private APIs are subject to change.*
 
+**Questions? Start a discussion on our [listserv](https://groups.google.com/forum/#!forum/pyam)**
+
 Overview and scope
 ------------------
 
