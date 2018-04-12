@@ -18,7 +18,6 @@ from pyam import plotting
 from pyam.logger import logger
 from pyam.run_control import run_control
 from pyam.utils import (
-    isstr,
     write_sheet,
     read_ix,
     read_files,
