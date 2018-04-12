@@ -129,6 +129,17 @@ def format_data(df):
         missing = list(set(IAMC_IDX) - set(df.columns))
         raise ValueError("missing required columns `{}`!".format(missing))
 
+    if 'notes' in df.columns:
+        df.drop(columns='notes',inplace=True)
+        # remove SSP Public Database row
+        database_label_rows = [
+            'SSP Public Database' in model
+            for model in df.model
+        ]
+        df.drop(df[database_label_rows].index, inplace=True)
+
+
+
     # check whether data in IAMC style or year/value layout
     if 'value' not in df.columns:
         numcols = sorted(set(df.columns) - set(IAMC_IDX))
