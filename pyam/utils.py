@@ -130,7 +130,7 @@ def format_data(df):
         raise ValueError("missing required columns `{}`!".format(missing))
 
     if 'notes' in df.columns:
-        logger().info('Ignoring notes column in `{}`'.format(fname))
+        logger().info('Ignoring notes column in dataframe')
         df.drop(columns='notes',inplace=True)
         # remove SSP Public Database row
         database_label_rows = [
