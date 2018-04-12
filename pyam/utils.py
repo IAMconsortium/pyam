@@ -134,7 +134,7 @@ def format_data(df):
         df.drop(columns='notes', inplace=True)
         df = df[
             (~df.model.str.contains('SSP Public Database'))
-            | (~df.model.str.startswith('@'))
+            & (~df.model.str.startswith('@'))
         ]
 
     # check whether data in IAMC style or year/value layout
