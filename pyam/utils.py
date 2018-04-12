@@ -131,15 +131,17 @@ def format_data(df):
 
     if 'notes' in df.columns:
         logger().info('Ignoring notes column in dataframe')
-        df.drop(columns='notes',inplace=True)
+        df.drop(columns='notes', inplace=True)
+        df = df[
+            (~df.model.str.contains('SSP Public Database'))
+            | (~df.model.str.startswith('@'))
+        ]
         # remove SSP Public Database row
         database_label_rows = [
             'SSP Public Database' in model
             for model in df.model
         ]
         df.drop(df[database_label_rows].index, inplace=True)
-
-
 
     # check whether data in IAMC style or year/value layout
     if 'value' not in df.columns:
