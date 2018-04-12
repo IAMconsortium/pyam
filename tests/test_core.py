@@ -246,6 +246,12 @@ def test_load_metadata(test_df):
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
+def test_load_SSP_database_downloaded_file(test_df):
+    obs_df = IamDataFrame(os.path.join(
+        TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
+    )
+
+    pd.testing.assert_frame_equal(obs_df, test_df)
 
 def test_append(test_df):
     df2 = test_df.append(other=os.path.join(
@@ -342,7 +348,7 @@ def test_filter_by_metadata_str(meta_df):
     meta_df.metadata(['testing', 'testing2'], name='category')
     obs = meta_df.filter({'category': 'testing'})
     assert obs['scenario'].unique() == 'a_scenario'
-    
+
 
 def test_filter_by_metadata_bool(meta_df):
     meta_df.metadata([True, False], name='exclude')
