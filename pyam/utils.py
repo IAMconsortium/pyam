@@ -129,6 +129,11 @@ def format_data(df):
         missing = list(set(IAMC_IDX) - set(df.columns))
         raise ValueError("missing required columns `{}`!".format(missing))
 
+    if 'notes' in df.columns:
+        logger().info('Ignoring notes column in dataframe')
+        df.drop(columns='notes', inplace=True)
+        df = df[~df.model.str.contains('database', case=False)]
+
     # check whether data in IAMC style or year/value layout
     if 'value' not in df.columns:
         numcols = sorted(set(df.columns) - set(IAMC_IDX))
