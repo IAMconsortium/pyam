@@ -29,6 +29,7 @@ from pyam.utils import (
     isstr,
     islistable,
     META_IDX,
+    YEAR_IDX,
     IAMC_IDX,
     SORT_IDX,
     LONG_IDX,
@@ -512,9 +513,9 @@ class IamDataFrame(object):
             return diff.unstack().rename_axis(None, axis=1)
 
     def _exclude(self, df):
+        """Assign a selection of scenarios as `exclude: True` in meta"""
         idx = _meta_idx(df)
         self.meta.loc[idx, 'exclude'] = True
-
         logger().info('{} non-valid scenario{} will be excluded'
                       .format(len(idx), '' if len(idx) == 1 else 's'))
 
@@ -788,7 +789,7 @@ def _aggregate_by_variables(df, variables, units=None):
         units = [units] if isstr(units) else units
         df = df[df.unit.isin(units)]
 
-    return df.groupby(['model', 'scenario', 'region', 'year']).sum()['value']
+    return df.groupby(YEAR_IDX).sum()['value']
 
 
 def _apply_filters(data, meta, filters):
