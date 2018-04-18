@@ -62,7 +62,6 @@ class IamDataFrame(object):
         # define a dataframe for categorization and other metadata indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
-        self.index = self.meta.index
 
         # execute user-defined code
         if 'exec' in run_control():
@@ -153,7 +152,6 @@ class IamDataFrame(object):
 
         # check that any model/scenario is not yet included in IamDataFrame
         ret.meta = ret.meta.append(other.meta, verify_integrity=True)
-        ret.index = ret.meta.index
 
         # add new data
         ret.data = ret.data.append(other.data).reset_index(drop=True)
