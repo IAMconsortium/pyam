@@ -308,7 +308,7 @@ def test_add_metadata_as_named_series(meta_df):
 
     s = pd.Series(data=[0.3], index=idx)
     s.name = 'meta_values'
-    meta_df.metadata(s)
+    meta_df.set_meta(s)
 
     idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario', 'a_scenario2']],
                         labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
@@ -324,7 +324,7 @@ def test_add_metadata_non_unique_index_fail(meta_df):
                         labels=[[0, 0], [0, 0], [0, 1]],
                         names=['model', 'scenario', 'region'])
     s = pd.Series([0.4, 0.5], idx)
-    pytest.raises(ValueError, meta_df.metadata, s)
+    pytest.raises(ValueError, meta_df.set_meta, s)
 
 
 def test_add_metadata_non_existing_index_fail(meta_df):
@@ -332,12 +332,12 @@ def test_add_metadata_non_existing_index_fail(meta_df):
                                 ['a_scenario', 'fail_scenario']],
                         labels=[[0, 1], [0, 1]], names=['model', 'scenario'])
     s = pd.Series([0.4, 0.5], idx)
-    pytest.raises(ValueError, meta_df.metadata, s)
+    pytest.raises(ValueError, meta_df.set_meta, s)
 
 
 def test_add_metadata_as_series(meta_df):
     s = pd.Series([0.3, 0.4])
-    meta_df.metadata(s, 'meta_series')
+    meta_df.set_meta(s, 'meta_series')
 
     idx = pd.MultiIndex(levels=[['a_model'],
                                 ['a_scenario', 'a_scenario2']],
@@ -351,7 +351,7 @@ def test_add_metadata_as_series(meta_df):
 
 
 def test_add_metadata_as_int(meta_df):
-    meta_df.metadata(3.2, 'meta_int')
+    meta_df.set_meta(3.2, 'meta_int')
 
     idx = pd.MultiIndex(levels=[['a_model'],
                                 ['a_scenario', 'a_scenario2']],
@@ -367,7 +367,7 @@ def test_add_metadata_as_str_by_index(meta_df):
     idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario']],
                         labels=[[0], [0]], names=['model', 'scenario'])
 
-    meta_df.metadata('foo', 'meta_str', idx)
+    meta_df.set_meta('foo', 'meta_str', idx)
 
     obs = meta_df['meta_str'].values
     npt.assert_array_equal(obs, ['foo', 'uncategorized'])

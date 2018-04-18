@@ -252,7 +252,7 @@ class IamDataFrame(object):
         """
         self.meta['exclude'] = False
 
-    def metadata(self, meta, name=None, index=None):
+    def set_meta(self, meta, name=None, index=None):
         """Add metadata columns as pd.Series or list
 
         Parameters
