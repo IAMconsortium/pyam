@@ -398,3 +398,50 @@ def test_map_regions_r5_agg(reg_df):
     exp = exp.groupby(grp).sum().reset_index()
     exp = exp[columns]
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_48a():
+    # tests fix for #48 mapping many->few
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SSD', 'var', 'unit', 1, 6],
+        ['model', 'scen', 'SDN', 'var', 'unit', 2, 7],
+        ['model', 'scen1', 'SSD', 'var', 'unit', 2, 7],
+        ['model', 'scen1', 'SDN', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+
+    exp = _r5_regions_exp(df)
+    columns = df.data.columns
+    grp = list(columns)
+    grp.remove('value')
+    exp = exp.groupby(grp).sum().reset_index()
+    exp = exp[columns]
+
+    obs = df.map_regions('r5_region', region_col='iso', agg='sum').data
+
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_48b():
+    # tests fix for #48 mapping few->many
+
+    exp = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SSD', 'var', 'unit', 1, 6],
+        ['model', 'scen', 'SDN', 'var', 'unit', 1, 6],
+        ['model', 'scen1', 'SSD', 'var', 'unit', 2, 7],
+        ['model', 'scen1', 'SDN', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    )).data.reset_index(drop=True)
+
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'R5MAF', 'var', 'unit', 1, 6],
+        ['model', 'scen1', 'R5MAF', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+    obs = df.map_regions('iso', region_col='r5_region').data
+    obs = obs[obs.region.isin(['SSD', 'SDN'])].reset_index(drop=True)
+
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
