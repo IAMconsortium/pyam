@@ -432,7 +432,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        filters: dict
+        filters: dict or keyword arguments, default None
             The following columns are available for filtering:
              - metadata columns: filter by category assignment in metadata
              - 'model', 'scenario', 'region', 'variable', 'unit':
@@ -442,9 +442,16 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
+            arguments can be passed as kwargs instead of a `filters` dictionary
+        keep: bool, default True
+            keep all scenarios satisfying the filters (if True) or the inverse
         inplace: bool, default False
             if True, do operation inplace and return None
         """
+        if filters is not None and len(kwargs) > 0:
+            raise ValueError('Only one of filters or kwargs must have a value')
+        if filters is None:
+            filters = kwargs
         _keep = _apply_filters(self.data, self.meta, filters)
         _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self

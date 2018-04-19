@@ -100,6 +100,21 @@ def test_variable_unit(test_df):
     npt.assert_array_equal(test_df[cols].drop_duplicates(), exp)
 
 
+def test_filter_error(test_df):
+    pytest.raises(ValueError, test_df.filter, filters={}, model='foo')
+
+
+def test_filter_as_kwarg(meta_df):
+    obs = list(meta_df.filter(variable='Primary Energy|Coal').scenarios())
+    assert obs == ['a_scenario']
+
+
+def test_filter_keep_false(meta_df):
+    df = meta_df.filter(variable='Primary Energy|Coal', year=2005, keep=False)
+    obs = df.data[df.data.scenario == 'a_scenario'].value
+    npt.assert_array_equal(obs, [1, 6, 3])
+
+
 def test_timeseries(test_df):
     dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario'] * 2,
            'years': [2005, 2010], 'value': [1, 6]}
