@@ -47,49 +47,49 @@ def test_variable_unit(test_df):
 
 
 def test_variable_depth_0(test_df):
-    obs = list(test_df.filter({'level': 0})['variable'].unique())
+    obs = list(test_df.filter(level=0)['variable'].unique())
     exp = ['Primary Energy']
     assert obs == exp
 
 
 def test_variable_depth_0_keep_false(test_df):
-    obs = list(test_df.filter({'level': 0}, keep=False)['variable'].unique())
+    obs = list(test_df.filter(level=0, keep=False)['variable'].unique())
     exp = ['Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_0_minus(test_df):
-    obs = list(test_df.filter({'level': '0-'})['variable'].unique())
+    obs = list(test_df.filter(level='0-')['variable'].unique())
     exp = ['Primary Energy']
     assert obs == exp
 
 
 def test_variable_depth_0_plus(test_df):
-    obs = list(test_df.filter({'level': '0+'})['variable'].unique())
+    obs = list(test_df.filter(level='0+')['variable'].unique())
     exp = ['Primary Energy', 'Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_1(test_df):
-    obs = list(test_df.filter({'level': 1})['variable'].unique())
+    obs = list(test_df.filter(level=1)['variable'].unique())
     exp = ['Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_1_minus(test_df):
-    obs = list(test_df.filter({'level': '1-'})['variable'].unique())
+    obs = list(test_df.filter(level='1-')['variable'].unique())
     exp = ['Primary Energy', 'Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_1_plus(test_df):
-    obs = list(test_df.filter({'level': '1+'})['variable'].unique())
+    obs = list(test_df.filter(level='1+')['variable'].unique())
     exp = ['Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_raises(test_df):
-    pytest.raises(ValueError, test_df.filter, {'level': '1/'})
+    pytest.raises(ValueError, test_df.filter, level='1/')
 
 
 def test_variable_unit(test_df):
@@ -101,7 +101,7 @@ def test_variable_unit(test_df):
 
 
 def test_filter_error(test_df):
-    pytest.raises(ValueError, test_df.filter, filters={}, model='foo')
+    pytest.raises(ValueError, test_df.filter, foo='foo')
 
 
 def test_filter_as_kwarg(meta_df):
@@ -120,7 +120,7 @@ def test_timeseries(test_df):
            'years': [2005, 2010], 'value': [1, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_df.filter({'variable': 'Primary Energy'}).timeseries()
+    obs = test_df.filter(variable='Primary Energy').timeseries()
     npt.assert_array_equal(obs, exp)
 
 
@@ -291,7 +291,7 @@ def test_interpolate(test_df):
            'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_df.filter({'variable': 'Primary Energy'}).timeseries()
+    obs = test_df.filter(variable='Primary Energy').timeseries()
     npt.assert_array_equal(obs, exp)
 
 
@@ -360,24 +360,24 @@ def test_add_metadata_as_int(meta_df):
 
 def test_filter_by_metadata_str(meta_df):
     meta_df.metadata(['testing', 'testing2'], name='category')
-    obs = meta_df.filter({'category': 'testing'})
+    obs = meta_df.filter(category='testing')
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def test_filter_by_metadata_bool(meta_df):
     meta_df.metadata([True, False], name='exclude')
-    obs = meta_df.filter({'exclude': True})
+    obs = meta_df.filter(exclude=True)
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def test_filter_by_metadata_int(meta_df):
     meta_df.metadata([1, 2], name='value')
-    obs = meta_df.filter({'value': [1, 3]})
+    obs = meta_df.filter(value=[1, 3])
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def _r5_regions_exp(df):
-    df = df.filter({'region': 'World'}, keep=False)
+    df = df.filter(region='World', keep=False)
     df['region'] = 'R5MAF'
     return df.data.reset_index(drop=True)
 
@@ -389,7 +389,7 @@ def test_map_regions_r5(reg_df):
 
 
 def test_map_regions_r5_region_col(reg_df):
-    df = reg_df.filter({'model': 'MESSAGE-GLOBIOM'})
+    df = reg_df.filter(model='MESSAGE-GLOBIOM')
     obs = df.map_regions(
         'r5_region', region_col='MESSAGE-GLOBIOM.REGION').data
     exp = _r5_regions_exp(df)

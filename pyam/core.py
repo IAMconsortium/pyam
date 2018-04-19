@@ -427,12 +427,16 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def filter(self, filters, keep=True, inplace=False):
+    def filter(self, keep=True, inplace=False, **kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
         ----------
-        filters: dict or keyword arguments, default None
+        keep: bool, default True
+            keep all scenarios satisfying the filters (if True) or the inverse
+        inplace: bool, default False
+            if True, do operation inplace and return None
+        filters by kwargs:
             The following columns are available for filtering:
              - metadata columns: filter by category assignment in metadata
              - 'model', 'scenario', 'region', 'variable', 'unit':
@@ -442,17 +446,12 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-            arguments can be passed as kwargs instead of a `filters` dictionary
-        keep: bool, default True
-            keep all scenarios satisfying the filters (if True) or the inverse
-        inplace: bool, default False
-            if True, do operation inplace and return None
         """
-        if filters is not None and len(kwargs) > 0:
-            raise ValueError('Only one of filters or kwargs must have a value')
-        if filters is None:
-            filters = kwargs
-        _keep = _apply_filters(self.data, self.meta, filters)
+        if type(keep) == dict:
+            msg = 'Filtering by dictionary is deprecated, please use kwargs'
+            raise ValueError(msg)
+
+        _keep = _apply_filters(self.data, self.meta, kwargs)
         _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[_keep]
@@ -715,7 +714,7 @@ def _apply_filters(data, meta, filters):
             else:
                 continue
         else:
-            raise SystemError(
+            raise ValueError(
                 'filter by column ' + col + ' not supported')
         keep &= keep_col
 
@@ -788,8 +787,7 @@ def validate(df, *args, **kwargs):
         filter by data & metadata columns, see function 'filter()' for details,
         filtering by 'variable'/'year' is replaced by arguments of 'criteria'
     """
-    filters = kwargs.pop('filters', {})
-    fdf = df.filter(filters)
+    fdf = df.filter(**kwargs.pop('filters', {}))
     if len(fdf.data) > 0:
         vdf = fdf.validate(*args, **kwargs)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
@@ -806,8 +804,7 @@ def require_variable(df, *args, **kwargs):
     filters: dict, optional
         filter by data & metadata columns, see function 'filter()' for details
     """
-    filters = kwargs.pop('filters', {})
-    fdf = df.filter(filters)
+    fdf = df.filter(**kwargs.pop('filters', {}))
     if len(fdf.data) > 0:
         vdf = fdf.require_variable(*args, **kwargs)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
@@ -826,8 +823,7 @@ def categorize(df, *args, **kwargs):
         filter by data & metadata columns, see function 'filter()' for details,
         filtering by 'variable'/'year' is replaced by arguments of 'criteria'
     """
-    filters = kwargs.pop('filters', {})
-    fdf = df.filter(filters)
+    fdf = df.filter(**kwargs.pop('filters', {}))
     fdf.categorize(*args, **kwargs)
 
     # update metadata
