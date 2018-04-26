@@ -405,7 +405,7 @@ class IamDataFrame(object):
 
             return df
 
-    def rename(self, mapping):
+    def rename_data(self, mapping):
         """ Rename and aggregate column entries
 
         Parameters
@@ -417,7 +417,7 @@ class IamDataFrame(object):
 
         ret = copy.deepcopy(self)
         for col in mapping:
-            ret.data.loc[:, col] = self.data.loc[:, col].map(mapping[col], na_action='ignore')
+            ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
         ret.data = ret.data.groupby(IAMC_IDX + ['year']).sum().reset_index()
 
         return ret
