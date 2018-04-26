@@ -400,6 +400,31 @@ def test_map_regions_r5_agg(reg_df):
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
 
+#def test_rename():
+#    df = IamDataFrame(pd.DataFrame([
+#        ['model', 'scen', 'SSD', 'test_1', 'unit', 1, 5],
+#        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
+#        ['model', 'scen1', 'SSD', 'test_1', 'unit', 3, 7],
+#        ['model', 'scen1', 'SDT', 'test_2', 'unit', 4, 8],
+#    ], columns=['model', 'scenario', 'region',
+#                'variable', 'unit', 2005, 2010],
+#    ))
+#
+#    mapping = {'variable': {'test_1': 'test'}}
+#
+#    obs = rename(df)
+#
+#    exp = IamDataFrame(pd.DataFrame([
+#        ['model', 'scen', 'SSD', 'test', 'unit', 4, 11],
+#        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
+#        ['model', 'scen1', 'SDT', 'test_2', 'unit', 4, 8],
+#    ], columns=['model', 'scenario', 'region',
+#                'variable', 'unit', 2005, 2010],
+#    ))
+#
+#    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
 def test_48a():
     # tests fix for #48 mapping many->few
     df = IamDataFrame(pd.DataFrame([
