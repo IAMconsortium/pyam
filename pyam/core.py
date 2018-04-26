@@ -405,6 +405,23 @@ class IamDataFrame(object):
 
             return df
 
+    def rename(self, mapping):
+        """ Rename and aggregate column entries
+
+        Parameters
+        ----------
+        mapping: dict
+            for each column where entries should be renamed, provide current name and target name
+            {<column name>: {<current_name_1>: <target_name_1>, <current_name_1>: <target_name_1>}}
+        """
+
+        ret = copy.deepcopy(self)
+        for col in mapping:
+            ret.data.loc[:, col] = self.data.loc[:, col].map(mapping[col], na_action='ignore')
+        ret.data = ret.data.groupby(IAMC_IDX + ['year']).sum().reset_index()
+
+        return ret
+
     def filter(self, filters, keep=True, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
