@@ -405,6 +405,26 @@ class IamDataFrame(object):
 
             return df
 
+    def conv_unit(self, unit_conv, inplace=False):
+        """ Converts units based on provided unit conversion factors
+
+        Parameters
+        ----------
+        unit_conv: dict
+            for each unit for which a conversion should be carried out, provide current unit and target unit and conversion factor
+            {<current unit>: [<target unit>, <conversion factor>]}
+        inplace: bool, default False
+            if True, do operation inplace and return None
+        """
+        ret = copy.deepcopy(self) if not inplace else self
+        for unt in unit_conv:
+            if not unit_conv[unt][1].isnumeric():
+                raise ValueError('unit conversion factor for {} is not numeric!'.format(unt))
+            ret.data.loc[ret.data['unit'] == unt, 'value'] = ret.data.loc[ret.data['unit'] == unt, 'value'] * unit_conv[unt][1]
+            ret.data.loc[ret.data['unit'] == unt, 'unit'] = unit_conv[unt][0]
+        if not inplace:
+            return ret
+
     def filter(self, filters, keep=True, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
