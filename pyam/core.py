@@ -418,7 +418,7 @@ class IamDataFrame(object):
         """
         ret = copy.deepcopy(self) if not inplace else self
         for unt in unit_conv:
-            if not unit_conv[unt][1].isnumeric():
+            if not type(unit_conv[unt][1]) in [int, np.integer, float]:
                 raise ValueError(
                     'unit conversion factor for {} is not numeric!'.format(unt))
             ret.data.loc[ret.data['unit'] == unt, 'value'] = ret.data.loc[ret.data['unit']
@@ -426,7 +426,7 @@ class IamDataFrame(object):
             ret.data.loc[ret.data['unit'] == unt, 'unit'] = unit_conv[unt][0]
         if not inplace:
             return ret
-
+        
     def filter(self, filters, keep=True, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
