@@ -246,11 +246,13 @@ def test_load_metadata(test_df):
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
+
 def test_load_SSP_database_downloaded_file(test_df):
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
     )
     pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df.as_pandas())
+
 
 def test_append(test_df):
     df2 = test_df.append(other=os.path.join(
@@ -445,6 +447,7 @@ def test_48b():
     obs = obs[obs.region.isin(['SSD', 'SDN'])].reset_index(drop=True)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
 
 def test_conv_unit():
     df = IamDataFrame(pd.DataFrame([

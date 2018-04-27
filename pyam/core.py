@@ -419,8 +419,10 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
         for unt in unit_conv:
             if not unit_conv[unt][1].isnumeric():
-                raise ValueError('unit conversion factor for {} is not numeric!'.format(unt))
-            ret.data.loc[ret.data['unit'] == unt, 'value'] = ret.data.loc[ret.data['unit'] == unt, 'value'] * unit_conv[unt][1]
+                raise ValueError(
+                    'unit conversion factor for {} is not numeric!'.format(unt))
+            ret.data.loc[ret.data['unit'] == unt, 'value'] = ret.data.loc[ret.data['unit']
+                                                                          == unt, 'value'] * unit_conv[unt][1]
             ret.data.loc[ret.data['unit'] == unt, 'unit'] = unit_conv[unt][0]
         if not inplace:
             return ret
