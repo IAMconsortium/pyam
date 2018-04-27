@@ -405,22 +405,27 @@ class IamDataFrame(object):
 
             return df
 
-    def rename_data(self, mapping):
-        """ Rename and aggregate column entries
+    def rename(self, mapping, inplace=False):
+        """ Rename and aggregate column entries using groupby.sum()
 
         Parameters
         ----------
         mapping: dict
             for each column where entries should be renamed, provide current name and target name
-            {<column name>: {<current_name_1>: <target_name_1>, <current_name_1>: <target_name_1>}}
+            {<column name>: {<current_name_1>: <target_name_1>, <current_name_2>: <target_name_2>}}
+        inplace: bool, default False
+            if True, do operation inplace and return None
         """
-
-        ret = copy.deepcopy(self)
+        ret = copy.deepcopy(self) if not inplace else self
         for col in mapping:
-            ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
-        ret.data = ret.data.groupby(IAMC_IDX + ['year']).sum().reset_index()
+            if col in ['region', 'variable', 'unit']:
+                ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
+            else:
+                raise ValueError('renaming by {} not supported!'.format(col))
 
-        return ret
+        ret.data = ret.data.groupby(IAMC_IDX + ['year']).sum().reset_index()
+        if not inplace:
+            return ret
 
     def filter(self, filters, keep=True, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
