@@ -29,6 +29,7 @@ from pyam.utils import (
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
+    LONG_IDX,
 )
 from pyam.timeseries import fill_series
 
@@ -418,12 +419,11 @@ class IamDataFrame(object):
         """
         ret = copy.deepcopy(self) if not inplace else self
         for col in mapping:
-            if col in ['region', 'variable', 'unit']:
-                ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
-            else:
+            if not col in ['region', 'variable', 'unit']:
                 raise ValueError('renaming by {} not supported!'.format(col))
+            ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
 
-        ret.data = ret.data.groupby(IAMC_IDX + ['year']).sum().reset_index()
+        ret.data = ret.data.groupby(LONG_IDX).sum().reset_index()
         if not inplace:
             return ret
 
@@ -658,7 +658,7 @@ class IamDataFrame(object):
 
         # perform aggregations
         if agg == 'sum':
-            df = df.groupby(IAMC_IDX + ['year']).sum().reset_index()
+            df = df.groupby(LONG_IDX).sum().reset_index()
 
         ret.data = (df
                     .reindex(columns=columns_orderd)
