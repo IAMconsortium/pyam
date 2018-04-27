@@ -457,7 +457,7 @@ def test_rename():
 
     mapping = {'variable': {'test_1': 'test', 'test_3': 'test'}}
 
-    obs = df.rename_data(mapping).data.reset_index(drop=True)
+    obs = df.rename(mapping).data.reset_index(drop=True)
 
     exp = IamDataFrame(pd.DataFrame([
         ['model', 'scen', 'SST', 'test', 'unit', 4, 12],
