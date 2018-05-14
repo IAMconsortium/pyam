@@ -136,7 +136,7 @@ def test_meta_idx(meta_df):
 
 def test_require_variable(meta_df):
     obs = meta_df.require_variable(variable='Primary Energy|Coal',
-                                   exclude=True)
+                                   exclude_on_fail=True)
     assert len(obs) == 1
     assert obs.loc[0, 'scenario'] == 'a_scenario2'
 
@@ -145,7 +145,7 @@ def test_require_variable(meta_df):
 
 def test_require_variable_top_level(meta_df):
     obs = require_variable(meta_df, variable='Primary Energy|Coal',
-                           exclude=True)
+                           exclude_on_fail=True)
     assert len(obs) == 1
     assert obs.loc[0, 'scenario'] == 'a_scenario2'
 
@@ -154,7 +154,7 @@ def test_require_variable_top_level(meta_df):
 
 def test_validate_all_pass(meta_df):
     obs = meta_df.validate(
-        {'Primary Energy': {'up': 10}}, exclude=True)
+        {'Primary Energy': {'up': 10}}, exclude_on_fail=True)
     assert obs is None
     assert len(meta_df.data) == 6  # data unchanged
 
@@ -162,7 +162,8 @@ def test_validate_all_pass(meta_df):
 
 
 def test_validate_nonexisting(meta_df):
-    obs = meta_df.validate({'Primary Energy|Coal': {'up': 2}}, exclude=True)
+    obs = meta_df.validate({'Primary Energy|Coal': {'up': 2}},
+                           exclude_on_fail=True)
     assert len(obs) == 1
     assert obs['scenario'].values[0] == 'a_scenario'
 
@@ -171,7 +172,8 @@ def test_validate_nonexisting(meta_df):
 
 
 def test_validate_up(meta_df):
-    obs = meta_df.validate({'Primary Energy': {'up': 6.5}}, exclude=False)
+    obs = meta_df.validate({'Primary Energy': {'up': 6.5}},
+                           exclude_on_fail=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
 
@@ -194,24 +196,22 @@ def test_validate_both(meta_df):
 
 def test_validate_year(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
-                           exclude=False)
+                           exclude_on_fail=False)
     assert obs is None
 
     obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2010}},
-                           exclude=False)
+                           exclude_on_fail=False)
     assert len(obs) == 2
 
 
 def test_validate_exclude(meta_df):
-    obs = meta_df.validate({'Primary Energy': {'up': 6.0}}, exclude=True)
+    meta_df.validate({'Primary Energy': {'up': 6.0}}, exclude_on_fail=True)
     assert list(meta_df['exclude']) == [False, True]
 
 
 def test_validate_top_level(meta_df):
-    obs = validate(meta_df,
-                   filters={'variable': 'Primary Energy'},
-                   criteria={'Primary Energy': {'up': 6.0}},
-                   exclude=True)
+    obs = validate(meta_df, criteria={'Primary Energy': {'up': 6.0}},
+                   exclude_on_fail=True, variable='Primary Energy')
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
     assert list(meta_df['exclude']) == [False, True]
@@ -246,7 +246,7 @@ def test_category_top_level(meta_df):
 
     categorize(meta_df, 'category', 'Testing',
                criteria={'Primary Energy': {'up': 6, 'year': 2010}},
-               filters={'variable': 'Primary Energy'})
+               variable='Primary Energy')
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
