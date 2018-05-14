@@ -30,6 +30,7 @@ from pyam.logger import logger
 META_IDX = ['model', 'scenario']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
+LONG_IDX = IAMC_IDX + ['year']
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(zip(range(0, 702),
