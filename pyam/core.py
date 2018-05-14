@@ -29,6 +29,7 @@ from pyam.utils import (
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
+    LONG_IDX,
 )
 from pyam.timeseries import fill_series
 
@@ -405,6 +406,27 @@ class IamDataFrame(object):
 
             return df
 
+    def rename(self, mapping, inplace=False):
+        """ Rename and aggregate column entries using groupby.sum()
+
+        Parameters
+        ----------
+        mapping: dict
+            for each column where entries should be renamed, provide current name and target name
+            {<column name>: {<current_name_1>: <target_name_1>, <current_name_2>: <target_name_2>}}
+        inplace: bool, default False
+            if True, do operation inplace and return None
+        """
+        ret = copy.deepcopy(self) if not inplace else self
+        for col in mapping:
+            if not col in ['region', 'variable', 'unit']:
+                raise ValueError('renaming by {} not supported!'.format(col))
+            ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
+
+        ret.data = ret.data.groupby(LONG_IDX).sum().reset_index()
+        if not inplace:
+            return ret
+
     def filter(self, filters, keep=True, inplace=False):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
@@ -636,7 +658,7 @@ class IamDataFrame(object):
 
         # perform aggregations
         if agg == 'sum':
-            df = df.groupby(IAMC_IDX + ['year']).sum().reset_index()
+            df = df.groupby(LONG_IDX).sum().reset_index()
 
         ret.data = (df
                     .reindex(columns=columns_orderd)

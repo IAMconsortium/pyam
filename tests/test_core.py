@@ -445,3 +445,25 @@ def test_48b():
     obs = obs[obs.region.isin(['SSD', 'SDN'])].reset_index(drop=True)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+def test_rename():
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SST', 'test_1', 'unit', 1, 5],
+        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'SST', 'test_3', 'unit', 3, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+
+    mapping = {'variable': {'test_1': 'test', 'test_3': 'test'}}
+
+    obs = df.rename(mapping).data.reset_index(drop=True)
+
+    exp = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SST', 'test', 'unit', 4, 12],
+        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    )).data.sort_values(by='region').reset_index(drop=True)
+
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
