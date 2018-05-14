@@ -460,7 +460,7 @@ def test_conv_unit():
 
     unit_conv = {'A': ['B', 5], 'C': ['D', 3]}
 
-    obs = df.conv_unit(unit_conv).data.reset_index(drop=True)
+    obs = df.convert_unit(unit_conv).data.reset_index(drop=True)
 
     exp = IamDataFrame(pd.DataFrame([
         ['model', 'scen', 'SST', 'test_1', 'B', 5, 25],
