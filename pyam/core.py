@@ -788,7 +788,7 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
-        vdf = fdf.validate(criteria, exclude_on_fail)
+        vdf = fdf.validate(criteria=criteria, exclude_on_fail=exclude_on_fail)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
         return vdf
 
@@ -804,7 +804,8 @@ def require_variable(df, variable, unit=None, year=None, exclude_on_fail=False,
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
-        vdf = fdf.require_variable(variable, unit, year, exclude_on_fail)
+        vdf = fdf.require_variable(variable=variable, unit=unit, year=year,
+                                   exclude_on_fail=exclude_on_fail)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
         return vdf
 
@@ -820,7 +821,8 @@ def categorize(df, name, value, criteria,
     args and kwargs: see IamDataFrame.categorize()  and .filter() for details
     """
     fdf = df.filter(**kwargs)
-    fdf.categorize(name, value, criteria, color, marker, linestyle)
+    fdf.categorize(name=name, value=value, criteria=criteria, color=color,
+                   marker=marker, linestyle=linestyle)
 
     # update metadata
     if name in df.meta:
