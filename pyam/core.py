@@ -111,7 +111,7 @@ class IamDataFrame(object):
         """Get a list of models"""
         return pd.Series(self.meta.index.levels[0])
 
-    def scenarios(self, filters={}):
+    def scenarios(self):
         """Get a list of scenarios"""
         return pd.Series(self.meta.index.levels[1])
 
