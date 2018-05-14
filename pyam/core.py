@@ -429,7 +429,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def filter(self, keep=True, inplace=False, filters=None, **kwargs):
+    def filter(self, filters=None, keep=True, inplace=False,**kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
