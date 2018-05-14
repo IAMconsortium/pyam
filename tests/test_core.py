@@ -47,49 +47,49 @@ def test_variable_unit(test_df):
 
 
 def test_variable_depth_0(test_df):
-    obs = list(test_df.filter({'level': 0})['variable'].unique())
+    obs = list(test_df.filter(level=0)['variable'].unique())
     exp = ['Primary Energy']
     assert obs == exp
 
 
 def test_variable_depth_0_keep_false(test_df):
-    obs = list(test_df.filter({'level': 0}, keep=False)['variable'].unique())
+    obs = list(test_df.filter(level=0, keep=False)['variable'].unique())
     exp = ['Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_0_minus(test_df):
-    obs = list(test_df.filter({'level': '0-'})['variable'].unique())
+    obs = list(test_df.filter(level='0-')['variable'].unique())
     exp = ['Primary Energy']
     assert obs == exp
 
 
 def test_variable_depth_0_plus(test_df):
-    obs = list(test_df.filter({'level': '0+'})['variable'].unique())
+    obs = list(test_df.filter(level='0+')['variable'].unique())
     exp = ['Primary Energy', 'Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_1(test_df):
-    obs = list(test_df.filter({'level': 1})['variable'].unique())
+    obs = list(test_df.filter(level=1)['variable'].unique())
     exp = ['Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_1_minus(test_df):
-    obs = list(test_df.filter({'level': '1-'})['variable'].unique())
+    obs = list(test_df.filter(level='1-')['variable'].unique())
     exp = ['Primary Energy', 'Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_1_plus(test_df):
-    obs = list(test_df.filter({'level': '1+'})['variable'].unique())
+    obs = list(test_df.filter(level='1+')['variable'].unique())
     exp = ['Primary Energy|Coal']
     assert obs == exp
 
 
 def test_variable_depth_raises(test_df):
-    pytest.raises(ValueError, test_df.filter, {'level': '1/'})
+    pytest.raises(ValueError, test_df.filter, level='1/')
 
 
 def test_variable_unit(test_df):
@@ -100,12 +100,27 @@ def test_variable_unit(test_df):
     npt.assert_array_equal(test_df[cols].drop_duplicates(), exp)
 
 
+def test_filter_error(test_df):
+    pytest.raises(ValueError, test_df.filter, foo='foo')
+
+
+def test_filter_as_kwarg(meta_df):
+    obs = list(meta_df.filter(variable='Primary Energy|Coal').scenarios())
+    assert obs == ['a_scenario']
+
+
+def test_filter_keep_false(meta_df):
+    df = meta_df.filter(variable='Primary Energy|Coal', year=2005, keep=False)
+    obs = df.data[df.data.scenario == 'a_scenario'].value
+    npt.assert_array_equal(obs, [1, 6, 3])
+
+
 def test_timeseries(test_df):
     dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario'] * 2,
            'years': [2005, 2010], 'value': [1, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_df.filter({'variable': 'Primary Energy'}).timeseries()
+    obs = test_df.filter(variable='Primary Energy').timeseries()
     npt.assert_array_equal(obs, exp)
 
 
@@ -121,7 +136,7 @@ def test_meta_idx(meta_df):
 
 def test_require_variable(meta_df):
     obs = meta_df.require_variable(variable='Primary Energy|Coal',
-                                   exclude=True)
+                                   exclude_on_fail=True)
     assert len(obs) == 1
     assert obs.loc[0, 'scenario'] == 'a_scenario2'
 
@@ -130,7 +145,7 @@ def test_require_variable(meta_df):
 
 def test_require_variable_top_level(meta_df):
     obs = require_variable(meta_df, variable='Primary Energy|Coal',
-                           exclude=True)
+                           exclude_on_fail=True)
     assert len(obs) == 1
     assert obs.loc[0, 'scenario'] == 'a_scenario2'
 
@@ -139,7 +154,7 @@ def test_require_variable_top_level(meta_df):
 
 def test_validate_all_pass(meta_df):
     obs = meta_df.validate(
-        {'Primary Energy': {'up': 10}}, exclude=True)
+        {'Primary Energy': {'up': 10}}, exclude_on_fail=True)
     assert obs is None
     assert len(meta_df.data) == 6  # data unchanged
 
@@ -147,7 +162,8 @@ def test_validate_all_pass(meta_df):
 
 
 def test_validate_nonexisting(meta_df):
-    obs = meta_df.validate({'Primary Energy|Coal': {'up': 2}}, exclude=True)
+    obs = meta_df.validate({'Primary Energy|Coal': {'up': 2}},
+                           exclude_on_fail=True)
     assert len(obs) == 1
     assert obs['scenario'].values[0] == 'a_scenario'
 
@@ -156,7 +172,8 @@ def test_validate_nonexisting(meta_df):
 
 
 def test_validate_up(meta_df):
-    obs = meta_df.validate({'Primary Energy': {'up': 6.5}}, exclude=False)
+    obs = meta_df.validate({'Primary Energy': {'up': 6.5}},
+                           exclude_on_fail=False)
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
 
@@ -179,24 +196,22 @@ def test_validate_both(meta_df):
 
 def test_validate_year(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
-                           exclude=False)
+                           exclude_on_fail=False)
     assert obs is None
 
     obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2010}},
-                           exclude=False)
+                           exclude_on_fail=False)
     assert len(obs) == 2
 
 
 def test_validate_exclude(meta_df):
-    obs = meta_df.validate({'Primary Energy': {'up': 6.0}}, exclude=True)
+    meta_df.validate({'Primary Energy': {'up': 6.0}}, exclude_on_fail=True)
     assert list(meta_df['exclude']) == [False, True]
 
 
 def test_validate_top_level(meta_df):
-    obs = validate(meta_df,
-                   filters={'variable': 'Primary Energy'},
-                   criteria={'Primary Energy': {'up': 6.0}},
-                   exclude=True)
+    obs = validate(meta_df, criteria={'Primary Energy': {'up': 6.0}},
+                   exclude_on_fail=True, variable='Primary Energy')
     assert len(obs) == 1
     assert obs['year'].values[0] == 2010
     assert list(meta_df['exclude']) == [False, True]
@@ -231,7 +246,7 @@ def test_category_top_level(meta_df):
 
     categorize(meta_df, 'category', 'Testing',
                criteria={'Primary Energy': {'up': 6, 'year': 2010}},
-               filters={'variable': 'Primary Energy'})
+               variable='Primary Energy')
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
@@ -276,7 +291,7 @@ def test_interpolate(test_df):
            'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_df.filter({'variable': 'Primary Energy'}).timeseries()
+    obs = test_df.filter(variable='Primary Energy').timeseries()
     npt.assert_array_equal(obs, exp)
 
 
@@ -345,24 +360,24 @@ def test_add_metadata_as_int(meta_df):
 
 def test_filter_by_metadata_str(meta_df):
     meta_df.metadata(['testing', 'testing2'], name='category')
-    obs = meta_df.filter({'category': 'testing'})
+    obs = meta_df.filter(category='testing')
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def test_filter_by_metadata_bool(meta_df):
     meta_df.metadata([True, False], name='exclude')
-    obs = meta_df.filter({'exclude': True})
+    obs = meta_df.filter(exclude=True)
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def test_filter_by_metadata_int(meta_df):
     meta_df.metadata([1, 2], name='value')
-    obs = meta_df.filter({'value': [1, 3]})
+    obs = meta_df.filter(value=[1, 3])
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def _r5_regions_exp(df):
-    df = df.filter({'region': 'World'}, keep=False)
+    df = df.filter(region='World', keep=False)
     df['region'] = 'R5MAF'
     return df.data.reset_index(drop=True)
 
@@ -374,7 +389,7 @@ def test_map_regions_r5(reg_df):
 
 
 def test_map_regions_r5_region_col(reg_df):
-    df = reg_df.filter({'model': 'MESSAGE-GLOBIOM'})
+    df = reg_df.filter(model='MESSAGE-GLOBIOM')
     obs = df.map_regions(
         'r5_region', region_col='MESSAGE-GLOBIOM.REGION').data
     exp = _r5_regions_exp(df)

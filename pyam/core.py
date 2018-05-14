@@ -3,6 +3,7 @@ import importlib
 import itertools
 import os
 import sys
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -110,7 +111,7 @@ class IamDataFrame(object):
         """Get a list of models"""
         return pd.Series(self.meta.index.levels[0])
 
-    def scenarios(self, filters={}):
+    def scenarios(self):
         """Get a list of scenarios"""
         return pd.Series(self.meta.index.levels[1])
 
@@ -340,7 +341,8 @@ class IamDataFrame(object):
             logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
                                      name, value))
 
-    def require_variable(self, variable, unit=None, year=None, exclude=False):
+    def require_variable(self, variable, unit=None, year=None,
+                         exclude_on_fail=False):
         """Check whether all scenarios have a required variable
 
         Parameters
@@ -372,14 +374,14 @@ class IamDataFrame(object):
         msg = '{} scenario does not include required variable `{}`' if n == 1 \
             else '{} scenarios do not include required variable `{}`'
 
-        if exclude:
+        if exclude_on_fail:
             self.meta.loc[idx, 'exclude'] = True
             msg += ', marked as `exclude: True` in metadata'
 
         logger().info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
 
-    def validate(self, criteria={}, exclude=False):
+    def validate(self, criteria={}, exclude_on_fail=False):
         """Validate scenarios using criteria on timeseries values
 
         Parameters
@@ -387,12 +389,12 @@ class IamDataFrame(object):
         criteria: dict
            dictionary with variable keys and check values
             ('up' and 'lo' for respective bounds, 'year' for years)
-        exclude: bool, default False
+        exclude_on_fail: bool, default False
             flag scenarios failing validation as `exclude: True`
         """
         df = _apply_criteria(self.data, criteria, in_range=False)
 
-        if exclude:
+        if exclude_on_fail:
             idx = _meta_idx(df)
             self.meta.loc[idx, 'exclude'] = True
 
@@ -400,7 +402,7 @@ class IamDataFrame(object):
             msg = '{} of {} data points to not satisfy the criteria'
             logger().info(msg.format(len(df), len(self.data)))
 
-            if exclude and len(idx) > 0:
+            if exclude_on_fail and len(idx) > 0:
                 logger().info('{} non-valid scenario{} will be excluded'
                               .format(len(idx), '' if len(idx) == 1 else 's'))
 
@@ -427,12 +429,16 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def filter(self, filters, keep=True, inplace=False):
+    def filter(self, filters=None, keep=True, inplace=False,**kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
         ----------
-        filters: dict
+        keep: bool, default True
+            keep all scenarios satisfying the filters (if True) or the inverse
+        inplace: bool, default False
+            if True, do operation inplace and return None
+        filters by kwargs or dict (deprecated):
             The following columns are available for filtering:
              - metadata columns: filter by category assignment in metadata
              - 'model', 'scenario', 'region', 'variable', 'unit':
@@ -442,10 +448,12 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-        inplace: bool, default False
-            if True, do operation inplace and return None
         """
-        _keep = _apply_filters(self.data, self.meta, filters)
+        if filters is not None:
+            warnings.warn('`filters` keyword argument in filters() is deprecated and will be removed in the next release')
+            kwargs.update(filters)
+
+        _keep = _apply_filters(self.data, self.meta, kwargs)
         _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[_keep]
@@ -708,7 +716,7 @@ def _apply_filters(data, meta, filters):
             else:
                 continue
         else:
-            raise SystemError(
+            raise ValueError(
                 'filter by column ' + col + ' not supported')
         keep &= keep_col
 
@@ -770,61 +778,53 @@ def _apply_criteria(df, criteria, **kwargs):
     return df
 
 
-def validate(df, *args, **kwargs):
+def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     """Validate scenarios using criteria on timeseries values
 
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.validate() for details
-    filters: dict, optional
-        filter by data & metadata columns, see function 'filter()' for details,
-        filtering by 'variable'/'year' is replaced by arguments of 'criteria'
+    args and kwargs: see IamDataFrame.validate() and .filter() for details
     """
-    filters = kwargs.pop('filters', {})
-    fdf = df.filter(filters)
+    fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
-        vdf = fdf.validate(*args, **kwargs)
+        vdf = fdf.validate(criteria=criteria, exclude_on_fail=exclude_on_fail)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
         return vdf
 
 
-def require_variable(df, *args, **kwargs):
+def require_variable(df, variable, unit=None, year=None, exclude_on_fail=False,
+                     **kwargs):
     """Check whether all scenarios have a required variable
 
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.require_variable() for details
-    filters: dict, optional
-        filter by data & metadata columns, see function 'filter()' for details
+    args and kwargs: see IamDataFrame.validate() and .filter() for details
     """
-    filters = kwargs.pop('filters', {})
-    fdf = df.filter(filters)
+    fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
-        vdf = fdf.require_variable(*args, **kwargs)
+        vdf = fdf.require_variable(variable=variable, unit=unit, year=year,
+                                   exclude_on_fail=exclude_on_fail)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
         return vdf
 
 
-def categorize(df, *args, **kwargs):
+def categorize(df, name, value, criteria,
+               color=None, marker=None, linestyle=None, **kwargs):
     """Assign scenarios to a category according to specific criteria
     or display the category assignment
 
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.categorize() for details
-    filters: dict, optional
-        filter by data & metadata columns, see function 'filter()' for details,
-        filtering by 'variable'/'year' is replaced by arguments of 'criteria'
+    args and kwargs: see IamDataFrame.categorize()  and .filter() for details
     """
-    filters = kwargs.pop('filters', {})
-    fdf = df.filter(filters)
-    fdf.categorize(*args, **kwargs)
+    fdf = df.filter(**kwargs)
+    fdf.categorize(name=name, value=value, criteria=criteria, color=color,
+                   marker=marker, linestyle=linestyle)
 
     # update metadata
-    name = args[0] if len(args) else kwargs['name']
     if name in df.meta:
         df.meta[name].update(fdf.meta[name])
     else:
