@@ -3,6 +3,7 @@ import importlib
 import itertools
 import os
 import sys
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -427,7 +428,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def filter(self, keep=True, inplace=False, **kwargs):
+    def filter(self, keep=True, inplace=False, filters=None, **kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
@@ -436,7 +437,7 @@ class IamDataFrame(object):
             keep all scenarios satisfying the filters (if True) or the inverse
         inplace: bool, default False
             if True, do operation inplace and return None
-        filters by kwargs:
+        filters by kwargs or dict (deprecated):
             The following columns are available for filtering:
              - metadata columns: filter by category assignment in metadata
              - 'model', 'scenario', 'region', 'variable', 'unit':
@@ -447,9 +448,9 @@ class IamDataFrame(object):
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
         """
-        if type(keep) == dict:
-            msg = 'Filtering by dictionary is deprecated, please use kwargs'
-            raise ValueError(msg)
+        if filters is not None:
+            warnings.warn('`filters` keyword argument in filters() is deprecated and will be removed in the next release')
+            kwargs.update(filters)
 
         _keep = _apply_filters(self.data, self.meta, kwargs)
         _keep = _keep if keep else ~_keep
