@@ -409,7 +409,7 @@ class IamDataFrame(object):
             return df
 
     def rename(self, mapping, inplace=False):
-        """ Rename and aggregate column entries using groupby.sum()
+        """Rename and aggregate column entries using groupby.sum()
 
         Parameters
         ----------
@@ -429,7 +429,28 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def filter(self, filters=None, keep=True, inplace=False,**kwargs):
+    def convert_unit(self, conversion_mapping, inplace=False):
+        """Converts units based on provided unit conversion factors
+
+        Parameters
+        ----------
+        conversion_mapping: dict
+            for each unit for which a conversion should be carried out, provide current unit 
+            and target unit and conversion factor
+            {<current unit>: [<target unit>, <conversion factor>]}
+        inplace: bool, default False
+            if True, do operation inplace and return None
+        """
+        ret = copy.deepcopy(self) if not inplace else self
+        for current_unit, (new_unit, factor) in conversion_mapping.items():
+            factor = pd.to_numeric(factor)
+            where = ret.data['unit'] == current_unit
+            ret.data.loc[where, 'value'] *= factor
+            ret.data.loc[where, 'unit'] = new_unit
+        if not inplace:
+            return ret
+
+    def filter(self, filters=None, keep=True, inplace=False, **kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
@@ -450,7 +471,8 @@ class IamDataFrame(object):
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
         """
         if filters is not None:
-            warnings.warn('`filters` keyword argument in filters() is deprecated and will be removed in the next release')
+            warnings.warn(
+                '`filters` keyword argument in filters() is deprecated and will be removed in the next release')
             kwargs.update(filters)
 
         _keep = _apply_filters(self.data, self.meta, kwargs)

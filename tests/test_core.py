@@ -261,11 +261,13 @@ def test_load_metadata(test_df):
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
+
 def test_load_SSP_database_downloaded_file(test_df):
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
     )
     pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df.as_pandas())
+
 
 def test_append(test_df):
     df2 = test_df.append(other=os.path.join(
@@ -461,6 +463,7 @@ def test_48b():
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
+
 def test_rename():
     df = IamDataFrame(pd.DataFrame([
         ['model', 'scen', 'SST', 'test_1', 'unit', 1, 5],
@@ -480,5 +483,29 @@ def test_rename():
     ], columns=['model', 'scenario', 'region',
                 'variable', 'unit', 2005, 2010],
     )).data.sort_values(by='region').reset_index(drop=True)
+
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_convert_unit():
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SST', 'test_1', 'A', 1, 5],
+        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'SST', 'test_3', 'C', 3, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+
+    unit_conv = {'A': ['B', 5], 'C': ['D', 3]}
+
+    obs = df.convert_unit(unit_conv).data.reset_index(drop=True)
+
+    exp = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SST', 'test_1', 'B', 5, 25],
+        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'SST', 'test_3', 'D', 9, 21],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    )).data.reset_index(drop=True)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
