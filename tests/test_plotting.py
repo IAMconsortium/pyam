@@ -68,7 +68,7 @@ def test_line_single_color(plot_df):
 @pytest.mark.mpl_image_compare(style='ggplot', baseline_dir=IMAGE_BASELINE_DIR)
 def test_line_filter_title(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.filter({'variable': 'Primary Energy|Coal'}).line_plot(
+    plot_df.filter(variable='Primary Energy|Coal').line_plot(
         ax=ax, color='model', marker='scenario', legend=True)
     return fig
 
@@ -85,7 +85,7 @@ def test_line_update_rc(plot_df):
 def test_line_plot_1_var(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'model': 'test_model', 'scenario': 'test_scenario'})
+     .filter(model='test_model', scenario='test_scenario')
      .line_plot(x='Primary Energy', y='year', ax=ax, legend=False)
      )
     return fig
@@ -95,7 +95,7 @@ def test_line_plot_1_var(plot_df):
 def test_line_plot_2_vars(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'model': 'test_model', 'scenario': 'test_scenario'})
+     .filter(model='test_model', scenario='test_scenario')
      .line_plot(x='Primary Energy|Coal', y='Primary Energy', ax=ax, legend=False)
      )
     return fig
@@ -238,7 +238,7 @@ def test_bar_plot_raises(plot_df):
 def test_bar_plot(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .filter(variable='Primary Energy', model='test_model')
      .bar_plot(ax=ax, bars='scenario')
      )
     return fig
@@ -249,7 +249,7 @@ def test_bar_plot(plot_df):
 def test_bar_plot_h(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .filter(variable='Primary Energy', model='test_model')
      .bar_plot(ax=ax, bars='scenario',
                orient='h')
      )
@@ -261,7 +261,7 @@ def test_bar_plot_h(plot_df):
 def test_bar_plot_stacked(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .filter(variable='Primary Energy', model='test_model')
      .bar_plot(ax=ax, bars='scenario',
                stacked=True)
      )
@@ -273,7 +273,7 @@ def test_bar_plot_stacked(plot_df):
 def test_bar_plot_title(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .filter(variable='Primary Energy', model='test_model')
      .bar_plot(ax=ax, bars='scenario',
                title='foo')
      )
@@ -286,7 +286,7 @@ def test_bar_plot_rc(plot_df):
     with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
         fig, ax = plt.subplots(figsize=(8, 8))
         (plot_df
-         .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+         .filter(variable='Primary Energy', model='test_model')
          .bar_plot(ax=ax, bars='scenario')
          )
     return fig
@@ -297,7 +297,7 @@ def test_bar_plot_rc(plot_df):
 def test_pie_plot_labels(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model', 'year': 2010})
+     .filter(variable='Primary Energy', model='test_model', year=2010)
      .pie_plot(ax=ax, category='scenario')
      )
     return fig
@@ -308,7 +308,7 @@ def test_pie_plot_labels(plot_df):
 def test_pie_plot_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model', 'year': 2010})
+     .filter(variable='Primary Energy', model='test_model', year=2010)
      .pie_plot(ax=ax, category='scenario', labels=None, legend=True)
      )
     return fig
@@ -320,7 +320,7 @@ def test_pie_plot_other(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
         (plot_df
-         .filter({'variable': 'Primary Energy', 'model': 'test_model', 'year': 2010})
+         .filter(variable='Primary Energy', model='test_model', year=2010)
          .pie_plot(ax=ax, category='scenario', cmap='viridis', title='foo')
          )
     return fig
@@ -331,7 +331,7 @@ def test_pie_plot_other(plot_df):
 def test_stack_plot(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
-     .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+     .filter(variable='Primary Energy', model='test_model')
      .stack_plot(ax=ax, stack='scenario')
      )
     return fig
@@ -343,7 +343,7 @@ def test_stack_plot_other(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
         (plot_df
-         .filter({'variable': 'Primary Energy', 'model': 'test_model'})
+         .filter(variable='Primary Energy', model='test_model')
          .stack_plot(ax=ax, stack='scenario', cmap='viridis', title='foo')
          )
     return fig
