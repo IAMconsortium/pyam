@@ -435,7 +435,8 @@ class IamDataFrame(object):
         Parameters
         ----------
         conversion_mapping: dict
-            for each unit for which a conversion should be carried out, provide current unit and target unit and conversion factor
+            for each unit for which a conversion should be carried out, provide current unit 
+            and target unit and conversion factor
             {<current unit>: [<target unit>, <conversion factor>]}
         inplace: bool, default False
             if True, do operation inplace and return None
