@@ -129,8 +129,8 @@ def test_read_pandas():
     assert list(df.variables()) == ['Primary Energy']
 
 
-def test_filter_index(meta_df):
-    obs = meta_df.filter({'scenario': 'a_scenario2'}).index
+def test_filter_meta_index(meta_df):
+    obs = meta_df.filter({'scenario': 'a_scenario2'}).meta.index
     exp = pd.MultiIndex(levels=[['a_model'], ['a_scenario2']],
                         labels=[[0], [0]],
                         names=['model', 'scenario'])
@@ -374,19 +374,19 @@ def test_add_metadata_as_str_by_index(meta_df):
 
 
 def test_filter_by_metadata_str(meta_df):
-    meta_df.metadata(['testing', 'testing2'], name='category')
+    meta_df.set_meta(['testing', 'testing2'], name='category')
     obs = meta_df.filter(category='testing')
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def test_filter_by_metadata_bool(meta_df):
-    meta_df.metadata([True, False], name='exclude')
+    meta_df.set_meta([True, False], name='exclude')
     obs = meta_df.filter(exclude=True)
     assert obs['scenario'].unique() == 'a_scenario'
 
 
 def test_filter_by_metadata_int(meta_df):
-    meta_df.metadata([1, 2], name='value')
+    meta_df.set_meta([1, 2], name='value')
     obs = meta_df.filter(value=[1, 3])
     assert obs['scenario'].unique() == 'a_scenario'
 
