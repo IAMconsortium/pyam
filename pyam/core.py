@@ -494,7 +494,6 @@ class IamDataFrame(object):
             logger().warning('Filtered IamDataFrame is empty!')
 
         ret.meta = ret.meta.loc[idx]
-        ret.index = ret.meta.index
         if not inplace:
             return ret
 
