@@ -130,7 +130,7 @@ def test_read_pandas():
 
 
 def test_filter_meta_index(meta_df):
-    obs = meta_df.filter({'scenario': 'a_scenario2'}).meta.index
+    obs = meta_df.filter(scenario='a_scenario2').meta.index
     exp = pd.MultiIndex(levels=[['a_model'], ['a_scenario2']],
                         labels=[[0], [0]],
                         names=['model', 'scenario'])
