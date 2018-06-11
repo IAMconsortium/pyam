@@ -274,13 +274,13 @@ class IamDataFrame(object):
 
         # append by index of pd.Series if possible
         if isinstance(_meta, pd.Series) and \
-                set(['model', 'scenario']).issubset(_meta.index.names):
-            _meta.name = name or _meta.name
+                set(META_IDX).issubset(_meta.index.names):
+            name = _meta.name = name or _meta.name
             # reduce index dimensions to model-scenario only
             _meta = (_meta
                      .reset_index()
-                     .loc[:, ['model', 'scenario', _meta.name]]
-                     .set_index(['model', 'scenario'])
+                     .reindex(columns=META_IDX + [_meta.name])
+                     .set_index(META_IDX)
                      )
             # raise error if index is not unique
             if _meta.index.duplicated().any():
@@ -291,10 +291,8 @@ class IamDataFrame(object):
                 error = "adding metadata for non-existing scenarios '{}'!"
                 raise ValueError(error.format(diff))
 
-            self._add_meta_column(name, meta)
-            self.meta = _meta.combine_first(self.meta)
-            #  quickfix for pandas.combine_first(), issue #7509
-            self.meta['exclude'] = self.meta['exclude'].astype('bool')
+            self._new_meta_column(name, meta)
+            self.meta[name] = _meta[name].combine_first(self.meta[name])
             return  # EXIT FUNCTION
 
         # append every other column type as list
@@ -341,16 +339,19 @@ class IamDataFrame(object):
             return  # EXIT FUNCTION
 
         # update metadata dataframe
-        self._add_meta_column(name, value)
+        self._new_meta_column(name, value)
         self.meta.loc[idx, name] = value
         msg = '{} scenario{} categorized as `{}: {}`'
         logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
                                  name, value))
 
-    def _add_meta_column(self, name, value):
+    def _new_meta_column(self, name, value):
         """Add a metadata column, set to `uncategorized` if str else np.nan"""
-        if name is not None and name not in self.meta:
+        if name is None:
+            raise ValueError('cannot add a meta column {}'.format(name))
+        if name not in self.meta:
             self.meta[name] = 'uncategorized' if isstr(value) else np.nan
+
     def require_variable(self, variable, unit=None, year=None,
                          exclude_on_fail=False):
         """Check whether all scenarios have a required variable
