@@ -262,9 +262,13 @@ class IamDataFrame(object):
             (by `['model', 'scenario']` index if possible)
         name: str
             category column name (if not given by meta pd.Series.name)
-        index: pd.MultiIndex
+        index: pyam.IamDataFrame or pd.MultiIndex
             index to be used for setting metadata column
         """
+        # use meta.index if index arg is an IamDataFrame
+        if index is not None and isinstance(index, IamDataFrame):
+            index = index.meta.index
+
         # create pd.Series from index and meta if provided
         _meta = meta if index is None else pd.Series(data=meta, index=index)
 
