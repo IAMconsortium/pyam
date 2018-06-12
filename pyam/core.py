@@ -1,4 +1,5 @@
 import copy
+import collections
 import importlib
 import itertools
 import os
@@ -260,9 +261,9 @@ class IamDataFrame(object):
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
         name: str
-            category column name (if not given by meta pd.Series.name)
-        index: pyam.IamDataFrame or pd.MultiIndex
-            index to be used for setting metadata column
+            meta column name (if not given by meta pd.Series.name)
+        index: pyam.IamDataFrame or pd.MultiIndex, optional
+            index to be used for setting meta column
         """
         if not name and not hasattr(meta, 'name'):
             raise ValueError('Must pass a name or use a pd.Series')
@@ -272,37 +273,45 @@ class IamDataFrame(object):
             index = index.meta.index
 
         # create pd.Series from index and meta if provided
-        _meta = meta if index is None else pd.Series(data=meta, index=index)
+        _meta = meta if index is None else pd.Series(data=meta, index=index,
+                                                     name=name)
 
-        # append by index of pd.Series if possible
-        if isinstance(_meta, pd.Series) and \
-                set(META_IDX).issubset(_meta.index.names):
-            name = _meta.name = name or _meta.name
-            # reduce index dimensions to model-scenario only
-            _meta = (_meta
-                     .reset_index()
-                     .reindex(columns=META_IDX + [_meta.name])
-                     .set_index(META_IDX)
-                     )
-            # raise error if index is not unique
-            if _meta.index.duplicated().any():
-                raise ValueError("non-unique ['model', 'scenario'] index!")
-            # check if trying to add model-scenario index not existing in self
-            diff = _meta.index.difference(self.meta.index)
-            if not diff.empty:
-                error = "adding metadata for non-existing scenarios '{}'!"
-                raise ValueError(error.format(diff))
+        try:
+            append_by_idx = set(META_IDX).issubset(_meta.index.names)
+        except AttributeError:
+            append_by_idx = False
 
-            self._new_meta_column(name, meta)
-            self.meta[name] = _meta[name].combine_first(self.meta[name])
+        # if not possible to append by index
+        if not append_by_idx:
+            if isinstance(meta, collections.Iterable) and not isstr(meta):
+                self.meta[name] = list(meta)
+            else:
+                self.meta[name] = meta
             return  # EXIT FUNCTION
 
-        # append every other column type as list
-        if isinstance(_meta, pd.Series):
-            name = name or _meta.name
-            _meta = _meta.tolist()
+        # else append by index
+        name = name or _meta.name
 
-        self.meta[name] = _meta
+        # reduce index dimensions to model-scenario only
+        _meta = (
+                    _meta
+                    .reset_index()
+                    .reindex(columns=META_IDX + [name])
+                    .set_index(META_IDX)
+                 )
+
+        # raise error if index is not unique
+        if _meta.index.duplicated().any():
+            raise ValueError("non-unique ['model', 'scenario'] index!")
+
+        # check if trying to add model-scenario index not existing in self
+        diff = _meta.index.difference(self.meta.index)
+        if not diff.empty:
+            error = "adding metadata for non-existing scenarios '{}'!"
+            raise ValueError(error.format(diff))
+
+        self._new_meta_column(name, meta)
+        self.meta[name] = _meta[name].combine_first(self.meta[name])
 
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
