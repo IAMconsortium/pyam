@@ -265,6 +265,9 @@ class IamDataFrame(object):
         index: pyam.IamDataFrame or pd.MultiIndex
             index to be used for setting metadata column
         """
+        if not name and not hasattr(meta, 'name'):
+            raise ValueError('Must pass a name or use a pd.Series')
+
         # use meta.index if index arg is an IamDataFrame
         if index is not None and isinstance(index, IamDataFrame):
             index = index.meta.index
