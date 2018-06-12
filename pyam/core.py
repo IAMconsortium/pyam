@@ -886,7 +886,8 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.validate() and .filter() for details
+    args: see `IamDataFrame.validate()` for details
+    kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -902,7 +903,8 @@ def require_variable(df, variable, unit=None, year=None, exclude_on_fail=False,
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.validate() and .filter() for details
+    args: see `IamDataFrame.require_variable()` for details
+    kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -920,7 +922,8 @@ def categorize(df, name, value, criteria,
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.categorize()  and .filter() for details
+    args: see `IamDataFrame.categorize()` for details
+    kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
     fdf.categorize(name=name, value=value, criteria=criteria, color=color,
@@ -933,21 +936,21 @@ def categorize(df, name, value, criteria,
         df.meta[name] = fdf.meta[name]
 
 
-def check_aggregate(df, *args, **kwargs):
+def check_aggregate(df, variable, components=None, units=None,
+                    exclude_on_fail=False, multiplier=1, **kwargs):
     """Check whether the timeseries values match the aggregation
     of sub-categories
 
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.check_aggregate() for details
-    filters: dict, optional
-        filter by data & metadata columns, see function 'filter()' for details,
-        filtering by 'variable'/'year' is replaced by arguments of 'criteria'
+    args: see IamDataFrame.check_aggregate() for details
+    kwargs: passed to `df.filter()`
     """
-    filters = kwargs.pop('filters', {})
-    fdf = df.filter(filters)
+    fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
-        vdf = fdf.check_aggregate(*args, **kwargs)
+        vdf = fdf.check_aggregate(variable=variable, components=components,
+                                  units=units, exclude_on_fail=exclude_on_fail,
+                                  multiplier=multiplier)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
         return vdf
