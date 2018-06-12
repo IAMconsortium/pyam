@@ -226,8 +226,7 @@ def test_validate_top_level(meta_df):
 
 
 def test_check_aggregate_fail(meta_df):
-    obs = meta_df.check_aggregate('Primary Energy', exclude=True)
-    print(obs)
+    obs = meta_df.check_aggregate('Primary Energy', exclude_on_fail=True)
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == ('a_model', 'a_scenario', 'World')
 
@@ -238,16 +237,15 @@ def test_check_aggregate_pass(meta_df):
                        'region': 'World', 'variable': 'Primary Energy|Gas',
                        'unit': 'EJ/y', 'year': [2005, 2010], 'value': [.5, 3]})
     meta_df.data = meta_df.data.append(df, ignore_index=True)
-    obs = meta_df.check_aggregate('Primary Energy')
+    obs = meta_df.filter(scenario='a_scenario').check_aggregate('Primary Energy')
     assert obs is None
 
 
 def test_check_aggregate_top_level(meta_df):
-    obs = check_aggregate(meta_df, filters={'year': 2005},
-                          var_total='Primary Energy', threshold=0.1)
+    obs = check_aggregate(meta_df, variable='Primary Energy', year=2005)
     assert len(obs.columns) == 1
     assert obs.index.get_values()[0] == ('a_model', 'a_scenario', 'World')
-    
+
 
 def test_category_none(meta_df):
     meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
