@@ -417,16 +417,12 @@ class IamDataFrame(object):
         """
         df = _apply_criteria(self.data, criteria, in_range=False)
 
-        if exclude_on_fail:
-            idx = _meta_idx(df)
-            self.meta.loc[idx, 'exclude'] = True
-
         if not df.empty:
             msg = '{} of {} data points to not satisfy the criteria'
             logger().info(msg.format(len(df), len(self.data)))
 
-            if exclude_on_fail and len(idx) > 0:
-                self._exclude(df)
+            if exclude_on_fail and len(df) > 0:
+                self._exclude_on_fail(df)
 
             return df
 
@@ -512,9 +508,9 @@ class IamDataFrame(object):
 
             return diff.unstack().rename_axis(None, axis=1)
 
-    def _exclude(self, df):
+    def _exclude_on_fail(self, df):
         """Assign a selection of scenarios as `exclude: True` in meta"""
-        idx = _meta_idx(df)
+        idx = df if isinstance(df, pd.MultiIndex) else _meta_idx(df)
         self.meta.loc[idx, 'exclude'] = True
         logger().info('{} non-valid scenario{} will be excluded'
                       .format(len(idx), '' if len(idx) == 1 else 's'))
