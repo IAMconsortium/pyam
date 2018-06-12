@@ -248,8 +248,7 @@ class IamDataFrame(object):
         )
 
     def reset_exclude(self):
-        """Reset exclusion assignment for all scenarios to `exclude: False`
-        """
+        """Reset exclusion assignment for all scenarios to `exclude: False`"""
         self.meta['exclude'] = False
 
     def set_meta(self, meta, name=None, index=None):
@@ -428,14 +427,16 @@ class IamDataFrame(object):
         Parameters
         ----------
         mapping: dict
-            for each column where entries should be renamed, provide current name and target name
-            {<column name>: {<current_name_1>: <target_name_1>, <current_name_2>: <target_name_2>}}
+            for each column where entries should be renamed, provide current
+            name and target name
+            {<column name>: {<current_name_1>: <target_name_1>,
+                             <current_name_2>: <target_name_2>}}
         inplace: bool, default False
             if True, do operation inplace and return None
         """
         ret = copy.deepcopy(self) if not inplace else self
         for col in mapping:
-            if not col in ['region', 'variable', 'unit']:
+            if col not in ['region', 'variable', 'unit']:
                 raise ValueError('renaming by {} not supported!'.format(col))
             ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
 
@@ -449,8 +450,8 @@ class IamDataFrame(object):
         Parameters
         ----------
         conversion_mapping: dict
-            for each unit for which a conversion should be carried out, provide current unit 
-            and target unit and conversion factor
+            for each unit for which a conversion should be carried out,
+            provide current unit and target unit and conversion factor
             {<current unit>: [<target unit>, <conversion factor>]}
         inplace: bool, default False
             if True, do operation inplace and return None
