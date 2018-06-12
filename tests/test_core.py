@@ -301,7 +301,7 @@ def test_interpolate(test_df):
     npt.assert_array_equal(obs, exp)
 
 
-def test_add_metadata_as_named_series(meta_df):
+def test_set_meta_as_named_series(meta_df):
     idx = pd.MultiIndex(levels=[['a_scenario'], ['a_model'], ['a_region']],
                         labels=[[0], [0], [0]],
                         names=['scenario', 'model', 'region'])
@@ -319,7 +319,7 @@ def test_add_metadata_as_named_series(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_add_metadata_non_unique_index_fail(meta_df):
+def test_set_meta_non_unique_index_fail(meta_df):
     idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario'], ['a', 'b']],
                         labels=[[0, 0], [0, 0], [0, 1]],
                         names=['model', 'scenario', 'region'])
@@ -327,7 +327,7 @@ def test_add_metadata_non_unique_index_fail(meta_df):
     pytest.raises(ValueError, meta_df.set_meta, s)
 
 
-def test_add_metadata_non_existing_index_fail(meta_df):
+def test_set_meta_non_existing_index_fail(meta_df):
     idx = pd.MultiIndex(levels=[['a_model', 'fail_model'],
                                 ['a_scenario', 'fail_scenario']],
                         labels=[[0, 1], [0, 1]], names=['model', 'scenario'])
@@ -335,7 +335,7 @@ def test_add_metadata_non_existing_index_fail(meta_df):
     pytest.raises(ValueError, meta_df.set_meta, s)
 
 
-def test_add_metadata_as_series(meta_df):
+def test_set_meta_as_series(meta_df):
     s = pd.Series([0.3, 0.4])
     meta_df.set_meta(s, 'meta_series')
 
@@ -350,7 +350,7 @@ def test_add_metadata_as_series(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_add_metadata_as_int(meta_df):
+def test_set_meta_as_int(meta_df):
     meta_df.set_meta(3.2, 'meta_int')
 
     idx = pd.MultiIndex(levels=[['a_model'],
@@ -363,7 +363,26 @@ def test_add_metadata_as_int(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_add_metadata_as_str_by_index(meta_df):
+def test_set_meta_as_str(meta_df):
+    meta_df.set_meta('testing', name='meta_str')
+
+    idx = pd.MultiIndex(levels=[['a_model'],
+                                ['a_scenario', 'a_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+
+    exp = pd.Series(data=['testing', 'testing'], index=idx, name='meta_str')
+
+    obs = meta_df['meta_str']
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_set_meta_as_str_list(meta_df):
+    meta_df.set_meta(['testing', 'testing2'], name='category')
+    obs = meta_df.filter(category='testing')
+    assert obs['scenario'].unique() == 'a_scenario'
+
+
+def test_set_meta_as_str_by_index(meta_df):
     idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario']],
                         labels=[[0], [0]], names=['model', 'scenario'])
 
@@ -373,19 +392,13 @@ def test_add_metadata_as_str_by_index(meta_df):
     npt.assert_array_equal(obs, ['foo', 'uncategorized'])
 
 
-def test_filter_by_metadata_str(meta_df):
-    meta_df.set_meta(['testing', 'testing2'], name='category')
-    obs = meta_df.filter(category='testing')
-    assert obs['scenario'].unique() == 'a_scenario'
-
-
-def test_filter_by_metadata_bool(meta_df):
+def test_filter_by_bool(meta_df):
     meta_df.set_meta([True, False], name='exclude')
     obs = meta_df.filter(exclude=True)
     assert obs['scenario'].unique() == 'a_scenario'
 
 
-def test_filter_by_metadata_int(meta_df):
+def test_filter_by_int(meta_df):
     meta_df.set_meta([1, 2], name='value')
     obs = meta_df.filter(value=[1, 3])
     assert obs['scenario'].unique() == 'a_scenario'
