@@ -470,41 +470,46 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def check_aggregate(self, var_total, var_sector=None, units=None,
-                        exclude=False, threshold=0.1, multiplier=1):
-        """Check whether the timeseries values match the aggregation
-        of sub-categories
+    def check_aggregate(self, variable, components=None, units=None,
+                        exclude_on_fail=False, multiplier=1, **kwargs):
+        """Check whether the timeseries data match the aggregation
+        of components or sub-categories
 
         Parameters
         ----------
-        var_total: str
+        variable: str
             variable to be checked for matching aggregation of sub-categories
-        var_sector: list of str, default None
-            list of variables, defaults to all sub-categories of `var_total`
-        threshold: number, default 0.1
-            threshold for identifiying aggregate as `non-matching`
-            (to allow rounding errors)
+        components: list of str, default None
+            list of variables, defaults to all sub-categories of `variable`
+        units: str or list of str, default None
+            filter variable and components for given unit(s)
+        exclude_on_fail: boolean, default False
+            flag scenarios failing validation as `exclude: True`
         multiplier: number, default 1
-            factor when comparing var_total and sum of var_sector
+            factor when comparing variable and sum of components
+        kwargs: passed to `np.isclose()`
         """
-        # default var_sector to all variables one level below `var_total`
-        if var_sector is None:
-            var_sector = self.filter({'variable': '{}|*'.format(var_total),
-                                      'level': 0}).variables()
+        # default components to all variables one level below `variable`
+        if components is None:
+            components = self.filter(variable='{}|*'.format(variable),
+                                     level=0).variables()
 
-        df_total = _aggregate_by_variables(self.data, var_total, units)
-        df_sector = _aggregate_by_variables(self.data, var_sector, units)
-        n = len(df_total)
+        # filter and groupby data, use `pd.Series.align` for machting index
+        df_variable, df_components = (
+                _aggregate_by_variables(self.data, variable, units)
+                .align(_aggregate_by_variables(self.data, components, units))
+                )
 
-        diff = df_total - multiplier * df_sector
-        diff = diff[abs(diff) > threshold]
+        # use `np.isclose` for checking match
+        diff = df_variable[~np.isclose(df_variable, multiplier * df_components,
+                                       **kwargs)]
 
         if len(diff):
-            msg = '{} of {} data points are not aggregates of sub-categories'
-            logger().info(msg.format(len(diff), n))
+            msg = '{} of {} data points are not aggregates of components'
+            logger().info(msg.format(len(diff), len(df_variable)))
 
-            if exclude:
-                self._exclude(diff.reset_index())
+            if exclude_on_fail:
+                self._exclude_on_fail(diff.index.droplevel([2, 3]))
 
             return diff.unstack().rename_axis(None, axis=1)
 
