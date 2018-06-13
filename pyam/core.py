@@ -27,6 +27,7 @@ from pyam.utils import (
     pattern_match,
     years_match,
     isstr,
+    islistable,
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
@@ -248,11 +249,10 @@ class IamDataFrame(object):
         )
 
     def reset_exclude(self):
-        """Reset exclusion assignment for all scenarios to `exclude: False`
-        """
+        """Reset exclusion assignment for all scenarios to `exclude: False`"""
         self.meta['exclude'] = False
 
-    def metadata(self, meta, name=None):
+    def set_meta(self, meta, name=None, index=None):
         """Add metadata columns as pd.Series or list
 
         Parameters
@@ -261,35 +261,57 @@ class IamDataFrame(object):
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
         name: str
-            category column name (if not given by meta pd.Series.name)
+            meta column name (if not given by meta pd.Series.name)
+        index: pyam.IamDataFrame or pd.MultiIndex, optional
+            index to be used for setting meta column
         """
-        if isinstance(meta, pd.Series) and \
-                set(['model', 'scenario']).issubset(meta.index.names):
-            meta.name = name or meta.name
-            # reduce index dimensions to model-scenario only
-            meta = (meta
-                    .reset_index()
-                    .loc[:, ['model', 'scenario', meta.name]]
-                    .set_index(['model', 'scenario'])
-                    )
-            # raise error if index is not unique
-            if meta.index.duplicated().any():
-                raise ValueError("non-unique ['model', 'scenario'] index!")
-            # check if trying to add model-scenario index not existing in self
-            diff = meta.index.difference(self.meta.index)
-            if not diff.empty:
-                error = "adding metadata for non-existing scenarios '{}'!"
-                raise ValueError(error.format(diff))
-            self.meta = meta.combine_first(self.meta)
-            #  quickfix for pandas.combine_first(), issue #7509
-            self.meta['exclude'] = self.meta['exclude'].astype('bool')
+        if not name and not hasattr(meta, 'name'):
+            raise ValueError('Must pass a name or use a pd.Series')
+
+        # use meta.index if index arg is an IamDataFrame
+        if index is not None and isinstance(index, IamDataFrame):
+            index = index.meta.index
+
+        # create pd.Series from index and meta if provided
+        _meta = meta if index is None else pd.Series(data=meta, index=index,
+                                                     name=name)
+
+        try:
+            append_by_idx = set(META_IDX).issubset(_meta.index.names)
+        except AttributeError:
+            append_by_idx = False
+
+        # if not possible to append by index
+        if not append_by_idx:
+            if islistable(meta):
+                self.meta[name] = list(meta)
+            else:
+                self.meta[name] = meta
             return  # EXIT FUNCTION
 
-        if isinstance(meta, pd.Series):
-            name = name or meta.name
-            meta = meta.tolist()
+        # else append by index
+        name = name or _meta.name
 
-        self.meta[name] = meta
+        # reduce index dimensions to model-scenario only
+        _meta = (
+                    _meta
+                    .reset_index()
+                    .reindex(columns=META_IDX + [name])
+                    .set_index(META_IDX)
+                 )
+
+        # raise error if index is not unique
+        if _meta.index.duplicated().any():
+            raise ValueError("non-unique ['model', 'scenario'] index!")
+
+        # check if trying to add model-scenario index not existing in self
+        diff = _meta.index.difference(self.meta.index)
+        if not diff.empty:
+            error = "adding metadata for non-existing scenarios '{}'!"
+            raise ValueError(error.format(diff))
+
+        self._new_meta_column(name, meta)
+        self.meta[name] = _meta[name].combine_first(self.meta[name])
 
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
@@ -318,28 +340,28 @@ class IamDataFrame(object):
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
 
-        if criteria == 'uncategorized':
-            self.meta[name].fillna(value, inplace=True)
-            msg = "{} of {} scenarios are uncategorized."
-            logger().info(msg.format(np.sum(self.meta[name] == value),
-                                     len(self.meta)))
-            return  # EXIT FUNCTION
-
         # find all data that matches categorization
         rows = _apply_criteria(self.data, criteria,
                                in_range=True, return_test='all')
         idx = _meta_idx(rows)
 
-        # update metadata dataframe
-        if name not in self.meta:
-            self.meta[name] = np.nan
         if len(idx) == 0:
             logger().info("No scenarios satisfy the criteria")
-        else:
-            self.meta.loc[idx, name] = value
-            msg = '{} scenario{} categorized as `{}: {}`'
-            logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
-                                     name, value))
+            return  # EXIT FUNCTION
+
+        # update metadata dataframe
+        self._new_meta_column(name, value)
+        self.meta.loc[idx, name] = value
+        msg = '{} scenario{} categorized as `{}: {}`'
+        logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
+                                 name, value))
+
+    def _new_meta_column(self, name, value):
+        """Add a metadata column, set to `uncategorized` if str else np.nan"""
+        if name is None:
+            raise ValueError('cannot add a meta column {}'.format(name))
+        if name not in self.meta:
+            self.meta[name] = 'uncategorized' if isstr(value) else np.nan
 
     def require_variable(self, variable, unit=None, year=None,
                          exclude_on_fail=False):
@@ -414,14 +436,16 @@ class IamDataFrame(object):
         Parameters
         ----------
         mapping: dict
-            for each column where entries should be renamed, provide current name and target name
-            {<column name>: {<current_name_1>: <target_name_1>, <current_name_2>: <target_name_2>}}
+            for each column where entries should be renamed, provide current
+            name and target name
+            {<column name>: {<current_name_1>: <target_name_1>,
+                             <current_name_2>: <target_name_2>}}
         inplace: bool, default False
             if True, do operation inplace and return None
         """
         ret = copy.deepcopy(self) if not inplace else self
         for col in mapping:
-            if not col in ['region', 'variable', 'unit']:
+            if col not in ['region', 'variable', 'unit']:
                 raise ValueError('renaming by {} not supported!'.format(col))
             ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
 
@@ -435,8 +459,8 @@ class IamDataFrame(object):
         Parameters
         ----------
         conversion_mapping: dict
-            for each unit for which a conversion should be carried out, provide current unit 
-            and target unit and conversion factor
+            for each unit for which a conversion should be carried out,
+            provide current unit and target unit and conversion factor
             {<current unit>: [<target unit>, <conversion factor>]}
         inplace: bool, default False
             if True, do operation inplace and return None
