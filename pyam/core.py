@@ -27,6 +27,7 @@ from pyam.utils import (
     pattern_match,
     years_match,
     isstr,
+    islistable,
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
@@ -282,7 +283,7 @@ class IamDataFrame(object):
 
         # if not possible to append by index
         if not append_by_idx:
-            if isinstance(meta, collections.Iterable) and not isstr(meta):
+            if islistable(meta):
                 self.meta[name] = list(meta)
             else:
                 self.meta[name] = meta
