@@ -63,6 +63,16 @@ def isstr(x):
     return isinstance(x, six.string_types)
 
 
+def isscalar(x):
+    """Returns True if x is a scalar"""
+    return not isinstance(x, collections.Iterable) or isstr(x)
+
+
+def islistable(x):
+    """Returns True if x is a list but not a string"""
+    return isinstance(x, collections.Iterable) and not isstr(x)
+
+
 def write_sheet(writer, name, df, index=False):
     """Write a pandas DataFrame to an ExcelWriter,
     auto-formatting column width depending on maxwidth of data and colum header
