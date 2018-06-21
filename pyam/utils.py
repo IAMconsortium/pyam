@@ -28,6 +28,7 @@ from pyam.logger import logger
 
 # common indicies
 META_IDX = ['model', 'scenario']
+YEAR_IDX = ['model', 'scenario', 'region', 'year']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
 LONG_IDX = IAMC_IDX + ['year']

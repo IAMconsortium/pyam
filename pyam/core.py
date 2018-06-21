@@ -29,6 +29,7 @@ from pyam.utils import (
     isstr,
     islistable,
     META_IDX,
+    YEAR_IDX,
     IAMC_IDX,
     SORT_IDX,
     LONG_IDX,
@@ -416,17 +417,12 @@ class IamDataFrame(object):
         """
         df = _apply_criteria(self.data, criteria, in_range=False)
 
-        if exclude_on_fail:
-            idx = _meta_idx(df)
-            self.meta.loc[idx, 'exclude'] = True
-
         if not df.empty:
             msg = '{} of {} data points to not satisfy the criteria'
             logger().info(msg.format(len(df), len(self.data)))
 
-            if exclude_on_fail and len(idx) > 0:
-                logger().info('{} non-valid scenario{} will be excluded'
-                              .format(len(idx), '' if len(idx) == 1 else 's'))
+            if exclude_on_fail and len(df) > 0:
+                self._exclude_on_fail(df)
 
             return df
 
@@ -473,6 +469,56 @@ class IamDataFrame(object):
             ret.data.loc[where, 'unit'] = new_unit
         if not inplace:
             return ret
+
+    def check_aggregate(self, variable, components=None, units=None,
+                        exclude_on_fail=False, multiplier=1, **kwargs):
+        """Check whether the timeseries data match the aggregation
+        of components or sub-categories
+
+        Parameters
+        ----------
+        variable: str
+            variable to be checked for matching aggregation of sub-categories
+        components: list of str, default None
+            list of variables, defaults to all sub-categories of `variable`
+        units: str or list of str, default None
+            filter variable and components for given unit(s)
+        exclude_on_fail: boolean, default False
+            flag scenarios failing validation as `exclude: True`
+        multiplier: number, default 1
+            factor when comparing variable and sum of components
+        kwargs: passed to `np.isclose()`
+        """
+        # default components to all variables one level below `variable`
+        if components is None:
+            components = self.filter(variable='{}|*'.format(variable),
+                                     level=0).variables()
+
+        # filter and groupby data, use `pd.Series.align` for machting index
+        df_variable, df_components = (
+                _aggregate_by_variables(self.data, variable, units)
+                .align(_aggregate_by_variables(self.data, components, units))
+                )
+
+        # use `np.isclose` for checking match
+        diff = df_variable[~np.isclose(df_variable, multiplier * df_components,
+                                       **kwargs)]
+
+        if len(diff):
+            msg = '{} of {} data points are not aggregates of components'
+            logger().info(msg.format(len(diff), len(df_variable)))
+
+            if exclude_on_fail:
+                self._exclude_on_fail(diff.index.droplevel([2, 3]))
+
+            return diff.unstack().rename_axis(None, axis=1)
+
+    def _exclude_on_fail(self, df):
+        """Assign a selection of scenarios as `exclude: True` in meta"""
+        idx = df if isinstance(df, pd.MultiIndex) else _meta_idx(df)
+        self.meta.loc[idx, 'exclude'] = True
+        logger().info('{} non-valid scenario{} will be excluded'
+                      .format(len(idx), '' if len(idx) == 1 else 's'))
 
     def filter(self, filters=None, keep=True, inplace=False, **kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
@@ -736,6 +782,17 @@ def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
+def _aggregate_by_variables(df, variables, units=None):
+    variables = [variables] if isstr(variables) else variables
+    df = df[df.variable.isin(variables)]
+
+    if units is not None:
+        units = [units] if isstr(units) else units
+        df = df[df.unit.isin(units)]
+
+    return df.groupby(YEAR_IDX).sum()['value']
+
+
 def _apply_filters(data, meta, filters):
     keep = np.array([True] * len(data))
 
@@ -830,7 +887,8 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.validate() and .filter() for details
+    args: see `IamDataFrame.validate()` for details
+    kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -846,7 +904,8 @@ def require_variable(df, variable, unit=None, year=None, exclude_on_fail=False,
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.validate() and .filter() for details
+    args: see `IamDataFrame.require_variable()` for details
+    kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -864,7 +923,8 @@ def categorize(df, name, value, criteria,
     Parameters
     ----------
     df: IamDataFrame instance
-    args and kwargs: see IamDataFrame.categorize()  and .filter() for details
+    args: see `IamDataFrame.categorize()` for details
+    kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
     fdf.categorize(name=name, value=value, criteria=criteria, color=color,
@@ -875,3 +935,23 @@ def categorize(df, name, value, criteria,
         df.meta[name].update(fdf.meta[name])
     else:
         df.meta[name] = fdf.meta[name]
+
+
+def check_aggregate(df, variable, components=None, units=None,
+                    exclude_on_fail=False, multiplier=1, **kwargs):
+    """Check whether the timeseries values match the aggregation
+    of sub-categories
+
+    Parameters
+    ----------
+    df: IamDataFrame instance
+    args: see IamDataFrame.check_aggregate() for details
+    kwargs: passed to `df.filter()`
+    """
+    fdf = df.filter(**kwargs)
+    if len(fdf.data) > 0:
+        vdf = fdf.check_aggregate(variable=variable, components=components,
+                                  units=units, exclude_on_fail=exclude_on_fail,
+                                  multiplier=multiplier)
+        df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
+        return vdf
