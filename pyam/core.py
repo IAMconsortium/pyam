@@ -975,7 +975,11 @@ def filter_by_meta(data, df, **kwargs):
         by the given arguments (using `utils.pattern_match()`) and `col=None`
         joins the column without filtering
     """
-    data = data.copy().join(df.meta[list(kwargs.keys())])
+    data = data.copy()
+    idx = data.index.copy()
+    data.index = data.index.droplevel(list(set(idx.names) - set(META_IDX)))
+    data = data.join(df.meta[list(kwargs.keys())])
+    data.index = idx
 
     # filter by joined columns
     keep = np.array([True] * len(data))

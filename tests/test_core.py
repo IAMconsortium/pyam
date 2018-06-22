@@ -565,19 +565,20 @@ def test_convert_unit():
 
 def test_pd_filter_by_meta(meta_df):
     data = pd.DataFrame([
-        ['a_model', 'a_scenario', 1],
-        ['a_model', 'a_scenario', 2],
-        ['a_model', 'a_scenario2', 3],
-    ], columns=['model', 'scenario', 'col']).set_index(META_IDX)
+        ['a_model', 'a_scenario', 'a_region1', 1],
+        ['a_model', 'a_scenario', 'a_region2', 2],
+        ['a_model', 'a_scenario2', 'a_region3', 3],
+    ], columns=['model', 'scenario', 'region', 'col']
+        ).set_index(META_IDX + ['region'])
 
     meta_df.set_meta([True, False], 'boolean')
     meta_df.set_meta(0, 'integer')
 
     obs = filter_by_meta(data, meta_df, boolean=True, integer=None)
+    obs = obs.reindex(columns=['col', 'boolean', 'integer'])
 
-    exp = data.loc[('a_model', 'a_scenario')]
+    exp = data.iloc[0:2].copy()
     exp['boolean'] = True
     exp['integer'] = 0
 
-    obs = obs.reindex(columns=['col', 'boolean', 'integer'])
     pd.testing.assert_frame_equal(obs, exp)
