@@ -7,7 +7,7 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, plotting, validate, categorize, \
-    require_variable, check_aggregate
+    require_variable, check_aggregate, filter_by_meta, META_IDX
 from pyam.core import _meta_idx
 
 from conftest import TEST_DATA_DIR
@@ -561,3 +561,22 @@ def test_convert_unit():
     )).data.reset_index(drop=True)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_pd_filter_by_meta(meta_df):
+    data = pd.DataFrame([
+        ['a_model', 'a_scenario', 1],
+        ['a_model', 'a_scenario', 2],
+        ['a_model', 'a_scenario2', 3],
+    ], columns=['model', 'scenario', 'col']).set_index(META_IDX)
+
+    meta_df.set_meta([True, False], 'boolean')
+    meta_df.set_meta(0, 'integer')
+
+    obs = filter_by_meta(data, meta_df, boolean=True, integer=None)
+
+    exp = data.loc[('a_model', 'a_scenario')]
+    exp['boolean'] = True
+    exp['integer'] = 0
+
+    npt.assert_array_equal(obs, exp)

@@ -958,3 +958,29 @@ def check_aggregate(df, variable, components=None, units=None,
                                   multiplier=multiplier)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
         return vdf
+
+
+def filter_by_meta(data, df, **kwargs):
+    """Add columns from IamDataFrame.meta table to a pd.DataFrame and apply
+    filters (optional)
+
+    Parameters
+    ----------
+    data: pd.DataFrame instance, index must include `['model', 'scenario']`
+        the DataFrame to which meta columns are to be joined
+    df: IamDataFrame instance
+        the IamDataFrame from which meta columns are joined
+    kwargs:
+        meta columns to be joined, where `col=...` applies filters
+        by the given arguments (using `utils.pattern_match()`) and `col=None`
+        joins the column without filtering
+    """
+    data = data.copy().join(df.meta[list(kwargs.keys())])
+
+    # filter by joined columns
+    keep = np.array([True] * len(data))
+    for col, values in kwargs.items():
+        if values is not None:
+            keep_col = pattern_match(data[col], values)
+            keep &= keep_col
+    return data[keep]
