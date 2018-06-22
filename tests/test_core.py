@@ -579,4 +579,4 @@ def test_pd_filter_by_meta(meta_df):
     exp['boolean'] = True
     exp['integer'] = 0
 
-    npt.assert_array_equal(obs, exp)
+    pd.testing.assert_frame_equal(obs, exp)
