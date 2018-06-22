@@ -1,0 +1,44 @@
+
+environment:
+  matrix:
+      - PYTHON_VERSION: "2.7"	
+        MINICONDA: "C:\\Miniconda-x64"
+        PYTHON_ARCH: "64"
+      - PYTHON_VERSION: "3.6"
+        MINICONDA: "C:\\Miniconda36-x64"
+        PYTHON_ARCH: "64"
+
+init:
+  - "ECHO %PYTHON_VERSION% %MINICONDA%"
+  
+install:
+  # these correspond to folder naming of miniconda installs on appveyor.  See
+  # https://www.appveyor.com/docs/installed-software#python
+  - if "%PYTHON_VERSION%" == "3.6" set "BASE_PYTHON_VERSION=36"
+  - if "%PYTHON_ARCH%" == "64" set "ARCH_LABEL=-x64"
+  # These are already installed on appveyor.  Update them.
+  - set "CONDA_ROOT=C:\Miniconda%BASE_PYTHON_VERSION%%ARCH_LABEL%"
+  - set "PATH=%CONDA_ROOT%;%CONDA_ROOT%\Scripts;%CONDA_ROOT%\Library\bin;%PATH%"
+
+  # Dependencies and package install
+  - pip install cython>0.15.1 numpy scipy pandas pyyaml xlrd xlsxwriter
+  - if "%PYTHON_VERSION%" == "2.7" pip install functools32
+  - pip install matplotlib==2.1.2 seaborn==0.8.1
+  - python setup.py install
+
+build: false
+
+test_script:
+  - pip install pytest pytest-mpl
+  - pytest -v --mpl tests --mpl-results-path=test-artifacts 
+
+artifacts:
+  - path: 'test-artifacts\*\*'
+    name: test-artifacts
+
+on_failure:
+  - dir test-artifacts /s /b /o:gn
+  - ps: Get-ChildItem test-artifacts\*\* | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name }
+
+on_success:
+  - echo Build succesful!
