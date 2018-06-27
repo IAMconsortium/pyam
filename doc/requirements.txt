@@ -1,0 +1,12 @@
+sphinx
+sphinxcontrib-bibtex
+sphinxcontrib-fulltoc
+sphinxcontrib-programoutput
+sphinx-gallery
+nbsphinx
+numpydoc
+cloud_sptheme
+nbformat
+ipython
+jupyter
+pillow

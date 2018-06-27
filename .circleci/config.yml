@@ -32,6 +32,10 @@ jobs:
           command:  docker run -v /ci-artifacts:/test-artifacts pyam/pyam-py3:latest python3 -m pytest -v --mpl --mpl-results-path=/test-artifacts /pyam/tests
           when: always
       - run:
+          name: Make Docs
+          command:  docker run pyam/pyam-py3:latest /bin/bash -c "cd /pyam/doc && pip install -r requirements.txt && make html"
+          when: always
+      - run:
           name: check artifacts
           command: ls /ci-artifacts
           when: on_fail
