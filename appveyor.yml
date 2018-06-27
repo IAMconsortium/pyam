@@ -21,6 +21,7 @@ install:
   - set "PATH=%CONDA_ROOT%;%CONDA_ROOT%\Scripts;%CONDA_ROOT%\Library\bin;%PATH%"
 
   # Dependencies and package install
+  - conda install --yes geopandas cartopy
   - pip install cython>0.15.1 numpy scipy pandas pyyaml xlrd xlsxwriter
   - if "%PYTHON_VERSION%" == "2.7" pip install functools32
   - pip install matplotlib==2.1.2 seaborn==0.8.1
@@ -31,7 +32,8 @@ build: false
 test_script:
   - pip install pytest pytest-mpl
   - pytest -v --mpl tests --mpl-results-path=test-artifacts
-  - cd doc && pip install -r requirements.txt && .\make.bat html
+  - cd doc && pip install -r requirements.txt
+  - .\make.bat html
 
 artifacts:
   - path: 'test-artifacts\*\*'

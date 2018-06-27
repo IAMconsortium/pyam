@@ -5,7 +5,7 @@ import sys
 import tempfile
 import pytest
 
-from testing_utils import here
+from conftest import here
 
 try:
     import nbformat
