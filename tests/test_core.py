@@ -318,8 +318,13 @@ def test_interpolate(test_df):
            'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_df.filter(variable='Primary Energy').timeseries()
+    variable = {'variable': 'Primary Energy'}
+    obs = test_df.filter(**variable).timeseries()
     npt.assert_array_equal(obs, exp)
+
+    # redo the inpolation and check that no duplicates are added
+    test_df.interpolate(2007)
+    assert not test_df.filter(**variable).data.duplicated().any()
 
 
 def test_set_meta_as_named_series(meta_df):
