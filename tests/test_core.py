@@ -10,8 +10,7 @@ from pyam import IamDataFrame, plotting, validate, categorize, \
     require_variable, check_aggregate
 from pyam.core import _meta_idx
 
-
-from testing_utils import here, meta_df, test_df, reg_df, TEST_DATA_DIR
+from conftest import TEST_DATA_DIR
 
 
 def test_get_item(test_df):

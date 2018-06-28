@@ -2,8 +2,7 @@ import os
 
 from pyam import IamDataFrame, run_control
 
-from testing_utils import TEST_DATA_DIR, TEST_DF
-
+from conftest import TEST_DATA_DIR, TEST_DF
 
 def test_exec():
     rc = {'exec': [
