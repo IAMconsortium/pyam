@@ -604,4 +604,3 @@ def test_pd_filter_by_meta_no_index(meta_df):
     exp['int'] = 0
 
     pd.testing.assert_frame_equal(obs, exp)
-    
