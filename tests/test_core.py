@@ -7,7 +7,7 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, plotting, validate, categorize, \
-    require_variable, check_aggregate
+    require_variable, check_aggregate, filter_by_meta, META_IDX
 from pyam.core import _meta_idx
 
 from conftest import TEST_DATA_DIR
@@ -561,3 +561,46 @@ def test_convert_unit():
     )).data.reset_index(drop=True)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_pd_filter_by_meta(meta_df):
+    data = pd.DataFrame([
+        ['a_model', 'a_scenario', 'a_region1', 1],
+        ['a_model', 'a_scenario', 'a_region2', 2],
+        ['a_model', 'a_scenario2', 'a_region3', 3],
+    ], columns=['model', 'scenario', 'region', 'col']
+    ).set_index(['model', 'region'])
+
+    meta_df.set_meta([True, False], 'boolean')
+    meta_df.set_meta(0, 'integer')
+
+    obs = filter_by_meta(data, meta_df, join_meta=True,
+                         boolean=True, integer=None)
+    obs = obs.reindex(columns=['scenario', 'col', 'boolean', 'integer'])
+
+    exp = data.iloc[0:2].copy()
+    exp['boolean'] = True
+    exp['integer'] = 0
+
+    pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_pd_filter_by_meta_no_index(meta_df):
+    data = pd.DataFrame([
+        ['a_model', 'a_scenario', 'a_region1', 1],
+        ['a_model', 'a_scenario', 'a_region2', 2],
+        ['a_model', 'a_scenario2', 'a_region3', 3],
+    ], columns=['model', 'scenario', 'region', 'col'])
+
+    meta_df.set_meta([True, False], 'boolean')
+    meta_df.set_meta(0, 'int')
+
+    obs = filter_by_meta(data, meta_df, join_meta=True,
+                         boolean=True, int=None)
+    obs = obs.reindex(columns=META_IDX + ['region', 'col', 'boolean', 'int'])
+
+    exp = data.iloc[0:2].copy()
+    exp['boolean'] = True
+    exp['int'] = 0
+
+    pd.testing.assert_frame_equal(obs, exp)

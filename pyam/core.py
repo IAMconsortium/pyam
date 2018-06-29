@@ -958,3 +958,47 @@ def check_aggregate(df, variable, components=None, units=None,
                                   multiplier=multiplier)
         df.meta['exclude'] |= fdf.meta['exclude']  # update if any excluded
         return vdf
+
+
+def filter_by_meta(data, df, join_meta=False, **kwargs):
+    """Filter by and join meta columns from an IamDataFrame to a pd.DataFrame
+
+    Parameters
+    ----------
+    data: pd.DataFrame instance
+        DataFrame to which meta columns are to be joined,
+        index or columns must include `['model', 'scenario']`
+    df: IamDataFrame instance
+        IamDataFrame from which meta columns are filtered and joined (optional)
+    join_meta: bool, default False
+        join selected columns from `df.meta` on `data`
+    kwargs:
+        meta columns to be joined, where `col=...` applies filters
+        by the given arguments (using `utils.pattern_match()`) and `col=None`
+        joins the column without filtering
+    """
+    if not set(META_IDX).issubset(data.index.names + list(data.columns)):
+        raise ValueError('missing required index dimensions or columns!')
+
+    meta = df.meta[list(kwargs)].copy()
+
+    # filter meta by columns
+    keep = np.array([True] * len(meta))
+    for col, values in kwargs.items():
+        if values is not None:
+            keep_col = pattern_match(meta[col], values)
+            keep &= keep_col
+    meta = meta[keep]
+
+    # set the data index to META_IDX and apply filtered meta index
+    data = data.copy()
+    idx = list(data.index.names) if not data.index.names == [None] else None
+    data = data.reset_index().set_index(META_IDX).loc[meta.index]
+
+    # join meta (optional), reset index to format as input arg
+    data = data.join(meta) if join_meta else data
+    data = data.reset_index().set_index(idx or 'index')
+    if idx is None:
+        data.index.name = None
+
+    return data
