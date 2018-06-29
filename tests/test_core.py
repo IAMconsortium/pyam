@@ -563,7 +563,7 @@ def test_convert_unit():
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
 
-def test_pd_filter_by_meta(meta_df):
+def test_pd_filter_by_meta_with_index(meta_df):
     data = pd.DataFrame([
         ['a_model', 'a_scenario', 'a_region1', 1],
         ['a_model', 'a_scenario', 'a_region2', 2],
@@ -574,7 +574,8 @@ def test_pd_filter_by_meta(meta_df):
     meta_df.set_meta([True, False], 'boolean')
     meta_df.set_meta(0, 'integer')
 
-    obs = filter_by_meta(data, meta_df, boolean=True, integer=None)
+    obs = filter_by_meta(data, meta_df, join_meta=True,
+                         boolean=True, integer=None)
     obs = obs.reindex(columns=['col', 'boolean', 'integer'])
 
     exp = data.iloc[0:2].copy()
