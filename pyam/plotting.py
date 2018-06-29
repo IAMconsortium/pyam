@@ -64,6 +64,42 @@ def default_props(reset=False, **kwargs):
     return _DEFAULT_PROPS
 
 
+def assign_style_props(df, color=None, marker=None, linestyle=None,
+                       cmap=None):
+    """Assign the style properties for a plot
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        data to be used for style properties
+    """
+    # determine color, marker, and linestyle for each line
+    defaults = default_props(reset=True, num_colors=len(df),
+                             colormap=cmap)
+
+    props = {}
+    rc = run_control()
+
+    kinds = [('color', color), ('marker', marker), ('linestyle', linestyle)]
+
+    for kind, var in kinds:
+        rc_has_kind = kind in rc
+        if var in df.columns:
+            rc_has_var = rc_has_kind and var in rc[kind]
+            props_for_kind = {}
+
+            for val in df[var].unique():
+                if rc_has_var and val in rc[kind][var]:
+                    props_for_kind[val] = rc[kind][var][val]
+                    # cycle any way to keep defaults the same
+                    next(defaults[kind])
+                else:
+                    props_for_kind[val] = next(defaults[kind])
+            props[kind] = props_for_kind
+
+    return props
+
+
 def reshape_line_plot(df, x, y):
     """Reshape data from long form to "line plot form".
 
@@ -95,8 +131,8 @@ def reshape_bar_plot(df, x, y, bars):
 @requires_package(gpd, 'Requires geopandas')
 @lru_cache()
 def read_shapefile(fname, region_col=None, **kwargs):
-    """Read a shapefile for use in regional plots. Shapefiles must have a 
-    column denoted as "region".
+    """Read a shapefile for use in regional plots. Shapefiles must have
+    a column denoted as "region".
 
     Parameters
     ----------
@@ -456,6 +492,92 @@ def bar_plot(df, x='year', y='value', bars='variable',
     return ax
 
 
+def scatter(df, x, y, ax=None, legend=None, title=None,
+            color=None, marker='o', linestyle=None, cmap=None,
+            groupby=['model', 'scenario'], **kwargs):
+    """Plot data as a scatter chart.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Data to plot as a long-form data frame
+    x : str
+        column to be plotted on the x-axis
+    y : str
+        column to be plotted on the y-axis
+    ax : matplotlib.Axes, optional
+    legend : bool, optional
+        Include a legend (`None` displays legend only if less than 13 entries)
+        default: None
+    title : bool or string, optional
+        Display a custom title.
+    color : string, optional
+        A valid matplotlib color or column name. If a column name, common
+        values will be provided the same color.
+        default: None
+    marker : string
+        A valid matplotlib marker or column name. If a column name, common
+        values will be provided the same marker.
+        default: 'o'
+    linestyle : string, optional
+        A valid matplotlib linestyle or column name. If a column name, common
+        values will be provided the same linestyle.
+        default: None
+    cmap : string, optional
+        A colormap to use.
+        default: None
+    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+    """
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    # assign styling properties
+    props = assign_style_props(df, color=color, marker=marker,
+                               linestyle=linestyle, cmap=cmap)
+
+    # group data
+    groups = df.groupby(groupby)
+
+    # loop over grouped dataframe, plot data
+    legend_data = []
+    for name, group in groups:
+        pargs = {}
+        labels = []
+        for key, kind, var in [('c', 'color', color),
+                               ('marker', 'marker', marker),
+                               ('linestyle', 'linestyle', linestyle)]:
+            if kind in props:
+                label = group[var].values[0]
+                pargs[key] = props[kind][group[var].values[0]]
+                labels.append(repr(label).lstrip("u'").strip("'"))
+            else:
+                pargs[key] = var
+
+        if len(labels) > 0:
+            legend_data.append(' '.join(labels))
+        else:
+            legend_data.append(' '.join(name))
+        kwargs.update(pargs)
+        ax.plot(group[x], group[y], **kwargs)
+
+    # build legend handles and labels
+    handles, labels = ax.get_legend_handles_labels()
+    if legend_data != [''] * len(legend_data):
+        labels = sorted(list(set(tuple(legend_data))))
+        idxs = [legend_data.index(d) for d in labels]
+        handles = [handles[i] for i in idxs]
+    if legend is None and len(labels) < 13 or legend is True:
+        ax.legend(handles, labels)
+
+    # add labels and title
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
+    if title:
+        ax.set_title(title)
+
+    return ax
+
+
 def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
               color=None, marker=None, linestyle=None, cmap=None,
               **kwargs):
@@ -494,31 +616,21 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
-
     if ax is None:
         fig, ax = plt.subplots()
 
+    # assign styling properties
+    props = assign_style_props(df, color=color, marker=marker,
+                               linestyle=linestyle, cmap=cmap)
+
+    # reshape data for use in line_plot
     df = reshape_line_plot(df, x, y)  # long form to one column per line
 
-    # determine color, marker, and linestyle for each line
-    defaults = default_props(reset=True, num_colors=len(df.columns),
-                             colormap=cmap)
-    props = {}
+    # determine index of column name in reshaped dataframe
     prop_idx = {}
-    rc = run_control()
-    for kind, var in [('color', color), ('marker', marker), ('linestyle', linestyle)]:
-        rc_has_kind = kind in rc
-        if var in df.columns.names:
-            rc_has_var = rc_has_kind and var in rc[kind]
-            props_for_kind = {}
-            for val in df.columns.get_level_values(var).unique():
-                if rc_has_var and val in rc[kind][var]:
-                    props_for_kind[val] = rc[kind][var][val]
-                    # cycle any way to keep defaults the same
-                    next(defaults[kind])
-                else:
-                    props_for_kind[val] = next(defaults[kind])
-            props[kind] = props_for_kind
+    for kind, var in [('color', color), ('marker', marker),
+                      ('linestyle', linestyle)]:
+        if var is not None and var in df.columns.names:
             prop_idx[kind] = df.columns.names.index(var)
 
     # plot data
