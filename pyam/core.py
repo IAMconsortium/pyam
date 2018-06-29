@@ -977,6 +977,10 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
         by the given arguments (using `utils.pattern_match()`) and `col=None`
         joins the column without filtering
     """
+    if not set(META_IDX).issubset(data.index.names) \
+            and META_IDX not in data.columns:
+        raise ValueError('missing required index dimensions or columns!')
+
     meta = df.meta[list(kwargs)].copy()
 
     # filter meta by columns
