@@ -565,10 +565,10 @@ def test_convert_unit():
 
 def test_pd_filter_by_meta_with_index(meta_df):
     data = pd.DataFrame([
-        ['a_model', 'a_scenario', 'a_region1', 1],
-        ['a_model', 'a_scenario', 'a_region2', 2],
-        ['a_model', 'a_scenario2', 'a_region3', 3],
-    ], columns=['model', 'scenario', 'region', 'col']
+                ['a_model', 'a_scenario', 'a_region1', 1],
+                ['a_model', 'a_scenario', 'a_region2', 2],
+                ['a_model', 'a_scenario2', 'a_region3', 3],
+            ], columns=['model', 'scenario', 'region', 'col']
         ).set_index(META_IDX + ['region'])
 
     meta_df.set_meta([True, False], 'boolean')
@@ -593,17 +593,14 @@ def test_pd_filter_by_meta_index_as_cols(meta_df):
     ], columns=['model', 'scenario', 'region', 'col'])
 
     meta_df.set_meta([True, False], 'boolean')
-    meta_df.set_meta(0, 'integer')
+    meta_df.set_meta(0, 'int')
 
     obs = filter_by_meta(data, meta_df, join_meta=True,
-                         boolean=True, integer=None)
-    obs = obs.reindex(columns=META_IDX + ['region','col', 'boolean', 'integer'])
+                         boolean=True, int=None)
+    obs = obs.reindex(columns=META_IDX + ['region', 'col', 'boolean', 'int'])
 
     exp = data.iloc[0:2].copy()
     exp['boolean'] = True
-    exp['integer'] = 0
-
-    print(obs)
-    print(exp)
+    exp['int'] = 0
 
     pd.testing.assert_frame_equal(obs, exp)
