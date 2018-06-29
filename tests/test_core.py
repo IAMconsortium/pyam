@@ -565,11 +565,11 @@ def test_convert_unit():
 
 def test_pd_filter_by_meta_with_index(meta_df):
     data = pd.DataFrame([
-                ['a_model', 'a_scenario', 'a_region1', 1],
-                ['a_model', 'a_scenario', 'a_region2', 2],
-                ['a_model', 'a_scenario2', 'a_region3', 3],
-            ], columns=['model', 'scenario', 'region', 'col']
-        ).set_index(META_IDX + ['region'])
+        ['a_model', 'a_scenario', 'a_region1', 1],
+        ['a_model', 'a_scenario', 'a_region2', 2],
+        ['a_model', 'a_scenario2', 'a_region3', 3],
+    ], columns=['model', 'scenario', 'region', 'col']
+    ).set_index(META_IDX + ['region'])
 
     meta_df.set_meta([True, False], 'boolean')
     meta_df.set_meta(0, 'integer')
