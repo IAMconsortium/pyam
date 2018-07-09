@@ -146,24 +146,34 @@ def read_files(fnames, *args, **kwargs):
     for fname in fnames:
         logger().info('Reading `{}`'.format(fname))
         df = read_pandas(fname, *args, **kwargs)
-        dfs.append(format_data(df))
+        df = format_data(df)
+        dfs.append(df)
 
     return pd.concat(dfs)
 
 
 def format_data(df):
     """Convert an imported dataframe and check all required columns"""
+    # all lower case
+    df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
+
+    if 'notes' in df.columns:  # this came from the database
+        logger().info('Ignoring notes column in dataframe')
+        df.drop(columns='notes', inplace=True)
+        # model for SSPs, scenario for RCPs
+        col = 'model' if 'model' in df else 'scenario'
+        df = df[~df[col].str.contains('database', case=False)]
+        if 'scenario' in df.columns and 'model' not in df.columns:
+            # model and scenario are jammed together in RCP data
+            scen = df['scenario']
+            df['model'] = scen.apply(lambda s: s.split('-')[0].strip())
+            df['scenario'] = scen.apply(
+                lambda s: '-'.join(s.split('-')[1:]).strip())
 
     # format columns to lower-case and check that all required columns exist
-    df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
     if not set(IAMC_IDX).issubset(set(df.columns)):
         missing = list(set(IAMC_IDX) - set(df.columns))
         raise ValueError("missing required columns `{}`!".format(missing))
-
-    if 'notes' in df.columns:
-        logger().info('Ignoring notes column in dataframe')
-        df.drop(columns='notes', inplace=True)
-        df = df[~df.model.str.contains('database', case=False)]
 
     # check whether data in IAMC style or year/value layout
     if 'value' not in df.columns:
