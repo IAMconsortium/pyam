@@ -160,8 +160,7 @@ def format_data(df):
     if 'notes' in df.columns:  # this came from the database
         logger().info('Ignoring notes column in dataframe')
         df.drop(columns='notes', inplace=True)
-        # model for SSPs, scenario for RCPs
-        col = 'model' if 'model' in df else 'scenario'
+        col = df.columns[0]  # first column has database notes
         df = df[~df[col].str.contains('database', case=False)]
         if 'scenario' in df.columns and 'model' not in df.columns:
             # model and scenario are jammed together in RCP data
