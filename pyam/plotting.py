@@ -538,6 +538,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
 
         legend_data.append(' '.join(labels))
         kwargs.update(pargs)
+        data = data.dropna()
         data.plot(ax=ax, **kwargs)
 
     # build legend handles and labels
