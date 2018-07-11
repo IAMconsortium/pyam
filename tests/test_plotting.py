@@ -69,6 +69,15 @@ def test_line_marker_legend(plot_df):
 
 @pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_rm_legend_label(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, marker='model', linestyle='scenario', legend=True,
+                      rm_legend_label='marker')
+    return fig
+
+
+@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_linestyle_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, linestyle='model', legend=True)
