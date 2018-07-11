@@ -28,7 +28,7 @@ except ImportError:
 
 from pyam.utils import SORT_IDX
 from pyam.run_control import run_control
-from pyam.utils import requires_package
+from pyam.utils import requires_package, SORT_IDX, isstr
 
 from pandas.plotting._style import _get_standard_colors
 
@@ -458,7 +458,7 @@ def bar_plot(df, x='year', y='value', bars='variable',
 
 def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
               color=None, marker=None, linestyle=None, cmap=None,
-              **kwargs):
+              rm_legend_label=[], **kwargs):
     """Plot data as lines with or without markers.
 
     Parameters
@@ -492,6 +492,9 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     cmap : string, optional
         A colormap to use.
         default: None
+    rm_legend_label : string, list, optional
+        Remove the color, marker, or linestyle label in the legend.
+        default: []
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
 
@@ -521,8 +524,9 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
             props[kind] = props_for_kind
             prop_idx[kind] = df.columns.names.index(var)
 
-    # plot data
+    # plot data, keeping track of which legend labels to apply
     legend_data = []
+    no_label = [rm_legend_label] if isstr(rm_legend_label) else rm_legend_label
     for col, data in df.iteritems():
         pargs = {}
         labels = []
@@ -532,7 +536,8 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
             if kind in props:
                 label = col[prop_idx[kind]]
                 pargs[key] = props[kind][label]
-                labels.append(repr(label).lstrip("u'").strip("'"))
+                if kind not in no_label:
+                    labels.append(repr(label).lstrip("u'").strip("'"))
             else:
                 pargs[key] = var
 
