@@ -26,7 +26,6 @@ try:
 except ImportError:
     from functools32 import lru_cache
 
-from pyam.utils import SORT_IDX
 from pyam.run_control import run_control
 from pyam.utils import requires_package, SORT_IDX, isstr
 
