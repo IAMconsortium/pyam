@@ -26,6 +26,7 @@ try:
 except ImportError:
     from functools32 import lru_cache
 
+from pyam.logger import logger
 from pyam.run_control import run_control
 from pyam.utils import requires_package, SORT_IDX, isstr
 
@@ -34,6 +35,9 @@ from pandas.plotting._style import _get_standard_colors
 # line colors, markers, and styles that are cycled through when not
 # explicitly declared
 _DEFAULT_PROPS = None
+
+# maximum number of labels after which do not show legends by default
+MAX_LEGEND_LABELS = 13
 
 
 def reset_default_props(**kwargs):
@@ -205,13 +209,13 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
             )
         cb = plt.colorbar(scalar_map, **cbar)
 
-    if legend:
+    if legend is not False:
         if legend is True:  # use some defaults
             legend = dict(
                 bbox_to_anchor=(1.32, 0.5) if cbar else (1.2, 0.5),
                 loc='right',
             )
-        ax.legend(handles, labels, **legend)
+        _add_legend(ax, handles, labels, legend)
 
     if title:
         var = df['variable'].unique()[0]
@@ -471,9 +475,10 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         The column to use for y-axis values
         default: value
     ax : matplotlib.Axes, optional
-    legend : bool, optional
-        Include a legend (`None` displays legend only if less than 13 entries)
-        default: None
+    legend : bool or dictionary, optional
+        Add a legend. If a dictionary is provided, it will be used as keyword
+        arguments in creating the legend.
+        default: None (displays legend only if less than 13 entries)
     title : bool or string, optional
         Display a default or custom title.
     color : string, optional
@@ -550,8 +555,8 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         labels = sorted(list(set(tuple(legend_data))))
         idxs = [legend_data.index(d) for d in labels]
         handles = [handles[i] for i in idxs]
-    if legend is None and len(labels) < 13 or legend is True:
-        ax.legend(handles, labels)
+    if legend is not False:
+        _add_legend(ax, handles, labels, legend)
 
     # add default labels if possible
     ax.set_xlabel(x.title())
@@ -571,3 +576,11 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         ax.set_title(' '.join(_title))
 
     return ax, handles, labels
+
+
+def _add_legend(ax, handles, labels, legend):
+    if legend is None and len(labels) >= MAX_LEGEND_LABELS:
+        logger().info('>={} labels, not applying legend'.format(
+            MAX_LEGEND_LABELS))
+    legend = {} if legend in [True, None] else legend
+    ax.legend(handles, labels, **legend)

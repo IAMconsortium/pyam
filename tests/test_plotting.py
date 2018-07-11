@@ -45,6 +45,15 @@ def test_line_plot(plot_df):
 
 @pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_dict_legend(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, legend=dict(
+        loc='center left', bbox_to_anchor=(1.0, 0.5)))
+    return fig
+
+
+@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_no_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, legend=False)
