@@ -540,6 +540,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
             for (i, v) in enumerate(odict[keys[0]]):
                 if v in tup[idx]:
                     return i
+                return len(odict[keys[0]])
         all_cols = sorted(all_cols, key=sort_func)
 
     for col in all_cols:
