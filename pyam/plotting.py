@@ -533,7 +533,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         keys = list(odict.keys())
         if len(keys) > 1:
             msg = 'Can only order by one column at present, {} given.'
-            raise NotImplementedError(msg.format(key))
+            raise NotImplementedError(msg.format(keys))
         idx = df.columns.names.index(keys[0])
 
         def sort_func(tup):
