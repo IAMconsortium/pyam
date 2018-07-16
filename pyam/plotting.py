@@ -526,7 +526,24 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     # plot data, keeping track of which legend labels to apply
     legend_data = []
     no_label = [rm_legend_label] if isstr(rm_legend_label) else rm_legend_label
-    for col, data in df.iteritems():
+
+    all_cols = df.columns
+    if 'order' in rc:
+        odict = rc['order']
+        keys = list(odict.keys())
+        if len(keys) > 1:
+            msg = 'Can only order by one column at present, {} given.'
+            raise NotImplementedError(msg.format(key))
+        idx = df.columns.names.index(keys[0])
+
+        def sort_func(tup):
+            for (i, v) in enumerate(odict[keys[0]]):
+                if v in tup[idx]:
+                    return i
+        all_cols = sorted(all_cols, key=sort_func)
+
+    for col in all_cols:
+        data = df[col]
         pargs = {}
         labels = []
         for key, kind, var in [('c', 'color', color),
