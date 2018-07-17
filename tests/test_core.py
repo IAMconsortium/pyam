@@ -236,7 +236,8 @@ def test_check_aggregate_pass(meta_df):
                        'region': 'World', 'variable': 'Primary Energy|Gas',
                        'unit': 'EJ/y', 'year': [2005, 2010], 'value': [.5, 3]})
     meta_df.data = meta_df.data.append(df, ignore_index=True)
-    obs = meta_df.filter(scenario='a_scenario').check_aggregate('Primary Energy')
+    obs = meta_df.filter(
+        scenario='a_scenario').check_aggregate('Primary Energy')
     assert obs is None
 
 
@@ -258,7 +259,7 @@ def test_category_pass(meta_df):
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     meta_df.categorize('category', 'foo', {'Primary Energy':
-        {'up': 6, 'year': 2010}})
+                                           {'up': 6, 'year': 2010}})
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
@@ -290,6 +291,13 @@ def test_load_metadata(test_df):
 def test_load_SSP_database_downloaded_file(test_df):
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
+    )
+    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df.as_pandas())
+
+
+def test_load_RCP_database_downloaded_file(test_df):
+    obs_df = IamDataFrame(os.path.join(
+        TEST_DATA_DIR, 'test_RCP_database_raw_download.xlsx')
     )
     pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df.as_pandas())
 
