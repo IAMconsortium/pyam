@@ -155,7 +155,7 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
 
         if not isinstance(other, IamDataFrame):
-            other = IamDataFrame(other)
+            other = IamDataFrame(other, **kwargs)
 
         # check that any model/scenario is not yet included in IamDataFrame
         ret.meta = ret.meta.append(other.meta, verify_integrity=True)
