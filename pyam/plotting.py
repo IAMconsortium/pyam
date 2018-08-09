@@ -544,6 +544,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
             else:
                 pargs[key] = var
         kwargs.update(pargs)
+        data = data.dropna()
         data.plot(ax=ax, **kwargs)
         if labels:
             ax.lines[-1].set_label(' '.join(labels))
