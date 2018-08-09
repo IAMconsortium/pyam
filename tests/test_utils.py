@@ -51,3 +51,24 @@ def test_pattern_match_plus():
     exp = [False, True, True, True]
 
     assert (obs == exp).all()
+
+
+def test_pattern_match_dot():
+    data = pd.Series(['foo', 'fo.'])
+    values = ['fo.']
+
+    obs = utils.pattern_match(data, values)
+    exp = [False, True]
+
+    assert (obs == exp).all()
+
+
+def test_pattern_match_brackets():
+    data = pd.Series(['foo (bar)', 'foo bar'])
+    values = ['foo (bar)']
+
+    obs = utils.pattern_match(data, values)
+    exp = [True, False]
+
+    print(obs)
+    assert (obs == exp).all()
