@@ -45,6 +45,15 @@ def test_line_plot(plot_df):
 
 @pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_dict_legend(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, legend=dict(
+        loc='center left', bbox_to_anchor=(1.0, 0.5)))
+    return fig
+
+
+@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_no_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, legend=False)
@@ -64,6 +73,15 @@ def test_line_color(plot_df):
 def test_line_marker_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, marker='model', legend=True)
+    return fig
+
+
+@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_rm_legend_label(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, marker='model', linestyle='scenario', legend=True,
+                      rm_legend_label='marker')
     return fig
 
 

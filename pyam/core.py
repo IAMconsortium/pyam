@@ -51,7 +51,12 @@ class IamDataFrame(object):
         ----------
         data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
             an instance of an TimeSeries or Scenario (requires `ixmp`),
-            or pd.DataFrame or data file with IAMC-format data columns
+            or pd.DataFrame or data file with IAMC-format data columns.
+
+            Special support is provided for data files downloaded directly from
+            IIASA SSP and RCP databases. If you run into any problems loading
+            data, please make an issue at:
+            https://github.com/IAMconsortium/pyam/issues
         """
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame):
@@ -150,7 +155,7 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
 
         if not isinstance(other, IamDataFrame):
-            other = IamDataFrame(other)
+            other = IamDataFrame(other, **kwargs)
 
         # check that any model/scenario is not yet included in IamDataFrame
         ret.meta = ret.meta.append(other.meta, verify_integrity=True)
@@ -298,11 +303,11 @@ class IamDataFrame(object):
 
         # reduce index dimensions to model-scenario only
         _meta = (
-                    _meta
-                    .reset_index()
-                    .reindex(columns=META_IDX + [name])
-                    .set_index(META_IDX)
-                 )
+            _meta
+            .reset_index()
+            .reindex(columns=META_IDX + [name])
+            .set_index(META_IDX)
+        )
 
         # raise error if index is not unique
         if _meta.index.duplicated().any():
@@ -499,9 +504,9 @@ class IamDataFrame(object):
 
         # filter and groupby data, use `pd.Series.align` for machting index
         df_variable, df_components = (
-                _aggregate_by_variables(self.data, variable, units)
-                .align(_aggregate_by_variables(self.data, components, units))
-                )
+            _aggregate_by_variables(self.data, variable, units)
+            .align(_aggregate_by_variables(self.data, components, units))
+        )
 
         # use `np.isclose` for checking match
         diff = df_variable[~np.isclose(df_variable, multiplier * df_components,
