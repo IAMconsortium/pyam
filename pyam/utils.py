@@ -231,8 +231,11 @@ def pattern_match(data, values, level=None):
         if isstr(s):
             regexp = (str(s)
                       .replace('|', '\\|')
+                      .replace('.', '\.')  # `.` has to be replaced before `*`
                       .replace('*', '.*')
                       .replace('+', '\+')
+                      .replace('(', '\(')
+                      .replace(')', '\)')
                       ) + "$"
             pattern = re.compile(regexp)
             subset = filter(pattern.match, data)
