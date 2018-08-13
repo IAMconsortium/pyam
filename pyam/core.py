@@ -262,17 +262,17 @@ class IamDataFrame(object):
         self.meta['exclude'] = False
 
     def set_meta(self, meta, name=None, index=None):
-        """Add metadata columns as pd.Series or list
+        """Add metadata columns as pd.Series, list or value (int/float/str)
 
         Parameters
         ----------
-        meta: pd.Series, list, int or str
+        meta: pd.Series, list, int, float or str
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
-        name: str
-            meta column name (if not given by meta pd.Series.name)
+        name: str, optional
+            meta column name (defaults to meta pd.Series.name)
         index: pyam.IamDataFrame or pd.MultiIndex, optional
-            index to be used for setting meta column
+            index to be used for setting meta column (`['model', 'scenario']`)
         """
         if not name and not hasattr(meta, 'name'):
             raise ValueError('Must pass a name or use a pd.Series')
@@ -281,7 +281,7 @@ class IamDataFrame(object):
         if index is not None and isinstance(index, IamDataFrame):
             index = index.meta.index
 
-        # create pd.Series from index and meta if provided
+        # create pd.Series from meta, index and name if provided
         _meta = meta if index is None else pd.Series(data=meta, index=index,
                                                      name=name)
 
@@ -292,14 +292,11 @@ class IamDataFrame(object):
 
         # if not possible to append by index
         if not append_by_idx:
-            if islistable(meta):
-                self.meta[name] = list(meta)
-            else:
-                self.meta[name] = meta
+            self.meta[name] = list(meta) if islistable(meta) else meta
             return  # EXIT FUNCTION
 
         # else append by index
-        name = name or _meta.name
+        _meta.name = name = name or _meta.name
 
         # reduce index dimensions to model-scenario only
         _meta = (
