@@ -353,6 +353,23 @@ def test_set_meta_as_named_series(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
+def test_set_meta_as_unnamed_series(meta_df):
+    idx = pd.MultiIndex(levels=[['a_scenario'], ['a_model'], ['a_region']],
+                        labels=[[0], [0], [0]],
+                        names=['scenario', 'model', 'region'])
+
+    s = pd.Series(data=[0.3], index=idx)
+    meta_df.set_meta(s, name='meta_values')
+
+    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario', 'a_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+    exp = pd.Series(data=[0.3, np.nan], index=idx)
+    exp.name = 'meta_values'
+
+    obs = meta_df['meta_values']
+    pd.testing.assert_series_equal(obs, exp)
+
+
 def test_set_meta_non_unique_index_fail(meta_df):
     idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario'], ['a', 'b']],
                         labels=[[0, 0], [0, 0], [0, 1]],
