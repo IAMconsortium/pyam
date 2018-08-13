@@ -431,7 +431,7 @@ class IamDataFrame(object):
 
             return df
 
-    def rename(self, mapping, inplace=False):
+    def rename(self, mapping, append=False, inplace=False):
         """Rename and aggregate column entries using groupby.sum()
 
         Parameters
@@ -441,6 +441,8 @@ class IamDataFrame(object):
             name and target name
             {<column name>: {<current_name_1>: <target_name_1>,
                              <current_name_2>: <target_name_2>}}
+        append: bool, default False
+            if True, append renamed rows to existing data
         inplace: bool, default False
             if True, do operation inplace and return None
         """
@@ -448,9 +450,14 @@ class IamDataFrame(object):
         for col in mapping:
             if col not in ['region', 'variable', 'unit']:
                 raise ValueError('renaming by {} not supported!'.format(col))
-            ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
+            if append:
+                ret.data = ret.data.append(_replace(self.data, col, mapping),
+                                           ignore_index=True)
+            else:
+                ret.data.loc[:, col] = _replace(self.data, col, mapping)
 
         ret.data = ret.data.groupby(LONG_IDX).sum().reset_index()
+
         if not inplace:
             return ret
 
@@ -884,6 +891,10 @@ def _apply_criteria(df, criteria, **kwargs):
             idxs.append(grp_idxs)
     df = df.loc[itertools.chain(*idxs)]
     return df
+
+
+def _replace(data, col, mapping):
+    return data.loc[:, col].replace(mapping[col])
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
