@@ -299,7 +299,7 @@ class IamDataFrame(object):
             return  # EXIT FUNCTION
 
         # else append by index
-        name = name or _meta.name
+        _meta.name = name = name or _meta.name
 
         # reduce index dimensions to model-scenario only
         _meta = (
