@@ -1,6 +1,7 @@
 
 # Next Release
 
+- (#81)[https://github.com/IAMconsortium/pyam/pull/81] Bug-fix when using `set_meta()` with unnamed pd.Series and no `name` kwarg
 - (#80)[https://github.com/IAMconsortium/pyam/pull/80] Extend the pseudo-regexp syntax for filtering in `pattern_match()`
 - (#73)[https://github.com/IAMconsortium/pyam/pull/73] Adds ability to remove labels for markers, colors, or linestyles
 - (#72)[https://github.com/IAMconsortium/pyam/pull/72] line_plot now drops NaNs so that lines are fully plotted
