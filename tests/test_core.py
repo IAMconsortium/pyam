@@ -14,12 +14,10 @@ from conftest import TEST_DATA_DIR
 
 
 df_rename_tests = pd.DataFrame([
-        ['model', 'scen', 'region_a', 'test_1', 'unit', 1, 5],
-        ['model', 'scen', 'region_b', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'region_a', 'test_3', 'unit', 3, 7],
-    ], columns=['model', 'scenario', 'region',
-                'variable', 'unit', 2005, 2010],
-    )
+    ['model', 'scen', 'region_a', 'test_1', 'unit', 1, 5],
+    ['model', 'scen', 'region_b', 'test_2', 'unit', 2, 6],
+    ['model', 'scen', 'region_a', 'test_3', 'unit', 3, 7],
+    ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010])
 
 
 def test_get_item(test_df):
