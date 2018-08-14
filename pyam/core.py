@@ -447,16 +447,16 @@ class IamDataFrame(object):
             if True, do operation inplace and return None
         """
         ret = copy.deepcopy(self) if not inplace else self
-        for col in mapping:
+        data = ret.data.copy() if append else ret.data
+
+        for col, dct in mapping.items():
             if col not in ['region', 'variable', 'unit']:
                 raise ValueError('renaming by {} not supported!'.format(col))
-            if append:
-                ret.data = ret.data.append(_replace(self.data, col, mapping),
-                                           ignore_index=True)
-            else:
-                ret.data.loc[:, col] = _replace(self.data, col, mapping)
+            data.loc[:, col] = data.loc[:, col].replace(dct)
+            data = data[data[col].isin(dct.values())] if append else data
 
-        ret.data = ret.data.groupby(LONG_IDX).sum().reset_index()
+        data = ret.data.append(data, ignore_index=True) if append else data
+        ret.data = data.groupby(LONG_IDX).sum().reset_index()
 
         if not inplace:
             return ret
@@ -891,10 +891,6 @@ def _apply_criteria(df, criteria, **kwargs):
             idxs.append(grp_idxs)
     df = df.loc[itertools.chain(*idxs)]
     return df
-
-
-def _replace(data, col, mapping):
-    return data.loc[:, col].replace(mapping[col])
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
