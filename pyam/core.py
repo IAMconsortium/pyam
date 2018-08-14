@@ -432,7 +432,7 @@ class IamDataFrame(object):
             return df
 
     def rename(self, mapping, append=False, inplace=False):
-        """Rename and aggregate column entries using groupby.sum()
+        """Rename and aggregate using `groupby.sum()`
 
         Parameters
         ----------
