@@ -583,9 +583,9 @@ def test_rename_append():
 
 def test_convert_unit():
     df = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'SST', 'test_1', 'A', 1, 5],
-        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'SST', 'test_3', 'C', 3, 7],
+        ['model', 'scen', 'region_a', 'test_1', 'A', 1, 5],
+        ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'region_a', 'test_3', 'C', 3, 7],
     ], columns=['model', 'scenario', 'region',
                 'variable', 'unit', 2005, 2010],
     ))
@@ -595,9 +595,9 @@ def test_convert_unit():
     obs = df.convert_unit(unit_conv).data.reset_index(drop=True)
 
     exp = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'SST', 'test_1', 'B', 5, 25],
-        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'SST', 'test_3', 'D', 9, 21],
+        ['model', 'scen', 'region_a', 'test_1', 'B', 5, 25],
+        ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'region_a', 'test_3', 'D', 9, 21],
     ], columns=['model', 'scenario', 'region',
                 'variable', 'unit', 2005, 2010],
     )).data.reset_index(drop=True)
