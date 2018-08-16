@@ -452,6 +452,12 @@ class IamDataFrame(object):
         for col, dct in mapping.items():
             if col not in ['region', 'variable', 'unit']:
                 raise ValueError('renaming by {} not supported!'.format(col))
+
+            # remove dict entries where `key == value` to avoid double-counting
+            if append:
+                dct = dict([(key, value) for key, value in dct.items()
+                            if not key == value])
+
             data.loc[:, col] = data.loc[:, col].replace(dct)
             data = data[data[col].isin(dct.values())] if append else data
 

@@ -569,7 +569,8 @@ def test_rename():
 def test_rename_append():
     df = IamDataFrame(df_rename_tests)
 
-    mapping = {'variable': {'test_1': 'test', 'test_3': 'test'}}
+    mapping = {'variable': {'test_1': 'test', 'test_3': 'test',
+                            'test_2': 'test_2'}}
     obs = df.rename(mapping, append=True).data.reset_index(drop=True)
 
     exp = IamDataFrame(df_rename_tests.append(pd.DataFrame([
