@@ -975,9 +975,10 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     join_meta: bool, default False
         join selected columns from `df.meta` on `data`
     kwargs:
-        meta columns to be joined, where `col=...` applies filters
+        meta columns to be filtered/joined, where `col=...` applies filters
         by the given arguments (using `utils.pattern_match()`) and `col=None`
-        joins the column without filtering
+        joins the column without filtering (setting col to `np.nan`
+        if `(model, scenario) not in df.meta.index`)
     """
     if not set(META_IDX).issubset(data.index.names + list(data.columns)):
         raise ValueError('missing required index dimensions or columns!')
