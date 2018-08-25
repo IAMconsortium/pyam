@@ -982,7 +982,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     if not set(META_IDX).issubset(data.index.names + list(data.columns)):
         raise ValueError('missing required index dimensions or columns!')
 
-    meta = df.meta[list(kwargs)].copy()
+    meta = pd.DataFrame(df.meta[list(kwargs)].copy())
 
     # filter meta by columns
     keep = np.array([True] * len(meta))
@@ -996,7 +996,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     data = data.copy()
     idx = list(data.index.names) if not data.index.names == [None] else None
     data = data.reset_index().set_index(META_IDX)
-    meta = meta.loc[data.index.unique()]
+    meta = meta.loc[meta.index.intersection(data.index)]
     meta.index.names = META_IDX
     data = data.loc[meta.index]
     data.index.names = META_IDX

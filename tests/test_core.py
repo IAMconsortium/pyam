@@ -620,7 +620,7 @@ def test_pd_filter_by_meta_nonmatching_index(meta_df):
 
     meta_df.set_meta(['a', 'b'], 'string')
 
-    obs = filter_by_meta(data, meta_df, join_meta=True, string='a')
+    obs = filter_by_meta(data, meta_df, join_meta=True, string='b')
     obs = obs.reindex(columns=['scenario', 2010, 2020, 'string'])
 
     exp = data.iloc[2:3].copy()
