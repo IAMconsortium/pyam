@@ -20,6 +20,14 @@ df_filter_by_meta_matching_idx = pd.DataFrame([
 ], columns=['model', 'scenario', 'region', 'col'])
 
 
+df_filter_by_meta_nonmatching_idx = pd.DataFrame([
+    ['a_model', 'a_scenario3', 'a_region1', 1, 2],
+    ['a_model', 'a_scenario3', 'a_region2', 2, 3],
+    ['a_model', 'a_scenario2', 'a_region3', 3, 4],
+], columns=['model', 'scenario', 'region', 2010, 2020]
+).set_index(['model', 'region'])
+
+
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['a_model']
 
@@ -612,14 +620,25 @@ def test_pd_filter_by_meta(meta_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_pd_filter_by_meta_nonmatching_index(meta_df):
-    data = pd.DataFrame([
-        ['a_model', 'a_scenario3', 'a_region1', 1, 2],
-        ['a_model', 'a_scenario3', 'a_region2', 2, 3],
-        ['a_model', 'a_scenario2', 'a_region3', 3, 4],
-    ], columns=['model', 'scenario', 'region', 2010, 2020]
-    ).set_index(['model', 'region'])
+def test_pd_filter_by_meta_no_index(meta_df):
+    data = df_filter_by_meta_matching_idx
 
+    meta_df.set_meta([True, False], 'boolean')
+    meta_df.set_meta(0, 'int')
+
+    obs = filter_by_meta(data, meta_df, join_meta=True,
+                         boolean=True, int=None)
+    obs = obs.reindex(columns=META_IDX + ['region', 'col', 'boolean', 'int'])
+
+    exp = data.iloc[0:2].copy()
+    exp['boolean'] = True
+    exp['int'] = 0
+
+    pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_pd_filter_by_meta_nonmatching_index(meta_df):
+    data = df_filter_by_meta_nonmatching_idx
     meta_df.set_meta(['a', 'b'], 'string')
 
     obs = filter_by_meta(data, meta_df, join_meta=True, string='b')
@@ -639,29 +658,6 @@ def test_pd_join_by_meta_nonmatching_index(meta_df):
     obs = obs.reindex(columns=['scenario', 2010, 2020, 'string'])
 
     exp = data.copy()
-    exp['string'] = [None, None, 'b']
+    exp['string'] = [np.nan, np.nan, 'b']
 
-    print(obs)
-    print(exp)
-
-    pd.testing.assert_frame_equal(obs, exp)
-
-def test_pd_filter_by_meta_no_index(meta_df):
-    data = pd.DataFrame([
-        ['a_model', 'a_scenario', 'a_region1', 1],
-        ['a_model', 'a_scenario', 'a_region2', 2],
-        ['a_model', 'a_scenario2', 'a_region3', 3],
-    ], columns=['model', 'scenario', 'region', 'col'])
-
-    meta_df.set_meta([True, False], 'boolean')
-    meta_df.set_meta(0, 'int')
-
-    obs = filter_by_meta(data, meta_df, join_meta=True,
-                         boolean=True, int=None)
-    obs = obs.reindex(columns=META_IDX + ['region', 'col', 'boolean', 'int'])
-
-    exp = data.iloc[0:2].copy()
-    exp['boolean'] = True
-    exp['int'] = 0
-
-    pd.testing.assert_frame_equal(obs, exp)
+    pd.testing.assert_frame_equal(obs.sort_index(level=1), exp)
