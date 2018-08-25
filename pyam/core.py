@@ -986,10 +986,12 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
 
     # filter meta by columns
     keep = np.array([True] * len(meta))
+    apply_filter = False
     for col, values in kwargs.items():
         if values is not None:
             keep_col = pattern_match(meta[col], values)
             keep &= keep_col
+            apply_filter = True
     meta = meta[keep]
 
     # set the data index to META_IDX and apply filtered meta index
@@ -998,7 +1000,8 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     data = data.reset_index().set_index(META_IDX)
     meta = meta.loc[meta.index.intersection(data.index)]
     meta.index.names = META_IDX
-    data = data.loc[meta.index]
+    if apply_filter:
+        data = data.loc[meta.index]
     data.index.names = META_IDX
 
     # join meta (optional), reset index to format as input arg
