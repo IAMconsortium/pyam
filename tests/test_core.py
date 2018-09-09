@@ -284,15 +284,16 @@ def test_category_top_level(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_load_metadata(test_df):
-    test_df.load_metadata(os.path.join(
+def test_load_metadata(meta_df):
+    meta_df.load_metadata(os.path.join(
         TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='metadata')
+    obs = meta_df.meta
 
-    obs = test_df.meta
-    dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
-           'category': ['imported']}
+    dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario', 'a_scenario2'],
+           'category': ['imported', None], 'exclude': [False, False]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
-    pd.testing.assert_series_equal(obs['category'], exp['category'])
+    cols = ['category', 'exclude']
+    pd.testing.assert_frame_equal(obs[cols], exp[cols])
 
 
 def test_load_SSP_database_downloaded_file(test_df):
