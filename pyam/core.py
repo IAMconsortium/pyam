@@ -628,7 +628,7 @@ class IamDataFrame(object):
             path/filename for xlsx file of metadata export
         """
         writer = pd.ExcelWriter(path)
-        write_sheet(writer, 'metadata', self.meta, index=True)
+        write_sheet(writer, 'meta', self.meta, index=True)
         writer.save()
 
     def load_metadata(self, path, *args, **kwargs):
