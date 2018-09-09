@@ -286,7 +286,7 @@ def test_category_top_level(meta_df):
 
 def test_load_metadata(meta_df):
     meta_df.load_metadata(os.path.join(
-        TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='metadata')
+        TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='meta')
     obs = meta_df.meta
 
     dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario', 'a_scenario2'],
