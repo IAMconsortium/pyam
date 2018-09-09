@@ -316,7 +316,7 @@ class IamDataFrame(object):
             error = "adding metadata for non-existing scenarios '{}'!"
             raise ValueError(error.format(diff))
 
-        self._new_meta_column(name, meta)
+        self._new_meta_column(name)
         self.meta[name] = _meta[name].combine_first(self.meta[name])
 
     def categorize(self, name, value, criteria,
@@ -356,18 +356,18 @@ class IamDataFrame(object):
             return  # EXIT FUNCTION
 
         # update metadata dataframe
-        self._new_meta_column(name, value)
+        self._new_meta_column(name)
         self.meta.loc[idx, name] = value
         msg = '{} scenario{} categorized as `{}: {}`'
         logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
                                  name, value))
 
-    def _new_meta_column(self, name, value):
-        """Add a metadata column, set to `uncategorized` if str else np.nan"""
+    def _new_meta_column(self, name):
+        """Add a column to meta if it doesn't exist, set to value `np.nan`"""
         if name is None:
-            raise ValueError('cannot add a meta column {}'.format(name))
+            raise ValueError('cannot add a meta column `{}`'.format(name))
         if name not in self.meta:
-            self.meta[name] = 'uncategorized' if isstr(value) else np.nan
+            self.meta[name] = np.nan
 
     def require_variable(self, variable, unit=None, year=None,
                          exclude_on_fail=False):

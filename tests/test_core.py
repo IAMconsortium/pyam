@@ -262,7 +262,7 @@ def test_category_none(meta_df):
 def test_category_pass(meta_df):
     dct = {'model': ['a_model', 'a_model'],
            'scenario': ['a_scenario', 'a_scenario2'],
-           'category': ['foo', 'uncategorized']}
+           'category': ['foo', None]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     meta_df.categorize('category', 'foo', {'Primary Energy':
@@ -274,7 +274,7 @@ def test_category_pass(meta_df):
 def test_category_top_level(meta_df):
     dct = {'model': ['a_model', 'a_model'],
            'scenario': ['a_scenario', 'a_scenario2'],
-           'category': ['Testing', 'uncategorized']}
+           'category': ['Testing', None]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     categorize(meta_df, 'category', 'Testing',
@@ -446,8 +446,8 @@ def test_set_meta_as_str_by_index(meta_df):
 
     meta_df.set_meta('foo', 'meta_str', idx)
 
-    obs = meta_df['meta_str'].values
-    npt.assert_array_equal(obs, ['foo', 'uncategorized'])
+    obs = pd.Series(meta_df['meta_str'].values)
+    pd.testing.assert_series_equal(obs, pd.Series(['foo', None]))
 
 
 def test_filter_by_bool(meta_df):
