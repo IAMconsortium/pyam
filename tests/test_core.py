@@ -292,8 +292,8 @@ def test_load_metadata(meta_df):
     dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario', 'a_scenario2'],
            'category': ['imported', np.nan], 'exclude': [False, False]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
-    cols = ['category', 'exclude']
-    pd.testing.assert_frame_equal(obs[cols], exp[cols])
+    pd.testing.assert_series_equal(obs['exclude'], exp['exclude'])
+    pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
 def test_load_SSP_database_downloaded_file(test_df):
