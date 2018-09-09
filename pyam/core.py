@@ -632,7 +632,7 @@ class IamDataFrame(object):
         writer.save()
 
     def load_metadata(self, path, *args, **kwargs):
-        """Load metadata from previously exported instance of pyam
+        """Load metadata exported from `pyam.IamDataFrame` instance
 
         Parameters
         ----------
@@ -652,7 +652,21 @@ class IamDataFrame(object):
             e = 'File `{}` does not have required columns ({})!'
             raise ValueError(e.format(path, req_cols))
 
+        # set index, filter to relevant scenarios from imported metadata file
         df.set_index(META_IDX, inplace=True)
+        idx = self.meta.index.intersection(df.index)
+
+        n_invalid = len(df) - len(idx)
+        if n_invalid > 0:
+            msg = 'Ignoring {} scenario{} from imported metadata'
+            logger().info(msg.format(n_invalid, 's' if n_invalid > 1 else ''))
+
+        if idx.empty:
+            raise ValueError('No valid scenarios in imported metadata file!')
+
+        df = df.loc[idx]
+
+        # Merge in imported metadata
         msg = 'Importing metadata for {} scenario{} (for total of {})'
         logger().info(msg.format(len(df), 's' if len(df) > 1 else '',
                       len(self.meta)))
