@@ -655,6 +655,8 @@ class IamDataFrame(object):
 
         df.set_index(META_IDX, inplace=True)
         self.meta = df.combine_first(self.meta)
+        # set column `exclude` to bool
+        self.meta.exclude = self.meta.exclude.astype('bool')
 
     def line_plot(self, x='year', y='value', **kwargs):
         """Plot timeseries lines of existing data
