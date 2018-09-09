@@ -106,14 +106,6 @@ def test_variable_depth_raises(test_df):
     pytest.raises(ValueError, test_df.filter, level='1/')
 
 
-def test_variable_unit(test_df):
-    dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
-           'unit': ['EJ/y', 'EJ/y']}
-    cols = ['variable', 'unit']
-    exp = pd.DataFrame.from_dict(dct)[cols]
-    npt.assert_array_equal(test_df[cols].drop_duplicates(), exp)
-
-
 def test_filter_error(test_df):
     pytest.raises(ValueError, test_df.filter, foo='foo')
 
