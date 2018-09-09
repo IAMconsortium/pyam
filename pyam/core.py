@@ -659,7 +659,7 @@ class IamDataFrame(object):
 
         for col in df.columns:
             self._new_meta_column(col)
-        self.meta[col] = df[col].combine_first(self.meta[col])
+            self.meta[col] = df[col].combine_first(self.meta[col])
         # set column `exclude` to bool
         self.meta.exclude = self.meta.exclude.astype('bool')
 
