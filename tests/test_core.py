@@ -290,7 +290,7 @@ def test_load_metadata(meta_df):
     obs = meta_df.meta
 
     dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario', 'a_scenario2'],
-           'category': ['imported', None], 'exclude': [False, False]}
+           'category': ['imported', np.nan], 'exclude': [False, False]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
     cols = ['category', 'exclude']
     pd.testing.assert_frame_equal(obs[cols], exp[cols])
