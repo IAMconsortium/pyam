@@ -649,10 +649,14 @@ class IamDataFrame(object):
 
         req_cols = ['model', 'scenario', 'exclude']
         if not set(req_cols).issubset(set(df.columns)):
-            e = "metadata file '{}' does not have required columns ({})!"
+            e = 'File `{}` does not have required columns ({})!'
             raise ValueError(e.format(path, req_cols))
 
         df.set_index(META_IDX, inplace=True)
+        msg = 'Importing metadata for {} scenario{} (for total of {})'
+        logger().info(msg.format(len(df), 's' if len(df) > 1 else '',
+                      len(self.meta)))
+
         for col in df.columns:
             self._new_meta_column(col)
         self.meta[col] = df[col].combine_first(self.meta[col])
