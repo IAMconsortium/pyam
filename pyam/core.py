@@ -654,7 +654,9 @@ class IamDataFrame(object):
             raise ValueError(e.format(path, req_cols))
 
         df.set_index(META_IDX, inplace=True)
-        self.meta = df.combine_first(self.meta)
+        for col in df.columns:
+            self._new_meta_column(col)
+        self.meta[col] = df[col].combine_first(self.meta[col])
         # set column `exclude` to bool
         self.meta.exclude = self.meta.exclude.astype('bool')
 
