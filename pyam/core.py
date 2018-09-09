@@ -637,9 +637,8 @@ class IamDataFrame(object):
         Parameters
         ----------
         path: string
-            xlsx file with metadata exported from an instance of pyam
+            xlsx file with metadata exported from `pyam.IamDataFrame` instance
         """
-
         if not os.path.exists(path):
             raise ValueError("no metadata file '" + path + "' found!")
 
