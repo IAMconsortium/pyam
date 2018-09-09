@@ -227,6 +227,10 @@ def pattern_match(data, values, level=None):
     if not isinstance(values, collections.Iterable) or isstr(values):
         values = [values]
 
+    # issue (#40) with string-to-nan comparison, replace nan by empty string 
+    _data = data.copy()
+    _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ''
+
     for s in values:
         if isstr(s):
             regexp = (str(s)
@@ -238,9 +242,9 @@ def pattern_match(data, values, level=None):
                       .replace(')', '\)')
                       ) + "$"
             pattern = re.compile(regexp)
-            subset = filter(pattern.match, data)
-            depth = True if level is None else find_depth(data, s, level)
-            matches |= (data.isin(subset) & depth)
+            subset = filter(pattern.match, _data)
+            depth = True if level is None else find_depth(_data, s, level)
+            matches |= (_data.isin(subset) & depth)
         else:
             matches |= data == s
     return matches
