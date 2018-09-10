@@ -227,7 +227,7 @@ def pattern_match(data, values, level=None):
     if not isinstance(values, collections.Iterable) or isstr(values):
         values = [values]
 
-    # issue (#40) with string-to-nan comparison, replace nan by empty string 
+    # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.copy()
     _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ''
 
