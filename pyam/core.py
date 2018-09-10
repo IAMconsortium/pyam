@@ -432,7 +432,9 @@ class IamDataFrame(object):
             return df
 
     def rename(self, mapping, inplace=False):
-        """Rename and aggregate column entries using groupby.sum()
+        """Rename and aggregate column entries using `groupby.sum()` on values.
+        When renaming models or scenarios, the uniqueness of the index must be
+        maintained, and the function will raise an error otherwise.
 
         Parameters
         ----------
