@@ -449,12 +449,12 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
         for col, _mapping in mapping.items():
             if col in ['model', 'scenario']:
-                index = pd.DataFrame(index=self.meta.index).reset_index()
+                index = pd.DataFrame(index=ret.meta.index).reset_index()
                 index.loc[:, col] = index.loc[:, col].replace(_mapping)
                 if index.duplicated().any():
                     raise ValueError('Renaming to non-unique {} index!'
                                      .format(col))
-                ret.meta.index = index.set_index(META_IDX)
+                ret.meta.index = index.set_index(META_IDX).index
             elif col not in ['region', 'variable', 'unit']:
                 raise ValueError('Renaming by {} not supported!'.format(col))
             ret.data.loc[:, col] = ret.data.loc[:, col].replace(_mapping)

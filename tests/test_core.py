@@ -580,8 +580,9 @@ def test_rename_index_fail(meta_df):
 def test_rename_index(meta_df):
     mapping = {'model': {'a_model': 'b_model'},
                'scenario': {'a_scenario': 'b_scen'}}
-    obs = meta_df.rename(mapping).timeseries().sort_index()
+    obs = meta_df.rename(mapping)
 
+    # test data changes
     exp = pd.DataFrame([
         ['b_model', 'b_scen', 'World', 'Primary Energy', 'EJ/y', 1., 6.],
         ['b_model', 'b_scen', 'World', 'Primary Energy|Coal', 'EJ/y', .5, 3.],
@@ -590,7 +591,19 @@ def test_rename_index(meta_df):
     ).set_index(IAMC_IDX).sort_index()
     exp.columns = exp.columns.map(int)
 
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+
+    # test meta changes
+    exp = pd.DataFrame([
+        ['b_model', 'b_scen', False],
+        ['b_model', 'a_scenario2', False],
+    ], columns=['model', 'scenario', 'exclude']
+    ).set_index(META_IDX)
+
+    print(obs.meta)
+    print(exp)
+
+    pd.testing.assert_frame_equal(obs.meta, exp)
 
 
 def test_convert_unit():
