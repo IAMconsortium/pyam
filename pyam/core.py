@@ -30,6 +30,7 @@ from pyam.utils import (
     islistable,
     META_IDX,
     YEAR_IDX,
+    REGION_IDX,
     IAMC_IDX,
     SORT_IDX,
     LONG_IDX,
@@ -511,7 +512,13 @@ class IamDataFrame(object):
             components = self.filter(variable='{}|*'.format(variable),
                                      level=0).variables()
 
-        # filter and groupby data, use `pd.Series.align` for machting index
+        if not len(components):
+            msg = '{} - cannot check aggregate because it has no components'
+            logger().info(msg.format(variable))
+
+            return None
+
+        # filter and groupby data, use `pd.Series.align` for matching index
         df_variable, df_components = (
             _aggregate_by_variables(self.data, variable, units)
             .align(_aggregate_by_variables(self.data, components, units))
@@ -522,13 +529,124 @@ class IamDataFrame(object):
                                        **kwargs)]
 
         if len(diff):
-            msg = '{} of {} data points are not aggregates of components'
-            logger().info(msg.format(len(diff), len(df_variable)))
+            msg = '{} - {} of {} data points are not aggregates of components'
+            logger().info(msg.format(variable, len(diff), len(df_variable)))
 
             if exclude_on_fail:
                 self._exclude_on_fail(diff.index.droplevel([2, 3]))
 
+            diff = pd.concat([diff], keys=[variable], names=['variable'])
+
             return diff.unstack().rename_axis(None, axis=1)
+
+    def check_aggregate_regions(self, variable, region='World',
+                                components=None, units=None,
+                                exclude_on_fail=False, multiplier=1, **kwargs):
+        """Check whether the world timeseries data match the aggregation
+        of regions
+
+        Parameters
+        ----------
+        variable: str
+            variable to be checked for matching aggregation of regional data
+        region: str
+            region to be checked for matching aggregation of regional data
+        components: list of str, default None
+            list of regions, defaults to all regions except region
+        units: str or list of str, default None
+            filter variable and components for given unit(s)
+        exclude_on_fail: boolean, default False
+            flag scenarios failing validation as `exclude: True`
+        multiplier: number, default 1
+            factor when comparing variable and sum of components
+        kwargs: passed to `np.isclose()`
+        """
+        # default components to all variables one level below `variable`
+        var_df = self.filter(variable=variable, level=0)
+
+        if components is None:
+            components = var_df.filter(region=region, keep=False).regions()
+
+        if not len(components):
+            msg = (
+                '{} - cannot check regional aggregate because it has no '
+                'regional components'
+            )
+            logger().info(msg.format(variable))
+
+            return None
+
+        # filter and groupby data, use `pd.Series.align` for matching index
+        df_region, df_components = (
+            _aggregate_by_regions(var_df.data, region, units)
+            .align(_aggregate_by_regions(var_df.data, components, units))
+        )
+
+        # if it's a World comparison, we need to add in variables that might
+        # have been missed e.g. shipping and aviation
+        if region == "World":
+            df_components.index = df_components.index.droplevel(
+                "variable"
+            )
+            non_world_region = components[0]
+
+            for var_to_add in self.filter(variable="{}|*".format(variable)).variables():
+
+                var_has_regional_info = (
+                    (self.data.variable == var_to_add)
+                    & (self.data.region == non_world_region)
+                ).any()
+
+                if not var_has_regional_info:
+                    df_var_to_add = self.filter(region=region, variable=var_to_add).data.groupby(REGION_IDX).sum()['value']
+                    df_var_to_add.index = df_var_to_add.index.droplevel("variable")
+
+                    if len(df_var_to_add):
+                        df_components = df_components.add(df_var_to_add,
+                                                          fill_value=0)
+
+            df_components = pd.concat([df_components], keys=[variable],
+                                      names=['variable'])
+
+        # use `np.isclose` for checking match
+        diff = df_region[~np.isclose(df_region, multiplier * df_components,
+                                     **kwargs)]
+
+        if len(diff):
+            msg = (
+                '{} - {} of {} data points are not aggregates of regional '
+                'components'
+            )
+            logger().info(msg.format(variable, len(diff), len(df_region)))
+
+            if exclude_on_fail:
+                self._exclude_on_fail(diff.index.droplevel([2, 3]))
+
+            diff = pd.concat([diff], keys=[region], names=['region'])
+
+            return diff.unstack().rename_axis(None, axis=1)
+
+    def check_internal_consistency(self, **kwargs):
+        #TODO: test this and write docstring, kwargs passed to np is close
+        inconsistent_vars = {}
+        for variable in self.variables():
+            diff_agg = self.check_aggregate(
+                variable,
+                **kwargs
+            )
+            if diff_agg is not None:
+                inconsistent_vars[variable + "-aggregate"] = diff_agg
+
+            diff_regional = self.check_aggregate_regions(
+                variable,
+                **kwargs
+            )
+            if diff_regional is not None:
+                inconsistent_vars[variable + "-regional"] = diff_regional
+
+        if inconsistent_vars:
+            return inconsistent_vars
+
 
     def _exclude_on_fail(self, df):
         """Assign a selection of scenarios as `exclude: True` in meta"""
@@ -830,6 +948,17 @@ def _aggregate_by_variables(df, variables, units=None):
         df = df[df.unit.isin(units)]
 
     return df.groupby(YEAR_IDX).sum()['value']
+
+
+def _aggregate_by_regions(df, regions, units=None):
+    regions = [regions] if isstr(regions) else regions
+    df = df[df.region.isin(regions)]
+
+    if units is not None:
+        units = [units] if isstr(units) else units
+        df = df[df.unit.isin(units)]
+
+    return df.groupby(REGION_IDX).sum()['value']
 
 
 def _apply_filters(data, meta, filters):
