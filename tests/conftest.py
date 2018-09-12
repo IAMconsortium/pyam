@@ -31,6 +31,91 @@ REG_DF = pd.DataFrame([
 )
 
 
+CHECK_AGG_DF = pd.DataFrame([
+    ['IMAGE', 'a_scenario', 'R5ASIA', 'Primary Energy', 'EJ/y', 1, 6],
+    ['IMAGE', 'a_scenario', 'R5ASIA', 'Primary Energy|Coal', 'EJ/y', 0.75, 5],
+    ['IMAGE', 'a_scenario', 'R5ASIA', 'Primary Energy|Gas', 'EJ/y', 0.25, 1],
+    ['IMAGE', 'a_scenario', 'R5ASIA', 'Emissions|CO2', 'Mt CO2/yr', 3, 8],
+    ['IMAGE', 'a_scenario', 'R5ASIA', 'Emissions|CO2|Cars', 'Mt CO2/yr', 1, 3],
+    ['IMAGE', 'a_scenario', 'R5ASIA', 'Emissions|CO2|Power', 'Mt CO2/yr', 2, 5],
+    ['IMAGE', 'a_scenario', 'R5REF', 'Primary Energy', 'EJ/y', 0.3, 0.6],
+    ['IMAGE', 'a_scenario', 'R5REF', 'Primary Energy|Coal', 'EJ/y', 0.15, 0.4],
+    ['IMAGE', 'a_scenario', 'R5REF', 'Primary Energy|Gas', 'EJ/y', 0.15, 0.2],
+    ['IMAGE', 'a_scenario', 'R5REF', 'Emissions|CO2', 'Mt CO2/yr', 1, 1.4],
+    ['IMAGE', 'a_scenario', 'R5REF', 'Emissions|CO2|Cars', 'Mt CO2/yr', 0.6, 0.8],
+    ['IMAGE', 'a_scenario', 'R5REF', 'Emissions|CO2|Power', 'Mt CO2/yr', 0.4, 0.6],
+    ['IMAGE', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 1.3, 6.6],
+    ['IMAGE', 'a_scenario', 'World', 'Primary Energy|Coal', 'EJ/y', 0.9, 5.4],
+    ['IMAGE', 'a_scenario', 'World', 'Primary Energy|Gas', 'EJ/y', 0.4, 1.2],
+    ['IMAGE', 'a_scenario', 'World', 'Emissions|CO2', 'Mt CO2/yr', 4, 9.4],
+    ['IMAGE', 'a_scenario', 'World', 'Emissions|CO2|Cars', 'Mt CO2/yr', 1.6, 3.8],
+    ['IMAGE', 'a_scenario', 'World', 'Emissions|CO2|Power', 'Mt CO2/yr', 2.4, 5.6],
+    ['IMAGE', 'a_scenario_2', 'R5ASIA', 'Primary Energy', 'EJ/y', 1.4, 6.4],
+    ['IMAGE', 'a_scenario_2', 'R5ASIA', 'Primary Energy|Coal', 'EJ/y', 0.95, 5.2],
+    ['IMAGE', 'a_scenario_2', 'R5ASIA', 'Primary Energy|Gas', 'EJ/y', 0.45, 1.2],
+    ['IMAGE', 'a_scenario_2', 'R5ASIA', 'Emissions|CO2', 'Mt CO2/yr', 3.4, 8.4],
+    ['IMAGE', 'a_scenario_2', 'R5ASIA', 'Emissions|CO2|Cars', 'Mt CO2/yr', 1.2, 3.2],
+    ['IMAGE', 'a_scenario_2', 'R5ASIA', 'Emissions|CO2|Power', 'Mt CO2/yr', 2.2, 5.2],
+    ['IMAGE', 'a_scenario_2', 'R5REF', 'Primary Energy', 'EJ/y', 0.7, 1.0],
+    ['IMAGE', 'a_scenario_2', 'R5REF', 'Primary Energy|Coal', 'EJ/y', 0.35, 0.6],
+    ['IMAGE', 'a_scenario_2', 'R5REF', 'Primary Energy|Gas', 'EJ/y', 0.35, 0.4],
+    ['IMAGE', 'a_scenario_2', 'R5REF', 'Emissions|CO2', 'Mt CO2/yr', 1.4, 1.8],
+    ['IMAGE', 'a_scenario_2', 'R5REF', 'Emissions|CO2|Cars', 'Mt CO2/yr', 0.8, 1.0],
+    ['IMAGE', 'a_scenario_2', 'R5REF', 'Emissions|CO2|Power', 'Mt CO2/yr', 0.6, 0.8],
+    ['IMAGE', 'a_scenario_2', 'World', 'Primary Energy', 'EJ/y', 2.1, 7.4],
+    ['IMAGE', 'a_scenario_2', 'World', 'Primary Energy|Coal', 'EJ/y', 1.3, 5.8],
+    ['IMAGE', 'a_scenario_2', 'World', 'Primary Energy|Gas', 'EJ/y', 0.8, 1.6],
+    ['IMAGE', 'a_scenario_2', 'World', 'Emissions|CO2', 'Mt CO2/yr', 4.8, 10.2],
+    ['IMAGE', 'a_scenario_2', 'World', 'Emissions|CO2|Cars', 'Mt CO2/yr', 2.0, 4.2],
+    ['IMAGE', 'a_scenario_2', 'World', 'Emissions|CO2|Power', 'Mt CO2/yr', 2.8, 6.0],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5ASIA', 'Primary Energy', 'EJ/y', 0.8, 5.8],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5ASIA', 'Primary Energy|Coal', 'EJ/y', 0.65, 4.9],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5ASIA', 'Primary Energy|Gas', 'EJ/y', 0.15, 0.9],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5ASIA', 'Emissions|CO2', 'Mt CO2/yr', 2.8, 7.8],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5ASIA', 'Emissions|CO2|Cars', 'Mt CO2/yr', 0.9, 2.9],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5ASIA', 'Emissions|CO2|Power', 'Mt CO2/yr', 1.9, 4.9],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5REF', 'Primary Energy', 'EJ/y', 0.1, 0.4],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5REF', 'Primary Energy|Coal', 'EJ/y', 0.05, 0.3],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5REF', 'Primary Energy|Gas', 'EJ/y', 0.05, 0.1],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5REF', 'Emissions|CO2', 'Mt CO2/yr', 0.8, 1.2],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5REF', 'Emissions|CO2|Cars', 'Mt CO2/yr', 0.5, 0.7],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'R5REF', 'Emissions|CO2|Power', 'Mt CO2/yr', 0.3, 0.5],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 0.9, 6.2],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Primary Energy|Coal', 'EJ/y', 0.7, 5.2],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Primary Energy|Gas', 'EJ/y', 0.2, 1.0],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Emissions|CO2', 'Mt CO2/yr', 3.6, 9.0],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Emissions|CO2|Cars', 'Mt CO2/yr', 1.4, 3.6],
+    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Emissions|CO2|Power', 'Mt CO2/yr', 2.2, 5.4],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5ASIA', 'Primary Energy', 'EJ/y', -1.4, -6.4],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5ASIA', 'Primary Energy|Coal', 'EJ/y', -0.95, -5.2],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5ASIA', 'Primary Energy|Gas', 'EJ/y', -0.45, -1.2],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5ASIA', 'Emissions|CO2', 'Mt CO2/yr', -3.4, -8.4],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5ASIA', 'Emissions|CO2|Cars', 'Mt CO2/yr', -1.2, -3.2],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5ASIA', 'Emissions|CO2|Power', 'Mt CO2/yr', -2.2, -5.2],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5REF', 'Primary Energy', 'EJ/y', -0.7, -1.0],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5REF', 'Primary Energy|Coal', 'EJ/y', -0.35, -0.6],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5REF', 'Primary Energy|Gas', 'EJ/y', -0.35, -0.4],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5REF', 'Emissions|CO2', 'Mt CO2/yr', -1.4, -1.8],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5REF', 'Emissions|CO2|Cars', 'Mt CO2/yr', -0.8, -1.0],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5REF', 'Emissions|CO2|Power', 'Mt CO2/yr', -0.6, -0.8],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Primary Energy', 'EJ/y', -2.1, -7.4],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Primary Energy|Coal', 'EJ/y', -1.3, -5.8],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Primary Energy|Gas', 'EJ/y', -0.8, -1.6],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|CO2', 'Mt CO2/yr', -5.0, -10.6],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|CO2|Cars', 'Mt CO2/yr', -2.0, -4.2],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|CO2|Power', 'Mt CO2/yr', -2.8, -6.0],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|CO2|Aggregate Agg', 'Mt CO2/yr', -0.2, -0.4],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|CF4', 'kt CF4/yr', 54, 56],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|C2F6', 'kt C2F6/yr', 32, 27],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|C2F6|Solvents', 'kt C2F6/yr', 30, 33],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|C2F6|Industry', 'kt C2F6/yr', 2, -6],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'World', 'Emissions|CH4', 'Mt CH4/yr', 322, 217],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5REF', 'Emissions|CH4', 'Mt CH4/yr', 30, 201],
+    ['MESSAGE-GLOBIOM', 'a_scenario_2', 'R5ASIA', 'Emissions|CH4', 'Mt CH4/yr', 292, 16],
+],
+    columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
+)
+
 @pytest.fixture(scope="function")
 def test_df():
     df = IamDataFrame(data=TEST_DF.iloc[:2])
@@ -45,6 +130,12 @@ def test_pd_df():
 @pytest.fixture(scope="function")
 def meta_df():
     df = IamDataFrame(data=TEST_DF)
+    yield df
+
+
+@pytest.fixture(scope="function")
+def check_aggregate_df():
+    df = IamDataFrame(data=CHECK_AGG_DF)
     yield df
 
 
