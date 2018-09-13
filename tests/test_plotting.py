@@ -1,5 +1,13 @@
+import matplotlib
 import pytest
 import os
+
+# on CI, freetype version 2.6.1 works, but 2.8.0 does not
+# if we want to move to 2.8.0, then we will need to regenerate images
+FREETYPE_VERSION = matplotlib.ft2font.__freetype_version__
+if int(FREETYPE_VERSION.replace('.', '')) > 261:
+    pytest.skip('Freetype version > 2.6.1: {}'.format(FREETYPE_VERSION),
+                allow_module_level=True)
 
 try:
     import cartopy
@@ -18,7 +26,6 @@ from conftest import IMAGE_BASELINE_DIR, TEST_DATA_DIR
 IS_WINDOWS = os.name == 'nt'
 WINDOWS_REASON = "CI on Windows fails with silly dimension difference"
 TOLERANCE = 6 if IS_WINDOWS else 2
-
 
 MPL_KWARGS = {
     'style': 'ggplot',
