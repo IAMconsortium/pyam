@@ -390,7 +390,6 @@ def test_stack_plot_other(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_add_panel_label(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
