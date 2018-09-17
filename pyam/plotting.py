@@ -595,16 +595,14 @@ def set_panel_label(label, ax=None, x=0.05, y=0.9):
     ax : matplotlib.Axes, optional
         panel to which to add the panel label
     x : number, default 0.05
-        relative location of label on x-axis
-    y : string, optional
-        The column to use for y-axis values
-        default: value
+        relative location of label to x-axis
+    y : number, default 0.9
+        relative location of label to y-axis
     """
+    def _lim_loc(lim, loc):
+        return lim[0] + (lim[1] - lim[0]) * loc
+
     if ax is not None:
         ax.text(_lim_loc(ax.get_xlim(), x), _lim_loc(ax.get_ylim(), y), label)
     else:
         plt.text(_lim_loc(plt.xlim(), x), _lim_loc(plt.ylim(), y), label)
-
-
-def _lim_loc(lim, loc):
-    return lim[0] + (lim[1] - lim[0]) * loc
