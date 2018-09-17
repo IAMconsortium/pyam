@@ -106,14 +106,6 @@ def test_variable_depth_raises(test_df):
     pytest.raises(ValueError, test_df.filter, level='1/')
 
 
-def test_variable_unit(test_df):
-    dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
-           'unit': ['EJ/y', 'EJ/y']}
-    cols = ['variable', 'unit']
-    exp = pd.DataFrame.from_dict(dct)[cols]
-    npt.assert_array_equal(test_df[cols].drop_duplicates(), exp)
-
-
 def test_filter_error(test_df):
     pytest.raises(ValueError, test_df.filter, foo='foo')
 
@@ -270,7 +262,7 @@ def test_category_none(meta_df):
 def test_category_pass(meta_df):
     dct = {'model': ['a_model', 'a_model'],
            'scenario': ['a_scenario', 'a_scenario2'],
-           'category': ['foo', 'uncategorized']}
+           'category': ['foo', None]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     meta_df.categorize('category', 'foo', {'Primary Energy':
@@ -282,7 +274,7 @@ def test_category_pass(meta_df):
 def test_category_top_level(meta_df):
     dct = {'model': ['a_model', 'a_model'],
            'scenario': ['a_scenario', 'a_scenario2'],
-           'category': ['Testing', 'uncategorized']}
+           'category': ['Testing', None]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
     categorize(meta_df, 'category', 'Testing',
@@ -292,14 +284,15 @@ def test_category_top_level(meta_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_load_metadata(test_df):
-    test_df.load_metadata(os.path.join(
-        TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='metadata')
+def test_load_metadata(meta_df):
+    meta_df.load_metadata(os.path.join(
+        TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='meta')
+    obs = meta_df.meta
 
-    obs = test_df.meta
-    dct = {'model': ['a_model'], 'scenario': ['a_scenario'],
-           'category': ['imported']}
+    dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario', 'a_scenario2'],
+           'category': ['imported', np.nan], 'exclude': [False, False]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
+    pd.testing.assert_series_equal(obs['exclude'], exp['exclude'])
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
@@ -454,8 +447,8 @@ def test_set_meta_as_str_by_index(meta_df):
 
     meta_df.set_meta('foo', 'meta_str', idx)
 
-    obs = meta_df['meta_str'].values
-    npt.assert_array_equal(obs, ['foo', 'uncategorized'])
+    obs = pd.Series(meta_df['meta_str'].values)
+    pd.testing.assert_series_equal(obs, pd.Series(['foo', None]))
 
 
 def test_filter_by_bool(meta_df):

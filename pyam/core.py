@@ -316,7 +316,7 @@ class IamDataFrame(object):
             error = "adding metadata for non-existing scenarios '{}'!"
             raise ValueError(error.format(diff))
 
-        self._new_meta_column(name, meta)
+        self._new_meta_column(name)
         self.meta[name] = _meta[name].combine_first(self.meta[name])
 
     def categorize(self, name, value, criteria,
@@ -356,18 +356,18 @@ class IamDataFrame(object):
             return  # EXIT FUNCTION
 
         # update metadata dataframe
-        self._new_meta_column(name, value)
+        self._new_meta_column(name)
         self.meta.loc[idx, name] = value
         msg = '{} scenario{} categorized as `{}: {}`'
         logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
                                  name, value))
 
-    def _new_meta_column(self, name, value):
-        """Add a metadata column, set to `uncategorized` if str else np.nan"""
+    def _new_meta_column(self, name):
+        """Add a column to meta if it doesn't exist, set to value `np.nan`"""
         if name is None:
-            raise ValueError('cannot add a meta column {}'.format(name))
+            raise ValueError('cannot add a meta column `{}`'.format(name))
         if name not in self.meta:
-            self.meta[name] = 'uncategorized' if isstr(value) else np.nan
+            self.meta[name] = np.nan
 
     def require_variable(self, variable, unit=None, year=None,
                          exclude_on_fail=False):
@@ -628,18 +628,17 @@ class IamDataFrame(object):
             path/filename for xlsx file of metadata export
         """
         writer = pd.ExcelWriter(path)
-        write_sheet(writer, 'metadata', self.meta, index=True)
+        write_sheet(writer, 'meta', self.meta, index=True)
         writer.save()
 
     def load_metadata(self, path, *args, **kwargs):
-        """Load metadata from previously exported instance of pyam
+        """Load metadata exported from `pyam.IamDataFrame` instance
 
         Parameters
         ----------
         path: string
-            xlsx file with metadata exported from an instance of pyam
+            xlsx file with metadata exported from `pyam.IamDataFrame` instance
         """
-
         if not os.path.exists(path):
             raise ValueError("no metadata file '" + path + "' found!")
 
@@ -650,11 +649,33 @@ class IamDataFrame(object):
 
         req_cols = ['model', 'scenario', 'exclude']
         if not set(req_cols).issubset(set(df.columns)):
-            e = "metadata file '{}' does not have required columns ({})!"
+            e = 'File `{}` does not have required columns ({})!'
             raise ValueError(e.format(path, req_cols))
 
+        # set index, filter to relevant scenarios from imported metadata file
         df.set_index(META_IDX, inplace=True)
-        self.meta = df.combine_first(self.meta)
+        idx = self.meta.index.intersection(df.index)
+
+        n_invalid = len(df) - len(idx)
+        if n_invalid > 0:
+            msg = 'Ignoring {} scenario{} from imported metadata'
+            logger().info(msg.format(n_invalid, 's' if n_invalid > 1 else ''))
+
+        if idx.empty:
+            raise ValueError('No valid scenarios in imported metadata file!')
+
+        df = df.loc[idx]
+
+        # Merge in imported metadata
+        msg = 'Importing metadata for {} scenario{} (for total of {})'
+        logger().info(msg.format(len(df), 's' if len(df) > 1 else '',
+                      len(self.meta)))
+
+        for col in df.columns:
+            self._new_meta_column(col)
+            self.meta[col] = df[col].combine_first(self.meta[col])
+        # set column `exclude` to bool
+        self.meta.exclude = self.meta.exclude.astype('bool')
 
     def line_plot(self, x='year', y='value', **kwargs):
         """Plot timeseries lines of existing data

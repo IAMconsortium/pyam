@@ -1,6 +1,7 @@
 
 # Next Release
 
+- (#85)[https://github.com/IAMconsortium/pyam/pull/85] Improved functionality for importing metadata and bugfix for filtering for strings if `nan` values exist in metadata
 - (#83)[https://github.com/IAMconsortium/pyam/pull/83] Extending `filter_by_meta()` to work with non-matching indices between `df` and `data
 - (#81)[https://github.com/IAMconsortium/pyam/pull/81] Bug-fix when using `set_meta()` with unnamed pd.Series and no `name` kwarg
 - (#80)[https://github.com/IAMconsortium/pyam/pull/80] Extend the pseudo-regexp syntax for filtering in `pattern_match()`

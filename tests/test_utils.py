@@ -1,10 +1,21 @@
 import pandas as pd
+import numpy as np
 
 from pyam import utils
 
 
 def test_pattern_match_none():
     data = pd.Series(['foo', 'bar'])
+    values = ['baz']
+
+    obs = utils.pattern_match(data, values)
+    exp = [False, False]
+
+    assert (obs == exp).all()
+
+
+def test_pattern_match_nan():
+    data = pd.Series(['foo', np.nan])
     values = ['baz']
 
     obs = utils.pattern_match(data, values)
