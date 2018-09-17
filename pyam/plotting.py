@@ -583,3 +583,28 @@ def _add_legend(ax, handles, labels, legend):
             MAX_LEGEND_LABELS))
     legend = {} if legend in [True, None] else legend
     ax.legend(handles, labels, **legend)
+
+
+def set_panel_label(label, ax=None, x=0.05, y=0.9):
+    """Add a panel label to the figure/axes, by default in the top-left corner
+
+    Parameters
+    ----------
+    label : str
+        text to be added as panel label
+    ax : matplotlib.Axes, optional
+        panel to which to add the panel label
+    x : number, default 0.05
+        relative location of label on x-axis
+    y : string, optional
+        The column to use for y-axis values
+        default: value
+    """
+    if ax is not None:
+        ax.text(_lim_loc(ax.get_xlim(), x), _lim_loc(ax.get_ylim(), y), label)
+    else:
+        plt.text(_lim_loc(plt.xlim(), x), _lim_loc(plt.ylim(), y), label)
+
+
+def _lim_loc(lim, loc):
+    return lim[0] + (lim[1] - lim[0]) * loc
