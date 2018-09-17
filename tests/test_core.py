@@ -7,7 +7,7 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, plotting, validate, categorize, \
-    require_variable, check_aggregate, filter_by_meta, META_IDX
+    require_variable, check_aggregate, filter_by_meta, META_IDX, IAMC_IDX
 from pyam.core import _meta_idx
 
 from conftest import TEST_DATA_DIR
@@ -549,7 +549,7 @@ def test_48b():
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
 
-def test_rename():
+def test_rename_variable():
     df = IamDataFrame(pd.DataFrame([
         ['model', 'scen', 'SST', 'test_1', 'unit', 1, 5],
         ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
@@ -570,6 +570,35 @@ def test_rename():
     )).data.sort_values(by='region').reset_index(drop=True)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_rename_index_fail(meta_df):
+    mapping = {'scenario': {'a_scenario': 'a_scenario2'}}
+    pytest.raises(ValueError, meta_df.rename, mapping)
+
+
+def test_rename_index(meta_df):
+    mapping = {'model': {'a_model': 'b_model'},
+               'scenario': {'a_scenario': 'b_scen'}}
+    obs = meta_df.rename(mapping)
+
+    # test data changes
+    exp = pd.DataFrame([
+        ['b_model', 'b_scen', 'World', 'Primary Energy', 'EJ/y', 1., 6.],
+        ['b_model', 'b_scen', 'World', 'Primary Energy|Coal', 'EJ/y', .5, 3.],
+        ['b_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2., 7.],
+    ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    ).set_index(IAMC_IDX).sort_index()
+    exp.columns = exp.columns.map(int)
+    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+
+    # test meta changes
+    exp = pd.DataFrame([
+        ['b_model', 'b_scen', False],
+        ['b_model', 'a_scenario2', False],
+    ], columns=['model', 'scenario', 'exclude']
+    ).set_index(META_IDX)
+    pd.testing.assert_frame_equal(obs.meta, exp)
 
 
 def test_convert_unit():

@@ -432,7 +432,9 @@ class IamDataFrame(object):
             return df
 
     def rename(self, mapping, inplace=False):
-        """Rename and aggregate column entries using groupby.sum()
+        """Rename and aggregate column entries using `groupby.sum()` on values.
+        When renaming models or scenarios, the uniqueness of the index must be
+        maintained, and the function will raise an error otherwise.
 
         Parameters
         ----------
@@ -445,10 +447,17 @@ class IamDataFrame(object):
             if True, do operation inplace and return None
         """
         ret = copy.deepcopy(self) if not inplace else self
-        for col in mapping:
-            if col not in ['region', 'variable', 'unit']:
-                raise ValueError('renaming by {} not supported!'.format(col))
-            ret.data.loc[:, col] = self.data.loc[:, col].replace(mapping[col])
+        for col, _mapping in mapping.items():
+            if col in ['model', 'scenario']:
+                index = pd.DataFrame(index=ret.meta.index).reset_index()
+                index.loc[:, col] = index.loc[:, col].replace(_mapping)
+                if index.duplicated().any():
+                    raise ValueError('Renaming to non-unique {} index!'
+                                     .format(col))
+                ret.meta.index = index.set_index(META_IDX).index
+            elif col not in ['region', 'variable', 'unit']:
+                raise ValueError('Renaming by {} not supported!'.format(col))
+            ret.data.loc[:, col] = ret.data.loc[:, col].replace(_mapping)
 
         ret.data = ret.data.groupby(LONG_IDX).sum().reset_index()
         if not inplace:
