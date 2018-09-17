@@ -590,7 +590,6 @@ def test_rename_index(meta_df):
     ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     ).set_index(IAMC_IDX).sort_index()
     exp.columns = exp.columns.map(int)
-
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
@@ -599,10 +598,6 @@ def test_rename_index(meta_df):
         ['b_model', 'a_scenario2', False],
     ], columns=['model', 'scenario', 'exclude']
     ).set_index(META_IDX)
-
-    print(obs.meta)
-    print(exp)
-
     pd.testing.assert_frame_equal(obs.meta, exp)
 
 
