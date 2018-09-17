@@ -11,8 +11,8 @@ before_install:
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda update --yes conda
   # install deps
-  - conda install --yes cartopy geopandas
-  - pip install cython>0.15.1 numpy scipy pandas pyyaml xlrd xlsxwriter matplotlib==2.1.2 seaborn==0.8.1
+  - conda install --yes cartopy geopandas matplotlib==2.1.2
+  - pip install cython>0.15.1 numpy scipy pandas pyyaml xlrd xlsxwriter seaborn==0.8.1
   - mkdir -p ~/.matplotlib
   - touch ~/.matplotlib/matplotlibrc
   - "echo 'backend: TkAgg' >> ~/.matplotlib/matplotlibrc"

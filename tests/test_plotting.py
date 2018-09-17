@@ -1,5 +1,13 @@
+import matplotlib
 import pytest
 import os
+
+# on CI, freetype version 2.6.1 works, but 2.8.0 does not
+# if we want to move to 2.8.0, then we will need to regenerate images
+FREETYPE_VERSION = matplotlib.ft2font.__freetype_version__
+if int(FREETYPE_VERSION.replace('.', '')) > 261:
+    pytest.skip('Freetype version > 2.6.1: {}'.format(FREETYPE_VERSION),
+                allow_module_level=True)
 
 try:
     import cartopy
@@ -16,9 +24,7 @@ from pyam import IamDataFrame, plotting, run_control, reset_rc_defaults
 from conftest import IMAGE_BASELINE_DIR, TEST_DATA_DIR
 
 IS_WINDOWS = os.name == 'nt'
-WINDOWS_REASON = "CI on Windows fails with silly dimension difference"
 TOLERANCE = 6 if IS_WINDOWS else 2
-
 
 MPL_KWARGS = {
     'style': 'ggplot',
@@ -35,7 +41,6 @@ def update_run_control(update):
     reset_rc_defaults()
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -43,7 +48,6 @@ def test_line_plot(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot_dict_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -52,7 +56,6 @@ def test_line_plot_dict_legend(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_no_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -60,7 +63,6 @@ def test_line_no_legend(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -68,7 +70,6 @@ def test_line_color(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_marker_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -76,7 +77,6 @@ def test_line_marker_legend(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_rm_legend_label(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -85,7 +85,6 @@ def test_line_rm_legend_label(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_linestyle_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -93,7 +92,6 @@ def test_line_linestyle_legend(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_single_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -101,8 +99,6 @@ def test_line_single_color(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS,
-                    reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_filter_title(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -111,7 +107,6 @@ def test_line_filter_title(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_update_rc(plot_df):
     with update_run_control({'color': {'model': {'test_model1': 'cyan'}}}):
@@ -120,7 +115,6 @@ def test_line_update_rc(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot_1_var(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -131,7 +125,6 @@ def test_line_plot_1_var(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot_2_vars(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -142,7 +135,6 @@ def test_line_plot_2_vars(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region():
@@ -158,7 +150,6 @@ def test_region():
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_cbar():
@@ -174,7 +165,6 @@ def test_region_cbar():
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_cbar_args():
@@ -190,7 +180,6 @@ def test_region_cbar_args():
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_vmin_vmax():
@@ -208,7 +197,6 @@ def test_region_vmin_vmax():
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_cmap():
@@ -225,7 +213,6 @@ def test_region_cmap():
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_crs():
@@ -242,7 +229,6 @@ def test_region_crs():
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_map_regions():
@@ -259,7 +245,6 @@ def test_region_map_regions():
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_map_regions_legend():
@@ -291,7 +276,6 @@ def test_bar_plot(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_bar_plot_h(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -367,7 +351,6 @@ def test_pie_plot_other(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_stack_plot(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -378,7 +361,6 @@ def test_stack_plot(plot_df):
     return fig
 
 
-@pytest.mark.skipif(IS_WINDOWS, reason=WINDOWS_REASON)
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_stack_plot_other(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
