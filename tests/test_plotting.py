@@ -370,3 +370,10 @@ def test_stack_plot_other(plot_df):
          .stack_plot(ax=ax, stack='scenario', cmap='viridis', title='foo')
          )
     return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_add_panel_label(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plotting.set_panel_label('test', ax=ax, x=0.5, y=0.5)
+    return fig

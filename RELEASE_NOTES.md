@@ -1,6 +1,7 @@
 
 # Next Release
 
+- (#90)[https://github.com/IAMconsortium/pyam/pull/90] Adding a function to `set_panel_label()` as part of the plotting library
 - (#87)[https://github.com/IAMconsortium/pyam/pull/87] Extending `rename()` to work with model and scenario names
 - (#85)[https://github.com/IAMconsortium/pyam/pull/85] Improved functionality for importing metadata and bugfix for filtering for strings if `nan` values exist in metadata
 - (#83)[https://github.com/IAMconsortium/pyam/pull/83] Extending `filter_by_meta()` to work with non-matching indices between `df` and `data
