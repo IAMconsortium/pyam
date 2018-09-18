@@ -121,6 +121,11 @@ def test_filter_keep_false(meta_df):
     npt.assert_array_equal(obs, [1, 6, 3])
 
 
+def test_filter_by_regexp(meta_df):
+    obs = meta_df.filter(scenario='a_scenari.$', regexp=True)
+    assert obs['scenario'].unique() == 'a_scenario'
+
+
 def test_timeseries(test_df):
     dct = {'model': ['a_model'] * 2, 'scenario': ['a_scenario'] * 2,
            'years': [2005, 2010], 'value': [1, 6]}

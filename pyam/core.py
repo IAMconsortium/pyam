@@ -829,28 +829,31 @@ def _aggregate_by_variables(df, variables, units=None):
 
 
 def _apply_filters(data, meta, filters):
+
+    regexp = filters.pop('regexp') if 'regexp' in filters else False
     keep = np.array([True] * len(data))
 
     # filter by columns and list of values
     for col, values in filters.items():
         if col in meta.columns:
-            matches = pattern_match(meta[col], values)
+            matches = pattern_match(meta[col], values, regexp=regexp)
             cat_idx = meta[matches].index
             keep_col = data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
 
         elif col in ['model', 'scenario', 'region', 'unit']:
-            keep_col = pattern_match(data[col], values)
+            keep_col = pattern_match(data[col], values, regexp=regexp)
 
         elif col == 'variable':
-            level = filters['level'] if 'level' in filters.keys() else None
-            keep_col = pattern_match(data[col], values, level)
+            level = filters['level'] if 'level' in filters else None
+            keep_col = pattern_match(data[col], values, level, regexp)
 
         elif col == 'year':
             keep_col = years_match(data[col], values)
 
         elif col == 'level':
             if 'variable' not in filters.keys():
-                keep_col = pattern_match(data['variable'], '*', level=values)
+                keep_col = pattern_match(data['variable'], '*', values,
+                                         regexp=regexp)
             else:
                 continue
         else:

@@ -218,10 +218,10 @@ def find_depth(data, s, level):
     return list(map(apply_test, data))
 
 
-def pattern_match(data, values, level=None, pseudo_regexp=True):
+def pattern_match(data, values, level=None, regexp=False):
     """
-    matching of model/scenario names, variables, regions, and categories
-    to pseudo-regex for filtering by columns (str, int, bool)
+    matching of model/scenario names, variables, regions, and meta columns to
+    pseudo-regex (if `regexp == False`) for filtering (str, int, bool)
     """
     matches = np.array([False] * len(data))
     if not isinstance(values, collections.Iterable) or isstr(values):
@@ -233,16 +233,17 @@ def pattern_match(data, values, level=None, pseudo_regexp=True):
 
     for s in values:
         if isstr(s):
-            regexp = (str(s)
-                      .replace('|', '\\|')
-                      .replace('.', '\.')  # `.` has to be replaced before `*`
-                      .replace('*', '.*')
-                      .replace('+', '\+')
-                      .replace('(', '\(')
-                      .replace('$', '\\$')
-                      .replace(')', '\)')
-                      ) + "$" if pseudo_regexp else s
-            pattern = re.compile(regexp)
+            _regexp = (str(s)
+                       .replace('|', '\\|')
+                       .replace('.', '\.')  # `.` has to be replaced before `*`
+                       .replace('*', '.*')
+                       .replace('+', '\+')
+                       .replace('(', '\(')
+                       .replace(')', '\)')
+                       .replace('$', '\\$')
+                       ) + "$"
+            pattern = re.compile(_regexp if not regexp else s)
+            print(pattern)
             subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
             matches |= (_data.isin(subset) & depth)
