@@ -38,6 +38,11 @@ def test_df():
 
 
 @pytest.fixture(scope="function")
+def test_pd_df():
+    yield TEST_DF
+
+
+@pytest.fixture(scope="function")
 def meta_df():
     df = IamDataFrame(data=TEST_DF)
     yield df

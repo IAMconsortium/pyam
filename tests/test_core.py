@@ -28,6 +28,12 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 ).set_index(['model', 'region'])
 
 
+def test_init_df_with_index(test_pd_df):
+    df = IamDataFrame(test_pd_df.set_index(META_IDX))
+    pd.testing.assert_series_equal(df.models(),
+                                   pd.Series(data=['a_model'], name='model'))
+
+
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['a_model']
 
