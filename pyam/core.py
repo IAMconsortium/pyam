@@ -553,6 +553,7 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
+            - 'regexp=True' overrides pseudo-regexp syntax in `pattern_match()`
         """
         if filters is not None:
             warnings.warn(
@@ -829,7 +830,18 @@ def _aggregate_by_variables(df, variables, units=None):
 
 
 def _apply_filters(data, meta, filters):
+    """Applies filters to the data and meta tables of an IamDataFrame.
 
+    Parametersp
+    ----------
+    data: pd.DataFrame
+        data table of an IamDataFrame
+    meta: pd.DataFrame
+        meta table of an IamDataFrame
+    filters: dict
+        dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
+        default, but accepts `regexp: True` to use direct regexp
+    """
     regexp = filters.pop('regexp') if 'regexp' in filters else False
     keep = np.array([True] * len(data))
 
