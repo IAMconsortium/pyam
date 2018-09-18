@@ -218,7 +218,7 @@ def find_depth(data, s, level):
     return list(map(apply_test, data))
 
 
-def pattern_match(data, values, level=None):
+def pattern_match(data, values, level=None, pseudo_regexp=True):
     """
     matching of model/scenario names, variables, regions, and categories
     to pseudo-regex for filtering by columns (str, int, bool)
@@ -239,8 +239,9 @@ def pattern_match(data, values, level=None):
                       .replace('*', '.*')
                       .replace('+', '\+')
                       .replace('(', '\(')
+                      .replace('$', '\\$')
                       .replace(')', '\)')
-                      ) + "$"
+                      ) + "$" if pseudo_regexp else s
             pattern = re.compile(regexp)
             subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
