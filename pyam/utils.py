@@ -243,7 +243,7 @@ def pattern_match(data, values, level=None, regexp=False):
                        .replace('$', '\\$')
                        ) + "$"
             pattern = re.compile(_regexp if not regexp else s)
-            print(pattern)
+
             subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
             matches |= (_data.isin(subset) & depth)

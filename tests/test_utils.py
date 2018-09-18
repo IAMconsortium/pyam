@@ -81,7 +81,6 @@ def test_pattern_match_brackets():
     obs = utils.pattern_match(data, values)
     exp = [True, False]
 
-    print(obs)
     assert (obs == exp).all()
 
 
@@ -92,7 +91,6 @@ def test_pattern_match_dollar():
     obs = utils.pattern_match(data, values)
     exp = [True, False]
 
-    print(obs)
     assert (obs == exp).all()
 
 
@@ -103,5 +101,4 @@ def test_pattern_regexp():
     obs = utils.pattern_match(data, values, regexp=True)
     exp = [True, True, False]
 
-    print(obs)
     assert (obs == exp).all()
