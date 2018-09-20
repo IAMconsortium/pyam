@@ -553,6 +553,7 @@ class IamDataFrame(object):
              - 'year': takes an integer, a list of integers or a range
                 note that the last year of a range is not included,
                 so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
+            - 'regexp=True' overrides pseudo-regexp syntax in `pattern_match()`
         """
         if filters is not None:
             warnings.warn(
@@ -829,28 +830,42 @@ def _aggregate_by_variables(df, variables, units=None):
 
 
 def _apply_filters(data, meta, filters):
+    """Applies filters to the data and meta tables of an IamDataFrame.
+
+    Parametersp
+    ----------
+    data: pd.DataFrame
+        data table of an IamDataFrame
+    meta: pd.DataFrame
+        meta table of an IamDataFrame
+    filters: dict
+        dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
+        default, but accepts `regexp: True` to use direct regexp
+    """
+    regexp = filters.pop('regexp', False)
     keep = np.array([True] * len(data))
 
     # filter by columns and list of values
     for col, values in filters.items():
         if col in meta.columns:
-            matches = pattern_match(meta[col], values)
+            matches = pattern_match(meta[col], values, regexp=regexp)
             cat_idx = meta[matches].index
             keep_col = data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
 
         elif col in ['model', 'scenario', 'region', 'unit']:
-            keep_col = pattern_match(data[col], values)
+            keep_col = pattern_match(data[col], values, regexp=regexp)
 
         elif col == 'variable':
-            level = filters['level'] if 'level' in filters.keys() else None
-            keep_col = pattern_match(data[col], values, level)
+            level = filters['level'] if 'level' in filters else None
+            keep_col = pattern_match(data[col], values, level, regexp)
 
         elif col == 'year':
             keep_col = years_match(data[col], values)
 
         elif col == 'level':
             if 'variable' not in filters.keys():
-                keep_col = pattern_match(data['variable'], '*', level=values)
+                keep_col = pattern_match(data['variable'], '*', values,
+                                         regexp=regexp)
             else:
                 continue
         else:

@@ -81,5 +81,24 @@ def test_pattern_match_brackets():
     obs = utils.pattern_match(data, values)
     exp = [True, False]
 
-    print(obs)
+    assert (obs == exp).all()
+
+
+def test_pattern_match_dollar():
+    data = pd.Series(['foo$bar', 'foo'])
+    values = ['foo$bar']
+
+    obs = utils.pattern_match(data, values)
+    exp = [True, False]
+
+    assert (obs == exp).all()
+
+
+def test_pattern_regexp():
+    data = pd.Series(['foo', 'foa', 'foo$'])
+    values = ['fo.$']
+
+    obs = utils.pattern_match(data, values, regexp=True)
+    exp = [True, True, False]
+
     assert (obs == exp).all()
