@@ -842,7 +842,7 @@ def _apply_filters(data, meta, filters):
         dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
         default, but accepts `regexp: True` to use direct regexp
     """
-    regexp = filters.pop('regexp') if 'regexp' in filters else False
+    regexp = filters.pop('regexp', False)
     keep = np.array([True] * len(data))
 
     # filter by columns and list of values
