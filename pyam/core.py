@@ -272,53 +272,55 @@ class IamDataFrame(object):
             (by `['model', 'scenario']` index if possible)
         name: str, optional
             meta column name (defaults to meta pd.Series.name)
-        index: pyam.IamDataFrame or pd.MultiIndex, optional
+        index: pyam.IamDataFrame, pd.DataFrame or pd.MultiIndex, optional
             index to be used for setting meta column (`['model', 'scenario']`)
         """
         if not name and not hasattr(meta, 'name'):
-            raise ValueError('Must pass a name or use a pd.Series')
+            raise ValueError('Must pass a name or use a named pd.Series')
 
-        # use meta.index if index arg is an IamDataFrame
-        if index is not None and isinstance(index, IamDataFrame):
-            index = index.meta.index
+        # check if meta has a valid index and use it for further workflow
+        if hasattr(meta, 'index') and hasattr(meta.index, 'names') \
+                and set(META_IDX).issubset(meta.index.names):
+            index = meta.index
 
-        # create pd.Series from meta, index and name if provided
-        _meta = meta if index is None else pd.Series(data=meta, index=index,
-                                                     name=name)
-
-        try:
-            append_by_idx = set(META_IDX).issubset(_meta.index.names)
-        except AttributeError:
-            append_by_idx = False
-
-        # if not possible to append by index
-        if not append_by_idx:
+        # if no valid index is provided, add meta as new column `name` and exit
+        if index is None:
             self.meta[name] = list(meta) if islistable(meta) else meta
             return  # EXIT FUNCTION
 
-        # else append by index
-        _meta.name = name = name or _meta.name
+        # use meta.index if index arg is an IamDataFrame
+        if isinstance(index, IamDataFrame):
+            index = index.meta.index
+        # turn dataframe to index if index arg is a DataFrame
+        if isinstance(index, pd.DataFrame):
+            index = index.set_index(META_IDX).index
+        if not isinstance(index, pd.MultiIndex):
+            raise ValueError('index cannot be coerced to pd.MultiIndex')
+
+        # create pd.Series from meta, index and name if provided
+        meta = pd.Series(data=meta, index=index, name=name)
+        meta.name = name = name or meta.name
 
         # reduce index dimensions to model-scenario only
-        _meta = (
-            _meta
+        meta = (
+            meta
             .reset_index()
             .reindex(columns=META_IDX + [name])
             .set_index(META_IDX)
         )
 
         # raise error if index is not unique
-        if _meta.index.duplicated().any():
+        if meta.index.duplicated().any():
             raise ValueError("non-unique ['model', 'scenario'] index!")
 
         # check if trying to add model-scenario index not existing in self
-        diff = _meta.index.difference(self.meta.index)
+        diff = meta.index.difference(self.meta.index)
         if not diff.empty:
             error = "adding metadata for non-existing scenarios '{}'!"
             raise ValueError(error.format(diff))
 
         self._new_meta_column(name)
-        self.meta[name] = _meta[name].combine_first(self.meta[name])
+        self.meta[name] = meta[name].combine_first(self.meta[name])
 
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
