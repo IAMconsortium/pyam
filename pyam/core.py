@@ -297,6 +297,10 @@ class IamDataFrame(object):
         if not isinstance(index, pd.MultiIndex):
             raise ValueError('index cannot be coerced to pd.MultiIndex')
 
+        # raise error if index is not unique
+        if index.duplicated().any():
+            raise ValueError("non-unique ['model', 'scenario'] index!")
+
         # create pd.Series from meta, index and name if provided
         meta = pd.Series(data=meta, index=index, name=name)
         meta.name = name = name or meta.name
@@ -308,10 +312,6 @@ class IamDataFrame(object):
             .reindex(columns=META_IDX + [name])
             .set_index(META_IDX)
         )
-
-        # raise error if index is not unique
-        if meta.index.duplicated().any():
-            raise ValueError("non-unique ['model', 'scenario'] index!")
 
         # check if trying to add model-scenario index not existing in self
         diff = meta.index.difference(self.meta.index)

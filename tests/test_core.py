@@ -412,7 +412,6 @@ def test_set_meta_non_existing_index_fail(meta_df):
 def test_set_meta_by_df(meta_df):
     df = pd.DataFrame([
         ['a_model', 'a_scenario', 'a_region1', 1],
-        ['a_model', 'a_scenario', 'a_region2', 2],
     ], columns=['model', 'scenario', 'region', 'col'])
 
     meta_df.set_meta(meta=0.3, name='meta_values', index=df)
