@@ -1,6 +1,7 @@
 
 # Next Release
 
+- (#94)[https://github.com/IAMconsortium/pyam/pull/94] `set_meta()` can take pd.DataFrame (with columns `['model', 'scenario']`) as `index` arg
 - (#93)[https://github.com/IAMconsortium/pyam/pull/93] IamDataFrame can be initilialzed from pd.DataFrame with index
 - (#92)[https://github.com/IAMconsortium/pyam/pull/92] Adding `$` to the pseudo-regexp syntax in `pattern_match()`, adds override option
 - (#90)[https://github.com/IAMconsortium/pyam/pull/90] Adding a function to `set_panel_label()` as part of the plotting library

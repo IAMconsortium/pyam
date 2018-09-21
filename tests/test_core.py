@@ -409,6 +409,22 @@ def test_set_meta_non_existing_index_fail(meta_df):
     pytest.raises(ValueError, meta_df.set_meta, s)
 
 
+def test_set_meta_by_df(meta_df):
+    df = pd.DataFrame([
+        ['a_model', 'a_scenario', 'a_region1', 1],
+    ], columns=['model', 'scenario', 'region', 'col'])
+
+    meta_df.set_meta(meta=0.3, name='meta_values', index=df)
+
+    idx = pd.MultiIndex(levels=[['a_model'], ['a_scenario', 'a_scenario2']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+    exp = pd.Series(data=[0.3, np.nan], index=idx)
+    exp.name = 'meta_values'
+
+    obs = meta_df['meta_values']
+    pd.testing.assert_series_equal(obs, exp)
+
+
 def test_set_meta_as_series(meta_df):
     s = pd.Series([0.3, 0.4])
     meta_df.set_meta(s, 'meta_series')
