@@ -169,6 +169,10 @@ def format_data(df):
             df['scenario'] = scen.apply(
                 lambda s: '-'.join(s.split('-')[1:]).strip())
 
+    # reset the index if meaningful entries are included there
+    if not list(df.index.names) == [None]:
+        df.reset_index(inplace=True)
+
     # format columns to lower-case and check that all required columns exist
     if not set(IAMC_IDX).issubset(set(df.columns)):
         missing = list(set(IAMC_IDX) - set(df.columns))

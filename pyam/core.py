@@ -52,6 +52,7 @@ class IamDataFrame(object):
         data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
             an instance of an TimeSeries or Scenario (requires `ixmp`),
             or pd.DataFrame or data file with IAMC-format data columns.
+            A pd.DataFrame can have the required data as columns or index.
 
             Special support is provided for data files downloaded directly from
             IIASA SSP and RCP databases. If you run into any problems loading
