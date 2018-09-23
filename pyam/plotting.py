@@ -67,6 +67,42 @@ def default_props(reset=False, **kwargs):
     return _DEFAULT_PROPS
 
 
+def assign_style_props(df, color=None, marker=None, linestyle=None,
+                       cmap=None):
+    """Assign the style properties for a plot
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        data to be used for style properties
+    """
+    # determine color, marker, and linestyle for each line
+    defaults = default_props(reset=True, num_colors=len(df),
+                             colormap=cmap)
+
+    props = {}
+    rc = run_control()
+
+    kinds = [('color', color), ('marker', marker), ('linestyle', linestyle)]
+
+    for kind, var in kinds:
+        rc_has_kind = kind in rc
+        if var in df.columns:
+            rc_has_var = rc_has_kind and var in rc[kind]
+            props_for_kind = {}
+
+            for val in df[var].unique():
+                if rc_has_var and val in rc[kind][var]:
+                    props_for_kind[val] = rc[kind][var][val]
+                    # cycle any way to keep defaults the same
+                    next(defaults[kind])
+                else:
+                    props_for_kind[val] = next(defaults[kind])
+            props[kind] = props_for_kind
+
+    return props
+
+
 def reshape_line_plot(df, x, y):
     """Reshape data from long form to "line plot form".
 
@@ -504,27 +540,18 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     if ax is None:
         fig, ax = plt.subplots()
 
+    # assign styling properties
+    props = assign_style_props(df, color=color, marker=marker,
+                               linestyle=linestyle, cmap=cmap)
+
+    # reshape data for use in line_plot
     df = reshape_line_plot(df, x, y)  # long form to one column per line
 
-    # determine color, marker, and linestyle for each line
-    defaults = default_props(reset=True, num_colors=len(df.columns),
-                             colormap=cmap)
-    props = {}
+    # determine index of column name in reshaped dataframe
     prop_idx = {}
-    rc = run_control()
-    for kind, var in [('color', color), ('marker', marker), ('linestyle', linestyle)]:
-        rc_has_kind = kind in rc
-        if var in df.columns.names:
-            rc_has_var = rc_has_kind and var in rc[kind]
-            props_for_kind = {}
-            for val in df.columns.get_level_values(var).unique():
-                if rc_has_var and val in rc[kind][var]:
-                    props_for_kind[val] = rc[kind][var][val]
-                    # cycle any way to keep defaults the same
-                    next(defaults[kind])
-                else:
-                    props_for_kind[val] = next(defaults[kind])
-            props[kind] = props_for_kind
+    for kind, var in [('color', color), ('marker', marker),
+                      ('linestyle', linestyle)]:
+        if var is not None and var in df.columns.names:
             prop_idx[kind] = df.columns.names.index(var)
 
     # plot data, keeping track of which legend labels to apply
