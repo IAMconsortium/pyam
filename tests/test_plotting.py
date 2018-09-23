@@ -373,6 +373,17 @@ def test_stack_plot_other(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_scatter(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.set_meta(meta=plot_df.filter(variable='Primary Energy')
+                     .timeseries()[2010], name='Total')
+    plot_df.set_meta(meta=plot_df.filter(variable='Primary Energy|Coal')
+                     .timeseries()[2010], name='Coal')
+    plot_df.scatter(ax=ax, x='Total', y='Coal')
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_add_panel_label(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plotting.set_panel_label('test', ax=ax, x=0.5, y=0.5)
