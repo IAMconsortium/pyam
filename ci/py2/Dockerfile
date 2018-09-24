@@ -1,8 +1,8 @@
 FROM gidden/python2-viz
 
-RUN add-apt-repository ppa:glasen/freetype2
-RUN apt update
-RUN apt install -y freetype2-demos
+RUN add-apt-repository -y ppa:glasen/freetype2
+RUN apt-get update
+RUN apt-get install -y freetype2-demos
 
 COPY . /pyam
 WORKDIR /
