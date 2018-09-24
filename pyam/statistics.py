@@ -3,40 +3,54 @@
 
 import numpy as np
 import pandas as pd
-import utils
+from pyam import filter_by_meta
 
 describe_cols = ['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max']
 
 
 class Statistics(object):
-    """This class provides a wrapper.
+    """This class provides a wrapper for descriptive statistics
+    of IAMC-style timeseries data.
+
+    Parameters
+    ----------
+    df: pyam.IamDataFrame
+        an IamDataFrame from which to retrieve metadata for grouping, filtering
+    col: str
+        a column of `df.meta` to be used for the groupby feature
+    cats: list
+        list of `df.meta.groupby_col` values to be used for the groupby feature
     """
-    def __init__(self, df, groupby=None, **kwargs):
+    def __init__(self, df, col=None, cats=None):
         self.df = df
-        self.groupby = groupby
-        self.filters = kwargs
+        # check valid specifications for the `groupby` feature
+        if col is not None and col not in df.meta.columns:
+            raise ValueError('column `{}` not in `df.meta`'.format(col))
+        self.groupby = {col: cats} if col is not None else None
 
         self.stats = None
         self.rows = []
-        self.subrows = self.filters[groupby] if groupby else None
+#        self.subrows = self.filters[groupby] if groupby else None
         self.headers = []
 
     def describe(self, name, data, header, subheader=None):
         """Filter `data` by arguments of this SummaryStats instance,
         then apply `pd.describe()` and format the output"""
-
         if isinstance(data, pd.Series):
             data.name = subheader or ''
             data = pd.DataFrame(data)
 
-        _data = utils.filter_by_meta(data, self.df, **self.filters)
-
         if self.groupby is not None:
-            _data = _data.groupby(self.groupby)
+            _data = filter_by_meta(data, self.df, **self.groupby, join_meta=True)
+            _stats = _data.groupby('category').describe()
+            _stats = _stats.set_index('name', append=True).swaplevel()
+            _stats.index.names = ['', '']
+
+        return _stats
 
         # generate statistics for `data` dataframe and append to self.stats
-        stats = describe(_data, row=name, col=header)
-        self._append_stats(stats, name, header)
+        #stats = describe(_data, row=name, col=header)
+        #self._append_stats(stats, name, header)
 
     def add_by_row(self, name, data, header, subheader=None, **kwargs):
         """Add data by row to the summary statistics"""
@@ -48,7 +62,7 @@ class Statistics(object):
             data.name = subheader or ''
             data = pd.DataFrame(data)
 
-        data = utils.filter_by_meta(data, self.df, **kwargs)
+        data = filter_by_meta(data, self.df, **kwargs)
 
         data['name'] = name
         data['type'] = header
