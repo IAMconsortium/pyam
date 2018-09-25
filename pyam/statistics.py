@@ -4,6 +4,7 @@
 import numpy as np
 import pandas as pd
 from pyam import filter_by_meta
+from pyam.utils import isstr
 
 describe_cols = ['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max']
 
@@ -16,69 +17,48 @@ class Statistics(object):
     ----------
     df: pyam.IamDataFrame
         an IamDataFrame from which to retrieve metadata for grouping, filtering
-    col: str
-        a column of `df.meta` to be used for the groupby feature
-    cats: list
-        list of `df.meta.groupby_col` values to be used for the groupby feature
+    groupby: str or dict
+        a column of `df.meta` to be used for the groupby feature,
+        or a dictionary of `{column: list}`, where `list` is used for ordering
     """
-    def __init__(self, df, col=None, cats=None):
+    def __init__(self, df, groupby=None):
         self.df = df
-        # check valid specifications for the `groupby` feature
-        if col is not None and col not in df.meta.columns:
-            raise ValueError('column `{}` not in `df.meta`'.format(col))
-        self.groupby = {col: cats} if col is not None else None
+        # check that specifications for the `groupby` feature are valid
+        self.col = None
+        self.groupby = None
+        if isstr(groupby):
+            self.col = groupby
+            self.groupby = {groupby: None}
+        elif isinstance(groupby, dict) and len(groupby) == 1:
+            self.col = list(groupby.keys())[0]
+            self.groupby = groupby
+        elif groupby is not None:
+            raise ValueError('arg `{}` not valid `groupby`'.format(groupby))
+        if self.col is not None and self.col not in df.meta.columns:
+            raise ValueError('column `{}` not in `df.meta`'.format(self.col))
 
         self.stats = None
         self.rows = []
-#        self.subrows = self.filters[groupby] if groupby else None
         self.headers = []
 
-    def describe(self, name, data, header, subheader=None):
+    def describe(self, data, header, subheader=None):
         """Filter `data` by arguments of this SummaryStats instance,
-        then apply `pd.describe()` and format the output"""
+        then apply `pd.describe()` and format the statistics"""
         if isinstance(data, pd.Series):
             data.name = subheader or ''
             data = pd.DataFrame(data)
 
         if self.groupby is not None:
-            _data = filter_by_meta(data, self.df, **self.groupby, join_meta=True)
-            _stats = _data.groupby('category').describe()
-            _stats = _stats.set_index('name', append=True).swaplevel()
-            _stats.index.names = ['', '']
+            args = dict(data=data, df=self.df, **self.groupby, join_meta=True)
+            stats = filter_by_meta(**args).groupby('category').describe()
+            stats['name'] = self.col
+            stats = stats.set_index('name', append=True).swaplevel()
+            stats.index.names = ['', '']
+            # order rows by groupby-columns if available
+            if self.groupby[self.col] is not None:
+                stats = stats.reindex(index=self.groupby[self.col], level=1)
 
-        return _stats
-
-        # generate statistics for `data` dataframe and append to self.stats
-        #stats = describe(_data, row=name, col=header)
-        #self._append_stats(stats, name, header)
-
-    def add_by_row(self, name, data, header, subheader=None, **kwargs):
-        """Add data by row to the summary statistics"""
-        if len(kwargs) > 1:
-            msg = 'Filtering by more than one kwargs not supported!'
-            raise NotImplementedError(msg)
-
-        if isinstance(data, pd.Series):
-            data.name = subheader or ''
-            data = pd.DataFrame(data)
-
-        data = filter_by_meta(data, self.df, **kwargs)
-
-        data['name'] = name
-        data['type'] = header
-        data[''] = '50%'
-
-        cat = list(kwargs.keys())[0]
-
-        data = (
-                data
-                .reset_index(drop=True)
-                .set_index(['name', cat, '', 'type'])
-                .reindex(index=kwargs[cat], level=1)
-                .unstack().unstack()
-                )
-        data.columns = data.columns.swaplevel(i=0, j=1)
-        self._append_stats(data, name, header)
+        return stats
 
     def _append_stats(self, other, name, header):
         if name not in self.rows:
@@ -102,32 +82,8 @@ class Statistics(object):
             self.stats = self.stats.reindex(index=self.rows, level=0)\
                 .reindex(index=self.subrows, level=1)
 
-    def format_as_table(self, upper='max', lower='min'):
-        """Format the compiled statistics to a concise string output"""
-        return self.stats.apply(format_rows, upper=upper, lower=lower,
-                                axis=1, raw=False)
-
 
 # %% auxiliary functions
-
-def describe(x, row, col):
-    """Wrapper for `pd.describe()` to get output in standardized format"""
-
-    stats = x.describe()
-
-    stats['name'] = row
-    stats = stats.set_index('name', append=True).swaplevel()
-
-    if isinstance(x, pd.DataFrame):
-        cols = stats.index.get_level_values(1)
-        stats = stats.unstack().reindex(columns=cols, level=1)
-
-    stats['type'] = col
-    stats.set_index(['type'], append=True, inplace=True)
-    stats = stats.unstack()
-    stats.columns = stats.columns.swaplevel().swaplevel(i=0, j=1)
-
-    return stats
 
 
 def format_rows(row, upper='max', lower='min'):
