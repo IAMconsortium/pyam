@@ -50,37 +50,23 @@ class Statistics(object):
 
         if self.groupby is not None:
             args = dict(data=data, df=self.df, **self.groupby, join_meta=True)
-            stats = filter_by_meta(**args).groupby('category').describe()
-            stats['name'] = self.col
-            stats = stats.set_index('name', append=True).swaplevel()
-            stats.index.names = ['', '']
+            _stats = filter_by_meta(**args).groupby('category').describe()
+            _stats['name'] = self.col
+            _stats = _stats.set_index('name', append=True).swaplevel()
+            _stats.index.names = ['', '']
             # order rows by groupby-columns if available
             if self.groupby[self.col] is not None:
-                stats = stats.reindex(index=self.groupby[self.col], level=1)
-
-        return stats
-
-    def _append_stats(self, other, name, header):
-        if name not in self.rows:
-            self.rows.append(name)
-        if header not in self.headers:
-            self.headers.append(header)
+                _stats = _stats.reindex(index=self.groupby[self.col], level=1)
+            _stats = pd.concat([_stats], keys=[header], names=[''], axis=1)
 
         if self.stats is None:
-            self.stats = other
+            self.stats = _stats
         else:
-            self.stats = (
-                    other.combine_first(self.stats)
-                    .reindex(columns=self.headers, level=0)
-                    .reindex(columns=describe_cols, level=2)
-                    )
-
-        # reorder groupby-for first (and second) index level (if necessary)
-        if self.groupby is None:
-            self.stats = self.stats.reindex(index=self.rows)
-        else:
-            self.stats = self.stats.reindex(index=self.rows, level=0)\
-                .reindex(index=self.subrows, level=1)
+            # replace or join statistics
+            intersect = self.stats.columns.intersection(_stats.columns)
+            self.stats.loc[:, intersect] = _stats.loc[:, intersect]
+            diff = _stats.columns.difference(self.stats.columns)
+            self.stats = self.stats.join(_stats.loc[:, diff])
 
 
 # %% auxiliary functions
