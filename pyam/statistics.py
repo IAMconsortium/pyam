@@ -63,10 +63,10 @@ class Statistics(object):
             data = pd.DataFrame(data)
 
         if self.groupby is not None:
-            args = dict(data=data, df=self.df, **self.groupby, join_meta=True)
-            _stats = filter_by_meta(**args).groupby('category').describe()
-            _stats['name'] = self.col
-            _stats = _stats.set_index('name', append=True).swaplevel()
+            filter_args = dict(data=data, df=self.df, join_meta=True)
+            _stats = filter_by_meta(**filter_args, **self.groupby)\
+                .groupby(self.col).describe()
+            _stats = pd.concat([_stats], keys=[self.col], names=[''], axis=0)
             _stats.index.names = ['', '']
             # order rows by groupby-columns if available
             if self.groupby[self.col] is not None:
