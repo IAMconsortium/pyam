@@ -68,6 +68,18 @@ class Statistics(object):
             diff = _stats.columns.difference(self.stats.columns)
             self.stats = self.stats.join(_stats.loc[:, diff])
 
+    def summarize(self, interquartile=False):
+        """Format the compiled statistics to a concise string output
+
+        Parameter
+        ---------
+        interquartile : bool, default False
+            return interquartile range if True, else max-min
+        """
+        upper = '75%' if interquartile else 'max'
+        lower = '25%' if interquartile else 'min'
+        return self.stats.apply(format_rows, upper=upper, lower=lower,
+                                axis=1, raw=False)
 
 # %% auxiliary functions
 
@@ -75,16 +87,18 @@ class Statistics(object):
 def format_rows(row, upper='max', lower='min'):
     """Format a row with `describe()` columns to a concise string"""
     index = row.index.droplevel(2).drop_duplicates()
-    ret = pd.Series(index=pd.MultiIndex.from_tuples(tuples=[('count', '')],
-                                                    names=['type', None])
-                    .append(index))
+    count_arg = dict(tuples=[('count', '')], names=[None, None])
+    ret = pd.Series(index=pd.MultiIndex.from_tuples(**count_arg).append(index))
+
+    row = row.sort_index()
 
     # get maximum of `count` and write to first entry of return series
     count = max(row.loc[(slice(None), slice(None), 'count')])
     ret.loc[('count', '')] = ('{:.0f}'.format(count)) if count > 1 else ''
 
+    # format `describe()` columns to string output
     for i in index:
-        x = row.loc[(i[0], i[1])]
+        x = row.loc[i]
         _count = x['count']
         if np.isnan(_count) or _count == 0:
             s = 'NA'
@@ -92,11 +106,9 @@ def format_rows(row, upper='max', lower='min'):
             s = '{:.2f} ({:.2f}, {:.2f})'.format(x['50%'], x[upper], x[lower])
         elif _count == 1:
             s = '{:.2f}'.format(x['50%'])
-
-        # add count of this section in `[]` if different from count_max
+        # add count of this section as `[]` if different from count_max
         if _count < count:
             s += ' [{:.0f}]'.format(_count)
-
-        ret.loc[(i[0], i[1])] = s
+        ret.loc[i] = s
 
     return ret
