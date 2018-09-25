@@ -8,11 +8,12 @@ def test_statistics(plot_df):
     plot_df.set_meta(meta=['a', 'b', 'b', 'a'], name='category')
     stats = Statistics(df=plot_df, groupby={'category': ['b', 'a']})
 
-    yr = 2005
-    primary = plot_df.filter(variable='Primary Energy', year=yr).timeseries()
+    # test describing as pd.DataFrame
+    primary = plot_df.filter(variable='Primary Energy', year=2005).timeseries()
     stats.describe(data=primary, header='primary')
-    coal = plot_df.filter(variable='Primary Energy|Coal', year=yr).timeseries()
-    stats.describe(data=coal, header='coal')
+    # test describing as pd.Series with `subheader` arg
+    coal = plot_df.filter(variable='Primary Energy|Coal').timeseries()[2005]
+    stats.describe(data=coal, header='coal', subheader=2005)
 
     obs = stats.summarize()
 

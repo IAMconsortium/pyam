@@ -43,10 +43,20 @@ class Statistics(object):
 
     def describe(self, data, header, subheader=None):
         """Filter `data` by arguments of this SummaryStats instance,
-        then apply `pd.describe()` and format the statistics"""
-        if isinstance(data, pd.Series):
+        then apply `pd.describe()` and format the statistics
+
+        Parameters
+        ----------
+        data : pd.DataFrame or pd.Series
+            data for which summary statistics should be computed
+        header : str
+            column name for descriptive statistics
+        subheader : str, optional
+            column name (level=1) if data is a unnamed `pd.Series`
+        """
+        if isinstance(data, pd.Series) and data.name is None:
             data.name = subheader or ''
-            data = pd.DataFrame(data)
+        data = pd.DataFrame(data)
 
         if self.groupby is not None:
             args = dict(data=data, df=self.df, **self.groupby, join_meta=True)
