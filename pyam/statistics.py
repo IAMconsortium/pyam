@@ -64,8 +64,8 @@ class Statistics(object):
 
         if self.groupby is not None:
             filter_args = dict(data=data, df=self.df, join_meta=True)
-            _stats = filter_by_meta(**filter_args, **self.groupby)\
-                .groupby(self.col).describe()
+            filter_args.update(self.groupby)
+            _stats = filter_by_meta(**filter_args).groupby(self.col).describe()
             _stats = pd.concat([_stats], keys=[self.col], names=[''], axis=0)
             _stats.index.names = ['', '']
             # order rows by groupby-columns if available
