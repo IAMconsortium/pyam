@@ -11,8 +11,9 @@ def test_statistics(plot_df):
     # test describing as pd.DataFrame
     primary = plot_df.filter(variable='Primary Energy', year=2005).timeseries()
     stats.describe(data=primary, header='primary')
-    # test describing as pd.Series with `subheader` arg
+    # test describing as unamed pd.Series with `subheader` arg
     coal = plot_df.filter(variable='Primary Energy|Coal').timeseries()[2005]
+    coal.name = None
     stats.describe(data=coal, header='coal', subheader=2005)
 
     obs = stats.summarize()

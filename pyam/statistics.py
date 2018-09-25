@@ -54,9 +54,13 @@ class Statistics(object):
         subheader : str, optional
             column name (level=1) if data is a unnamed `pd.Series`
         """
-        if isinstance(data, pd.Series) and data.name is None:
-            data.name = subheader or ''
-        data = pd.DataFrame(data)
+        if isinstance(data, pd.Series):
+            if subheader is not None:
+                data.name = subheader
+            if data.name is None:
+                msg = '`data` must be named `pd.Series` or provide `subheader`'
+                raise ValueError(msg)
+            data = pd.DataFrame(data)
 
         if self.groupby is not None:
             args = dict(data=data, df=self.df, **self.groupby, join_meta=True)
