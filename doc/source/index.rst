@@ -31,7 +31,7 @@ see `data.ene.iiasa.ac.at/database`_ for more information.
 .. _`data.ene.iiasa.ac.at/database`: http://data.ene.iiasa.ac.at/database/
 
 ============  =============  ==========  ==============  ========  ========  ========  ========
-**model**     **scenario**   **region**  **variable**    **unit**  **2005**  **2010**  **2015**
+**Model**     **Scenario**   **Region**  **Variable**    **Unit**  **2005**  **2010**  **2015**
 ============  =============  ==========  ==============  ========  ========  ========  ========
 MESSAGE V.4   AMPERE3-Base   World       Primary Energy  EJ/y      454.5     479.6     ...
 ...           ...            ...         ...             ...       ...       ...       ...
