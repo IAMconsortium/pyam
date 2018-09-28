@@ -4,8 +4,8 @@ pyam: a Python toolkit for Integrated Assessment Modeling
 Overview and scope
 ------------------
 
-The ``pyam`` package provides a range of diagnostic tools and functions  
-for analyzing and working scenario data following the IAMC timeseries data format.
+The ``pyam`` package provides a range of diagnostic tools and functions
+for analyzing and visualising scenario data in the IAMC timeseries format.
 
 Features:
  - Summary of models, scenarios, variables, and regions included in a snapshot.
@@ -14,15 +14,15 @@ Features:
  - Advanced visualization and plotting functions.
  - Diagnostic checks for non-reported variables or timeseries values
    to analyze and validate scenario data.
- - Categorization of scenarios according to timeseries data 
-   or meta-identifiers for further analysis.
+ - Categorization of scenarios according to timeseries data
+   or metadata for further analysis.
 
-The package can be used with data that follows the data template convention 
+The package can be used with data that follows the data template convention
 of the `Integrated Assessment Modeling Consortium`_ (IAMC).
-An illustrative example is shown below; 
+An illustrative example is shown below;
 see `data.ene.iiasa.ac.at/database`_ for more information.
 
-.. _`pandas.DataFrame`: 
+.. _`pandas.DataFrame`:
    https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 
 .. _`Integrated Assessment Modeling Consortium`:
@@ -33,7 +33,7 @@ see `data.ene.iiasa.ac.at/database`_ for more information.
 ============  =============  ==========  ==============  ========  ========  ========  ========
 **model**     **scenario**   **region**  **variable**    **unit**  **2005**  **2010**  **2015**
 ============  =============  ==========  ==============  ========  ========  ========  ========
-MESSAGE V.4   AMPERE3-Base   World       Primary Energy  EJ/y      454.5     479.6     ... 
+MESSAGE V.4   AMPERE3-Base   World       Primary Energy  EJ/y      454.5     479.6     ...
 ...           ...            ...         ...             ...       ...       ...       ...
 ============  =============  ==========  ==============  ========  ========  ========  ========
 
