@@ -1,5 +1,5 @@
-pyam: a Python toolkit for Integrated Assessment Modeling
-=========================================================
+**pyam**: an open-source Python package for IAM scenario analysis and visualization
+===================================================================================
 
 Overview and scope
 ------------------
