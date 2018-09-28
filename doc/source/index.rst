@@ -20,15 +20,13 @@ Features:
 The package can be used with data that follows the data template convention
 of the `Integrated Assessment Modeling Consortium`_ (IAMC).
 An illustrative example is shown below;
-see `data.ene.iiasa.ac.at/database`_ for more information.
+see https://data.ene.iiasa.ac.at/database for more information.
 
 .. _`pandas.DataFrame`:
    https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 
 .. _`Integrated Assessment Modeling Consortium`:
    http://www.globalchange.umd.edu/iamc/
-
-.. _`data.ene.iiasa.ac.at/database`: http://data.ene.iiasa.ac.at/database/
 
 ============  =============  ==========  ==============  ========  ========  ========  ========
 **Model**     **Scenario**   **Region**  **Variable**    **Unit**  **2005**  **2010**  **2015**
@@ -38,18 +36,19 @@ MESSAGE V.4   AMPERE3-Base   World       Primary Energy  EJ/y      454.5     479
 ============  =============  ==========  ==============  ========  ========  ========  ========
 
 
-License and source code repository
-----------------------------------
+License, source code, documentation
+-----------------------------------
 
 The `pyam` package is licensed under an `APACHE 2.0 open-source license`_.
 See the `LICENSE`_ file included in this repository for the full text.
-The source code is available on `github.com/IAMconsortium/pyam`_.
+
+The source code is available on https://github.com/IAMconsortium/pyam.
+The full documentation of the latest release is available on
+https://software.ene.iiasa.ac.at/pyam.
 
 .. _`APACHE 2.0 open-source license`: http://www.apache.org/licenses/LICENSE-2.0
 
 .. _`LICENSE`: https://github.com/IAMconsortium/pyam/blob/master/LICENSE
-
-.. _`github.com/IAMconsortium/pyam`: https://github.com/IAMconsortium/pyam
 
 
 The `pyam` data model
