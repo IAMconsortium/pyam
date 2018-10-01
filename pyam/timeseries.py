@@ -82,3 +82,29 @@ def cumulative(x, first_year, last_year):
         value += x[last_year]
 
         return value
+
+
+def cross_threshold(x, threshold=0):
+    """Returns a list of the years in which a timeseries (indexed over years)
+    crosses a given threshold
+
+    Parameters
+    ----------
+    x: pandas.Series
+        a timeseries indexed over years
+    """
+    prev_yr, prev_val = None, None
+    years = []
+
+    for yr, val in zip(x.index, x.values):
+        if np.isnan(val):  # ignore nans in the timeseries
+            continue
+        if prev_val is None:
+            prev_yr, prev_val = yr, val
+            continue
+        if not np.sign(prev_val - threshold) == np.sign(val - threshold):
+            change = (val - prev_val) / (yr - prev_yr)
+            # add one because int() rounds down
+            years.append(prev_yr + int((threshold - prev_val) / change) + 1)
+        prev_yr, prev_val = yr, val
+    return years
