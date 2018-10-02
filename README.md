@@ -49,9 +49,9 @@ See the instruction in [doc/README](doc/README.md).
 Authors
 -------
 
-This package was developed and is currently maintained 
-by Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/))
-and Matthew Gidden ([@gidden](https://github.com/gidden)).
+This package was developed and is currently maintained
+by Matthew Gidden ([@gidden](https://github.com/gidden))
+and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
 
 License
 -------
