@@ -581,8 +581,9 @@ def _add_legend(ax, handles, labels, legend):
     if legend is None and len(labels) >= MAX_LEGEND_LABELS:
         logger().info('>={} labels, not applying legend'.format(
             MAX_LEGEND_LABELS))
-    legend = {} if legend in [True, None] else legend
-    ax.legend(handles, labels, **legend)
+    else:
+        legend = {} if legend in [True, None] else legend
+        ax.legend(handles, labels, **legend)
 
 
 def set_panel_label(label, ax=None, x=0.05, y=0.9):
