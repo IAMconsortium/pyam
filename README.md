@@ -8,23 +8,23 @@ pyam: a Python toolkit for Integrated Assessment Modeling
 Overview and scope
 ------------------
 
-The ``pyam`` package provides a range of diagnostic tools and functions  
-for analyzing and working with IAMC-format timeseries data. 
+The ``pyam`` package provides a range of diagnostic tools and functions
+for analyzing and working with IAMC-format timeseries data.
 
 Features:
 - Summary of models, scenarios, variables, and regions included in a snapshot.
-- Display of timeseries data as pandas.DataFrame with IAMC-specific filtering 
+- Display of timeseries data as pandas.DataFrame with IAMC-specific filtering
   options.
 - Simple visualization and plotting functions.
-- Diagnostic checks for non-reported variables or timeseries data to identify 
+- Diagnostic checks for non-reported variables or timeseries data to identify
   outliers and potential reporting issues.
-- Categorization of scenarios according to timeseries data or meta-identifiers 
+- Categorization of scenarios according to timeseries data or meta-identifiers
   for further analysis.
 
-The package can be used with timeseries data that follows the data template 
+The package can be used with timeseries data that follows the data template
 convention of the [Integrated Assessment Modeling Consortium](http://www.globalchange.umd.edu/iamc/) (IAMC).
 An illustrative example is shown below;
-see [data.ene.iiasa.ac.at/database](http://data.ene.iiasa.ac.at/database/) 
+see [data.ene.iiasa.ac.at/database](http://data.ene.iiasa.ac.at/database/)
 for more information.
 
 | **model**    | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
@@ -36,7 +36,7 @@ for more information.
 Tutorial
 --------
 
-A comprehensive tutorial for the basic functions is included 
+A comprehensive tutorial for the basic functions is included
 in [tutorial/pyam_first_steps](tutorial/pyam_first_steps.ipynb)
 using a partial snapshot of the IPCC AR5 scenario database.
 
@@ -83,14 +83,14 @@ Installation instructions
 -------------------------
 
 0. Fork this repository and clone the forked repository (`<user>/pyam`)
-   to your machine. To fork the repository, look for the fork icon in the top 
+   to your machine. To fork the repository, look for the fork icon in the top
    right at [iiasa/pyam](https://github.com/iiasa/pyam).
    Add `iiasa/pyam` as `upstream` to your clone.
 
    *We recommend* [GitKraken](https://www.gitkraken.com/) *for users*
    *who prefer a graphical user interface application*
    *to work with Github (as opposed to the command line).*
-   
+
 ### Windows Users
 
 0. Double click on `install.bat` in the local folder where you cloned your fork.
