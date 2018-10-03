@@ -1,7 +1,7 @@
 
 # Next Release
 
-- (#95)[https://github.com/IAMconsortium/pyam/pull/95] add a first implementation of a `scatter()` chart in the plotting library
+- (#95)[https://github.com/IAMconsortium/pyam/pull/95] add a `scatter()` chart in the plotting library using metadata 
 - (#94)[https://github.com/IAMconsortium/pyam/pull/94] `set_meta()` can take pd.DataFrame (with columns `['model', 'scenario']`) as `index` arg
 - (#93)[https://github.com/IAMconsortium/pyam/pull/93] IamDataFrame can be initilialzed from pd.DataFrame with index
 - (#92)[https://github.com/IAMconsortium/pyam/pull/92] Adding `$` to the pseudo-regexp syntax in `pattern_match()`, adds override option
