@@ -516,7 +516,7 @@ class IamDataFrame(object):
             msg = '{} - cannot check aggregate because it has no components'
             logger().info(msg.format(variable))
 
-            return None
+            return
 
         # filter and groupby data, use `pd.Series.align` for matching index
         df_variable, df_components = (
@@ -541,7 +541,7 @@ class IamDataFrame(object):
 
     def check_aggregate_regions(self, variable, region='World',
                                 components=None, units=None,
-                                exclude_on_fail=False, multiplier=1, **kwargs):
+                                exclude_on_fail=False, **kwargs):
         """Check whether the world timeseries data match the aggregation
         of regions
 
@@ -557,11 +557,8 @@ class IamDataFrame(object):
             filter variable and components for given unit(s)
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
-        multiplier: number, default 1
-            factor when comparing variable and sum of components
         kwargs: passed to `np.isclose()`
         """
-        # default components to all variables one level below `variable`
         var_df = self.filter(variable=variable, level=0)
 
         if components is None:
@@ -609,8 +606,7 @@ class IamDataFrame(object):
                                       names=['variable'])
 
         # use `np.isclose` for checking match
-        diff = df_region[~np.isclose(df_region, multiplier * df_components,
-                                     **kwargs)]
+        diff = df_region[~np.isclose(df_region, df_components, **kwargs)]
 
         if len(diff):
             msg = (
@@ -630,22 +626,15 @@ class IamDataFrame(object):
         #TODO: test this and write docstring, kwargs passed to np is close
         inconsistent_vars = {}
         for variable in self.variables():
-            diff_agg = self.check_aggregate(
-                variable,
-                **kwargs
-            )
+            diff_agg = self.check_aggregate(variable, **kwargs)
             if diff_agg is not None:
                 inconsistent_vars[variable + "-aggregate"] = diff_agg
 
-            diff_regional = self.check_aggregate_regions(
-                variable,
-                **kwargs
-            )
+            diff_regional = self.check_aggregate_regions(variable, **kwargs)
             if diff_regional is not None:
                 inconsistent_vars[variable + "-regional"] = diff_regional
 
-        if inconsistent_vars:
-            return inconsistent_vars
+        return inconsistent_vars if inconsistent_vars else None
 
 
     def _exclude_on_fail(self, df):
