@@ -73,8 +73,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyam'
-copyright = u'2017-2018, Daniel Huppmann, Matthew Gidden @ IIASA Energy Program'
-author = u'Daniel Huppmann, Matthew Gidden'
+copyright = u'2017-2018, Matthew Gidden & Daniel Huppmann @ IIASA Energy Program'
+author = u'Matthew Gidden, Daniel Huppmann'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
