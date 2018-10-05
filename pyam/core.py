@@ -682,7 +682,7 @@ class IamDataFrame(object):
         # Merge in imported metadata
         msg = 'Importing metadata for {} scenario{} (for total of {})'
         logger().info(msg.format(len(df), 's' if len(df) > 1 else '',
-                      len(self.meta)))
+                                 len(self.meta)))
 
         for col in df.columns:
             self._new_meta_column(col)
@@ -745,12 +745,45 @@ class IamDataFrame(object):
         ax = plotting.pie_plot(df, *args, **kwargs)
         return ax
 
-    def scatter(self, *args, **kwargs):
+    def scatter(self, x, y, **kwargs):
         """Plot a scatter chart using metadata columns
 
         see pyam.plotting.scatter() for all available options
         """
-        return plotting.scatter(self.meta.reset_index(), *args, **kwargs)
+        xisvar = x in self.data['variable'].unique()
+        yisvar = y in self.data['variable'].unique()
+        if not xisvar and not yisvar:
+            df = self.meta.reset_index()
+        elif xisvar and yisvar:
+            # filter pivot both and rename
+            dfx = (
+                self
+                .filter(variable=x)
+                .as_pandas()
+                .rename(columns={'value': x, 'unit': 'xunit'})
+                .set_index(YEAR_IDX)
+                .drop('variable', axis=1)
+            )
+            dfy = (
+                self
+                .filter(variable=y)
+                .as_pandas()
+                .rename(columns={'value': y, 'unit': 'yunit'})
+                .set_index(YEAR_IDX)
+                .drop('variable', axis=1)
+            )
+            df = dfx.join(dfy).reset_index()
+        else:
+            # filter, merge with meta, and rename value column to match var
+            var = x if xisvar else y
+            df = (
+                self
+                .filter(variable=var)
+                .as_pandas(with_metadata=True)
+                .rename(columns={'value': var})
+            )
+        ax = plotting.scatter(df, x, y, **kwargs)
+        return ax
 
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
                     region_col=None, inplace=False):
