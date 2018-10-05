@@ -114,8 +114,11 @@ def cross_threshold(x, threshold=0, direction=['from above', 'from below']):
             prev_yr, prev_val = yr, val
             continue
         if not np.sign(prev_val - threshold) == np.sign(val - threshold):
-            change = (val - prev_val) / (yr - prev_yr)
-            # add one because int() rounds down
-            years.append(prev_yr + int((threshold - prev_val) / change) + 1)
+            if ('from above' in direction and prev_val > val) \
+                    or ('from below' in direction and prev_val < val):
+                change = (val - prev_val) / (yr - prev_yr)
+                # add one because int() rounds down
+                cross_yr = prev_yr + int((threshold - prev_val) / change) + 1
+                years.append(cross_yr)
         prev_yr, prev_val = yr, val
     return years
