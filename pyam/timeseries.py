@@ -3,6 +3,9 @@
 import numpy as np
 import warnings
 
+from pyam.utils import (
+    isstr
+)
 
 # %%
 
@@ -84,7 +87,7 @@ def cumulative(x, first_year, last_year):
         return value
 
 
-def cross_threshold(x, threshold=0):
+def cross_threshold(x, threshold=0, direction=['from above', 'from below']):
     """Returns a list of the years in which a timeseries (indexed over years)
     crosses a given threshold
 
@@ -92,9 +95,17 @@ def cross_threshold(x, threshold=0):
     ----------
     x: pandas.Series
         a timeseries indexed over years
+    threshold: float, default 0
+        the threshold that the timeseries is checked against
+    direction: str, optional, default `['from above', 'from below']`
+        whether to return all years where the threshold is crossed
+        or only where threshold is crossed in a specific direction
     """
     prev_yr, prev_val = None, None
     years = []
+    direction = [direction] if isstr(direction) else list(direction)
+    if not set(direction).issubset(set(['from above', 'from below'])):
+        raise ValueError('invalid direction `{}`'.format(direction))
 
     for yr, val in zip(x.index, x.values):
         if np.isnan(val):  # ignore nans in the timeseries
