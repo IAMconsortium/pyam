@@ -33,5 +33,5 @@ def test_cross_treshold_from_above():
 
 def test_cross_treshold_direction_error():
     y = pd.Series(data=[np.nan, 1, 3, 1], index=[2002, 2005, 2007, 2013])
-    pytest.raises(ValueError, cross_threshold, x = y, threshold=2,
+    pytest.raises(ValueError, cross_threshold, x=y, threshold=2,
                   direction='up')
