@@ -68,8 +68,8 @@ class Statistics(object):
             if isstr(idx):
                 self._add_to_index(idx)
             else:
-                if not (isinstance(idx, tuple) and len(idx) == 2
-                        and isstr(idx[0]) or not isstr(idx[1])):
+                if not (isinstance(idx, tuple) and len(idx) == 2 and
+                        isstr(idx[0]) or not isstr(idx[1])):
                     raise ValueError('`{}` is not a valid index'.format(idx))
                 self._add_to_index(idx[0], idx[1])
             # check that filters in tuple are valid
@@ -77,16 +77,16 @@ class Statistics(object):
                 raise ValueError('`{}` is not a valid filter'.format(_filter))
             elif not (set(_filter) - set(META_IDX)).issubset(df.meta):
                 raise ValueError('column `{}` not in `df.meta`'.format(
-                        set(_filter) - set(META_IDX) - set(df.meta)))
+                    set(_filter) - set(META_IDX) - set(df.meta)))
 
         self.stats = None
         self.rows = [] if rows else None
 
         # percentiles for passing to `pandas.describe()`
         self.percentiles = list(percentiles)
-        self._describe_cols = (['count', 'mean', 'std', 'min']
-                               + ['{:.0%}'.format(i) for i in self.percentiles]
-                               + ['max'])
+        self._describe_cols = (['count', 'mean', 'std', 'min'] +
+                               ['{:.0%}'.format(i) for i in self.percentiles] +
+                               ['max'])
 
     def _add_to_index(self, idx, sub_idx=None):
         # assign index depth if not set
