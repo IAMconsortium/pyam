@@ -111,14 +111,8 @@ def test_statistics_with_rows(plot_df):
 def test_statistics_with_percentiles(plot_df):
     stats = Statistics(df=plot_df,
                        filters=[('test', {'scenario': 'test_scenario'})],
-                       percentiles=[0.05, 0.25, 0.5, 0.75, 0.95])
-    obs = stats_add(stats, plot_df).summarize(interquartile=True)
-
-    idx = pd.MultiIndex(levels=[['test']], labels=[[0]])
-    cols = pd.MultiIndex(levels=[['count', 'primary', 'coal'], ['', 2005]],
-                         labels=[[0, 1, 2], [0, 1, 1]],
-                         names=[None, 'mean (interquartile range)'])
-    exp = pd.DataFrame(data=['2', '0.85 (0.93, 0.77)', '0.42 (0.46, 0.39)'],
-                       index=cols, columns=idx).T
-    pd.testing.assert_frame_equal(obs, exp)
-    assert 1 == 0
+                       percentiles=[0.05, 0.95])
+    stats = stats_add(stats, plot_df)
+    obs = set(stats.stats.columns.get_level_values(2))
+    assert obs == set(['count', 'mean', 'std', 'min', '5%', '50%', '95%',
+                       'max'])
