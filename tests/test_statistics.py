@@ -42,16 +42,16 @@ def test_statistics(plot_df):
                        groupby={'category': ['b', 'a']},
                        filters=[(('scen', 'test'),
                                  {'scenario': 'test_scenario'})])
-    obs = stats_add(stats, plot_df).summarize()
+    obs = stats_add(stats, plot_df).summarize(custom_format='{:.0f}')
 
     idx = pd.MultiIndex(levels=[['category', 'scen'], ['b', 'a', 'test']],
                         labels=[[0, 0, 1], [0, 1, 2]], names=['', ''])
     cols = pd.MultiIndex(levels=[['count', 'primary', 'coal'], ['', 2005]],
                          labels=[[0, 1, 2], [0, 1, 1]],
                          names=[None, 'mean (max, min)'])
-    exp = pd.DataFrame(data=[['2', '1.35 (2.00, 0.70)', '0.42 (0.50, 0.35)'],
-                             ['2', '1.20 (1.40, 1.00)', '0.42 (0.50, 0.35)'],
-                             ['2', '0.85 (1.00, 0.70)', '0.42 (0.50, 0.35)']],
+    exp = pd.DataFrame(data=[['2', '1 (2, 1)', '0 (0, 0)'],
+                             ['2', '1 (1, 1)', '0 (0, 0)'],
+                             ['2', '1 (1, 1)', '0 (0, 0)']],
                        index=idx, columns=cols)
     pd.testing.assert_frame_equal(obs, exp)
 
