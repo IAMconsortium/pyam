@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 import numpy as np
 import pandas as pd
 from pyam import filter_by_meta, META_IDX
@@ -194,18 +195,22 @@ class Statistics(object):
         else:
             self.stats = _stats.combine_first(self.stats)
 
-    def reindex(self):
-        """Reindex the summary statistics dataframe """
-        self.stats = self.stats.reindex(index=self._idx, level=0)
-        if self.idx_depth == 2:
-            self.stats = self.stats.reindex(index=self._sub_idx, level=1)
-        if self.rows is not None:
-            self.stats = self.stats.reindex(index=self.rows,
-                                            level=self.idx_depth)
+    def reindex(self, copy=True):
+        """Reindex the summary statistics dataframe"""
+        ret = deepcopy(self) if copy else self
 
-        self.stats = self.stats.reindex(columns=self._headers, level=0)
-        self.stats = self.stats.reindex(columns=self._subheaders, level=1)
-        self.stats = self.stats.reindex(columns=self._describe_cols, level=2)
+        ret.stats = ret.stats.reindex(index=ret._idx, level=0)
+        if ret.idx_depth == 2:
+            ret.stats = self.stats.reindex(index=ret._sub_idx, level=1)
+        if ret.rows is not None:
+            ret.stats = ret.stats.reindex(index=ret.rows, level=ret.idx_depth)
+
+        ret.stats = ret.stats.reindex(columns=ret._headers, level=0)
+        ret.stats = ret.stats.reindex(columns=ret._subheaders, level=1)
+        ret.stats = ret.stats.reindex(columns=ret._describe_cols, level=2)
+
+        if copy:
+            return ret
 
     def summarize(self, center='mean', fullrange=None, interquartile=None,
                   custom_format='{:.2f}'):
@@ -223,7 +228,7 @@ class Statistics(object):
         custom_format : formatting specifications
         """
         # call `reindex()` to reorder index and columns
-        self.reindex()
+        self.reindex(copy=False)
 
         center = 'median' if center == '50%' else center
         if fullrange is None and interquartile is None:
