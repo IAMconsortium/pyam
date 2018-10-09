@@ -625,7 +625,8 @@ class IamDataFrame(object):
             return diff.unstack().rename_axis(None, axis=1)
 
     def check_internal_consistency(self, **kwargs):
-        #TODO: test this and write docstring, kwargs passed to np is close
+        # TODO: test this and write docstring, kwargs passed to np is close
+        # need to have a aggregate_regions keyword argument
         inconsistent_vars = {}
         for variable in self.variables():
             diff_agg = self.check_aggregate(variable, **kwargs)
