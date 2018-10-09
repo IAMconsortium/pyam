@@ -2,7 +2,7 @@
 
 import numpy as np
 from pyam.logger import logger
-from pyam.utils import isstr
+from pyam.utils import isstr, cast_years_to_int
 
 # %%
 
@@ -59,7 +59,9 @@ def cumulative(x, first_year, last_year):
                          .format(x.name or x, last_year))
         return np.nan
 
-    format_cols_to_int(x)
+    # cast tiemseries colums to `int` if necessary
+    if not x.index.dtype == 'int64':
+        cast_years_to_int(x, index=True)
 
     x[first_year] = fill_series(x, first_year)
     x[last_year] = fill_series(x, last_year)
@@ -120,13 +122,3 @@ def cross_threshold(x, threshold=0, direction=['from above', 'from below']):
                 years.append(cross_yr)
         prev_yr, prev_val = yr, val
     return years
-
-
-def format_cols_to_int(x):
-    """formatting timeseries columns to int and checking validity of columns"""
-    cols = list(map(int, x.index))
-    error = x.index[cols != x.index]
-    if not error.empty:
-        raise ValueError('invalid timeseries columns `{}`'.format(error))
-    x.index = cols
-    return x

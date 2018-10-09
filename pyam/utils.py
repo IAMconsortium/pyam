@@ -262,3 +262,17 @@ def years_match(data, years):
     """
     years = [years] if isinstance(years, int) else years
     return data.isin(years)
+
+
+def cast_years_to_int(x, index=False):
+    """formatting series or timeseries columns to int and checking validity"""
+    _x = x.index if index else x
+    cols = list(map(int, _x))
+    error = _x[cols != _x]
+    if not error.empty:
+        raise ValueError('invalid values `{}`'.format(list(error)))
+    if index:
+        x.index = cols
+        return x
+    else:
+        return _x
