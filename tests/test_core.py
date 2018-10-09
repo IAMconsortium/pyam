@@ -291,20 +291,24 @@ def test_df_check_aggregate_regions_pass(check_aggregate_df):
 
 
 def run_check_agg_fail(pyam_df, tweak_dict, test_type):
-    row_to_tweak = (
-        (pyam_df.data.model == tweak_dict['model'])
-        & (pyam_df.data.scenario == tweak_dict['scenario'])
-        & (pyam_df.data.region == tweak_dict['region'])
-        & (pyam_df.data.variable == tweak_dict['variable'])
-        & (pyam_df.data.unit == tweak_dict['unit'])
-    )
+    mr = pyam_df.data.model == tweak_dict['model']
+    sr = pyam_df.data.scenario == tweak_dict['scenario']
+    rr = pyam_df.data.region == tweak_dict['region']
+    vr = pyam_df.data.variable == tweak_dict['variable']
+    ur = pyam_df.data.unit == tweak_dict['unit']
+    row_to_tweak = mr & sr & rr & vr & ur
+    assert row_to_tweak.any()
 
     pyam_df.data.value.iloc[np.where(row_to_tweak)[0]] *= 0.99
 
     # the error variable is always the top level one
     expected_index = tweak_dict
-    if (test_type == 'aggregate') or (test_type == 'region-world-only-contrib'):
-        expected_index['variable'] = '|'.join(expected_index['variable'].split('|')[:2])
+    agg_test = test_type == 'aggregate'
+    region_world_only_contrib = test_type == 'region-world-only-contrib'
+    if agg_test or region_world_only_contrib:
+        expected_index['variable'] = '|'.join(
+            expected_index['variable'].split('|')[:2]
+        )
     elif 'region' in test_type:
         expected_index['region'] = 'World'
 
@@ -328,8 +332,8 @@ def run_check_agg_fail(pyam_df, tweak_dict, test_type):
 
 def test_df_check_aggregate_fail(check_aggregate_df):
     to_tweak = {
-        'model': 'IMAGE',
-        'scenario': 'a_scenario_2',
+        'model': 'IMG',
+        'scenario': 'a_scen_2',
         'region': 'R5REF',
         'variable': 'Emissions|CO2',
         'unit': 'Mt CO2/yr',
@@ -339,8 +343,8 @@ def test_df_check_aggregate_fail(check_aggregate_df):
 
 def test_df_check_aggregate_fail_no_regions(check_aggregate_df):
     to_tweak = {
-        'model': 'MESSAGE-GLOBIOM',
-        'scenario': 'a_scenario_2',
+        'model': 'MSG-GLB',
+        'scenario': 'a_scen_2',
         'region': 'World',
         'variable': 'Emissions|C2F6|Solvents',
         'unit': 'kt C2F6/yr',
@@ -350,8 +354,8 @@ def test_df_check_aggregate_fail_no_regions(check_aggregate_df):
 
 def test_df_check_aggregate_region_fail(check_aggregate_df):
     to_tweak = {
-        'model': 'IMAGE',
-        'scenario': 'a_scenario_2',
+        'model': 'IMG',
+        'scenario': 'a_scen_2',
         'region': 'World',
         'variable': 'Emissions|CO2',
         'unit': 'Mt CO2/yr',
@@ -362,8 +366,8 @@ def test_df_check_aggregate_region_fail(check_aggregate_df):
 
 def test_df_check_aggregate_region_fail_no_subsector(check_aggregate_df):
     to_tweak = {
-        'model': 'MESSAGE-GLOBIOM',
-        'scenario': 'a_scenario_2',
+        'model': 'MSG-GLB',
+        'scenario': 'a_scen_2',
         'region': 'R5REF',
         'variable': 'Emissions|CH4',
         'unit': 'Mt CH4/yr',
@@ -374,44 +378,60 @@ def test_df_check_aggregate_region_fail_no_subsector(check_aggregate_df):
 
 def test_df_check_aggregate_region_fail_world_only_contributor(check_aggregate_df):
     to_tweak = {
-        'model': 'MESSAGE-GLOBIOM',
-        'scenario': 'a_scenario_2',
+        'model': 'MSG-GLB',
+        'scenario': 'a_scen_2',
         'region': 'World',
-        'variable': 'Emissions|CO2|Aggregate Agg',
+        'variable': 'Emissions|CO2|Agg Agg',
         'unit': 'Mt CO2/yr',
     }
 
-    run_check_agg_fail(check_aggregate_df, to_tweak, 'region-world-only-contrib')
+    run_check_agg_fail(
+        check_aggregate_df, to_tweak, 'region-world-only-contrib'
+    )
 
 
 def test_df_check_aggregate_regions_errors(check_aggregate_regional_df):
-    # these tests should fail because our dataframe has continents and regions so
-    # checking without providing components leads to double counting and hence failure
-    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O', 'World')
+    # these tests should fail because our dataframe has continents and regions
+    # so checking without providing components leads to double counting and
+    # hence failure
+    obs = check_aggregate_regional_df.check_aggregate_regions(
+        'Emissions|N2O', 'World'
+    )
 
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'World', 'AIM/CGE', 'c_scen', 'Emissions|N2O'
+        'World', 'AIM', 'cscen', 'Emissions|N2O'
     )
 
-    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O', 'REUROPE')
+    obs = check_aggregate_regional_df.check_aggregate_regions(
+        'Emissions|N2O', 'REUROPE'
+    )
 
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'REUROPE', 'AIM/CGE', 'c_scen', 'Emissions|N2O'
+        'REUROPE', 'AIM', 'cscen', 'Emissions|N2O'
     )
+
 
 def test_df_check_aggregate_regions_components(check_aggregate_regional_df):
-    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O', 'World', components=['REUROPE', 'RASIA'])
+    obs = check_aggregate_regional_df.check_aggregate_regions(
+        'Emissions|N2O', 'World', components=['REUROPE', 'RASIA']
+    )
     assert obs is None
 
-    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O|Solvents', 'World', components=['REUROPE', 'RASIA'])
+    obs = check_aggregate_regional_df.check_aggregate_regions(
+        'Emissions|N2O|Solvents', 'World', components=['REUROPE', 'RASIA']
+    )
     assert obs is None
 
-    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O', 'REUROPE', components=['Germany', 'UK'])
+    obs = check_aggregate_regional_df.check_aggregate_regions(
+        'Emissions|N2O', 'REUROPE', components=['Germany', 'UK']
+    )
     assert obs is None
 
-    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O|Transport', 'REUROPE', components=['Germany', 'UK'])
+    obs = check_aggregate_regional_df.check_aggregate_regions(
+        'Emissions|N2O|Transport', 'REUROPE', components=['Germany', 'UK']
+    )
     assert obs is None
 
 

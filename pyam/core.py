@@ -583,21 +583,24 @@ class IamDataFrame(object):
             "variable"
         )
 
-        # Add in variables that are included in region totals but which aren't
-        # included in the regional components.
-        # For example, if we are looking at World and Emissions|BC, we need to add
-        # aviation and shipping to the sum of Emissions|BC for each of World's
-        # regional components to do a valid check.
+        # Add in variables that are included in region totals but which
+        # aren't included in the regional components.
+        # For example, if we are looking at World and Emissions|BC, we need
+        # to add aviation and shipping to the sum of Emissions|BC for each
+        # of World's regional components to do a valid check.
         different_region = components[0]
-        variable_components = self.filter(variable="{}|*".format(variable)).variables()
+        variable_components = self.filter(
+            variable="{}|*".format(variable)
+        ).variables()
         for var_to_add in variable_components:
-            var_has_regional_info = (
-                (self.data.variable == var_to_add)
-                & (self.data.region == different_region)
-            ).any()
+            var_rows = self.data.variable == var_to_add
+            region_rows = self.data.region == different_region
+            var_has_regional_info = (var_rows & region_rows).any()
 
             if not var_has_regional_info:
-                df_var_to_add = self.filter(region=region, variable=var_to_add).data.groupby(REGION_IDX).sum()['value']
+                df_var_to_add = self.filter(
+                    region=region, variable=var_to_add
+                ).data.groupby(REGION_IDX).sum()['value']
                 df_var_to_add.index = df_var_to_add.index.droplevel("variable")
 
                 if len(df_var_to_add):
@@ -627,14 +630,16 @@ class IamDataFrame(object):
     def check_internal_consistency(self, **kwargs):
         """Check whether the database is internally consistent
 
-        We check that all variables are equal to the sum of their sectoral components
-        and that all the regions add up to the World total. If the check is passed,
-        None is returned, otherwise a dictionary of inconsistent variables is returned.
+        We check that all variables are equal to the sum of their sectoral
+        components and that all the regions add up to the World total. If
+        the check is passed, None is returned, otherwise a dictionary of
+        inconsistent variables is returned.
 
-        Note: at the moment, this method's regional checking is limited to checking
-        that all the regions sum to the World region. We cannot make this more
-        automatic unless we start to store how the regions relate, see [this
-        issue](https://github.com/IAMconsortium/pyam/issues/106).
+        Note: at the moment, this method's regional checking is limited to
+        checking that all the regions sum to the World region. We cannot
+        make this more automatic unless we start to store how the regions
+        relate, see
+        [this issue](https://github.com/IAMconsortium/pyam/issues/106).
 
         Parameters
         ----------
