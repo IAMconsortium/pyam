@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-import warnings
+from pyam.logger import logger
 
 from pyam.utils import (
     isstr
 )
 
 # %%
+
 
 def fill_series(x, year):
     """Returns the value of a timeseries (indexed over years) for a year
@@ -50,17 +51,15 @@ def cumulative(x, first_year, last_year):
     last_year: int
         last year of the sum (inclusive)
     """
-
+    # if the timeseries does not cover the range `[first_year, last_year]`,
+    # return nan to avoid erroneous aggregation
     if min(x.index) > first_year:
-        # if the timeseries does not cover the range `[first_year, last_year]`,
-        # replace by nan to avoid erroneous aggregation
-        warnings.warn('timeseries {} does not start by {}'.format(x.name,
-                      first_year))
+        logger().warning('the timeseries `{}` does not start by {}'.format(
+            x.name or x, first_year))
         return np.nan
-
     if max(x.index) < last_year:
-        warnings.warn('the timeseries {} does not extend until {}'
-                      .format(x.name, last_year))
+        logger().warning('the timeseries `{}` does not extend until {}'
+                         .format(x.name or x, last_year))
         return np.nan
 
     x[first_year] = fill_series(x, first_year)
