@@ -2,10 +2,7 @@
 
 import numpy as np
 from pyam.logger import logger
-
-from pyam.utils import (
-    isstr
-)
+from pyam.utils import isstr
 
 # %%
 
