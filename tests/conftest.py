@@ -116,6 +116,31 @@ CHECK_AGG_DF = pd.DataFrame([
     columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
 )
 
+
+CHECK_AGG_REGIONAL_DF = pd.DataFrame([
+    ['AIM/CGE', 'c_scen', 'World', 'Emissions|N2O', 'Mt N/yr', 1.8, 15.6],
+    ['AIM/CGE', 'c_scen', 'World', 'Emissions|N2O|Shipping', 'Mt N/yr', 1, 6],
+    ['AIM/CGE', 'c_scen', 'World', 'Emissions|N2O|Solvents', 'Mt N/yr', 1.6, 3.8],
+    ['AIM/CGE', 'c_scen', 'World', 'Emissions|N2O|Transport', 'Mt N/yr', -0.8, 5.8],
+    ['AIM/CGE', 'c_scen', 'RASIA', 'Emissions|N2O', 'Mt N/yr', 0, 5.9],
+    ['AIM/CGE', 'c_scen', 'RASIA', 'Emissions|N2O|Solvents', 'Mt N/yr', 0.8, 2.6],
+    ['AIM/CGE', 'c_scen', 'RASIA', 'Emissions|N2O|Transport', 'Mt N/yr', -0.8, 3.3],
+    ['AIM/CGE', 'c_scen', 'REUROPE', 'Emissions|N2O', 'Mt N/yr', 0.8, 3.7],
+    ['AIM/CGE', 'c_scen', 'REUROPE', 'Emissions|N2O|Solvents', 'Mt N/yr', 0.8, 1.2],
+    ['AIM/CGE', 'c_scen', 'REUROPE', 'Emissions|N2O|Transport', 'Mt N/yr', 0, 2.5],
+    ['AIM/CGE', 'c_scen', 'China', 'Emissions|N2O', 'Mt N/yr', 0.2, 1.3],
+    ['AIM/CGE', 'c_scen', 'China', 'Emissions|N2O|Transport', 'Mt N/yr', 0.2, 1.3],
+    ['AIM/CGE', 'c_scen', 'Japan', 'Emissions|N2O', 'Mt N/yr', -1, 2],
+    ['AIM/CGE', 'c_scen', 'Japan', 'Emissions|N2O|Transport', 'Mt N/yr', -1, 2],
+    ['AIM/CGE', 'c_scen', 'Germany', 'Emissions|N2O', 'Mt N/yr', 2, 3],
+    ['AIM/CGE', 'c_scen', 'Germany', 'Emissions|N2O|Transport', 'Mt N/yr', 2, 3],
+    ['AIM/CGE', 'c_scen', 'UK', 'Emissions|N2O', 'Mt N/yr', -2, -0.5],
+    ['AIM/CGE', 'c_scen', 'UK', 'Emissions|N2O|Transport', 'Mt N/yr', -2, -0.5],
+
+],
+    columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
+)
+
 @pytest.fixture(scope="function")
 def test_df():
     df = IamDataFrame(data=TEST_DF.iloc[:2])
@@ -136,6 +161,12 @@ def meta_df():
 @pytest.fixture(scope="function")
 def check_aggregate_df():
     df = IamDataFrame(data=CHECK_AGG_DF)
+    yield df
+
+
+@pytest.fixture(scope="function")
+def check_aggregate_regional_df():
+    df = IamDataFrame(data=CHECK_AGG_REGIONAL_DF)
     yield df
 
 

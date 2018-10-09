@@ -384,6 +384,37 @@ def test_df_check_aggregate_region_fail_world_only_contributor(check_aggregate_d
     run_check_agg_fail(check_aggregate_df, to_tweak, 'region-world-only-contrib')
 
 
+def test_df_check_aggregate_regions_errors(check_aggregate_regional_df):
+    # these tests should fail because our dataframe has continents and regions so
+    # checking without providing components leads to double counting and hence failure
+    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O', 'World')
+
+    assert len(obs.columns) == 2
+    assert obs.index.get_values()[0] == (
+        'World', 'AIM/CGE', 'c_scen', 'Emissions|N2O'
+    )
+
+    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O', 'REUROPE')
+
+    assert len(obs.columns) == 2
+    assert obs.index.get_values()[0] == (
+        'REUROPE', 'AIM/CGE', 'c_scen', 'Emissions|N2O'
+    )
+
+def test_df_check_aggregate_regions_components(check_aggregate_regional_df):
+    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O', 'World', components=['REUROPE', 'RASIA'])
+    assert obs is None
+
+    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O|Solvents', 'World', components=['REUROPE', 'RASIA'])
+    assert obs is None
+
+    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O', 'REUROPE', components=['Germany', 'UK'])
+    assert obs is None
+
+    obs = check_aggregate_regional_df.check_aggregate_regions('Emissions|N2O|Transport', 'REUROPE', components=['Germany', 'UK'])
+    assert obs is None
+
+
 def test_category_none(meta_df):
     meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
     assert 'category' not in meta_df.meta.columns

@@ -579,31 +579,33 @@ class IamDataFrame(object):
             .align(_aggregate_by_regions(var_df.data, components, units))
         )
 
-        # if it's a World comparison, we need to add in variables that might
-        # have been missed e.g. shipping and aviation
-        if region == "World":
-            df_components.index = df_components.index.droplevel(
-                "variable"
-            )
-            non_world_region = components[0]
+        df_components.index = df_components.index.droplevel(
+            "variable"
+        )
 
-            for var_to_add in self.filter(variable="{}|*".format(variable)).variables():
+        # Add in variables that are included in region totals but which aren't
+        # included in the regional components.
+        # For example, if we are looking at World and Emissions|BC, we need to add
+        # aviation and shipping to the sum of Emissions|BC for each of World's
+        # regional components to do a valid check.
+        different_region = components[0]
+        variable_components = self.filter(variable="{}|*".format(variable)).variables()
+        for var_to_add in variable_components:
+            var_has_regional_info = (
+                (self.data.variable == var_to_add)
+                & (self.data.region == different_region)
+            ).any()
 
-                var_has_regional_info = (
-                    (self.data.variable == var_to_add)
-                    & (self.data.region == non_world_region)
-                ).any()
+            if not var_has_regional_info:
+                df_var_to_add = self.filter(region=region, variable=var_to_add).data.groupby(REGION_IDX).sum()['value']
+                df_var_to_add.index = df_var_to_add.index.droplevel("variable")
 
-                if not var_has_regional_info:
-                    df_var_to_add = self.filter(region=region, variable=var_to_add).data.groupby(REGION_IDX).sum()['value']
-                    df_var_to_add.index = df_var_to_add.index.droplevel("variable")
+                if len(df_var_to_add):
+                    df_components = df_components.add(df_var_to_add,
+                                                      fill_value=0)
 
-                    if len(df_var_to_add):
-                        df_components = df_components.add(df_var_to_add,
-                                                          fill_value=0)
-
-            df_components = pd.concat([df_components], keys=[variable],
-                                      names=['variable'])
+        df_components = pd.concat([df_components], keys=[variable],
+                                  names=['variable'])
 
         # use `np.isclose` for checking match
         diff = df_region[~np.isclose(df_region, df_components, **kwargs)]
