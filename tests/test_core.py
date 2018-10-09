@@ -248,7 +248,8 @@ def test_validate_top_level(meta_df):
 
 def test_check_aggregate_pass(check_aggregate_df):
     obs = check_aggregate_df.filter(
-        scenario='a_scenario').check_aggregate('Primary Energy')
+        scenario='a_scenario'
+    ).check_aggregate('Primary Energy')
     assert obs is None
 
 
@@ -273,9 +274,7 @@ def test_df_check_aggregate_pass(check_aggregate_df):
     assert obs is None
 
     for variable in check_aggregate_df.variables():
-        obs = check_aggregate_df.check_aggregate(
-            variable,
-        )
+        obs = check_aggregate_df.check_aggregate(variable)
         assert obs is None
 
 
@@ -284,9 +283,7 @@ def test_df_check_aggregate_regions_pass(check_aggregate_df):
     assert obs is None
 
     for variable in check_aggregate_df.variables():
-        obs = check_aggregate_df.check_aggregate_regions(
-            variable,
-        )
+        obs = check_aggregate_df.check_aggregate_regions(variable)
         assert obs is None
 
 
@@ -296,6 +293,7 @@ def run_check_agg_fail(pyam_df, tweak_dict, test_type):
     rr = pyam_df.data.region == tweak_dict['region']
     vr = pyam_df.data.variable == tweak_dict['variable']
     ur = pyam_df.data.unit == tweak_dict['unit']
+
     row_to_tweak = mr & sr & rr & vr & ur
     assert row_to_tweak.any()
 
@@ -376,7 +374,7 @@ def test_df_check_aggregate_region_fail_no_subsector(check_aggregate_df):
     run_check_agg_fail(check_aggregate_df, to_tweak, 'region')
 
 
-def test_df_check_aggregate_region_fail_world_only_contributor(check_aggregate_df):
+def test_df_check_aggregate_region_fail_world_only_var(check_aggregate_df):
     to_tweak = {
         'model': 'MSG-GLB',
         'scenario': 'a_scen_2',

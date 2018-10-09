@@ -596,7 +596,6 @@ class IamDataFrame(object):
             var_rows = self.data.variable == var_to_add
             region_rows = self.data.region == different_region
             var_has_regional_info = (var_rows & region_rows).any()
-
             if not var_has_regional_info:
                 df_var_to_add = self.filter(
                     region=region, variable=var_to_add
