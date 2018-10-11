@@ -201,7 +201,7 @@ class Statistics(object):
 
         ret.stats = ret.stats.reindex(index=ret._idx, level=0)
         if ret.idx_depth == 2:
-            ret.stats = self.stats.reindex(index=ret._sub_idx, level=1)
+            ret.stats = ret.stats.reindex(index=ret._sub_idx, level=1)
         if ret.rows is not None:
             ret.stats = ret.stats.reindex(index=ret.rows, level=ret.idx_depth)
 
