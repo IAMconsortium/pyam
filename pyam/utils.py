@@ -183,7 +183,10 @@ def format_data(df):
         numcols = sorted(set(df.columns) - set(IAMC_IDX))
         df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
                      value_vars=numcols, value_name='value')
+
+    # cast year and value columns to numeric
     df['year'] = pd.to_numeric(df['year'])
+    df['value'] = df['value'].astype('float64')
 
     # drop NaN's
     df.dropna(inplace=True)
