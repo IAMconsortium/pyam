@@ -130,6 +130,9 @@ def read_pandas(fname, *args, **kwargs):
     if fname.endswith('csv'):
         df = pd.read_csv(fname, *args, **kwargs)
     else:
+        xl = pd.ExcelFile(fname)
+        if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
+            kwargs['sheet_name'] = 'data'
         df = pd.read_excel(fname, *args, **kwargs)
     return df
 
