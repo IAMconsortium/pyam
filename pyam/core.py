@@ -658,6 +658,9 @@ class IamDataFrame(object):
         if path.endswith('csv'):
             df = pd.read_csv(path, *args, **kwargs)
         else:
+            xl = pd.ExcelFile(path)
+            if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
+                kwargs['sheet_name'] = 'meta'
             df = pd.read_excel(path, *args, **kwargs)
 
         req_cols = ['model', 'scenario', 'exclude']
