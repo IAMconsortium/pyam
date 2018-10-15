@@ -28,6 +28,7 @@ from pyam.utils import (
     years_match,
     isstr,
     islistable,
+    cast_years_to_int,
     META_IDX,
     YEAR_IDX,
     IAMC_IDX,
@@ -66,6 +67,10 @@ class IamDataFrame(object):
             self.data = read_ix(data, **kwargs)
         else:
             self.data = read_files(data, **kwargs)
+
+        # cast year column to `int` if necessary
+        if not self.data.year.dtype == 'int64':
+            self.data.year = cast_years_to_int(self.data.year)
 
         # define a dataframe for categorization and other metadata indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
