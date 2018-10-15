@@ -71,6 +71,17 @@ def test_line_color(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_fill_between(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, color='model', fill_between=True, legend=True)
+    return fig
+
+
+def test_line_color_fill_between_raises(plot_df):
+    pytest.raises(ValueError, plot_df.line_plot, fill_between=True)
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_marker_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, marker='model', legend=True)

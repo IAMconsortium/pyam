@@ -593,7 +593,7 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
 
 def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
               color=None, marker=None, linestyle=None, cmap=None,
-              rm_legend_label=[], **kwargs):
+              rm_legend_label=[], fill_between=None, **kwargs):
     """Plot data as lines with or without markers.
 
     Parameters
@@ -628,6 +628,12 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     cmap : string, optional
         A colormap to use.
         default: None
+    fill_between : boolean or dict, optional
+        Fill lines between minima/maxima of the 'color' argument. This can only
+        be used if also providing a 'color' argument. If this is True, then
+        default arguments will be provided to `ax.fill_between()`. If this is a
+        dictionary, those arguments will be provided instead of defaults.
+        default: None
     rm_legend_label : string, list, optional
         Remove the color, marker, or linestyle label in the legend.
         default: []
@@ -639,6 +645,9 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     # assign styling properties
     props = assign_style_props(df, color=color, marker=marker,
                                linestyle=linestyle, cmap=cmap)
+
+    if fill_between and not 'color' in props:
+        raise ValueError('Must use `color` kwarg if using `fill_between`')
 
     # reshape data for use in line_plot
     df = reshape_line_plot(df, x, y)  # long form to one column per line
@@ -652,6 +661,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
 
     # plot data, keeping track of which legend labels to apply
     no_label = [rm_legend_label] if isstr(rm_legend_label) else rm_legend_label
+
     for col, data in df.iteritems():
         pargs = {}
         labels = []
@@ -671,6 +681,17 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         data.plot(ax=ax, **kwargs)
         if labels:
             ax.lines[-1].set_label(' '.join(labels))
+
+    if fill_between:
+        fbkwargs = {'alpha': 0.25} if fill_between in [
+            True, None] else fill_between
+        mins = df.T.groupby(color).min()
+        maxs = df.T.groupby(color).max()
+        for idx in mins.index:
+            ymin = mins.loc[idx]
+            ymax = maxs.loc[idx]
+            ax.fill_between(ymin.index, ymin, ymax,
+                            facecolor=props['color'][idx], **fbkwargs)
 
     # build unique legend handles and labels
     handles, labels = ax.get_legend_handles_labels()
