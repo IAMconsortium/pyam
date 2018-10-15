@@ -1,6 +1,7 @@
 
 # Next Release
 
+- (#109)[https://github.com/IAMconsortium/pyam/pull/109] add ability to fill between in `line_plot()`
 - (#101)[https://github.com/IAMconsortium/pyam/pull/101] add function `cross_threshold()` to determine years where a timeseries crosses a given threshold
 - (#95)[https://github.com/IAMconsortium/pyam/pull/95] add a `scatter()` chart in the plotting library using metadata 
 - (#94)[https://github.com/IAMconsortium/pyam/pull/94] `set_meta()` can take pd.DataFrame (with columns `['model', 'scenario']`) as `index` arg
