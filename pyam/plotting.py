@@ -636,11 +636,11 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         dictionary, those arguments will be provided instead of defaults.
         default: None
     final_ranges : boolean or dict, optional
-        Add vertical line between minima/maxima of the 'color' argument in the 
-        last period plotted.  This can only
-        be used if also providing a 'color' argument. If this is True, then
-        default arguments will be provided to `ax.axvline()`. If this is a
-        dictionary, those arguments will be provided instead of defaults.
+        Add vertical line between minima/maxima of the 'color' argument in the
+        last period plotted.  This can only be used if also providing a 'color'
+        argument. If this is True, then default arguments will be provided to
+        `ax.axvline()`. If this is a dictionary, those arguments will be
+        provided instead of defaults.
         default: None
     rm_legend_label : string, list, optional
         Remove the color, marker, or linestyle label in the legend.
