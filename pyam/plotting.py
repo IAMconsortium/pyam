@@ -646,7 +646,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     props = assign_style_props(df, color=color, marker=marker,
                                linestyle=linestyle, cmap=cmap)
 
-    if fill_between and not 'color' in props:
+    if fill_between and 'color' not in props:
         raise ValueError('Must use `color` kwarg if using `fill_between`')
 
     # reshape data for use in line_plot
@@ -683,8 +683,8 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
             ax.lines[-1].set_label(' '.join(labels))
 
     if fill_between:
-        fbkwargs = {'alpha': 0.25} if fill_between in [
-            True, None] else fill_between
+        fbkwargs = {'alpha': 0.25} if fill_between in [True, None] \
+            else fill_between
         mins = df.T.groupby(color).min()
         maxs = df.T.groupby(color).max()
         for idx in mins.index:
