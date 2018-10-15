@@ -81,11 +81,6 @@ def test_line_color_fill_between(plot_df):
     return fig
 
 
-def test_line_color_fill_between_raises(plot_df):
-    fig, ax = plt.subplots(figsize=(8, 8))
-    pytest.raises(ValueError, plot_df.line_plot, fill_between=True)
-
-
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_marker_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
