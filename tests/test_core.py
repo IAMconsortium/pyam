@@ -33,6 +33,17 @@ def test_init_df_with_index(test_pd_df):
     pd.testing.assert_frame_equal(df.timeseries().reset_index(), test_pd_df)
 
 
+def test_init_df_with_float_cols_raises(test_pd_df):
+    _test_df = test_pd_df.rename(columns={2005: 2005.5, 2010: 2010.})
+    pytest.raises(ValueError, IamDataFrame, data=_test_df)
+
+
+def test_init_df_with_float_cols(test_pd_df):
+    _test_df = test_pd_df.rename(columns={2005: 2005., 2010: 2010.})
+    obs = IamDataFrame(_test_df).timeseries().reset_index()
+    pd.testing.assert_series_equal(obs[2005], test_pd_df[2005])
+
+
 def test_init_df_from_timeseries(test_df):
     df = IamDataFrame(test_df.timeseries())
     pd.testing.assert_frame_equal(df.timeseries(), test_df.timeseries())

@@ -1,5 +1,6 @@
 from pyam.core import *
 from pyam.utils import *
+from pyam.statistics import *
 from pyam.timeseries import *
 from pyam.logger import *
 from pyam.run_control import *

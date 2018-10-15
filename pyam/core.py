@@ -28,6 +28,7 @@ from pyam.utils import (
     years_match,
     isstr,
     islistable,
+    cast_years_to_int,
     META_IDX,
     YEAR_IDX,
     REGION_IDX,
@@ -67,6 +68,10 @@ class IamDataFrame(object):
             self.data = read_ix(data, **kwargs)
         else:
             self.data = read_files(data, **kwargs)
+
+        # cast year column to `int` if necessary
+        if not self.data.year.dtype == 'int64':
+            self.data.year = cast_years_to_int(self.data.year)
 
         # define a dataframe for categorization and other metadata indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
@@ -784,6 +789,9 @@ class IamDataFrame(object):
         if path.endswith('csv'):
             df = pd.read_csv(path, *args, **kwargs)
         else:
+            xl = pd.ExcelFile(path)
+            if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
+                kwargs['sheet_name'] = 'meta'
             df = pd.read_excel(path, *args, **kwargs)
 
         req_cols = ['model', 'scenario', 'exclude']
@@ -808,7 +816,7 @@ class IamDataFrame(object):
         # Merge in imported metadata
         msg = 'Importing metadata for {} scenario{} (for total of {})'
         logger().info(msg.format(len(df), 's' if len(df) > 1 else '',
-                      len(self.meta)))
+                                 len(self.meta)))
 
         for col in df.columns:
             self._new_meta_column(col)
@@ -869,6 +877,46 @@ class IamDataFrame(object):
         """
         df = self.as_pandas(with_metadata=True)
         ax = plotting.pie_plot(df, *args, **kwargs)
+        return ax
+
+    def scatter(self, x, y, **kwargs):
+        """Plot a scatter chart using metadata columns
+
+        see pyam.plotting.scatter() for all available options
+        """
+        xisvar = x in self.data['variable'].unique()
+        yisvar = y in self.data['variable'].unique()
+        if not xisvar and not yisvar:
+            df = self.meta.reset_index()
+        elif xisvar and yisvar:
+            # filter pivot both and rename
+            dfx = (
+                self
+                .filter(variable=x)
+                .as_pandas()
+                .rename(columns={'value': x, 'unit': 'xunit'})
+                .set_index(YEAR_IDX)
+                .drop('variable', axis=1)
+            )
+            dfy = (
+                self
+                .filter(variable=y)
+                .as_pandas()
+                .rename(columns={'value': y, 'unit': 'yunit'})
+                .set_index(YEAR_IDX)
+                .drop('variable', axis=1)
+            )
+            df = dfx.join(dfy).reset_index()
+        else:
+            # filter, merge with meta, and rename value column to match var
+            var = x if xisvar else y
+            df = (
+                self
+                .filter(variable=var)
+                .as_pandas(with_metadata=True)
+                .rename(columns={'value': var})
+            )
+        ax = plotting.scatter(df, x, y, **kwargs)
         return ax
 
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
@@ -1168,16 +1216,19 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     if not set(META_IDX).issubset(data.index.names + list(data.columns)):
         raise ValueError('missing required index dimensions or columns!')
 
-    meta = pd.DataFrame(df.meta[list(kwargs)].copy())
+    meta = pd.DataFrame(df.meta[list(set(kwargs) - set(META_IDX))].copy())
 
     # filter meta by columns
     keep = np.array([True] * len(meta))
     apply_filter = False
     for col, values in kwargs.items():
-        if values is not None:
-            keep_col = pattern_match(meta[col], values)
-            keep &= keep_col
+        if col in META_IDX and values is not None:
+            _col = meta.index.get_level_values(0 if col is 'model' else 1)
+            keep &= pattern_match(_col, values, has_nan=False)
             apply_filter = True
+        elif values is not None:
+            keep &= pattern_match(meta[col], values)
+        apply_filter |= values is not None
     meta = meta[keep]
 
     # set the data index to META_IDX and apply filtered meta index

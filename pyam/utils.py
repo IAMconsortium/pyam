@@ -131,6 +131,9 @@ def read_pandas(fname, *args, **kwargs):
     if fname.endswith('csv'):
         df = pd.read_csv(fname, *args, **kwargs)
     else:
+        xl = pd.ExcelFile(fname)
+        if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
+            kwargs['sheet_name'] = 'data'
         df = pd.read_excel(fname, *args, **kwargs)
     return df
 
@@ -184,7 +187,10 @@ def format_data(df):
         numcols = sorted(set(df.columns) - set(IAMC_IDX))
         df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
                      value_vars=numcols, value_name='value')
+
+    # cast year and value columns to numeric
     df['year'] = pd.to_numeric(df['year'])
+    df['value'] = df['value'].astype('float64')
 
     # drop NaN's
     df.dropna(inplace=True)
@@ -223,7 +229,7 @@ def find_depth(data, s, level):
     return list(map(apply_test, data))
 
 
-def pattern_match(data, values, level=None, regexp=False):
+def pattern_match(data, values, level=None, regexp=False, has_nan=True):
     """
     matching of model/scenario names, variables, regions, and meta columns to
     pseudo-regex (if `regexp == False`) for filtering (str, int, bool)
@@ -234,7 +240,8 @@ def pattern_match(data, values, level=None, regexp=False):
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.copy()
-    _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ''
+    if has_nan:
+        _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ''
 
     for s in values:
         if isstr(s):
@@ -263,3 +270,20 @@ def years_match(data, years):
     """
     years = [years] if isinstance(years, int) else years
     return data.isin(years)
+
+
+def cast_years_to_int(x, index=False):
+    """Formatting series or timeseries columns to int and checking validity.
+    If `index=False`, the function works on the `pd.Series x`; else,
+    the function casts the index of `x` to int and returns x with a new index.
+    """
+    _x = x.index if index else x
+    cols = list(map(int, _x))
+    error = _x[cols != _x]
+    if not error.empty:
+        raise ValueError('invalid values `{}`'.format(list(error)))
+    if index:
+        x.index = cols
+        return x
+    else:
+        return _x
