@@ -130,6 +130,9 @@ def read_pandas(fname, *args, **kwargs):
     if fname.endswith('csv'):
         df = pd.read_csv(fname, *args, **kwargs)
     else:
+        xl = pd.ExcelFile(fname)
+        if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
+            kwargs['sheet_name'] = 'data'
         df = pd.read_excel(fname, *args, **kwargs)
     return df
 
@@ -183,7 +186,10 @@ def format_data(df):
         numcols = sorted(set(df.columns) - set(IAMC_IDX))
         df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
                      value_vars=numcols, value_name='value')
+
+    # cast year and value columns to numeric
     df['year'] = pd.to_numeric(df['year'])
+    df['value'] = df['value'].astype('float64')
 
     # drop NaN's
     df.dropna(inplace=True)

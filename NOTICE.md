@@ -1,6 +1,6 @@
-   Copyright 2017 IIASA Energy Program
+   Copyright 2017-2018 IIASA Energy Program
 
-   The `pyam` package is licensed under 
+   The `pyam` package is licensed under
    the Apache License, Version 2.0 (the "License");
    you may not use the package except in compliance with the License.
    You may obtain a copy of the License at
