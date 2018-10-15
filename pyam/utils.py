@@ -228,7 +228,7 @@ def find_depth(data, s, level):
     return list(map(apply_test, data))
 
 
-def pattern_match(data, values, level=None, regexp=False):
+def pattern_match(data, values, level=None, regexp=False, has_nan=True):
     """
     matching of model/scenario names, variables, regions, and meta columns to
     pseudo-regex (if `regexp == False`) for filtering (str, int, bool)
@@ -239,7 +239,8 @@ def pattern_match(data, values, level=None, regexp=False):
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.copy()
-    _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ''
+    if has_nan:
+        _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ''
 
     for s in values:
         if isstr(s):

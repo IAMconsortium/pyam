@@ -106,6 +106,7 @@ See `this guide`_ for guidelines on NumPy/SciPy Documentation conventions.
    :maxdepth: 2
 
    IamDataFrame
+   Statistics
    pyam_functions
    timeseries
    examples/index

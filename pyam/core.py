@@ -1079,16 +1079,19 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     if not set(META_IDX).issubset(data.index.names + list(data.columns)):
         raise ValueError('missing required index dimensions or columns!')
 
-    meta = pd.DataFrame(df.meta[list(kwargs)].copy())
+    meta = pd.DataFrame(df.meta[list(set(kwargs) - set(META_IDX))].copy())
 
     # filter meta by columns
     keep = np.array([True] * len(meta))
     apply_filter = False
     for col, values in kwargs.items():
-        if values is not None:
-            keep_col = pattern_match(meta[col], values)
-            keep &= keep_col
+        if col in META_IDX and values is not None:
+            _col = meta.index.get_level_values(0 if col is 'model' else 1)
+            keep &= pattern_match(_col, values, has_nan=False)
             apply_filter = True
+        elif values is not None:
+            keep &= pattern_match(meta[col], values)
+        apply_filter |= values is not None
     meta = meta[keep]
 
     # set the data index to META_IDX and apply filtered meta index
