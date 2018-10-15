@@ -29,6 +29,7 @@ from pyam.logger import logger
 # common indicies
 META_IDX = ['model', 'scenario']
 YEAR_IDX = ['model', 'scenario', 'region', 'year']
+REGION_IDX = ['model', 'scenario', 'variable', 'year']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
 LONG_IDX = IAMC_IDX + ['year']
@@ -228,7 +229,7 @@ def find_depth(data, s, level):
     return list(map(apply_test, data))
 
 
-def pattern_match(data, values, level=None, regexp=False):
+def pattern_match(data, values, level=None, regexp=False, has_nan=True):
     """
     matching of model/scenario names, variables, regions, and meta columns to
     pseudo-regex (if `regexp == False`) for filtering (str, int, bool)
@@ -239,7 +240,8 @@ def pattern_match(data, values, level=None, regexp=False):
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.copy()
-    _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ''
+    if has_nan:
+        _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ''
 
     for s in values:
         if isstr(s):
@@ -268,3 +270,20 @@ def years_match(data, years):
     """
     years = [years] if isinstance(years, int) else years
     return data.isin(years)
+
+
+def cast_years_to_int(x, index=False):
+    """Formatting series or timeseries columns to int and checking validity.
+    If `index=False`, the function works on the `pd.Series x`; else,
+    the function casts the index of `x` to int and returns x with a new index.
+    """
+    _x = x.index if index else x
+    cols = list(map(int, _x))
+    error = _x[cols != _x]
+    if not error.empty:
+        raise ValueError('invalid values `{}`'.format(list(error)))
+    if index:
+        x.index = cols
+        return x
+    else:
+        return _x

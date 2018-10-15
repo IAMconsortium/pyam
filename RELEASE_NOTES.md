@@ -2,12 +2,15 @@
 # Next Release
 
 - (#109)[https://github.com/IAMconsortium/pyam/pull/109] add ability to fill between and add data ranges in `line_plot()`
+- (#104)[https://github.com/IAMconsortium/pyam/pull/104] fixes a bug with timeseries utils functions, ensures that years are cast as integers
 - (#101)[https://github.com/IAMconsortium/pyam/pull/101] add function `cross_threshold()` to determine years where a timeseries crosses a given threshold
+- (#98)[https://github.com/IAMconsortium/pyam/pull/98] add a module to compute and format summary statistics for timeseries data (wrapper for `pd.describe()`
 - (#95)[https://github.com/IAMconsortium/pyam/pull/95] add a `scatter()` chart in the plotting library using metadata 
 - (#94)[https://github.com/IAMconsortium/pyam/pull/94] `set_meta()` can take pd.DataFrame (with columns `['model', 'scenario']`) as `index` arg
 - (#93)[https://github.com/IAMconsortium/pyam/pull/93] IamDataFrame can be initilialzed from pd.DataFrame with index
 - (#92)[https://github.com/IAMconsortium/pyam/pull/92] Adding `$` to the pseudo-regexp syntax in `pattern_match()`, adds override option
 - (#90)[https://github.com/IAMconsortium/pyam/pull/90] Adding a function to `set_panel_label()` as part of the plotting library
+- (#88)[https://github.com/IAMconsortium/pyam/pull/88] Adding `check_aggregate_regions` and `check_internal_consistency` to help with database validation, especially for emissions users
 - (#87)[https://github.com/IAMconsortium/pyam/pull/87] Extending `rename()` to work with model and scenario names
 - (#85)[https://github.com/IAMconsortium/pyam/pull/85] Improved functionality for importing metadata and bugfix for filtering for strings if `nan` values exist in metadata
 - (#83)[https://github.com/IAMconsortium/pyam/pull/83] Extending `filter_by_meta()` to work with non-matching indices between `df` and `data
