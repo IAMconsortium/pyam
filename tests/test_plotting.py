@@ -78,6 +78,13 @@ def test_line_color_fill_between(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_final_ranges(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, color='model', final_ranges=True, legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_marker_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, marker='model', legend=True)

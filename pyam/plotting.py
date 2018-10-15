@@ -703,7 +703,11 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
             ax.fill_between(ymin.index, ymin, ymax,
                             facecolor=props['color'][idx], **_kwargs)
 
+    # add bars to the end of the plot showing range
     if final_ranges:
+        # have to explicitly draw it to get the tick labels (these change once
+        # you add the vlines)
+        plt.gcf().canvas.draw()
         _kwargs = {'linewidth': 2} if final_ranges in [True, None] \
             else final_ranges
         final = df.index[-1]
@@ -713,10 +717,22 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         ydiff = ymax - ymin
         xmin, xmax = ax.get_xlim()
         xdiff = xmax - xmin
+        xticks = ax.get_xticks()
+        xlabels = ax.get_xticklabels()
+        # 1.5% increase seems to be ok per extra line
+        extra_space = 0.015
+        # I have no idea why this factor is needed, but if I don't use it, then
+        # the lines will be slightly off (although all the math works out)
+        factor = 1.0175
         for i, idx in enumerate(mins.index):
-            ax.axvline(xmax + 0.015 * xdiff * i,
-                       ymin=mins[idx] / ydiff, ymax=maxs[idx] / ydiff,
+            xpos = final + xdiff * extra_space * (i + 1)
+            ymin = mins[idx] / ydiff * factor
+            ymax = maxs[idx] / ydiff * factor
+            ax.axvline(xpos, ymin=ymin, ymax=ymax,
                        color=props['color'][idx], **_kwargs)
+        ax.set_xlim(xmin, xmin + xdiff * (1 + extra_space * len(mins)))
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xlabels)
 
     # build unique legend handles and labels
     handles, labels = ax.get_legend_handles_labels()
