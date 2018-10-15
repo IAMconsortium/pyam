@@ -265,7 +265,10 @@ def years_match(data, years):
 
 
 def cast_years_to_int(x, index=False):
-    """formatting series or timeseries columns to int and checking validity"""
+    """Formatting series or timeseries columns to int and checking validity.
+    If `index=False`, the function works on the `pd.Series x`; else,
+    the function casts the index of `x` to int and returns x with a new index.
+    """
     _x = x.index if index else x
     cols = list(map(int, _x))
     error = _x[cols != _x]
