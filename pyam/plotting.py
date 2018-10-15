@@ -497,7 +497,7 @@ def bar_plot(df, x='year', y='value', bars='variable',
 
 def scatter(df, x, y, ax=None, legend=None, title=None,
             color=None, marker='o', linestyle=None, cmap=None,
-            groupby=['model', 'scenario'], **kwargs):
+            groupby=['model', 'scenario'], with_lines=False, **kwargs):
     """Plot data as a scatter chart.
 
     Parameters
@@ -529,6 +529,12 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
     cmap : string, optional
         A colormap to use.
         default: None
+    groupby : list-like, optional
+        Data grouping for plotting.
+        default: ['model', 'scenario']
+    with_lines : bool, optional
+        Make the scatter plot with lines connecting common data.
+        default: False
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
     if ax is None:
@@ -561,7 +567,11 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
         else:
             legend_data.append(' '.join(name))
         kwargs.update(pargs)
-        ax.plot(group[x], group[y], **kwargs)
+        if with_lines:
+            ax.plot(group[x], group[y], **kwargs)
+        else:
+            kwargs.pop('linestyle')  # scatter() can't take a linestyle
+            ax.scatter(group[x], group[y], **kwargs)
 
     # build legend handles and labels
     handles, labels = ax.get_legend_handles_labels()

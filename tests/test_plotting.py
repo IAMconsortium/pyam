@@ -375,6 +375,21 @@ def test_stack_plot_other(plot_df):
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_scatter(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.scatter(ax=ax, x='Primary Energy', y='Primary Energy|Coal')
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_scatter_with_lines(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.scatter(ax=ax, x='Primary Energy', y='Primary Energy|Coal',
+                    with_lines=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_scatter_meta(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.set_meta(meta=plot_df.filter(variable='Primary Energy')
                      .timeseries()[2010], name='Total')
     plot_df.set_meta(meta=plot_df.filter(variable='Primary Energy|Coal')
