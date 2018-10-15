@@ -593,7 +593,8 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
 
 def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
               color=None, marker=None, linestyle=None, cmap=None,
-              rm_legend_label=[], fill_between=None, **kwargs):
+              fill_between=None, final_ranges=None,
+              rm_legend_label=[], **kwargs):
     """Plot data as lines with or without markers.
 
     Parameters
@@ -634,6 +635,13 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         default arguments will be provided to `ax.fill_between()`. If this is a
         dictionary, those arguments will be provided instead of defaults.
         default: None
+    final_ranges : boolean or dict, optional
+        Add vertical line between minima/maxima of the 'color' argument in the 
+        last period plotted.  This can only
+        be used if also providing a 'color' argument. If this is True, then
+        default arguments will be provided to `ax.axvline()`. If this is a
+        dictionary, those arguments will be provided instead of defaults.
+        default: None
     rm_legend_label : string, list, optional
         Remove the color, marker, or linestyle label in the legend.
         default: []
@@ -648,6 +656,8 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
 
     if fill_between and 'color' not in props:
         raise ValueError('Must use `color` kwarg if using `fill_between`')
+    if final_ranges and 'color' not in props:
+        raise ValueError('Must use `color` kwarg if using `final_ranges`')
 
     # reshape data for use in line_plot
     df = reshape_line_plot(df, x, y)  # long form to one column per line
@@ -683,7 +693,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
             ax.lines[-1].set_label(' '.join(labels))
 
     if fill_between:
-        fbkwargs = {'alpha': 0.25} if fill_between in [True, None] \
+        _kwargs = {'alpha': 0.25} if fill_between in [True, None] \
             else fill_between
         mins = df.T.groupby(color).min()
         maxs = df.T.groupby(color).max()
@@ -691,7 +701,22 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
             ymin = mins.loc[idx]
             ymax = maxs.loc[idx]
             ax.fill_between(ymin.index, ymin, ymax,
-                            facecolor=props['color'][idx], **fbkwargs)
+                            facecolor=props['color'][idx], **_kwargs)
+
+    if final_ranges:
+        _kwargs = {'linewidth': 2} if final_ranges in [True, None] \
+            else final_ranges
+        final = df.index[-1]
+        mins = df.T.groupby(color).min()[final]
+        maxs = df.T.groupby(color).max()[final]
+        ymin, ymax = ax.get_ylim()
+        ydiff = ymax - ymin
+        xmin, xmax = ax.get_xlim()
+        xdiff = xmax - xmin
+        for i, idx in enumerate(mins.index):
+            ax.axvline(xmax + 0.015 * xdiff * i,
+                       ymin=mins[idx] / ydiff, ymax=maxs[idx] / ydiff,
+                       color=props['color'][idx], **_kwargs)
 
     # build unique legend handles and labels
     handles, labels = ax.get_legend_handles_labels()
