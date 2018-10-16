@@ -12,6 +12,7 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import matplotlib.patches as mpatches
 import numpy as np
+import pandas as pd
 
 try:
     import geopandas as gpd
@@ -695,8 +696,24 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     if fill_between:
         _kwargs = {'alpha': 0.25} if fill_between in [True, None] \
             else fill_between
-        mins = df.T.groupby(color).min()
-        maxs = df.T.groupby(color).max()
+        data = df.T
+        columns = data.columns
+        # get outer boundary mins and maxes
+        allmins = data.groupby(color).min()
+        intermins = (
+            data.dropna(axis=1).groupby(color).min()  # nonan data
+            .reindex(columns=columns)  # refill with nans
+            .T.interpolate(method='index').T  # interpolate
+        )
+        mins = pd.concat([allmins, intermins]).min(level=0)
+        allmaxs = data.groupby(color).max()
+        intermaxs = (
+            data.dropna(axis=1).groupby(color).max()  # nonan data
+            .reindex(columns=columns)  # refill with nans
+            .T.interpolate(method='index').T  # interpolate
+        )
+        maxs = pd.concat([allmaxs, intermaxs]).max(level=0)
+        # do the fill
         for idx in mins.index:
             ymin = mins.loc[idx]
             ymax = maxs.loc[idx]
