@@ -710,6 +710,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         plt.gcf().canvas.draw()
         _kwargs = {'linewidth': 2} if final_ranges in [True, None] \
             else final_ranges
+        first = df.index[0]
         final = df.index[-1]
         mins = df.T.groupby(color).min()[final]
         maxs = df.T.groupby(color).max()[final]
@@ -721,16 +722,15 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         xlabels = ax.get_xticklabels()
         # 1.5% increase seems to be ok per extra line
         extra_space = 0.015
-        # I have no idea why this factor is needed, but if I don't use it, then
-        # the lines will be slightly off (although all the math works out)
-        factor = 1.0175
         for i, idx in enumerate(mins.index):
             xpos = final + xdiff * extra_space * (i + 1)
-            ymin = mins[idx] / ydiff * factor
-            ymax = maxs[idx] / ydiff * factor
-            ax.axvline(xpos, ymin=ymin, ymax=ymax,
+            _ymin = (mins[idx] - ymin) / ydiff
+            _ymax = (maxs[idx] - ymin) / ydiff
+            ax.axvline(xpos, ymin=_ymin, ymax=_ymax,
                        color=props['color'][idx], **_kwargs)
-        ax.set_xlim(xmin, xmin + xdiff * (1 + extra_space * len(mins)))
+        # for equal spacing between xmin and first datapoint and xmax and last
+        # line
+        ax.set_xlim(xmin, xpos + first - xmin)
         ax.set_xticks(xticks)
         ax.set_xticklabels(xlabels)
 
