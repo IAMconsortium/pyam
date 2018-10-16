@@ -1,6 +1,7 @@
 import matplotlib
 import pytest
 import os
+import pyam
 
 # on CI, freetype version 2.6.1 works, but 2.8.0 does not
 # if we want to move to 2.8.0, then we will need to regenerate images
@@ -67,6 +68,39 @@ def test_line_no_legend(plot_df):
 def test_line_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, color='model', legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_fill_between(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, color='model', fill_between=True, legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_fill_between_interpolate(plot_df):
+    # designed to create the sawtooth behavior at a midpoint with missing data
+    df = pyam.IamDataFrame(plot_df.data.copy())
+    fig, ax = plt.subplots(figsize=(8, 8))
+    newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|Coal',
+               'EJ/y', 2010, 3.50]
+    df.data.loc[len(df.data) - 1] = newdata
+    newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|Coal',
+               'EJ/y', 2012, 3.50]
+    df.data.loc[len(df.data)] = newdata
+    newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|Coal',
+               'EJ/y', 2015, 3.50]
+    df.data.loc[len(df.data) + 1] = newdata
+    print(df.data)
+    df.line_plot(ax=ax, color='model', fill_between=True, legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_final_ranges(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, color='model', final_ranges=True, legend=True)
     return fig
 
 

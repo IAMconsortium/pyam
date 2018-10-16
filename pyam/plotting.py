@@ -12,6 +12,7 @@ import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import matplotlib.patches as mpatches
 import numpy as np
+import pandas as pd
 
 try:
     import geopandas as gpd
@@ -593,6 +594,7 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
 
 def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
               color=None, marker=None, linestyle=None, cmap=None,
+              fill_between=None, final_ranges=None,
               rm_legend_label=[], **kwargs):
     """Plot data as lines with or without markers.
 
@@ -628,6 +630,19 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     cmap : string, optional
         A colormap to use.
         default: None
+    fill_between : boolean or dict, optional
+        Fill lines between minima/maxima of the 'color' argument. This can only
+        be used if also providing a 'color' argument. If this is True, then
+        default arguments will be provided to `ax.fill_between()`. If this is a
+        dictionary, those arguments will be provided instead of defaults.
+        default: None
+    final_ranges : boolean or dict, optional
+        Add vertical line between minima/maxima of the 'color' argument in the
+        last period plotted.  This can only be used if also providing a 'color'
+        argument. If this is True, then default arguments will be provided to
+        `ax.axvline()`. If this is a dictionary, those arguments will be
+        provided instead of defaults.
+        default: None
     rm_legend_label : string, list, optional
         Remove the color, marker, or linestyle label in the legend.
         default: []
@@ -639,6 +654,11 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     # assign styling properties
     props = assign_style_props(df, color=color, marker=marker,
                                linestyle=linestyle, cmap=cmap)
+
+    if fill_between and 'color' not in props:
+        raise ValueError('Must use `color` kwarg if using `fill_between`')
+    if final_ranges and 'color' not in props:
+        raise ValueError('Must use `color` kwarg if using `final_ranges`')
 
     # reshape data for use in line_plot
     df = reshape_line_plot(df, x, y)  # long form to one column per line
@@ -652,6 +672,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
 
     # plot data, keeping track of which legend labels to apply
     no_label = [rm_legend_label] if isstr(rm_legend_label) else rm_legend_label
+
     for col, data in df.iteritems():
         pargs = {}
         labels = []
@@ -671,6 +692,64 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         data.plot(ax=ax, **kwargs)
         if labels:
             ax.lines[-1].set_label(' '.join(labels))
+
+    if fill_between:
+        _kwargs = {'alpha': 0.25} if fill_between in [True, None] \
+            else fill_between
+        data = df.T
+        columns = data.columns
+        # get outer boundary mins and maxes
+        allmins = data.groupby(color).min()
+        intermins = (
+            data.dropna(axis=1).groupby(color).min()  # nonan data
+            .reindex(columns=columns)  # refill with nans
+            .T.interpolate(method='index').T  # interpolate
+        )
+        mins = pd.concat([allmins, intermins]).min(level=0)
+        allmaxs = data.groupby(color).max()
+        intermaxs = (
+            data.dropna(axis=1).groupby(color).max()  # nonan data
+            .reindex(columns=columns)  # refill with nans
+            .T.interpolate(method='index').T  # interpolate
+        )
+        maxs = pd.concat([allmaxs, intermaxs]).max(level=0)
+        # do the fill
+        for idx in mins.index:
+            ymin = mins.loc[idx]
+            ymax = maxs.loc[idx]
+            ax.fill_between(ymin.index, ymin, ymax,
+                            facecolor=props['color'][idx], **_kwargs)
+
+    # add bars to the end of the plot showing range
+    if final_ranges:
+        # have to explicitly draw it to get the tick labels (these change once
+        # you add the vlines)
+        plt.gcf().canvas.draw()
+        _kwargs = {'linewidth': 2} if final_ranges in [True, None] \
+            else final_ranges
+        first = df.index[0]
+        final = df.index[-1]
+        mins = df.T.groupby(color).min()[final]
+        maxs = df.T.groupby(color).max()[final]
+        ymin, ymax = ax.get_ylim()
+        ydiff = ymax - ymin
+        xmin, xmax = ax.get_xlim()
+        xdiff = xmax - xmin
+        xticks = ax.get_xticks()
+        xlabels = ax.get_xticklabels()
+        # 1.5% increase seems to be ok per extra line
+        extra_space = 0.015
+        for i, idx in enumerate(mins.index):
+            xpos = final + xdiff * extra_space * (i + 1)
+            _ymin = (mins[idx] - ymin) / ydiff
+            _ymax = (maxs[idx] - ymin) / ydiff
+            ax.axvline(xpos, ymin=_ymin, ymax=_ymax,
+                       color=props['color'][idx], **_kwargs)
+        # for equal spacing between xmin and first datapoint and xmax and last
+        # line
+        ax.set_xlim(xmin, xpos + first - xmin)
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xlabels)
 
     # build unique legend handles and labels
     handles, labels = ax.get_legend_handles_labels()
