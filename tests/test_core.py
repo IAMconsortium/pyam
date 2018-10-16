@@ -533,6 +533,14 @@ def test_interpolate(test_df):
     assert not test_df.filter(**variable).data.duplicated().any()
 
 
+def test_set_meta_no_name(meta_df):
+    idx = pd.MultiIndex(levels=[['a_scenario'], ['a_model'], ['a_region']],
+                        labels=[[0], [0], [0]],
+                        names=['scenario', 'model', 'region'])
+    s = pd.Series(data=[0.3], index=idx)
+    pytest.raises(ValueError, meta_df.set_meta, s)
+
+
 def test_set_meta_as_named_series(meta_df):
     idx = pd.MultiIndex(levels=[['a_scenario'], ['a_model'], ['a_region']],
                         labels=[[0], [0], [0]],

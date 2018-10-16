@@ -277,11 +277,12 @@ class IamDataFrame(object):
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
         name: str, optional
-            meta column name (defaults to meta pd.Series.name)
+            meta column name (defaults to meta pd.Series.name);
+            either a meta.name or the name kwarg must be defined
         index: pyam.IamDataFrame, pd.DataFrame or pd.MultiIndex, optional
             index to be used for setting meta column (`['model', 'scenario']`)
         """
-        if not name and not hasattr(meta, 'name'):
+        if (name or (hasattr(meta, 'name') and meta.name)) in [None, False]:
             raise ValueError('Must pass a name or use a named pd.Series')
 
         # check if meta has a valid index and use it for further workflow
