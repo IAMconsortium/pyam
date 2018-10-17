@@ -92,7 +92,6 @@ def test_line_color_fill_between_interpolate(plot_df):
     newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|Coal',
                'EJ/y', 2015, 3.50]
     df.data.loc[len(df.data) + 1] = newdata
-    print(df.data)
     df.line_plot(ax=ax, color='model', fill_between=True, legend=True)
     return fig
 
