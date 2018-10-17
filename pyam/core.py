@@ -958,7 +958,27 @@ class IamDataFrame(object):
             _col = region_col or '{}.REGION'.format(model)
             _map = mapping.rename(columns={_col.lower(): 'region'})
             _map = _map[['region', map_col]].dropna().drop_duplicates()
-
+            if _map['region'].duplicated().any():
+                # find duplicates
+                where_dup = _map['region'].duplicated(keep=False)
+                dups = _map[where_dup]
+                logger().warning("""
+                Duplicate entries found for the following regions.
+                Mapping will occur only for the most common instance.
+                {}""".format(dups['region'].unique()))
+                # get non duplicates
+                _map = _map[~where_dup]
+                # order duplicates by the count frequency
+                dups = (dups
+                        .groupby(['region', map_col])
+                        .size()
+                        .reset_index(name='count')
+                        .sort_values(by='count', ascending=False)
+                        .drop('count', axis=1))
+                # take top occurance
+                dups = dups[~dups['region'].duplicated(keep='first')]
+                # combine them back
+                _map = pd.concat([_map, dups])
             if copy_col is not None:
                 df[copy_col] = df['region']
 
