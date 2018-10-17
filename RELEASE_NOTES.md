@@ -2,6 +2,7 @@
 # Next Release
 
 - (#111)[https://github.com/IAMconsortium/pyam/pull/111] extends `set_meta()` such that it requires a name (not None)
+- (#109)[https://github.com/IAMconsortium/pyam/pull/109] add ability to fill between and add data ranges in `line_plot()`
 - (#104)[https://github.com/IAMconsortium/pyam/pull/104] fixes a bug with timeseries utils functions, ensures that years are cast as integers
 - (#101)[https://github.com/IAMconsortium/pyam/pull/101] add function `cross_threshold()` to determine years where a timeseries crosses a given threshold
 - (#98)[https://github.com/IAMconsortium/pyam/pull/98] add a module to compute and format summary statistics for timeseries data (wrapper for `pd.describe()`
