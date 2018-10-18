@@ -921,7 +921,7 @@ class IamDataFrame(object):
         return ax
 
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
-                    region_col=None, inplace=False):
+                    region_col=None, remove_duplicates=False, inplace=False):
         """Plot regional data for a single model, scenario, variable, and year
 
         see pyam.plotting.region_plot() for all available options
@@ -939,6 +939,12 @@ class IamDataFrame(object):
             Use a non-default region mapping file
         region_col: string, optional
             Use a non-default column name for regions to map from.
+        remove_duplicates: bool, optional, default: False
+            If there are duplicates in the mapping from one regional level to
+            another, then remove these duplicates by counting the most common
+            mapped value.
+            This option is most useful when mapping from high resolution
+            (e.g., model regions) to low resolution (e.g., 5_region).
         inplace : bool, default False
             if True, do operation inplace and return None
         """
@@ -958,7 +964,8 @@ class IamDataFrame(object):
             _col = region_col or '{}.REGION'.format(model)
             _map = mapping.rename(columns={_col.lower(): 'region'})
             _map = _map[['region', map_col]].dropna().drop_duplicates()
-            if _map['region'].duplicated().any():
+            _map = _map[_map['region'].isin(_df['region'])]
+            if remove_duplicates and _map['region'].duplicated().any():
                 # find duplicates
                 where_dup = _map['region'].duplicated(keep=False)
                 dups = _map[where_dup]
