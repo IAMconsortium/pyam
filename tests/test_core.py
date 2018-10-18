@@ -763,6 +763,27 @@ def test_48b():
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
 
+def test_48c():
+    # tests fix for #48 mapping few->many, dropping duplicates
+
+    exp = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'AGO', 'var', 'unit', 1, 6],
+        ['model', 'scen1', 'AGO', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    )).data.reset_index(drop=True)
+
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'R5MAF', 'var', 'unit', 1, 6],
+        ['model', 'scen1', 'R5MAF', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+    obs = df.map_regions('iso', region_col='r5_region',
+                         remove_duplicates=True).data
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
 def test_rename_variable():
     df = IamDataFrame(pd.DataFrame([
         ['model', 'scen', 'SST', 'test_1', 'unit', 1, 5],
