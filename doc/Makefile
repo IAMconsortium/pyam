@@ -201,7 +201,6 @@ html-publish: html publish
 .PHONY: html-publish
 
 serve: html
-	cd $(BUILDDIR)/html
 	@echo
 	@echo "Serving from $(BUILDDIR)/html."
-	python -m SimpleHTTPServer
+	cd $(BUILDDIR)/html && python3 -m http.server
