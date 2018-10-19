@@ -148,27 +148,43 @@ class IamDataFrame(object):
             return pd.Series(self.data.variable.unique(), name='variable')
 
     def append(self, other, inplace=False, **kwargs):
-        """Import or read timeseries data and append to IamDataFrame
+        """Append any castable object to this IamDataFrame.
+        Columns in `other.meta` that are not in `self.meta` are merged,
+        duplicate region-variable-unit-year rows raise a ValueError.
 
         Parameters
         ----------
         other: pyam.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
         pd.DataFrame or data file
-            an IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
-            or pd.DataFrame or data file with IAMC-format data columns
+            An IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
+            pandas.DataFrame or data file with IAMC-format data columns
         inplace : bool, default False
-            if True, do operation inplace and return None
+            If True, do operation inplace and return None
         """
         ret = copy.deepcopy(self) if not inplace else self
 
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
 
-        # check that any model/scenario is not yet included in IamDataFrame
-        ret.meta = ret.meta.append(other.meta, verify_integrity=True)
+        # join other.meta for new scenarios
+        diff = other.meta.index.difference(ret.meta.index)
+        intersect = other.meta.index.intersection(ret.meta.index)
 
-        # add new data
-        ret.data = ret.data.append(other.data).reset_index(drop=True)
+        if not diff.empty:
+            ret.meta = ret.meta.append(other.meta.loc[diff, :], sort=False)
+
+        # merge other.meta columns not in self.meta for existing scenarios
+        if not intersect.empty:
+            _meta = other.meta.loc[intersect, [i for i in other.meta.columns
+                                               if i not in ret.meta.columns]]
+            ret.meta = ret.meta.merge(_meta, how='outer',
+                                      left_index=True, right_index=True)
+
+        # append other.data (verify integrity for no duplicates)
+        ret.data.set_index(LONG_IDX, inplace=True)
+        other.data.set_index(LONG_IDX, inplace=True)
+        ret.data = ret.data.append(other.data, verify_integrity=True)\
+            .reset_index(drop=False)
 
         if not inplace:
             return ret
