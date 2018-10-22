@@ -532,10 +532,8 @@ def test_append_other_scenario(meta_df):
 
 
 def test_append_same_scenario(meta_df):
-    other = (
-            meta_df.filter(scenario='a_scenario2')
-            .rename({'variable': {'Primary Energy': 'Primary Energy clone'}})
-            )
+    other = meta_df.filter(scenario='a_scenario2')\
+        .rename({'variable': {'Primary Energy': 'Primary Energy clone'}})
 
     meta_df.set_meta([0, 1], name='col1')
 
