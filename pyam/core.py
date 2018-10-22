@@ -166,10 +166,10 @@ class IamDataFrame(object):
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
 
-        # join other.meta for new scenarios
         diff = other.meta.index.difference(ret.meta.index)
         intersect = other.meta.index.intersection(ret.meta.index)
 
+        # join other.meta for new scenarios
         if not diff.empty:
             ret.meta = ret.meta.append(other.meta.loc[diff, :], sort=False)
 
