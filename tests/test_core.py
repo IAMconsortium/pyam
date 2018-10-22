@@ -540,7 +540,11 @@ def test_append_same_scenario(meta_df):
     other.set_meta(2, name='col1')
     other.set_meta('b', name='col2')
 
-    df = meta_df.append(other)
+    # check that non-matching meta raise an error
+    pytest.raises(AssertionError, meta_df.append, other=other)
+
+    # check that ignoring meta conflict works as expetced
+    df = meta_df.append(other, ignore_meta_conflict=True)
 
     # check that the new meta.index is updated, but not the original one
     npt.assert_array_equal(meta_df.meta.columns, ['exclude', 'col1'])

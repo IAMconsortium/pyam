@@ -147,9 +147,10 @@ class IamDataFrame(object):
         else:
             return pd.Series(self.data.variable.unique(), name='variable')
 
-    def append(self, other, inplace=False, **kwargs):
+    def append(self, other, ignore_meta_conflict=False, inplace=False,
+               **kwargs):
         """Append any castable object to this IamDataFrame.
-        Columns in `other.meta` that are not in `self.meta` are merged,
+        Columns in `other.meta` that are not in `self.meta` are always merged,
         duplicate region-variable-unit-year rows raise a ValueError.
 
         Parameters
@@ -158,6 +159,9 @@ class IamDataFrame(object):
         pd.DataFrame or data file
             An IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
             pandas.DataFrame or data file with IAMC-format data columns
+        ignore_meta_conflict : bool, default False
+            If False and `other` is an IamDataFrame, raise an error if
+            any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             If True, do operation inplace and return None
         """
@@ -165,12 +169,19 @@ class IamDataFrame(object):
 
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
+            ignore_meta_conflict = True
 
         diff = other.meta.index.difference(ret.meta.index)
         intersect = other.meta.index.intersection(ret.meta.index)
 
         # merge other.meta columns not in self.meta for existing scenarios
         if not intersect.empty:
+            # if not ignored, check that overlapping meta dataframes are equal
+            if not ignore_meta_conflict:
+                cols = [i for i in other.meta.columns if i in ret.meta.columns]
+                pd.testing.assert_frame_equal(ret.meta.loc[intersect, cols],
+                                              other.meta.loc[intersect, cols])
+
             cols = [i for i in other.meta.columns if i not in ret.meta.columns]
             _meta = other.meta.loc[intersect, cols]
             ret.meta = ret.meta.merge(_meta, how='outer',
