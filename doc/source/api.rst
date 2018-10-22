@@ -1,7 +1,25 @@
 .. currentmodule:: pyam
 
+Python API
+**********
+
+Class IamDataFrame
+~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: IamDataFrame
+   :members:
+
+Useful `pyam` functions
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: filter_by_meta
+
+.. autofunction:: cumulative
+
+.. autofunction:: fill_series
+
 Class Statistics
-================
+~~~~~~~~~~~~~~~~
 
 This class provides a wrapper for generating descriptive summary statistics
 for timeseries data using various groupbys or filters.
