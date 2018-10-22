@@ -8,9 +8,6 @@ IAMC-style Data
 An illustrative example of IAMC-style data is shown below;
 see https://data.ene.iiasa.ac.at/database for more information.
 
-.. _`pandas.DataFrame`:
-   https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
-
 ============  =============  ==========  ==============  ========  ========  ========  ========
 **Model**     **Scenario**   **Region**  **Variable**    **Unit**  **2005**  **2010**  **2015**
 ============  =============  ==========  ==============  ========  ========  ========  ========
