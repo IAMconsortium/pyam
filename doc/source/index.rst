@@ -26,7 +26,7 @@ Release v\ |version|.
    :target: https://doi.org/10.5281/zenodo.802832
 
 The **pyam** Python package provides a range of diagnostic tools and functions
-for analyzing and visualising data in the IAMC timeseries format.
+for analyzing and visualizing data from your favorite assessment model(s).
 
 Overview
 --------
