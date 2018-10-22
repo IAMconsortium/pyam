@@ -64,6 +64,7 @@ Documentation
 
    install
    data
-   api
+   tutorials
    examples/index
+   api
 

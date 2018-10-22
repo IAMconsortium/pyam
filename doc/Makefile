@@ -53,6 +53,7 @@ help:
 clean:
 	rm -rf $(BUILDDIR)/*
 	rm -rf examples/*
+	rm -rf source/tutorials/.ipynb_checkpoints/
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
