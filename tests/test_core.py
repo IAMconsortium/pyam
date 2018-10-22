@@ -524,6 +524,8 @@ def test_append_other_scenario(meta_df):
     ], columns=['model', 'scenario', 'exclude', 'col1', 'col2', 'col3']
     ).set_index(['model', 'scenario'])
 
+    # sort columns for assertion in older pandas versions
+    df.meta.reindex(columns=exp.columns, copy=False)
     pd.testing.assert_frame_equal(df.meta, exp)
 
     # assert that appending data works as expected
