@@ -40,21 +40,11 @@ Features:
  - Categorization of scenarios according to timeseries data
    or metadata for further analysis.
 
-An illustrative example of IAMC-style data is shown below;
-see https://data.ene.iiasa.ac.at/database for more information.
+.. _`IAMC`:
+   https://data.ene.iiasa.ac.at/database
 
 .. _`pandas.DataFrame`:
    https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
-
-.. _`IAMC`:
-   http://www.globalchange.umd.edu/iamc/
-
-============  =============  ==========  ==============  ========  ========  ========  ========
-**Model**     **Scenario**   **Region**  **Variable**    **Unit**  **2005**  **2010**  **2015**
-============  =============  ==========  ==============  ========  ========  ========  ========
-MESSAGE V.4   AMPERE3-Base   World       Primary Energy  EJ/y      454.5     479.6     ...
-...           ...            ...         ...             ...       ...       ...       ...
-============  =============  ==========  ==============  ========  ========  ========  ========
 
 Documentation
 -------------

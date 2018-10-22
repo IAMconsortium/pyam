@@ -8,7 +8,7 @@ Via Conda
 
 .. code-block:: bash
 
-    conda install -c pyam
+    conda install -c conda-forge pyam
 
 Via Pip
 ~~~~~~~
@@ -28,6 +28,12 @@ Depedencies
 ~~~~~~~~~~~
 
 The depedencies for :code:`pyam` are:
+
+  .. include:: ../../requirements.txt
+	  :start-line: 1
+	  :literal:
+
+The depedencies for building this documentation are:
 
   .. include:: ../requirements.txt
 	  :start-line: 1
