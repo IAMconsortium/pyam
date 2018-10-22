@@ -169,16 +169,19 @@ class IamDataFrame(object):
         diff = other.meta.index.difference(ret.meta.index)
         intersect = other.meta.index.intersection(ret.meta.index)
 
-        # join other.meta for new scenarios
-        if not diff.empty:
-            ret.meta = ret.meta.append(other.meta.loc[diff, :], sort=False)
-
         # merge other.meta columns not in self.meta for existing scenarios
         if not intersect.empty:
-            _meta = other.meta.loc[intersect, [i for i in other.meta.columns
-                                               if i not in ret.meta.columns]]
+            cols = [i for i in other.meta.columns if i not in ret.meta.columns]
+            _meta = other.meta.loc[intersect, cols]
             ret.meta = ret.meta.merge(_meta, how='outer',
                                       left_index=True, right_index=True)
+
+        # join other.meta for new scenarios
+        if not diff.empty:
+            # sorting not supported by ` pd.append()`  prior to version 23
+            sort_kwarg = {} if int(pd.__version__.split('.')[1]) < 23 \
+                else dict(sort=False)
+            ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
 
         # append other.data (verify integrity for no duplicates)
         ret.data.set_index(LONG_IDX, inplace=True)
