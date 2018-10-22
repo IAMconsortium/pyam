@@ -43,7 +43,15 @@ extensions = [
     'nbsphinx',
     'sphinxcontrib.programoutput',
     'sphinx.ext.mathbase',
+    'sphinx_gallery.gen_gallery',
 ]
+
+sphinx_gallery_conf = {
+    # path to your examples scripts
+    'examples_dirs': '_examples',
+    # path where to save gallery generated examples
+    'gallery_dirs': 'examples'
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

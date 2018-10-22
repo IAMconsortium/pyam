@@ -51,8 +51,8 @@ help:
 	@echo "  serve      serve a local version of the website on the default port for SimpleHTTPServer"
 
 clean:
-	rm -rf $(BUILDDIR)/*
-	rm -rf examples/*
+	rm -rf $(BUILDDIR)
+	rm -rf source/examples
 	rm -rf source/tutorials/.ipynb_checkpoints/
 
 html:
