@@ -19,9 +19,6 @@ Release v\ |version|.
 .. image:: https://ci.appveyor.com/api/projects/status/github/IAMconsortium/pyam?svg=true&passingText=passing&failingText=failing&pendingText=pending
       :target: https://ci.appveyor.com/project/IAMconsortium/pyam
 
-.. image:: https://coveralls.io/repos/github/IAMconsortium/pyam/badge.svg?branch=master
-    :target: https://coveralls.io/github/IAMconsortium/pyam?branch=master
-
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.802832.svg
    :target: https://doi.org/10.5281/zenodo.802832
 
