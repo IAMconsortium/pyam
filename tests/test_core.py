@@ -543,7 +543,7 @@ def test_append_same_scenario(meta_df):
     other.set_meta('b', name='col2')
 
     # check that non-matching meta raise an error
-    pytest.raises(AssertionError, meta_df.append, other=other)
+    pytest.raises(ValueError, meta_df.append, other=other)
 
     # check that ignoring meta conflict works as expetced
     df = meta_df.append(other, ignore_meta_conflict=True)

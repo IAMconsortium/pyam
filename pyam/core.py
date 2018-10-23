@@ -179,8 +179,16 @@ class IamDataFrame(object):
             # if not ignored, check that overlapping meta dataframes are equal
             if not ignore_meta_conflict:
                 cols = [i for i in other.meta.columns if i in ret.meta.columns]
-                pd.testing.assert_frame_equal(ret.meta.loc[intersect, cols],
-                                              other.meta.loc[intersect, cols])
+                if not ret.meta.loc[intersect, cols].equals(
+                        other.meta.loc[intersect, cols]):
+                    conflict_idx = (
+                        pd.concat([ret.meta.loc[intersect, cols],
+                                   other.meta.loc[intersect, cols]]
+                                  ).drop_duplicates().index.drop_duplicates()
+                        )
+                    msg = 'conflict in `meta` for scenarios {}'.format(
+                        [i for i in pd.DataFrame(index=conflict_idx).index])
+                    raise ValueError(msg)
 
             cols = [i for i in other.meta.columns if i not in ret.meta.columns]
             _meta = other.meta.loc[intersect, cols]
