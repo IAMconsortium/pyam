@@ -28,7 +28,7 @@ for analyzing and visualizing data from your favorite assessment model(s).
 Overview
 --------
 
-Features:
+Some of the **pyam** features include:
  - Easily filter and manipulate data in the `IAMC`_ timeseries format
  - An interface similar in feel and style to `pandas.DataFrame`_
  - Advanced visualization and plotting functions.
@@ -42,6 +42,9 @@ Features:
 
 .. _`pandas.DataFrame`:
    https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
+
+After installing, check out our tutorials or our plotting gallery to get
+started.
 
 Documentation
 -------------
