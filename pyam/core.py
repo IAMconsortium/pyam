@@ -147,28 +147,67 @@ class IamDataFrame(object):
         else:
             return pd.Series(self.data.variable.unique(), name='variable')
 
-    def append(self, other, inplace=False, **kwargs):
-        """Import or read timeseries data and append to IamDataFrame
+    def append(self, other, ignore_meta_conflict=False, inplace=False,
+               **kwargs):
+        """Append any castable object to this IamDataFrame.
+        Columns in `other.meta` that are not in `self.meta` are always merged,
+        duplicate region-variable-unit-year rows raise a ValueError.
 
         Parameters
         ----------
         other: pyam.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
         pd.DataFrame or data file
-            an IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
-            or pd.DataFrame or data file with IAMC-format data columns
+            An IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
+            pandas.DataFrame or data file with IAMC-format data columns
+        ignore_meta_conflict : bool, default False
+            If False and `other` is an IamDataFrame, raise an error if
+            any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
-            if True, do operation inplace and return None
+            If True, do operation inplace and return None
         """
         ret = copy.deepcopy(self) if not inplace else self
 
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
+            ignore_meta_conflict = True
 
-        # check that any model/scenario is not yet included in IamDataFrame
-        ret.meta = ret.meta.append(other.meta, verify_integrity=True)
+        diff = other.meta.index.difference(ret.meta.index)
+        intersect = other.meta.index.intersection(ret.meta.index)
 
-        # add new data
-        ret.data = ret.data.append(other.data).reset_index(drop=True)
+        # merge other.meta columns not in self.meta for existing scenarios
+        if not intersect.empty:
+            # if not ignored, check that overlapping meta dataframes are equal
+            if not ignore_meta_conflict:
+                cols = [i for i in other.meta.columns if i in ret.meta.columns]
+                if not ret.meta.loc[intersect, cols].equals(
+                        other.meta.loc[intersect, cols]):
+                    conflict_idx = (
+                        pd.concat([ret.meta.loc[intersect, cols],
+                                   other.meta.loc[intersect, cols]]
+                                  ).drop_duplicates()
+                        .index.drop_duplicates()
+                                   )
+                    msg = 'conflict in `meta` for scenarios {}'.format(
+                        [i for i in pd.DataFrame(index=conflict_idx).index])
+                    raise ValueError(msg)
+
+            cols = [i for i in other.meta.columns if i not in ret.meta.columns]
+            _meta = other.meta.loc[intersect, cols]
+            ret.meta = ret.meta.merge(_meta, how='outer',
+                                      left_index=True, right_index=True)
+
+        # join other.meta for new scenarios
+        if not diff.empty:
+            # sorting not supported by ` pd.append()`  prior to version 23
+            sort_kwarg = {} if int(pd.__version__.split('.')[1]) < 23 \
+                else dict(sort=False)
+            ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
+
+        # append other.data (verify integrity for no duplicates)
+        ret.data.set_index(LONG_IDX, inplace=True)
+        other.data.set_index(LONG_IDX, inplace=True)
+        ret.data = ret.data.append(other.data, verify_integrity=True)\
+            .reset_index(drop=False)
 
         if not inplace:
             return ret
