@@ -56,12 +56,12 @@ def test_pyam_first_steps(capsys):
     assert errors == []
 
 
-# @pytest.mark.skipif(not jupyter_installed,
-#                     reason='requires Jupyter Notebook to be installed')
-# def test_checking_databases():
-#     fname = os.path.join(tut_path, 'checking_databases.ipynb')
-#     nb, errors = _notebook_run(fname)
-#     assert errors == []
+@pytest.mark.skipif(not jupyter_installed,
+                    reason='requires Jupyter Notebook to be installed')
+def test_checking_databases():
+    fname = os.path.join(tut_path, 'checking_databases.ipynb')
+    nb, errors = _notebook_run(fname)
+    assert errors == []
 
 
 @pytest.mark.skipif(not jupyter_installed,
