@@ -184,8 +184,9 @@ class IamDataFrame(object):
                     conflict_idx = (
                         pd.concat([ret.meta.loc[intersect, cols],
                                    other.meta.loc[intersect, cols]]
-                                  ).drop_duplicates().index.drop_duplicates()
-                        )
+                                  ).drop_duplicates()
+                        .index.drop_duplicates()
+                                   )
                     msg = 'conflict in `meta` for scenarios {}'.format(
                         [i for i in pd.DataFrame(index=conflict_idx).index])
                     raise ValueError(msg)
