@@ -13,7 +13,7 @@ try:
 except:
     jupyter_installed = False
 
-tut_path = os.path.join(here, '..', 'tutorial')
+tut_path = os.path.join(here, '..', 'doc', 'source', 'tutorials')
 
 # taken from the execellent example here:
 # https://blog.thedataincubator.com/2016/06/testing-jupyter-notebooks/
@@ -56,7 +56,14 @@ def test_pyam_first_steps(capsys):
 
 
 @pytest.mark.skipif(not jupyter_installed, reason='requires Jupyter Notebook to be installed')
-def test_plotting():
-    fname = os.path.join(tut_path, 'plotting.ipynb')
+def test_checking_databases():
+    fname = os.path.join(tut_path, 'checking_databases.ipynb')
+    nb, errors = _notebook_run(fname)
+    assert errors == []
+
+
+@pytest.mark.skipif(not jupyter_installed, reason='requires Jupyter Notebook to be installed')
+def test_pyam_logo():
+    fname = os.path.join(tut_path, 'pyam_logo.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
