@@ -4,8 +4,10 @@ Plot Regional Data
 ==================
 
 """
-import matplotlib.pyplot as plt
+import cartopy
 import pyam
+
+import matplotlib.pyplot as plt
 
 fname = 'data.csv'
 
@@ -19,6 +21,6 @@ df = (df
 
 print(df.head())
 
-df.region_plot()
+df.region_plot(crs=cartopy.crs.Robinson())
 
 plt.show()

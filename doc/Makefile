@@ -51,8 +51,9 @@ help:
 	@echo "  serve      serve a local version of the website on the default port for SimpleHTTPServer"
 
 clean:
-	rm -rf $(BUILDDIR)/*
-	rm -rf examples/*
+	rm -rf $(BUILDDIR)
+	rm -rf source/examples
+	rm -rf source/tutorials/.ipynb_checkpoints/
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -201,7 +202,6 @@ html-publish: html publish
 .PHONY: html-publish
 
 serve: html
-	cd $(BUILDDIR)/html
 	@echo
 	@echo "Serving from $(BUILDDIR)/html."
-	python -m SimpleHTTPServer
+	cd $(BUILDDIR)/html && python3 -m http.server

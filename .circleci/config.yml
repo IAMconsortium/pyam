@@ -33,7 +33,7 @@ jobs:
           when: always
       - run:
           name: Make Docs
-          command:  docker run pyam/pyam-py3:latest /bin/bash -c "cd /pyam/doc && pip install -r requirements.txt && make html"
+          command:  docker run pyam/pyam-py3:latest /bin/bash -c "apt-get install --yes pandoc && cd /pyam/doc && pip install -r requirements.txt && make html"
           when: always
       - run:
           name: check artifacts

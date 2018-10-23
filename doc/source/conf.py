@@ -19,7 +19,6 @@ import shlex
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#sys.path.insert(0, os.path.abspath('.'))
 
 # -- General configuration ------------------------------------------------
 
@@ -36,17 +35,13 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'cloud_sptheme.ext.table_styling',
     'numpydoc',
     'nbsphinx',
-    'sphinxcontrib.fulltoc',
     'sphinxcontrib.programoutput',
-    'IPython.sphinxext.ipython_directive',
-    'IPython.sphinxext.ipython_console_highlighting',
+    'sphinx.ext.mathbase',
     'sphinx_gallery.gen_gallery',
 ]
 
@@ -73,8 +68,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyam'
-copyright = u'2017-2018, Matthew Gidden & Daniel Huppmann @ IIASA Energy Program'
-author = u'Matthew Gidden, Daniel Huppmann'
+copyright = u'2018, Matthew Gidden & Daniel Huppmann'
+author = u'Matthew Gidden & Daniel Huppmann'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -100,7 +95,7 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_themes/*']
+exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -143,7 +138,7 @@ html_theme = 'kr'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {}
+#html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -157,7 +152,7 @@ html_theme_options = {}
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = '_static/logo.svg'
+html_logo = '_static/logo.svg'
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -167,7 +162,7 @@ html_theme_options = {}
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['css']
+html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -297,7 +292,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'pyam', u'pyam Documentation',
-     author, 'pyam', 'a Python toolkit for IAM scenario analysis and visualization',
+     author, 'pyam', 'One line description of project.',
      'Miscellaneous'),
 ]
 

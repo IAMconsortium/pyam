@@ -32,8 +32,6 @@ build: false
 test_script:
   - pip install pytest pytest-mpl
   - pytest -v --mpl tests --mpl-results-path=test-artifacts
-  - cd doc && pip install -r requirements.txt
-  - .\make.bat html
 
 artifacts:
   - path: 'test-artifacts\*\*'

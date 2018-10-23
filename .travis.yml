@@ -25,4 +25,3 @@ install:
 script:
   - pip install pytest pytest-mpl
   - pytest -v --mpl tests
-  - cd doc && pip install -r requirements.txt && make html

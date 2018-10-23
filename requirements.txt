@@ -6,3 +6,6 @@ xlrd
 xlsxwriter
 matplotlib
 seaborn
+six
+geopandas
+cartopy

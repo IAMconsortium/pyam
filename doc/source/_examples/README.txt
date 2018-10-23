@@ -1,6 +1,6 @@
 .. _examples:
 
-Examples
-========
+Plotting Gallery
+================
 
-Some examples of `pyam`'s tools, features, and plotting capabilities.
+A variety of examples of :code:`pyam`'s plotting capabilities.
