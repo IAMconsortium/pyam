@@ -22,6 +22,7 @@ From Source
 
 .. code-block:: bash
 
+    git clone https://github.com/IAMconsortium/pyam && cd pyam
     pip install -r requirements.txt && python setup.py install
 
 Depedencies

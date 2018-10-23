@@ -32,7 +32,7 @@ Overview
 --------
 
 Features:
- - Easily filter and manipulate `IAMC`_ compliant data
+ - Easily filter and manipulate data in the `IAMC`_ timeseries format
  - An interface similar in feel and style to `pandas.DataFrame`_
  - Advanced visualization and plotting functions.
  - Diagnostic checks for non-reported variables or timeseries values
