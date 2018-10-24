@@ -29,3 +29,12 @@ publish-on-pypi:
 	else \
 		echo Working directory is dirty >&2; \
 	fi;
+
+.PHONY: release-on-conda
+release-on-conda:
+	@echo 'For now, this is all very manual'
+	@echo 'Checklist:'
+	@echo '- version number'
+	@echo '- sha'
+	@echo '- README.md badge'
+	@echo '- release notes up to date'
