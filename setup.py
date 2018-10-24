@@ -64,7 +64,9 @@ class RunTests(Command):
 
 def main():
     print(logo)
-
+    classifiers = [
+        "License :: OSI Approved :: Apache Software License",,
+    ]
     packages = [
         'pyam',
     ]
@@ -100,6 +102,8 @@ def main():
         "name": "pyam-iamc",
         "version": INFO['version'],
         "description": 'Analyze & Visualize Assessment Model Results',
+        "classifiers": classifiers,
+        "license": "Apache License 2.0",
         "author": 'Matthew Gidden & Daniel Huppmann',
         "author_email": 'matthew.gidden@gmail.com',
         "url": 'https://github.com/IAMconsortium/pyam',
