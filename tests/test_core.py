@@ -2,6 +2,7 @@ import os
 import copy
 import pytest
 import re
+from unittest.mock import Mock
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ from pyam import (IamDataFrame, OpenSCMDataFrame, plotting, validate, categorize
                   require_variable, check_aggregate, filter_by_meta, META_IDX,
                   IAMC_IDX)
 from pyam.core import _meta_idx
+from pyam.errors import ConversionError
 
 from conftest import TEST_DATA_DIR
 
@@ -993,3 +995,90 @@ def test_pd_join_by_meta_nonmatching_index(meta_df):
     exp['string'] = [np.nan, np.nan, 'b']
 
     pd.testing.assert_frame_equal(obs.sort_index(level=1), exp)
+
+
+@pytest.mark.xfail(reason="cast_years_to_int isn't actually casting, rather just checking that if you cast years to int, you end up with the same thing, without actually returning the cast values")
+def test_iam_df_year_axis_to_int(test_df_iam):
+    float_time_df = test_df_iam.data.copy()
+    float_time_df.year = float_time_df.year.astype(float)
+    test_df = IamDataFrame(data=float_time_df)
+
+    # the first assertion is a sanity check
+    assert test_df_iam.data.year.dtype <= np.integer
+    assert test_df.data.year.dtype <= np.integer
+
+
+def test_openscm_df_year_axis_is_float(float_time_pd_df):
+    float_time_pd_df.rename({"year": "time"}, axis="columns", inplace=True)
+    test_df = OpenSCMDataFrame(data=float_time_pd_df)
+    assert test_df.data.year.dtype <= np.float
+
+
+@pytest.mark.parametrize("error_cls", [Exception, KeyError, AttributeError])
+def test_worst_case_conversion_error_to_openscm(test_df_iam, error_cls):
+    test_df_iam._get_openscm_df_data_except_year_renaming_and_metadata = Mock(side_effect=error_cls("Test"))
+    error_msg = (
+        re.escape("I don't know why, but I can't convert to an OpenSCMDataFrame.")
+        + r"\n"
+        + re.escape("The original traceback is:")
+        + r"\n[\s\S]*Test[\s\S]*"
+    )
+    with pytest.raises(ConversionError, match=error_msg):
+        test_df_iam.to_openscm_df()
+
+
+def test_to_openscm_df(test_df_iam):
+    exp = pd.DataFrame([
+        ['N/A', 'a_scenario|a_model', 'World', 'Primary Energy', 'EJ/y', 2005, 1],
+        ['N/A', 'a_scenario|a_model', 'World', 'Primary Energy', 'EJ/y', 2010, 6.],
+        ['N/A', 'a_scenario|a_model', 'World', 'Primary Energy|Coal', 'EJ/y', 2005, 0.5],
+        ['N/A', 'a_scenario|a_model', 'World', 'Primary Energy|Coal', 'EJ/y', 2010, 3],
+    ],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 'year', 'value'],
+    )
+
+    obs = test_df_iam.to_openscm_df()
+    assert obs.data.year.dtype <= np.float
+    pd.testing.assert_frame_equal(obs.data, exp, check_index_type=False)
+
+
+def test_to_from_openscm_df_loop(test_df_iam):
+    obs = test_df_iam.to_openscm_df().to_iam_df()
+
+    exp_df = test_df_iam.data.reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs.data, exp_df)
+    pd.testing.assert_frame_equal(obs.meta, test_df_iam.meta)
+
+
+def test_to_iam_df(test_df_openscm):
+    exp = pd.DataFrame([
+        ['N/A', 'a_scenario', 'World', 'Diagnostics|a_model|Primary Energy', 'EJ/y', 2005, 1],
+        ['N/A', 'a_scenario', 'World', 'Diagnostics|a_model|Primary Energy', 'EJ/y', 2010, 6.],
+        ['N/A', 'a_scenario', 'World', 'Diagnostics|a_model|Primary Energy|Coal', 'EJ/y', 2005, 0.5],
+        ['N/A', 'a_scenario', 'World', 'Diagnostics|a_model|Primary Energy|Coal', 'EJ/y', 2010, 3],
+    ],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 'year', 'value'],
+    )
+
+    obs = test_df_openscm.to_iam_df()
+    pd.testing.assert_frame_equal(obs.data, exp, check_index_type=False)
+
+
+def test_worst_case_conversion_error_to_iam(test_df_openscm):
+    test_df_openscm._get_iam_df_data_and_metadata = Mock(side_effect=Exception("Test"))
+    error_msg = (
+        re.escape("I don't know why, but I can't convert to an IamDataFrame.")
+        + r"\n"
+        + re.escape("The original traceback is:")
+        + r"\n[\s\S]*Test[\s\S]*"
+    )
+    with pytest.raises(ConversionError, match=error_msg):
+        test_df_openscm.to_iam_df()
+
+
+def test_to_from_iam_df_loop(test_df_openscm):
+    obs = test_df_openscm.to_iam_df().to_openscm_df()
+
+    exp_df = test_df_openscm.data.reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs.data, exp_df)
+    pd.testing.assert_frame_equal(obs.meta, test_df_openscm.meta)

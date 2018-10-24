@@ -4,6 +4,7 @@ import itertools
 import os
 import sys
 import warnings
+import traceback
 
 import numpy as np
 import pandas as pd
@@ -37,6 +38,7 @@ from pyam.utils import (
     LONG_IDX,
 )
 from pyam.timeseries import fill_series
+from pyam.errors import ConversionError
 
 
 class _PyamDataFrame(object):
@@ -1080,9 +1082,126 @@ class IamDataFrame(_PyamDataFrame):
 
         return inconsistent_vars if inconsistent_vars else None
 
+    def to_openscm_df(self):
+        """Convert to an OpenSCMDataFrame
+        Returns
+        -------
+        :obj:`pyam.OpenSCMDataFrame`
+            An OpenSCM style data frame which is compatible with the
+            `openscm <https://github.com/openclimatedata/openscm/>`_ package.
+        Raises
+        ------
+        ConversionError
+            If conversion to OpenSCM dataframe is not possible
+        """
+        try:
+            data, meta = self._get_openscm_df_data_except_year_renaming_and_metadata()
+            openscm = OpenSCMDataFrame(data)
+            openscm.meta = meta
+        except Exception:
+            worst_case_msg = (
+                "I don't know why, but I can't convert to an OpenSCMDataFrame.\n"
+                "The original traceback is:\n{}".format(traceback.format_exc())
+            )
+            raise ConversionError(worst_case_msg)
+
+        return openscm
+
+    def _get_openscm_df_data_except_year_renaming_and_metadata(self):
+        conv = copy.deepcopy(self)
+
+        # get model info from diagnostics variables if it's there
+        # must be a better way to do this...
+        openscm_models = []
+        for i, iam_var in enumerate(conv.data.variable):
+            if iam_var.startswith("Diagnostics|"):
+                var_bits = iam_var.split("|")
+                assert var_bits[0] == "Diagnostics"
+                openscm_models.append(var_bits[1])
+                conv.data.variable.iloc[i] = "|".join(var_bits[2:])
+            else:
+                openscm_models.append("N/A")
+
+        model_scen_combos = conv[META_IDX].drop_duplicates()
+        iam_scenarios = model_scen_combos.scenario
+        iam_models = model_scen_combos.model
+
+        openscm_scens = []
+        for j, iam_model in enumerate(iam_models):
+            if iam_model == "N/A":
+                openscm_scens.append(iam_scenarios[j])
+            else:
+                openscm_scens.append(iam_scenarios[j] + "|" + iam_model)
+
+        renamings = {
+            "scenario": dict(zip(iam_scenarios, openscm_scens)),
+            "model": dict(zip(iam_models, openscm_models)),
+        }
+
+        conv.rename(renamings, inplace=True)
+        return conv.data.reset_index(drop=True), conv.meta
+
 
 class OpenSCMDataFrame(_PyamDataFrame):
-    pass
+    """Base class for data following the OpenSCM format.
+    """
+    def to_iam_df(self):
+        """Convert to an IamDataFrame.
+
+        Returns
+        -------
+        :obj:`pyam.IamDataFrame`
+            An IAMC style data frame.
+
+        Raises
+        ------
+        ConversionError
+            If conversion to IAM dataframe is not possible.
+        """
+        try:
+            data, meta = self._get_iam_df_data_and_metadata()
+            iam = IamDataFrame(data)
+            iam.meta = meta
+        except Exception:
+            worst_case_msg = (
+                "I don't know why, but I can't convert to an IamDataFrame.\n"
+                "The original traceback is:\n{}".format(traceback.format_exc())
+            )
+            raise ConversionError(worst_case_msg)
+
+        return iam
+
+    def _get_iam_df_data_and_metadata(self):
+        conv = copy.deepcopy(self)
+
+        # put model info in diagnostics if it's there
+        # must be a better way to do this...
+        for i, openscm_model in enumerate(conv.data.model):
+            if openscm_model != "N/A":
+                conv.data.variable.iloc[i] = "Diagnostics|{}|{}".format(
+                    openscm_model, conv.data.variable.iloc[i]
+                )
+
+        openscm_scenarios = conv.scenarios().tolist()
+        openscm_models = conv.models().tolist()
+
+        # must be a better way to do this too...
+        iam_scens = []
+        iam_models = []
+        for s in openscm_scenarios:
+            split_name = s.split("|")
+            iam_scens.append(split_name[0])
+            assert len(split_name) <= 2, "How did we get an extra pipe in scenario name?"
+            iam_model = split_name[1] if len(split_name) == 2 else "N/A"
+            iam_models.append(iam_model)
+
+        renamings = {
+            "scenario": dict(zip(openscm_scenarios, iam_scens)),
+            "model": dict(zip(openscm_models, iam_models)),
+        }
+
+        conv.rename(renamings, inplace=True)
+        return conv.data.reset_index(drop=True), conv.meta
 
 
 def _meta_idx(data):
