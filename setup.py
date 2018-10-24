@@ -38,8 +38,9 @@ class Cmd(install):
             'build',
         ]
         for d in dirs:
-            print('removing {}'.format(d))
-            shutil.rmtree(d)
+            if os.path.exists(d):
+                print('removing {}'.format(d))
+                shutil.rmtree(d)
 
 
 def main():
