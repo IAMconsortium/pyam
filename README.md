@@ -1,8 +1,25 @@
 pyam: a Python toolkit for Integrated Assessment Modeling
 =========================================================
 
-*The pyam package is still under heavy development; public and private APIs are subject to change.*
+.. image:: https://img.shields.io/pypi/v/pyam-iamc.svg
+   :target: https://pypi.python.org/pypi/pyam-iamc/
+   
+.. image:: https://img.shields.io/pypi/l/pyam-iamc.svg
+    :target: https://pypi.python.org/pypi/pyam-iamc
 
+.. image:: https://circleci.com/gh/IAMconsortium/pyam.svg?style=shield&circle-token=:circle-token
+    :target: https://circleci.com/gh/IAMconsortium/pyam
+
+.. image:: https://travis-ci.org/IAMconsortium/pyam.svg?branch=master
+   :target: https://travis-ci.org/IAMconsortium/pyam
+   
+.. image:: https://ci.appveyor.com/api/projects/status/github/IAMconsortium/pyam?svg=true&passingText=passing&failingText=failing&pendingText=pending
+      :target: https://ci.appveyor.com/project/IAMconsortium/pyam
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.802832.svg
+   :target: https://doi.org/10.5281/zenodo.802832
+
+**Documentation: http://software.ene.iiasa.ac.at/pyam**
 **Questions? Start a discussion on our [listserv](https://groups.google.com/forum/#!forum/pyam)**
 
 Overview and scope

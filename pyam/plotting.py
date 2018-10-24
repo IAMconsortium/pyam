@@ -19,7 +19,7 @@ try:
 except ImportError:
     gpd = None
 
-from collections import defaultdict
+from collections import defaultdict, Iterable
 from contextlib import contextmanager
 
 try:
@@ -494,6 +494,36 @@ def bar_plot(df, x='year', y='value', bars='variable',
         ax.set_title(title)
 
     return ax
+
+
+def _get_boxes(ax, xoffset=0.05, width_weight=0.1):
+    xys = {}
+    widths = {}
+    heights = defaultdict(list)
+    for b in ax.get_children():
+        if isinstance(b, mpatches.Rectangle) and b.xy != (0, 0):
+            x, y = b.xy
+            heights[x].append(b.get_height())
+            widths[x] = b.get_width() * width_weight
+            xys[x] = ((x + b.get_width()) + xoffset, 0)
+    return {x: (xys[x], widths[x], sum(heights[x])) for x in xys.keys()}
+
+
+def add_net_values_to_bar_plot(axs, color='k'):
+    """Add net values next to an existing vertical stacked bar chart
+
+    Parameters
+    ----------
+    axs : matplotlib.Axes or list thereof
+    color : str, optional, default: black
+        the color of the bars to add
+    """
+    axs = axs if isinstance(axs, Iterable) else [axs]
+    for ax in axs:
+        box_args = _get_boxes(ax)
+        for x, args in box_args.items():
+            rect = mpatches.Rectangle(*args, color=color)
+            ax.add_patch(rect)
 
 
 def scatter(df, x, y, ax=None, legend=None, title=None,
