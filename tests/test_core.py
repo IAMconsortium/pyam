@@ -259,7 +259,7 @@ def test_validate_top_level(meta_df):
 
 def test_check_aggregate_pass(check_aggregate_df):
     obs = check_aggregate_df.filter(
-        scenario='a_scenario'
+        scenario='a_scen'
     ).check_aggregate('Primary Energy')
     assert obs is None
 
