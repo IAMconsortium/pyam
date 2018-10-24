@@ -68,7 +68,7 @@ def main():
         "version": INFO['version'],
         "description": 'Analyze & Visualize Assessment Model Results',
         "author": 'Matthew Gidden & Daniel Huppmann',
-        "author_email": 'matthew.gidden@gmail.com & huppmann@iiasa.ac.at',
+        "author_email": 'matthew.gidden@gmail.com',
         "url": 'https://github.com/IAMconsortium/pyam',
         "packages": packages,
         "package_dir": pack_dir,
