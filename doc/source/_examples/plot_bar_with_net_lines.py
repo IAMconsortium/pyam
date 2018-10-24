@@ -22,9 +22,10 @@ print(df.head())
 
 data = df.filter({'variable': 'Emissions|CO2|*',
                   'level': 0,
-                  'region': 'World'})
+                  'region': 'World',
+                  'year': [2040, 2050, 2060]})
 
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots(figsize=(6, 6))
 data.bar_plot(ax=ax, stacked=True)
 fig.subplots_adjust(right=0.55)
 plt.show()
@@ -35,9 +36,10 @@ plt.show()
 
 data = df.filter({'variable': 'Emissions|CO2|*',
                   'level': 0,
-                  'region': 'World'})
+                  'region': 'World',
+                  'year': [2040, 2050, 2060]})
 
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots(figsize=(6, 6))
 data.bar_plot(ax=ax, stacked=True)
 add_net_values_to_bar_plot(ax, color='k')
 fig.subplots_adjust(right=0.55)
