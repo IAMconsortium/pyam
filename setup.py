@@ -63,13 +63,12 @@ def main():
         'install': Cmd,
     }
     setup_kwargs = {
-        "name": "pyam",
+        "name": "pyam-iamc",
         "version": INFO['version'],
-        "description": 'Analyze Integrated Assessment Model Results'
-        'Trajectories',
+        "description": 'Analyze & Visualize Assessment Model Results',
         "author": 'Matthew Gidden & Daniel Huppmann',
         "author_email": 'matthew.gidden@gmail.com & huppmann@iiasa.ac.at',
-        "url": 'http://github.com/iiasa/pyam',
+        "url": 'https://github.com/IAMconsortium/pyam',
         "packages": packages,
         "package_dir": pack_dir,
         "entry_points": entry_points,
