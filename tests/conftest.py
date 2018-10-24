@@ -150,14 +150,32 @@ def pyam_df(request):
 
 
 @pytest.fixture(scope="function")
+def test_df(pyam_df):
+    df = pyam_df(data=TEST_DF.iloc[:2])
+    yield df
+
+
+@pytest.fixture(scope="function")
 def test_df_iam():
     df = IamDataFrame(data=TEST_DF.iloc[:2])
     yield df
 
 
 @pytest.fixture(scope="function")
+def test_df_openscm():
+    df = OpenSCMDataFrame(data=TEST_DF.iloc[:2])
+    yield df
+
+
+@pytest.fixture(scope="function")
 def test_pd_df():
     yield TEST_DF
+
+
+@pytest.fixture(scope="function")
+def meta_df(pyam_df):
+    df = pyam_df(data=TEST_DF)
+    yield df
 
 
 @pytest.fixture(scope="function")
@@ -179,6 +197,12 @@ def check_aggregate_regional_df_iam():
 
 
 @pytest.fixture(scope="function")
+def reg_df(pyam_df):
+    df = pyam_df(data=REG_DF)
+    yield df
+
+
+@pytest.fixture(scope="function")
 def reg_df_iam():
     df = IamDataFrame(data=REG_DF)
     yield df
@@ -188,3 +212,12 @@ def reg_df_iam():
 def plot_df_iam():
     df = IamDataFrame(data=os.path.join(TEST_DATA_DIR, 'plot_data.csv'))
     yield df
+
+@pytest.fixture(scope="function")
+def float_time_pd_df():
+    return pd.DataFrame([
+        ['a_model', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
+    ],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 2005.5, 2010.5],
+    )
+
