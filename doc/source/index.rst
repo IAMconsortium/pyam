@@ -6,9 +6,6 @@ Release v\ |version|.
 
 .. image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
-   
-.. image:: https://img.shields.io/pypi/l/pyam-iamc.svg
-    :target: https://pypi.python.org/pypi/pyam-iamc
 
 .. image:: https://circleci.com/gh/IAMconsortium/pyam.svg?style=shield&circle-token=:circle-token
     :target: https://circleci.com/gh/IAMconsortium/pyam
