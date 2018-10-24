@@ -554,11 +554,12 @@ class IamDataFrame(object):
         """
         # default components to all variables one level below `variable`
         if components is None:
-            components = self.filter(variable='{}|*'.format(variable),
-                                     level=0).variables()
+            var_list = pd.Series(self.data.variable.unique())
+            components = var_list[pattern_match(var_list,
+                                                '{}|*'.format(variable), 0)]
 
         if not len(components):
-            msg = '{} - cannot check aggregate because it has no components'
+            msg = 'cannot check aggregate for {} because it has no components'
             logger().info(msg.format(variable))
 
             return
@@ -607,11 +608,11 @@ class IamDataFrame(object):
         var_df = self.filter(variable=variable, level=0)
 
         if components is None:
-            components = var_df.filter(region=region, keep=False).regions()
+            components = list(set(var_df.data.region) - set([region]))
 
         if not len(components):
             msg = (
-                '{} - cannot check regional aggregate because it has no '
+                'cannot check regional aggregate for `{}` because it has no '
                 'regional components'
             )
             logger().info(msg.format(variable))
@@ -634,10 +635,10 @@ class IamDataFrame(object):
         # to add aviation and shipping to the sum of Emissions|BC for each
         # of World's regional components to do a valid check.
         different_region = components[0]
-        variable_components = self.filter(
-            variable="{}|*".format(variable)
-        ).variables()
-        for var_to_add in variable_components:
+        var_list = pd.Series(self.data.variable.unique())
+        var_components = var_list[pattern_match(var_list,
+                                                '{}|*'.format(variable), 0)]
+        for var_to_add in var_components:
             var_rows = self.data.variable == var_to_add
             region_rows = self.data.region == different_region
             var_has_regional_info = (var_rows & region_rows).any()
