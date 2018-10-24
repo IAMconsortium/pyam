@@ -65,7 +65,7 @@ class RunTests(Command):
 def main():
     print(logo)
     classifiers = [
-        "License :: OSI Approved :: Apache Software License",,
+        "License :: OSI Approved :: Apache Software License",
     ]
     packages = [
         'pyam',
@@ -84,7 +84,7 @@ def main():
     cmdclass = {
         'install': Cmd,
     }
-    install_requirements=[
+    install_requirements = [
         "argparse",
         "numpy",
         "pandas >=0.21.0",
