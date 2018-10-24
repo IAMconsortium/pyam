@@ -338,8 +338,8 @@ def test_bar_plot_stacked_net_line(plot_df):
     df = pyam.IamDataFrame(plot_df.data.copy())
     vals = [(2005, 0.35), (2010, -1.0), (2015, -4.0)]
     for i, (y, v) in enumerate(vals):
-        newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|foo',
-                   'EJ/y', y, v]
+        newdata = ['test_model1', 'test_scenario1', 'World',
+                   'Primary Energy|foo', 'EJ/y', y, v]
         df.data.loc[len(df) + i] = newdata
     (df
      .filter(variable='Primary Energy|*', model='test_model1',
