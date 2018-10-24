@@ -5,44 +5,44 @@ import pandas as pd
 from pyam import Statistics
 
 
-def stats_add(stats, plot_df):
+def stats_add(stats, plot_df_iam):
     # test describing as pd.DataFrame
-    primary = plot_df.filter(variable='Primary Energy', year=2005).timeseries()
+    primary = plot_df_iam.filter(variable='Primary Energy', year=2005).timeseries()
     stats.add(data=primary, header='primary')
     # test describing as unamed pd.Series with `subheader` arg
-    coal = plot_df.filter(variable='Primary Energy|Coal').timeseries()[2010]
+    coal = plot_df_iam.filter(variable='Primary Energy|Coal').timeseries()[2010]
     coal.name = None
     stats.add(data=coal, header='coal', subheader=2005)
 
     # repeat `add()` to ensure that previous data is overwritten
-    coal = plot_df.filter(variable='Primary Energy|Coal').timeseries()[2005]
+    coal = plot_df_iam.filter(variable='Primary Energy|Coal').timeseries()[2005]
     coal.name = None
     stats.add(data=coal, header='coal', subheader=2005)
     return stats
 
 
-def stats_add_with_rows(stats, plot_df):
+def stats_add_with_rows(stats, plot_df_iam):
     # test describing as pd.DataFrame
-    primary = plot_df.filter(variable='Primary Energy', year=2005).timeseries()
+    primary = plot_df_iam.filter(variable='Primary Energy', year=2005).timeseries()
     stats.add(data=primary, header='primary', row='first')
     # test describing as unamed pd.Series with `subheader` arg
-    coal = plot_df.filter(variable='Primary Energy|Coal').timeseries()[2010]
+    coal = plot_df_iam.filter(variable='Primary Energy|Coal').timeseries()[2010]
     coal.name = None
     stats.add(data=coal, header='coal', subheader=2005, row='another')
     # repeat `add()` to ensure that previous data is overwritten
-    coal = plot_df.filter(variable='Primary Energy|Coal').timeseries()[2005]
+    coal = plot_df_iam.filter(variable='Primary Energy|Coal').timeseries()[2005]
     coal.name = None
     stats.add(data=coal, header='coal', subheader=2005, row='another')
     return stats
 
 
-def test_statistics(plot_df):
-    plot_df.set_meta(meta=['a', 'b', 'b', 'a'], name='category')
-    stats = Statistics(df=plot_df,
+def test_statistics(plot_df_iam):
+    plot_df_iam.set_meta(meta=['a', 'b', 'b', 'a'], name='category')
+    stats = Statistics(df=plot_df_iam,
                        groupby={'category': ['b', 'a']},
                        filters=[(('scen', 'test'),
                                  {'scenario': 'test_scenario'})])
-    obs = stats_add(stats, plot_df).summarize(custom_format='{:.0f}')
+    obs = stats_add(stats, plot_df_iam).summarize(custom_format='{:.0f}')
 
     idx = pd.MultiIndex(levels=[['category', 'scen'], ['b', 'a', 'test']],
                         labels=[[0, 0, 1], [0, 1, 2]], names=['', ''])
@@ -56,23 +56,23 @@ def test_statistics(plot_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_statistics_mismatching_groupby_index(plot_df):
-    pytest.raises(ValueError, Statistics, df=plot_df,
+def test_statistics_mismatching_groupby_index(plot_df_iam):
+    pytest.raises(ValueError, Statistics, df=plot_df_iam,
                   groupby={'category': ['b', 'a']},
                   filters=[(('test'), {'scenario': 'test_scenario'})])
 
 
-def test_statistics_mismatching_filters_depth(plot_df):
-    pytest.raises(ValueError, Statistics, df=plot_df,
+def test_statistics_mismatching_filters_depth(plot_df_iam):
+    pytest.raises(ValueError, Statistics, df=plot_df_iam,
                   groupby={'category': ['b', 'a']},
                   filters=[(('test'), {'scenario': 'test_scenario'}),
                            (('test', 'test'), {'scenario': 'test_scenario'})])
 
 
-def test_statistics_by_filter(plot_df):
-    stats = Statistics(df=plot_df,
+def test_statistics_by_filter(plot_df_iam):
+    stats = Statistics(df=plot_df_iam,
                        filters=[('test', {'scenario': 'test_scenario'})])
-    obs = stats_add(stats, plot_df).summarize(interquartile=True)
+    obs = stats_add(stats, plot_df_iam).summarize(interquartile=True)
 
     idx = pd.MultiIndex(levels=[['test']], labels=[[0]])
     cols = pd.MultiIndex(levels=[['count', 'primary', 'coal'],
@@ -84,18 +84,18 @@ def test_statistics_by_filter(plot_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_statistics_with_row_required(plot_df):
-    stats = Statistics(df=plot_df)
-    primary = plot_df.filter(variable='Primary Energy', year=2005).timeseries()
+def test_statistics_with_row_required(plot_df_iam):
+    stats = Statistics(df=plot_df_iam)
+    primary = plot_df_iam.filter(variable='Primary Energy', year=2005).timeseries()
     # test that kwarg `row` is required for `add`
     pytest.raises(ValueError, stats.add, data=primary, header='primary')
 
 
-def test_statistics_with_rows(plot_df):
-    stats = Statistics(df=plot_df,
+def test_statistics_with_rows(plot_df_iam):
+    stats = Statistics(df=plot_df_iam,
                        filters=[('test', {'scenario': 'test_scenario'})],
                        rows=True)
-    obs = stats_add_with_rows(stats, plot_df).summarize(center='50%')
+    obs = stats_add_with_rows(stats, plot_df_iam).summarize(center='50%')
 
     idx = pd.MultiIndex(levels=[['test'], ['first', 'another']],
                         labels=[[0, 0], [0, 1]])
@@ -108,11 +108,11 @@ def test_statistics_with_rows(plot_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_statistics_with_percentiles(plot_df):
-    stats = Statistics(df=plot_df,
+def test_statistics_with_percentiles(plot_df_iam):
+    stats = Statistics(df=plot_df_iam,
                        filters=[('test', {'scenario': 'test_scenario'})],
                        percentiles=[0.05, 0.95])
-    stats = stats_add(stats, plot_df)
+    stats = stats_add(stats, plot_df_iam)
     obs = set(stats.stats.columns.get_level_values(2))
     assert obs == set(['count', 'mean', 'std', 'min', '5%', '50%', '95%',
                        'max'])

@@ -1081,6 +1081,10 @@ class IamDataFrame(_PyamDataFrame):
         return inconsistent_vars if inconsistent_vars else None
 
 
+class OpenSCMDataFrame(_PyamDataFrame):
+    pass
+
+
 def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 

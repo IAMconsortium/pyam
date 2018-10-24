@@ -3,7 +3,7 @@ import pytest
 
 import pandas as pd
 
-from pyam import IamDataFrame
+from pyam import IamDataFrame, OpenSCMDataFrame
 
 here = os.path.dirname(os.path.realpath(__file__))
 IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
@@ -144,8 +144,13 @@ CHECK_AGG_REGIONAL_DF = pd.DataFrame([
 )
 
 
+@pytest.fixture(scope="function", params=[IamDataFrame, OpenSCMDataFrame])
+def pyam_df(request):
+    return request.param
+
+
 @pytest.fixture(scope="function")
-def test_df():
+def test_df_iam():
     df = IamDataFrame(data=TEST_DF.iloc[:2])
     yield df
 
@@ -156,30 +161,30 @@ def test_pd_df():
 
 
 @pytest.fixture(scope="function")
-def meta_df():
+def meta_df_iam():
     df = IamDataFrame(data=TEST_DF)
     yield df
 
 
 @pytest.fixture(scope="function")
-def check_aggregate_df():
+def check_aggregate_df_iam():
     df = IamDataFrame(data=CHECK_AGG_DF)
     yield df
 
 
 @pytest.fixture(scope="function")
-def check_aggregate_regional_df():
+def check_aggregate_regional_df_iam():
     df = IamDataFrame(data=CHECK_AGG_REGIONAL_DF)
     yield df
 
 
 @pytest.fixture(scope="function")
-def reg_df():
+def reg_df_iam():
     df = IamDataFrame(data=REG_DF)
     yield df
 
 
 @pytest.fixture(scope="session")
-def plot_df():
+def plot_df_iam():
     df = IamDataFrame(data=os.path.join(TEST_DATA_DIR, 'plot_data.csv'))
     yield df
