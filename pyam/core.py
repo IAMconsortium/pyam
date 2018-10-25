@@ -454,6 +454,16 @@ class _PyamDataFrame(object):
         logger().info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
 
+
+    def add_missing_variables(self, variables_to_add, inplace=False):
+        """Add a variable to all scenarios
+
+        """
+        import pdb
+        pdb.set_trace()
+        return df
+
+
     def validate(self, criteria={}, exclude_on_fail=False):
         """Validate scenarios using criteria on timeseries values
 

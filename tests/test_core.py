@@ -1135,3 +1135,50 @@ def test_to_from_iam_df_loop(test_df_openscm):
     exp_df = test_df_openscm.data.reset_index(drop=True)
     pd.testing.assert_frame_equal(obs.data, exp_df)
     pd.testing.assert_frame_equal(obs.meta, test_df_openscm.meta)
+
+
+# TODO: move this to OpenSCM, all this SCM specific stuff belongs there
+@pytest.fixture(scope="function")
+def test_df_infilling(test_df):
+    # how do you use append...
+    test_infilling_df = pd.DataFrame([
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|MAGICC AFOLU', 'Gt C / yr', 1.2, 1.1],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|MAGICC Fossil and Industrial', 'Gt C / yr', 1.2, 1.1],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Aggregate - Agriculture and LUC', 'Gt C / yr', 1.2, 1.1],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Aircraft', 'Gt C / yr', 0.5, 0.7],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Energy Sector', 'Gt C / yr', 1.0, 0.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Industrial Sector', 'Gt C / yr', 1.1, 1.3],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|International Shipping', 'Gt C / yr', 0.2, 0.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Residential Commercial Other', 'Gt C / yr', 0.4, 0.6],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Solvents Production and Application', 'Gt C / yr', 0.2, 0.4],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Transportation Sector', 'Gt C / yr', 1.5, 1.6],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Waste', 'Gt C / yr', 0.1, 0.0],
+        ['a_model', 'a_scenario', 'World', 'Emissions|BC', 'Mt BC / yr', 1.1, 1.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|C2F6', 'kt C2F6 / yr', 1.1, 1.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CCl4', 'kt CCl4 / yr', 1.1, 1.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CF4', 'kt CF4 / yr', 1.1, 1.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-11', 'kt CFC-11 / yr', 1.1, 1.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-12', 'kt CFC-12 / yr', 1.1, 1.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-113', 'kt CFC-113 / yr', 1.1, 1.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-114', 'kt CFC-114 / yr', 1.1, 1.2],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-115', 'kt CFC-115 / yr', 1.1, 1.2],
+    ],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 2040, 2050],
+    )
+    df = test_df.append(test_infilling_df)
+    yield df
+# question: What to do if MAGICC AFOLU and MAGICC Fossil and Industrial not provided? When to throw errors, when to assume all is ok and simply aggregate? When to throw erros because we don't know how to downscale?
+# test filling of missing non-key var with zeros
+# test filling of missing non-key var in same way as CMIP6 (maybe, was pretty stupid method)
+# test warning and continue if variable already there
+@pytest.mark.parametrize("var_to_add", ["Emissions|C6F14", ["Emissions|C6F14"], ["Emissions|C6F14", "Emissions|C4F10"]])
+def test_add_missing_variables_zeros(test_df_infilling, var_to_add):
+    obs = test_df_infilling.add_missing_variables(var_to_add)
+
+    var_to_check = var_to_add if isinstance(var_to_add, list) else [var_to_add]
+
+    for vtc in var_to_check:
+        import pdb
+        pdb.set_trace()
+        assert vtc in obs.variables()
+        np.testing.assert_all_close(obs.filter(variable="*vtc*").value, 0.0)
