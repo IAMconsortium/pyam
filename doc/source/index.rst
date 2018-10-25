@@ -22,6 +22,11 @@ Release v\ |version|.
 The **pyam** Python package provides a range of diagnostic tools and functions
 for analyzing and visualizing data from your favorite assessment model(s).
 
+The source code for **pyam** is available on `Github`_.
+
+.. _`Github`:
+   https://github.com/IAMconsortium/pyam
+
 Overview
 --------
 
