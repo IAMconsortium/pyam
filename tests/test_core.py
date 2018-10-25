@@ -10,7 +10,7 @@ from numpy import testing as npt
 
 from pyam import (IamDataFrame, OpenSCMDataFrame, plotting, validate, categorize,
                   require_variable, check_aggregate, filter_by_meta, META_IDX,
-                  IAMC_IDX)
+                  IAMC_IDX, LONG_IDX)
 from pyam.core import _meta_idx
 from pyam.errors import ConversionError
 
@@ -1027,19 +1027,45 @@ def test_worst_case_conversion_error_to_openscm(test_df_iam, error_cls):
         test_df_iam.to_openscm_df()
 
 
-def test_to_openscm_df(test_df_iam):
+def test_to_openscm_df():
+    test_df = IamDataFrame(pd.DataFrame([
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Atmospheric Concentrations|CO2', 'ppm', 2005, 395],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Atmospheric Concentrations|CO2', 'ppm', 2010, 401],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Surface Temperature', 'K', 2005, 0.9],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Surface Temperature', 'K', 2010, 0.94],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Emissions|CO2', 'Gt C / yr', 2005, 0.5],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Emissions|CO2', 'Gt C / yr', 2010, 3.0],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2', 'Gt C / yr', 2005, 0.5],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2', 'Gt C / yr', 2010, 3.0],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Coal', 'Gt C / yr', 2005, 0.5],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Coal', 'Gt C / yr', 2010, 3.0],
+    ],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 'year', 'value'],
+    ))
+
     exp = pd.DataFrame([
-        ['N/A', 'a_scenario|a_model', 'World', 'Primary Energy', 'EJ/y', 2005, 1],
-        ['N/A', 'a_scenario|a_model', 'World', 'Primary Energy', 'EJ/y', 2010, 6.],
-        ['N/A', 'a_scenario|a_model', 'World', 'Primary Energy|Coal', 'EJ/y', 2005, 0.5],
-        ['N/A', 'a_scenario|a_model', 'World', 'Primary Energy|Coal', 'EJ/y', 2010, 3],
+        ['c_model', 'a_scenario|a_model', 'World', 'Atmospheric Concentrations|CO2', 'ppm', 2005, 395],
+        ['c_model', 'a_scenario|a_model', 'World', 'Atmospheric Concentrations|CO2', 'ppm', 2010, 401],
+        ['c_model', 'a_scenario|a_model', 'World', 'Surface Temperature', 'K', 2005, 0.9],
+        ['c_model', 'a_scenario|a_model', 'World', 'Surface Temperature', 'K', 2010, 0.94],
+        ['c_model', 'a_scenario|a_model', 'World', 'Emissions|CO2', 'Gt C / yr', 2005, 0.5],
+        ['c_model', 'a_scenario|a_model', 'World', 'Emissions|CO2', 'Gt C / yr', 2010, 3.0],
+        ['N/A', 'a_scenario|a_model', 'World', 'Emissions|CO2', 'Gt C / yr', 2005, 0.5],
+        ['N/A', 'a_scenario|a_model', 'World', 'Emissions|CO2', 'Gt C / yr', 2010, 3.0],
+        ['N/A', 'a_scenario|a_model', 'World', 'Emissions|CO2|Coal', 'Gt C / yr', 2005, 0.5],
+        ['N/A', 'a_scenario|a_model', 'World', 'Emissions|CO2|Coal', 'Gt C / yr', 2010, 3.0],
     ],
         columns=['model', 'scenario', 'region', 'variable', 'unit', 'year', 'value'],
     )
 
-    obs = test_df_iam.to_openscm_df()
+    obs = test_df.to_openscm_df()
     assert obs.data.year.dtype <= np.float
-    pd.testing.assert_frame_equal(obs.data, exp, check_index_type=False)
+    # all this sort and reset is nasty but I don't see how to fix it
+    pd.testing.assert_frame_equal(
+        obs.data.sort_values(by=LONG_IDX, axis=0).reset_index(drop=True),
+        exp.sort_values(by=LONG_IDX, axis=0).reset_index(drop=True),
+        check_index_type=False
+    )
 
 
 def test_to_from_openscm_df_loop(test_df_iam):
@@ -1050,18 +1076,45 @@ def test_to_from_openscm_df_loop(test_df_iam):
     pd.testing.assert_frame_equal(obs.meta, test_df_iam.meta)
 
 
-def test_to_iam_df(test_df_openscm):
+def test_to_iam_df():
+    test_df = OpenSCMDataFrame(pd.DataFrame([
+        ['c_model', 'a_scenario|a_model', 'World', 'Atmospheric Concentrations|CO2', 'ppm', 2005, 395],
+        ['c_model', 'a_scenario|a_model', 'World', 'Atmospheric Concentrations|CO2', 'ppm', 2010, 401],
+        ['c_model', 'a_scenario|a_model', 'World', 'Surface Temperature', 'K', 2005, 0.9],
+        ['c_model', 'a_scenario|a_model', 'World', 'Surface Temperature', 'K', 2010, 0.94],
+        ['c_model', 'a_scenario|a_model', 'World', 'Emissions|CO2', 'Gt C / yr', 2005, 0.5],
+        ['c_model', 'a_scenario|a_model', 'World', 'Emissions|CO2', 'Gt C / yr', 2010, 3.0],
+        ['N/A', 'a_scenario|a_model', 'World', 'Emissions|CO2', 'Gt C / yr', 2005, 0.5],
+        ['N/A', 'a_scenario|a_model', 'World', 'Emissions|CO2', 'Gt C / yr', 2010, 3.0],
+        ['N/A', 'a_scenario|a_model', 'World', 'Emissions|CO2|Coal', 'Gt C / yr', 2005, 0.5],
+        ['N/A', 'a_scenario|a_model', 'World', 'Emissions|CO2|Coal', 'Gt C / yr', 2010, 3.0],
+    ],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 'year', 'value'],
+    ))
+
     exp = pd.DataFrame([
-        ['N/A', 'a_scenario', 'World', 'Diagnostics|a_model|Primary Energy', 'EJ/y', 2005, 1],
-        ['N/A', 'a_scenario', 'World', 'Diagnostics|a_model|Primary Energy', 'EJ/y', 2010, 6.],
-        ['N/A', 'a_scenario', 'World', 'Diagnostics|a_model|Primary Energy|Coal', 'EJ/y', 2005, 0.5],
-        ['N/A', 'a_scenario', 'World', 'Diagnostics|a_model|Primary Energy|Coal', 'EJ/y', 2010, 3],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Atmospheric Concentrations|CO2', 'ppm', 2005, 395],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Atmospheric Concentrations|CO2', 'ppm', 2010, 401],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Surface Temperature', 'K', 2005, 0.9],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Surface Temperature', 'K', 2010, 0.94],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Emissions|CO2', 'Gt C / yr', 2005, 0.5],
+        ['a_model', 'a_scenario', 'World', 'Diagnostics|c_model|Emissions|CO2', 'Gt C / yr', 2010, 3.0],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2', 'Gt C / yr', 2005, 0.5],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2', 'Gt C / yr', 2010, 3.0],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Coal', 'Gt C / yr', 2005, 0.5],
+        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Coal', 'Gt C / yr', 2010, 3.0],
     ],
         columns=['model', 'scenario', 'region', 'variable', 'unit', 'year', 'value'],
     )
 
-    obs = test_df_openscm.to_iam_df()
-    pd.testing.assert_frame_equal(obs.data, exp, check_index_type=False)
+    obs = test_df.to_iam_df()
+    assert obs.data.year.dtype <= np.int
+    # all this sort and reset is nasty but I don't see how to fix it
+    pd.testing.assert_frame_equal(
+        obs.data.sort_values(by=LONG_IDX, axis=0).reset_index(drop=True),
+        exp.sort_values(by=LONG_IDX, axis=0).reset_index(drop=True),
+        check_index_type=False
+    )
 
 
 def test_worst_case_conversion_error_to_iam(test_df_openscm):

@@ -1110,35 +1110,41 @@ class IamDataFrame(_PyamDataFrame):
     def _get_openscm_df_data_except_year_renaming_and_metadata(self):
         conv = copy.deepcopy(self)
 
-        # get model info from diagnostics variables if it's there
-        # must be a better way to do this...
-        openscm_models = []
-        for i, iam_var in enumerate(conv.data.variable):
-            if iam_var.startswith("Diagnostics|"):
-                var_bits = iam_var.split("|")
-                assert var_bits[0] == "Diagnostics"
-                openscm_models.append(var_bits[1])
-                conv.data.variable.iloc[i] = "|".join(var_bits[2:])
-            else:
-                openscm_models.append("N/A")
-
         model_scen_combos = conv[META_IDX].drop_duplicates()
         iam_scenarios = model_scen_combos.scenario
         iam_models = model_scen_combos.model
 
+        # this should be faster with `apply` I think...
         openscm_scens = []
         for j, iam_model in enumerate(iam_models):
             if iam_model == "N/A":
                 openscm_scens.append(iam_scenarios[j])
             else:
                 openscm_scens.append(iam_scenarios[j] + "|" + iam_model)
+        openscm_models_initial_conversion = ["N/A"] * len(openscm_scens)
 
         renamings = {
             "scenario": dict(zip(iam_scenarios, openscm_scens)),
-            "model": dict(zip(iam_models, openscm_models)),
+            "model": dict(zip(iam_models, openscm_models_initial_conversion)),
         }
-
         conv.rename(renamings, inplace=True)
+
+        # get model info from diagnostics variables if it's there
+        # must be a better way to do this...
+        for i, iam_var in enumerate(conv.data.variable):
+            if iam_var.startswith("Diagnostics|"):
+                var_bits = iam_var.split("|")
+                assert var_bits[0] == "Diagnostics"
+                conv.data.model.iloc[i] = var_bits[1]
+                # TODO: fix warning that this throws
+                conv.data.variable.iloc[i] = "|".join(var_bits[2:])
+
+        # TODO: work out if we can convert without destroying meta given that
+        # transfering splits scenario-model keys into different scenario-model keys
+        # depending on the climate model..
+        conv.meta = conv.data[META_IDX].drop_duplicates().set_index(META_IDX)
+        conv.reset_exclude()
+
         return conv.data.reset_index(drop=True), conv.meta
 
 
@@ -1175,32 +1181,33 @@ class OpenSCMDataFrame(_PyamDataFrame):
         conv = copy.deepcopy(self)
 
         # put model info in diagnostics if it's there
-        # must be a better way to do this...
+        # probably faster with `apply`
         for i, openscm_model in enumerate(conv.data.model):
             if openscm_model != "N/A":
+                # TODO: fix warning that this throws
                 conv.data.variable.iloc[i] = "Diagnostics|{}|{}".format(
-                    openscm_model, conv.data.variable.iloc[i]
+                    openscm_model, conv.data.iloc[i].variable
                 )
 
-        openscm_scenarios = conv.scenarios().tolist()
-        openscm_models = conv.models().tolist()
-
-        # must be a better way to do this too...
+        # also probably faster way with pandas `apply` or `str` or something
         iam_scens = []
         iam_models = []
-        for s in openscm_scenarios:
+        for s in conv.data.scenario.tolist():
             split_name = s.split("|")
             iam_scens.append(split_name[0])
             assert len(split_name) <= 2, "How did we get an extra pipe in scenario name?"
             iam_model = split_name[1] if len(split_name) == 2 else "N/A"
             iam_models.append(iam_model)
 
-        renamings = {
-            "scenario": dict(zip(openscm_scenarios, iam_scens)),
-            "model": dict(zip(openscm_models, iam_models)),
-        }
+        conv.data.model = iam_models
+        conv.data.scenario = iam_scens
 
-        conv.rename(renamings, inplace=True)
+        # TODO: work out if we can convert without destroying meta given that
+        # transfering combines different scenario-model keys into one scenario-model
+        # key because we lose the climate model information..
+        conv.meta = conv.data[META_IDX].drop_duplicates().set_index(META_IDX)
+        conv.reset_exclude()
+
         return conv.data.reset_index(drop=True), conv.meta
 
 
