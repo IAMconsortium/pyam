@@ -455,13 +455,94 @@ class _PyamDataFrame(object):
         return pd.DataFrame(index=idx).reset_index()
 
 
-    def add_missing_variables(self, variables_to_add, inplace=False):
-        """Add a variable to all scenarios
+    def add_missing_variables(self, variables_to_add, leads=None, inplace=False):
+        """Add a variable to ``self.data``
 
+        Parameters
+        ----------
+        variables_to_add : str, list of str, dict
+            Variables to add to the dataframe in ``self.data``. For each variable to add, provide at least the unit which you would like the output to be provided in. If you don't provide a 'lead variable' to follow to derive the new trajectory, the added variable's timeseries will simply be zeros. If you do provide a 'lead variable', also provide a single data point (year, value) from which we can derive the ratio between the 'lead variable' trajectory and our variable to add's trajectory. Note: Firstly, if the scale year is not in the 'lead variable' data, we will linearly interpolate the lead variable's trajectory in order to determine the scaling ration. Secondly, as this ratio is applied blindly over the entire trajectory, this is very likely to give odd results, especially for lead trajectories which go negative. A much nicer solution would be to use Aneris, the harmonisation package used for CMIP6 because this could use the same logic.
+            {<variable to add>: {"unit": <unit>,
+                                 "lead variable": <lead variable>,
+                                 "scale year": <scale year>,
+                                 "scale value": <scale value>}
+
+        inplace : bool, default False
+            If True, do operation inplace and return None
+
+        Raises
+        ------
+        ValueError
+            If the lead variable cannot be found in the data.
+
+        UserWarning
+            If the variable is already in the data frame. In this case we will not
+            overwrite the variable and will just move on.
+
+        Examples
+        --------
+        adds "Emissions|C3F8" all as zeros
+
+        >>> df.add_missing_variables({
+            "Emissions|C3F8": {
+                "unit": "kt C3F8 / yr",
+            }
+        })
+
+        add "Emissions|C3F8", following the trajectory of "Emissions|CF4" with a 2015
+        value of 23 kt C3F8 / yr.
+
+        >>> df.add_missing_variables({
+            "Emissions|C3F8": {
+                "unit": "kt C3F8 / yr",
+                "lead gas": "Emissions|CF4",
+                "scale year": 2015,
+                "scale value": 23
+            }
+        })
         """
-        import pdb
-        pdb.set_trace()
-        return df
+        ret = copy.deepcopy(self) if not inplace else self
+
+        for var_to_add, config in variables_to_add.items():
+            for label, df in self.data.groupby(META_IDX + ["region"]):
+                region = df.region.unique()
+                assert len(region) == 1
+                region = region[0]
+
+                if "lead variable" not in config:
+                    # choose one, doesn't matter which
+                    lead_var = df.variable.iloc[0]
+                else:
+                    lead_var = config['lead variable']
+
+                lead_trajectory = df[
+                    (df.variable == lead_var)
+                    & (df.region == region)
+                ]
+                if lead_trajectory.empty:
+                    raise ValueError("Lead variable, {}, could not be found".format(config['lead variable']))
+
+                missing_var_df = lead_trajectory[YEAR_IDX]
+                missing_var_df["variable"] = var_to_add
+                missing_var_df["unit"] = config["unit"]
+
+                if "lead variable" not in config:
+                    missing_var_df["value"] = 0.0
+                else:
+                    fill_data = lead_trajectory[lead_trajectory.year == config['scale year']]
+                    if fill_data.empty:
+                        fill_data = IamDataFrame(lead_trajectory)
+                        fill_data.interpolate(config["scale year"])
+                        fill_data = fill_data.filter(year=config["scale year"]).data
+
+                    assert len(fill_data) == 1, "We should only have one row left by now"
+                    scale_factor = config["scale value"] / fill_data.value.iloc[0]
+                    missing_var_df["value"] = lead_trajectory["value"].values * scale_factor
+
+                ret.append(missing_var_df, inplace=True)
+
+        if not inplace:
+            return ret
 
 
     def validate(self, criteria={}, exclude_on_fail=False):

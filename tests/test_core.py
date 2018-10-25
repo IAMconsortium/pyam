@@ -2,6 +2,7 @@ import os
 import copy
 import pytest
 import re
+from copy import deepcopy
 from unittest.mock import Mock
 
 import numpy as np
@@ -1142,26 +1143,15 @@ def test_to_from_iam_df_loop(test_df_openscm):
 def test_df_infilling(test_df):
     # how do you use append...
     test_infilling_df = pd.DataFrame([
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|MAGICC AFOLU', 'Gt C / yr', 1.2, 1.1],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|MAGICC Fossil and Industrial', 'Gt C / yr', 1.2, 1.1],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Aggregate - Agriculture and LUC', 'Gt C / yr', 1.2, 1.1],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Aircraft', 'Gt C / yr', 0.5, 0.7],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Energy Sector', 'Gt C / yr', 1.0, 0.2],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Industrial Sector', 'Gt C / yr', 1.1, 1.3],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|International Shipping', 'Gt C / yr', 0.2, 0.2],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Residential Commercial Other', 'Gt C / yr', 0.4, 0.6],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Solvents Production and Application', 'Gt C / yr', 0.2, 0.4],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Transportation Sector', 'Gt C / yr', 1.5, 1.6],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CO2|Waste', 'Gt C / yr', 0.1, 0.0],
         ['a_model', 'a_scenario', 'World', 'Emissions|BC', 'Mt BC / yr', 1.1, 1.2],
         ['a_model', 'a_scenario', 'World', 'Emissions|C2F6', 'kt C2F6 / yr', 1.1, 1.2],
         ['a_model', 'a_scenario', 'World', 'Emissions|CCl4', 'kt CCl4 / yr', 1.1, 1.2],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CF4', 'kt CF4 / yr', 1.1, 1.2],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-11', 'kt CFC-11 / yr', 1.1, 1.2],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-12', 'kt CFC-12 / yr', 1.1, 1.2],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-113', 'kt CFC-113 / yr', 1.1, 1.2],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-114', 'kt CFC-114 / yr', 1.1, 1.2],
-        ['a_model', 'a_scenario', 'World', 'Emissions|CFC-115', 'kt CFC-115 / yr', 1.1, 1.2],
+        ['a_model', 'b_scenario', 'World', 'Emissions|BC', 'Mt BC / yr', 2.1, 2.2],
+        ['a_model', 'b_scenario', 'World', 'Emissions|C2F6', 'kt C2F6 / yr', 2.1, 2.2],
+        ['a_model', 'b_scenario', 'World', 'Emissions|CCl4', 'kt CCl4 / yr', 2.1, 2.2],
+        ['b_model', 'b_scenario', 'World', 'Emissions|BC', 'Mt BC / yr', 1.4, 1.4],
+        ['b_model', 'b_scenario', 'World', 'Emissions|C2F6', 'kt C2F6 / yr', 1.4, 1.4],
+        ['b_model', 'b_scenario', 'World', 'Emissions|CCl4', 'kt CCl4 / yr', 1.4, 1.4],
     ],
         columns=['model', 'scenario', 'region', 'variable', 'unit', 2040, 2050],
     )
@@ -1171,14 +1161,79 @@ def test_df_infilling(test_df):
 # test filling of missing non-key var with zeros
 # test filling of missing non-key var in same way as CMIP6 (maybe, was pretty stupid method)
 # test warning and continue if variable already there
-@pytest.mark.parametrize("var_to_add", ["Emissions|C6F14", ["Emissions|C6F14"], ["Emissions|C6F14", "Emissions|C4F10"]])
-def test_add_missing_variables_zeros(test_df_infilling, var_to_add):
-    obs = test_df_infilling.add_missing_variables(var_to_add)
 
-    var_to_check = var_to_add if isinstance(var_to_add, list) else [var_to_add]
+def test_add_missing_variables_example_1(test_df_infilling):
+    tconfig = {"Emissions|C3F8": {"unit": "kt C3F8 / yr"}}
+    obs = test_df_infilling.add_missing_variables(tconfig)
 
-    for vtc in var_to_check:
-        import pdb
-        pdb.set_trace()
-        assert vtc in obs.variables()
-        np.testing.assert_all_close(obs.filter(variable="*vtc*").value, 0.0)
+    for vtc in tconfig:
+        obs.variables().isin([vtc]).sum() == 1
+        var_df = obs.filter(variable="*{}*".format(vtc))
+        assert (var_df["unit"] == tconfig[vtc]["unit"]).all()
+        np.testing.assert_allclose(var_df["value"], 0.0)
+
+
+def test_add_missing_variables_example_2(test_df_infilling):
+    tlead_var = "Emissions|C2F6"
+    tscale_value = 23
+    tscale_year = 2040
+    tconfig = {"Emissions|C3F8": {
+        "unit": "kt C3F8 / yr",
+        "lead variable": tlead_var,
+        "scale year": tscale_year,
+        "scale value": tscale_value,
+    }}
+    obs = test_df_infilling.add_missing_variables(tconfig)
+
+    for vtc in tconfig:
+        obs.variables().isin([vtc]).sum() == 1
+        var_df = obs.filter(variable="*{}*".format(vtc))
+        assert (var_df["unit"] == tconfig[vtc]["unit"]).all()
+
+        for label, df in var_df.data.groupby(META_IDX + ["region"]):
+            lead_trajectory = test_df_infilling.filter(
+                variable=tconfig[vtc]["lead variable"],
+                model=df.model.iloc[0],
+                scenario=df.scenario.iloc[0],
+            )
+
+            lead_scale_value = lead_trajectory.filter(year=tscale_year,)["value"].values
+
+            scale_factor = tscale_value / lead_scale_value
+            np.testing.assert_allclose(
+                df["value"].values, lead_trajectory["value"].values * scale_factor
+            )
+
+
+def test_add_missing_variables_example_2_with_interpolation(test_df_infilling):
+    tlead_var = "Emissions|C2F6"
+    tscale_value = 23
+    tscale_year = 2045
+    tconfig = {"Emissions|C3F8": {
+        "unit": "kt C3F8 / yr",
+        "lead variable": tlead_var,
+        "scale year": tscale_year,
+        "scale value": tscale_value,
+    }}
+    obs = test_df_infilling.add_missing_variables(tconfig)
+
+    for vtc in tconfig:
+        obs.variables().isin([vtc]).sum() == 1
+        var_df = obs.filter(variable="*{}*".format(vtc))
+        assert (var_df["unit"] == tconfig[vtc]["unit"]).all()
+
+        for label, df in var_df.data.groupby(META_IDX + ["region"]):
+            lead_trajectory = test_df_infilling.filter(
+                variable=tconfig[vtc]["lead variable"],
+                model=df.model.iloc[0],
+                scenario=df.scenario.iloc[0],
+            )
+
+            scale_df = deepcopy(lead_trajectory)
+            scale_df.interpolate(tscale_year)
+            lead_scale_value = scale_df.filter(year=tscale_year,)["value"].values
+
+            scale_factor = tscale_value / lead_scale_value
+            np.testing.assert_allclose(
+                df["value"].values, lead_trajectory["value"].values * scale_factor
+            )

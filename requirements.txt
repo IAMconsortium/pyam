@@ -9,3 +9,5 @@ seaborn
 six
 geopandas
 cartopy
+nbconvert
+jupyter_contrib_nbextensions
