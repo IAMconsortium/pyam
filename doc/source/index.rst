@@ -13,8 +13,8 @@ Release v\ |version|.
 .. image:: https://travis-ci.org/IAMconsortium/pyam.svg?branch=master
    :target: https://travis-ci.org/IAMconsortium/pyam
    
-.. image:: https://ci.appveyor.com/api/projects/status/github/IAMconsortium/pyam?svg=true&passingText=passing&failingText=failing&pendingText=pending
-      :target: https://ci.appveyor.com/project/IAMconsortium/pyam
+.. image:: https://ci.appveyor.com/api/projects/status/qd4taojd2vkqoab4/branch/master?svg=true&passingText=passing&failingText=failing&pendingText=pending
+      :target: https://ci.appveyor.com/project/gidden/pyam/branch/master
 
 .. image:: https://zenodo.org/badge/113359260.svg
    :target: https://zenodo.org/badge/latestdoi/113359260
