@@ -1,13 +1,14 @@
 
 # Next Release
 
+- (#127)[https://github.com/IAMconsortium/pyam/pull/127] add `add_missing_variables` method which allows users to add a missing variable in very simple ways as required
 - (#114)[https://github.com/IAMconsortium/pyam/pull/114] extends `append()` such that data can be added to existing scenarios
 - (#111)[https://github.com/IAMconsortium/pyam/pull/111] extends `set_meta()` such that it requires a name (not None)
 - (#109)[https://github.com/IAMconsortium/pyam/pull/109] add ability to fill between and add data ranges in `line_plot()`
 - (#104)[https://github.com/IAMconsortium/pyam/pull/104] fixes a bug with timeseries utils functions, ensures that years are cast as integers
 - (#101)[https://github.com/IAMconsortium/pyam/pull/101] add function `cross_threshold()` to determine years where a timeseries crosses a given threshold
 - (#98)[https://github.com/IAMconsortium/pyam/pull/98] add a module to compute and format summary statistics for timeseries data (wrapper for `pd.describe()`
-- (#95)[https://github.com/IAMconsortium/pyam/pull/95] add a `scatter()` chart in the plotting library using metadata 
+- (#95)[https://github.com/IAMconsortium/pyam/pull/95] add a `scatter()` chart in the plotting library using metadata
 - (#94)[https://github.com/IAMconsortium/pyam/pull/94] `set_meta()` can take pd.DataFrame (with columns `['model', 'scenario']`) as `index` arg
 - (#93)[https://github.com/IAMconsortium/pyam/pull/93] IamDataFrame can be initilialzed from pd.DataFrame with index
 - (#92)[https://github.com/IAMconsortium/pyam/pull/92] Adding `$` to the pseudo-regexp syntax in `pattern_match()`, adds override option
