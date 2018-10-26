@@ -461,7 +461,20 @@ class _PyamDataFrame(object):
         Parameters
         ----------
         variables_to_add : str, list of str, dict
-            Variables to add to the dataframe in ``self.data``. For each variable to add, provide at least the unit which you would like the output to be provided in. If you don't provide a 'lead variable' to follow to derive the new trajectory, the added variable's timeseries will simply be zeros. If you do provide a 'lead variable', also provide a single data point (year, value) from which we can derive the ratio between the 'lead variable' trajectory and our variable to add's trajectory. Note: Firstly, if the scale year is not in the 'lead variable' data, we will linearly interpolate the lead variable's trajectory in order to determine the scaling ration. Secondly, as this ratio is applied blindly over the entire trajectory, this is very likely to give odd results, especially for lead trajectories which go negative. A much nicer solution would be to use Aneris, the harmonisation package used for CMIP6 because this could use the same logic.
+            Variables to add to the dataframe in ``self.data``. For each variable to
+            add, provide at least the unit which you would like the output to be
+            provided in. If you don't provide a 'lead variable' to follow to derive
+            the new trajectory, the added variable's timeseries will simply be zeros.
+            If you do provide a 'lead variable', also provide a single data point (
+            year, value) from which we can derive the ratio between the 'lead
+            variable' trajectory and our variable to add's trajectory. Note: Firstly,
+            if the scale year is not in the 'lead variable' data, we will linearly
+            interpolate the lead variable's trajectory in order to determine the
+            scaling ration. Secondly, as this ratio is applied blindly over the entire
+            trajectory, this is very likely to give odd results, especially for lead
+            trajectories which go negative. A much nicer solution would be to use
+            Aneris, the harmonisation package used for CMIP6 because this could use
+            the same logic.
             {<variable to add>: {"unit": <unit>,
                                  "lead variable": <lead variable>,
                                  "scale year": <scale year>,
@@ -505,12 +518,20 @@ class _PyamDataFrame(object):
 
         for var_to_add, config in variables_to_add.items():
             for label, df in self.data.groupby(META_IDX + ["region"]):
+                if (var_to_add == df.variable).any():
+                    warn_msg = (
+                        "Variable to fill '{}' already in data frame, "
+                        "skipping".format(var_to_add)
+                    )
+                    warnings.warn(warn_msg)
+                    continue
+
                 region = df.region.unique()
                 assert len(region) == 1
                 region = region[0]
 
                 if "lead variable" not in config:
-                    # choose one, doesn't matter which
+                    # choose one, doesn't matter which as will fill with zeroes anyway
                     lead_var = df.variable.iloc[0]
                 else:
                     lead_var = config['lead variable']
@@ -520,7 +541,12 @@ class _PyamDataFrame(object):
                     & (df.region == region)
                 ]
                 if lead_trajectory.empty:
-                    raise ValueError("Lead variable, {}, could not be found".format(config['lead variable']))
+                    error_msg = (
+                        "Lead variable '{}' could not be found for all "
+                        "model-scenario-region combinations in your data "
+                        "frame".format(config['lead variable'])
+                    )
+                    raise ValueError(error_msg)
 
                 missing_var_df = lead_trajectory[YEAR_IDX]
                 missing_var_df["variable"] = var_to_add

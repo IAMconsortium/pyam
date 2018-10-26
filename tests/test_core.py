@@ -4,6 +4,7 @@ import pytest
 import re
 from copy import deepcopy
 from unittest.mock import Mock
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -1138,7 +1139,6 @@ def test_to_from_iam_df_loop(test_df_openscm):
     pd.testing.assert_frame_equal(obs.meta, test_df_openscm.meta)
 
 
-# TODO: move this to OpenSCM, all this SCM specific stuff belongs there
 @pytest.fixture(scope="function")
 def test_df_infilling(test_df):
     # how do you use append...
@@ -1157,10 +1157,7 @@ def test_df_infilling(test_df):
     )
     df = test_df.append(test_infilling_df)
     yield df
-# question: What to do if MAGICC AFOLU and MAGICC Fossil and Industrial not provided? When to throw errors, when to assume all is ok and simply aggregate? When to throw erros because we don't know how to downscale?
-# test filling of missing non-key var with zeros
-# test filling of missing non-key var in same way as CMIP6 (maybe, was pretty stupid method)
-# test warning and continue if variable already there
+
 
 def test_add_missing_variables_example_1(test_df_infilling):
     tconfig = {"Emissions|C3F8": {"unit": "kt C3F8 / yr"}}
@@ -1237,3 +1234,30 @@ def test_add_missing_variables_example_2_with_interpolation(test_df_infilling):
             np.testing.assert_allclose(
                 df["value"].values, lead_trajectory["value"].values * scale_factor
             )
+
+
+def test_add_missing_variables_bad_lead_variable_error(test_df_infilling):
+    tlead_var = "junk"
+    tconfig = {"Emissions|C3F8": {
+        "unit": "kt C3F8 / yr",
+        "lead variable": tlead_var,
+    }}
+    error_msg = (
+        "Lead variable '{}' could not be found for all model-scenario-region "
+        "combinations in your data frame".format(tlead_var)
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        test_df_infilling.add_missing_variables(tconfig)
+
+
+def test_add_missing_variables_variable_exists_warning(test_df_infilling):
+    tlead_var = "Emissions|C2F6"
+    tconfig = {tlead_var: {}}
+    warning_msg = (
+        "Variable to fill '{}' already in data frame, skipping".format(tlead_var)
+    )
+    with warnings.catch_warnings(record=True) as mock_existing_var_warning:
+        test_df_infilling.add_missing_variables(tconfig)
+
+    assert len(mock_existing_var_warning) == 1  # just rethrow warnings
+    assert str(mock_existing_var_warning[0].message) == warning_msg
