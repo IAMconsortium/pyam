@@ -95,3 +95,12 @@ def test_query_sr15():
     df = iiasa.read_iiasa_sr15(model='AIM*', scenario='ADVANCE_2020_Med2C',
                                variable='Emissions|CO2', region='World')
     assert len(df) == 20
+
+
+def test_query_sr15_list():
+    df = iiasa.read_iiasa_sr15(
+        model='MESSAGEix*',
+        variable=['Emissions|CO2', 'Primary Energy|Coal'],
+        region='World'
+    )
+    assert len(df) == 168

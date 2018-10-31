@@ -1,5 +1,6 @@
-import requests
 import json
+import logging
+import requests
 
 import numpy as np
 import pandas as pd
@@ -10,10 +11,25 @@ except ImportError:
     from functools32 import lru_cache
 
 from pyam.core import IamDataFrame
+from pyam.logger import logger
 from pyam.utils import LONG_IDX, isstr, pattern_match
+
+# quiet this fool
+logging.getLogger('requests').setLevel(logging.WARNING)
 
 _URL_TEMPLATE = 'https://db1.ene.iiasa.ac.at/{}-api/rest/v2.1/'
 _AUTH_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/anonym'
+
+_CITATIONS = {
+    'sr15': 'Huppmann, D., Rogelj, J., Kriegler, E., '
+    'Krey, V., & Riahi, K. (2018). A new scenario resource for '
+    'integrated 1.5° C research. Nature Climate Change, 2018, '
+    'DOI: 10.1038/s41558-018-0317-4',
+}
+
+
+def valid_connection_names():
+    return list(_CITATIONS.keys())
 
 
 class Connection(object):
@@ -24,13 +40,18 @@ class Connection(object):
         Parameters
         ----------
         name : str
-            A valid database name. Available options include:
-                - sr15
+            A valid database name. For available options, see 
+            valid_connection_names().
         """
-        valid = ['sr15']
+        valid = valid_connection_names()
         if name not in valid:
             raise ValueError('{} is not a valid name. Choose one of {}'.format(
                 name, valid))
+
+        logger().info(
+            'You are connected to the {} database. Please cite as:\n\n{}'
+            .format(name, _CITATIONS[name])
+        )
 
         self.base_url = _URL_TEMPLATE.format(name)
 
@@ -100,7 +121,7 @@ class Connection(object):
             where = np.array([True] * len(meta))
             if len(models) > 0:
                 where &= meta.model.isin(models)
-            if len(scenarios) >= 0:
+            if len(scenarios) > 0:
                 where &= meta.scenario.isin(scenarios)
             runs = meta.run_id[where].unique().tolist()
 
@@ -120,7 +141,6 @@ class Connection(object):
         }
         return data
 
-    @lru_cache()
     def query(self, **kwargs):
         """
         Query the data source, subselecting data. Available keyword arguments
