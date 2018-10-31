@@ -17,7 +17,6 @@ before_install:
   - "echo 'backend: TkAgg' >> ~/.matplotlib/matplotlibrc"
 
 install:
-  # - pip install cython>0.15.1 numpy scipy pandas pyyaml xlrd xlsxwriter seaborn==0.8.1
   - pip install -e .[tests]
   - echo $PWD
 
