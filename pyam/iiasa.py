@@ -62,6 +62,25 @@ class Connection(object):
         return r.json()
 
     @lru_cache()
+    def metadata(self):
+        """
+        Metadata (e.g., models, scenarios, etc.) in the connected data
+        source
+        """
+        url = self.base_url + 'runs?getOnlyDefaultRuns=false'
+        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
+        r = requests.get(url, headers=headers)
+        return pd.read_json(r.content, orient='records')
+
+    def models(self):
+        """All models in the connected data source"""
+        return pd.Series(self.metadata()['model'].unique(), name='model')
+
+    def scenarios(self):
+        """All scenarios in the connected data source"""
+        return pd.Series(self.metadata()['scenario'].unique(), name='scenario')
+
+    @lru_cache()
     def variables(self):
         """All variables in the connected data source"""
         url = self.base_url + 'ts'
@@ -78,17 +97,6 @@ class Connection(object):
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
         return pd.Series(df['name'].unique(), name='region')
-
-    @lru_cache()
-    def metadata(self):
-        """
-        Metadata (e.g., models, scenarios, etc.) in the connected data
-        source
-        """
-        url = self.base_url + 'runs?getOnlyDefaultRuns=false'
-        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
-        r = requests.get(url, headers=headers)
-        return pd.read_json(r.content, orient='records')
 
     def _query_post_data(self, **kwargs):
         def _get_kwarg(k):
