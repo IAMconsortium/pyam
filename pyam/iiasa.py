@@ -40,7 +40,7 @@ class Connection(object):
         Parameters
         ----------
         name : str
-            A valid database name. For available options, see 
+            A valid database name. For available options, see
             valid_connection_names().
         """
         valid = valid_connection_names()
@@ -163,7 +163,7 @@ class Connection(object):
         -------
 
         ```
-        Connection.query(model='MESSAGE', scenario='SSP2*', 
+        Connection.query(model='MESSAGE', scenario='SSP2*',
                          variable=['Emissions|CO2', 'Primary Energy'])
         ```
         """
