@@ -88,7 +88,7 @@ def main():
         "argparse",
         "numpy",
         "pandas >=0.21.0",
-        "pyyaml",
+        "PyYAML",
         "xlrd",
         "xlsxwriter",
         "matplotlib",
