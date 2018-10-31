@@ -36,11 +36,13 @@ class Connection(object):
 
     @lru_cache()
     def auth(self):
+        """Anonymous user authentication token"""
         r = requests.get(_AUTH_URL)
         return r.json()
 
     @lru_cache()
     def variables(self):
+        """All variables in the connected data source"""
         url = self.base_url + 'ts'
         headers = {'Authorization': 'Bearer {}'.format(self.auth())}
         r = requests.get(url, headers=headers)
@@ -49,6 +51,7 @@ class Connection(object):
 
     @lru_cache()
     def regions(self):
+        """All regions in the connected data source"""
         url = self.base_url + 'nodes?hierarchy=%2A'
         headers = {'Authorization': 'Bearer {}'.format(self.auth())}
         r = requests.get(url, headers=headers)
@@ -57,6 +60,10 @@ class Connection(object):
 
     @lru_cache()
     def metadata(self):
+        """
+        Metadata (e.g., models, scenarios, etc.) in the connected data
+        source
+        """
         url = self.base_url + 'runs?getOnlyDefaultRuns=false'
         headers = {'Authorization': 'Bearer {}'.format(self.auth())}
         r = requests.get(url, headers=headers)
@@ -115,6 +122,23 @@ class Connection(object):
 
     @lru_cache()
     def query(self, **kwargs):
+        """
+        Query the data source, subselecting data. Available keyword arguments
+        include
+
+        - model
+        - scenario
+        - region
+        - variable
+
+        Example
+        -------
+
+        ```
+        Connection.query(model='MESSAGE', scenario='SSP2*', 
+                         variable=['Emissions|CO2', 'Primary Energy'])
+        ```
+        """
         headers = {
             'Authorization': 'Bearer {}'.format(self.auth()),
             'Content-Type': 'application/json',
@@ -126,10 +150,16 @@ class Connection(object):
 
 
 def read_iiasa(name, **kwargs):
+    """
+    Query an IIASA database. See Connection.query() for more documentation
+    """
     conn = Connection(name)
     df = conn.query(**kwargs)
     return IamDataFrame(df[LONG_IDX + ['value']])
 
 
 def read_iiasa_sr15(**kwargs):
+    """
+    Query the SR1.5 database. See Connection.query() for more documentation
+    """
     return read_iiasa('sr15', **kwargs)

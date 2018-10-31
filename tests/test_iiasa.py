@@ -1,4 +1,5 @@
 import copy
+import pytest
 
 import numpy.testing as npt
 
@@ -9,6 +10,10 @@ def test_auth():
     conn = iiasa.Connection('sr15')
     assert conn.base_url == 'https://db1.ene.iiasa.ac.at/sr15-api/rest/v2.1/'
     conn.auth()
+
+
+def test_connection_raises():
+    pytest.raises(ValueError, iiasa.Connection, 'foo')
 
 
 def test_variables():
