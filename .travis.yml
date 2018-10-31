@@ -12,16 +12,15 @@ before_install:
   - conda update --yes conda
   # install deps
   - conda install --yes cartopy geopandas matplotlib==2.1.2
-  - pip install cython>0.15.1 numpy scipy pandas pyyaml xlrd xlsxwriter seaborn==0.8.1
   - mkdir -p ~/.matplotlib
   - touch ~/.matplotlib/matplotlibrc
   - "echo 'backend: TkAgg' >> ~/.matplotlib/matplotlibrc"
 
 install:
-  - python setup.py install
+  # - pip install cython>0.15.1 numpy scipy pandas pyyaml xlrd xlsxwriter seaborn==0.8.1
+  - pip install -e .[tests]
   - echo $PWD
 
 # Run test
 script:
-  - pip install pytest pytest-mpl
   - pytest -v --mpl tests

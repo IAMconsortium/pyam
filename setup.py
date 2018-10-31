@@ -96,7 +96,7 @@ def main():
         "six",
     ]
     extra_requirements = {
-        'test': ['coverage', 'pytest', 'pytest-cov'],
+        'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
     }
     setup_kwargs = {
         "name": "pyam-iamc",
