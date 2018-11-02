@@ -5,6 +5,9 @@
 *xlsx
 *png
 
+# logo made when running tests
+doc/source/tutorials/logo.pdf
+
 # Apple file system
 *.DS_STORE
 

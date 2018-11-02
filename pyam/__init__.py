@@ -1,4 +1,5 @@
 from pyam.core import *
+from pyam.iam import *
 from pyam.utils import *
 from pyam.statistics import *
 from pyam.timeseries import *

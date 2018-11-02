@@ -39,15 +39,13 @@ from pyam.utils import (
 from pyam.timeseries import fill_series
 
 
-class IamDataFrame(object):
-    """This class is a wrapper for dataframes following the IAMC format.
-    It provides a number of diagnostic features (including validation of data,
-    completeness of variables provided) as well as a number of visualization
-    and plotting tools.
+class _PyamDataFrame(object):
+    """Base class for pyam dataframes.
+    This class provides a number of data analysis tools, in particular data categorisation, filtering and visualistation tools
     """
 
     def __init__(self, data, **kwargs):
-        """Initialize an instance of an IamDataFrame
+        """Initialize an instance of an _PyamDataFrame
 
         Parameters
         ----------
@@ -68,10 +66,6 @@ class IamDataFrame(object):
             self.data = read_ix(data, **kwargs)
         else:
             self.data = read_files(data, **kwargs)
-
-        # cast year column to `int` if necessary
-        if not self.data.year.dtype == 'int64':
-            self.data.year = cast_years_to_int(self.data.year)
 
         # define a dataframe for categorization and other metadata indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
@@ -149,26 +143,26 @@ class IamDataFrame(object):
 
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
-        """Append any castable object to this IamDataFrame.
+        """Append any castable object to this _PyamDataFrame.
         Columns in `other.meta` that are not in `self.meta` are always merged,
         duplicate region-variable-unit-year rows raise a ValueError.
 
         Parameters
         ----------
-        other: pyam.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
+        other: pyam._PyamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
         pd.DataFrame or data file
-            An IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
+            An _PyamDataFrame, TimeSeries or Scenario (requires `ixmp`),
             pandas.DataFrame or data file with IAMC-format data columns
         ignore_meta_conflict : bool, default False
-            If False and `other` is an IamDataFrame, raise an error if
+            If False and `other` is an _PyamDataFrame, raise an error if
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             If True, do operation inplace and return None
         """
         ret = copy.deepcopy(self) if not inplace else self
 
-        if not isinstance(other, IamDataFrame):
-            other = IamDataFrame(other, **kwargs)
+        if not isinstance(other, _PyamDataFrame):
+            other = _PyamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
 
         diff = other.meta.index.difference(ret.meta.index)
@@ -318,7 +312,7 @@ class IamDataFrame(object):
         name: str, optional
             meta column name (defaults to meta pd.Series.name);
             either a meta.name or the name kwarg must be defined
-        index: pyam.IamDataFrame, pd.DataFrame or pd.MultiIndex, optional
+        index: pyam._PyamDataFrame, pd.DataFrame or pd.MultiIndex, optional
             index to be used for setting meta column (`['model', 'scenario']`)
         """
         if (name or (hasattr(meta, 'name') and meta.name)) in [None, False]:
@@ -334,8 +328,8 @@ class IamDataFrame(object):
             self.meta[name] = list(meta) if islistable(meta) else meta
             return  # EXIT FUNCTION
 
-        # use meta.index if index arg is an IamDataFrame
-        if isinstance(index, IamDataFrame):
+        # use meta.index if index arg is an _PyamDataFrame
+        if isinstance(index, _PyamDataFrame):
             index = index.meta.index
         # turn dataframe to index if index arg is a DataFrame
         if isinstance(index, pd.DataFrame):
@@ -533,175 +527,6 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def check_aggregate(self, variable, components=None, units=None,
-                        exclude_on_fail=False, multiplier=1, **kwargs):
-        """Check whether the timeseries data match the aggregation
-        of components or sub-categories
-
-        Parameters
-        ----------
-        variable: str
-            variable to be checked for matching aggregation of sub-categories
-        components: list of str, default None
-            list of variables, defaults to all sub-categories of `variable`
-        units: str or list of str, default None
-            filter variable and components for given unit(s)
-        exclude_on_fail: boolean, default False
-            flag scenarios failing validation as `exclude: True`
-        multiplier: number, default 1
-            factor when comparing variable and sum of components
-        kwargs: passed to `np.isclose()`
-        """
-        # default components to all variables one level below `variable`
-        if components is None:
-            var_list = pd.Series(self.data.variable.unique())
-            components = var_list[pattern_match(var_list,
-                                                '{}|*'.format(variable), 0)]
-
-        if not len(components):
-            msg = 'cannot check aggregate for {} because it has no components'
-            logger().info(msg.format(variable))
-
-            return
-
-        # filter and groupby data, use `pd.Series.align` for matching index
-        df_variable, df_components = (
-            _aggregate_by_variables(self.data, variable, units)
-            .align(_aggregate_by_variables(self.data, components, units))
-        )
-
-        # use `np.isclose` for checking match
-        diff = df_variable[~np.isclose(df_variable, multiplier * df_components,
-                                       **kwargs)]
-
-        if len(diff):
-            msg = '{} - {} of {} data points are not aggregates of components'
-            logger().info(msg.format(variable, len(diff), len(df_variable)))
-
-            if exclude_on_fail:
-                self._exclude_on_fail(diff.index.droplevel([2, 3]))
-
-            diff = pd.concat([diff], keys=[variable], names=['variable'])
-
-            return diff.unstack().rename_axis(None, axis=1)
-
-    def check_aggregate_regions(self, variable, region='World',
-                                components=None, units=None,
-                                exclude_on_fail=False, **kwargs):
-        """Check whether the region timeseries data match the aggregation
-        of components
-
-        Parameters
-        ----------
-        variable: str
-            variable to be checked for matching aggregation of components data
-        region: str
-            region to be checked for matching aggregation of components data
-        components: list of str, default None
-            list of regions, defaults to all regions except region
-        units: str or list of str, default None
-            filter variable and components for given unit(s)
-        exclude_on_fail: boolean, default False
-            flag scenarios failing validation as `exclude: True`
-        kwargs: passed to `np.isclose()`
-        """
-        var_df = self.filter(variable=variable, level=0)
-
-        if components is None:
-            components = list(set(var_df.data.region) - set([region]))
-
-        if not len(components):
-            msg = (
-                'cannot check regional aggregate for `{}` because it has no '
-                'regional components'
-            )
-            logger().info(msg.format(variable))
-
-            return None
-
-        # filter and groupby data, use `pd.Series.align` for matching index
-        df_region, df_components = (
-            _aggregate_by_regions(var_df.data, region, units)
-            .align(_aggregate_by_regions(var_df.data, components, units))
-        )
-
-        df_components.index = df_components.index.droplevel(
-            "variable"
-        )
-
-        # Add in variables that are included in region totals but which
-        # aren't included in the regional components.
-        # For example, if we are looking at World and Emissions|BC, we need
-        # to add aviation and shipping to the sum of Emissions|BC for each
-        # of World's regional components to do a valid check.
-        different_region = components[0]
-        var_list = pd.Series(self.data.variable.unique())
-        var_components = var_list[pattern_match(var_list,
-                                                '{}|*'.format(variable), 0)]
-        for var_to_add in var_components:
-            var_rows = self.data.variable == var_to_add
-            region_rows = self.data.region == different_region
-            var_has_regional_info = (var_rows & region_rows).any()
-            if not var_has_regional_info:
-                df_var_to_add = self.filter(
-                    region=region, variable=var_to_add
-                ).data.groupby(REGION_IDX).sum()['value']
-                df_var_to_add.index = df_var_to_add.index.droplevel("variable")
-
-                if len(df_var_to_add):
-                    df_components = df_components.add(df_var_to_add,
-                                                      fill_value=0)
-
-        df_components = pd.concat([df_components], keys=[variable],
-                                  names=['variable'])
-
-        # use `np.isclose` for checking match
-        diff = df_region[~np.isclose(df_region, df_components, **kwargs)]
-
-        if len(diff):
-            msg = (
-                '{} - {} of {} data points are not aggregates of regional '
-                'components'
-            )
-            logger().info(msg.format(variable, len(diff), len(df_region)))
-
-            if exclude_on_fail:
-                self._exclude_on_fail(diff.index.droplevel([2, 3]))
-
-            diff = pd.concat([diff], keys=[region], names=['region'])
-
-            return diff.unstack().rename_axis(None, axis=1)
-
-    def check_internal_consistency(self, **kwargs):
-        """Check whether the database is internally consistent
-
-        We check that all variables are equal to the sum of their sectoral
-        components and that all the regions add up to the World total. If
-        the check is passed, None is returned, otherwise a dictionary of
-        inconsistent variables is returned.
-
-        Note: at the moment, this method's regional checking is limited to
-        checking that all the regions sum to the World region. We cannot
-        make this more automatic unless we start to store how the regions
-        relate, see
-        [this issue](https://github.com/IAMconsortium/pyam/issues/106).
-
-        Parameters
-        ----------
-        kwargs: passed to `np.isclose()`
-        """
-        inconsistent_vars = {}
-        for variable in self.variables():
-            diff_agg = self.check_aggregate(variable, **kwargs)
-            if diff_agg is not None:
-                inconsistent_vars[variable + "-aggregate"] = diff_agg
-
-            diff_regional = self.check_aggregate_regions(variable, **kwargs)
-            if diff_regional is not None:
-                inconsistent_vars[variable + "-regional"] = diff_regional
-
-        return inconsistent_vars if inconsistent_vars else None
-
     def _exclude_on_fail(self, df):
         """Assign a selection of scenarios as `exclude: True` in meta"""
         idx = df if isinstance(df, pd.MultiIndex) else _meta_idx(df)
@@ -710,7 +535,7 @@ class IamDataFrame(object):
                       .format(len(idx), '' if len(idx) == 1 else 's'))
 
     def filter(self, filters=None, keep=True, inplace=False, **kwargs):
-        """Return a filtered IamDataFrame (i.e., a subset of current data)
+        """Return a filtered _PyamDataFrame (i.e., a subset of current data)
 
         Parameters
         ----------
@@ -745,7 +570,7 @@ class IamDataFrame(object):
             names=('model', 'scenario')
         )
         if len(idx) == 0:
-            logger().warning('Filtered IamDataFrame is empty!')
+            logger().warning('Filtered _PyamDataFrame is empty!')
 
         ret.meta = ret.meta.loc[idx]
         if not inplace:
@@ -792,7 +617,7 @@ class IamDataFrame(object):
         excel_writer: string or ExcelWriter object
              file path or existing ExcelWriter
         sheet_name: string, default 'data'
-            name of the sheet that will contain the (filtered) IamDataFrame
+            name of the sheet that will contain the (filtered) _PyamDataFrame
         index: boolean, default False
             write row names (index)
         """
@@ -817,12 +642,12 @@ class IamDataFrame(object):
         writer.save()
 
     def load_metadata(self, path, *args, **kwargs):
-        """Load metadata exported from `pyam.IamDataFrame` instance
+        """Load metadata exported from `pyam._PyamDataFrame` instance
 
         Parameters
         ----------
         path: string
-            xlsx file with metadata exported from `pyam.IamDataFrame` instance
+            xlsx file with metadata exported from `pyam._PyamDataFrame` instance
         """
         if not os.path.exists(path):
             raise ValueError("no metadata file '" + path + "' found!")
@@ -1086,14 +911,14 @@ def _aggregate_by_regions(df, regions, units=None):
 
 
 def _apply_filters(data, meta, filters):
-    """Applies filters to the data and meta tables of an IamDataFrame.
+    """Applies filters to the data and meta tables of an _PyamDataFrame.
 
     Parametersp
     ----------
     data: pd.DataFrame
-        data table of an IamDataFrame
+        data table of an _PyamDataFrame
     meta: pd.DataFrame
-        meta table of an IamDataFrame
+        meta table of an _PyamDataFrame
     filters: dict
         dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
         default, but accepts `regexp: True` to use direct regexp
@@ -1192,8 +1017,8 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
 
     Parameters
     ----------
-    df: IamDataFrame instance
-    args: see `IamDataFrame.validate()` for details
+    df: _PyamDataFrame instance
+    args: see `_PyamDataFrame.validate()` for details
     kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
@@ -1209,8 +1034,8 @@ def require_variable(df, variable, unit=None, year=None, exclude_on_fail=False,
 
     Parameters
     ----------
-    df: IamDataFrame instance
-    args: see `IamDataFrame.require_variable()` for details
+    df: _PyamDataFrame instance
+    args: see `_PyamDataFrame.require_variable()` for details
     kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
@@ -1228,8 +1053,8 @@ def categorize(df, name, value, criteria,
 
     Parameters
     ----------
-    df: IamDataFrame instance
-    args: see `IamDataFrame.categorize()` for details
+    df: _PyamDataFrame instance
+    args: see `_PyamDataFrame.categorize()` for details
     kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
@@ -1250,8 +1075,8 @@ def check_aggregate(df, variable, components=None, units=None,
 
     Parameters
     ----------
-    df: IamDataFrame instance
-    args: see IamDataFrame.check_aggregate() for details
+    df: _PyamDataFrame instance
+    args: see _PyamDataFrame.check_aggregate() for details
     kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
@@ -1264,15 +1089,15 @@ def check_aggregate(df, variable, components=None, units=None,
 
 
 def filter_by_meta(data, df, join_meta=False, **kwargs):
-    """Filter by and join meta columns from an IamDataFrame to a pd.DataFrame
+    """Filter by and join meta columns from an _PyamDataFrame to a pd.DataFrame
 
     Parameters
     ----------
     data: pd.DataFrame instance
         DataFrame to which meta columns are to be joined,
         index or columns must include `['model', 'scenario']`
-    df: IamDataFrame instance
-        IamDataFrame from which meta columns are filtered and joined (optional)
+    df: _PyamDataFrame instance
+        _PyamDataFrame from which meta columns are filtered and joined (optional)
     join_meta: bool, default False
         join selected columns from `df.meta` on `data`
     kwargs:
