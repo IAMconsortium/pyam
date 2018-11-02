@@ -1,6 +1,7 @@
 
 # Next Release
 
+- (#135)[https://github.com/IAMconsortium/pyam/pull/135] add requests as dependency and add test pypi install target to ``Makefile``
 - (#128)[https://github.com/IAMconsortium/pyam/pull/128] add ability to directly read data from iiasa data sources
 - (#120)[https://github.com/IAMconsortium/pyam/pull/120] update install setup
 
