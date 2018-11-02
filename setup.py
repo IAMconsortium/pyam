@@ -82,7 +82,7 @@ def main():
         'pyam': ['region_mappings/*'],
     }
     cmdclass = {
-        'install': Cmd,
+        # 'install': Cmd,
     }
     install_requirements = [
         "argparse",
