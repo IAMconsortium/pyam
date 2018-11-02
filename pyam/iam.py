@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 
 
-from pyam.core import _PyamDataFrame, _aggregate_by_variables, _aggregate_by_regions
+from pyam.core import (_PyamDataFrame, _aggregate_by_variables,
+                       _aggregate_by_regions)
 from pyam.utils import cast_years_to_int, pattern_match, REGION_IDX
 from pyam.logger import logger
 

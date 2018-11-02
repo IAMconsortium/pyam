@@ -45,7 +45,7 @@ class _PyamDataFrame(object):
     """
 
     def __init__(self, data, **kwargs):
-        """Initialize an instance of an _PyamDataFrame
+        """Initialize an instance of a _PyamDataFrame
 
         Parameters
         ----------
@@ -151,10 +151,10 @@ class _PyamDataFrame(object):
         ----------
         other: pyam._PyamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
         pd.DataFrame or data file
-            An _PyamDataFrame, TimeSeries or Scenario (requires `ixmp`),
+            A _PyamDataFrame, TimeSeries or Scenario (requires `ixmp`),
             pandas.DataFrame or data file with IAMC-format data columns
         ignore_meta_conflict : bool, default False
-            If False and `other` is an _PyamDataFrame, raise an error if
+            If False and `other` is a _PyamDataFrame, raise an error if
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             If True, do operation inplace and return None
@@ -328,7 +328,7 @@ class _PyamDataFrame(object):
             self.meta[name] = list(meta) if islistable(meta) else meta
             return  # EXIT FUNCTION
 
-        # use meta.index if index arg is an _PyamDataFrame
+        # use meta.index if index arg is a _PyamDataFrame
         if isinstance(index, _PyamDataFrame):
             index = index.meta.index
         # turn dataframe to index if index arg is a DataFrame
@@ -911,14 +911,14 @@ def _aggregate_by_regions(df, regions, units=None):
 
 
 def _apply_filters(data, meta, filters):
-    """Applies filters to the data and meta tables of an _PyamDataFrame.
+    """Applies filters to the data and meta tables of a _PyamDataFrame.
 
     Parametersp
     ----------
     data: pd.DataFrame
-        data table of an _PyamDataFrame
+        data table of a _PyamDataFrame
     meta: pd.DataFrame
-        meta table of an _PyamDataFrame
+        meta table of a _PyamDataFrame
     filters: dict
         dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
         default, but accepts `regexp: True` to use direct regexp
@@ -1089,7 +1089,7 @@ def check_aggregate(df, variable, components=None, units=None,
 
 
 def filter_by_meta(data, df, join_meta=False, **kwargs):
-    """Filter by and join meta columns from an _PyamDataFrame to a pd.DataFrame
+    """Filter by and join meta columns from a _PyamDataFrame to a pd.DataFrame
 
     Parameters
     ----------
