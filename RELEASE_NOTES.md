@@ -1,6 +1,11 @@
 
 # Next Release
 
+- (#128)[https://github.com/IAMconsortium/pyam/pull/128] add ability to directly read data from iiasa data sources
+
+
+# Release v0.1.0
+
 - (#114)[https://github.com/IAMconsortium/pyam/pull/114] extends `append()` such that data can be added to existing scenarios
 - (#111)[https://github.com/IAMconsortium/pyam/pull/111] extends `set_meta()` such that it requires a name (not None)
 - (#109)[https://github.com/IAMconsortium/pyam/pull/109] add ability to fill between and add data ranges in `line_plot()`

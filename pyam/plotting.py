@@ -610,8 +610,8 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
         labels = sorted(list(set(tuple(legend_data))))
         idxs = [legend_data.index(d) for d in labels]
         handles = [handles[i] for i in idxs]
-    if legend is None and len(labels) < 13 or legend is True:
-        ax.legend(handles, labels)
+    if legend is None and len(labels) < 13 or legend is not False:
+        _add_legend(ax, handles, labels, legend)
 
     # add labels and title
     ax.set_xlabel(x)
