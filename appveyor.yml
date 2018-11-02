@@ -1,7 +1,7 @@
 
 environment:
   matrix:
-      - PYTHON_VERSION: "2.7"	
+      - PYTHON_VERSION: "2.7"
         MINICONDA: "C:\\Miniconda-x64"
         PYTHON_ARCH: "64"
       - PYTHON_VERSION: "3.6"
@@ -10,7 +10,7 @@ environment:
 
 init:
   - "ECHO %PYTHON_VERSION% %MINICONDA%"
-  
+
 install:
   # these correspond to folder naming of miniconda installs on appveyor.  See
   # https://www.appveyor.com/docs/installed-software#python
@@ -22,15 +22,12 @@ install:
 
   # Dependencies and package install
   - conda install --yes geopandas cartopy
-  - pip install cython>0.15.1 numpy scipy pandas pyyaml xlrd xlsxwriter
   - if "%PYTHON_VERSION%" == "2.7" pip install functools32
-  - pip install matplotlib==2.1.2 seaborn==0.8.1
-  - python setup.py install
 
 build: false
 
 test_script:
-  - pip install pytest pytest-mpl
+  - pip install -e .[tests]
   - pytest -v --mpl tests --mpl-results-path=test-artifacts
 
 artifacts:

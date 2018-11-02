@@ -23,7 +23,7 @@ _AUTH_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/anonym'
 _CITATIONS = {
     'iamc15': 'D. Huppmann, E. Kriegler, V. Krey, K. Riahi, '
     'J. Rogelj, S.K. Rose, J. Weyant, et al., '
-    'IAMC 1.5°C Scenario Explorer and Data hosted by IIASA. '
+    'IAMC 1.5C Scenario Explorer and Data hosted by IIASA. '
     'IIASA & IAMC, 2018. '
     'doi: 10.22022/SR15/08-2018.15429, '
     'url: data.ene.iiasa.ac.at/iamc-1.5c-explorer'

@@ -4,17 +4,18 @@ from __future__ import print_function
 import glob
 import os
 import shutil
+from subprocess import call
 
 from setuptools import setup, Command, find_packages
 from setuptools.command.install import install
 
 # Thanks to http://patorjk.com/software/taag/
 logo = r"""
- ______   __  __     ______     __    __                                             
-/\  == \ /\ \_\ \   /\  __ \   /\ "-./  \                                            
-\ \  _-/ \ \____ \  \ \  __ \  \ \ \-./\ \                                           
- \ \_\    \/\_____\  \ \_\ \_\  \ \_\ \ \_\                                          
-  \/_/     \/_____/   \/_/\/_/   \/_/  \/_/                                          
+ ______   __  __     ______     __    __
+/\  == \ /\ \_\ \   /\  __ \   /\ "-./  \
+\ \  _-/ \ \____ \  \ \  __ \  \ \ \-./\ \
+ \ \_\    \/\_____\  \ \_\ \_\  \ \_\ \ \_\
+  \/_/     \/_____/   \/_/\/_/   \/_/  \/_/
 """
 
 INFO = {
@@ -43,9 +44,29 @@ class Cmd(install):
                 shutil.rmtree(d)
 
 
+# thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
+class RunTests(Command):
+    """Run all tests."""
+    description = 'run tests'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        """Run all tests!"""
+        errno = call(['py.test', '--cov=skele', '--cov-report=term-missing'])
+        raise SystemExit(errno)
+
+
 def main():
     print(logo)
-
+    classifiers = [
+        "License :: OSI Approved :: Apache Software License",
+    ]
     packages = [
         'pyam',
     ]
@@ -63,10 +84,26 @@ def main():
     cmdclass = {
         'install': Cmd,
     }
+    install_requirements = [
+        "argparse",
+        "numpy",
+        "pandas >=0.21.0",
+        "PyYAML",
+        "xlrd",
+        "xlsxwriter",
+        "matplotlib",
+        "seaborn",
+        "six",
+    ]
+    extra_requirements = {
+        'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
+    }
     setup_kwargs = {
         "name": "pyam-iamc",
         "version": INFO['version'],
         "description": 'Analyze & Visualize Assessment Model Results',
+        "classifiers": classifiers,
+        "license": "Apache License 2.0",
         "author": 'Matthew Gidden & Daniel Huppmann',
         "author_email": 'matthew.gidden@gmail.com',
         "url": 'https://github.com/IAMconsortium/pyam',
@@ -75,6 +112,8 @@ def main():
         "entry_points": entry_points,
         "cmdclass": cmdclass,
         "package_data": package_data,
+        "install_requires": install_requirements,
+        "extras_require": extra_requirements,
     }
     rtn = setup(**setup_kwargs)
 
