@@ -7,8 +7,8 @@ from pyam import iiasa
 
 
 def test_auth():
-    conn = iiasa.Connection('sr15')
-    assert conn.base_url == 'https://db1.ene.iiasa.ac.at/sr15-api/rest/v2.1/'
+    conn = iiasa.Connection('iamc15')
+    assert conn.base_url == 'https://db1.ene.iiasa.ac.at/iamc15-api/rest/v2.1/'
     conn.auth()
 
 
@@ -17,19 +17,19 @@ def test_connection_raises():
 
 
 def test_variables():
-    conn = iiasa.Connection('sr15')
+    conn = iiasa.Connection('iamc15')
     obs = conn.variables().values
     assert 'Emissions|CO2' in obs
 
 
 def test_regions():
-    conn = iiasa.Connection('sr15')
+    conn = iiasa.Connection('iamc15')
     obs = conn.regions().values
     assert 'World' in obs
 
 
 def test_metadata():
-    conn = iiasa.Connection('sr15')
+    conn = iiasa.Connection('iamc15')
     obs = conn.metadata()['model'].values
     assert 'MESSAGEix-GLOBIOM 1.0' in obs
 
@@ -47,7 +47,7 @@ QUERY_DATA_EXP = {
 
 
 def test_query_data_model_scen():
-    conn = iiasa.Connection('sr15')
+    conn = iiasa.Connection('iamc15')
     obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C')
     exp = copy.deepcopy(QUERY_DATA_EXP)
     exp['filters']['runs'] = [2]
@@ -55,7 +55,7 @@ def test_query_data_model_scen():
 
 
 def test_query_data_region():
-    conn = iiasa.Connection('sr15')
+    conn = iiasa.Connection('iamc15')
     obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C',
                                 region='*World*')
     exp = copy.deepcopy(QUERY_DATA_EXP)
@@ -65,7 +65,7 @@ def test_query_data_region():
 
 
 def test_query_data_variables():
-    conn = iiasa.Connection('sr15')
+    conn = iiasa.Connection('iamc15')
     obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C',
                                 variable='Emissions|CO2*')
     exp = copy.deepcopy(QUERY_DATA_EXP)
@@ -91,14 +91,14 @@ def test_query_data_variables():
         npt.assert_array_equal(obs['filters'][k], exp['filters'][k])
 
 
-def test_query_sr15():
-    df = iiasa.read_iiasa_sr15(model='AIM*', scenario='ADVANCE_2020_Med2C',
-                               variable='Emissions|CO2', region='World')
+def test_query_iamc15():
+    df = iiasa.read_iiasa_iamc15(model='AIM*', scenario='ADVANCE_2020_Med2C',
+                                 variable='Emissions|CO2', region='World')
     assert len(df) == 20
 
 
-def test_query_sr15_list():
-    df = iiasa.read_iiasa_sr15(
+def test_query_iamc15_list():
+    df = iiasa.read_iiasa_iamc15(
         model='MESSAGEix*',
         variable=['Emissions|CO2', 'Primary Energy|Coal'],
         region='World'
