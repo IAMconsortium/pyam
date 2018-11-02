@@ -94,6 +94,7 @@ def main():
         "matplotlib",
         "seaborn",
         "six",
+        "requests",
     ]
     extra_requirements = {
         'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
