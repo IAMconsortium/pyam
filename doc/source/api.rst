@@ -9,6 +9,12 @@ Class IamDataFrame
 .. autoclass:: IamDataFrame
    :members:
 
+Class OpenSCMDataFrame
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: OpenSCMDataFrame
+   :members:
+
 Useful `pyam` functions
 ~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,6 +1,7 @@
 
 # Next Release
 
+- (#134)[https://github.com/IAMconsortium/pyam/pull/134] split out base class to make room for other user communities
 - (#128)[https://github.com/IAMconsortium/pyam/pull/128] add ability to directly read data from iiasa data sources
 - (#120)[https://github.com/IAMconsortium/pyam/pull/120] update install setup
 
