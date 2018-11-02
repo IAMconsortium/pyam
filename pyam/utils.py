@@ -10,11 +10,6 @@ import numpy as np
 import pandas as pd
 
 try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
-
-try:
     import ixmp
 except ImportError:
     pass

@@ -9,4 +9,5 @@ Tutorials
 
    tutorials/pyam_first_steps.ipynb
    tutorials/pyam_logo.ipynb
+   tutorials/iiasa_dbs.ipynb
    tutorials/checking_databases.ipynb

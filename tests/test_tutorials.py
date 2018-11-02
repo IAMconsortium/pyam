@@ -79,3 +79,11 @@ def test_pyam_logo():
     fname = os.path.join(tut_path, 'pyam_logo.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
+
+
+@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
+@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
+def test_iiasa_dbs():
+    fname = os.path.join(tut_path, 'iiasa_dbs.ipynb')
+    nb, errors = _notebook_run(fname)
+    assert errors == []
