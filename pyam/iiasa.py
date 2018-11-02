@@ -21,10 +21,12 @@ _URL_TEMPLATE = 'https://db1.ene.iiasa.ac.at/{}-api/rest/v2.1/'
 _AUTH_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/anonym'
 
 _CITATIONS = {
-    'sr15': 'Huppmann, D., Rogelj, J., Kriegler, E., '
-    'Krey, V., & Riahi, K. (2018). A new scenario resource for '
-    'integrated 1.5° C research. Nature Climate Change, 2018, '
-    'DOI: 10.1038/s41558-018-0317-4',
+    'iamc15': 'D. Huppmann, E. Kriegler, V. Krey, K. Riahi, '
+    'J. Rogelj, S.K. Rose, J. Weyant, et al., '
+    'IAMC 1.5°C Scenario Explorer and Data hosted by IIASA. '
+    'IIASA & IAMC, 2018. '
+    'doi: 10.22022/SR15/08-2018.15429, '
+    'url: data.ene.iiasa.ac.at/iamc-1.5c-explorer'
 }
 
 
@@ -49,8 +51,8 @@ class Connection(object):
                 name, valid))
 
         logger().info(
-            'You are connected to the {} database. Please cite as:\n\n{}'
-            .format(name, _CITATIONS[name])
+            'You are connected to the {} {}. Please cite as:\n\n{}'
+            .format(name, 'scenario explorer', _CITATIONS[name])
         )
 
         self.base_url = _URL_TEMPLATE.format(name)
@@ -186,8 +188,9 @@ def read_iiasa(name, **kwargs):
     return IamDataFrame(df[LONG_IDX + ['value']])
 
 
-def read_iiasa_sr15(**kwargs):
+def read_iiasa_iamc15(**kwargs):
     """
-    Query the SR1.5 database. See Connection.query() for more documentation
+    Query the IAMC 1.5C Scenario Explorer.
+    See Connection.query() for more documentation
     """
-    return read_iiasa('sr15', **kwargs)
+    return read_iiasa('iamc15', **kwargs)
