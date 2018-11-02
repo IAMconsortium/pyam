@@ -10,7 +10,7 @@ try:
 except ImportError:
     from functools32 import lru_cache
 
-from pyam.core import IamDataFrame
+from pyam import IamDataFrame
 from pyam.logger import logger
 from pyam.utils import LONG_IDX, isstr, pattern_match
 
