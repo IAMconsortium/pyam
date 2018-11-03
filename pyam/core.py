@@ -28,7 +28,6 @@ from pyam.utils import (
     years_match,
     isstr,
     islistable,
-    cast_years_to_int,
     META_IDX,
     YEAR_IDX,
     REGION_IDX,
@@ -762,8 +761,9 @@ class IamDataFrame(object):
             - 'regexp=True' overrides pseudo-regexp syntax in `pattern_match()`
         """
         if filters is not None:
-            warnings.warn(
-                '`filters` keyword argument in filters() is deprecated and will be removed in the next release')
+            msg = '`filters` keyword argument in filters() is deprecated ' + \
+                'and will be removed in the next release'
+            warnings.warn(msg)
             kwargs.update(filters)
 
         _keep = _apply_filters(self.data, self.meta, kwargs)
