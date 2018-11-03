@@ -292,11 +292,10 @@ class IamDataFrame(object):
         return df
 
     def timeseries(self):
-        """Returns a dataframe in the standard IAMC format
-        """
+        """Returns a dataframe in the standard IAMC format"""
         return (
             self.data
-            .pivot_table(index=IAMC_IDX, columns='year')
+            .pivot_table(index=IAMC_IDX, columns=self.time_col)
             .value  # column name
             .rename_axis(None, axis=1)
         )
