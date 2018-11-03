@@ -318,8 +318,12 @@ class IamDataFrame(object):
         index: pyam.IamDataFrame, pd.DataFrame or pd.MultiIndex, optional
             index to be used for setting meta column (`['model', 'scenario']`)
         """
+        # check that name is valid and doesn't conflict with data columns
         if (name or (hasattr(meta, 'name') and meta.name)) in [None, False]:
             raise ValueError('Must pass a name or use a named pd.Series')
+        name = name or meta.name
+        if name in self.data.columns:
+            raise ValueError('`{}` already exists in `data`!'.format(name))
 
         # check if meta has a valid index and use it for further workflow
         if hasattr(meta, 'index') and hasattr(meta.index, 'names') \
@@ -346,7 +350,6 @@ class IamDataFrame(object):
 
         # create pd.Series from meta, index and name if provided
         meta = pd.Series(data=meta, index=index, name=name)
-        meta.name = name = name or meta.name
 
         # reduce index dimensions to model-scenario only
         meta = (

@@ -547,8 +547,8 @@ def test_filter_by_bool(meta_df):
 
 
 def test_filter_by_int(meta_df):
-    meta_df.set_meta([1, 2], name='value')
-    obs = meta_df.filter(value=[1, 3])
+    meta_df.set_meta([1, 2], name='test')
+    obs = meta_df.filter(test=[1, 3])
     assert obs['scenario'].unique() == 'a_scenario'
 
 
