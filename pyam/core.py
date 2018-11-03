@@ -431,9 +431,9 @@ class IamDataFrame(object):
             required variable
         unit: str, default None
             name of unit (optional)
-        years: int or list, default None
+        year: int or list, default None
             years (optional)
-        exclude: bool, default False
+        exclude_on_fail: bool, default False
             flag scenarios missing the required variables as `exclude: True`
         """
         criteria = {'variable': variable}
@@ -1176,7 +1176,7 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
     rows: pd.DataFrame
         data rows
     check: dict
-        dictionary with possible values of "up", "lo", and "year"
+        dictionary with possible values of 'up', 'lo', and 'year'
     in_range: bool, optional
         check if values are inside or outside of provided range
     return_test: str, optional
