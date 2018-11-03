@@ -1137,9 +1137,6 @@ def _apply_filters(data, meta, filters):
             cat_idx = meta[matches].index
             keep_col = data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
 
-        elif col in ['model', 'scenario', 'region', 'unit']:
-            keep_col = pattern_match(data[col], values, regexp=regexp)
-
         elif col == 'variable':
             level = filters['level'] if 'level' in filters else None
             keep_col = pattern_match(data[col], values, level, regexp)
@@ -1153,9 +1150,12 @@ def _apply_filters(data, meta, filters):
                                          regexp=regexp)
             else:
                 continue
+
+        elif col in data.columns:
+            keep_col = pattern_match(data[col], values, regexp=regexp)
+
         else:
-            raise ValueError(
-                'filter by column ' + col + ' not supported')
+            raise ValueError('filter by `{}` not supported'.format(col))
         keep &= keep_col
 
     return keep
