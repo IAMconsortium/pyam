@@ -163,6 +163,9 @@ class IamDataFrame(object):
         inplace : bool, default False
             If True, do operation inplace and return None
         """
+        if self.time_col is not other.time_col:
+            raise ValueError('incompatible time format (years vs. datetime)!')
+
         ret = copy.deepcopy(self) if not inplace else self
 
         if not isinstance(other, IamDataFrame):
