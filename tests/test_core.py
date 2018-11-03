@@ -313,18 +313,18 @@ def test_load_metadata(meta_df):
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
-def test_load_SSP_database_downloaded_file(test_df):
+def test_load_SSP_database_downloaded_file(test_df_year):
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
     )
-    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df.as_pandas())
+    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df_year.as_pandas())
 
 
-def test_load_RCP_database_downloaded_file(test_df):
+def test_load_RCP_database_downloaded_file(test_df_year):
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_RCP_database_raw_download.xlsx')
     )
-    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df.as_pandas())
+    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df_year.as_pandas())
 
 
 def test_append_other_scenario(meta_df):
@@ -388,24 +388,24 @@ def test_append_same_scenario(meta_df):
     npt.assert_array_equal(ts.iloc[2], ts.iloc[3])
 
 
-def test_append_duplicates(test_df):
-    other = copy.deepcopy(test_df)
-    pytest.raises(ValueError, test_df.append, other=other)
+def test_append_duplicates(test_df_year):
+    other = copy.deepcopy(test_df_year)
+    pytest.raises(ValueError, test_df_year.append, other=other)
 
 
-def test_interpolate(test_df):
-    test_df.interpolate(2007)
+def test_interpolate(test_df_year):
+    test_df_year.interpolate(2007)
     dct = {'model': ['a_model'] * 3, 'scenario': ['a_scenario'] * 3,
            'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
     variable = {'variable': 'Primary Energy'}
-    obs = test_df.filter(**variable).timeseries()
+    obs = test_df_year.filter(**variable).timeseries()
     npt.assert_array_equal(obs, exp)
 
     # redo the inpolation and check that no duplicates are added
-    test_df.interpolate(2007)
-    assert not test_df.filter(**variable).data.duplicated().any()
+    test_df_year.interpolate(2007)
+    assert not test_df_year.filter(**variable).data.duplicated().any()
 
 
 def test_set_meta_no_name(meta_df):

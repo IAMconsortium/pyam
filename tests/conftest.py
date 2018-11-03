@@ -3,6 +3,7 @@ matplotlib.use('agg')
 
 import os
 import pytest
+from datetime import datetime
 
 import pandas as pd
 
@@ -147,8 +148,23 @@ CHECK_AGG_REGIONAL_DF = pd.DataFrame([
 )
 
 
+TIME_AXES = [
+    [2005, 2010],
+    [datetime(2005, 6, 17), datetime(2010, 6, 17)],
+]
+
+
+@pytest.fixture(scope="function", params=TIME_AXES)
+def test_df(request):
+    tdf = TEST_DF.iloc[:2]
+    tdf = tdf.rename({2005: request.param[0], 2010: request.param[1]},
+                     axis="columns")
+    df = IamDataFrame(data=tdf)
+    yield df
+
+
 @pytest.fixture(scope="function")
-def test_df():
+def test_df_year():
     df = IamDataFrame(data=TEST_DF.iloc[:2])
     yield df
 
