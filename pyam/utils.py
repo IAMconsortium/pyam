@@ -186,7 +186,7 @@ def format_data(df):
         else:
             msg = 'invalid time format, must have either `year` or `time`!'
             raise ValueError(msg)
-        extra_cols = list(set(df.columns) - set(IAMC_IDX + [time_col]))
+        extra_cols = list(set(cols) - set(IAMC_IDX + [time_col, 'value']))
     else:
         # if in wide format, check if columns are years (int) or datetime
         cols = set(df.columns) - set(IAMC_IDX)
