@@ -178,18 +178,18 @@ class Connection(object):
         r = requests.post(url, headers=headers, data=data)
         # refactor returned json object to be castable to an IamDataFrame
         df = (
-              pd.read_json(r.content, orient='records')
-              .drop(columns='runId')
-              .rename(columns={'time': 'subannual'})
-              )
+            pd.read_json(r.content, orient='records')
+            .drop(columns='runId')
+            .rename(columns={'time': 'subannual'})
+        )
         # check if returned dataframe has subannual disaggregation, drop if not
         if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
             df.drop(columns='subannual', inplace=True)
         # check if there are multiple version for any model/scenario
         lst = (
-               df[META_IDX + ['version']].drop_duplicates()
-               .groupby(META_IDX).count().version
-               )
+            df[META_IDX + ['version']].drop_duplicates()
+            .groupby(META_IDX).count().version
+        )
         if max(lst) > 1:
             raise ValueError('multiple versions for {}'.format(
                 lst[lst > 1].index.to_list()))
