@@ -12,7 +12,7 @@ except ImportError:
 
 from pyam.core import IamDataFrame
 from pyam.logger import logger
-from pyam.utils import IAMC_IDX, isstr, pattern_match
+from pyam.utils import META_IDX, isstr, pattern_match
 
 # quiet this fool
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -185,6 +185,16 @@ class Connection(object):
         # check if returned dataframe has subannual disaggregation, drop if not
         if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
             df.drop(columns='subannual', inplace=True)
+        # check if there are multiple version for any model/scenario
+        lst = (
+                df[META_IDX + ['version']].drop_duplicates()
+                .groupby(META_IDX).count().version
+                )
+        if max(lst) > 1:
+            raise ValueError('multiple versions for {}'.format(
+                    lst[lst > 1].index.to_list()))
+        df.drop(columns='version', inplace=True)
+
         return df
 
 
