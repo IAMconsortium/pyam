@@ -176,7 +176,16 @@ class Connection(object):
         data = json.dumps(self._query_post_data(**kwargs))
         url = self.base_url + 'runs/bulk/ts'
         r = requests.post(url, headers=headers, data=data)
-        return pd.read_json(r.content, orient='records')
+        # refactor returned json object to be castable to an IamDataFrame
+        df = (
+                pd.read_json(r.content, orient='records')
+                .drop(columns='runId')
+                .rename(columns={'time': 'subannual'})
+                )
+        # check if returned dataframe has subannual disaggregation, drop if not
+        if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
+            df.drop(columns='subannual', inplace=True)
+        return df
 
 
 def read_iiasa(name, **kwargs):
