@@ -293,14 +293,26 @@ class IamDataFrame(object):
                   )
         return df
 
-    def timeseries(self):
-        """Returns a dataframe in the standard IAMC format"""
-        return (
+    def timeseries(self, iamc_index=True):
+        """Returns a pd.DataFrame in wide format (years or timedate as columns)
+
+        Parameters
+        ----------
+        iamc_index: bool, default True
+            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all `data` columns
+        """
+        index = IAMC_IDX if iamc_index else IAMC_IDX + self.extra_cols
+        df = (
             self.data
-            .pivot_table(index=IAMC_IDX, columns=self.time_col)
+            .pivot_table(index=index, columns=self.time_col)
             .value  # column name
             .rename_axis(None, axis=1)
         )
+        if df.index.has_duplicates:
+            raise ValueError('timeseries object has duplicates in index ',
+                             'use `iamc_index=False`')
+        return df
 
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to `exclude: False`"""
