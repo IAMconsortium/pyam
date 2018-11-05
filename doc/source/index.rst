@@ -1,11 +1,26 @@
 **pyam**: analysis and visualization of assessment models
 =========================================================
 
+.. |br| raw:: html
+
+    <br>
 
 Release v\ |version|.
 
 .. image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
+
+.. image:: https://anaconda.org/conda-forge/pyam/badges/version.svg
+   :target: https://anaconda.org/conda-forge/pyam   
+
+.. image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
+   :target: https://anaconda.org/conda-forge/pyam
+
+.. image:: https://zenodo.org/badge/113359260.svg
+   :target: https://zenodo.org/badge/latestdoi/113359260
+
+.. image:: https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg
+   :target: https://anaconda.org/conda-forge/pyam
 
 .. image:: https://circleci.com/gh/IAMconsortium/pyam.svg?style=shield&circle-token=:circle-token
     :target: https://circleci.com/gh/IAMconsortium/pyam
@@ -15,9 +30,6 @@ Release v\ |version|.
    
 .. image:: https://ci.appveyor.com/api/projects/status/qd4taojd2vkqoab4/branch/master?svg=true&passingText=passing&failingText=failing&pendingText=pending
       :target: https://ci.appveyor.com/project/gidden/pyam/branch/master
-
-.. image:: https://zenodo.org/badge/113359260.svg
-   :target: https://zenodo.org/badge/latestdoi/113359260
 
 The **pyam** Python package provides a range of diagnostic tools and functions
 for analyzing and visualizing data from your favorite assessment model(s).

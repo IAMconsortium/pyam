@@ -19,7 +19,7 @@ logo = r"""
 """
 
 INFO = {
-    'version': '0.1.1',
+    'version': '0.1.2',
 }
 
 
@@ -87,6 +87,7 @@ def main():
     install_requirements = [
         "argparse",
         "numpy",
+        "requests",
         "pandas >=0.21.0",
         "PyYAML",
         "xlrd",
