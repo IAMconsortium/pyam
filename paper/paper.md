@@ -35,31 +35,35 @@ For the recent *Special Report on Global Warming of 1.5 °C*
 a scenario ensemble underpinning the quantitative assessment was compiled
 and released to facilitate transparency of the assessment and replicability
 of the findings in the report [@huppmann_ncc_2018].
+
+Additionally, IAM scenarios serve as one of the main
+drivers of the Coupled Model Intercomparison Project Phase 6
+[(CMIP6)](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip6)
 [@oneill_scenario_2016; @gidden_global_2018], which informs the global
 scientific basis for climate change. IAMs are not only limited to global
 analyses, but also are critical for country-specific policy assessments both
-domestically as well as in the global context [@rogelj_paris_2016].  While great
+domestically as well as in the global context [@rogelj_paris_2016]. While great
 strides have been made to make IAM scenario data publicly available among these
-different projects, limited effort has been applied to support their
-exploration, analysis, and visualization thus far.
+different projects, limited effort has been applied so far
+to develop open tools for their exploration, analysis, and visualization.
 
 Here we present a new tool which aims to fill the current gaps in the IAM
 toolbox: an open-source analysis and visualization library named __pyam__
 [@pyam_2018]. __pyam__ has been designed since its inception following known
 best practices in scientific software development, including automatic
 documentation, unit testing, and continuous integration. At its core, __pyam__
-is a tool that enables interested scientists to easily explore, categorize, and
-visualize scenario data such as the ensembles assessed by the IPCC. Such
-exploration is enabled via a __pandas.DataFrame__ style interface using a
+is a tool that enables researchers to easily explore, categorize, and
+visualize scenario data such as the scenario ensembles assessed by the IPCC.
+Such exploration is enabled via a __pandas.DataFrame__-style interface using a
 composition design pattern while maintaining sidecar metadata in a single
 __pyam.IamDataFrame__ object. 
 
 Critically, __pyam__ provides a common mechanism by which scenario data analysis
-is performed which can be easily shared for greater transparency and
-reproducibility, through, e.g., Jupyter notebooks. In fact, it is already an
+is performed. This allows to easily share such analysis for greater transparency
+and reproducibility, through, e.g., Jupyter notebooks. In fact, it is already an
 integral tool used by scientists leading the data analysis of both the IPCC
-SR1.5 as well as the ScenarioMIP contribution to CMIP6. The Jupyter notebooks
-generating the categorization and assessment in the SR1.5, including figures and
+SR15 as well as the ScenarioMIP contribution to CMIP6. The Jupyter notebooks
+generating the categorization and assessment in the SR15, including figures and
 tables printed in the report, are based on __pyam__ and have been publicly
 released under an open-source license [@huppmann_notebooks_2018].
 
