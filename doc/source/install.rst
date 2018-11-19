@@ -22,20 +22,19 @@ From Source
 
 .. code-block:: bash
 
-    git clone https://github.com/IAMconsortium/pyam && cd pyam
-    pip install -r requirements.txt && python setup.py install
+    pip install -e git+https://github.com/IAMconsortium/pyam.git#egg=pyam
 
 Depedencies
 ~~~~~~~~~~~
 
-The depedencies for :code:`pyam` are:
+The optional depedencies for :code:`pyam` are:
 
   .. include:: ../../requirements.txt
-	  :start-line: 1
+	  :start-line: 0
 	  :literal:
 
 The depedencies for building this documentation are:
 
   .. include:: ../requirements.txt
-	  :start-line: 1
+	  :start-line: 0
 	  :literal:

@@ -61,44 +61,14 @@ The ``pyam`` package is licensed
 under the Apache License, Version 2.0 (the "License");
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
-Python dependencies
--------------------
+Install
+-------
 
-0. `pandas` v0.21.0 or higher
-0. `matplotlib`
-0. `seaborn`
-0. `geopandas` (optional)
-0. `cartopy` (optional)
+For basic instructions see our
+[website](http://software.ene.iiasa.ac.at/pyam/install.html).
 
-Documentation Building Depedencies
-----------------------------------
+To install from source after cloning this repository, simply run
 
-0. `Sphinx <http://sphinx-doc.org/>`_ v1.1.2 or higher
-0. `sphinxcontrib.bibtex`
-0. `sphinxcontrib-fulltoc`
-0. `sphinx-gallery`
-
-Installation instructions
--------------------------
-
-0. Fork this repository and clone the forked repository (`<user>/pyam`)
-   to your machine. To fork the repository, look for the fork icon in the top
-   right at [iiasa/pyam](https://github.com/iiasa/pyam).
-   Add `iiasa/pyam` as `upstream` to your clone.
-
-   *We recommend* [GitKraken](https://www.gitkraken.com/) *for users*
-   *who prefer a graphical user interface application*
-   *to work with Github (as opposed to the command line).*
-
-### Windows Users
-
-0. Double click on `install.bat` in the local folder where you cloned your fork.
-
-### *nix Users
-
-0. In a command prompt, execute the following command
-
-    ```
-    python setup.py install
-    ```
-
+```
+pip install -e .
+```
