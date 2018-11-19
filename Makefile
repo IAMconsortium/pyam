@@ -4,31 +4,40 @@ new_release:
 	@echo 'git tag vX.Y.Z'
 	@echo 'make publish-on-pypi'
 
-# first time setup, follow this https://blog.jetbrains.com/pycharm/2017/05/how-to-publish-your-package-on-pypi/
+# first time setup, follow the 'Register for PyPI' section in this
+# https://blog.jetbrains.com/pycharm/2017/05/how-to-publish-your-package-on-pypi/
 # then this works
 .PHONY: publish-on-testpypi
-publish-on-testpypi:
+publish-on-testpypi: venv
 	-rm -rf build dist
 	@status=$$(git status --porcelain); \
 	if test "x$${status}" = x; then \
-		$(call activate_conda_env,); \
-			python setup.py sdist bdist_wheel --universal; \
-			twine upload -r testpypi dist/*; \
+		./venv/bin/python setup.py bdist_wheel --universal; \
+		./venv/bin/twine upload -r testpypi dist/*; \
 	else \
 		echo Working directory is dirty >&2; \
 	fi;
 
 .PHONY: publish-on-pypi
-publish-on-pypi:
+publish-on-pypi: venv
 	-rm -rf build dist
 	@status=$$(git status --porcelain); \
 	if test "x$${status}" = x; then \
-		$(call activate_conda_env,); \
-			python setup.py sdist bdist_wheel --universal; \
-			twine upload dist/*; \
+		./venv/bin/python setup.py bdist_wheel --universal; \
+		./venv/bin/twine upload dist/*; \
 	else \
 		echo Working directory is dirty >&2; \
 	fi;
+
+.PHONY: test
+test: venv
+	./venv/bin/pytest tests
+
+venv:
+	[ -d ./venv ] || python3 -m venv venv
+	./venv/bin/pip install --upgrade pip
+	./venv/bin/pip install -e .[tests,docs,deploy]
+	touch venv
 
 .PHONY: release-on-conda
 release-on-conda:
