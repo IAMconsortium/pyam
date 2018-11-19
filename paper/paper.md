@@ -24,16 +24,17 @@ affiliations:
 
 # Summary
 
-Integrated Assessment Modeling (IAM) scenarios play a critical role in the
-scientific exploration of global sustainable development and mitigation of
-climate change. Perhaps chief among these is their assessment by Working Group
-III of the Intergovernmental Panel on Climate Change (IPCC). For its Fifth
-Assessment Report (AR5), a database comprising more than 1000 such scenarios
-[@ar5-wg3] was compiled and analyzed; similar work was recently carried out for
-the Special Report on Global Warming of 1.5 °C (SR1.5) of the IPCC. Both the
-report and the related quantitative scenario ensemble were recently released
-[@huppmann_new_2018]. Additionally, IAM scenarios serve as one of the main
-drivers of the Coupled Model Intercomparison Project Phase 6 (CMIP6)
+Quantitative model-based scenarios of the human and earth systems
+play a critical role in the scientific analysis of climate change mitigation
+options and sustainable development policies.
+Perhaps the most visible among these projects is the assessment of pathways
+from Integrated Assessment Models (IAM) and other numerical frameworks by
+the Intergovernmental Panel on Climate Change (IPCC) in its periodical reports.
+For the recent *Special Report on Global Warming of 1.5 °C*
+[(SR15)](http://www.ipcc.ch/report/sr15/),
+a scenario ensemble underpinning the quantitative assessment was compiled
+and released to facilitate transparency of the assessment and replicability
+of the findings in the report [@huppmann_new_2018].
 [@oneill_scenario_2016; @gidden_global_2018], which informs the global
 scientific basis for climate change. IAMs are not only limited to global
 analyses, but also are critical for country-specific policy assessments both
