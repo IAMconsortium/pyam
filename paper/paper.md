@@ -2,24 +2,24 @@
 title: 'pyam: a Python Package for the Analysis and Visualization of Assessment Models'
 authors:
     - name: Matthew J. Gidden
-	        orcid: 0000-0003-0687-414X
-		    affiliation: 1
+            orcid: 0000-0003-0687-414X
+            affiliation: 1
     - name: Daniel Huppmann
-	        orcid: 0000-0002-7729-7389
-		    affiliation: 1
+            orcid: 0000-0002-7729-7389
+            affiliation: 1
 date: 20 November 2018
 output: pdf_document
 bibliography: paper.bib
 tags:
-	- Python
-	- Visualization
-	- Integrated Assessment Models
-	- Simple Climate Models
-	- Climate Change
-	- Greenhouse Gases
+    - Python
+    - Visualization
+    - Integrated Assessment Models
+    - Simple Climate Models
+    - Climate Change
+    - Greenhouse Gases
 affiliations:
     - name: International Institute for Applied Systems Analysis, Schlossplatz 1, A-2361 Laxenburg, Austria
-			index: 1
+            index: 1
 ---
 
 # Summary
