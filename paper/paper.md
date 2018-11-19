@@ -100,7 +100,7 @@ df.categorize(
     color='magenta'
 )
 
-# Finally, plot temperature data based on these categories,
+# Temperature data can be plotted directly based on these categories,
 # shading areas between lowest and highest values for each category,
 # and providing minimum/maximum ranges of final-year data
 (df
@@ -109,9 +109,17 @@ df.categorize(
             alpha=0.5, fill_between=True, 
             final_ranges=dict(linewidth=4))
 )
+
+# Separately, the other data can be plotted using the temperatue categories.
+(df
+ .filter(region='World')
+ .scatter(x='Primary Energy|Coal', y='Emissions|CO2', 
+          color='Temperature', alpha=0.5, legend=True)
+)
 ```
 
-Executing the above code snippet results in ![the following figure](paper.png).
+Executing the above code snippet results in the following ![line plot](line.png)
+and ![scatter plot](scatter.png).
 
 The __pyam__ user community already spans three continents and multiple
 scientific domains. New features, e.g., integration with simple climate models,
