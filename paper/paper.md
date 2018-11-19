@@ -69,13 +69,14 @@ released under an open-source license [@huppmann_notebooks_2018].
 
 A large suite of examples is available via the __pyam__
 [website](https://data.ene.iiasa.ac.at/software/pyam/). Here, we provide a small
-vignette below for interacting with and visualizing the recent SR1.5 dataset.
+vignette below for interacting with and visualizing the recent SR15 dataset.
 
 
 ```python
 import pyam
 
-# from the IPCC Special Report on 1.5C, read all global data for three variables
+# read all data for three variables at the global ('World') level
+# from the *IAMC 1.5 °C Scenario Data*, the database underpinning the IPCC SR15
 df = pyam.read_iiasa_iamc15(
     model='*', scenario='*',
     variable=['Emissions|CO2', 'Primary Energy|Coal', 
