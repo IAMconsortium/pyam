@@ -34,7 +34,7 @@ For the recent *Special Report on Global Warming of 1.5 °C*
 [(SR15)](http://www.ipcc.ch/report/sr15/),
 a scenario ensemble underpinning the quantitative assessment was compiled
 and released to facilitate transparency of the assessment and replicability
-of the findings in the report [@huppmann_new_2018].
+of the findings in the report [@huppmann_ncc_2018].
 [@oneill_scenario_2016; @gidden_global_2018], which informs the global
 scientific basis for climate change. IAMs are not only limited to global
 analyses, but also are critical for country-specific policy assessments both
