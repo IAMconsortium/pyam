@@ -61,7 +61,7 @@ integral tool used by scientists leading the data analysis of both the IPCC
 SR1.5 as well as the ScenarioMIP contribution to CMIP6. The Jupyter notebooks
 generating the categorization and assessment in the SR1.5, including figures and
 tables printed in the report, are based on __pyam__ and have been publicly
-released.
+released under an open-source license [@huppmann_notebooks_2018].
 
 A large suite of examples is available via the __pyam__
 [website](https://data.ene.iiasa.ac.at/software/pyam/). Here, we provide a small
