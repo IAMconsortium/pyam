@@ -128,7 +128,7 @@ Executing the above code snippet results in the following figures.
 
 ![A classic AR5-style line plot, showing various temperature categories, their scenario ranges, and end-of-century outcome ranges.](line.png)
 
-![A scatter plot showing scenario values of primary energy from coal vs. CO2 emissions colored based on end-of-centure temperate outcomes](scatter.png).
+![A scatter plot showing scenario values of primary energy from coal vs. CO2 emissions colored based on end-of-centure temperate outcomes.](scatter.png)
 
 The __pyam__ user community already spans three continents and multiple
 scientific domains. New features, e.g., integration with simple climate models,
