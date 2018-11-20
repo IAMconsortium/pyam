@@ -138,4 +138,9 @@ assessment modeling, modelers can more keenly focus on their core competency:
 developing and performing large-scale models of the interlinked human,
 environment, and climate systems.
 
+# Acknowledgments
+
+This project has received funding from the European Union’s Horizon 2020
+research and innovation programme under grant agreement No 641816 (CRESCENDO).
+
 # References
