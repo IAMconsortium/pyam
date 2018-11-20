@@ -299,12 +299,12 @@ class IamDataFrame(object):
                   )
         return df
 
-    def timeseries(self, iamc_index=True):
+    def timeseries(self, iamc_index=False):
         """Returns a pd.DataFrame in wide format (years or timedate as columns)
 
         Parameters
         ----------
-        iamc_index: bool, default True
+        iamc_index: bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all `data` columns
         """
