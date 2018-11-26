@@ -1,5 +1,5 @@
 ---
-title: 'pyam: a Python Package for the Analysis and Visualization of Assessment Models'
+title: 'pyam: a Python Package for the Analysis and Visualization of Models of the Interaction of Climate, Human, and Environmental Systems'
 authors:
     - name: Matthew J. Gidden
       orcid: 0000-0003-0687-414X
@@ -34,9 +34,9 @@ For the recent *Special Report on Global Warming of 1.5 °C*
 [(SR15)](http://www.ipcc.ch/report/sr15/),
 a scenario ensemble underpinning the quantitative assessment was compiled
 and released to facilitate transparency of the assessment and replicability
-of the findings in the report [@huppmann_ncc_2018].
+of the findings in the report [@rogelj_global_nodate].
 
-Additionally, IAM scenarios serve as one of the main
+Additionally, IAM scenarios [@riahi_shared_2017] serve as one of the main
 drivers of the Coupled Model Intercomparison Project Phase 6
 [(CMIP6)](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip6)
 [@oneill_scenario_2016; @gidden_global_2018], which informs the global
@@ -44,8 +44,8 @@ scientific basis for climate change. IAMs are not only limited to global
 analyses, but also are critical for country-specific policy assessments both
 domestically as well as in the global context [@rogelj_paris_2016]. While great
 strides have been made to make IAM scenario data publicly available among these
-different projects, limited effort has been applied so far
-to develop open tools for their exploration, analysis, and visualization.
+different projects, limited effort has been applied so far to develop open tools
+for their exploration, analysis, and visualization.
 
 Here we present a new tool which aims to fill the current gaps in the IAM
 toolbox: an open-source analysis and visualization library named __pyam__
