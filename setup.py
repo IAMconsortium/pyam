@@ -98,6 +98,8 @@ def main():
     ]
     extra_requirements = {
         'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
+        'docs': ['sphinx', 'sphinx_rtd_theme'],
+        'deploy': ['twine', 'setuptools', 'wheel'],
     }
     setup_kwargs = {
         "name": "pyam-iamc",
