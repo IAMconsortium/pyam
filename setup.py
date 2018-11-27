@@ -4,10 +4,10 @@ from __future__ import print_function
 import glob
 import os
 import shutil
-from subprocess import call
+import versioneer
 
-from setuptools import setup, Command, find_packages
-from setuptools.command.install import install
+from setuptools import setup, Command
+from subprocess import call
 
 # Thanks to http://patorjk.com/software/taag/
 logo = r"""
@@ -21,27 +21,6 @@ logo = r"""
 INFO = {
     'version': '0.1.2',
 }
-
-
-class Cmd(install):
-    """Custom clean command to tidy up the project root."""
-
-    def initialize_options(self):
-        install.initialize_options(self)
-
-    def finalize_options(self):
-        install.finalize_options(self)
-
-    def run(self):
-        install.run(self)
-        dirs = [
-            'pyam.egg-info',
-            'build',
-        ]
-        for d in dirs:
-            if os.path.exists(d):
-                print('removing {}'.format(d))
-                shutil.rmtree(d)
 
 
 # thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
@@ -81,9 +60,6 @@ def main():
     package_data = {
         'pyam': ['region_mappings/*'],
     }
-    cmdclass = {
-        # 'install': Cmd,
-    }
     install_requirements = [
         "argparse",
         "numpy",
@@ -103,7 +79,8 @@ def main():
     }
     setup_kwargs = {
         "name": "pyam-iamc",
-        "version": INFO['version'],
+        "version": versioneer.get_version(),
+        "cmdclass": versioneer.get_cmdclass(),
         "description": 'Analyze & Visualize Assessment Model Results',
         "classifiers": classifiers,
         "license": "Apache License 2.0",
@@ -113,7 +90,6 @@ def main():
         "packages": packages,
         "package_dir": pack_dir,
         "entry_points": entry_points,
-        "cmdclass": cmdclass,
         "package_data": package_data,
         "install_requires": install_requirements,
         "extras_require": extra_requirements,
