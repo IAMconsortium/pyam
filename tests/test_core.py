@@ -63,12 +63,6 @@ def test_init_df_with_extra_col(test_pd_df):
     assert df.extra_cols == [extra_col]
     pd.testing.assert_frame_equal(df.timeseries().reset_index(), tdf, check_like=True)
 
-    exp_meta = pd.DataFrame([
-        ['b_model', 'b_scen', extra_value, False],
-        ['b_model', 'a_scenario2', extra_value, False],
-    ], columns=['model', 'scenario', extra_col, 'exclude']
-    ).set_index(['model', 'scenario', extra_col])
-    pd.testing.assert_frame_equal(df.meta, exp_meta)
 
 
 def test_to_excel(test_df):
