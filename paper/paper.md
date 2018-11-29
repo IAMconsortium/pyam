@@ -31,10 +31,10 @@ Perhaps the most visible among these projects is the assessment of pathways
 from Integrated Assessment Models (IAM) and other numerical frameworks by
 the Intergovernmental Panel on Climate Change (IPCC) in its periodical reports.
 For the recent *Special Report on Global Warming of 1.5 °C*
-[(SR15)](http://www.ipcc.ch/report/sr15/),
+([SR15](http://www.ipcc.ch/report/sr15/), [@rogelj_global_nodate]),
 a scenario ensemble underpinning the quantitative assessment was compiled
 and released to facilitate transparency of the assessment and replicability
-of the findings in the report [@rogelj_global_nodate].
+of the findings in the report [@huppmann_ncc_2018].
 
 Additionally, IAM scenarios [@riahi_shared_2017] serve as one of the main
 drivers of the Coupled Model Intercomparison Project Phase 6
