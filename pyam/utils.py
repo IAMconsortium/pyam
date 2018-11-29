@@ -5,6 +5,8 @@ import six
 import re
 import glob
 import collections
+import datetime
+import time
 
 import numpy as np
 import pandas as pd
@@ -296,8 +298,85 @@ def years_match(data, years):
     matching of year columns for data filtering
     """
     years = [years] if isinstance(years, int) else years
+    if isinstance(years, datetime.datetime) or isinstance(years[0], datetime.datetime):
+        error_msg = "`year` can only be filtered with ints or lists of ints"
+        raise TypeError(error_msg)
     return data.isin(years)
 
+
+def month_match(data, months):
+    """
+    matching of months in time columns for data filtering
+    """
+    return time_match(data, months, ['%b', '%B'], "tm_mon", "months")
+
+
+def day_match(data, days):
+    """
+    matching of days in time columns for data filtering
+    """
+    return time_match(data, days, ['%a', '%A'], "tm_wday", "days")
+
+
+def hour_match(data, hours):
+    """
+    matching of days in time columns for data filtering
+    """
+    hours = [hours] if isinstance(hours, int) else hours
+    return data.isin(hours)
+
+
+def time_match(data, times, conv_codes, strptime_attr, name):
+    def conv_strs(strs_to_convert, conv_codes, name):
+        for conv_code in conv_codes:
+            try:
+                res = [getattr(time.strptime(t, conv_code), strptime_attr)
+                         for t in strs_to_convert]
+                break
+            except ValueError:
+                continue
+
+        try:
+            return res
+        except NameError:
+            raise ValueError("Could not convert {} to integer".format(name))
+
+    times = [times] if isinstance(times, (int, str)) else times
+    if isinstance(times[0], str):
+        to_delete = []
+        to_append = []
+        for i, timeset in enumerate(times):
+            if "-" in timeset:
+                ints = conv_strs(timeset.split("-"), conv_codes, name)
+                if ints[0] > ints[1]:
+                    error_msg = (
+                        "string ranges must lead to increasing integer ranges, {} "
+                        "becomes {}".format(timeset, ints)
+                    )
+                    raise ValueError(error_msg)
+
+                # + 1 to include last month
+                to_append += [j for j in range(ints[0], ints[1] + 1)]
+                to_delete.append(i)
+
+        for i in to_delete:
+            del times[i]
+
+        times = conv_strs(times, conv_codes, name)
+        times += to_append
+
+    return data.isin(times)
+
+
+def datetime_match(data, datetimes):
+    """
+    matching of datetimes in time columns for data filtering
+    """
+    datetimes = [datetimes] if isinstance(datetimes, datetime.datetime) else datetimes
+    if isinstance(datetimes, int) or isinstance(datetimes[0], int):
+        error_msg = "`time` can only be filtered with datetimes or lists of datetimes"
+        raise TypeError(error_msg)
+    return data.isin(datetimes)
 
 def cast_years_to_int(x, index=False):
     """Formatting series or timeseries columns to int and checking validity.

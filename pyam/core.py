@@ -26,6 +26,10 @@ from pyam.utils import (
     format_data,
     pattern_match,
     years_match,
+    month_match,
+    hour_match,
+    day_match,
+    datetime_match,
     isstr,
     islistable,
     META_IDX,
@@ -459,7 +463,7 @@ class IamDataFrame(object):
         if year:
             criteria.update({'year': year})
 
-        keep = _apply_filters(self.data, self.meta, criteria)
+        keep = self._apply_filters(criteria)
         idx = self.meta.index.difference(_meta_idx(self.data[keep]))
 
         n = len(idx)
@@ -784,7 +788,7 @@ class IamDataFrame(object):
             warnings.warn(msg)
             kwargs.update(filters)
 
-        _keep = _apply_filters(self.data, self.meta, kwargs)
+        _keep = self._apply_filters(kwargs)
         _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[_keep]
@@ -799,6 +803,83 @@ class IamDataFrame(object):
         ret.meta = ret.meta.loc[idx]
         if not inplace:
             return ret
+
+    def _apply_filters(self, filters):
+        """Determine rows to keep in data for given set of filters
+
+        Parameters
+        ----------
+        filters: dict
+            dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
+            default, but accepts `regexp: True` to use regexp directly
+        """
+        regexp = filters.pop('regexp', False)
+        keep = np.array([True] * len(self.data))
+
+        # filter by columns and list of values
+        for col, values in filters.items():
+            if col in self.meta.columns:
+                matches = pattern_match(self.meta[col], values, regexp=regexp)
+                cat_idx = self.meta[matches].index
+                keep_col = self.data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
+
+            elif col == 'variable':
+                level = filters['level'] if 'level' in filters else None
+                keep_col = pattern_match(self.data[col], values, level, regexp)
+
+            elif col == 'year':
+                if self.time_col is 'time':
+                    keep_col = years_match(self.data['time'].apply(lambda x: x.year),
+                                           values)
+                else:
+                    keep_col = years_match(self.data[col], values)
+
+            elif col == 'month':
+                if self.time_col is not 'time':
+                    _raise_filter_error(col)
+                keep_col = month_match(self.data['time'].apply(lambda x: x.month),
+                                       values)
+
+            elif col == 'day':
+                if self.time_col is not 'time':
+                    _raise_filter_error(col)
+                wday = (
+                    isinstance(values, str)
+                    or (isinstance(values, list) and isinstance(values[0], str))
+                )
+                if wday:
+                    days = self.data['time'].apply(lambda x: x.weekday())
+                else:  # ints or list of ints
+                    days = self.data['time'].apply(lambda x: x.day)
+
+                keep_col = day_match(days, values)
+
+            elif col == 'hour':
+                if self.time_col is not 'time':
+                    _raise_filter_error(col)
+                keep_col = hour_match(self.data['time'].apply(lambda x: x.hour),
+                                      values)
+
+            elif col == 'time':
+                keep_col = datetime_match(self.data[col], values)
+
+            elif col == 'level':
+                if 'variable' not in filters.keys():
+                    keep_col = pattern_match(self.data['variable'], '*', values,
+                                             regexp=regexp)
+                else:
+                    continue
+
+            elif col in self.data.columns:
+                keep_col = pattern_match(self.data[col], values, regexp=regexp)
+
+            else:
+                _raise_filter_error(col)
+
+            keep &= keep_col
+
+        return keep
+
 
     def col_apply(self, col, func, *args, **kwargs):
         """Apply a function to a column
@@ -1138,53 +1219,8 @@ def _aggregate_by_regions(df, regions, units=None):
 
     return df.groupby(REGION_IDX + ['unit']).sum()['value']
 
-
-def _apply_filters(data, meta, filters):
-    """Applies filters to the data and meta tables of an IamDataFrame.
-
-    Parametersp
-    ----------
-    data: pd.DataFrame
-        data table of an IamDataFrame
-    meta: pd.DataFrame
-        meta table of an IamDataFrame
-    filters: dict
-        dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
-        default, but accepts `regexp: True` to use direct regexp
-    """
-    regexp = filters.pop('regexp', False)
-    keep = np.array([True] * len(data))
-
-    # filter by columns and list of values
-    for col, values in filters.items():
-        if col in meta.columns:
-            matches = pattern_match(meta[col], values, regexp=regexp)
-            cat_idx = meta[matches].index
-            keep_col = data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
-
-        elif col == 'variable':
-            level = filters['level'] if 'level' in filters else None
-            keep_col = pattern_match(data[col], values, level, regexp)
-
-        elif col == 'year':
-            keep_col = years_match(data[col], values)
-
-        elif col == 'level':
-            if 'variable' not in filters.keys():
-                keep_col = pattern_match(data['variable'], '*', values,
-                                         regexp=regexp)
-            else:
-                continue
-
-        elif col in data.columns:
-            keep_col = pattern_match(data[col], values, regexp=regexp)
-
-        else:
-            raise ValueError('filter by `{}` not supported'.format(col))
-        keep &= keep_col
-
-    return keep
-
+def _raise_filter_error(col):
+    raise ValueError('filter by `{}` not supported'.format(col))
 
 def _check_rows(rows, check, in_range=True, return_test='any'):
     """Check all rows to be in/out of a certain range and provide testing on
