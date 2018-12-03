@@ -41,6 +41,10 @@ class RunTests(Command):
         raise SystemExit(errno)
 
 
+CMDCLASS = versioneer.get_cmdclass()
+CMDCLASS.update({"test": RunTests})
+
+
 def main():
     print(logo)
     classifiers = [
@@ -80,7 +84,7 @@ def main():
     setup_kwargs = {
         "name": "pyam-iamc",
         "version": versioneer.get_version(),
-        "cmdclass": versioneer.get_cmdclass(),
+        "cmdclass": CMDCLASS,
         "description": 'Analyze & Visualize Assessment Model Results',
         "classifiers": classifiers,
         "license": "Apache License 2.0",
