@@ -249,9 +249,7 @@ def test_filter_time_exact_match(test_df):
 
 
 def test_filter_time_range(test_df):
-    error_msg = re.escape(
-        "'datetime.datetime' object cannot be interpreted as an integer"
-    )
+    error_msg = r".*datetime.datetime.* object cannot be interpreted as an int"
     with pytest.raises(TypeError, match=error_msg):
         obs = test_df.filter(year=range(
             datetime.datetime(2000, 6, 17),
