@@ -772,18 +772,20 @@ class IamDataFrame(object):
             if True, do operation inplace and return None
         filters by kwargs or dict (deprecated):
             The following columns are available for filtering:
-             - metadata columns: filter by category assignment in metadata
+             - metadata columns: filter by category assignment
              - 'model', 'scenario', 'region', 'variable', 'unit':
-               string or list of strings, where ``*`` can be used as a wildcard
+               string or list of strings, where `*` can be used as a wildcard
              - 'level': the maximum "depth" of IAM variables (number of '|')
                (exluding the strings given in the 'variable' argument)
              - 'year': takes an integer, a list of integers or a range
-                note that the last year of a range is not included,
-                so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-            - 'regexp=True' overrides pseudo-regexp syntax in `pattern_match()`
+               note that the last year of a range is not included,
+               so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
+             - arguments for filtering by `datetime.datetime`
+               ('month', 'hour', 'time')
+             - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
         """
         if filters is not None:
-            msg = '`filters` keyword argument in filters() is deprecated ' + \
+            msg = '`filters` keyword argument in `filter()` is deprecated ' + \
                 'and will be removed in the next release'
             warnings.warn(msg)
             kwargs.update(filters)
