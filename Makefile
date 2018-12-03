@@ -1,3 +1,7 @@
+.PHONY: clean
+clean:
+	rm -rf build dist *egg-info venv
+
 .PHONY: new_release
 new_release:
 	@echo 'For a new release on PyPI:'
