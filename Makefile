@@ -1,6 +1,6 @@
 .PHONY: clean
 clean:
-	rm -rf build dist *egg-info venv
+	rm -rf build dist *egg-info
 
 .PHONY: new_release
 new_release:
