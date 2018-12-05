@@ -63,6 +63,8 @@ def test_pyam_first_steps(capsys):
     fname = os.path.join(tut_path, 'pyam_first_steps.ipynb')
     nb, errors = _notebook_run(fname, capsys=capsys)
     assert errors == []
+    assert os.path.exists(os.path.join(tut_path, 'tutorial_export.xlsx'))
+    assert os.path.exists(os.path.join(tut_path, 'tutorial_metadata.xlsx'))
 
 
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
