@@ -56,6 +56,13 @@ def test_to_excel(test_df):
     os.remove(fname)
 
 
+def test_to_csv(test_df):
+    fname = 'foo_testing.csv'
+    test_df.to_excel(fname)
+    assert os.path.exists(fname)
+    os.remove(fname)
+
+
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['a_model']
 
