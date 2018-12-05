@@ -893,7 +893,8 @@ class IamDataFrame(object):
             if x != 'year' and y != 'year':
                 df = df.drop('year', axis=1)  # years causes NaNs
 
-        ax, handles, labels = plotting.line_plot(df, x=x, y=y, **kwargs)
+        ax, handles, labels = plotting.line_plot(
+            df.dropna(), x=x, y=y, **kwargs)
         return ax
 
     def stack_plot(self, *args, **kwargs):
@@ -937,7 +938,7 @@ class IamDataFrame(object):
             dfx = (
                 self
                 .filter(variable=x)
-                .as_pandas()
+                .as_pandas(with_metadata=True)
                 .rename(columns={'value': x, 'unit': 'xunit'})
                 .set_index(YEAR_IDX)
                 .drop('variable', axis=1)
@@ -945,12 +946,12 @@ class IamDataFrame(object):
             dfy = (
                 self
                 .filter(variable=y)
-                .as_pandas()
+                .as_pandas(with_metadata=True)
                 .rename(columns={'value': y, 'unit': 'yunit'})
                 .set_index(YEAR_IDX)
                 .drop('variable', axis=1)
             )
-            df = dfx.join(dfy).reset_index()
+            df = dfx.join(dfy, lsuffix='_left', rsuffix='').reset_index()
         else:
             # filter, merge with meta, and rename value column to match var
             var = x if xisvar else y
@@ -960,7 +961,7 @@ class IamDataFrame(object):
                 .as_pandas(with_metadata=True)
                 .rename(columns={'value': var})
             )
-        ax = plotting.scatter(df, x, y, **kwargs)
+        ax = plotting.scatter(df.dropna(), x, y, **kwargs)
         return ax
 
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
