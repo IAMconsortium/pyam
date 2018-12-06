@@ -21,7 +21,7 @@ jobs:
           when: always
       - run:
           name: Env Tests
-          command: echo $COVERALLS_REPO_TOKEN
+          command: echo "COVERALLS_REPO_TOKEN $COVERALLS_REPO_TOKEN"; env
       - run:
           name: Python3 Tests
           command: >
