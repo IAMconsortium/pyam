@@ -23,7 +23,7 @@ jobs:
           name: Python3 Tests
           command: >
             docker run -v /ci-artifacts:/test-artifacts -e COVERALLS_REPO_TOKEN pyam/pyam-py3:latest
-            /bin/bash -c "python3 -m pytest -v --mpl --mpl-results-path=/test-artifacts /pyam/tests --cov=pyam --cov-report term-missing && coveralls"
+            /bin/bash -c "cd /pyam/tests && python3 -m pytest -v --mpl --mpl-results-path=/test-artifacts --cov=pyam --cov-report term-missing && coveralls"
           when: always
       - run:
           name: Build Py2 Docker Image
