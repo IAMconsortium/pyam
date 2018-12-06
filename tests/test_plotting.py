@@ -433,6 +433,24 @@ def test_scatter(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_scatter_variables_with_meta_color(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.categorize(
+        'foo', 'a',
+        criteria={'Primary Energy': {'up': 5, 'year': 2010}},
+        color='blue'
+    )
+    plot_df.categorize(
+        'foo', 'b',
+        criteria={'Primary Energy': {'lo': 5, 'year': 2010}},
+        color='red'
+    )
+    plot_df.scatter(ax=ax, x='Primary Energy', y='Primary Energy|Coal',
+                    color='foo')
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_scatter_with_lines(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.scatter(ax=ax, x='Primary Energy', y='Primary Energy|Coal',
