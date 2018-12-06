@@ -4,30 +4,31 @@ jobs:
     working_directory: ~/pyam
     docker:
       - image: docker:17.05.0-ce-git
-        environment:
-          COVERALLS_REPO_TOKEN: "$COVERALLS_REPO_TOKEN"
     steps:
       - checkout
       - setup_remote_docker
-      - run:
-          name: ls
-          command: pwd && ls
       - run:
           name: CIRCLE_ARTIFACTS
           command: |
             mkdir /ci-artifacts;
             ls /ci-artifacts;
       - run:
+          name: Env Tests
+          command: |
+            echo "COVERALLS_REPO_TOKEN $COVERALLS_REPO_TOKEN"; 
+            echo "FOO_BAR $FOO_BAR";
+            env
+      - run:
           name: Build Py3 Docker Image
           command: /bin/sh -c "ln -f -s ci/py3/Dockerfile Dockerfile && docker build -t pyam/pyam-py3:latest ."
           when: always
       - run:
-          name: Env Tests
-          command: echo "COVERALLS_REPO_TOKEN $COVERALLS_REPO_TOKEN"; env
-      - run:
           name: Python3 Tests
-          command: >
-            docker run -v /ci-artifacts:/test-artifacts -e COVERALLS_REPO_TOKEN pyam/pyam-py3:latest
+          command: |
+            docker run \
+            -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
+            -v /ci-artifacts:/test-artifacts \
+            pyam/pyam-py3:latest \
             /bin/bash -c "echo $COVERALLS_REPO_TOKEN && cd /pyam/tests && python3 -m pytest -v --mpl --mpl-results-path=/test-artifacts --cov=pyam --cov-report term-missing && coveralls"
           when: always
       - run:
