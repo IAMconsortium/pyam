@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#151](https://github.com/IAMconsortium/pyam/pull/151) Fix bug where excel files were not being written on Windows and MacOSX (#149)
 - [#145](https://github.com/IAMconsortium/pyam/pull/145) Support full semantic and VCS-style versioning with `versioneer`
 
 # Release v0.1.2
