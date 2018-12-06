@@ -799,10 +799,13 @@ class IamDataFrame(object):
         if (path is None and writer is None) or \
            (path is not None and writer is not None):
             raise ValueError('Only one of path and writer must have a value')
+        close = writer is None
         if writer is None:
             writer = pd.ExcelWriter(path)
         self._to_file_format().to_excel(writer, sheet_name=sheet_name,
                                         index=index, **kwargs)
+        if close:
+            writer.close()
 
     def export_metadata(self, path):
         """Export metadata to Excel
