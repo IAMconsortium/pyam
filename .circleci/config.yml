@@ -8,9 +8,6 @@ jobs:
       - checkout
       - setup_remote_docker
       - run:
-          name: ls
-          command: pwd && ls
-      - run:
           name: CIRCLE_ARTIFACTS
           command: |
             mkdir /ci-artifacts;
@@ -21,7 +18,9 @@ jobs:
           when: always
       - run:
           name: Python2 Tests
-          command:  docker run -v /ci-artifacts:/test-artifacts pyam/pyam-py2:latest python2 -m pytest -v --mpl --mpl-results-path=/test-artifacts /pyam/tests
+          command: >
+            docker run -v /ci-artifacts:/test-artifacts pyam/pyam-py2:latest
+            python2 -m pytest -v --mpl --mpl-results-path=/test-artifacts /pyam/tests
           when: always
       - run:
           name: Build Py3 Docker Image
@@ -29,7 +28,12 @@ jobs:
           when: always
       - run:
           name: Python3 Tests
-          command:  docker run -v /ci-artifacts:/test-artifacts pyam/pyam-py3:latest python3 -m pytest -v --mpl --mpl-results-path=/test-artifacts /pyam/tests
+          command: |
+            docker run \
+            -e COVERALLS_REPO_TOKEN=$COVERALLS_REPO_TOKEN \
+            -v /ci-artifacts:/test-artifacts \
+            pyam/pyam-py3:latest \
+            /bin/bash -c "echo $COVERALLS_REPO_TOKEN && cd /pyam/tests && python3 -m pytest -v --mpl --mpl-results-path=/test-artifacts --cov=pyam --cov-report term-missing && coveralls"
           when: always
       - run:
           name: Make Docs
