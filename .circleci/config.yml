@@ -13,9 +13,6 @@ jobs:
             mkdir /ci-artifacts;
             ls /ci-artifacts;
       - run:
-          name: Env Tests
-          command: /bin/sh -c '[ -z "$COVERALLS_REPO_TOKEN" ] && echo "Need to set coveralls token" && exit 1;'
-      - run:
           name: Build Py2 Docker Image
           command: /bin/sh -c "ln -f -s ci/py2/Dockerfile Dockerfile && docker build -t pyam/pyam-py2:latest ."
           when: always
