@@ -34,10 +34,17 @@ Release v\ |version|.
 The **pyam** Python package provides a range of diagnostic tools and functions
 for analyzing and visualizing data from your favorite assessment model(s).
 
+The *community mailing* list for questions and discussions on new features is
+hosted by Googlegroups. Please join at `groups.google.com/d/forum/pyam`_
+and use <pyam@googlegroups.com> to send an email to the *pyam* community.
+
 The source code for **pyam** is available on `Github`_.
 
 .. _`Github`:
    https://github.com/IAMconsortium/pyam
+
+.. _`groups.google.com/d/forum/pyam` :
+   https://groups.google.com/d/forum/pyam
 
 Overview
 --------
