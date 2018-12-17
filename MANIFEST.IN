@@ -1,5 +1,4 @@
 exclude .gitignore
-include pyam/_version.py
 exclude appveyor.yml
 exclude .travis.yml
 recursive-exclude ci
