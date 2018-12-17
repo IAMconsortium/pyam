@@ -1,0 +1,18 @@
+exclude .gitignore
+include pyam/_version.py
+exclude appveyor.yml
+exclude .travis.yml
+recursive-exclude ci
+
+include README.md
+include setup.cfg
+include LICENSE
+include versioneer.py
+include pyam/_version.py
+
+prune .cache
+prune .git
+prune build
+prune dist
+
+recursive-exclude *.egg-info *
