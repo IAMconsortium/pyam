@@ -177,32 +177,46 @@ def format_data(df):
 
     # check whether data in wide format (IAMC) or long format (`value` column)
     if 'value' in df.columns:
-        extra_cols = list(set(df.columns) - set(IAMC_IDX + ['year', 'time']))
+        # check if time column is given as `year` (int) or `time` (datetime)
+        cols = df.columns
+        if 'year' in cols and 'time' not in cols:
+            time_col = 'year'
+        elif 'time' in cols and 'year' not in cols:
+            time_col = 'time'
+        else:
+            msg = 'invalid time format, must have either `year` or `time`!'
+            raise ValueError(msg)
+        extra_cols = list(set(df.columns) - set(IAMC_IDX + [time_col]))
     else:
-        # if in wide format, assume that all numeric columns are years
+        # if in wide format, check if columns are years (int) or datetime
         cols = set(df.columns) - set(IAMC_IDX)
-        year_cols, extra_cols = [], []
+        year_cols, time_cols, extra_cols = [], [], []
         for i in cols:
             try:
-                int(i)
-                year_cols.append(i)
+                year_cols.append(i) if int(i) else None
             except ValueError:
-                extra_cols.append(i)
-        year_cols = sorted(year_cols)
-        df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name='year',
-                     value_vars=year_cols, value_name='value')
+                try:
+                    time_cols.append(i) if pd.to_datetime([i]) else None
+                except ValueError:
+                    extra_cols.append(i)
+        if year_cols and not time_cols:
+            time_col = 'year'
+            melt_cols = year_cols
+        elif not year_cols and time_cols:
+            time_col = 'time'
+            melt_cols = time_cols
+        else:
+            msg = 'invalid column format, must be either years or `datetime`!'
+            raise ValueError(msg)
+        df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name=time_col,
+                     value_vars=sorted(melt_cols), value_name='value')
 
-    # check time format
-    cols = df.columns
-    if 'year' in cols and 'time' not in cols:
+    # cast time_col to correct format
+    if time_col == 'year':
         if not df.year.dtype == 'int64':
             df['year'] = cast_years_to_int(pd.to_numeric(df['year']))
-        time_col = 'year'
-    elif 'time' in cols and 'year' not in cols:
+    if time_col == 'time':
         df['time'] = pd.to_datetime(df['time'])
-        time_col = 'time'
-    else:
-        raise ValueError('invalid time format, use either `year` or `time`!')
 
     # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
