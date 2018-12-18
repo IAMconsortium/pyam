@@ -3,6 +3,7 @@ import pytest
 import os
 import pyam
 
+
 # on CI, freetype version 2.6.1 works, but 2.8.0 does not
 # if we want to move to 2.8.0, then we will need to regenerate images
 FREETYPE_VERSION = matplotlib.ft2font.__freetype_version__
