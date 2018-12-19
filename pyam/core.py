@@ -162,14 +162,14 @@ class IamDataFrame(object):
         inplace : bool, default False
             If True, do operation inplace and return None
         """
+        if not isinstance(other, IamDataFrame):
+            other = IamDataFrame(other, **kwargs)
+            ignore_meta_conflict = True
+
         if self.time_col is not other.time_col:
             raise ValueError('incompatible time format (years vs. datetime)!')
 
         ret = copy.deepcopy(self) if not inplace else self
-
-        if not isinstance(other, IamDataFrame):
-            other = IamDataFrame(other, **kwargs)
-            ignore_meta_conflict = True
 
         diff = other.meta.index.difference(ret.meta.index)
         intersect = other.meta.index.intersection(ret.meta.index)
