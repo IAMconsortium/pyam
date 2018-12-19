@@ -81,7 +81,7 @@ To setup a development environment,
 ```
 # pyam can be replaced with any other name
 # you don't have to specify your python version if you don't want
-conda create --name pip pyam python=X.Y.Z
+conda create --name pyam pip python=X.Y.Z
 conda activate pyam  # may be source activate pyam or just activate pyam
 pip install -e .[tests,docs,deploy]
 # install other required packages (e.g. on a Unix like system)
