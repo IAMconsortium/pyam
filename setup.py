@@ -9,6 +9,8 @@ import versioneer
 from setuptools import setup, Command
 from subprocess import call
 
+import requirements
+
 # Thanks to http://patorjk.com/software/taag/
 logo = r"""
  ______   __  __     ______     __    __
@@ -64,18 +66,7 @@ def main():
     package_data = {
         'pyam': ['region_mappings/*'],
     }
-    install_requirements = [
-        "argparse",
-        "numpy",
-        "requests",
-        "pandas >=0.21.0",
-        "PyYAML",
-        "xlrd",
-        "xlsxwriter",
-        "matplotlib",
-        "seaborn",
-        "six",
-    ]
+    install_requirements = requirements.install_requirements
     extra_requirements = {
         'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
         'docs': ['sphinx', 'sphinx_rtd_theme'],

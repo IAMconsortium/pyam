@@ -27,6 +27,10 @@ From Source
 Depedencies
 ~~~~~~~~~~~
 
+The required depedencies for :code:`pyam` are:
+
+  .. command-output:: python -c 'import sys; sys.path.append("../.."); import requirements; print(requirements.install_requirements'
+
 The optional depedencies for :code:`pyam` are:
 
   .. include:: ../../requirements.txt
