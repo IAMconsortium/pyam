@@ -130,6 +130,7 @@ def test_df_check_aggregate_region_fail(check_aggregate_df):
         'variable': 'Emissions|CO2',
         'unit': 'Mt CO2/yr',
     }
+
     run_check_agg_fail(check_aggregate_df, to_tweak, 'region')
 
 
@@ -141,6 +142,7 @@ def test_df_check_aggregate_region_fail_no_subsector(check_aggregate_df):
         'variable': 'Emissions|CH4',
         'unit': 'Mt CH4/yr',
     }
+
     run_check_agg_fail(check_aggregate_df, to_tweak, 'region')
 
 
