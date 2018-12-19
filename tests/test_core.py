@@ -299,7 +299,7 @@ def test_filter_time_range_round_the_clock_error(test_df, month_range):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `month` not supported")
         with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(month=month_range)
+            test_df.filter(month=month_range)
     else:
         error_msg = re.escape(
             "string ranges must lead to increasing integer ranges, "
