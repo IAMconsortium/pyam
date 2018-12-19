@@ -813,8 +813,8 @@ class IamDataFrame(object):
         Parameters
         ----------
         filters: dict
-            dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
-            default, but accepts `regexp: True` to use regexp directly
+            dictionary of filters ({col: values}}); uses a pseudo-regexp syntax
+            by default, but accepts `regexp: True` to use regexp directly
         """
         regexp = filters.pop('regexp', False)
         keep = np.array([True] * len(self.data))
@@ -824,7 +824,8 @@ class IamDataFrame(object):
             if col in self.meta.columns:
                 matches = pattern_match(self.meta[col], values, regexp=regexp)
                 cat_idx = self.meta[matches].index
-                keep_col = self.data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
+                keep_col = (self.data[META_IDX].set_index(META_IDX)
+                                .index.isin(cat_idx))
 
             elif col == 'variable':
                 level = filters['level'] if 'level' in filters else None
@@ -832,7 +833,8 @@ class IamDataFrame(object):
 
             elif col == 'year':
                 if self.time_col is 'time':
-                    keep_col = years_match(self.data['time'].apply(lambda x: x.year),
+                    keep_col = years_match(self.data['time']
+                                               .apply(lambda x: x.year),
                                            values)
                 else:
                     keep_col = years_match(self.data[col], values)
@@ -840,16 +842,20 @@ class IamDataFrame(object):
             elif col == 'month':
                 if self.time_col is not 'time':
                     _raise_filter_error(col)
-                keep_col = month_match(self.data['time'].apply(lambda x: x.month),
+                keep_col = month_match(self.data['time']
+                                           .apply(lambda x: x.month),
                                        values)
 
             elif col == 'day':
                 if self.time_col is not 'time':
                     _raise_filter_error(col)
-                wday = (
-                    isinstance(values, str)
-                    or (isinstance(values, list) and isinstance(values[0], str))
-                )
+                if isinstance(values, str):
+                    wday = True
+                elif isinstance(values, list) and isinstance(values[0], str):
+                    wday = True
+                else:
+                    wday = False
+
                 if wday:
                     days = self.data['time'].apply(lambda x: x.weekday())
                 else:  # ints or list of ints
@@ -860,7 +866,8 @@ class IamDataFrame(object):
             elif col == 'hour':
                 if self.time_col is not 'time':
                     _raise_filter_error(col)
-                keep_col = hour_match(self.data['time'].apply(lambda x: x.hour),
+                keep_col = hour_match(self.data['time']
+                                          .apply(lambda x: x.hour),
                                       values)
 
             elif col == 'time':
@@ -868,8 +875,8 @@ class IamDataFrame(object):
 
             elif col == 'level':
                 if 'variable' not in filters.keys():
-                    keep_col = pattern_match(self.data['variable'], '*', values,
-                                             regexp=regexp)
+                    keep_col = pattern_match(self.data['variable'],
+                                             '*', values, regexp=regexp)
                 else:
                     continue
 
@@ -1222,8 +1229,10 @@ def _aggregate_by_regions(df, regions, units=None):
 
     return df.groupby(REGION_IDX + ['unit']).sum()['value']
 
+
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))
+
 
 def _check_rows(rows, check, in_range=True, return_test='any'):
     """Check all rows to be in/out of a certain range and provide testing on
