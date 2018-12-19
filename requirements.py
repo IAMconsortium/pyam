@@ -10,3 +10,8 @@ install_requirements = [
     "seaborn",
     "six",
 ]
+
+
+def display():
+    for x in install_requirements:
+        print(x)

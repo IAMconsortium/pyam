@@ -29,7 +29,7 @@ Depedencies
 
 The required depedencies for :code:`pyam` are:
 
-  .. command-output:: python -c 'import sys; sys.path.append("../.."); import requirements; print(requirements.install_requirements'
+  .. program-output:: python -c 'import sys; sys.path.append("../.."); import requirements; requirements.display()'
 
 The optional depedencies for :code:`pyam` are:
 
