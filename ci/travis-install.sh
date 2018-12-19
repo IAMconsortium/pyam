@@ -61,4 +61,4 @@ conda install -n pyam-testing --yes \
       pandoc \
       pytest \
       coveralls \
-      pytest-cov
+      pytest-cov 
