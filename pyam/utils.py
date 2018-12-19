@@ -153,6 +153,9 @@ def read_files(fnames, *args, **kwargs):
 
 def format_data(df):
     """Convert an imported dataframe and check all required columns"""
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+
     # all lower case
     df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
 

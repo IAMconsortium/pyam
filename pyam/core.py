@@ -62,7 +62,7 @@ class IamDataFrame(object):
             https://github.com/IAMconsortium/pyam/issues
         """
         # import data from pd.DataFrame or read from source
-        if isinstance(data, pd.DataFrame):
+        if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             self.data = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             self.data = read_ix(data, **kwargs)
