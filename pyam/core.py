@@ -69,6 +69,7 @@ class IamDataFrame(object):
         else:
             _df = read_files(data, **kwargs)
         self.data, self.time_col, self.extra_cols = _df
+        self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
 
         # define a dataframe for categorization and other metadata indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
@@ -204,10 +205,15 @@ class IamDataFrame(object):
             ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
 
         # append other.data (verify integrity for no duplicates)
-        ret.data.set_index(LONG_IDX, inplace=True)
-        other.data.set_index(LONG_IDX, inplace=True)
-        ret.data = ret.data.append(other.data, verify_integrity=True)\
+        ret.data.set_index(ret._LONG_IDX, inplace=True)
+        _other = other.data.set_index(other._LONG_IDX)
+        ret.data = ret.data.append(_other, verify_integrity=True)\
             .reset_index(drop=False)
+
+        # merge extra columns in `data` and set `LONG_IDX`
+        ret.extra_cols += [i for i in other.extra_cols
+                           if i not in ret.extra_cols]
+        ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
 
         if not inplace:
             return ret
@@ -522,7 +528,7 @@ class IamDataFrame(object):
                 raise ValueError('Renaming by {} not supported!'.format(col))
             ret.data.loc[:, col] = ret.data.loc[:, col].replace(_mapping)
 
-        ret.data = ret.data.groupby(LONG_IDX).sum().reset_index()
+        ret.data = ret.data.groupby(self._LONG_IDX).sum().reset_index()
         if not inplace:
             return ret
 
@@ -1086,7 +1092,7 @@ class IamDataFrame(object):
 
         # perform aggregations
         if agg == 'sum':
-            df = df.groupby(LONG_IDX).sum().reset_index()
+            df = df.groupby(self._LONG_IDX).sum().reset_index()
 
         ret.data = (df
                     .reindex(columns=columns_orderd)

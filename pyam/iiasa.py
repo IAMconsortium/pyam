@@ -12,7 +12,7 @@ except ImportError:
 
 from pyam.core import IamDataFrame
 from pyam.logger import logger
-from pyam.utils import LONG_IDX, isstr, pattern_match
+from pyam.utils import IAMC_IDX, isstr, pattern_match
 
 # quiet this fool
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -194,7 +194,7 @@ def read_iiasa(name, **kwargs):
     """
     conn = Connection(name)
     df = conn.query(**kwargs)
-    return IamDataFrame(df[LONG_IDX + ['value']])
+    return IamDataFrame(df)
 
 
 def read_iiasa_iamc15(**kwargs):
