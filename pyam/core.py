@@ -815,46 +815,47 @@ class IamDataFrame(object):
         else:
             self.meta[col] = self.meta[col].apply(func, *args, **kwargs)
 
-    def _to_file_format(self):
+    def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
-        df = self.timeseries().reset_index()
+        df = self.timeseries(iamc_index=iamc_index).reset_index()
         df = df.rename(columns={c: str(c).title() for c in df.columns})
         return df
 
-    def to_csv(self, path, index=False, **kwargs):
-        """Write data to a csv file
+    def to_csv(self, path, iamc_index=False, **kwargs):
+        """Write timeseries data to a csv file
 
         Parameters
         ----------
-        index: boolean, default False
-            write row names (index)
+        path: string
+            file path
+        iamc_index: bool, default False
+            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all `data` columns
         """
-        self._to_file_format().to_csv(path, index=False, **kwargs)
+        self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
-    def to_excel(self, path=None, writer=None, sheet_name='data', index=False,
-                 **kwargs):
-        """Write timeseries data to Excel using the IAMC template convention
-        (wrapper for `pd.DataFrame.to_excel()`)
+    def to_excel(self, excel_writer, sheet_name='data',
+                 iamc_index=False, **kwargs):
+        """Write timeseries data to Excel format
 
         Parameters
         ----------
         excel_writer: string or ExcelWriter object
-             file path or existing ExcelWriter
+            file path or existing ExcelWriter
         sheet_name: string, default 'data'
-            name of the sheet that will contain the (filtered) IamDataFrame
-        index: boolean, default False
-            write row names (index)
+            name of sheet which will contain `IamDataFrame.timeseries()` data
+        iamc_index: bool, default False
+            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all `data` columns
         """
-        if (path is None and writer is None) or \
-           (path is not None and writer is not None):
-            raise ValueError('Only one of path and writer must have a value')
-        close = writer is None
-        if writer is None:
-            writer = pd.ExcelWriter(path)
-        self._to_file_format().to_excel(writer, sheet_name=sheet_name,
-                                        index=index, **kwargs)
+        if not isinstance(excel_writer, pd.ExcelWriter):
+            close = True
+            excel_writer = pd.ExcelWriter(excel_writer)
+        self._to_file_format(iamc_index)\
+            .to_excel(excel_writer, sheet_name=sheet_name, index=False,
+                      **kwargs)
         if close:
-            writer.close()
+            excel_writer.close()
 
     def export_metadata(self, path):
         """Export metadata to Excel
