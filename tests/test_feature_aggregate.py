@@ -13,7 +13,7 @@ def test_check_aggregate_fail(meta_df):
     obs = meta_df.check_aggregate('Primary Energy', exclude_on_fail=True)
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'Primary Energy', 'a_model', 'a_scenario', 'World'
+        'Primary Energy', 'a_model', 'a_scenario', 'World', 'EJ/y'
     )
 
 
@@ -21,7 +21,7 @@ def test_check_aggregate_top_level(meta_df):
     obs = check_aggregate(meta_df, variable='Primary Energy', year=2005)
     assert len(obs.columns) == 1
     assert obs.index.get_values()[0] == (
-        'Primary Energy', 'a_model', 'a_scenario', 'World'
+        'Primary Energy', 'a_model', 'a_scenario', 'World', 'EJ/y'
     )
 
 
@@ -67,7 +67,7 @@ def run_check_agg_fail(pyam_df, tweak_dict, test_type):
         expected_index['region'] = 'World'
 
     # units get dropped during aggregation and the index is a list
-    expected_index = [v for k, v in expected_index.items() if k != 'unit']
+    expected_index = [v for k, v in expected_index.items()]
 
     for variable in pyam_df.variables():
         if test_type == 'aggregate':
@@ -114,7 +114,6 @@ def test_df_check_aggregate_region_fail(check_aggregate_df):
         'variable': 'Emissions|CO2',
         'unit': 'Mt CO2/yr',
     }
-
     run_check_agg_fail(check_aggregate_df, to_tweak, 'region')
 
 
@@ -126,7 +125,6 @@ def test_df_check_aggregate_region_fail_no_subsector(check_aggregate_df):
         'variable': 'Emissions|CH4',
         'unit': 'Mt CH4/yr',
     }
-
     run_check_agg_fail(check_aggregate_df, to_tweak, 'region')
 
 
@@ -154,7 +152,7 @@ def test_df_check_aggregate_regions_errors(check_aggregate_regional_df):
 
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'World', 'AIM', 'cscen', 'Emissions|N2O'
+        'World', 'AIM', 'cscen', 'Emissions|N2O', 'Mt N/yr'
     )
 
     obs = check_aggregate_regional_df.check_aggregate_regions(
@@ -163,7 +161,7 @@ def test_df_check_aggregate_regions_errors(check_aggregate_regional_df):
 
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'REUROPE', 'AIM', 'cscen', 'Emissions|N2O'
+        'REUROPE', 'AIM', 'cscen', 'Emissions|N2O', 'Mt N/yr'
     )
 
 

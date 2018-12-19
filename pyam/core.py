@@ -35,6 +35,7 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     LONG_IDX,
+    GROUP_IDX
 )
 from pyam.timeseries import fill_series
 
@@ -645,8 +646,9 @@ class IamDataFrame(object):
             if not var_has_regional_info:
                 df_var_to_add = self.filter(
                     region=region, variable=var_to_add
-                ).data.groupby(REGION_IDX).sum()['value']
-                df_var_to_add.index = df_var_to_add.index.droplevel("variable")
+                ).data.groupby(REGION_IDX + ['unit']).sum()['value']
+                
+                df_var_to_add.index = df_var_to_add.index.droplevel('variable')
 
                 if len(df_var_to_add):
                     df_components = df_components.add(df_var_to_add,
@@ -669,7 +671,7 @@ class IamDataFrame(object):
                 self._exclude_on_fail(diff.index.droplevel([2, 3]))
 
             diff = pd.concat([diff], keys=[region], names=['region'])
-
+            diff.index = diff.index.swaplevel(i=-1, j=-2)
             return diff.unstack().rename_axis(None, axis=1)
 
     def check_internal_consistency(self, **kwargs):
@@ -1075,7 +1077,7 @@ def _aggregate_by_variables(df, variables, units=None):
         units = [units] if isstr(units) else units
         df = df[df.unit.isin(units)]
 
-    return df.groupby(YEAR_IDX).sum()['value']
+    return df.groupby(GROUP_IDX).sum()['value']
 
 
 def _aggregate_by_regions(df, regions, units=None):
@@ -1086,7 +1088,7 @@ def _aggregate_by_regions(df, regions, units=None):
         units = [units] if isstr(units) else units
         df = df[df.unit.isin(units)]
 
-    return df.groupby(REGION_IDX).sum()['value']
+    return df.groupby(REGION_IDX + ['unit']).sum()['value']
 
 
 def _apply_filters(data, meta, filters):

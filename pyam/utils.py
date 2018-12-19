@@ -28,6 +28,7 @@ REGION_IDX = ['model', 'scenario', 'variable', 'year']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
 LONG_IDX = IAMC_IDX + ['year']
+GROUP_IDX = ['model', 'scenario', 'region', 'unit', 'year']
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(zip(range(0, 702),
