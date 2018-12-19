@@ -82,5 +82,4 @@ License
 
 :code:`pyam` is available under the open source `Apache License`_.
 
-.. _Apache LIcense: http://www.apache.org/licenses/LICENSE-2.0.html
-
+.. _Apache License: http://www.apache.org/licenses/LICENSE-2.0.html
