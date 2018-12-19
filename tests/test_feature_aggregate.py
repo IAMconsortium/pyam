@@ -1,5 +1,22 @@
 import numpy as np
-from pyam import check_aggregate
+import pandas as pd
+from pyam import check_aggregate, IAMC_IDX
+
+
+def test_do_aggregate_append(meta_df):
+    meta_df.rename({'variable': {'Primary Energy': 'Primary Energy|Gas'}},
+                   inplace=True)
+    meta_df.aggregate('Primary Energy', append=True)
+    obs = meta_df.filter(variable='Primary Energy').timeseries()
+
+    exp = pd.DataFrame([
+        ['a_model', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 1.5, 9.],
+        ['a_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+    ],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    ).set_index(IAMC_IDX)
+    exp.columns = list(map(int, exp.columns))
+    pd.testing.assert_frame_equal(obs, exp)
 
 
 def test_check_aggregate_pass(check_aggregate_df):

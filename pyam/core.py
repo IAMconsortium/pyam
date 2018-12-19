@@ -534,6 +534,41 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
+    def aggregate(self, variable, components=None, units=None, append=False):
+        """Compute the aggregate of timeseries components or sub-categories
+
+        Parameters
+        ----------
+        variable: str
+            variable for which the aggregate should be computed
+        components: list of str, default None
+            list of variables, defaults to all sub-categories of `variable`
+        units: str or list of str, default None
+            filter variable and components for given unit(s)
+        append: bool
+            append the aggregate timeseries to `data` and return None,
+            else return aggregate timeseries
+        """
+        # default components to all variables one level below `variable`
+        if components is None:
+            var_list = pd.Series(self.data.variable.unique())
+            components = var_list[pattern_match(var_list,
+                                                '{}|*'.format(variable), 0)]
+
+        if not len(components):
+            msg = 'cannot aggregate {} because it has no components'
+            logger().info(msg.format(variable))
+
+            return
+
+        df_components = _aggregate_by_variables(self.data, components, units)
+
+        if append is True:
+            self.append(pd.concat([df_components], names=['variable'],
+                                  keys=[variable]), inplace=True)
+        else:
+            return df_components
+
     def check_aggregate(self, variable, components=None, units=None,
                         exclude_on_fail=False, multiplier=1, **kwargs):
         """Check whether the timeseries data match the aggregation
@@ -553,22 +588,15 @@ class IamDataFrame(object):
             factor when comparing variable and sum of components
         kwargs: passed to `np.isclose()`
         """
-        # default components to all variables one level below `variable`
-        if components is None:
-            var_list = pd.Series(self.data.variable.unique())
-            components = var_list[pattern_match(var_list,
-                                                '{}|*'.format(variable), 0)]
-
-        if not len(components):
-            msg = 'cannot check aggregate for {} because it has no components'
-            logger().info(msg.format(variable))
-
+        # compute aggregate from components, return None if no components
+        df_components = self.aggregate(variable, components, units)
+        if df_components is None:
             return
 
         # filter and groupby data, use `pd.Series.align` for matching index
         df_variable, df_components = (
             _aggregate_by_variables(self.data, variable, units)
-            .align(_aggregate_by_variables(self.data, components, units))
+            .align(df_components)
         )
 
         # use `np.isclose` for checking match
