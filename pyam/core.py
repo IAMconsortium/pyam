@@ -67,12 +67,12 @@ class IamDataFrame(object):
         """
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _df = format_data(data.copy())
+            _data = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
-            _df = read_ix(data, **kwargs)
+            _data = read_ix(data, **kwargs)
         else:
-            _df = read_files(data, **kwargs)
-        self.data, self.time_col, self.extra_cols = _df
+            _data = read_files(data, **kwargs)
+        self.data, self.time_col, self.extra_cols = _data
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
 
         # define a dataframe for categorization and other metadata indicators
