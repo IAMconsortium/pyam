@@ -83,7 +83,6 @@ def run_check_agg_fail(pyam_df, tweak_dict, test_type):
     elif 'region' in test_type:
         expected_index['region'] = 'World'
 
-    # units get dropped during aggregation and the index is a list
     expected_index = [v for k, v in expected_index.items()]
 
     for variable in pyam_df.variables():
