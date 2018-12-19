@@ -4,6 +4,7 @@
 *csv
 *xlsx
 *png
+*pdf
 
 # Apple file system
 *.DS_STORE
