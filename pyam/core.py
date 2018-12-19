@@ -64,15 +64,12 @@ class IamDataFrame(object):
         """
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            self.data = format_data(data.copy())
+            _df = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
-            self.data = read_ix(data, **kwargs)
+            _df = read_ix(data, **kwargs)
         else:
-            self.data = read_files(data, **kwargs)
-
-        # cast year column to `int` if necessary
-        if not self.data.year.dtype == 'int64':
-            self.data.year = cast_years_to_int(self.data.year)
+            _df = read_files(data, **kwargs)
+        self.data, self.time_col, self.extra_cols = _df
 
         # define a dataframe for categorization and other metadata indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)

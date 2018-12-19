@@ -117,7 +117,7 @@ def read_ix(ix, **kwargs):
     df = ix.timeseries(iamc=False, **kwargs)
     df['model'] = ix.model
     df['scenario'] = ix.scenario
-    return df
+    return df, [], 'year'
 
 
 def read_pandas(fname, *args, **kwargs):
@@ -138,18 +138,11 @@ def read_files(fnames, *args, **kwargs):
     """Read data from a snapshot file saved in the standard IAMC format
     or a table with year/value columns
     """
-    if isstr(fnames):
-        fnames = [fnames]
-
-    fnames = itertools.chain(*[glob.glob(f) for f in fnames])
-    dfs = []
-    for fname in fnames:
-        logger().info('Reading `{}`'.format(fname))
-        df = read_pandas(fname, *args, **kwargs)
-        df = format_data(df)
-        dfs.append(df)
-
-    return pd.concat(dfs)
+    if not isstr(fnames):
+        raise ValueError('reading multiple files not supported, '
+                         'please use `pyam.IamDataFrame.append()`')
+    logger().info('Reading `{}`'.format(fnames))
+    return format_data(read_pandas(fnames, *args, **kwargs))
 
 
 def format_data(df):
@@ -158,7 +151,8 @@ def format_data(df):
         df = df.to_frame()
 
     # all lower case
-    df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
+    str_cols = [c for c in df.columns if isstr(c)]
+    df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
 
     if 'notes' in df.columns:  # this came from the database
         logger().info('Ignoring notes column in dataframe')
@@ -181,23 +175,41 @@ def format_data(df):
         missing = list(set(IAMC_IDX) - set(df.columns))
         raise ValueError("missing required columns `{}`!".format(missing))
 
-    # check whether data in IAMC style or year/value layout
-    if 'value' not in df.columns:
-        numcols = sorted(set(df.columns) - set(IAMC_IDX))
-        df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
-                     value_vars=numcols, value_name='value')
+    # check whether data in wide format (IAMC) or long format (`value` column)
+    if 'value' in df.columns:
+        extra_cols = list(set(df.columns) - set(IAMC_IDX + ['year', 'time']))
+    else:
+        # if in wide format, assume that all numeric columns are years
+        cols = set(df.columns) - set(IAMC_IDX)
+        year_cols, extra_cols = [], []
+        for i in cols:
+            try:
+                int(i)
+                year_cols.append(i)
+            except ValueError:
+                extra_cols.append(i)
+        year_cols = sorted(year_cols)
+        df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name='year',
+                     value_vars=year_cols, value_name='value')
 
-    # cast year and value columns to numeric
-    df['year'] = pd.to_numeric(df['year'])
+    # check time format
+    cols = df.columns
+    if 'year' in cols and 'time' not in cols:
+        if not df.year.dtype == 'int64':
+            df['year'] = cast_years_to_int(pd.to_numeric(df['year']))
+        time_col = 'year'
+    elif 'time' in cols and 'year' not in cols:
+        df['time'] = pd.to_datetime(df['time'])
+        time_col = 'time'
+    else:
+        raise ValueError('invalid time format, use either `year` or `time`!')
+
+    # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
-
-    # drop NaN's
     df.dropna(inplace=True)
-
-    # sort data
     df.sort_values(SORT_IDX, inplace=True)
 
-    return df
+    return df, time_col, extra_cols
 
 
 def style_df(df, style='heatmap'):
