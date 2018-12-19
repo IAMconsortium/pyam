@@ -331,7 +331,7 @@ def time_match(data, times, conv_codes, strptime_attr, name):
         for conv_code in conv_codes:
             try:
                 res = [getattr(time.strptime(t, conv_code), strptime_attr)
-                         for t in strs_to_convert]
+                       for t in strs_to_convert]
                 break
             except ValueError:
                 continue
@@ -350,8 +350,8 @@ def time_match(data, times, conv_codes, strptime_attr, name):
                 ints = conv_strs(timeset.split("-"), conv_codes, name)
                 if ints[0] > ints[1]:
                     error_msg = (
-                        "string ranges must lead to increasing integer ranges, {} "
-                        "becomes {}".format(timeset, ints)
+                        "string ranges must lead to increasing integer ranges,"
+                        " {} becomes {}".format(timeset, ints)
                     )
                     raise ValueError(error_msg)
 
@@ -377,6 +377,7 @@ def datetime_match(data, datetimes):
         error_msg = "`time` can only be filtered with datetimes or lists of datetimes"
         raise TypeError(error_msg)
     return data.isin(datetimes)
+
 
 def cast_years_to_int(x, index=False):
     """Formatting series or timeseries columns to int and checking validity.
