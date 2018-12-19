@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+# Usage:
+# ./upload.sh <user@site> </path/to/remote/doc/folder>
+#
+
+
 set -e
 set -x
 
