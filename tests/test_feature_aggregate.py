@@ -1,15 +1,5 @@
-import os
-import copy
-import pytest
-
 import numpy as np
-import pandas as pd
-from numpy import testing as npt
-
-from pyam import IamDataFrame, check_aggregate
-
-
-from conftest import TEST_DATA_DIR
+from pyam import check_aggregate
 
 
 def test_check_aggregate_pass(check_aggregate_df):
