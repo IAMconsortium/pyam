@@ -1,12 +1,15 @@
+# has to go first for environment setup reasons
+import matplotlib
+matplotlib.use('agg')
+
 import os
 import pytest
 import pandas as pd
-import matplotlib
+
 
 from datetime import datetime
 from pyam import IamDataFrame
 
-matplotlib.use('agg')
 
 here = os.path.dirname(os.path.realpath(__file__))
 IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
