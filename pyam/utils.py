@@ -194,9 +194,10 @@ def format_data(df):
         for i in cols:
             try:
                 year_cols.append(i) if int(i) else None
-            except ValueError:
+            except (ValueError, TypeError):
                 try:
-                    time_cols.append(i) if pd.to_datetime([i]) else None
+                    pd.to_datetime([i])
+                    time_cols.append(i)
                 except ValueError:
                     extra_cols.append(i)
         if year_cols and not time_cols:
@@ -221,7 +222,8 @@ def format_data(df):
     # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True)
-    df.sort_values(SORT_IDX, inplace=True)
+    df.sort_values(META_IDX + ['variable', time_col, 'region'] + extra_cols,
+                   inplace=True)
 
     return df, time_col, extra_cols
 
