@@ -35,6 +35,7 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     LONG_IDX,
+    GROUP_IDX
 )
 from pyam.timeseries import fill_series
 
@@ -62,7 +63,7 @@ class IamDataFrame(object):
             https://github.com/IAMconsortium/pyam/issues
         """
         # import data from pd.DataFrame or read from source
-        if isinstance(data, pd.DataFrame):
+        if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             self.data = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             self.data = read_ix(data, **kwargs)
@@ -533,6 +534,41 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
+    def aggregate(self, variable, components=None, units=None, append=False):
+        """Compute the aggregate of timeseries components or sub-categories
+
+        Parameters
+        ----------
+        variable: str
+            variable for which the aggregate should be computed
+        components: list of str, default None
+            list of variables, defaults to all sub-categories of `variable`
+        units: str or list of str, default None
+            filter variable and components for given unit(s)
+        append: bool
+            append the aggregate timeseries to `data` and return None,
+            else return aggregate timeseries
+        """
+        # default components to all variables one level below `variable`
+        if components is None:
+            var_list = pd.Series(self.data.variable.unique())
+            components = var_list[pattern_match(var_list,
+                                                '{}|*'.format(variable), 0)]
+
+        if not len(components):
+            msg = 'cannot aggregate {} because it has no components'
+            logger().info(msg.format(variable))
+
+            return
+
+        df_components = _aggregate_by_variables(self.data, components, units)
+
+        if append is True:
+            self.append(pd.concat([df_components], names=['variable'],
+                                  keys=[variable]), inplace=True)
+        else:
+            return df_components
+
     def check_aggregate(self, variable, components=None, units=None,
                         exclude_on_fail=False, multiplier=1, **kwargs):
         """Check whether the timeseries data match the aggregation
@@ -552,22 +588,15 @@ class IamDataFrame(object):
             factor when comparing variable and sum of components
         kwargs: passed to `np.isclose()`
         """
-        # default components to all variables one level below `variable`
-        if components is None:
-            var_list = pd.Series(self.data.variable.unique())
-            components = var_list[pattern_match(var_list,
-                                                '{}|*'.format(variable), 0)]
-
-        if not len(components):
-            msg = 'cannot check aggregate for {} because it has no components'
-            logger().info(msg.format(variable))
-
+        # compute aggregate from components, return None if no components
+        df_components = self.aggregate(variable, components, units)
+        if df_components is None:
             return
 
         # filter and groupby data, use `pd.Series.align` for matching index
         df_variable, df_components = (
             _aggregate_by_variables(self.data, variable, units)
-            .align(_aggregate_by_variables(self.data, components, units))
+            .align(df_components)
         )
 
         # use `np.isclose` for checking match
@@ -579,7 +608,7 @@ class IamDataFrame(object):
             logger().info(msg.format(variable, len(diff), len(df_variable)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(diff.index.droplevel([2, 3]))
+                self._exclude_on_fail(diff.index.droplevel([2, 3, 4]))
 
             diff = pd.concat([diff], keys=[variable], names=['variable'])
 
@@ -645,8 +674,8 @@ class IamDataFrame(object):
             if not var_has_regional_info:
                 df_var_to_add = self.filter(
                     region=region, variable=var_to_add
-                ).data.groupby(REGION_IDX).sum()['value']
-                df_var_to_add.index = df_var_to_add.index.droplevel("variable")
+                ).data.groupby(REGION_IDX + ['unit']).sum()['value']
+                df_var_to_add.index = df_var_to_add.index.droplevel('variable')
 
                 if len(df_var_to_add):
                     df_components = df_components.add(df_var_to_add,
@@ -669,7 +698,7 @@ class IamDataFrame(object):
                 self._exclude_on_fail(diff.index.droplevel([2, 3]))
 
             diff = pd.concat([diff], keys=[region], names=['region'])
-
+            diff.index = diff.index.swaplevel(i=-1, j=-2)
             return diff.unstack().rename_axis(None, axis=1)
 
     def check_internal_consistency(self, **kwargs):
@@ -1075,7 +1104,7 @@ def _aggregate_by_variables(df, variables, units=None):
         units = [units] if isstr(units) else units
         df = df[df.unit.isin(units)]
 
-    return df.groupby(YEAR_IDX).sum()['value']
+    return df.groupby(GROUP_IDX).sum()['value']
 
 
 def _aggregate_by_regions(df, regions, units=None):
@@ -1086,7 +1115,7 @@ def _aggregate_by_regions(df, regions, units=None):
         units = [units] if isstr(units) else units
         df = df[df.unit.isin(units)]
 
-    return df.groupby(REGION_IDX).sum()['value']
+    return df.groupby(REGION_IDX + ['unit']).sum()['value']
 
 
 def _apply_filters(data, meta, filters):

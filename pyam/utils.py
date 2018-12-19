@@ -28,6 +28,7 @@ REGION_IDX = ['model', 'scenario', 'variable', 'year']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
 LONG_IDX = IAMC_IDX + ['year']
+GROUP_IDX = ['model', 'scenario', 'region', 'unit', 'year']
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(zip(range(0, 702),
@@ -153,6 +154,9 @@ def read_files(fnames, *args, **kwargs):
 
 def format_data(df):
     """Convert an imported dataframe and check all required columns"""
+    if isinstance(df, pd.Series):
+        df = df.to_frame()
+
     # all lower case
     df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
 
