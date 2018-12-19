@@ -61,7 +61,8 @@ def test_init_df_with_extra_col(test_pd_df):
     df = IamDataFrame(tdf)
 
     assert df.extra_cols == [extra_col]
-    pd.testing.assert_frame_equal(df.timeseries().reset_index(), tdf, check_like=True)
+    pd.testing.assert_frame_equal(df.timeseries().reset_index(),
+                                  tdf, check_like=True)
 
 
 
@@ -173,7 +174,8 @@ def test_filter_year(test_df):
         assert unique_time[0] == expected
 
 
-@pytest.mark.parametrize("test_month", [6, "June", "Jun", "jun", ["Jun", "jun"]])
+@pytest.mark.parametrize("test_month",
+                         [6, "June", "Jun", "jun", ["Jun", "jun"]])
 def test_filter_month(test_df, test_month):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `month` not supported")
@@ -203,7 +205,8 @@ def test_filter_year_month(test_df, test_month):
         assert unique_time[0] == expected
 
 
-@pytest.mark.parametrize("test_day", [17, "Fri", "Friday", "friday", ["Fri", "fri"]])
+@pytest.mark.parametrize("test_day",
+                         [17, "Fri", "Friday", "friday", ["Fri", "fri"]])
 def test_filter_day(test_df, test_day):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `day` not supported")
@@ -227,7 +230,8 @@ def test_filter_hour(test_df, test_hour):
     else:
         obs = test_df.filter(hour=test_hour)
         test_hour = [test_hour] if isinstance(test_hour, int) else test_hour
-        expected_rows = test_df.data["time"].apply(lambda x: x.hour).isin(test_hour)
+        expected_rows = (test_df.data["time"]
+                         .apply(lambda x: x.hour).isin(test_hour))
         expected = test_df.data["time"].loc[expected_rows].unique()
 
         unique_time = obs['time'].unique()
@@ -236,7 +240,9 @@ def test_filter_hour(test_df, test_hour):
 
 def test_filter_time_exact_match(test_df):
     if "year" in test_df.data.columns:
-        error_msg = re.escape("`year` can only be filtered with ints or lists of ints")
+        error_msg = re.escape(
+            "`year` can only be filtered with ints or lists of ints"
+        )
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(year=datetime.datetime(2005, 6, 17))
     else:
@@ -251,7 +257,7 @@ def test_filter_time_exact_match(test_df):
 def test_filter_time_range(test_df):
     error_msg = r".*datetime.datetime.*"
     with pytest.raises(TypeError, match=error_msg):
-        obs = test_df.filter(year=range(
+        test_df.filter(year=range(
             datetime.datetime(2000, 6, 17),
             datetime.datetime(2009, 6, 17)
         ))
@@ -266,7 +272,7 @@ def test_filter_time_range_year(test_df):
     else:
         unique_time = obs['time'].unique()
         expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
-                        dtype=np.datetime64)
+                            dtype=np.datetime64)
 
     assert len(unique_time) == 1
     assert unique_time[0] == expected
@@ -281,7 +287,7 @@ def test_filter_time_range_month(test_df, month_range):
     else:
         obs = test_df.filter(month=month_range)
         expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
-                        dtype=np.datetime64)
+                            dtype=np.datetime64)
 
         unique_time = obs['time'].unique()
         assert len(unique_time) == 1
@@ -295,9 +301,12 @@ def test_filter_time_range_round_the_clock_error(test_df, month_range):
         with pytest.raises(ValueError, match=error_msg):
             obs = test_df.filter(month=month_range)
     else:
-        error_msg = re.escape("string ranges must lead to increasing integer ranges, Nov-Feb becomes [11, 2]")
+        error_msg = re.escape(
+            "string ranges must lead to increasing integer ranges, "
+            "Nov-Feb becomes [11, 2]"
+        )
         with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(month=month_range)
+            test_df.filter(month=month_range)
 
 
 @pytest.mark.parametrize("day_range", [range(14, 20), "Thu-Sat"])
@@ -324,7 +333,8 @@ def test_filter_time_range_hour(test_df, hour_range):
     else:
         obs = test_df.filter(hour=hour_range)
 
-        expected_rows = test_df.data["time"].apply(lambda x: x.hour).isin(hour_range)
+        expected_rows = (test_df.data["time"]
+                         .apply(lambda x: x.hour).isin(hour_range))
         expected = test_df.data["time"].loc[expected_rows].unique()
 
         unique_time = obs['time'].unique()
@@ -333,7 +343,9 @@ def test_filter_time_range_hour(test_df, hour_range):
 
 def test_filter_time_no_match(test_df):
     if "year" in test_df.data.columns:
-        error_msg = re.escape("`year` can only be filtered with ints or lists of ints")
+        error_msg = re.escape(
+            "`year` can only be filtered with ints or lists of ints"
+        )
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(year=datetime.datetime(2004, 6, 18))
     else:
@@ -346,7 +358,9 @@ def test_filter_time_not_datetime_error(test_df):
         with pytest.raises(KeyError, match=re.escape("'time")):
             test_df.filter(time=datetime.datetime(2004, 6, 18))
     else:
-        error_msg = re.escape("`time` can only be filtered with datetimes or lists of datetimes")
+        error_msg = re.escape(
+            "`time` can only be filtered with datetimes or lists of datetimes"
+        )
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(time=2005)
 
@@ -356,7 +370,9 @@ def test_filter_time_not_datetime_range_error(test_df):
         with pytest.raises(KeyError, match=re.escape("'time")):
             test_df.filter(time=range(2000, 2008))
     else:
-        error_msg = re.escape("`time` can only be filtered with datetimes or lists of datetimes")
+        error_msg = re.escape(
+            "`time` can only be filtered with datetimes or lists of datetimes"
+        )
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(time=range(2000, 2008))
 

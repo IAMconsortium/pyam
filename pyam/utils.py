@@ -298,7 +298,8 @@ def years_match(data, years):
     matching of year columns for data filtering
     """
     years = [years] if isinstance(years, int) else years
-    if isinstance(years, datetime.datetime) or isinstance(years[0], datetime.datetime):
+    dt = datetime.datetime
+    if isinstance(years, dt) or isinstance(years[0], dt):
         error_msg = "`year` can only be filtered with ints or lists of ints"
         raise TypeError(error_msg)
     return data.isin(years)
@@ -368,15 +369,17 @@ def time_match(data, times, conv_codes, strptime_attr, name):
     return data.isin(times)
 
 
-def datetime_match(data, datetimes):
+def datetime_match(data, dts):
     """
     matching of datetimes in time columns for data filtering
     """
-    datetimes = [datetimes] if isinstance(datetimes, datetime.datetime) else datetimes
-    if isinstance(datetimes, int) or isinstance(datetimes[0], int):
-        error_msg = "`time` can only be filtered with datetimes or lists of datetimes"
+    dts = [dts] if isinstance(dts, datetime.datetime) else dts
+    if isinstance(dts, int) or isinstance(dts[0], int):
+        error_msg = (
+            "`time` can only be filtered with datetimes or lists of datetimes"
+        )
         raise TypeError(error_msg)
-    return data.isin(datetimes)
+    return data.isin(dts)
 
 
 def cast_years_to_int(x, index=False):
