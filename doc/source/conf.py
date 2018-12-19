@@ -43,6 +43,7 @@ extensions = [
     'sphinxcontrib.programoutput',
     'sphinx.ext.mathbase',
     'sphinx_gallery.gen_gallery',
+    'sphinxcontrib.bibtex',
 ]
 
 sphinx_gallery_conf = {
