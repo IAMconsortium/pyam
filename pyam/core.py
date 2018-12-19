@@ -608,7 +608,7 @@ class IamDataFrame(object):
             logger().info(msg.format(variable, len(diff), len(df_variable)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(diff.index.droplevel([2, 3]))
+                self._exclude_on_fail(diff.index.droplevel([2, 3, 4]))
 
             diff = pd.concat([diff], keys=[variable], names=['variable'])
 
