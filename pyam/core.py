@@ -698,7 +698,6 @@ class IamDataFrame(object):
                 df_var_to_add = self.filter(
                     region=region, variable=var_to_add
                 ).data.groupby(REGION_IDX + ['unit']).sum()['value']
-
                 df_var_to_add.index = df_var_to_add.index.droplevel('variable')
 
                 if len(df_var_to_add):
