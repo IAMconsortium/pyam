@@ -1,12 +1,15 @@
+# has to go first for environment setup reasons
 import matplotlib
 matplotlib.use('agg')
 
 import os
 import pytest
-
 import pandas as pd
 
+
+from datetime import datetime
 from pyam import IamDataFrame
+
 
 here = os.path.dirname(os.path.realpath(__file__))
 IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
@@ -147,8 +150,25 @@ CHECK_AGG_REGIONAL_DF = pd.DataFrame([
 )
 
 
+TIME_AXES = [
+    [2005, 2010],
+    [datetime(2005, 6, 17), datetime(2010, 7, 21)],
+    ['2005-06-17', '2010-07-21'],
+    ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
+]
+
+
+@pytest.fixture(scope="function", params=TIME_AXES)
+def test_df(request):
+    tdf = TEST_DF.iloc[:2]
+    tdf = tdf.rename({2005: request.param[0], 2010: request.param[1]},
+                     axis="columns")
+    df = IamDataFrame(data=tdf)
+    yield df
+
+
 @pytest.fixture(scope="function")
-def test_df():
+def test_df_year():
     df = IamDataFrame(data=TEST_DF.iloc[:2])
     yield df
 

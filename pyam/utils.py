@@ -5,6 +5,8 @@ import six
 import re
 import glob
 import collections
+import datetime
+import time
 
 import numpy as np
 import pandas as pd
@@ -117,7 +119,7 @@ def read_ix(ix, **kwargs):
     df = ix.timeseries(iamc=False, **kwargs)
     df['model'] = ix.model
     df['scenario'] = ix.scenario
-    return df
+    return df, [], 'year'
 
 
 def read_pandas(fname, *args, **kwargs):
@@ -138,18 +140,11 @@ def read_files(fnames, *args, **kwargs):
     """Read data from a snapshot file saved in the standard IAMC format
     or a table with year/value columns
     """
-    if isstr(fnames):
-        fnames = [fnames]
-
-    fnames = itertools.chain(*[glob.glob(f) for f in fnames])
-    dfs = []
-    for fname in fnames:
-        logger().info('Reading `{}`'.format(fname))
-        df = read_pandas(fname, *args, **kwargs)
-        df = format_data(df)
-        dfs.append(df)
-
-    return pd.concat(dfs)
+    if not isstr(fnames):
+        raise ValueError('reading multiple files not supported, '
+                         'please use `pyam.IamDataFrame.append()`')
+    logger().info('Reading `{}`'.format(fnames))
+    return format_data(read_pandas(fnames, *args, **kwargs))
 
 
 def format_data(df):
@@ -158,7 +153,8 @@ def format_data(df):
         df = df.to_frame()
 
     # all lower case
-    df.rename(columns={c: str(c).lower() for c in df.columns}, inplace=True)
+    str_cols = [c for c in df.columns if isstr(c)]
+    df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
 
     if 'notes' in df.columns:  # this came from the database
         logger().info('Ignoring notes column in dataframe')
@@ -181,23 +177,57 @@ def format_data(df):
         missing = list(set(IAMC_IDX) - set(df.columns))
         raise ValueError("missing required columns `{}`!".format(missing))
 
-    # check whether data in IAMC style or year/value layout
-    if 'value' not in df.columns:
-        numcols = sorted(set(df.columns) - set(IAMC_IDX))
-        df = pd.melt(df, id_vars=IAMC_IDX, var_name='year',
-                     value_vars=numcols, value_name='value')
+    # check whether data in wide format (IAMC) or long format (`value` column)
+    if 'value' in df.columns:
+        # check if time column is given as `year` (int) or `time` (datetime)
+        cols = df.columns
+        if 'year' in cols and 'time' not in cols:
+            time_col = 'year'
+        elif 'time' in cols and 'year' not in cols:
+            time_col = 'time'
+        else:
+            msg = 'invalid time format, must have either `year` or `time`!'
+            raise ValueError(msg)
+        extra_cols = list(set(cols) - set(IAMC_IDX + [time_col, 'value']))
+    else:
+        # if in wide format, check if columns are years (int) or datetime
+        cols = set(df.columns) - set(IAMC_IDX)
+        year_cols, time_cols, extra_cols = [], [], []
+        for i in cols:
+            try:
+                year_cols.append(i) if int(i) else None
+            except (ValueError, TypeError):
+                try:
+                    pd.to_datetime([i])
+                    time_cols.append(i)
+                except ValueError:
+                    extra_cols.append(i)
+        if year_cols and not time_cols:
+            time_col = 'year'
+            melt_cols = year_cols
+        elif not year_cols and time_cols:
+            time_col = 'time'
+            melt_cols = time_cols
+        else:
+            msg = 'invalid column format, must be either years or `datetime`!'
+            raise ValueError(msg)
+        df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name=time_col,
+                     value_vars=sorted(melt_cols), value_name='value')
 
-    # cast year and value columns to numeric
-    df['year'] = pd.to_numeric(df['year'])
+    # cast time_col to correct format
+    if time_col == 'year':
+        if not df.year.dtype == 'int64':
+            df['year'] = cast_years_to_int(pd.to_numeric(df['year']))
+    if time_col == 'time':
+        df['time'] = pd.to_datetime(df['time'])
+
+    # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
-
-    # drop NaN's
     df.dropna(inplace=True)
+    df.sort_values(META_IDX + ['variable', time_col, 'region'] + extra_cols,
+                   inplace=True)
 
-    # sort data
-    df.sort_values(SORT_IDX, inplace=True)
-
-    return df
+    return df, time_col, extra_cols
 
 
 def style_df(df, style='heatmap'):
@@ -268,7 +298,88 @@ def years_match(data, years):
     matching of year columns for data filtering
     """
     years = [years] if isinstance(years, int) else years
+    dt = datetime.datetime
+    if isinstance(years, dt) or isinstance(years[0], dt):
+        error_msg = "`year` can only be filtered with ints or lists of ints"
+        raise TypeError(error_msg)
     return data.isin(years)
+
+
+def month_match(data, months):
+    """
+    matching of months in time columns for data filtering
+    """
+    return time_match(data, months, ['%b', '%B'], "tm_mon", "months")
+
+
+def day_match(data, days):
+    """
+    matching of days in time columns for data filtering
+    """
+    return time_match(data, days, ['%a', '%A'], "tm_wday", "days")
+
+
+def hour_match(data, hours):
+    """
+    matching of days in time columns for data filtering
+    """
+    hours = [hours] if isinstance(hours, int) else hours
+    return data.isin(hours)
+
+
+def time_match(data, times, conv_codes, strptime_attr, name):
+    def conv_strs(strs_to_convert, conv_codes, name):
+        for conv_code in conv_codes:
+            try:
+                res = [getattr(time.strptime(t, conv_code), strptime_attr)
+                       for t in strs_to_convert]
+                break
+            except ValueError:
+                continue
+
+        try:
+            return res
+        except NameError:
+            raise ValueError("Could not convert {} to integer".format(name))
+
+    times = [times] if isinstance(times, (int, str)) else times
+    if isinstance(times[0], str):
+        to_delete = []
+        to_append = []
+        for i, timeset in enumerate(times):
+            if "-" in timeset:
+                ints = conv_strs(timeset.split("-"), conv_codes, name)
+                if ints[0] > ints[1]:
+                    error_msg = (
+                        "string ranges must lead to increasing integer ranges,"
+                        " {} becomes {}".format(timeset, ints)
+                    )
+                    raise ValueError(error_msg)
+
+                # + 1 to include last month
+                to_append += [j for j in range(ints[0], ints[1] + 1)]
+                to_delete.append(i)
+
+        for i in to_delete:
+            del times[i]
+
+        times = conv_strs(times, conv_codes, name)
+        times += to_append
+
+    return data.isin(times)
+
+
+def datetime_match(data, dts):
+    """
+    matching of datetimes in time columns for data filtering
+    """
+    dts = [dts] if isinstance(dts, datetime.datetime) else dts
+    if isinstance(dts, int) or isinstance(dts[0], int):
+        error_msg = (
+            "`time` can only be filtered with datetimes or lists of datetimes"
+        )
+        raise TypeError(error_msg)
+    return data.isin(dts)
 
 
 def cast_years_to_int(x, index=False):

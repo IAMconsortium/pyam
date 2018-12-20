@@ -26,9 +26,12 @@ from pyam.utils import (
     format_data,
     pattern_match,
     years_match,
+    month_match,
+    hour_match,
+    day_match,
+    datetime_match,
     isstr,
     islistable,
-    cast_years_to_int,
     META_IDX,
     YEAR_IDX,
     REGION_IDX,
@@ -64,15 +67,13 @@ class IamDataFrame(object):
         """
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            self.data = format_data(data.copy())
+            _data = format_data(data.copy())
         elif has_ix and isinstance(data, ixmp.TimeSeries):
-            self.data = read_ix(data, **kwargs)
+            _data = read_ix(data, **kwargs)
         else:
-            self.data = read_files(data, **kwargs)
-
-        # cast year column to `int` if necessary
-        if not self.data.year.dtype == 'int64':
-            self.data.year = cast_years_to_int(self.data.year)
+            _data = read_files(data, **kwargs)
+        self.data, self.time_col, self.extra_cols = _data
+        self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
 
         # define a dataframe for categorization and other metadata indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
@@ -166,11 +167,14 @@ class IamDataFrame(object):
         inplace : bool, default False
             If True, do operation inplace and return None
         """
-        ret = copy.deepcopy(self) if not inplace else self
-
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
+
+        if self.time_col is not other.time_col:
+            raise ValueError('incompatible time format (years vs. datetime)!')
+
+        ret = copy.deepcopy(self) if not inplace else self
 
         diff = other.meta.index.difference(ret.meta.index)
         intersect = other.meta.index.intersection(ret.meta.index)
@@ -205,10 +209,15 @@ class IamDataFrame(object):
             ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
 
         # append other.data (verify integrity for no duplicates)
-        ret.data.set_index(LONG_IDX, inplace=True)
-        other.data.set_index(LONG_IDX, inplace=True)
-        ret.data = ret.data.append(other.data, verify_integrity=True)\
+        ret.data.set_index(ret._LONG_IDX, inplace=True)
+        _other = other.data.set_index(other._LONG_IDX)
+        ret.data = ret.data.append(_other, verify_integrity=True)\
             .reset_index(drop=False)
+
+        # merge extra columns in `data` and set `LONG_IDX`
+        ret.extra_cols += [i for i in other.extra_cols
+                           if i not in ret.extra_cols]
+        ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
 
         if not inplace:
             return ret
@@ -294,15 +303,26 @@ class IamDataFrame(object):
                   )
         return df
 
-    def timeseries(self):
-        """Returns a dataframe in the standard IAMC format
+    def timeseries(self, iamc_index=False):
+        """Returns a pd.DataFrame in wide format (years or timedate as columns)
+
+        Parameters
+        ----------
+        iamc_index: bool, default False
+            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all `data` columns
         """
-        return (
+        index = IAMC_IDX if iamc_index else IAMC_IDX + self.extra_cols
+        df = (
             self.data
-            .pivot_table(index=IAMC_IDX, columns='year')
+            .pivot_table(index=index, columns=self.time_col)
             .value  # column name
             .rename_axis(None, axis=1)
         )
+        if df.index.has_duplicates:
+            raise ValueError('timeseries object has duplicates in index ',
+                             'use `iamc_index=False`')
+        return df
 
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to `exclude: False`"""
@@ -322,8 +342,12 @@ class IamDataFrame(object):
         index: pyam.IamDataFrame, pd.DataFrame or pd.MultiIndex, optional
             index to be used for setting meta column (`['model', 'scenario']`)
         """
+        # check that name is valid and doesn't conflict with data columns
         if (name or (hasattr(meta, 'name') and meta.name)) in [None, False]:
             raise ValueError('Must pass a name or use a named pd.Series')
+        name = name or meta.name
+        if name in self.data.columns:
+            raise ValueError('`{}` already exists in `data`!'.format(name))
 
         # check if meta has a valid index and use it for further workflow
         if hasattr(meta, 'index') and hasattr(meta.index, 'names') \
@@ -350,7 +374,6 @@ class IamDataFrame(object):
 
         # create pd.Series from meta, index and name if provided
         meta = pd.Series(data=meta, index=index, name=name)
-        meta.name = name = name or meta.name
 
         # reduce index dimensions to model-scenario only
         meta = (
@@ -429,9 +452,9 @@ class IamDataFrame(object):
             required variable
         unit: str, default None
             name of unit (optional)
-        years: int or list, default None
+        year: int or list, default None
             years (optional)
-        exclude: bool, default False
+        exclude_on_fail: bool, default False
             flag scenarios missing the required variables as `exclude: True`
         """
         criteria = {'variable': variable}
@@ -440,7 +463,7 @@ class IamDataFrame(object):
         if year:
             criteria.update({'year': year})
 
-        keep = _apply_filters(self.data, self.meta, criteria)
+        keep = self._apply_filters(criteria)
         idx = self.meta.index.difference(_meta_idx(self.data[keep]))
 
         n = len(idx)
@@ -509,7 +532,7 @@ class IamDataFrame(object):
                 raise ValueError('Renaming by {} not supported!'.format(col))
             ret.data.loc[:, col] = ret.data.loc[:, col].replace(_mapping)
 
-        ret.data = ret.data.groupby(LONG_IDX).sum().reset_index()
+        ret.data = ret.data.groupby(self._LONG_IDX).sum().reset_index()
         if not inplace:
             return ret
 
@@ -675,6 +698,7 @@ class IamDataFrame(object):
                 df_var_to_add = self.filter(
                     region=region, variable=var_to_add
                 ).data.groupby(REGION_IDX + ['unit']).sum()['value']
+
                 df_var_to_add.index = df_var_to_add.index.droplevel('variable')
 
                 if len(df_var_to_add):
@@ -749,22 +773,25 @@ class IamDataFrame(object):
             if True, do operation inplace and return None
         filters by kwargs or dict (deprecated):
             The following columns are available for filtering:
-             - metadata columns: filter by category assignment in metadata
+             - metadata columns: filter by category assignment
              - 'model', 'scenario', 'region', 'variable', 'unit':
-               string or list of strings, where ``*`` can be used as a wildcard
+               string or list of strings, where `*` can be used as a wildcard
              - 'level': the maximum "depth" of IAM variables (number of '|')
                (exluding the strings given in the 'variable' argument)
              - 'year': takes an integer, a list of integers or a range
-                note that the last year of a range is not included,
-                so ``range(2010,2015)`` is interpreted as ``[2010, ..., 2014]``
-            - 'regexp=True' overrides pseudo-regexp syntax in `pattern_match()`
+               note that the last year of a range is not included,
+               so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
+             - arguments for filtering by `datetime.datetime`
+               ('month', 'hour', 'time')
+             - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
         """
         if filters is not None:
-            warnings.warn(
-                '`filters` keyword argument in filters() is deprecated and will be removed in the next release')
+            msg = '`filters` keyword argument in `filter()` is deprecated ' + \
+                'and will be removed in the next release'
+            warnings.warn(msg)
             kwargs.update(filters)
 
-        _keep = _apply_filters(self.data, self.meta, kwargs)
+        _keep = self._apply_filters(kwargs)
         _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[_keep]
@@ -779,6 +806,90 @@ class IamDataFrame(object):
         ret.meta = ret.meta.loc[idx]
         if not inplace:
             return ret
+
+    def _apply_filters(self, filters):
+        """Determine rows to keep in data for given set of filters
+
+        Parameters
+        ----------
+        filters: dict
+            dictionary of filters ({col: values}}); uses a pseudo-regexp syntax
+            by default, but accepts `regexp: True` to use regexp directly
+        """
+        regexp = filters.pop('regexp', False)
+        keep = np.array([True] * len(self.data))
+
+        # filter by columns and list of values
+        for col, values in filters.items():
+            if col in self.meta.columns:
+                matches = pattern_match(self.meta[col], values, regexp=regexp)
+                cat_idx = self.meta[matches].index
+                keep_col = (self.data[META_IDX].set_index(META_IDX)
+                                .index.isin(cat_idx))
+
+            elif col == 'variable':
+                level = filters['level'] if 'level' in filters else None
+                keep_col = pattern_match(self.data[col], values, level, regexp)
+
+            elif col == 'year':
+                if self.time_col is 'time':
+                    keep_col = years_match(self.data['time']
+                                               .apply(lambda x: x.year),
+                                           values)
+                else:
+                    keep_col = years_match(self.data[col], values)
+
+            elif col == 'month':
+                if self.time_col is not 'time':
+                    _raise_filter_error(col)
+                keep_col = month_match(self.data['time']
+                                           .apply(lambda x: x.month),
+                                       values)
+
+            elif col == 'day':
+                if self.time_col is not 'time':
+                    _raise_filter_error(col)
+                if isinstance(values, str):
+                    wday = True
+                elif isinstance(values, list) and isinstance(values[0], str):
+                    wday = True
+                else:
+                    wday = False
+
+                if wday:
+                    days = self.data['time'].apply(lambda x: x.weekday())
+                else:  # ints or list of ints
+                    days = self.data['time'].apply(lambda x: x.day)
+
+                keep_col = day_match(days, values)
+
+            elif col == 'hour':
+                if self.time_col is not 'time':
+                    _raise_filter_error(col)
+                keep_col = hour_match(self.data['time']
+                                          .apply(lambda x: x.hour),
+                                      values)
+
+            elif col == 'time':
+                keep_col = datetime_match(self.data[col], values)
+
+            elif col == 'level':
+                if 'variable' not in filters.keys():
+                    keep_col = pattern_match(self.data['variable'],
+                                             '*', values, regexp=regexp)
+                else:
+                    continue
+
+            elif col in self.data.columns:
+                keep_col = pattern_match(self.data[col], values, regexp=regexp)
+
+            else:
+                _raise_filter_error(col)
+
+            keep &= keep_col
+
+        return keep
+
 
     def col_apply(self, col, func, *args, **kwargs):
         """Apply a function to a column
@@ -795,46 +906,47 @@ class IamDataFrame(object):
         else:
             self.meta[col] = self.meta[col].apply(func, *args, **kwargs)
 
-    def _to_file_format(self):
+    def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
-        df = self.timeseries().reset_index()
+        df = self.timeseries(iamc_index=iamc_index).reset_index()
         df = df.rename(columns={c: str(c).title() for c in df.columns})
         return df
 
-    def to_csv(self, path, index=False, **kwargs):
-        """Write data to a csv file
+    def to_csv(self, path, iamc_index=False, **kwargs):
+        """Write timeseries data to a csv file
 
         Parameters
         ----------
-        index: boolean, default False
-            write row names (index)
+        path: string
+            file path
+        iamc_index: bool, default False
+            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all `data` columns
         """
-        self._to_file_format().to_csv(path, index=False, **kwargs)
+        self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
-    def to_excel(self, path=None, writer=None, sheet_name='data', index=False,
-                 **kwargs):
-        """Write timeseries data to Excel using the IAMC template convention
-        (wrapper for `pd.DataFrame.to_excel()`)
+    def to_excel(self, excel_writer, sheet_name='data',
+                 iamc_index=False, **kwargs):
+        """Write timeseries data to Excel format
 
         Parameters
         ----------
         excel_writer: string or ExcelWriter object
-             file path or existing ExcelWriter
+            file path or existing ExcelWriter
         sheet_name: string, default 'data'
-            name of the sheet that will contain the (filtered) IamDataFrame
-        index: boolean, default False
-            write row names (index)
+            name of sheet which will contain `IamDataFrame.timeseries()` data
+        iamc_index: bool, default False
+            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all `data` columns
         """
-        if (path is None and writer is None) or \
-           (path is not None and writer is not None):
-            raise ValueError('Only one of path and writer must have a value')
-        close = writer is None
-        if writer is None:
-            writer = pd.ExcelWriter(path)
-        self._to_file_format().to_excel(writer, sheet_name=sheet_name,
-                                        index=index, **kwargs)
+        if not isinstance(excel_writer, pd.ExcelWriter):
+            close = True
+            excel_writer = pd.ExcelWriter(excel_writer)
+        self._to_file_format(iamc_index)\
+            .to_excel(excel_writer, sheet_name=sheet_name, index=False,
+                      **kwargs)
         if close:
-            writer.close()
+            excel_writer.close()
 
     def export_metadata(self, path):
         """Export metadata to Excel
@@ -1072,7 +1184,7 @@ class IamDataFrame(object):
 
         # perform aggregations
         if agg == 'sum':
-            df = df.groupby(LONG_IDX).sum().reset_index()
+            df = df.groupby(self._LONG_IDX).sum().reset_index()
 
         ret.data = (df
                     .reindex(columns=columns_orderd)
@@ -1118,51 +1230,8 @@ def _aggregate_by_regions(df, regions, units=None):
     return df.groupby(REGION_IDX + ['unit']).sum()['value']
 
 
-def _apply_filters(data, meta, filters):
-    """Applies filters to the data and meta tables of an IamDataFrame.
-
-    Parametersp
-    ----------
-    data: pd.DataFrame
-        data table of an IamDataFrame
-    meta: pd.DataFrame
-        meta table of an IamDataFrame
-    filters: dict
-        dictionary of filters ({col: values}}); uses a pseudo-regexp syntax by
-        default, but accepts `regexp: True` to use direct regexp
-    """
-    regexp = filters.pop('regexp', False)
-    keep = np.array([True] * len(data))
-
-    # filter by columns and list of values
-    for col, values in filters.items():
-        if col in meta.columns:
-            matches = pattern_match(meta[col], values, regexp=regexp)
-            cat_idx = meta[matches].index
-            keep_col = data[META_IDX].set_index(META_IDX).index.isin(cat_idx)
-
-        elif col in ['model', 'scenario', 'region', 'unit']:
-            keep_col = pattern_match(data[col], values, regexp=regexp)
-
-        elif col == 'variable':
-            level = filters['level'] if 'level' in filters else None
-            keep_col = pattern_match(data[col], values, level, regexp)
-
-        elif col == 'year':
-            keep_col = years_match(data[col], values)
-
-        elif col == 'level':
-            if 'variable' not in filters.keys():
-                keep_col = pattern_match(data['variable'], '*', values,
-                                         regexp=regexp)
-            else:
-                continue
-        else:
-            raise ValueError(
-                'filter by column ' + col + ' not supported')
-        keep &= keep_col
-
-    return keep
+def _raise_filter_error(col):
+    raise ValueError('filter by `{}` not supported'.format(col))
 
 
 def _check_rows(rows, check, in_range=True, return_test='any'):
@@ -1174,7 +1243,7 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
     rows: pd.DataFrame
         data rows
     check: dict
-        dictionary with possible values of "up", "lo", and "year"
+        dictionary with possible values of 'up', 'lo', and 'year'
     in_range: bool, optional
         check if values are inside or outside of provided range
     return_test: str, optional
