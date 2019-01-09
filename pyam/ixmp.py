@@ -21,4 +21,4 @@ def read_ix(ix, **kwargs):
     df = ix.timeseries(iamc=False, **kwargs)
     df['model'] = ix.model
     df['scenario'] = ix.scenario
-    return df, [], 'year'
+    return df, 'year', []
