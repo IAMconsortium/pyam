@@ -12,11 +12,6 @@ import numpy as np
 import pandas as pd
 
 try:
-    import ixmp
-except ImportError:
-    pass
-
-try:
     import seaborn as sns
 except ImportError:
     pass
@@ -100,26 +95,6 @@ def write_sheet(writer, name, df, index=False):
                          len(col)]) + 2
         xls_col = '{c}:{c}'.format(c=NUMERIC_TO_STR[i])
         worksheet.set_column(xls_col, width)
-
-
-def read_ix(ix, **kwargs):
-    """Read timeseries data from an ix object
-
-    Parameters
-    ----------
-    ix: ixmp.TimeSeries or ixmp.Scenario
-        this option requires the ixmp package as a dependency
-    regions: list
-        list of regions to be loaded from the database snapshot
-    """
-    if not isinstance(ix, ixmp.TimeSeries):
-        error = 'not recognized as valid ixmp class: {}'.format(ix)
-        raise ValueError(error)
-
-    df = ix.timeseries(iamc=False, **kwargs)
-    df['model'] = ix.model
-    df['scenario'] = ix.scenario
-    return df, [], 'year'
 
 
 def read_pandas(fname, *args, **kwargs):
