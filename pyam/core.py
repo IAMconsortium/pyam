@@ -39,7 +39,7 @@ from pyam.utils import (
     LONG_IDX,
     GROUP_IDX
 )
-from pyam.ixmp import read_ix
+from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
 
 

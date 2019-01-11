@@ -2,7 +2,7 @@ from pyam.core import *
 from pyam.utils import *
 from pyam.statistics import *
 from pyam.timeseries import *
-from pyam.ixmp import *
+from pyam.read_ixmp import *
 from pyam.logger import *
 from pyam.run_control import *
 from pyam.iiasa import read_iiasa, read_iiasa_iamc15  # noqa: F401
