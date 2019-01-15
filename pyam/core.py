@@ -20,7 +20,6 @@ from pyam.logger import logger
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
-    read_ix,
     read_files,
     read_pandas,
     format_data,
@@ -40,6 +39,7 @@ from pyam.utils import (
     LONG_IDX,
     GROUP_IDX
 )
+from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
 
 
