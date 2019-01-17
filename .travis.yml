@@ -39,11 +39,7 @@ script:
   - py.test tests --verbose --mpl --cov=pyam --cov-config ci/.coveragerc --cov-report term-missing
   # silly problems are there for building docs in py2, so just test py3,
   # it gets the job done
-  - if [ "$PYENV" == "py37" ]; then
-      cd doc
-      pip install -r requirements.txt && make html
-      cd ..
-    fi
+  - cd doc && pip install -r requirements.txt && make html && cd ..
 
 after_success:
   - coveralls
