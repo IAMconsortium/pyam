@@ -40,7 +40,8 @@ script:
   # silly problems are there for building docs in py2, so just test py3,
   # it gets the job done
   - |
-    if [[ "$PYENV" == "py37"]]; then
+    if [[ "$PYENV" == "py37"]]
+    then
       cd doc
       pip install -r requirements.txt && make html
       cd ..
