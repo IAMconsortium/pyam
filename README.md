@@ -73,8 +73,7 @@ To install from source after cloning this repository, simply run
 pip install -e .
 ```
 
-Development
-+++++++++++
+### Development
 
 To setup a development environment,
 
