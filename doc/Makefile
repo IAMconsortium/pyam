@@ -204,4 +204,4 @@ html-publish: html publish
 serve: html
 	@echo
 	@echo "Serving from $(BUILDDIR)/html."
-	cd $(BUILDDIR)/html && python3 -m http.server
+	cd $(BUILDDIR)/html && python3 -m http.server || python3 -m http.server 8040

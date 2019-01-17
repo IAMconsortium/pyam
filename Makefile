@@ -1,6 +1,6 @@
 .PHONY: clean
 clean:
-	rm -rf build dist *egg-info
+	rm -rf build dist *egg-info __pycache__
 
 .PHONY: new_release
 new_release:

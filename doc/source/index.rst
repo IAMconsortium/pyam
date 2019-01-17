@@ -7,29 +7,35 @@
 
 Release v\ |version|.
 
-.. image:: https://img.shields.io/pypi/v/pyam-iamc.svg
+|pypi| |conda| |license| |latest|
+
+|travis| |appveyor|
+
+|joss| |doi|
+
+.. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
 
-.. image:: https://anaconda.org/conda-forge/pyam/badges/version.svg
+.. |conda| image:: https://anaconda.org/conda-forge/pyam/badges/version.svg
    :target: https://anaconda.org/conda-forge/pyam   
 
-.. image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
+.. |license| image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
    :target: https://anaconda.org/conda-forge/pyam
 
-.. image:: https://zenodo.org/badge/113359260.svg
-   :target: https://zenodo.org/badge/latestdoi/113359260
-
-.. image:: https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg
+.. |latest| image:: https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg
    :target: https://anaconda.org/conda-forge/pyam
 
-.. image:: https://circleci.com/gh/IAMconsortium/pyam.svg?style=shield&circle-token=:circle-token
-    :target: https://circleci.com/gh/IAMconsortium/pyam
-
-.. image:: https://travis-ci.org/IAMconsortium/pyam.svg?branch=master
+.. |travis| image:: https://travis-ci.org/IAMconsortium/pyam.svg?branch=master
    :target: https://travis-ci.org/IAMconsortium/pyam
    
-.. image:: https://ci.appveyor.com/api/projects/status/qd4taojd2vkqoab4/branch/master?svg=true&passingText=passing&failingText=failing&pendingText=pending
-      :target: https://ci.appveyor.com/project/gidden/pyam/branch/master
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/qd4taojd2vkqoab4/branch/master?svg=true&passingText=passing&failingText=failing&pendingText=pending
+   :target: https://ci.appveyor.com/project/gidden/pyam/branch/master
+
+.. |joss| image:: http://joss.theoj.org/papers/356bc013105642ec4e94a3b951836cfe/status.svg
+   :target: http://joss.theoj.org/papers/356bc013105642ec4e94a3b951836cfe
+
+.. |doi| image:: https://zenodo.org/badge/113359260.svg
+   :target: https://zenodo.org/badge/latestdoi/113359260
 
 The **pyam** Python package provides a range of diagnostic tools and functions
 for analyzing and visualizing data from your favorite assessment model(s).
