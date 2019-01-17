@@ -1,25 +1,25 @@
-language: minimal
+language: sh
 
 matrix:
     include:
-        - os: linux
-          env: PYENV=py37
-        - os: linux
-          env: PYENV=py27
-        - os: osx
-          env: PYENV=py37
-        - os: osx
-          env: PYENV=py27
-# turn these on once travis support gets a little better
-#        - os: windows
+#        - os: linux
 #          env: PYENV=py37
-#        - os: windows
+#        - os: linux
 #          env: PYENV=py27
+#        - os: osx
+#          env: PYENV=py37
+#        - os: osx
+#          env: PYENV=py27
+# turn these on once travis support gets a little better
+        - os: windows
+          env: PYENV=py37
+        - os: windows
+          env: PYENV=py27
 
 before_install:
+  - source ./ci/env.sh
   - bash ./ci/travis-install.sh
-  - export PATH=$HOME/miniconda/bin:$PATH
-  - source activate pyam-testing
+  - source activate testing
   # This is required to get FreeType v2.6.1 instead of a newer version.
   # If this does not happen, then slight changes occur in plots causing
   # failures.
