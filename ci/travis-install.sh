@@ -64,6 +64,7 @@ conda install -n pyam-testing --yes \
 # these have to be installed from conda-forge to get right gdal packages
 conda install -n pyam-testing -c conda-forge --yes \
       libkml \
+      gdal \
       fiona \
-      geopandas==0.3.0 \
-      cartopy==0.16.0
+      geopandas \
+      cartopy
