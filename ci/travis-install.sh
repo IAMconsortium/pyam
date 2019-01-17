@@ -62,7 +62,7 @@ conda install -n pyam-testing --yes \
       pytest-cov 
 
 # these have to be installed from conda-forge to get right gdal packages
-conda install -n pyam-testing -c conda-forge --yes \
+conda install -n pyam-testing -c conda-forge --override-channels "gdal>2.2.4" --yes \
       fiona \
       geopandas==0.3.0 \
       cartopy==0.16.0
