@@ -40,7 +40,7 @@ export PATH=$HOME/miniconda/bin:$PATH
 conda update --yes conda
 
 # create named env
-conda create -n pyam-testing --yes
+conda create -n pyam-testing python=$PYVERSION --yes
 
 # install deps, specific versions are used to guarantee consistency with
 # plotting tests
