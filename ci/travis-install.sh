@@ -15,6 +15,8 @@ else
     echo "foo"
     ls /c/tools
     echo "bar"
+    ls /c/ProgramData/chocolatey/lib/Miniconda
+    echo "baz"
     grep -i 'miniconda' /c/ProgramData/chocolatey/logs/chocolatey.log
     echo $PATH
     which conda
