@@ -40,7 +40,7 @@ export PATH=$HOME/miniconda/bin:$PATH
 conda update --yes conda
 
 # create named env
-conda create -n pyam-testing --yes
+conda create -n pyam-testing python=$PYVERSION --yes
 
 # install deps, specific versions are used to guarantee consistency with
 # plotting tests
@@ -49,8 +49,6 @@ conda install -n pyam-testing --yes \
       pandas==0.22.0 \
       matplotlib==2.1.2 \
       seaborn==0.8.1 \
-      geopandas==0.3.0 \
-      cartopy==0.16.0 \
       six \
       pyyaml \
       xlrd \
@@ -62,3 +60,11 @@ conda install -n pyam-testing --yes \
       pytest \
       coveralls \
       pytest-cov 
+
+# these have to be installed from conda-forge to get right gdal packages
+conda install -n pyam-testing -c conda-forge --yes \
+      libkml \
+      gdal \
+      fiona \
+      geopandas \
+      cartopy
