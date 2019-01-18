@@ -18,10 +18,12 @@ esac
 case "${PYENV}" in
     py27)
         export PYVERSION=2
+        export CHOCOPATH='miniconda2'
         export CHOCONAME='miniconda'
     ;;
     py37)
         export PYVERSION=3
+        export CHOCOPATH='miniconda3'
         export CHOCONAME='miniconda3'
     ;;
 esac
@@ -29,5 +31,5 @@ esac
 if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then
     export PATH=$HOME/miniconda/bin:$PATH
 else
-    export PATH="/c/tools/$CHOCONAME/scripts:/c/tools/$CHOCONAME/:$PATH"
+    export PATH="/c/tools/$CHOCOPATH/scripts:/c/tools/$CHOCOPATH/:$PATH"
 fi
