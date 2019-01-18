@@ -25,17 +25,11 @@ before_install:
   # failures.
   - conda uninstall --yes --force matplotlib
   - pip install matplotlib==2.1.2
-  - echo $CONDA_PREFIX
-  - python -c 'import geopandas'
 
 install:
-  - echo $CONDA_PREFIX
-  - python -c 'import geopandas'
   - pip install -e .[tests]
 
 script:
-  - echo $CONDA_PREFIX
-  - python -c 'import geopandas'
   - py.test tests --verbose --mpl --cov=pyam --cov-config ci/.coveragerc --cov-report term-missing
   # silly problems are there for building docs in py2, so just test py3,
   # it gets the job done
