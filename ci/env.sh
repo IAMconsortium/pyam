@@ -18,8 +18,8 @@ esac
 case "${PYENV}" in
     py27)
         export PYVERSION=2
-        export CHOCOPATH='miniconda2'
-        export CHOCONAME='miniconda'
+        export CHOCOPATH='anaconda2'
+        export CHOCONAME='anaconda2'
     ;;
     py37)
         export PYVERSION=3
