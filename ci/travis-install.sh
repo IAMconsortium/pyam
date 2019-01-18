@@ -11,13 +11,7 @@ if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then
     chmod +x miniconda.sh
     ./miniconda.sh -b -p $HOME/miniconda
 else
-    choco install $CHOCONAME --params='"/AddToPath /D:c:\tools"'
-    echo 'foo'
-    ls /c
-    echo 'bar'
-    ls /c/tools
-    echo 'baz'
-    which conda
+    choco install $CHOCONAME --params='"/AddToPath"'
 fi
 
 # update conda
