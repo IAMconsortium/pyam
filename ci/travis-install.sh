@@ -11,6 +11,7 @@ if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then
     ./miniconda.sh -b -p $HOME/miniconda
 else
     choco install $CHOCONAME --params='"/AddToPath"'
+    choco install make
 fi
 
 # update conda
