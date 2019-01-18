@@ -27,6 +27,7 @@ case "${PYENV}" in
         export CHOCONAME='miniconda3'
     ;;
 esac
+export URL="https://repo.anaconda.com/miniconda/Miniconda$PYVERSION-latest-$OSNAME-x86_64.$EXT"
 
 if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then
     export PATH=$HOME/miniconda/bin:$PATH

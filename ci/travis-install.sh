@@ -4,7 +4,6 @@ set -e
 
 # get conda and install it
 if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then
-    URL="https://repo.anaconda.com/miniconda/Miniconda$PYVERSION-latest-$OSNAME-x86_64.$EXT"
     echo "Starting download from $URL"
     wget $URL -O miniconda.sh --no-check-certificate
     echo "Download complete from $URL"
