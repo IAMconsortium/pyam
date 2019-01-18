@@ -2,15 +2,14 @@ language: sh
 
 matrix:
     include:
-#        - os: linux
-#          env: PYENV=py37
-#        - os: linux
-#          env: PYENV=py27
-#        - os: osx
-#          env: PYENV=py37
-#        - os: osx
-#          env: PYENV=py27
-# turn these on once travis support gets a little better
+        - os: linux
+          env: PYENV=py37
+        - os: linux
+          env: PYENV=py27
+        - os: osx
+          env: PYENV=py37
+        - os: osx
+          env: PYENV=py27
         - os: windows
           env: PYENV=py37
 # there is no maintained miniconda2 package for chocolatey
