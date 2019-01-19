@@ -1,4 +1,4 @@
-language: minimal
+language: sh
 
 matrix:
     include:
@@ -10,16 +10,16 @@ matrix:
           env: PYENV=py37
         - os: osx
           env: PYENV=py27
-# turn these on once travis support gets a little better
-#        - os: windows
-#          env: PYENV=py37
+        - os: windows
+          env: PYENV=py37
+# there is no maintained miniconda2 package for chocolatey
 #        - os: windows
 #          env: PYENV=py27
 
 before_install:
+  - source ./ci/env.sh
   - bash ./ci/travis-install.sh
-  - export PATH=$HOME/miniconda/bin:$PATH
-  - source activate pyam-testing
+  - source activate testing
   # This is required to get FreeType v2.6.1 instead of a newer version.
   # If this does not happen, then slight changes occur in plots causing
   # failures.
@@ -30,10 +30,12 @@ install:
   - pip install -e .[tests]
 
 script:
+  - python -c "import os, sys; assert os.environ['PYVERSION'] == sys.version[0]"
   - py.test tests --verbose --mpl --cov=pyam --cov-config ci/.coveragerc --cov-report term-missing
-  # silly problems are there for building docs in py2, so just test py3,
-  # it gets the job done
-  - if [[ $PYENV == 'py37' ]]; then cd doc && pip install -r requirements.txt && make html && cd ..; fi
-
+  # silly problems are there for building docs in windows and py2 (tries to look for py3 jupyter kernel)
+  - cd doc
+  - if [[ "${PYENV}" == "py37" && "${TRAVIS_OS_NAME}" != 'windows' ]]; then pip install -r requirements.txt && make html; fi
+  - cd ..
+  
 after_success:
   - coveralls
