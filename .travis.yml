@@ -34,7 +34,7 @@ script:
   - py.test tests --verbose --mpl --cov=pyam --cov-config ci/.coveragerc --cov-report term-missing
   # silly problems are there for building docs in windows and py2 (tries to look for py3 jupyter kernel)
   - cd doc
-  - if [[ "${PYENV}" == "py37" && "${TRAVIS_OS_NAME}" != 'Windows' ]]; then pip install -r requirements.txt && make html; fi
+  - if [[ "${PYENV}" == "py37" && "${TRAVIS_OS_NAME}" != 'windows' ]]; then pip install -r requirements.txt && make html; fi
   - cd ..
   
 after_success:
