@@ -41,6 +41,8 @@ conda install -n testing --yes \
 
 # these have to be installed from conda-forge to get right gdal packages
 conda install -n testing -c conda-forge --yes \
+      cython \
+      pyproj \
       libkml \
       gdal \
       fiona \
