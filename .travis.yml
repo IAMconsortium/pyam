@@ -32,9 +32,10 @@ install:
 script:
   - python -c "import os, sys; assert os.environ['PYVERSION'] == sys.version[0]"
   - py.test tests --verbose --mpl --cov=pyam --cov-config ci/.coveragerc --cov-report term-missing
-  # silly problems are there for building docs in py2, so just test py3,
-  # it gets the job done
-  - if [[ $PYENV == 'py37' ]]; then cd doc && pip install -r requirements.txt && make html && cd ..; fi
-
+  # silly problems are there for building docs in windows
+  - cd doc
+  - if [[ "${TRAVIS_OS_NAME}" != 'Windows' ]]; then pip install -r requirements.txt && make html; fi
+  - cd ..
+  
 after_success:
   - coveralls
