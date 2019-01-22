@@ -1433,7 +1433,7 @@ def difference(left, right, left_label='left', right_label='right', **kwargs):
     kwargs: passed to `np.isclose()`
     """
     _left, _right = left.data.set_index(left._LONG_IDX).align(
-            right.data.set_index(right._LONG_IDX))
+        right.data.set_index(right._LONG_IDX))
     diff = ~np.isclose(_left, _right, **kwargs)
     ret = _left[diff].rename(columns={'value': left_label})
     ret[right_label] = _right[diff]
