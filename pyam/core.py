@@ -1418,3 +1418,23 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
         data.index.name = None
 
     return data
+
+
+def difference(left, right, left_label='left', right_label='right', **kwargs):
+    """Compare the data in two IamDataFrames and return a pd.DataFrame
+    showing the difference
+
+    Parameters
+    ----------
+    left, right: IamDataFrames
+        the IamDataFrames to be compared
+    left_label, right_label: str, default `left`, `right`
+        column names of the returned dataframe
+    kwargs: passed to `np.isclose()`
+    """
+    _left, _right = left.data.set_index(left._LONG_IDX).align(
+            right.data.set_index(right._LONG_IDX))
+    diff = ~np.isclose(_left, _right, **kwargs)
+    ret = _left[diff].rename(columns={'value': left_label})
+    ret[right_label] = _right[diff]
+    return ret[[right_label, left_label]]
