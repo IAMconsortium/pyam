@@ -1,5 +1,4 @@
 import itertools
-import os
 import warnings
 
 try:
@@ -135,7 +134,7 @@ def reshape_bar_plot(df, x, y, bars):
 @requires_package(gpd, 'Requires geopandas')
 @lru_cache()
 def read_shapefile(fname, region_col=None, **kwargs):
-    """Read a shapefile for use in regional plots. Shapefiles must have a 
+    """Read a shapefile for use in regional plots. Shapefiles must have a
     column denoted as "region".
 
     Parameters
@@ -156,9 +155,9 @@ def read_shapefile(fname, region_col=None, **kwargs):
 
 @requires_package(gpd, 'Requires geopandas')
 @requires_package(cartopy, 'Requires cartopy')
-def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=True,
-                vmin=None, vmax=None, cmap=None, cbar=True, legend=False,
-                title=True):
+def region_plot(df, column='value', ax=None, crs=None, gdf=None,
+                add_features=True, vmin=None, vmax=None, cmap=None,
+                cbar=True, legend=False, title=True):
     """Plot data on a map.
 
     Parameters
@@ -181,10 +180,10 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None, add_features=Tr
     cmap : string, optional
         The colormap to use.
     cbar : bool or dictionary, optional, default: True
-        Add a colorbar. If a dictionary is provided, it will be used as keyword 
+        Add a colorbar. If a dictionary is provided, it will be used as keyword
         arguments in creating the colorbar.
     legend : bool or dictionary, optional, default: False
-        Add a legend. If a dictionary is provided, it will be used as keyword 
+        Add a legend. If a dictionary is provided, it will be used as keyword
         arguments in creating the legend.
     title : bool or string, optional
         Display a default or custom title.
@@ -293,7 +292,8 @@ def pie_plot(df, value='value', category='variable',
     """
     for col in set(SORT_IDX) - set([category]):
         if len(df[col].unique()) > 1:
-            msg = 'Can not plot multiple {}s in pie_plot with value={}, category={}'
+            msg = 'Can not plot multiple {}s in pie_plot with value={},' +\
+                ' category={}'
             raise ValueError(msg.format(col, value, category))
 
     if ax is None:
@@ -378,7 +378,8 @@ def stack_plot(df, x='year', y='value', stack='variable',
     colors = []
     for key in _df.columns:
         c = next(defaults)
-        if 'color' in rc and stack in rc['color'] and key in rc['color'][stack]:
+        if 'color' in rc and stack in rc['color'] and\
+                key in rc['color'][stack]:
             c = rc['color'][stack][key]
         colors.append(c)
 
@@ -797,14 +798,13 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
     ax.set_ylabel(ylabel)
 
     # build a default title if possible
-    _title = []
-    for var in ['model', 'scenario', 'region', 'variable']:
-        if var in df.columns.names:
-            values = df.columns.get_level_values(var).unique()
-            if len(values) == 1:
-                _title.append('{}: {}'.format(var, values[0]))
-    if title and _title:
-        ax.set_title(' '.join(_title))
+    if title:
+        var = df['variable'].unique()[0]
+        unit = df['unit'].unique()[0]
+        year = df['year'].unique()[0]
+        default_title = '{} ({}) in {}'.format(var, unit, year)
+        title = default_title if title is True else title
+        ax.set_title(title)
 
     return ax, handles, labels
 
