@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#175](https://github.com/IAMconsortium/pyam/pull/175) Update link to tutorial in readme.md 
 - [#171](https://github.com/IAMconsortium/pyam/pull/171) Fix a bug when reading from an `ixmp.TimeSeries` object, refactor to mitigate circular dependency
 - [#162](https://github.com/IAMconsortium/pyam/pull/162) Add a function to sum and append timeseries components to an aggregate variable
 - [#152](https://github.com/IAMconsortium/pyam/pull/152) Fix bug where scatter plots did not work with property metadata when using two variables (#136, #152)

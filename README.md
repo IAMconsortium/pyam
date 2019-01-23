@@ -36,7 +36,7 @@ Tutorial
 --------
 
 A comprehensive tutorial for the basic functions is included
-in [tutorial/pyam_first_steps](tutorial/pyam_first_steps.ipynb)
+in [the first tutorial](doc/source/tutorials/pyam_first_steps.ipynb)
 using a partial snapshot of the IPCC AR5 scenario database.
 
 Documentation
