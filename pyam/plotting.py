@@ -799,10 +799,12 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
 
     # build a default title if possible
     if title:
-        var = df['variable'].unique()[0]
-        unit = df['unit'].unique()[0]
-        year = df['year'].unique()[0]
-        default_title = '{} ({}) in {}'.format(var, unit, year)
+        default_title = []
+        for var in ['model', 'scenario', 'region', 'variable']:
+            if var in df.columns.names:
+                values = df.columns.get_level_values(var).unique()
+                if len(values) == 1:
+                    default_title.append('{}: {}'.format(var, values[0]))
         title = default_title if title is True else title
         ax.set_title(title)
 
