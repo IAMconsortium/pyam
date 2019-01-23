@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#176](https://github.com/IAMconsortium/pyam/pull/176) Corrected title setting operation in line_plot function
 - [#175](https://github.com/IAMconsortium/pyam/pull/175) Update link to tutorial in readme.md 
 - [#171](https://github.com/IAMconsortium/pyam/pull/171) Fix a bug when reading from an `ixmp.TimeSeries` object, refactor to mitigate circular dependency
 - [#162](https://github.com/IAMconsortium/pyam/pull/162) Add a function to sum and append timeseries components to an aggregate variable
