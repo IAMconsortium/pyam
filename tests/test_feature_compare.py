@@ -1,16 +1,16 @@
 import copy
 import numpy as np
 import pandas as pd
-from pyam import difference, IAMC_IDX
+from pyam import compare, IAMC_IDX
 
 
-def test_difference(meta_df):
+def test_compare(meta_df):
     clone = copy.deepcopy(meta_df)
     clone.data.iloc[0, clone.data.columns.get_loc('value')] = 2
     clone.rename({'variable': {'Primary Energy|Coal': 'Primary Energy|Gas'}},
                  inplace=True)
 
-    obs = difference(meta_df, clone, right_label='meta_df', left_label='clone')
+    obs = compare(meta_df, clone, right_label='meta_df', left_label='clone')
 
     exp = pd.DataFrame([
         ['Primary Energy', 'EJ/y', 2005, 2, 1],
@@ -25,5 +25,7 @@ def test_difference(meta_df):
     exp['scenario'] = 'a_scenario'
     exp['region'] = 'World'
     exp = exp.set_index(IAMC_IDX + ['year'])
+
+    print(obs)
 
     pd.testing.assert_frame_equal(obs, exp)
