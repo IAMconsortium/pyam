@@ -26,6 +26,4 @@ def test_compare(meta_df):
     exp['region'] = 'World'
     exp = exp.set_index(IAMC_IDX + ['year'])
 
-    print(obs)
-
     pd.testing.assert_frame_equal(obs, exp)
