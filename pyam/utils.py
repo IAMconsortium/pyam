@@ -6,6 +6,7 @@ import re
 import glob
 import collections
 import datetime
+from dateutil import parser
 import time
 
 import numpy as np
@@ -172,8 +173,11 @@ def format_data(df):
             try:
                 year_cols.append(i) if int(i) else None
             except (ValueError, TypeError):
+                if isinstance(i, datetime.datetime):
+                    time_cols.append(i)
+                    continue
                 try:
-                    pd.to_datetime([i])
+                    parser.parse(i)
                     time_cols.append(i)
                 except ValueError:
                     extra_cols.append(i)

@@ -65,6 +65,50 @@ def test_init_df_with_extra_col(test_pd_df):
                                   tdf, check_like=True)
 
 
+@pytest.mark.xfail(reason=(
+    "pandas datetime is limited to ~584 year timespan, see "
+    "https://stackoverflow.com/a/37226672"
+))
+def test_init_df_long_timespan(test_pd_df):
+    tdf = test_pd_df.copy()
+    tmin = datetime.datetime(2005, 6, 17)
+    tmax = datetime.datetime(3005, 6, 17)
+    tdf = tdf.rename(
+        {
+            2005: tmin,
+            2010: tmax,
+        },
+        axis="columns"
+    )
+
+    df = IamDataFrame(tdf)
+
+    assert df["time"].max() == tmax
+    assert df["time"].min() == tmin
+
+
+
+def test_subclass_passesinit_df_long_timespan(test_pd_df):
+    class TempSubClass(IamDataFrame):
+        def _format_datetime_col(self, df):
+            return df
+
+    tdf = test_pd_df.copy()
+    tmin = datetime.datetime(2005, 6, 17)
+    tmax = datetime.datetime(3005, 6, 17)
+    tdf = tdf.rename(
+        {
+            2005: tmin,
+            2010: tmax,
+        },
+        axis="columns"
+    )
+
+    df = TempSubClass(tdf)
+
+    assert df["time"].max() == tmax
+    assert df["time"].min() == tmin
+
 
 def test_to_excel(test_df):
     fname = 'foo_testing.xlsx'

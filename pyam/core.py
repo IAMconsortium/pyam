@@ -99,7 +99,6 @@ class IamDataFrame(object):
 
     def _format_datetime_col(self, df):
         df['time'] = pd.to_datetime(df['time'])
-
         return df
 
     def __getitem__(self, key):
