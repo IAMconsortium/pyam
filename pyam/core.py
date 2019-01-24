@@ -1418,3 +1418,25 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
         data.index.name = None
 
     return data
+
+
+def compare(left, right, left_label='left', right_label='right',
+            drop_close=True, **kwargs):
+    """Compare the data in two IamDataFrames and return a pd.DataFrame
+
+    Parameters
+    ----------
+    left, right: IamDataFrames
+        the IamDataFrames to be compared
+    left_label, right_label: str, default `left`, `right`
+        column names of the returned dataframe
+    drop_close: bool, default True
+        remove all data where `left` and `right` are close
+    kwargs: passed to `np.isclose()`
+    """
+    ret = pd.concat({right_label: right.data.set_index(right._LONG_IDX),
+                     left_label: left.data.set_index(left._LONG_IDX)}, axis=1)
+    ret.columns = ret.columns.droplevel(1)
+    if drop_close:
+        ret = ret[~np.isclose(ret[left_label], ret[right_label], **kwargs)]
+    return ret[[right_label, left_label]]
