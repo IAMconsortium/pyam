@@ -23,6 +23,7 @@ from pyam.utils import (
     read_files,
     read_pandas,
     format_data,
+    cast_years_to_int,
     pattern_match,
     years_match,
     month_match,
@@ -72,6 +73,8 @@ class IamDataFrame(object):
             _data = read_ix(data, **kwargs)
         else:
             _data = read_files(data, **kwargs)
+
+        _data = self._format_data_time_col(_data)
         self.data, self.time_col, self.extra_cols = _data
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
 
@@ -82,6 +85,22 @@ class IamDataFrame(object):
         # execute user-defined code
         if 'exec' in run_control():
             self._execute_run_control()
+
+    def _format_data_time_col(self, data):
+        df, time_col, extra_cols = data
+        # cast time_col to desired format
+        if time_col == 'year':
+            if not df.year.dtype == 'int64':
+                df['year'] = cast_years_to_int(pd.to_numeric(df['year']))
+        if time_col == 'time':
+            df = self._format_datetime_col(df)
+
+        return (df, time_col, extra_cols)
+
+    def _format_datetime_col(self, df):
+        df['time'] = pd.to_datetime(df['time'])
+
+        return df
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key

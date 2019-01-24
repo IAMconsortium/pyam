@@ -189,13 +189,6 @@ def format_data(df):
         df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name=time_col,
                      value_vars=sorted(melt_cols), value_name='value')
 
-    # cast time_col to correct format
-    if time_col == 'year':
-        if not df.year.dtype == 'int64':
-            df['year'] = cast_years_to_int(pd.to_numeric(df['year']))
-    if time_col == 'time':
-        df['time'] = pd.to_datetime(df['time'])
-
     # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True)
