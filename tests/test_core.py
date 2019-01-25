@@ -66,7 +66,7 @@ def test_init_df_with_extra_col(test_pd_df):
 
 
 @pytest.mark.xfail(reason=(
-    "pandas datetime is limited to ~584 year timespan, see "
+    "pandas datetime is limited to the time period of ~1677-2262, see "
     "https://stackoverflow.com/a/37226672"
 ))
 def test_init_df_long_timespan(test_pd_df):
@@ -85,7 +85,6 @@ def test_init_df_long_timespan(test_pd_df):
 
     assert df["time"].max() == tmax
     assert df["time"].min() == tmin
-
 
 
 def test_subclass_passesinit_df_long_timespan(test_pd_df):

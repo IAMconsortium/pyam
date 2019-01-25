@@ -1,8 +1,9 @@
 
 # Next Release
 
+- [#177](https://github.com/IAMconsortium/pyam/pull/177) Modified formatting of time column on init to allow subclasses to avoid pandas limitation (https://stackoverflow.com/a/37226672)
 - [#176](https://github.com/IAMconsortium/pyam/pull/176) Corrected title setting operation in line_plot function
-- [#175](https://github.com/IAMconsortium/pyam/pull/175) Update link to tutorial in readme.md 
+- [#175](https://github.com/IAMconsortium/pyam/pull/175) Update link to tutorial in readme.md
 - [#174](https://github.com/IAMconsortium/pyam/pull/174) Add a function `difference()` to compare two IamDataFrames
 - [#171](https://github.com/IAMconsortium/pyam/pull/171) Fix a bug when reading from an `ixmp.TimeSeries` object, refactor to mitigate circular dependency
 - [#162](https://github.com/IAMconsortium/pyam/pull/162) Add a function to sum and append timeseries components to an aggregate variable
