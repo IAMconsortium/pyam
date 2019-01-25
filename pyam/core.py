@@ -518,7 +518,7 @@ class IamDataFrame(object):
 
             return df
 
-    def rename(self, mapping, inplace=False):
+    def rename(self, mapping, inplace=False, append=False):
         """Rename and aggregate column entries using `groupby.sum()` on values.
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
@@ -532,8 +532,22 @@ class IamDataFrame(object):
                              <current_name_2>: <target_name_2>}}
         inplace: bool, default False
             if True, do operation inplace and return None
+        append: bool, default False
+            if True, append renamed timeseries to IamDataFrame
         """
+        filters = {}
+        for col, _mapping in mapping.items():
+            filters[col] = _mapping.keys()
+
+        # if append is True, downselect and call `rename()` on selection
+        if append:
+            df = self.filter(filters)
+            # note that `append(other, inplace=True)` returns None
+            return self.append(df.rename(mapping), inplace=inplace)
+
+        # if append is False, iterate over rename mapping and do groupby
         ret = copy.deepcopy(self) if not inplace else self
+
         for col, _mapping in mapping.items():
             if col in ['model', 'scenario']:
                 index = pd.DataFrame(index=ret.meta.index).reset_index()
