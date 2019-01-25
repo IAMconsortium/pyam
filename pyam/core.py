@@ -75,7 +75,12 @@ class IamDataFrame(object):
             _data = read_files(data, **kwargs)
 
         self.data, self.time_col, self.extra_cols = _data
-        self._format_data_time_col()
+        # cast time_col to desired format
+        if self.time_col == 'year':
+            self._format_year_col()
+        elif self.time_col == 'time':
+            self._format_datetime_col()
+
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
 
         # define a dataframe for categorization and other metadata indicators
@@ -86,12 +91,8 @@ class IamDataFrame(object):
         if 'exec' in run_control():
             self._execute_run_control()
 
-    def _format_data_time_col(self):
-        # cast time_col to desired format
-        if self.time_col == 'year':
-            self.data['year'] = to_int(pd.to_numeric(self.data['year']))
-        elif self.time_col == 'time':
-            self._format_datetime_col()
+    def _format_year_col(self):
+        self.data['year'] = to_int(pd.to_numeric(self.data['year']))
 
     def _format_datetime_col(self):
         self.data['time'] = pd.to_datetime(self.data['time'])
