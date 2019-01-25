@@ -535,6 +535,12 @@ class IamDataFrame(object):
         append: bool, default False
             if True, append renamed timeseries to IamDataFrame
         """
+        # changing index and data columns can cause model-scenario mismatch
+        if any(i in mapping for i in META_IDX)\
+                and any(i in mapping for i in ['region', 'variable', 'unit']):
+            msg = 'Renaming index and data cols simultaneously not supported!'
+            raise ValueError(msg)
+
         filters = {}
         for col, _mapping in mapping.items():
             filters[col] = _mapping.keys()

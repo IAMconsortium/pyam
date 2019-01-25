@@ -100,7 +100,13 @@ def test_rename_data_cols():
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
 
-def test_rename_index_fail(meta_df):
+def test_rename_index_data_fail(meta_df):
+    mapping = {'scenario': {'a_scenario': 'a_scenario2'},
+               'variable': {'Primary Energy|Coal': 'Primary Energy|Gas'}}
+    pytest.raises(ValueError, meta_df.rename, mapping)
+
+
+def test_rename_index_fail_duplicates(meta_df):
     mapping = {'scenario': {'a_scenario': 'a_scenario2'}}
     pytest.raises(ValueError, meta_df.rename, mapping)
 
