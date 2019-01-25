@@ -90,7 +90,9 @@ class IamDataFrame(object):
         # cast time_col to desired format
         if self.time_col == 'year':
             if not self.data['year'].dtype == 'int64':
-                self.data['year'] = cast_years_to_int(pd.to_numeric(self.data['year']))
+                self.data['year'] = cast_years_to_int(
+                    pd.to_numeric(self.data['year'])
+                )
         elif self.time_col == 'time':
             self._format_datetime_col()
 
