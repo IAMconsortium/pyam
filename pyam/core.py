@@ -89,12 +89,12 @@ class IamDataFrame(object):
     def _format_data_time_col(self):
         # cast time_col to desired format
         if self.time_col == 'year':
-            if not df.year.dtype == 'int64':
+            if not self.data['year'].dtype == 'int64':
                 self.data['year'] = cast_years_to_int(pd.to_numeric(self.data['year']))
-        if self.time_col == 'time':
-            self.data = self._format_datetime_col()
+        elif self.time_col == 'time':
+            self._format_datetime_col()
 
-    def _format_datetime_col(self, df):
+    def _format_datetime_col(self):
         self.data['time'] = pd.to_datetime(self.data['time'])
 
     def __getitem__(self, key):

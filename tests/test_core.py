@@ -89,8 +89,8 @@ def test_init_df_long_timespan(test_pd_df):
 
 def test_subclass_passesinit_df_long_timespan(test_pd_df):
     class TempSubClass(IamDataFrame):
-        def _format_datetime_col(self, df):
-            return df
+        def _format_datetime_col(self):
+            pass
 
     tdf = test_pd_df.copy()
     tmin = datetime.datetime(2005, 6, 17)
