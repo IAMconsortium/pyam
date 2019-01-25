@@ -523,6 +523,9 @@ class IamDataFrame(object):
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
 
+        Renaming is only applied to any data where a filter matches for all
+        columns given in `mapping`.
+
         Parameters
         ----------
         mapping: dict
@@ -556,12 +559,13 @@ class IamDataFrame(object):
 
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(filters)
+        idx = ret.meta.index.isin(_make_index_from_data(ret.data[rows]))
 
         # apply renaming changes
         for col, _mapping in mapping.items():
             if col in META_IDX:
                 _index = pd.DataFrame(index=ret.meta.index).reset_index()
-                _index.loc[:, col] = _index.loc[:, col].replace(_mapping)
+                _index.loc[idx, col] = _index.loc[idx, col].replace(_mapping)
                 if _index.duplicated().any():
                     raise ValueError('Renaming to non-unique `{}` index!'
                                      .format(col))

@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from numpy import testing as npt
 
+
 from pyam import IamDataFrame, META_IDX, IAMC_IDX
 
 
@@ -118,9 +119,9 @@ def test_rename_index(meta_df):
 
     # test data changes
     exp = pd.DataFrame([
-        ['b_model', 'b_scen', 'World', 'Primary Energy', 'EJ/y', 1., 6.],
-        ['b_model', 'b_scen', 'World', 'Primary Energy|Coal', 'EJ/y', .5, 3.],
-        ['b_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2., 7.],
+       ['b_model', 'b_scen', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
+       ['b_model', 'b_scen', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
+       ['a_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2, 7],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     ).set_index(IAMC_IDX).sort_index()
     exp.columns = exp.columns.map(int)
@@ -129,7 +130,7 @@ def test_rename_index(meta_df):
     # test meta changes
     exp = pd.DataFrame([
         ['b_model', 'b_scen', False],
-        ['b_model', 'a_scenario2', False],
+        ['a_model', 'a_scenario2', False],
     ], columns=['model', 'scenario', 'exclude']
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)
