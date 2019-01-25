@@ -824,13 +824,9 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[_keep]
 
-        idx = pd.MultiIndex.from_tuples(
-            pd.unique(list(zip(ret.data['model'], ret.data['scenario']))),
-            names=('model', 'scenario')
-        )
+        idx = _make_index_from_data(ret.data)
         if len(idx) == 0:
             logger().warning('Filtered IamDataFrame is empty!')
-
         ret.meta = ret.meta.loc[idx]
         if not inplace:
             return ret
@@ -1314,6 +1310,14 @@ def _apply_criteria(df, criteria, **kwargs):
             idxs.append(grp_idxs)
     df = df.loc[itertools.chain(*idxs)]
     return df
+
+
+def _make_index_from_data(df):
+    """Take the columns `['model', 'scenario']` to build an index"""
+    return pd.MultiIndex.from_tuples(
+        pd.unique(list(zip(df['model'], df['scenario']))),
+        names=('model', 'scenario')
+    )
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
