@@ -108,10 +108,10 @@ def test_init_datetime_long_timespan(test_pd_df):
 def test_init_datetime_subclass_long_timespan(test_pd_df):
     class TempSubClass(IamDataFrame):
         def _format_datetime_col(self):
-            # the subclass does not try to coerce the datetimes to pandas datetimes,
-            # instead simply leaving the time column as object type, so we don't run
-            # into the problem of pandas limited time period as discussed in
-            # https://stackoverflow.com/a/37226672
+            # the subclass does not try to coerce the datetimes to pandas
+            # datetimes, instead simply leaving the time column as object type,
+            # so we don't run into the problem of pandas limited time period as
+            # discussed in https://stackoverflow.com/a/37226672
             pass
 
     tdf = test_pd_df.copy()
