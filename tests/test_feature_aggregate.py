@@ -10,8 +10,8 @@ def test_do_aggregate_append(meta_df):
     obs = meta_df.filter(variable='Primary Energy').timeseries()
 
     exp = pd.DataFrame([
-        ['a_model', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 1.5, 9.],
-        ['a_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+        ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1.5, 9.],
+        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
     ],
         columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     ).set_index(IAMC_IDX)
@@ -30,7 +30,7 @@ def test_check_aggregate_fail(meta_df):
     obs = meta_df.check_aggregate('Primary Energy', exclude_on_fail=True)
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'Primary Energy', 'a_model', 'a_scenario', 'World', 'EJ/y'
+        'Primary Energy', 'model_a', 'scen_a', 'World', 'EJ/y'
     )
 
 
@@ -38,7 +38,7 @@ def test_check_aggregate_top_level(meta_df):
     obs = check_aggregate(meta_df, variable='Primary Energy', year=2005)
     assert len(obs.columns) == 1
     assert obs.index.get_values()[0] == (
-        'Primary Energy', 'a_model', 'a_scenario', 'World', 'EJ/y'
+        'Primary Energy', 'model_a', 'scen_a', 'World', 'EJ/y'
     )
 
 

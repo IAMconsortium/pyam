@@ -10,8 +10,8 @@ from pyam import IamDataFrame, META_IDX, IAMC_IDX
 
 
 def test_append_other_scenario(meta_df):
-    other = meta_df.filter(scenario='a_scenario2')\
-        .rename({'scenario': {'a_scenario2': 'a_scenario3'}})
+    other = meta_df.filter(scenario='scen_b')\
+        .rename({'scenario': {'scen_b': 'scen_c'}})
 
     meta_df.set_meta([0, 1], name='col1')
     meta_df.set_meta(['a', 'b'], name='col2')
@@ -23,13 +23,13 @@ def test_append_other_scenario(meta_df):
 
     # check that the original meta dataframe is not updated
     obs = meta_df.meta.index.get_level_values(1)
-    npt.assert_array_equal(obs, ['a_scenario', 'a_scenario2'])
+    npt.assert_array_equal(obs, ['scen_a', 'scen_b'])
 
     # assert that merging of meta works as expected
     exp = pd.DataFrame([
-        ['a_model', 'a_scenario', False, 0, 'a', np.nan],
-        ['a_model', 'a_scenario2', False, 1, 'b', np.nan],
-        ['a_model', 'a_scenario3', False, 2, np.nan, 'x'],
+        ['model_a', 'scen_a', False, 0, 'a', np.nan],
+        ['model_a', 'scen_b', False, 1, 'b', np.nan],
+        ['model_a', 'scen_c', False, 2, np.nan, 'x'],
     ], columns=['model', 'scenario', 'exclude', 'col1', 'col2', 'col3']
     ).set_index(['model', 'scenario'])
 
@@ -43,7 +43,7 @@ def test_append_other_scenario(meta_df):
 
 
 def test_append_same_scenario(meta_df):
-    other = meta_df.filter(scenario='a_scenario2')\
+    other = meta_df.filter(scenario='scen_b')\
         .rename({'variable': {'Primary Energy': 'Primary Energy clone'}})
 
     meta_df.set_meta([0, 1], name='col1')
@@ -108,20 +108,20 @@ def test_rename_index_data_fail(meta_df):
 
 
 def test_rename_index_fail_duplicates(meta_df):
-    mapping = {'scenario': {'a_scenario': 'a_scenario2'}}
+    mapping = {'scenario': {'scen_a': 'scen_b'}}
     pytest.raises(ValueError, meta_df.rename, mapping)
 
 
 def test_rename_index(meta_df):
-    mapping = {'model': {'a_model': 'b_model'},
-               'scenario': {'a_scenario': 'b_scen'}}
+    mapping = {'model': {'model_a': 'model_b'},
+               'scenario': {'scen_a': 'scen_c'}}
     obs = meta_df.rename(mapping)
 
     # test data changes
     exp = pd.DataFrame([
-       ['b_model', 'b_scen', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
-       ['b_model', 'b_scen', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
-       ['a_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
+        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
+        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     ).set_index(IAMC_IDX).sort_index()
     exp.columns = exp.columns.map(int)
@@ -129,25 +129,25 @@ def test_rename_index(meta_df):
 
     # test meta changes
     exp = pd.DataFrame([
-        ['b_model', 'b_scen', False],
-        ['a_model', 'a_scenario2', False],
+        ['model_b', 'scen_c', False],
+        ['model_a', 'scen_b', False],
     ], columns=['model', 'scenario', 'exclude']
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)
 
 
 def test_rename_append(meta_df):
-    mapping = {'model': {'a_model': 'b_model'},
-               'scenario': {'a_scenario': 'b_scen'}}
+    mapping = {'model': {'model_a': 'model_b'},
+               'scenario': {'scen_a': 'scen_c'}}
     obs = meta_df.rename(mapping, append=True)
 
     # test data changes
     exp = pd.DataFrame([
-        ['a_model', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
-        ['a_model', 'a_scenario', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
-        ['a_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2, 7],
-        ['b_model', 'b_scen', 'World', 'Primary Energy', 'EJ/y', 1., 6.],
-        ['b_model', 'b_scen', 'World', 'Primary Energy|Coal', 'EJ/y', .5, 3.],
+        ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
+        ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
+        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
+        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     ).set_index(IAMC_IDX).sort_index()
     exp.columns = exp.columns.map(int)
@@ -155,9 +155,9 @@ def test_rename_append(meta_df):
 
     # test meta changes
     exp = pd.DataFrame([
-        ['a_model', 'a_scenario', False],
-        ['a_model', 'a_scenario2', False],
-        ['b_model', 'b_scen', False],
+        ['model_a', 'scen_a', False],
+        ['model_a', 'scen_b', False],
+        ['model_b', 'scen_c', False],
     ], columns=['model', 'scenario', 'exclude']
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)

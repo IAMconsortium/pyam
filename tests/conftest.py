@@ -17,9 +17,9 @@ TEST_DATA_DIR = os.path.join(here, 'data')
 
 
 TEST_DF = pd.DataFrame([
-    ['a_model', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
-    ['a_model', 'a_scenario', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
-    ['a_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
+    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
+    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
 ],
     columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
 )
