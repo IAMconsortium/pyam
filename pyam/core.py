@@ -548,19 +548,24 @@ class IamDataFrame(object):
         # if append is False, iterate over rename mapping and do groupby
         ret = copy.deepcopy(self) if not inplace else self
 
+        # renaming is only applied where a filter matches for all given columns
+        rows = ret._apply_filters(filters)
+
+        # apply renaming changes
         for col, _mapping in mapping.items():
             if col in META_IDX:
                 _index = pd.DataFrame(index=ret.meta.index).reset_index()
                 _index.loc[:, col] = _index.loc[:, col].replace(_mapping)
                 if _index.duplicated().any():
-                    raise ValueError('Renaming to non-unique {} index!'
+                    raise ValueError('Renaming to non-unique `{}` index!'
                                      .format(col))
                 ret.meta.index = _index.set_index(META_IDX).index
             elif col not in ['region', 'variable', 'unit']:
-                raise ValueError('Renaming by {} not supported!'.format(col))
-            ret.data.loc[:, col] = ret.data.loc[:, col].replace(_mapping)
+                raise ValueError('Renaming by `{}` not supported!'.format(col))
+            ret.data.loc[rows, col] = ret.data.loc[rows, col].replace(_mapping)
 
-        ret.data = ret.data.groupby(self._LONG_IDX).sum().reset_index()
+        ret.data = ret.data.groupby(ret._LONG_IDX).sum().reset_index()
+
         if not inplace:
             return ret
 

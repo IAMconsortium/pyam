@@ -74,22 +74,25 @@ def test_append_duplicates(test_df_year):
     pytest.raises(ValueError, test_df_year.append, other=other)
 
 
-def test_rename_variable():
+def test_rename_data_cols():
     df = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'SST', 'test_1', 'unit', 1, 5],
-        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'SST', 'test_3', 'unit', 3, 7],
+        ['model', 'scen', 'region_a', 'test_1', 'unit', 1, 5],
+        ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'region_a', 'test_3', 'unit', 3, 7],
+        ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
     ], columns=['model', 'scenario', 'region',
                 'variable', 'unit', 2005, 2010],
     ))
 
-    mapping = {'variable': {'test_1': 'test', 'test_3': 'test'}}
+    mapping = {'region': {'region_a': 'region_c'},
+               'variable': {'test_1': 'test', 'test_3': 'test'}}
 
     obs = df.rename(mapping).data.reset_index(drop=True)
 
     exp = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'SST', 'test', 'unit', 4, 12],
-        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'region_c', 'test', 'unit', 4, 12],
+        ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
     ], columns=['model', 'scenario', 'region',
                 'variable', 'unit', 2005, 2010],
     )).data.sort_values(by='region').reset_index(drop=True)
