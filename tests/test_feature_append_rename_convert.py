@@ -126,6 +126,33 @@ def test_rename_index(meta_df):
     pd.testing.assert_frame_equal(obs.meta, exp)
 
 
+def test_rename_append(meta_df):
+    mapping = {'model': {'a_model': 'b_model'},
+               'scenario': {'a_scenario': 'b_scen'}}
+    obs = meta_df.rename(mapping, append=True)
+
+    # test data changes
+    exp = pd.DataFrame([
+        ['a_model', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
+        ['a_model', 'a_scenario', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
+        ['a_model', 'a_scenario2', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+        ['b_model', 'b_scen', 'World', 'Primary Energy', 'EJ/y', 1., 6.],
+        ['b_model', 'b_scen', 'World', 'Primary Energy|Coal', 'EJ/y', .5, 3.],
+    ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    ).set_index(IAMC_IDX).sort_index()
+    exp.columns = exp.columns.map(int)
+    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+
+    # test meta changes
+    exp = pd.DataFrame([
+        ['a_model', 'a_scenario', False],
+        ['a_model', 'a_scenario2', False],
+        ['b_model', 'b_scen', False],
+    ], columns=['model', 'scenario', 'exclude']
+    ).set_index(META_IDX)
+    pd.testing.assert_frame_equal(obs.meta, exp)
+
+
 def test_convert_unit():
     df = IamDataFrame(pd.DataFrame([
         ['model', 'scen', 'SST', 'test_1', 'A', 1, 5],
