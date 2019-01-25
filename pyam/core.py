@@ -23,7 +23,7 @@ from pyam.utils import (
     read_files,
     read_pandas,
     format_data,
-    cast_years_to_int,
+    to_int,
     pattern_match,
     years_match,
     month_match,
@@ -89,10 +89,7 @@ class IamDataFrame(object):
     def _format_data_time_col(self):
         # cast time_col to desired format
         if self.time_col == 'year':
-            if not self.data['year'].dtype == 'int64':
-                self.data['year'] = cast_years_to_int(
-                    pd.to_numeric(self.data['year'])
-                )
+            self.data['year'] = to_int(pd.to_numeric(self.data['year']))
         elif self.time_col == 'time':
             self._format_datetime_col()
 
@@ -905,7 +902,6 @@ class IamDataFrame(object):
             keep &= keep_col
 
         return keep
-
 
     def col_apply(self, col, func, *args, **kwargs):
         """Apply a function to a column

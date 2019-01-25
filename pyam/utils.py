@@ -6,7 +6,7 @@ import re
 import glob
 import collections
 import datetime
-from dateutil import parser
+import dateutil
 import time
 
 import numpy as np
@@ -171,16 +171,14 @@ def format_data(df):
         year_cols, time_cols, extra_cols = [], [], []
         for i in cols:
             try:
-                year_cols.append(i) if int(i) else None
+                int(i)  # this is a year
+                year_cols.append(i)
             except (ValueError, TypeError):
-                if isinstance(i, datetime.datetime):
-                    time_cols.append(i)
-                    continue
                 try:
-                    parser.parse(i)
+                    dateutil.parser.parse(str(i))  # this is datetime
                     time_cols.append(i)
                 except ValueError:
-                    extra_cols.append(i)
+                    extra_cols.append(i)  # some other string
         if year_cols and not time_cols:
             time_col = 'year'
             melt_cols = year_cols
@@ -354,7 +352,7 @@ def datetime_match(data, dts):
     return data.isin(dts)
 
 
-def cast_years_to_int(x, index=False):
+def to_int(x, index=False):
     """Formatting series or timeseries columns to int and checking validity.
     If `index=False`, the function works on the `pd.Series x`; else,
     the function casts the index of `x` to int and returns x with a new index.
