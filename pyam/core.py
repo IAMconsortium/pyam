@@ -23,6 +23,7 @@ from pyam.utils import (
     read_files,
     read_pandas,
     format_data,
+    to_int,
     pattern_match,
     years_match,
     month_match,
@@ -72,7 +73,14 @@ class IamDataFrame(object):
             _data = read_ix(data, **kwargs)
         else:
             _data = read_files(data, **kwargs)
+
         self.data, self.time_col, self.extra_cols = _data
+        # cast time_col to desired format
+        if self.time_col == 'year':
+            self._format_year_col()
+        elif self.time_col == 'time':
+            self._format_datetime_col()
+
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
 
         # define a dataframe for categorization and other metadata indicators
@@ -82,6 +90,12 @@ class IamDataFrame(object):
         # execute user-defined code
         if 'exec' in run_control():
             self._execute_run_control()
+
+    def _format_year_col(self):
+        self.data['year'] = to_int(pd.to_numeric(self.data['year']))
+
+    def _format_datetime_col(self):
+        self.data['time'] = pd.to_datetime(self.data['time'])
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
@@ -889,7 +903,6 @@ class IamDataFrame(object):
             keep &= keep_col
 
         return keep
-
 
     def col_apply(self, col, func, *args, **kwargs):
         """Apply a function to a column

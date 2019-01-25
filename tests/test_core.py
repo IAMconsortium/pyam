@@ -65,6 +65,71 @@ def test_init_df_with_extra_col(test_pd_df):
                                   tdf, check_like=True)
 
 
+def test_init_datetime(test_pd_df):
+    tdf = test_pd_df.copy()
+    tmin = datetime.datetime(2005, 6, 17)
+    tmax = datetime.datetime(2010, 6, 17)
+    tdf = tdf.rename(
+        {
+            2005: tmin,
+            2010: tmax,
+        },
+        axis="columns"
+    )
+
+    df = IamDataFrame(tdf)
+
+    assert df["time"].max() == tmax
+    assert df["time"].min() == tmin
+
+
+@pytest.mark.xfail(reason=(
+    "pandas datetime is limited to the time period of ~1677-2262, see "
+    "https://stackoverflow.com/a/37226672"
+))
+def test_init_datetime_long_timespan(test_pd_df):
+    tdf = test_pd_df.copy()
+    tmin = datetime.datetime(2005, 6, 17)
+    tmax = datetime.datetime(3005, 6, 17)
+    tdf = tdf.rename(
+        {
+            2005: tmin,
+            2010: tmax,
+        },
+        axis="columns"
+    )
+
+    df = IamDataFrame(tdf)
+
+    assert df["time"].max() == tmax
+    assert df["time"].min() == tmin
+
+
+def test_init_datetime_subclass_long_timespan(test_pd_df):
+    class TempSubClass(IamDataFrame):
+        def _format_datetime_col(self):
+            # the subclass does not try to coerce the datetimes to pandas
+            # datetimes, instead simply leaving the time column as object type,
+            # so we don't run into the problem of pandas limited time period as
+            # discussed in https://stackoverflow.com/a/37226672
+            pass
+
+    tdf = test_pd_df.copy()
+    tmin = datetime.datetime(2005, 6, 17)
+    tmax = datetime.datetime(3005, 6, 17)
+    tdf = tdf.rename(
+        {
+            2005: tmin,
+            2010: tmax,
+        },
+        axis="columns"
+    )
+
+    df = TempSubClass(tdf)
+
+    assert df["time"].max() == tmax
+    assert df["time"].min() == tmin
+
 
 def test_to_excel(test_df):
     fname = 'foo_testing.xlsx'

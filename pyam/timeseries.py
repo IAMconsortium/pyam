@@ -2,7 +2,7 @@
 
 import numpy as np
 from pyam.logger import logger
-from pyam.utils import isstr, cast_years_to_int
+from pyam.utils import isstr, to_int
 
 # %%
 
@@ -59,9 +59,8 @@ def cumulative(x, first_year, last_year):
                          .format(x.name or x, last_year))
         return np.nan
 
-    # cast tiemseries colums to `int` if necessary
-    if not x.index.dtype == 'int64':
-        cast_years_to_int(x, index=True)
+    # make sure we're using integers
+    to_int(x, index=True)
 
     x[first_year] = fill_series(x, first_year)
     x[last_year] = fill_series(x, last_year)
@@ -74,7 +73,7 @@ def cumulative(x, first_year, last_year):
     if not np.isnan(x[first_year]) and not np.isnan(x[last_year]):
         value = 0
         for (i, yr) in enumerate(years[:-1]):
-            next_yr = years[i+1]
+            next_yr = years[i + 1]
             # the summation is shifted to include the first year fully in sum,
             # otherwise, would return a weighted average of `yr` and `next_yr`
             value += ((next_yr - yr - 1) * x[next_yr] +

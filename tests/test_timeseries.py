@@ -4,7 +4,7 @@
 import numpy as np
 import pandas as pd
 from pyam.logger import logger
-from pyam import fill_series, cumulative, cross_threshold, cast_years_to_int
+from pyam import fill_series, cumulative, cross_threshold, to_int
 import pytest
 
 
@@ -21,7 +21,7 @@ def test_fill_series_out_of_range():
 
 def test_cols_to_int():
     y = pd.Series(data=[np.nan, 1, 3, 1], index=[2002., 2007.5, 2003., 2013.])
-    pytest.raises(ValueError, cast_years_to_int, x=y)
+    pytest.raises(ValueError, to_int, x=y)
 
 
 def test_cumulative():
