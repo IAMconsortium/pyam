@@ -8,6 +8,7 @@ def test_do_aggregate_append(meta_df):
                    inplace=True)
     meta_df.aggregate('Primary Energy', append=True)
     obs = meta_df.filter(variable='Primary Energy').timeseries()
+    obs.columns.name = None  # fix compatibility with pandas 24.0
 
     exp = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1.5, 9.],

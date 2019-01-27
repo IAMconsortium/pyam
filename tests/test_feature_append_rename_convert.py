@@ -143,7 +143,7 @@ def test_rename_index(meta_df):
     ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     ).set_index(IAMC_IDX).sort_index()
     exp.columns = exp.columns.map(int)
-    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+    assert_timeseries(obs, exp)
 
     # test meta changes
     exp = pd.DataFrame([
@@ -169,7 +169,7 @@ def test_rename_append(meta_df):
     ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     ).set_index(IAMC_IDX).sort_index()
     exp.columns = exp.columns.map(int)
-    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+    assert_timeseries(obs, exp)
 
     # test meta changes
     exp = pd.DataFrame([
@@ -179,6 +179,12 @@ def test_rename_append(meta_df):
     ], columns=['model', 'scenario', 'exclude']
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)
+
+
+def assert_timeseries(df, exp):
+    obs = df.timeseries()
+    obs.columns.name = None  # fix compatibility with pandas 24.0
+    pd.testing.assert_frame_equal(obs, exp)
 
 
 def test_convert_unit():

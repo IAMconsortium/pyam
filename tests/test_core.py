@@ -31,7 +31,9 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 
 def test_init_df_with_index(test_pd_df):
     df = IamDataFrame(test_pd_df.set_index(META_IDX))
-    pd.testing.assert_frame_equal(df.timeseries().reset_index(), test_pd_df)
+    obs = df.timeseries().reset_index()
+    obs.columns.name = None  # fix compatibility with pandas 24.0
+    pd.testing.assert_frame_equal(obs, test_pd_df)
 
 
 def test_init_df_with_float_cols_raises(test_pd_df):
