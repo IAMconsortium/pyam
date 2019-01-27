@@ -85,10 +85,9 @@ def test_rename_data_cols():
                 'variable', 'unit', 2005, 2010],
     ))
 
-    mapping = {'region': {'region_a': 'region_c'},
-               'variable': {'test_1': 'test', 'test_3': 'test'}}
-
-    obs = df.rename(mapping).data.reset_index(drop=True)
+    obs = df.rename(mapping={'variable': {'test_1': 'test', 'test_3': 'test'}},
+                    region={'region_a': 'region_c'})\
+        .data.reset_index(drop=True)
 
     exp = IamDataFrame(pd.DataFrame([
         ['model', 'scen', 'region_c', 'test', 'unit', 4, 12],
@@ -99,6 +98,11 @@ def test_rename_data_cols():
     )).data.sort_values(by='region').reset_index(drop=True)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_rename_conflict(meta_df):
+    mapping = {'scenario': {'scen_a': 'scen_b'}}
+    pytest.raises(ValueError, meta_df.rename, mapping, **mapping)
 
 
 def test_rename_index_data_fail(meta_df):
@@ -113,9 +117,8 @@ def test_rename_index_fail_duplicates(meta_df):
 
 
 def test_rename_index(meta_df):
-    mapping = {'model': {'model_a': 'model_b'},
-               'scenario': {'scen_a': 'scen_c'}}
-    obs = meta_df.rename(mapping)
+    mapping = {'model': {'model_a': 'model_b'}}
+    obs = meta_df.rename(mapping, scenario={'scen_a': 'scen_c'})
 
     # test data changes
     exp = pd.DataFrame([
