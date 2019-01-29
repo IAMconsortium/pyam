@@ -518,7 +518,7 @@ class IamDataFrame(object):
 
             return df
 
-    def rename(self, mapping={}, inplace=False, append=False, **kwargs):
+    def rename(self, mapping=None, inplace=False, append=False, **kwargs):
         """Rename and aggregate column entries using `groupby.sum()` on values.
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
@@ -539,7 +539,8 @@ class IamDataFrame(object):
         append: bool, default False
             if True, append renamed timeseries to IamDataFrame
         """
-        # combine `mapping` arg and mapping kwargs, ensure no conflicts
+        # combine `mapping` arg and mapping kwargs, ensure no rename conflicts
+        mapping = mapping or {}
         duplicate = set(mapping).intersection(kwargs)
         if duplicate:
             msg = 'conflicting rename args for columns `{}`'.format(duplicate)
@@ -556,7 +557,7 @@ class IamDataFrame(object):
         for col, _mapping in mapping.items():
             filters[col] = _mapping.keys()
 
-        # if append is True, downselect and call `rename()` on selection
+        # if append is True, downselect and append renamed data
         if append:
             df = self.filter(filters)
             # note that `append(other, inplace=True)` returns None
