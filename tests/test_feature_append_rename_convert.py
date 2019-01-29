@@ -9,6 +9,25 @@ from numpy import testing as npt
 from pyam import IamDataFrame, META_IDX, IAMC_IDX
 
 
+RENAME_DF = IamDataFrame(pd.DataFrame([
+    ['model', 'scen', 'region_a', 'test_1', 'unit', 1, 5],
+    ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
+    ['model', 'scen', 'region_a', 'test_3', 'unit', 3, 7],
+    ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
+], columns=['model', 'scenario', 'region',
+            'variable', 'unit', 2005, 2010],
+))
+
+# expected output
+EXP_RENAME_DF = IamDataFrame(pd.DataFrame([
+    ['model', 'scen', 'region_c', 'test', 'unit', 4, 12],
+    ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
+    ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
+], columns=['model', 'scenario', 'region',
+            'variable', 'unit', 2005, 2010],
+)).data.sort_values(by='region').reset_index(drop=True)
+
+
 def test_append_other_scenario(meta_df):
     other = meta_df.filter(scenario='scen_b')\
         .rename({'scenario': {'scen_b': 'scen_c'}})
@@ -75,29 +94,25 @@ def test_append_duplicates(test_df_year):
     pytest.raises(ValueError, test_df_year.append, other=other)
 
 
-def test_rename_data_cols():
-    df = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'region_a', 'test_1', 'unit', 1, 5],
-        ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'region_a', 'test_3', 'unit', 3, 7],
-        ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
-    ], columns=['model', 'scenario', 'region',
-                'variable', 'unit', 2005, 2010],
-    ))
+def test_rename_data_cols_by_dict():
+    args = {'mapping': {'variable': {'test_1': 'test', 'test_3': 'test'},
+                        'region': {'region_a': 'region_c'}}}
+    obs = RENAME_DF.rename(**args).data.reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
-    obs = df.rename(mapping={'variable': {'test_1': 'test', 'test_3': 'test'}},
-                    region={'region_a': 'region_c'})\
-        .data.reset_index(drop=True)
 
-    exp = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'region_c', 'test', 'unit', 4, 12],
-        ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
-    ], columns=['model', 'scenario', 'region',
-                'variable', 'unit', 2005, 2010],
-    )).data.sort_values(by='region').reset_index(drop=True)
+def test_rename_data_cols_by_kwargs():
+    args = {'variable': {'test_1': 'test', 'test_3': 'test'},
+            'region': {'region_a': 'region_c'}}
+    obs = RENAME_DF.rename(**args).data.reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+def test_rename_data_cols_by_mixed():
+    args = {'mapping': {'variable': {'test_1': 'test', 'test_3': 'test'}},
+            'region': {'region_a': 'region_c'}}
+    obs = RENAME_DF.rename(**args).data.reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
 def test_rename_conflict(meta_df):
@@ -106,7 +121,7 @@ def test_rename_conflict(meta_df):
 
 
 def test_rename_index_data_fail(meta_df):
-    mapping = {'scenario': {'a_scenario': 'a_scenario2'},
+    mapping = {'scenario': {'scen_a': 'scen_c'},
                'variable': {'Primary Energy|Coal': 'Primary Energy|Gas'}}
     pytest.raises(ValueError, meta_df.rename, mapping)
 
