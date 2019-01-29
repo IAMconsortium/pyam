@@ -524,7 +524,7 @@ class IamDataFrame(object):
         maintained, and the function will raise an error otherwise.
 
         Renaming is only applied to any data where a filter matches for all
-        columns given in `mapping`. Renaming can only be applied to the `model
+        columns given in `mapping`. Renaming can only be applied to the `model`
         and `scenario` columns or to other data columns simultaneously.
 
         Parameters
