@@ -553,9 +553,7 @@ class IamDataFrame(object):
             msg = 'Renaming index and data cols simultaneously not supported!'
             raise ValueError(msg)
 
-        filters = {}
-        for col, _mapping in mapping.items():
-            filters[col] = _mapping.keys()
+        filters = {col: _from.keys() for col, _from in mapping.items()}
 
         # if append is True, downselect and append renamed data
         if append:
@@ -568,7 +566,7 @@ class IamDataFrame(object):
 
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(filters)
-        idx = ret.meta.index.isin(_make_index_from_data(ret.data[rows]))
+        idx = ret.meta.index.isin(_make_index(ret.data[rows]))
 
         # apply renaming changes
         for col, _mapping in mapping.items():
@@ -848,7 +846,7 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[_keep]
 
-        idx = _make_index_from_data(ret.data)
+        idx = _make_index(ret.data)
         if len(idx) == 0:
             logger().warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
@@ -1336,12 +1334,10 @@ def _apply_criteria(df, criteria, **kwargs):
     return df
 
 
-def _make_index_from_data(df):
-    """Take the columns `['model', 'scenario']` to build an index"""
+def _make_index(df, cols=META_IDX):
+    """Create an index from the columns of a dataframe"""
     return pd.MultiIndex.from_tuples(
-        pd.unique(list(zip(df['model'], df['scenario']))),
-        names=('model', 'scenario')
-    )
+            pd.unique(list(zip(df[col] for col in cols)), names=tuple(cols)))
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
