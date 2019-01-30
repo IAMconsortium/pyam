@@ -1337,7 +1337,7 @@ def _apply_criteria(df, criteria, **kwargs):
 def _make_index(df, cols=META_IDX):
     """Create an index from the columns of a dataframe"""
     return pd.MultiIndex.from_tuples(
-            pd.unique(list(zip(df[col] for col in cols)), names=tuple(cols)))
+        pd.unique(list(zip(df[col] for col in cols)), names=tuple(cols)))
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
