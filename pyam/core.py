@@ -518,35 +518,71 @@ class IamDataFrame(object):
 
             return df
 
-    def rename(self, mapping, inplace=False):
+    def rename(self, mapping=None, inplace=False, append=False, **kwargs):
         """Rename and aggregate column entries using `groupby.sum()` on values.
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
 
+        Renaming is only applied to any data where a filter matches for all
+        columns given in `mapping`. Renaming can only be applied to the `model`
+        and `scenario` columns or to other data columns simultaneously.
+
         Parameters
         ----------
-        mapping: dict
-            for each column where entries should be renamed, provide current
-            name and target name
-            {<column name>: {<current_name_1>: <target_name_1>,
-                             <current_name_2>: <target_name_2>}}
+        mapping: dict or kwargs
+            mapping of column name to rename-dictionary of that column
+            >> {<column_name>: {<current_name_1>: <target_name_1>,
+            >>                  <current_name_2>: <target_name_2>}}
+            or kwargs as `column_name={<current_name_1>: <target_name_1>, ...}`
         inplace: bool, default False
             if True, do operation inplace and return None
+        append: bool, default False
+            if True, append renamed timeseries to IamDataFrame
         """
-        ret = copy.deepcopy(self) if not inplace else self
-        for col, _mapping in mapping.items():
-            if col in ['model', 'scenario']:
-                index = pd.DataFrame(index=ret.meta.index).reset_index()
-                index.loc[:, col] = index.loc[:, col].replace(_mapping)
-                if index.duplicated().any():
-                    raise ValueError('Renaming to non-unique {} index!'
-                                     .format(col))
-                ret.meta.index = index.set_index(META_IDX).index
-            elif col not in ['region', 'variable', 'unit']:
-                raise ValueError('Renaming by {} not supported!'.format(col))
-            ret.data.loc[:, col] = ret.data.loc[:, col].replace(_mapping)
+        # combine `mapping` arg and mapping kwargs, ensure no rename conflicts
+        mapping = mapping or {}
+        duplicate = set(mapping).intersection(kwargs)
+        if duplicate:
+            msg = 'conflicting rename args for columns `{}`'.format(duplicate)
+            raise ValueError(msg)
+        mapping.update(kwargs)
 
-        ret.data = ret.data.groupby(self._LONG_IDX).sum().reset_index()
+        # changing index and data columns can cause model-scenario mismatch
+        if any(i in mapping for i in META_IDX)\
+                and any(i in mapping for i in ['region', 'variable', 'unit']):
+            msg = 'Renaming index and data cols simultaneously not supported!'
+            raise ValueError(msg)
+
+        filters = {col: _from.keys() for col, _from in mapping.items()}
+
+        # if append is True, downselect and append renamed data
+        if append:
+            df = self.filter(filters)
+            # note that `append(other, inplace=True)` returns None
+            return self.append(df.rename(mapping), inplace=inplace)
+
+        # if append is False, iterate over rename mapping and do groupby
+        ret = copy.deepcopy(self) if not inplace else self
+
+        # renaming is only applied where a filter matches for all given columns
+        rows = ret._apply_filters(filters)
+        idx = ret.meta.index.isin(_make_index(ret.data[rows]))
+
+        # apply renaming changes
+        for col, _mapping in mapping.items():
+            if col in META_IDX:
+                _index = pd.DataFrame(index=ret.meta.index).reset_index()
+                _index.loc[idx, col] = _index.loc[idx, col].replace(_mapping)
+                if _index.duplicated().any():
+                    raise ValueError('Renaming to non-unique `{}` index!'
+                                     .format(col))
+                ret.meta.index = _index.set_index(META_IDX).index
+            elif col not in ['region', 'variable', 'unit']:
+                raise ValueError('Renaming by `{}` not supported!'.format(col))
+            ret.data.loc[rows, col] = ret.data.loc[rows, col].replace(_mapping)
+
+        ret.data = ret.data.groupby(ret._LONG_IDX).sum().reset_index()
+
         if not inplace:
             return ret
 
@@ -810,13 +846,9 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[_keep]
 
-        idx = pd.MultiIndex.from_tuples(
-            pd.unique(list(zip(ret.data['model'], ret.data['scenario']))),
-            names=('model', 'scenario')
-        )
+        idx = _make_index(ret.data)
         if len(idx) == 0:
             logger().warning('Filtered IamDataFrame is empty!')
-
         ret.meta = ret.meta.loc[idx]
         if not inplace:
             return ret
@@ -1300,6 +1332,12 @@ def _apply_criteria(df, criteria, **kwargs):
             idxs.append(grp_idxs)
     df = df.loc[itertools.chain(*idxs)]
     return df
+
+
+def _make_index(df, cols=META_IDX):
+    """Create an index from the columns of a dataframe"""
+    return pd.MultiIndex.from_tuples(
+        pd.unique(list(zip(*[df[col] for col in cols]))), names=tuple(cols))
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):

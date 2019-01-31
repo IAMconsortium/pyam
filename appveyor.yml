@@ -28,6 +28,9 @@ build: false
 
 test_script:
   - pip install -e .[tests]
+  # pyam currently does not support pandas 0.24.0
+  # this is specified in requirements.py, but AppVeyor seems to ignore that
+  - pip install pandas==0.23.4
   - pytest -v --mpl tests --mpl-results-path=test-artifacts
 
 artifacts:

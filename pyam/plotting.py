@@ -3,8 +3,10 @@ import warnings
 
 try:
     import cartopy
-except ImportError:
+    cartopy_message = 'all good!'
+except ImportError as e:
     cartopy = None
+    cartopy_message = str(e)
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -15,8 +17,10 @@ import pandas as pd
 
 try:
     import geopandas as gpd
-except ImportError:
+    gpd_message = 'all good!'
+except ImportError as e:
     gpd = None
+    gpd_message = str(e)
 
 from collections import defaultdict, Iterable
 from contextlib import contextmanager
@@ -131,7 +135,7 @@ def reshape_bar_plot(df, x, y, bars):
     return df
 
 
-@requires_package(gpd, 'Requires geopandas')
+@requires_package(gpd, 'Requires geopandas: ' + gpd_message)
 @lru_cache()
 def read_shapefile(fname, region_col=None, **kwargs):
     """Read a shapefile for use in regional plots. Shapefiles must have a
@@ -153,8 +157,8 @@ def read_shapefile(fname, region_col=None, **kwargs):
     return gdf
 
 
-@requires_package(gpd, 'Requires geopandas')
-@requires_package(cartopy, 'Requires cartopy')
+@requires_package(gpd, 'Requires geopandas: ' + gpd_message)
+@requires_package(cartopy, 'Requires cartopy: ' + cartopy_message)
 def region_plot(df, column='value', ax=None, crs=None, gdf=None,
                 add_features=True, vmin=None, vmax=None, cmap=None,
                 cbar=True, legend=False, title=True):

@@ -21,8 +21,8 @@ def test_compare(meta_df):
     ],
         columns=['variable', 'unit', 'year', 'meta_df', 'clone'],
     )
-    exp['model'] = 'a_model'
-    exp['scenario'] = 'a_scenario'
+    exp['model'] = 'model_a'
+    exp['scenario'] = 'scen_a'
     exp['region'] = 'World'
     exp = exp.set_index(IAMC_IDX + ['year'])
 
