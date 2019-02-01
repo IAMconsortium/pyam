@@ -9,7 +9,7 @@ Release v\ |version|.
 
 |pypi| |conda| |license| |latest|
 
-|travis| |appveyor|
+|travis| |appveyor| |coveralls|
 
 |joss| |doi|
 
@@ -17,7 +17,7 @@ Release v\ |version|.
    :target: https://pypi.python.org/pypi/pyam-iamc/
 
 .. |conda| image:: https://anaconda.org/conda-forge/pyam/badges/version.svg
-   :target: https://anaconda.org/conda-forge/pyam   
+   :target: https://anaconda.org/conda-forge/pyam
 
 .. |license| image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
    :target: https://anaconda.org/conda-forge/pyam
@@ -27,9 +27,12 @@ Release v\ |version|.
 
 .. |travis| image:: https://travis-ci.org/IAMconsortium/pyam.svg?branch=master
    :target: https://travis-ci.org/IAMconsortium/pyam
-   
+
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/qd4taojd2vkqoab4/branch/master?svg=true&passingText=passing&failingText=failing&pendingText=pending
    :target: https://ci.appveyor.com/project/gidden/pyam/branch/master
+
+.. |coveralls| image:: https://coveralls.io/repos/github/IAMconsortium/pyam/badge.svg?branch=master
+   :target: https://coveralls.io/github/IAMconsortium/pyam?branch=master
 
 .. |joss| image:: http://joss.theoj.org/papers/356bc013105642ec4e94a3b951836cfe/status.svg
    :target: http://joss.theoj.org/papers/356bc013105642ec4e94a3b951836cfe
