@@ -327,7 +327,7 @@ class IamDataFrame(object):
         """
         cols = set()
         for arg, value in kwargs.items():
-            if value in self.meta.columns:
+            if isstr(value) and value in self.meta.columns:
                 cols.add(value)
 
         return (
