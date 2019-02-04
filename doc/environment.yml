@@ -13,3 +13,8 @@ dependencies:
   - numpydoc=0.8.0
   - sphinx-gallery=0.2.0
   - pillow=5.4.1
+  - sphinxcontrib-bibtex
+  - sphinxcontrib-programoutput
+  - nbsphinx
+  - pip:
+    - cloud_sptheme
