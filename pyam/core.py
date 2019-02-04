@@ -331,11 +331,11 @@ class IamDataFrame(object):
                 cols.add(value)
 
         return (
-                self.data
-                .set_index(META_IDX)
-                .join(self.meta[list(cols)])
-                .reset_index()
-               )
+            self.data
+            .set_index(META_IDX)
+            .join(self.meta[list(cols)])
+            .reset_index()
+        )
 
     def timeseries(self, iamc_index=False):
         """Returns a pd.DataFrame in wide format (years or timedate as columns)
