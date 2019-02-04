@@ -50,7 +50,7 @@ def test_line_plot(plot_df):
     _plot_df = copy.deepcopy(plot_df)
     _plot_df.set_meta(meta=[np.nan] * 4, name='test')
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, legend=True)
+    _plot_df.line_plot(ax=ax, legend=True)
     return fig
 
 
