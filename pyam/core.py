@@ -325,7 +325,7 @@ class IamDataFrame(object):
         kwargs: arguments passed to plotting library, meta columns (as values)
            are joined to returned dataframe
         """
-        cols = set()
+        cols = set(['exclude'])
         for arg, value in kwargs.items():
             if isstr(value) and value in self.meta.columns:
                 cols.add(value)
