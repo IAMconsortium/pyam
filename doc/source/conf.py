@@ -37,13 +37,13 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'sphinx.ext.mathbase',
+    'sphinxcontrib.bibtex',
+    'sphinxcontrib.programoutput',
     'cloud_sptheme.ext.table_styling',
     'numpydoc',
     'nbsphinx',
-    'sphinxcontrib.programoutput',
-    'sphinx.ext.mathbase',
     'sphinx_gallery.gen_gallery',
-    'sphinxcontrib.bibtex',
 ]
 
 sphinx_gallery_conf = {
