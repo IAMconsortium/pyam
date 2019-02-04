@@ -13,6 +13,7 @@ dependencies:
   - sphinx=1.8.2
   - numpydoc=0.8.0
   - sphinx-gallery=0.2.0
+  - ipykernel
   - pillow=5.4.1
   - sphinxcontrib-bibtex
   - sphinxcontrib-programoutput
