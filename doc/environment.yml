@@ -16,5 +16,7 @@ dependencies:
   - sphinxcontrib-bibtex
   - sphinxcontrib-programoutput
   - nbsphinx
+  - ipython
+  - geopandas
   - pip:
     - cloud_sptheme
