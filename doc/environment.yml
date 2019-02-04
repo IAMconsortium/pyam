@@ -13,10 +13,9 @@ dependencies:
   - numpydoc=0.8.0
   - sphinx-gallery=0.2.0
   - pillow=5.4.1
-  - sphinxcontrib-bibtex==0.4.0
-  - sphinxcontrib-programoutput==0.11
-  - nbsphinx==0.4.2
-  - nb_conda_kernels==2.2.0
-  - geopandas==0.3.0
+  - sphinxcontrib-bibtex
+  - sphinxcontrib-programoutput
+  - nbsphinx
+  - geopandas
   - pip:
-    - cloud_sptheme==1.9.4
+    - cloud_sptheme
