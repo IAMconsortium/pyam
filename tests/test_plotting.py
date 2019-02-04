@@ -1,6 +1,7 @@
 import matplotlib
 import pytest
 import os
+import copy
 import pyam
 
 
@@ -45,9 +46,10 @@ def update_run_control(update):
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot(plot_df):
-    plot_df.set_meta(meta=2, name='test')
+    _plot_df = copy.deepcopy(plot_df)
+    _plot_df.set_meta(meta=2, name='test')
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, legend=True)
+    _plot_df.line_plot(ax=ax, legend=True)
     return fig
 
 
