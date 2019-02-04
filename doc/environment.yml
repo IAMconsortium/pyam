@@ -9,6 +9,7 @@ dependencies:
   - seaborn=0.9.0
   - ipython=7.2.0
   - cartopy=0.17.0
+  - geopandas>=0.3.0
   - sphinx=1.8.2
   - numpydoc=0.8.0
   - sphinx-gallery=0.2.0
