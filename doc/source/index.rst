@@ -7,11 +7,15 @@
 
 Release v\ |version|.
 
-|pypi| |conda| |license| |latest|
+|rtd| |pypi| |conda| |license| |latest|
 
 |travis| |appveyor| |coveralls|
 
 |joss| |doi|
+
+.. |rtd| image:: https://readthedocs.org/projects/pyam-iamc/badge/?version=latest
+   :target: https://pyam-iamc.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
