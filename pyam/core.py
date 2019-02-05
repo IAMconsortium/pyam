@@ -1128,16 +1128,18 @@ class IamDataFrame(object):
 
         see pyam.plotting.scatter() for all available options
         """
-        xisvar = x in self.data['variable'].unique()
-        yisvar = y in self.data['variable'].unique()
+        variables = self.data['variable'].unique()
+        xisvar = x in variables
+        yisvar = y in variables
         if not xisvar and not yisvar:
-            df = self.meta.reset_index()
+            cols = [x, y] + self._discover_meta_cols(**kwargs)
+            df = self.meta[cols].reset_index()
         elif xisvar and yisvar:
             # filter pivot both and rename
             dfx = (
                 self
                 .filter(variable=x)
-                .as_pandas(with_metadata=True)
+                .as_pandas(with_metadata=kwargs)
                 .rename(columns={'value': x, 'unit': 'xunit'})
                 .set_index(YEAR_IDX)
                 .drop('variable', axis=1)
@@ -1145,7 +1147,7 @@ class IamDataFrame(object):
             dfy = (
                 self
                 .filter(variable=y)
-                .as_pandas(with_metadata=True)
+                .as_pandas(with_metadata=kwargs)
                 .rename(columns={'value': y, 'unit': 'yunit'})
                 .set_index(YEAR_IDX)
                 .drop('variable', axis=1)
@@ -1157,7 +1159,7 @@ class IamDataFrame(object):
             df = (
                 self
                 .filter(variable=var)
-                .as_pandas(with_metadata=True)
+                .as_pandas(with_metadata=kwargs)
                 .rename(columns={'value': var})
             )
         ax = plotting.scatter(df.dropna(), x, y, **kwargs)
