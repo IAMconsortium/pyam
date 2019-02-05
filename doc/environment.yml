@@ -2,10 +2,9 @@ name: pyam-docs
 channels:
   - conda-forge
 dependencies:
-  - cartopy=0.17.0
+  - cartopy
   - pip:
     - ipython==7.2.0
-    - pyproj
     - geopandas
     - matplotlib==3.0.2
     - seaborn==0.9.0
