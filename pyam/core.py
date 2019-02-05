@@ -322,7 +322,8 @@ class IamDataFrame(object):
             return self.data.copy()
 
     def _discover_meta_cols(self, **kwargs):
-        """Discover applicable meta columns from kwargs"""
+        """Return the subset of `kwargs` values (not keys!) matching
+        a `meta` column name"""
         cols = set(['exclude'])
         for arg, value in kwargs.items():
             if isstr(value) and value in self.meta.columns:
