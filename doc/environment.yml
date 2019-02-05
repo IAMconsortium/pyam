@@ -6,7 +6,7 @@ dependencies:
   - pip:
     - ipython==7.2.0
     - geopandas
-    - cartopy
+    - cartopy==0.17.0
     - matplotlib==3.0.2
     - seaborn==0.9.0
     - cloud_sptheme
