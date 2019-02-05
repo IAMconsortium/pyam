@@ -1,7 +1,8 @@
 
 # Next Release
 
-- [#186](https://github.com/IAMconsortium/pyam/pull/186) Quickfix for over-zealous `dropna()` in `line_plot()`
+- [#189](https://github.com/IAMconsortium/pyam/pull/189) Fix over-zealous `dropna()` in `scatter()`
+- [#186](https://github.com/IAMconsortium/pyam/pull/186) Fix over-zealous `dropna()` in `line_plot()`, rework `as_pandas()` to (optionally) discover meta columns to be joined
 - [#178](https://github.com/IAMconsortium/pyam/pull/178) Add a kwarg `append` to the function `rename()`, change behaviour of mapping to only apply to data where all given columns are matched
 - [#177](https://github.com/IAMconsortium/pyam/pull/177) Modified formatting of time column on init to allow subclasses to avoid pandas limitation (https://stackoverflow.com/a/37226672)
 - [#176](https://github.com/IAMconsortium/pyam/pull/176) Corrected title setting operation in line_plot function
