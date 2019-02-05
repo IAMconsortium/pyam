@@ -317,7 +317,7 @@ class IamDataFrame(object):
             return (
                 self.data
                 .set_index(META_IDX)
-                .join(self.meta[list(cols)])
+                .join(self.meta[cols])
                 .reset_index()
             )
         else:
@@ -328,7 +328,7 @@ class IamDataFrame(object):
         for arg, value in kwargs.items():
             if isstr(value) and value in self.meta.columns:
                 cols.add(value)
-        return cols
+        return list(cols)
 
     def timeseries(self, iamc_index=False):
         """Returns a pd.DataFrame in wide format (years or timedate as columns)
