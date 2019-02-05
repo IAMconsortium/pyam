@@ -1,22 +1,19 @@
 name: pyam-docs
 channels:
-  - conda-forge
+  - oggm
 dependencies:
-  - numpy=1.16.0
-  - pandas=0.23.3
-  - scipy=1.2.0
-  - matplotlib=3.0.2
-  - seaborn=0.9.0
-  - ipython=7.2.0
-  - cartopy=0.17.0
-  - geopandas>=0.3.0
-  - sphinx=1.8.2
-  - numpydoc=0.8.0
-  - sphinx-gallery=0.2.0
-  - ipykernel
-  - pillow=5.4.1
-  - sphinxcontrib-bibtex
-  - sphinxcontrib-programoutput
-  - nbsphinx
+  - oggm-deps
   - pip:
+    - ipython==7.2.0
+    - matplotlib==3.0.2
+    - seaborn==0.9.0
     - cloud_sptheme
+    - sphinx==1.8.2
+    - numpydoc==0.8.0
+    - sphinx-gallery==0.2.0
+    - ipykernel
+    - pillow==5.4.1
+    - sphinxcontrib-bibtex
+    - sphinxcontrib-programoutput
+    - nbsphinx
+  
