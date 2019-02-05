@@ -305,17 +305,26 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        with_metadata : bool, default False
-           if True, join data with existing metadata
+        with_metadata : bool, default False or dict
+           if True, join data with all meta columns; if a dict, discover
+           meaningful meta columns from values (in key-value)
         """
-        df = self.data
         if with_metadata:
-            df = (df
-                  .set_index(META_IDX)
-                  .join(self.meta)
-                  .reset_index()
-                  )
-        return df
+            if isinstance(with_metadata, dict):
+                cols = set(['exclude'])
+                for arg, value in with_metadata.items():
+                    if isstr(value) and value in self.meta.columns:
+                        cols.add(value)
+            else:
+                cols = self.meta.columns
+            return (
+                self.data
+                .set_index(META_IDX)
+                .join(self.meta[list(cols)])
+                .reset_index()
+            )
+        else:
+            return self.data.copy()
 
     def timeseries(self, iamc_index=False):
         """Returns a pd.DataFrame in wide format (years or timedate as columns)
@@ -1059,7 +1068,7 @@ class IamDataFrame(object):
 
         see pyam.plotting.line_plot() for all available options
         """
-        df = self.as_pandas(with_metadata=True)
+        df = self.as_pandas(with_metadata=kwargs)
 
         # pivot data if asked for explicit variable name
         variables = df['variable'].unique()
