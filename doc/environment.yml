@@ -1,7 +1,6 @@
 name: pyam-docs
 channels:
   - oggm
-  - conda-forge
 dependencies:
   - oggm-deps
   - pip:
