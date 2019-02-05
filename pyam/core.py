@@ -311,10 +311,7 @@ class IamDataFrame(object):
         """
         if with_metadata:
             if isinstance(with_metadata, dict):
-                cols = set(['exclude'])
-                for arg, value in with_metadata.items():
-                    if isstr(value) and value in self.meta.columns:
-                        cols.add(value)
+                cols = self._discover_meta_cols(**with_metadata)
             else:
                 cols = self.meta.columns
             return (
@@ -325,6 +322,13 @@ class IamDataFrame(object):
             )
         else:
             return self.data.copy()
+
+    def _discover_meta_cols(self, **kwargs):
+        cols = set(['exclude'])
+        for arg, value in kwargs.items():
+            if isstr(value) and value in self.meta.columns:
+                cols.add(value)
+        return cols
 
     def timeseries(self, iamc_index=False):
         """Returns a pd.DataFrame in wide format (years or timedate as columns)
