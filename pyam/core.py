@@ -305,37 +305,26 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        with_metadata : bool, default False
-           if True, join data with existing metadata
+        with_metadata : bool, default False or dict
+           if True, join data with all meta columns; if a dict, discover
+           meaningful meta columns from values (in key-value)
         """
-        df = self.data
         if with_metadata:
-            df = (df
-                  .set_index(META_IDX)
-                  .join(self.meta)
-                  .reset_index()
-                  )
-        return df
-
-    def join_meta(self, **kwargs):
-        """Return data and selected meta columns as a pd.DataFrame
-
-        Parameters
-        ----------
-        kwargs: arguments passed to plotting library, meta columns (as values)
-           are joined to returned dataframe
-        """
-        cols = set(['exclude'])
-        for arg, value in kwargs.items():
-            if isstr(value) and value in self.meta.columns:
-                cols.add(value)
-
-        return (
-            self.data
-            .set_index(META_IDX)
-            .join(self.meta[list(cols)])
-            .reset_index()
-        )
+            if isinstance(with_metadata, dict):
+                cols = set(['exclude'])
+                for arg, value in with_metadata.items():
+                    if isstr(value) and value in self.meta.columns:
+                        cols.add(value)
+            else:
+                cols = self.meta.columns
+            return (
+                self.data
+                .set_index(META_IDX)
+                .join(self.meta[list(cols)])
+                .reset_index()
+            )
+        else:
+            return self.data.copy()
 
     def timeseries(self, iamc_index=False):
         """Returns a pd.DataFrame in wide format (years or timedate as columns)
@@ -1079,7 +1068,7 @@ class IamDataFrame(object):
 
         see pyam.plotting.line_plot() for all available options
         """
-        df = self.join_meta(x=x, y=y, **kwargs)
+        df = self.as_pandas(with_metadata=kwargs)
 
         # pivot data if asked for explicit variable name
         variables = df['variable'].unique()
