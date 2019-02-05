@@ -310,10 +310,8 @@ class IamDataFrame(object):
            meaningful meta columns from values (in key-value)
         """
         if with_metadata:
-            if isinstance(with_metadata, dict):
-                cols = self._discover_meta_cols(**with_metadata)
-            else:
-                cols = self.meta.columns
+            cols = self._discover_meta_cols(**with_metadata) \
+                if isinstance(with_metadata, dict) else self.meta.columns
             return (
                 self.data
                 .set_index(META_IDX)
