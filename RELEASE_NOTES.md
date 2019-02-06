@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#190](https://github.com/IAMconsortium/pyam/pull/190) Add `concat()` function
 - [#189](https://github.com/IAMconsortium/pyam/pull/189) Fix over-zealous `dropna()` in `scatter()`
 - [#186](https://github.com/IAMconsortium/pyam/pull/186) Fix over-zealous `dropna()` in `line_plot()`, rework `as_pandas()` to (optionally) discover meta columns to be joined
 - [#178](https://github.com/IAMconsortium/pyam/pull/178) Add a kwarg `append` to the function `rename()`, change behaviour of mapping to only apply to data where all given columns are matched
