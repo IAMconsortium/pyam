@@ -367,3 +367,19 @@ def to_int(x, index=False):
         return x
     else:
         return _x
+
+
+def concat(dfs):
+    """Concatenate a series of dataframes together"""
+    if not hasattr(dfs, '__iter__'):
+        raise ValueError('Input data must be iterable')
+
+    df = None
+    for _df in dfs:
+        if not isinstance(_df, pyam.IamDataFrame):
+            raise TypeError('Input contains non-dataframe')
+        if df:
+            df.append(_df, inplace=True)
+        else:
+            df = copy.deepcopy(_df)
+    return df
