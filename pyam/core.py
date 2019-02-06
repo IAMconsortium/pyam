@@ -1511,7 +1511,7 @@ def compare(left, right, left_label='left', right_label='right',
 def concat(dfs):
     """Concatenate a series of dataframes together"""
     if not hasattr(dfs, '__iter__'):
-        raise ValueError('Input data must be iterable')
+        raise TypeError('Input data must be iterable')
 
     df = None
     for _df in dfs:
