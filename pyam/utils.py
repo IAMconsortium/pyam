@@ -1,3 +1,4 @@
+import copy
 import os
 import itertools
 import string
@@ -17,6 +18,7 @@ try:
 except ImportError:
     pass
 
+from pyam.core import IamDataFrame
 from pyam.logger import logger
 
 # common indicies
