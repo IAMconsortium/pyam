@@ -1506,3 +1506,19 @@ def compare(left, right, left_label='left', right_label='right',
     if drop_close:
         ret = ret[~np.isclose(ret[left_label], ret[right_label], **kwargs)]
     return ret[[right_label, left_label]]
+
+
+def concat(dfs):
+    """Concatenate a series of dataframes together"""
+    if not hasattr(dfs, '__iter__'):
+        raise ValueError('Input data must be iterable')
+
+    df = None
+    for _df in dfs:
+        if not isinstance(_df, IamDataFrame):
+            raise TypeError('Input contains non-dataframe')
+        if df:
+            df.append(_df, inplace=True)
+        else:
+            df = copy.deepcopy(_df)
+    return df
