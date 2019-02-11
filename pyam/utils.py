@@ -262,23 +262,27 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=True):
 
     for s in values:
         if isstr(s):
-            _regexp = (str(s)
-                       .replace('|', '\\|')
-                       .replace('.', '\.')  # `.` has to be replaced before `*`
-                       .replace('*', '.*')
-                       .replace('+', '\+')
-                       .replace('(', '\(')
-                       .replace(')', '\)')
-                       .replace('$', '\\$')
-                       ) + "$"
-            pattern = re.compile(_regexp if not regexp else s)
-
+            pattern = re.compile(_escape_regexp(s) if not regexp else s)
             subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
             matches |= (_data.isin(subset) & depth)
         else:
             matches |= data == s
     return matches
+
+
+def _escape_regexp(s):
+    """escape characters with specific regexp use"""
+    return (
+        str(s)
+        .replace('|', '\\|')
+        .replace('.', '\.')  # `.` has to be replaced before `*`
+        .replace('*', '.*')
+        .replace('+', '\+')
+        .replace('(', '\(')
+        .replace(')', '\)')
+        .replace('$', '\\$')
+    ) + "$"
 
 
 def years_match(data, years):
