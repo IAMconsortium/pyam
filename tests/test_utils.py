@@ -102,3 +102,10 @@ def test_pattern_regexp():
     exp = [True, True, False]
 
     assert (obs == exp).all()
+
+
+def test_find_depth(test_df):
+    data = pd.Series(['foo', 'foo|bar', 'foo|bar|baz'])
+    obs = utils.find_depth(data)
+    exp = [0, 1, 2]
+    assert obs == exp
