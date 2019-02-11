@@ -109,3 +109,10 @@ def test_find_depth(test_df):
     obs = utils.find_depth(data)
     exp = [0, 1, 2]
     assert obs == exp
+
+
+def test_find_depth_with_str(test_df):
+    data = pd.Series(['foo', 'foo|bar', 'foo|bar|baz'])
+    obs = utils.find_depth(data, 'foo|b')
+    exp = [-1, 0, 1]
+    assert obs == exp

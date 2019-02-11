@@ -208,8 +208,27 @@ def style_df(df, style='heatmap'):
         return df.style.background_gradient(cmap=cm)
 
 
-def find_depth(data, s, level):
-    # determine function for finding depth level =, >=, <= |s
+def find_depth(data, s='', level=None):
+    """
+    return a list of bools asserting the depth indicated by `level`;
+    or if level is None, return -1 if the string does not contain `s` and
+    the depth (number of `|`) otherwise
+    """
+    # determine depth
+    pipe = re.compile('\\|')
+    regexp = str(s).replace('*', '')
+
+    def find_depth(val):
+        return len(pipe.findall(val.replace(regexp, '')))
+
+    # if no level test is specified, return the depth as int
+    if level is None:
+        def return_depth(val):
+            return -1 if s not in val else find_depth(val)
+
+        return list(map(return_depth, data))
+
+    # if `level` is given, set function for finding depth level =, >=, <= |s
     if not isstr(level):
         test = lambda x: level == x
     elif level[-1] == '-':
@@ -221,10 +240,9 @@ def find_depth(data, s, level):
     else:
         raise ValueError('Unknown level type: {}'.format(level))
 
-    # determine depth
-    pipe = re.compile('\\|')
-    regexp = str(s).replace('*', '')
-    apply_test = lambda val: test(len(pipe.findall(val.replace(regexp, ''))))
+    def apply_test(val):
+        return test(find_depth(val))
+
     return list(map(apply_test, data))
 
 
