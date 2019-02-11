@@ -218,7 +218,7 @@ def find_depth(data, s='', level=None):
     pipe = re.compile('\\|')
     regexp = str(s).replace('*', '')
 
-    def find_depth(val):
+    def _find_depth(val):
         return len(pipe.findall(val.replace(regexp, '')))
 
     # if no level test is specified, return the depth as int
@@ -241,7 +241,7 @@ def find_depth(data, s='', level=None):
         raise ValueError('Unknown level type: {}'.format(level))
 
     def apply_test(val):
-        return test(find_depth(val))
+        return test(_find_depth(val))
 
     return list(map(apply_test, data))
 
