@@ -224,7 +224,7 @@ def find_depth(data, s='', level=None):
     # if no level test is specified, return the depth as int
     if level is None:
         def return_depth(val):
-            return -1 if s not in val else find_depth(val)
+            return -1 if s not in val else _find_depth(val)
 
         return list(map(return_depth, data))
 
