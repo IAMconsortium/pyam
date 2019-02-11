@@ -212,19 +212,21 @@ def find_depth(data, s='', level=None):
     """
     return a list of bools asserting the depth indicated by `level`;
     or if level is None, return -1 if the string does not contain `s` and
-    the depth (number of `|`) otherwise
+    the depth (number of `|`) otherwise.
+    string `s` is removed from `data` if at the start of a variable.
     """
-    # determine depth
+    # remove wildcard from string, determine depth
+    s = s.replace('*', '')
     pipe = re.compile('\\|')
-    regexp = str(s).replace('*', '')
+    regexp = re.compile(_escape_regexp(s))
 
     def _find_depth(val):
-        return len(pipe.findall(val.replace(regexp, '')))
+        return len(pipe.findall(re.sub(regexp, '', val)))
 
     # if no level test is specified, return the depth as int
     if level is None:
         def return_depth(val):
-            return -1 if s not in val else _find_depth(val)
+            return -1 if not val.startswith(s) else _find_depth(val)
 
         return list(map(return_depth, data))
 
@@ -262,7 +264,7 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=True):
 
     for s in values:
         if isstr(s):
-            pattern = re.compile(_escape_regexp(s) if not regexp else s)
+            pattern = re.compile(_escape_regexp(s) + '$' if not regexp else s)
             subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
             matches |= (_data.isin(subset) & depth)
@@ -282,7 +284,7 @@ def _escape_regexp(s):
         .replace('(', '\(')
         .replace(')', '\)')
         .replace('$', '\\$')
-    ) + "$"
+    )
 
 
 def years_match(data, years):
