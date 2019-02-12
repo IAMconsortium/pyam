@@ -216,18 +216,14 @@ def find_depth(data, s='', level=None):
     """
     # remove wildcard as last character from string, find depth
     s = s.rstrip('*')
-    pipe = re.compile('\\|')
     regexp = re.compile(_escape_regexp(s))
 
-    def _find_depth(val):
-        return len(pipe.findall(re.sub(regexp, '', val)))
+    def _pipe(val):
+        return len(re.compile('\\|').findall(re.sub(regexp, '', val)))
 
     # if no level test is specified, return the depth as int
     if level is None:
-        def return_depth(val):
-            return -1 if not val.startswith(s) else _find_depth(val)
-
-        return list(map(return_depth, data))
+        return list(map(lambda x: _pipe(x) if regexp.match(x) else None, data))
 
     # if `level` is given, set function for finding depth level =, >=, <= |s
     if not isstr(level):
@@ -241,10 +237,7 @@ def find_depth(data, s='', level=None):
     else:
         raise ValueError('Unknown level type: {}'.format(level))
 
-    def apply_test(val):
-        return test(_find_depth(val))
-
-    return list(map(apply_test, data))
+    return list(map(lambda x: test(_pipe(x)), data))
 
 
 def pattern_match(data, values, level=None, regexp=False, has_nan=True):
