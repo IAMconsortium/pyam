@@ -12,6 +12,7 @@ if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then
 else
     choco install $CHOCONAME --params='"/AddToPath"'
     choco install make
+    execstack -c anaconda3/lib/libcrypto.so.1.0.0
 fi
 
 # update conda
