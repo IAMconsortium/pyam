@@ -227,13 +227,15 @@ def find_depth(data, s='', level=None):
     s = s.rstrip('*')
     regexp = re.compile('^' + _escape_regexp(s))
 
-    def _pipe(val):
+    def _count_pipes(val):
         return len(re.compile('\\|').findall(re.sub(regexp, '', val))) \
             if regexp.match(val) else None
 
+    n_pipes = map(_count_pipes, data)
+
     # if no level test is specified, return the depth as int
     if level is None:
-        return list(map(lambda x: _pipe(x), data))
+        return list(n_pipes)
 
     # if `level` is given, set function for finding depth level =, >=, <= |s
     if not isstr(level):
@@ -247,7 +249,7 @@ def find_depth(data, s='', level=None):
     else:
         raise ValueError('Unknown level type: `{}`'.format(level))
 
-    return list(map(lambda x: test(_pipe(x)), data))
+    return list(map(test, n_pipes))
 
 
 def pattern_match(data, values, level=None, regexp=False, has_nan=True):
