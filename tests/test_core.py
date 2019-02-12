@@ -176,44 +176,17 @@ def test_variable_unit(test_df):
     npt.assert_array_equal(test_df.variables(include_units=True), exp)
 
 
-def test_variable_depth_0(test_df):
-    obs = list(test_df.filter(level=0)['variable'].unique())
-    exp = ['Primary Energy']
+def test_filter_variable_and_depth(test_df):
+    obs = list(test_df.filter(variable='*rimary*C*', level=0).variables())
+    exp = ['Primary Energy|Coal']
     assert obs == exp
+
+    obs = list(test_df.filter(variable='*rimary*C*', level=1).variables())
+    assert len(obs) == 0
 
 
 def test_variable_depth_0_keep_false(test_df):
     obs = list(test_df.filter(level=0, keep=False)['variable'].unique())
-    exp = ['Primary Energy|Coal']
-    assert obs == exp
-
-
-def test_variable_depth_0_minus(test_df):
-    obs = list(test_df.filter(level='0-')['variable'].unique())
-    exp = ['Primary Energy']
-    assert obs == exp
-
-
-def test_variable_depth_0_plus(test_df):
-    obs = list(test_df.filter(level='0+')['variable'].unique())
-    exp = ['Primary Energy', 'Primary Energy|Coal']
-    assert obs == exp
-
-
-def test_variable_depth_1(test_df):
-    obs = list(test_df.filter(level=1)['variable'].unique())
-    exp = ['Primary Energy|Coal']
-    assert obs == exp
-
-
-def test_variable_depth_1_minus(test_df):
-    obs = list(test_df.filter(level='1-')['variable'].unique())
-    exp = ['Primary Energy', 'Primary Energy|Coal']
-    assert obs == exp
-
-
-def test_variable_depth_1_plus(test_df):
-    obs = list(test_df.filter(level='1+')['variable'].unique())
     exp = ['Primary Energy|Coal']
     assert obs == exp
 

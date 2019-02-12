@@ -24,6 +24,7 @@ from pyam.utils import (
     read_pandas,
     format_data,
     to_int,
+    find_depth,
     pattern_match,
     years_match,
     month_match,
@@ -840,7 +841,7 @@ class IamDataFrame(object):
              - 'model', 'scenario', 'region', 'variable', 'unit':
                string or list of strings, where `*` can be used as a wildcard
              - 'level': the maximum "depth" of IAM variables (number of '|')
-               (exluding the strings given in the 'variable' argument)
+               (excluding the strings given in the 'variable' argument)
              - 'year': takes an integer, a list of integers or a range
                note that the last year of a range is not included,
                so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
@@ -934,8 +935,7 @@ class IamDataFrame(object):
 
             elif col == 'level':
                 if 'variable' not in filters.keys():
-                    keep_col = pattern_match(self.data['variable'],
-                                             '*', values, regexp=regexp)
+                    keep_col = find_depth(self.data['variable'], level=values)
                 else:
                     continue
 

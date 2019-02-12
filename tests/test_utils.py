@@ -3,15 +3,15 @@ import numpy as np
 
 from pyam import utils
 
+TEST_VARS = pd.Series(['foo', 'foo|bar', 'foo|bar|baz'])
+
 
 def test_pattern_match_none():
     data = pd.Series(['foo', 'bar'])
     values = ['baz']
 
     obs = utils.pattern_match(data, values)
-    exp = [False, False]
-
-    assert (obs == exp).all()
+    assert (obs == [False, False]).all()
 
 
 def test_pattern_match_nan():
@@ -19,9 +19,7 @@ def test_pattern_match_nan():
     values = ['baz']
 
     obs = utils.pattern_match(data, values)
-    exp = [False, False]
-
-    assert (obs == exp).all()
+    assert (obs == [False, False]).all()
 
 
 def test_pattern_match_one():
@@ -29,9 +27,7 @@ def test_pattern_match_one():
     values = ['foo']
 
     obs = utils.pattern_match(data, values)
-    exp = [True, False]
-
-    assert (obs == exp).all()
+    assert (obs == [True, False]).all()
 
 
 def test_pattern_match_str_regex():
@@ -39,9 +35,7 @@ def test_pattern_match_str_regex():
     values = ['foo']
 
     obs = utils.pattern_match(data, values)
-    exp = [True, False, False]
-
-    assert (obs == exp).all()
+    assert (obs == [True, False, False]).all()
 
 
 def test_pattern_match_ast_regex():
@@ -49,9 +43,15 @@ def test_pattern_match_ast_regex():
     values = ['foo*']
 
     obs = utils.pattern_match(data, values)
-    exp = [True, True, False]
+    assert (obs == [True, True, False]).all()
 
-    assert (obs == exp).all()
+
+def test_pattern_match_ast2_regex():
+    data = pd.Series(['foo|bar', 'foo', 'bar'])
+    values = ['*o*b*']
+
+    obs = utils.pattern_match(data, values)
+    assert (obs == [True, False, False]).all()
 
 
 def test_pattern_match_plus():
@@ -59,9 +59,7 @@ def test_pattern_match_plus():
     values = ['*+*']
 
     obs = utils.pattern_match(data, values)
-    exp = [False, True, True, True]
-
-    assert (obs == exp).all()
+    assert (obs == [False, True, True, True]).all()
 
 
 def test_pattern_match_dot():
@@ -69,9 +67,7 @@ def test_pattern_match_dot():
     values = ['fo.']
 
     obs = utils.pattern_match(data, values)
-    exp = [False, True]
-
-    assert (obs == exp).all()
+    assert (obs == [False, True]).all()
 
 
 def test_pattern_match_brackets():
@@ -79,9 +75,7 @@ def test_pattern_match_brackets():
     values = ['foo (bar)']
 
     obs = utils.pattern_match(data, values)
-    exp = [True, False]
-
-    assert (obs == exp).all()
+    assert (obs == [True, False]).all()
 
 
 def test_pattern_match_dollar():
@@ -89,9 +83,7 @@ def test_pattern_match_dollar():
     values = ['foo$bar']
 
     obs = utils.pattern_match(data, values)
-    exp = [True, False]
-
-    assert (obs == exp).all()
+    assert (obs == [True, False]).all()
 
 
 def test_pattern_regexp():
@@ -99,6 +91,57 @@ def test_pattern_regexp():
     values = ['fo.$']
 
     obs = utils.pattern_match(data, values, regexp=True)
-    exp = [True, True, False]
+    assert (obs == [True, True, False]).all()
 
-    assert (obs == exp).all()
+
+def test_find_depth():
+    obs = utils.find_depth(TEST_VARS)
+    assert obs == [0, 1, 2]
+
+
+def test_find_depth_with_str():
+    data = pd.Series(['foo', 'foo|bar|baz', 'bar|baz', 'bar|baz|foo'])
+    obs = utils.find_depth(data, 'bar')
+    assert obs == [None, None, 1, 2]
+
+
+def test_find_depth_with_str_1():
+    data = pd.Series(['foo', 'foo|bar|baz', 'bar|baz', 'bar|baz|foo'])
+    obs = utils.find_depth(data, 'bar|', 1)
+    assert obs == [False, False, False, True]
+
+
+def test_find_depth_with_str_0():
+    data = pd.Series(['foo', 'foo|bar|baz', 'bar|baz', 'bar|baz|foo'])
+    obs = utils.find_depth(data, '*bar|', 0)
+    assert obs == [False, True, True, False]
+
+
+def test_find_depth_0():
+    obs = utils.find_depth(TEST_VARS, level=0)
+    assert obs == [True, False, False]
+
+
+def test_find_depth_0_minus():
+    obs = utils.find_depth(TEST_VARS, level='0-')
+    assert obs == [True, False, False]
+
+
+def test_find_depth_0_plus():
+    obs = utils.find_depth(TEST_VARS, level='0+')
+    assert obs == [True, True, True]
+
+
+def test_find_depth_1():
+    obs = utils.find_depth(TEST_VARS, level=1)
+    assert obs == [False, True, False]
+
+
+def test_find_depth_1_minus():
+    obs = utils.find_depth(TEST_VARS, level='1-')
+    assert obs == [True, True, False]
+
+
+def test_find_depth_1_plus():
+    obs = utils.find_depth(TEST_VARS, level='1+')
+    assert obs == [False, True, True]

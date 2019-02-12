@@ -208,24 +208,48 @@ def style_df(df, style='heatmap'):
         return df.style.background_gradient(cmap=cm)
 
 
-def find_depth(data, s, level):
-    # determine function for finding depth level =, >=, <= |s
+def find_depth(data, s='', level=None):
+    """
+    return or assert the depth (number of `|`) of variables
+
+    Parameters
+    ----------
+    data : pd.Series of strings
+        IAMC-style variables
+    s : str, default ''
+        remove leading `s` from any variable in `data`
+    level : int or str, default None
+        if None, return depth (number of `|`); else, return list of booleans
+        whether depth satisfies the condition (equality if `level` is int,
+        >= if `.+`,  <= if `.-`)
+    """
+    # remove wildcard as last character from string, escape regex characters
+    _s = re.compile('^' + _escape_regexp(s.rstrip('*')))
+    _p = re.compile('\\|')
+
+    # find depth
+    def _count_pipes(val):
+        return len(_p.findall(re.sub(_s, '', val))) if _s.match(val) else None
+
+    n_pipes = map(_count_pipes, data)
+
+    # if no level test is specified, return the depth as int
+    if level is None:
+        return list(n_pipes)
+
+    # if `level` is given, set function for finding depth level =, >=, <= |s
     if not isstr(level):
-        test = lambda x: level == x
+        test = lambda x: level == x if x is not None else False
     elif level[-1] == '-':
         level = int(level[:-1])
-        test = lambda x: level >= x
+        test = lambda x: level >= x if x is not None else False
     elif level[-1] == '+':
         level = int(level[:-1])
-        test = lambda x: level <= x
+        test = lambda x: level <= x if x is not None else False
     else:
-        raise ValueError('Unknown level type: {}'.format(level))
+        raise ValueError('Unknown level type: `{}`'.format(level))
 
-    # determine depth
-    pipe = re.compile('\\|')
-    regexp = str(s).replace('*', '')
-    apply_test = lambda val: test(len(pipe.findall(val.replace(regexp, ''))))
-    return list(map(apply_test, data))
+    return list(map(test, n_pipes))
 
 
 def pattern_match(data, values, level=None, regexp=False, has_nan=True):
@@ -244,23 +268,27 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=True):
 
     for s in values:
         if isstr(s):
-            _regexp = (str(s)
-                       .replace('|', '\\|')
-                       .replace('.', '\.')  # `.` has to be replaced before `*`
-                       .replace('*', '.*')
-                       .replace('+', '\+')
-                       .replace('(', '\(')
-                       .replace(')', '\)')
-                       .replace('$', '\\$')
-                       ) + "$"
-            pattern = re.compile(_regexp if not regexp else s)
-
+            pattern = re.compile(_escape_regexp(s) + '$' if not regexp else s)
             subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
             matches |= (_data.isin(subset) & depth)
         else:
             matches |= data == s
     return matches
+
+
+def _escape_regexp(s):
+    """escape characters with specific regexp use"""
+    return (
+        str(s)
+        .replace('|', '\\|')
+        .replace('.', '\.')  # `.` has to be replaced before `*`
+        .replace('*', '.*')
+        .replace('+', '\+')
+        .replace('(', '\(')
+        .replace(')', '\)')
+        .replace('$', '\\$')
+    )
 
 
 def years_match(data, years):
