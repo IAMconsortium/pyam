@@ -215,8 +215,8 @@ def find_depth(data, s='', level=None):
     the depth (number of `|`) otherwise.
     string `s` is removed from `data` if at the start of a variable.
     """
-    # remove wildcard from string, determine depth
-    s = s.replace('*', '')
+    # remove wildcard as last character from string, find depth
+    s = s.rstrip('*')
     pipe = re.compile('\\|')
     regexp = re.compile(_escape_regexp(s))
 
