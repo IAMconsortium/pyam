@@ -105,10 +105,16 @@ def test_find_depth_with_str():
     assert obs == [None, None, 1, 2]
 
 
-def test_find_depth_with_str_0():
+def test_find_depth_with_str_1():
     data = pd.Series(['foo', 'foo|bar|baz', 'bar|baz', 'bar|baz|foo'])
     obs = utils.find_depth(data, 'bar|', 1)
     assert obs == [False, False, False, True]
+
+
+def test_find_depth_with_str_0():
+    data = pd.Series(['foo', 'foo|bar|baz', 'bar|baz', 'bar|baz|foo'])
+    obs = utils.find_depth(data, '*bar|', 0)
+    assert obs == [False, True, True, False]
 
 
 def test_find_depth_0():
