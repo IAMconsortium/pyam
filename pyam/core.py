@@ -24,6 +24,7 @@ from pyam.utils import (
     read_pandas,
     format_data,
     to_int,
+    find_depth,
     pattern_match,
     years_match,
     month_match,
@@ -934,8 +935,7 @@ class IamDataFrame(object):
 
             elif col == 'level':
                 if 'variable' not in filters.keys():
-                    keep_col = pattern_match(self.data['variable'],
-                                             '*', values, regexp=regexp)
+                    keep_col = find_depth(self.data['variable'], level=values)
                 else:
                     continue
 
