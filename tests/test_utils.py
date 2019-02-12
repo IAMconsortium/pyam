@@ -110,3 +110,32 @@ def test_find_depth_with_str_0():
     obs = utils.find_depth(data, 'bar|', 1)
     assert obs == [False, False, False, True]
 
+
+def test_find_depth_0():
+    obs = utils.find_depth(TEST_VARS, level=0)
+    assert obs == [True, False, False]
+
+
+def test_find_depth_0_minus():
+    obs = utils.find_depth(TEST_VARS, level='0-')
+    assert obs == [True, False, False]
+
+
+def test_find_depth_0_plus():
+    obs = utils.find_depth(TEST_VARS, level='0+')
+    assert obs == [True, True, True]
+
+
+def test_find_depth_1():
+    obs = utils.find_depth(TEST_VARS, level=1)
+    assert obs == [False, True, False]
+
+
+def test_find_depth_1_minus():
+    obs = utils.find_depth(TEST_VARS, level='1-')
+    assert obs == [True, True, False]
+
+
+def test_find_depth_1_plus():
+    obs = utils.find_depth(TEST_VARS, level='1+')
+    assert obs == [False, True, True]
