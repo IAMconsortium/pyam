@@ -1524,12 +1524,13 @@ def df_to_pyam(df, **kwargs):
 
     def _apply_defaults(df, defaults):
         for col, val in defaults.items():
-            df[col] = val
+            if col not in df:
+                df[col] = val
         return df
 
     # maybe only needed if variable is missing?
-    cols = list(set(df.columns) - set(pyam.utils.LONG_IDX))
-    idx = list(set(df.columns) & set(pyam.utils.LONG_IDX))
+    cols = list(set(df.columns) - set(GROUP_IDX))
+    idx = list(set(df.columns) & set(GROUP_IDX))
     df = df.set_index(idx)
     dfs = []
     for col in cols:
@@ -1538,4 +1539,4 @@ def df_to_pyam(df, **kwargs):
         dfs.append(_df.reset_index())
     df = pd.concat(dfs)
     df = _apply_defaults(df, defaults)
-    return pyam.IamDataFrame(df)
+    return IamDataFrame(df)
