@@ -210,9 +210,18 @@ def style_df(df, style='heatmap'):
 
 def find_depth(data, s='', level=None):
     """
-    return a list of bools asserting the depth (number of `|`) trailing `s`
-    by `level` tests; or if `level` is None, return -1 if the string does not
-    contain `s` and the depth otherwise.
+    return or assert the depth (number of `|`) of variables
+
+    Parameters
+    ----------
+    data : pd.Series of strings
+        IAMC-style variables
+    s : str, default ''
+        remove leading `s` from any variable in `data`
+    level : int or str, default None
+        if None, return depth (number of `|`); else, return list of booleans
+        whether depth satisfies the condition (equality if `level` is int,
+        >= if `.+`,  <= if `.-`)
     """
     # remove wildcard as last character from string, find depth
     s = s.rstrip('*')
