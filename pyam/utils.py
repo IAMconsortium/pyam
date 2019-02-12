@@ -223,13 +223,13 @@ def find_depth(data, s='', level=None):
         whether depth satisfies the condition (equality if `level` is int,
         >= if `.+`,  <= if `.-`)
     """
-    # remove wildcard as last character from string, find depth
-    s = s.rstrip('*')
-    regexp = re.compile('^' + _escape_regexp(s))
+    # remove wildcard as last character from string, escape regex characters
+    _s = re.compile('^' + _escape_regexp(s.rstrip('*')))
+    _p = re.compile('\\|')
 
+    # find depth
     def _count_pipes(val):
-        return len(re.compile('\\|').findall(re.sub(regexp, '', val))) \
-            if regexp.match(val) else None
+        return len(_p.findall(re.sub(_s, '', val))) if _s.match(val) else None
 
     n_pipes = map(_count_pipes, data)
 
