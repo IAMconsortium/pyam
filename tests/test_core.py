@@ -9,7 +9,7 @@ from numpy import testing as npt
 
 from pyam import IamDataFrame, validate, categorize, \
     require_variable, filter_by_meta, META_IDX
-from pyam.core import _meta_idx
+from pyam.core import _meta_idx, concat
 
 from conftest import TEST_DATA_DIR
 
@@ -947,3 +947,28 @@ def test_pd_join_by_meta_nonmatching_index(meta_df):
     exp['string'] = [np.nan, np.nan, 'b']
 
     pd.testing.assert_frame_equal(obs.sort_index(level=1), exp)
+
+
+def test_concat_fails_iter():
+    pytest.raises(TypeError, concat, 1)
+
+
+def test_concat_fails_notdf():
+    pytest.raises(TypeError, concat, 'foo')
+
+
+def test_concat(meta_df):
+    left = IamDataFrame(meta_df.data.copy())
+    right = left.data.copy()
+    right['model'] = 'not left'
+    right = IamDataFrame(right)
+
+    result = concat([left, right])
+
+    obs = result.data.reset_index(drop=True)
+    exp = pd.concat([left.data, right.data]).reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, exp)
+
+    obs = result.meta.reset_index(drop=True)
+    exp = pd.concat([left.meta, right.meta]).reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, exp)
