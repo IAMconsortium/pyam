@@ -216,7 +216,7 @@ def find_depth(data, s='', level=None):
     """
     # remove wildcard as last character from string, find depth
     s = s.rstrip('*')
-    regexp = re.compile(_escape_regexp(s))
+    regexp = re.compile('^' + _escape_regexp(s))
 
     def _pipe(val):
         return len(re.compile('\\|').findall(re.sub(regexp, '', val)))
