@@ -237,17 +237,17 @@ def find_depth(data, s='', level=None):
 
     # if `level` is given, set function for finding depth level =, >=, <= |s
     if not isstr(level):
-        test = lambda x: level == x
+        test = lambda x: level == x if x is not None else False
     elif level[-1] == '-':
         level = int(level[:-1])
-        test = lambda x: level >= x
+        test = lambda x: level >= x if x is not None else False
     elif level[-1] == '+':
         level = int(level[:-1])
-        test = lambda x: level <= x
+        test = lambda x: level <= x if x is not None else False
     else:
         raise ValueError('Unknown level type: `{}`'.format(level))
 
-    return list(map(lambda x: test(_pipe(x)) or False, data))
+    return list(map(lambda x: test(_pipe(x)), data))
 
 
 def pattern_match(data, values, level=None, regexp=False, has_nan=True):
