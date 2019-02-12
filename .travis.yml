@@ -10,15 +10,18 @@ matrix:
           env: PYENV=py37
         - os: osx
           env: PYENV=py27
-        - os: windows
-          env: PYENV=py37
+# Observed on 10-Feb-19, choclatey builds for miniconda3 break
+# see: https://github.com/conda/conda/issues/6064
+# It is not clear how/when this can be fixed, so turn this back off for now
+#        - os: windows
+#          env: PYENV=py37
 # there is no maintained miniconda2 package for chocolatey
 #        - os: windows
 #          env: PYENV=py27
 
 before_install:
   - source ./ci/env.sh
-  - travis_retry bash ./ci/travis-install.sh
+  - bash ./ci/travis-install.sh
   - source activate testing
   # This is required to get FreeType v2.6.1 instead of a newer version.
   # If this does not happen, then slight changes occur in plots causing
