@@ -54,6 +54,16 @@ def test_pattern_match_ast_regex():
     assert (obs == exp).all()
 
 
+def test_pattern_match_ast2_regex():
+    data = pd.Series(['foo|bar', 'foo', 'bar'])
+    values = ['*o*b*']
+
+    obs = utils.pattern_match(data, values)
+    exp = [True, False, False]
+
+    assert (obs == exp).all()
+
+
 def test_pattern_match_plus():
     data = pd.Series(['foo', 'foo+', '+bar', 'b+az'])
     values = ['*+*']
