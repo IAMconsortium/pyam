@@ -210,10 +210,9 @@ def style_df(df, style='heatmap'):
 
 def find_depth(data, s='', level=None):
     """
-    return a list of bools asserting the depth indicated by `level`;
-    or if level is None, return -1 if the string does not contain `s` and
-    the depth (number of `|`) otherwise.
-    string `s` is removed from `data` if at the start of a variable.
+    return a list of bools asserting the depth (number of `|`) trailing `s`
+    by `level` tests; or if `level` is None, return -1 if the string does not
+    contain `s` and the depth otherwise.
     """
     # remove wildcard as last character from string, find depth
     s = s.rstrip('*')
