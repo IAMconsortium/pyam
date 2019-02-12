@@ -395,29 +395,3 @@ def to_int(x, index=False):
         return x
     else:
         return _x
-
-
-def df_to_pyam(df, **kwargs):
-    numeric_cols = ['year']
-    defaults = {
-        x: x if x not in numeric_cols else 0 for x in pyam.utils.GROUP_IDX
-    }
-    defaults.update(kwargs)
-
-    def _apply_defaults(df, defaults):
-        for col, val in defaults.items():
-            df[col] = val
-        return df
-
-    # maybe only needed if variable is missing?
-    cols = list(set(df.columns) - set(pyam.utils.LONG_IDX))
-    idx = list(set(df.columns) & set(pyam.utils.LONG_IDX))
-    df = df.set_index(idx)
-    dfs = []
-    for col in cols:
-        _df = df[col].to_frame().rename(columns={col: 'value'})
-        _df['variable'] = col
-        dfs.append(_df.reset_index())
-    df = pd.concat(dfs)
-    df = _apply_defaults(df, defaults)
-    return pyam.IamDataFrame(df)
