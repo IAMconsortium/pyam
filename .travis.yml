@@ -18,7 +18,7 @@ matrix:
 
 before_install:
   - source ./ci/env.sh
-  - bash ./ci/travis-install.sh
+  - travis_retry bash ./ci/travis-install.sh
   - source activate testing
   # This is required to get FreeType v2.6.1 instead of a newer version.
   # If this does not happen, then slight changes occur in plots causing
