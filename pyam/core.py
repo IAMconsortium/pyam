@@ -892,12 +892,9 @@ class IamDataFrame(object):
                 keep_col = pattern_match(self.data[col], values, level, regexp)
 
             elif col == 'year':
-                if self.time_col is 'time':
-                    keep_col = years_match(self.data['time']
-                                               .apply(lambda x: x.year),
-                                           values)
-                else:
-                    keep_col = years_match(self.data[col], values)
+                _data = self.data[col] if self.time_col is not 'time' \
+                    else self.data['time'].apply(lambda x: x.year)
+                keep_col = years_match(_data, values)
 
             elif col == 'month':
                 if self.time_col is not 'time':
