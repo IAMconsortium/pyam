@@ -892,23 +892,16 @@ class IamDataFrame(object):
                 keep_col = pattern_match(self.data[col], values, level, regexp)
 
             elif col == 'year':
-                if self.time_col is 'time':
-                    keep_col = years_match(self.data['time']
-                                               .apply(lambda x: x.year),
-                                           values)
-                else:
-                    keep_col = years_match(self.data[col], values)
+                _data = self.data[col] if self.time_col is not 'time' \
+                    else self.data['time'].apply(lambda x: x.year)
+                keep_col = years_match(_data, values)
 
-            elif col == 'month':
-                if self.time_col is not 'time':
-                    _raise_filter_error(col)
+            elif col == 'month' and self.time_col is 'time':
                 keep_col = month_match(self.data['time']
                                            .apply(lambda x: x.month),
                                        values)
 
-            elif col == 'day':
-                if self.time_col is not 'time':
-                    _raise_filter_error(col)
+            elif col == 'day' and self.time_col is 'time':
                 if isinstance(values, str):
                     wday = True
                 elif isinstance(values, list) and isinstance(values[0], str):
@@ -923,14 +916,12 @@ class IamDataFrame(object):
 
                 keep_col = day_match(days, values)
 
-            elif col == 'hour':
-                if self.time_col is not 'time':
-                    _raise_filter_error(col)
+            elif col == 'hour' and self.time_col is 'time':
                 keep_col = hour_match(self.data['time']
                                           .apply(lambda x: x.hour),
                                       values)
 
-            elif col == 'time':
+            elif col == 'time' and self.time_col is 'time':
                 keep_col = datetime_match(self.data[col], values)
 
             elif col == 'level':

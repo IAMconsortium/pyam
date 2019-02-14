@@ -175,7 +175,7 @@ def test_df_year():
 
 @pytest.fixture(scope="function")
 def test_pd_df():
-    yield TEST_DF
+    yield TEST_DF.copy()
 
 
 @pytest.fixture(scope="function")

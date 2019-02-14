@@ -8,7 +8,7 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, validate, categorize, \
-    require_variable, filter_by_meta, META_IDX
+    require_variable, filter_by_meta, META_IDX, IAMC_IDX
 from pyam.core import _meta_idx, concat
 
 from conftest import TEST_DATA_DIR
@@ -392,26 +392,40 @@ def test_filter_time_no_match(test_df):
 
 def test_filter_time_not_datetime_error(test_df):
     if "year" in test_df.data.columns:
-        with pytest.raises(KeyError, match=re.escape("'time")):
+        with pytest.raises(ValueError, match=re.escape("`time`")):
             test_df.filter(time=datetime.datetime(2004, 6, 18))
     else:
         error_msg = re.escape(
-            "`time` can only be filtered with datetimes or lists of datetimes"
+            "`time` can only be filtered by datetimes"
         )
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(time=2005)
+        with pytest.raises(TypeError, match=error_msg):
+            test_df.filter(time='summer')
 
 
 def test_filter_time_not_datetime_range_error(test_df):
     if "year" in test_df.data.columns:
-        with pytest.raises(KeyError, match=re.escape("'time")):
+        with pytest.raises(ValueError, match=re.escape("`time`")):
             test_df.filter(time=range(2000, 2008))
     else:
         error_msg = re.escape(
-            "`time` can only be filtered with datetimes or lists of datetimes"
+            "`time` can only be filtered by datetimes"
         )
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(time=range(2000, 2008))
+        with pytest.raises(TypeError, match=error_msg):
+            test_df.filter(time=['summer', 'winter'])
+
+
+def test_filter_year_with_time_col(test_pd_df):
+    test_pd_df['time'] = ['summer', 'summer', 'winter']
+    df = IamDataFrame(test_pd_df)
+    obs = df.filter(time='summer').timeseries()
+
+    exp = test_pd_df.set_index(IAMC_IDX + ['time'])
+    exp.columns = list(map(int, exp.columns))
+    pd.testing.assert_frame_equal(obs, exp[0:2])
 
 
 def test_filter_as_kwarg(meta_df):
