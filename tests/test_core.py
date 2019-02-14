@@ -400,6 +400,8 @@ def test_filter_time_not_datetime_error(test_df):
         )
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(time=2005)
+        with pytest.raises(TypeError, match=error_msg):
+            test_df.filter(time='summer')
 
 
 def test_filter_time_not_datetime_range_error(test_df):
@@ -412,6 +414,8 @@ def test_filter_time_not_datetime_range_error(test_df):
         )
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(time=range(2000, 2008))
+        with pytest.raises(TypeError, match=error_msg):
+            test_df.filter(time=['summer', 'winter'])
 
 
 def test_filter_as_kwarg(meta_df):
