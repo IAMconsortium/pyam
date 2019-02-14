@@ -392,7 +392,7 @@ def test_filter_time_no_match(test_df):
 
 def test_filter_time_not_datetime_error(test_df):
     if "year" in test_df.data.columns:
-        with pytest.raises(KeyError, match=re.escape("'time")):
+        with pytest.raises(ValueError, match=re.escape("`time`")):
             test_df.filter(time=datetime.datetime(2004, 6, 18))
     else:
         error_msg = re.escape(
@@ -406,7 +406,7 @@ def test_filter_time_not_datetime_error(test_df):
 
 def test_filter_time_not_datetime_range_error(test_df):
     if "year" in test_df.data.columns:
-        with pytest.raises(KeyError, match=re.escape("'time")):
+        with pytest.raises(ValueError, match=re.escape("`time`")):
             test_df.filter(time=range(2000, 2008))
     else:
         error_msg = re.escape(
