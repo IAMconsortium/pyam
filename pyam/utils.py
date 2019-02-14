@@ -371,10 +371,10 @@ def datetime_match(data, dts):
     """
     matching of datetimes in time columns for data filtering
     """
-    dts = [dts] if isinstance(dts, datetime.datetime) else dts
-    if isinstance(dts, int) or isinstance(dts[0], int):
+    dts = dts if islistable(dts) else [dts]
+    if any([not isinstance(i, datetime.datetime) for i in dts]):
         error_msg = (
-            "`time` can only be filtered with datetimes or lists of datetimes"
+            "`time` can only be filtered by datetimes"
         )
         raise TypeError(error_msg)
     return data.isin(dts)
