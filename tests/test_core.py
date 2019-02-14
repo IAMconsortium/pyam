@@ -419,13 +419,13 @@ def test_filter_time_not_datetime_range_error(test_df):
 
 
 def test_filter_year_with_time_col(test_pd_df):
-    test_pd_df['time'] = 'summer'
+    test_pd_df['time'] = ['summer', 'summer', 'winter']
     df = IamDataFrame(test_pd_df)
     obs = df.filter(time='summer').timeseries()
 
     exp = test_pd_df.set_index(IAMC_IDX + ['time'])
     exp.columns = list(map(int, exp.columns))
-    pd.testing.assert_frame_equal(obs, exp)
+    pd.testing.assert_frame_equal(obs, exp[0:2])
 
 
 def test_filter_as_kwarg(meta_df):
