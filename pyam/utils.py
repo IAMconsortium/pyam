@@ -203,14 +203,6 @@ def format_data(df):
     return df.sort_values(idx_cols), time_col, extra_cols
 
 
-def style_df(df, style='heatmap'):
-    if style == 'highlight_not_max':
-        return df.style.apply(lambda s: ['' if v else 'background-color: yellow' for v in s == s.max()])
-    if style == 'heatmap':
-        cm = sns.light_palette("green", as_cmap=True)
-        return df.style.background_gradient(cmap=cm)
-
-
 def find_depth(data, s='', level=None):
     """
     return or assert the depth (number of `|`) of variables
