@@ -23,10 +23,10 @@ conda create -n testing python=$PYVERSION --yes
 # install deps, specific versions are used to guarantee consistency with
 # plotting tests
 conda install -n testing --yes \
-      numpy==1.14.0 \
-      pandas==0.22.0 \
-      matplotlib==2.1.2 \
-      seaborn==0.8.1 \
+      numpy \
+      pandas \
+      matplotlib \
+      seaborn \
       six \
       pyyaml \
       xlrd \
