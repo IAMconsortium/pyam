@@ -170,3 +170,19 @@ def test_concat_with_pipe_exclude_nan():
 def test_concat_with_pipe_by_name():
     obs = utils.concat_with_pipe(TEST_CONCAT_SERIES, ['f', 'z'])
     assert obs == 'foo|baz'
+
+
+def test_reduce_hierarchy_0():
+    assert utils.reduce_hierarchy('foo|bar|baz', 0) == 'foo'
+
+
+def test_reduce_hierarchy_1():
+    assert utils.reduce_hierarchy('foo|bar|baz', 1) == 'foo|bar'
+
+
+def test_reduce_hierarchy_neg1():
+    assert utils.reduce_hierarchy('foo|bar|baz', -1) == 'foo|bar'
+
+
+def test_reduce_hierarchy_neg2():
+    assert utils.reduce_hierarchy('foo|bar|baz', -2) == 'foo'

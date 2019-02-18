@@ -401,3 +401,10 @@ def concat_with_pipe(x, cols=None):
     """Concatenate a `pd.Series` separated by `|`, drop `None` or `np.nan`"""
     return '|'.join([x[i] for i in cols or x.index
                      if x[i] is not None and x[i] is not np.nan])
+
+
+def reduce_hierarchy(x, depth):
+    """Reduce the hierarchy (depth by `|`) string to the specified level"""
+    _x = x.split('|')
+    depth = len(_x) + depth - 1 if depth < 0 else depth
+    return '|'.join(_x[0:(depth + 1)])
