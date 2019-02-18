@@ -620,6 +620,15 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
+    def normalize(self, time, inplace=False):
+        ret = copy.deepcopy(self) if not inplace else self
+        df = ret.data
+        x = df.set_index(IAMC_IDX)
+        x['value'] /= x[x[ret.time_col] == time]['value']
+        ret.data = x.reset_index()
+        if not inplace:
+            return ret
+
     def aggregate(self, variable, components=None, units=None, append=False):
         """Compute the aggregate of timeseries components or sub-categories
 
