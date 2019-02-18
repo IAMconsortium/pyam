@@ -1507,7 +1507,10 @@ def concat(dfs):
     _df = None
     for df in dfs:
         if not isinstance(df, IamDataFrame):
-            raise TypeError('Input contains non-`pyam.IamDataFrame`')
+            try:
+                df = IamDataFrame(df)
+            except:
+                raise TypeError('Could not cast {} to IamDataFrame'.format(df))
         if _df is None:
             _df = copy.deepcopy(df)
         else:
@@ -1528,7 +1531,11 @@ def df_to_pyam(df, **kwargs):
                 df[col] = val
         return df
 
-    # maybe only needed if variable is missing?
+    # only need to fill in defaults
+    if 'variable' in df.columns:
+        return IamDataFrame(_apply_defaults(df, defaults))
+    
+    # variables are in columns and melt operation needed
     cols = list(set(df.columns) - set(GROUP_IDX))
     idx = list(set(df.columns) & set(GROUP_IDX))
     df = df.set_index(idx)
@@ -1539,4 +1546,5 @@ def df_to_pyam(df, **kwargs):
         dfs.append(_df.reset_index())
     df = pd.concat(dfs)
     df = _apply_defaults(df, defaults)
-    return IamDataFrame(df)
+    return IamDataFrame(_apply_defaults(df, defaults))
+    
