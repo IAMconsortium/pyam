@@ -39,6 +39,12 @@ def test_init_df_with_float_cols_raises(test_pd_df):
     pytest.raises(ValueError, IamDataFrame, data=_test_df)
 
 
+def test_init_df_with_duplicates_raises(test_df):
+    _df = test_df.timeseries()
+    _df = _df.append(_df.iloc[0]).reset_index()
+    pytest.raises(ValueError, IamDataFrame, data=_df)
+
+
 def test_init_df_with_float_cols(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005., 2010: 2010.})
     obs = IamDataFrame(_test_df).timeseries().reset_index()

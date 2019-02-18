@@ -194,10 +194,13 @@ def format_data(df):
     # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True)
-    df.sort_values(META_IDX + ['variable', time_col, 'region'] + extra_cols,
-                   inplace=True)
 
-    return df, time_col, extra_cols
+    # check for duplicates and return sorted data
+    idx_cols = META_IDX + ['variable', time_col, 'region'] + extra_cols
+    if any(df[idx_cols].duplicated()):
+        raise ValueError('duplicate rows in `data`!')
+
+    return df.sort_values(idx_cols), time_col, extra_cols
 
 
 def style_df(df, style='heatmap'):
