@@ -395,3 +395,8 @@ def to_int(x, index=False):
         return x
     else:
         return _x
+
+
+def concat_with_pipe(x, cols=None):
+    """Concatenate elements from `pd.Series` separated by `|`"""
+    return '|'.join([x[i] for i in cols or x.index if x[i] is not None])

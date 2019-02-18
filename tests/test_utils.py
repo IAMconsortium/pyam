@@ -4,6 +4,7 @@ import numpy as np
 from pyam import utils
 
 TEST_VARS = pd.Series(['foo', 'foo|bar', 'foo|bar|baz'])
+TEST_CONCAT_SERIES = pd.Series(['foo', 'bar', 'baz'], index=['f', 'b', 'z'])
 
 
 def test_pattern_match_none():
@@ -145,3 +146,20 @@ def test_find_depth_1_minus():
 def test_find_depth_1_plus():
     obs = utils.find_depth(TEST_VARS, level='1+')
     assert obs == [False, True, True]
+
+
+def test_concat_with_pipe_all():
+    obs = utils.concat_with_pipe(TEST_CONCAT_SERIES)
+    assert obs == 'foo|bar|baz'
+
+
+def test_concat_with_pipe_exclude_none():
+    s = TEST_CONCAT_SERIES.copy()
+    s['b'] = None
+    obs = utils.concat_with_pipe(s)
+    assert obs == 'foo|baz'
+
+
+def test_concat_with_pipe_by_name():
+    obs = utils.concat_with_pipe(TEST_CONCAT_SERIES, ['f', 'z'])
+    assert obs == 'foo|baz'
