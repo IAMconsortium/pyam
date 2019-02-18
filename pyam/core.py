@@ -1534,7 +1534,7 @@ def df_to_pyam(df, **kwargs):
     # only need to fill in defaults
     if 'variable' in df.columns:
         return IamDataFrame(_apply_defaults(df, defaults))
-    
+
     # variables are in columns and melt operation needed
     cols = list(set(df.columns) - set(GROUP_IDX))
     idx = list(set(df.columns) & set(GROUP_IDX))
@@ -1547,4 +1547,3 @@ def df_to_pyam(df, **kwargs):
     df = pd.concat(dfs)
     df = _apply_defaults(df, defaults)
     return IamDataFrame(_apply_defaults(df, defaults))
-    
