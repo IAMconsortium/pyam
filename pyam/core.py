@@ -1501,16 +1501,13 @@ def compare(left, right, left_label='left', right_label='right',
 
 def concat(dfs):
     """Concatenate a series of `pyam.IamDataFrame`-like objects together"""
-    if not hasattr(dfs, '__iter__'):
+    if isstr(dfs) or not hasattr(dfs, '__iter__'):
         raise TypeError('Input data must be iterable (e.g., list or tuple)')
 
     _df = None
     for df in dfs:
         if not isinstance(df, IamDataFrame):
-            try:
-                df = IamDataFrame(df)
-            except:
-                raise TypeError('Could not cast {} to IamDataFrame'.format(df))
+            df = IamDataFrame(df)
         if _df is None:
             _df = copy.deepcopy(df)
         else:
