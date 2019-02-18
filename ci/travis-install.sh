@@ -24,7 +24,7 @@ conda create -n testing python=$PYVERSION --yes
 # plotting tests
 conda install -n testing --yes \
       numpy==1.14.0 \
-      pandas \
+      pandas==0.22.0 \
       matplotlib==2.1.2 \
       seaborn==0.8.1 \
       six \
