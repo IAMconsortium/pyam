@@ -398,5 +398,6 @@ def to_int(x, index=False):
 
 
 def concat_with_pipe(x, cols=None):
-    """Concatenate elements from `pd.Series` separated by `|`, drop `None`"""
-    return '|'.join([str(x[i]) for i in cols or x.index if x[i] is not None])
+    """Concatenate a `pd.Series` separated by `|`, drop `None` or `np.nan`"""
+    return '|'.join([x[i] for i in cols or x.index
+                     if x[i] is not None and x[i] is not np.nan])

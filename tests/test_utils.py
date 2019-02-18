@@ -160,6 +160,13 @@ def test_concat_with_pipe_exclude_none():
     assert obs == 'foo|baz'
 
 
+def test_concat_with_pipe_exclude_nan():
+    s = TEST_CONCAT_SERIES.copy()
+    s['b'] = np.nan
+    obs = utils.concat_with_pipe(s)
+    assert obs == 'foo|baz'
+
+
 def test_concat_with_pipe_by_name():
     obs = utils.concat_with_pipe(TEST_CONCAT_SERIES, ['f', 'z'])
     assert obs == 'foo|baz'
