@@ -1516,21 +1516,15 @@ def concat(dfs):
 
 
 def df_to_pyam(df, **kwargs):
-    numeric_cols = ['year']
-    defaults = {
-        x: x if x not in numeric_cols else 0 for x in IAMC_IDX
-    }
-    defaults.update(kwargs)
-
-    def _apply_defaults(df, defaults):
-        for col, val in defaults.items():
+    def _apply_defaults(df, kwargs):
+        for col, val in kwargs.items():
             if col not in df:
                 df[col] = val
         return df
 
     # only need to fill in defaults
     if 'variable' in df.columns:
-        return IamDataFrame(_apply_defaults(df, defaults))
+        return IamDataFrame(_apply_defaults(df, kwargs))
 
     # variables are in columns and melt operation needed
     cols = list(set(df.columns) - set(GROUP_IDX))
@@ -1541,5 +1535,4 @@ def df_to_pyam(df, **kwargs):
         _df = df[col].to_frame().rename(columns={col: 'value'})
         _df['variable'] = col
         dfs.append(_df)
-    return IamDataFrame(_apply_defaults(pd.concat(dfs).reset_index(),
-                                        defaults))
+    return IamDataFrame(_apply_defaults(pd.concat(dfs).reset_index(), kwargs))
