@@ -1,10 +1,5 @@
-import copy
-import pytest
-
-import numpy as np
 import pandas as pd
-
-from pyam import IamDataFrame, compare, df_to_pyam
+from pyam import compare, df_to_pyam
 
 
 def test_cast_from_value_col(meta_df):
@@ -16,11 +11,8 @@ def test_cast_from_value_col(meta_df):
     ],
         columns=['model', 'scenario', 'region', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
-    )    
+    )
     df = df_to_pyam(df_with_value_cols)
-
-    print(df.timeseries())
-    print(meta_df.timeseries())
 
     assert compare(meta_df, df).empty
     pd.testing.assert_frame_equal(df.data, meta_df.data)
