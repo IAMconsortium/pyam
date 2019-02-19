@@ -28,7 +28,7 @@ from contextlib import contextmanager
 
 from pyam import IamDataFrame, plotting, run_control, reset_rc_defaults
 
-from conftest import IMAGE_BASELINE_DIR, TEST_DATA_DIR
+from conftest import IMAGE_BASELINE_DIR, TEST_DATA_DIR, TEST_STACKPLOT_DF
 
 IS_WINDOWS = os.name == 'nt'
 TOLERANCE = 6 if IS_WINDOWS else 2
@@ -553,4 +553,11 @@ def test_scatter_meta(plot_df):
 def test_add_panel_label(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plotting.set_panel_label('test', ax=ax, x=0.5, y=0.5)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_total_negative_emissions(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(ax=ax, total=True)
     return fig
