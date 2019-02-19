@@ -157,7 +157,7 @@ TEST_STACKPLOT_DF = pd.DataFrame([
     ['IMG', 'a_scen', 'World', 'Emissions|CO2|Tar', 'Mt CO2/yr', -2.4, -5.6],
     ['IMG', 'a_scen', 'World', 'Emissions|CO2|Agg', 'Mt CO2/yr', 1.2, 1.4],
     ['IMG', 'a_scen', 'World', 'Emissions|CO2|LUC', 'Mt CO2/yr', 0.3, -0.6]
-    ],
+],
     columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
 )
 
