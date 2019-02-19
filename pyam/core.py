@@ -23,6 +23,7 @@ from pyam.utils import (
     read_files,
     read_pandas,
     format_data,
+    sort_data,
     to_int,
     find_depth,
     pattern_match,
@@ -224,15 +225,14 @@ class IamDataFrame(object):
             ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
 
         # append other.data (verify integrity for no duplicates)
-        ret.data.set_index(ret._LONG_IDX, inplace=True)
-        _other = other.data.set_index(other._LONG_IDX)
-        ret.data = ret.data.append(_other, verify_integrity=True)\
-            .reset_index(drop=False)
+        _data = ret.data.set_index(ret._LONG_IDX).append(
+            other.data.set_index(other._LONG_IDX), verify_integrity=True)
 
         # merge extra columns in `data` and set `LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
+        ret.data = sort_data(_data.reset_index(), ret._LONG_IDX)
 
         if not inplace:
             return ret
