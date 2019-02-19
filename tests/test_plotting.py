@@ -28,7 +28,7 @@ from contextlib import contextmanager
 
 from pyam import IamDataFrame, plotting, run_control, reset_rc_defaults
 
-from conftest import IMAGE_BASELINE_DIR, TEST_DATA_DIR, TEST_STACKPLOT_DF
+from conftest import IMAGE_BASELINE_DIR, TEST_DATA_DIR
 
 IS_WINDOWS = os.name == 'nt'
 TOLERANCE = 6 if IS_WINDOWS else 2
