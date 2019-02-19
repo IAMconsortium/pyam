@@ -151,6 +151,17 @@ CHECK_AGG_REGIONAL_DF = pd.DataFrame([
 )
 
 
+TEST_STACKPLOT_DF = pd.DataFrame([
+    ['IMG', 'a_scen', 'World', 'Emissions|CO2|Energy', 'Mt CO2/yr', 4, 9.4],
+    ['IMG', 'a_scen', 'World', 'Emissions|CO2|Cars', 'Mt CO2/yr', 1.6, 3.8],
+    ['IMG', 'a_scen', 'World', 'Emissions|CO2|Tar', 'Mt CO2/yr', -2.4, -5.6],
+    ['IMG', 'a_scen', 'World', 'Emissions|CO2|Agg', 'Mt CO2/yr', 1.2, 1.4],
+    ['IMG', 'a_scen', 'World', 'Emissions|CO2|LUC', 'Mt CO2/yr', 0.3, -0.6]
+    ],
+    columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
+)
+
+
 TIME_AXES = [
     [2005, 2010],
     [datetime(2005, 6, 17), datetime(2010, 7, 21)],
@@ -206,4 +217,10 @@ def reg_df():
 @pytest.fixture(scope="session")
 def plot_df():
     df = IamDataFrame(data=os.path.join(TEST_DATA_DIR, 'plot_data.csv'))
+    yield df
+
+
+@pytest.fixture(scope="session")
+def plot_stack_plot_df():
+    df = IamDataFrame(TEST_STACKPLOT_DF)
     yield df
