@@ -1540,7 +1540,6 @@ def df_to_pyam(df, **kwargs):
     for col in cols:
         _df = df[col].to_frame().rename(columns={col: 'value'})
         _df['variable'] = col
-        dfs.append(_df.reset_index())
-    df = pd.concat(dfs)
-    df = _apply_defaults(df, defaults)
+        dfs.append(_df)
+    df = _apply_defaults(pd.concat(dfs).reset_index(), defaults)
     return IamDataFrame(_apply_defaults(df, defaults))
