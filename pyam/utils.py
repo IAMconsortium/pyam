@@ -157,9 +157,9 @@ def format_data(df):
     if 'value' in df.columns:
         # check if time column is given as `year` (int) or `time` (datetime)
         cols = df.columns
-        if 'year' in cols and 'time' not in cols:
+        if 'year' in cols:
             time_col = 'year'
-        elif 'time' in cols and 'year' not in cols:
+        elif 'time' in cols:
             time_col = 'time'
         else:
             msg = 'invalid time format, must have either `year` or `time`!'
