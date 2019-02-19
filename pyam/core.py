@@ -1518,7 +1518,7 @@ def concat(dfs):
 def df_to_pyam(df, **kwargs):
     numeric_cols = ['year']
     defaults = {
-        x: x if x not in numeric_cols else 0 for x in GROUP_IDX
+        x: x if x not in numeric_cols else 0 for x in IAMC_IDX
     }
     defaults.update(kwargs)
 
@@ -1541,5 +1541,5 @@ def df_to_pyam(df, **kwargs):
         _df = df[col].to_frame().rename(columns={col: 'value'})
         _df['variable'] = col
         dfs.append(_df)
-    df = _apply_defaults(pd.concat(dfs).reset_index(), defaults)
-    return IamDataFrame(_apply_defaults(df, defaults))
+    return IamDataFrame(_apply_defaults(pd.concat(dfs).reset_index(),
+                                        defaults))
