@@ -113,7 +113,7 @@ def read_pandas(fname, *args, **kwargs):
 
 
 def read_files(fnames, *args, **kwargs):
-    """Read data from a snapshot file saved in the standard IAMC format
+    """Read data from a file saved in the standard IAMC format
     or a table with year/value columns
     """
     if not isstr(fnames):
@@ -124,7 +124,7 @@ def read_files(fnames, *args, **kwargs):
 
 
 def format_data(df):
-    """Convert an imported dataframe and check all required columns"""
+    """Convert a `pd.Dataframe` or `pd.Series` to the required format"""
     if isinstance(df, pd.Series):
         df = df.to_frame()
 
