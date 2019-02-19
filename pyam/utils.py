@@ -196,11 +196,16 @@ def format_data(df):
     df.dropna(inplace=True)
 
     # check for duplicates and return sorted data
-    idx_cols = META_IDX + ['variable', time_col, 'region'] + extra_cols
+    idx_cols = IAMC_IDX + [time_col] + extra_cols
     if any(df[idx_cols].duplicated()):
         raise ValueError('duplicate rows in `data`!')
 
-    return df.sort_values(idx_cols), time_col, extra_cols
+    return sort_data(df, idx_cols), time_col, extra_cols
+
+
+def sort_data(data, cols):
+    """Sort `data` rows and order columns"""
+    return data.sort_values(cols)[cols + ['value']].reset_index(drop=True)
 
 
 def find_depth(data, s='', level=None):
