@@ -1,3 +1,4 @@
+import pytest
 import pandas as pd
 from pyam import compare, df_to_pyam
 
@@ -17,3 +18,13 @@ def test_cast_from_value_col(meta_df):
 
     assert compare(meta_df, df).empty
     pd.testing.assert_frame_equal(df.data, meta_df.data)
+
+
+def test_cast_with_model_arg_raises(meta_df):
+    df = pd.DataFrame([
+        ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
+    ],
+        columns=['model', 'scenario', 'region', 'unit', 'year',
+                 'Primary Energy', 'Primary Energy|Coal'],
+    )
+    pytest.raises(ValueError, df_to_pyam, df=df, model='foo')

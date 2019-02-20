@@ -1543,4 +1543,8 @@ def df_to_pyam(df, **kwargs):
             dfs.append(vdf.reset_index())
         df = pd.concat(dfs).reset_index(drop=True)
 
+    for col, value in kwargs.items():
+        if col in df:
+            raise ValueError('conflict of kwarg with column in dataframe!')
+
     return IamDataFrame(df)
