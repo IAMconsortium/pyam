@@ -20,7 +20,7 @@ from pyam.logger import logger
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
-    read_files,
+    read_file,
     read_pandas,
     format_data,
     sort_data,
@@ -74,7 +74,7 @@ class IamDataFrame(object):
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             _data = read_ix(data, **kwargs)
         else:
-            _data = read_files(data, **kwargs)
+            _data = read_file(data, **kwargs)
 
         self.data, self.time_col, self.extra_cols = _data
         # cast time_col to desired format

@@ -112,15 +112,15 @@ def read_pandas(fname, *args, **kwargs):
     return df
 
 
-def read_files(fnames, *args, **kwargs):
+def read_file(fname, *args, **kwargs):
     """Read data from a file saved in the standard IAMC format
     or a table with year/value columns
     """
-    if not isstr(fnames):
+    if not isstr(fname):
         raise ValueError('reading multiple files not supported, '
                          'please use `pyam.IamDataFrame.append()`')
-    logger().info('Reading `{}`'.format(fnames))
-    return format_data(read_pandas(fnames, *args, **kwargs))
+    logger().info('Reading `{}`'.format(fname))
+    format_kwargs = {}
 
 
 def format_data(df, **kwargs):
