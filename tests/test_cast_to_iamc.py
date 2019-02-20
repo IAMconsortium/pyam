@@ -12,7 +12,8 @@ def test_cast_from_value_col(meta_df):
         columns=['model', 'scenario', 'region', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
     )
-    df = df_to_pyam(df_with_value_cols)
+    df = df_to_pyam(df_with_value_cols,
+                    value=['Primary Energy', 'Primary Energy|Coal'])
 
     assert compare(meta_df, df).empty
     pd.testing.assert_frame_equal(df.data, meta_df.data)

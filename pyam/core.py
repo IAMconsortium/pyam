@@ -1516,23 +1516,31 @@ def concat(dfs):
 
 
 def df_to_pyam(df, **kwargs):
-    def _apply_defaults(df, kwargs):
-        for col, val in kwargs.items():
-            if col not in df:
-                df[col] = val
-        return df
+    """Cast a `pandas.DataFrame` to an `IamDataFrame` with custom settings
 
-    # only need to fill in defaults
-    if 'variable' in df.columns:
-        return IamDataFrame(_apply_defaults(df, kwargs))
+    Parameters
+    ----------
+    df: pd.DataFrame
+        the data to be cast to an `IamDataFrame`
+    value: str or list, must be columns of `df`
+        use data in these columns as `value`, use column name as `variable`
+    """
+    # ensure that only either `value` or `variable` custom setting is used
+    if all([i in kwargs or i in df.columns for i in ['value', 'variable']]):
+        raise ValueError('using both `value` and `variable` is not valid!')
 
-    # variables are in columns and melt operation needed
-    cols = list(set(df.columns) - set(GROUP_IDX))
-    idx = list(set(df.columns) & set(GROUP_IDX))
-    df = df.set_index(idx)
-    dfs = []
-    for col in cols:
-        _df = df[col].to_frame().rename(columns={col: 'value'})
-        _df['variable'] = col
-        dfs.append(_df)
-    return IamDataFrame(_apply_defaults(pd.concat(dfs).reset_index(), kwargs))
+    if 'value' in kwargs:
+        value = kwargs.pop('value')
+        idx = set(df.columns) & (set(IAMC_IDX) | set(['year', 'time']))
+        _df = df.set_index(list(idx))
+        print(_df)
+        dfs = []
+        for v in value if islistable(value) else [value]:
+            if v not in df.columns:
+                raise ValueError('column `{}` does not exist!'.format(v))
+            vdf = _df[v].to_frame().rename(columns={v: 'value'})
+            vdf['variable'] = v
+            dfs.append(vdf.reset_index())
+        df = pd.concat(dfs).reset_index(drop=True)
+
+    return IamDataFrame(df)
