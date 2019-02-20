@@ -121,6 +121,10 @@ def read_file(fname, *args, **kwargs):
                          'please use `pyam.IamDataFrame.append()`')
     logger().info('Reading `{}`'.format(fname))
     format_kwargs = {}
+    # extract kwargs that are intended for `format_data`
+    for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:
+        format_kwargs[c] = kwargs.pop(c)
+    return format_data(read_pandas(fname, *args, **kwargs), **format_kwargs)
 
 
 def format_data(df, **kwargs):
