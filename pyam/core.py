@@ -26,7 +26,6 @@ from pyam.utils import (
     sort_data,
     to_int,
     find_depth,
-    concat_with_pipe,
     pattern_match,
     years_match,
     month_match,
@@ -40,7 +39,6 @@ from pyam.utils import (
     REGION_IDX,
     IAMC_IDX,
     SORT_IDX,
-    LONG_IDX,
     GROUP_IDX
 )
 from pyam.read_ixmp import read_ix
@@ -182,6 +180,7 @@ class IamDataFrame(object):
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             If True, do operation inplace and return None
+        kwargs are passed through to `IamDataFrame(other, **kwargs)`
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
