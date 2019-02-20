@@ -123,10 +123,47 @@ def read_files(fnames, *args, **kwargs):
     return format_data(read_pandas(fnames, *args, **kwargs))
 
 
-def format_data(df):
+def format_data(df, **kwargs):
     """Convert a `pd.Dataframe` or `pd.Series` to the required format"""
     if isinstance(df, pd.Series):
         df = df.to_frame()
+
+    # ensure that only either `value` or `variable` custom setting is used
+    _cols = ['value', 'variable']
+    if any([i in kwargs for i in _cols]) and \
+            all([i in kwargs or i in df.columns for i in _cols]):
+        raise ValueError('using both `value` and `variable` is not valid!')
+
+    # if `value` arg is given, melt columns and use column name as `variable`
+    if 'value' in kwargs:
+        value = kwargs.pop('value')
+        idx = set(df.columns) & (set(IAMC_IDX) | set(['year', 'time']))
+        _df = df.set_index(list(idx))
+        print(_df)
+        dfs = []
+        for v in value if islistable(value) else [value]:
+            if v not in df.columns:
+                raise ValueError('column `{}` does not exist!'.format(v))
+            vdf = _df[v].to_frame().rename(columns={v: 'value'})
+            vdf['variable'] = v
+            dfs.append(vdf.reset_index())
+        df = pd.concat(dfs).reset_index(drop=True)
+
+    # for other columns, do a rename or concat multiple columns to IAMC-style
+    for col, value in kwargs.items():
+        if col in df:
+            raise ValueError('conflict of kwarg with column in dataframe!')
+
+        if isstr(value) and value in df:
+            df.rename(columns={value: col}, inplace=True)
+        elif islistable(value) and all([c in df.columns for c in value]):
+            df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
+            df.drop(value, axis=1, inplace=True)
+        elif isstr(value):
+            df[col] = value
+        else:
+            raise ValueError('invalid argument for casting `{}: {}`'
+                             .format(col, value))
 
     # all lower case
     str_cols = [c for c in df.columns if isstr(c)]

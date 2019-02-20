@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from pyam import compare, df_to_pyam
+from pyam import IamDataFrame, compare
 
 
 def test_cast_from_value_col(meta_df):
@@ -13,8 +13,8 @@ def test_cast_from_value_col(meta_df):
         columns=['model', 'scenario', 'region', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
     )
-    df = df_to_pyam(df_with_value_cols,
-                    value=['Primary Energy', 'Primary Energy|Coal'])
+    df = IamDataFrame(df_with_value_cols,
+                      value=['Primary Energy', 'Primary Energy|Coal'])
 
     assert compare(meta_df, df).empty
     pd.testing.assert_frame_equal(df.data, meta_df.data)
@@ -27,14 +27,14 @@ def test_cast_with_model_arg_raises():
         columns=['model', 'scenario', 'region', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
     )
-    pytest.raises(ValueError, df_to_pyam, df=df, model='foo')
+    pytest.raises(ValueError, IamDataFrame, df, model='foo')
 
 
 def test_cast_with_model_arg(meta_df):
     df = meta_df.timeseries().reset_index()
     df.rename(columns={'model': 'foo'}, inplace=True)
 
-    df = df_to_pyam(df, model='foo')
+    df = IamDataFrame(df, model='foo')
     assert compare(meta_df, df).empty
     pd.testing.assert_frame_equal(df.data, meta_df.data)
 
@@ -48,6 +48,6 @@ def test_cast_by_column_concat(meta_df):
         columns=['scenario', 'region', 'var_1', 'var_2', 'unit', 2005, 2010],
     )
 
-    df = df_to_pyam(df, model='model_a', variable=['var_1', 'var_2'])
+    df = IamDataFrame(df, model='model_a', variable=['var_1', 'var_2'])
     assert compare(meta_df, df).empty
     pd.testing.assert_frame_equal(df.data, meta_df.data)

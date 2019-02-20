@@ -52,26 +52,25 @@ class IamDataFrame(object):
     It provides a number of diagnostic features (including validation of data,
     completeness of variables provided) as well as a number of visualization
     and plotting tools.
+
+    Parameters
+    ----------
+    data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
+        an instance of an TimeSeries or Scenario (requires `ixmp`),
+        or pd.DataFrame or data file with IAMC-format data columns.
+        A pd.DataFrame can have the required data as columns or index.
+    kwargs:
+        if `value=col`, melt `col` to `value` and use `col` name as `variable`;
+        else, mapping of columns required for an `IamDataFrame` to:
+        - one column in `df`
+        - multiple columns, which will be concatenated by pipe
+        - a string to be used as value for this column
     """
-
     def __init__(self, data, **kwargs):
-        """Initialize an instance of an IamDataFrame
-
-        Parameters
-        ----------
-        data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
-            an instance of an TimeSeries or Scenario (requires `ixmp`),
-            or pd.DataFrame or data file with IAMC-format data columns.
-            A pd.DataFrame can have the required data as columns or index.
-
-            Special support is provided for data files downloaded directly from
-            IIASA SSP and RCP databases. If you run into any problems loading
-            data, please make an issue at:
-            https://github.com/IAMconsortium/pyam/issues
-        """
+        """Initialize an instance of an IamDataFrame"""
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _data = format_data(data.copy())
+            _data = format_data(data.copy(), **kwargs)
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             _data = read_ix(data, **kwargs)
         else:
@@ -1514,55 +1513,3 @@ def concat(dfs):
         else:
             _df.append(df, inplace=True)
     return _df
-
-
-def df_to_pyam(df, **kwargs):
-    """Cast a `pandas.DataFrame` to an `IamDataFrame` with custom settings
-
-    Parameters
-    ----------
-    df: pd.DataFrame
-        the data to be cast to an `IamDataFrame`
-    value: str or list, must be columns of `df`
-        use data in these columns as `value`, use column name as `variable`
-    kwargs
-        mapping of column required for an `IamDataFrame` to
-        - one column in `df`
-        - multiple columns, which will be concatenated by pipe
-        - a string to be used as value for this column
-    """
-    # ensure that only either `value` or `variable` custom setting is used
-    if all([i in kwargs or i in df.columns for i in ['value', 'variable']]):
-        raise ValueError('using both `value` and `variable` is not valid!')
-
-    # if `value` arg is given, melt columns and use column name as `variable`
-    if 'value' in kwargs:
-        value = kwargs.pop('value')
-        idx = set(df.columns) & (set(IAMC_IDX) | set(['year', 'time']))
-        _df = df.set_index(list(idx))
-        print(_df)
-        dfs = []
-        for v in value if islistable(value) else [value]:
-            if v not in df.columns:
-                raise ValueError('column `{}` does not exist!'.format(v))
-            vdf = _df[v].to_frame().rename(columns={v: 'value'})
-            vdf['variable'] = v
-            dfs.append(vdf.reset_index())
-        df = pd.concat(dfs).reset_index(drop=True)
-
-    # for other columns, do a rename or concat multiple columns to IAMC-style
-    for col, value in kwargs.items():
-        if col in df:
-            raise ValueError('conflict of kwarg with column in dataframe!')
-
-        if isstr(value) and value in df:
-            df.rename(columns={value: col}, inplace=True)
-        elif islistable(value) and all([c in df.columns for c in value]):
-            df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
-            df.drop(value, axis=1, inplace=True)
-        elif isstr(value):
-            df[col] = value
-        else:
-            raise ValueError('invalid argument for casting `{}: {}`'
-                             .format(col, value))
-    return IamDataFrame(df)
