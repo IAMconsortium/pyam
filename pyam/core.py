@@ -1546,5 +1546,7 @@ def df_to_pyam(df, **kwargs):
     for col, value in kwargs.items():
         if col in df:
             raise ValueError('conflict of kwarg with column in dataframe!')
+        if isstr(value) and value in df:
+            df.rename(columns={value: col}, inplace=True)
 
     return IamDataFrame(df)

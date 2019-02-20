@@ -20,7 +20,7 @@ def test_cast_from_value_col(meta_df):
     pd.testing.assert_frame_equal(df.data, meta_df.data)
 
 
-def test_cast_with_model_arg_raises(meta_df):
+def test_cast_with_model_arg_raises():
     df = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
     ],
@@ -28,3 +28,12 @@ def test_cast_with_model_arg_raises(meta_df):
                  'Primary Energy', 'Primary Energy|Coal'],
     )
     pytest.raises(ValueError, df_to_pyam, df=df, model='foo')
+
+
+def test_cast_with_model_arg(meta_df):
+    df = meta_df.timeseries().reset_index()
+    df.rename(columns={'model': 'foo'}, inplace=True)
+
+    df = df_to_pyam(df, model='foo')
+    assert compare(meta_df, df).empty
+    pd.testing.assert_frame_equal(df.data, meta_df.data)
