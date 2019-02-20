@@ -26,6 +26,7 @@ from pyam.utils import (
     sort_data,
     to_int,
     find_depth,
+    concat_with_pipe,
     pattern_match,
     years_match,
     month_match,
@@ -1524,11 +1525,17 @@ def df_to_pyam(df, **kwargs):
         the data to be cast to an `IamDataFrame`
     value: str or list, must be columns of `df`
         use data in these columns as `value`, use column name as `variable`
+    kwargs
+        mapping of column required for an `IamDataFrame` to
+        - one column in `df`
+        - multiple columns, which will be concatenated by pipe
+        - a string to be used as value for this column
     """
     # ensure that only either `value` or `variable` custom setting is used
     if all([i in kwargs or i in df.columns for i in ['value', 'variable']]):
         raise ValueError('using both `value` and `variable` is not valid!')
 
+    # if `value` arg is given, melt columns and use column name as `variable`
     if 'value' in kwargs:
         value = kwargs.pop('value')
         idx = set(df.columns) & (set(IAMC_IDX) | set(['year', 'time']))
@@ -1543,10 +1550,19 @@ def df_to_pyam(df, **kwargs):
             dfs.append(vdf.reset_index())
         df = pd.concat(dfs).reset_index(drop=True)
 
+    # for other columns, do a rename or concat multiple columns to IAMC-style
     for col, value in kwargs.items():
         if col in df:
             raise ValueError('conflict of kwarg with column in dataframe!')
+
         if isstr(value) and value in df:
             df.rename(columns={value: col}, inplace=True)
-
+        elif islistable(value) and all([c in df.columns for c in value]):
+            df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
+            df.drop(value, axis=1, inplace=True)
+        elif isstr(value):
+            df[col] = value
+        else:
+            raise ValueError('invalid argument for casting `{}: {}`'
+                             .format(col, value))
     return IamDataFrame(df)

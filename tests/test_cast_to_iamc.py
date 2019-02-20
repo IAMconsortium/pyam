@@ -37,3 +37,17 @@ def test_cast_with_model_arg(meta_df):
     df = df_to_pyam(df, model='foo')
     assert compare(meta_df, df).empty
     pd.testing.assert_frame_equal(df.data, meta_df.data)
+
+
+def test_cast_by_column_concat(meta_df):
+    df = pd.DataFrame([
+        ['scen_a', 'World', 'Primary Energy', None, 'EJ/y', 1, 6.],
+        ['scen_a', 'World', 'Primary Energy', 'Coal', 'EJ/y', 0.5, 3],
+        ['scen_b', 'World', 'Primary Energy', None, 'EJ/y', 2, 7],
+    ],
+        columns=['scenario', 'region', 'var_1', 'var_2', 'unit', 2005, 2010],
+    )
+
+    df = df_to_pyam(df, model='model_a', variable=['var_1', 'var_2'])
+    assert compare(meta_df, df).empty
+    pd.testing.assert_frame_equal(df.data, meta_df.data)
