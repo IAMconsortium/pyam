@@ -109,9 +109,7 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
         data to be used for style properties
     """
     if color is None and cmap is not None:
-        raise ValueError(
-            'If using cmap, you must also provide and explicit `color` argument'
-        )
+        raise ValueError('`cmap` must be provided with the `color` argument')
 
     # determine color, marker, and linestyle for each line
     n = len(df[color].unique()) if color in df.columns else \
