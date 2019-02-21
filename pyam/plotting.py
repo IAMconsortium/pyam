@@ -109,8 +109,8 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
         data to be used for style properties
     """
     # determine color, marker, and linestyle for each line
-    n = len(df[color].unique()) if color else \
-        len(df[IAMC_IDX].drop_duplicates())
+    n = len(df[color].unique()) if color in df.columns else \
+        len(df[list(set(df.columns) & set(IAMC_IDX))].drop_duplicates())
     defaults = default_props(reset=True, num_colors=n, colormap=cmap)
 
     props = {}
