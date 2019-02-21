@@ -440,8 +440,8 @@ def to_int(x, index=False):
 
 def concat_with_pipe(x, cols=None):
     """Concatenate a `pd.Series` separated by `|`, drop `None` or `np.nan`"""
-    return '|'.join([x[i] for i in cols or x.index
-                     if x[i] is not None and x[i] is not np.nan])
+    cols = cols or x.index
+    return '|'.join([x[i] for i in cols if x[i] not in [None, np.nan]])
 
 
 def reduce_hierarchy(x, depth):
