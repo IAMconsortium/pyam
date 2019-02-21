@@ -620,11 +620,27 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def normalize(self, time, inplace=False):
+    def normalize(self, val, cols=None, inplace=False):
+        """Normalize data to a given value. Currently only supports normalizing to a
+        specific time
+
+        Parameters
+        ----------
+        val: one or more values
+            the values to normalize to (based on `by` argument)
+        col: string or list of strings, default time column
+            the columns on which to normalize
+        inplace: bool, default False
+            if True, do operation inplace and return None
+        """
+        if cols is not None and cols != self.time_col:
+            raise ValueError('Only time-based normalization supported')
+        cols = self.time_col
         ret = copy.deepcopy(self) if not inplace else self
         df = ret.data
         x = df.set_index(IAMC_IDX)
-        x['value'] /= x[x[ret.time_col] == time]['value']
+        # change this if supporting more in the future
+        x['value'] /= x[x[cols] == val]['value']
         ret.data = x.reset_index()
         if not inplace:
             return ret

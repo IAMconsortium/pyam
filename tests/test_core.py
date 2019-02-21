@@ -965,3 +965,18 @@ def test_concat(meta_df):
     obs = result.meta.reset_index(drop=True)
     exp = pd.concat([left.meta, right.meta]).reset_index(drop=True)
     pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_normalize(meta_df):
+    exp = meta_df.data.copy().reset_index(drop=True)
+    exp['value'][1::2] /= exp['value'][::2].values
+    exp['value'][::2] /= exp['value'][::2].values
+    obs = meta_df.normalize(2005).data.reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_normalize_not_time(meta_df):
+    pytest.raises(ValueError, meta_df.normalize, 2005,
+                  cols='variable')
+    pytest.raises(ValueError, meta_df.normalize, 2005,
+                  cols=['model', 'variable'])
