@@ -6,6 +6,7 @@
 - [#212](https://github.com/IAMconsortium/pyam/pull/212) Now natively support reading R-style data frames with year columns like "X2015"
 - [#202](https://github.com/IAMconsortium/pyam/pull/202) Extend the `df.rename()` function with a `check_duplicates (default True)` validation option
 - [#201](https://github.com/IAMconsortium/pyam/pull/201) Added native support for legends outside of plots with `pyam.plotting.OUTSIDE_LEGEND` with a tutorial
+- [#200](https://github.com/IAMconsortium/pyam/pull/200) Bugfix when providing `cmap`  and `color`  arguments to plotting functions
 - [#199](https://github.com/IAMconsortium/pyam/pull/199) Initializing an `IamDataFrame` accepts kwargs to fill or create from the data any missing required columns
 - [#197](https://github.com/IAMconsortium/pyam/pull/197) Added a `normalize` function that normalizes all data in a data frame to a specific time period.
 - [#195](https://github.com/IAMconsortium/pyam/pull/195) Fix filtering for `time`, `day` and `hour` to use generic `pattern_match()` (if such a column exists) in 'year'-formmatted IamDataFrames
