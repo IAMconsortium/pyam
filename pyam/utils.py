@@ -112,21 +112,62 @@ def read_pandas(fname, *args, **kwargs):
     return df
 
 
-def read_files(fnames, *args, **kwargs):
-    """Read data from a snapshot file saved in the standard IAMC format
+def read_file(fname, *args, **kwargs):
+    """Read data from a file saved in the standard IAMC format
     or a table with year/value columns
     """
-    if not isstr(fnames):
+    if not isstr(fname):
         raise ValueError('reading multiple files not supported, '
                          'please use `pyam.IamDataFrame.append()`')
-    logger().info('Reading `{}`'.format(fnames))
-    return format_data(read_pandas(fnames, *args, **kwargs))
+    logger().info('Reading `{}`'.format(fname))
+    format_kwargs = {}
+    # extract kwargs that are intended for `format_data`
+    for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:
+        format_kwargs[c] = kwargs.pop(c)
+    return format_data(read_pandas(fname, *args, **kwargs), **format_kwargs)
 
 
-def format_data(df):
-    """Convert an imported dataframe and check all required columns"""
+def format_data(df, **kwargs):
+    """Convert a `pd.Dataframe` or `pd.Series` to the required format"""
     if isinstance(df, pd.Series):
         df = df.to_frame()
+
+    # ensure that only either `value` or `variable` custom setting is used
+    _cols = ['value', 'variable']
+    if any([i in kwargs for i in _cols]) and \
+            all([i in kwargs or i in df.columns for i in _cols]):
+        raise ValueError('using both `value` and `variable` is not valid!')
+
+    # if `value` arg is given, melt columns and use column name as `variable`
+    if 'value' in kwargs:
+        value = kwargs.pop('value')
+        idx = set(df.columns) & (set(IAMC_IDX) | set(['year', 'time']))
+        _df = df.set_index(list(idx))
+        print(_df)
+        dfs = []
+        for v in value if islistable(value) else [value]:
+            if v not in df.columns:
+                raise ValueError('column `{}` does not exist!'.format(v))
+            vdf = _df[v].to_frame().rename(columns={v: 'value'})
+            vdf['variable'] = v
+            dfs.append(vdf.reset_index())
+        df = pd.concat(dfs).reset_index(drop=True)
+
+    # for other columns, do a rename or concat multiple columns to IAMC-style
+    for col, value in kwargs.items():
+        if col in df:
+            raise ValueError('conflict of kwarg with column in dataframe!')
+
+        if isstr(value) and value in df:
+            df.rename(columns={value: col}, inplace=True)
+        elif islistable(value) and all([c in df.columns for c in value]):
+            df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
+            df.drop(value, axis=1, inplace=True)
+        elif isstr(value):
+            df[col] = value
+        else:
+            raise ValueError('invalid argument for casting `{}: {}`'
+                             .format(col, value))
 
     # all lower case
     str_cols = [c for c in df.columns if isstr(c)]
@@ -157,9 +198,9 @@ def format_data(df):
     if 'value' in df.columns:
         # check if time column is given as `year` (int) or `time` (datetime)
         cols = df.columns
-        if 'year' in cols and 'time' not in cols:
+        if 'year' in cols:
             time_col = 'year'
-        elif 'time' in cols and 'year' not in cols:
+        elif 'time' in cols:
             time_col = 'time'
         else:
             msg = 'invalid time format, must have either `year` or `time`!'
@@ -194,18 +235,18 @@ def format_data(df):
     # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True)
-    df.sort_values(META_IDX + ['variable', time_col, 'region'] + extra_cols,
-                   inplace=True)
 
-    return df, time_col, extra_cols
+    # check for duplicates and return sorted data
+    idx_cols = IAMC_IDX + [time_col] + extra_cols
+    if any(df[idx_cols].duplicated()):
+        raise ValueError('duplicate rows in `data`!')
+
+    return sort_data(df, idx_cols), time_col, extra_cols
 
 
-def style_df(df, style='heatmap'):
-    if style == 'highlight_not_max':
-        return df.style.apply(lambda s: ['' if v else 'background-color: yellow' for v in s == s.max()])
-    if style == 'heatmap':
-        cm = sns.light_palette("green", as_cmap=True)
-        return df.style.background_gradient(cmap=cm)
+def sort_data(data, cols):
+    """Sort `data` rows and order columns"""
+    return data.sort_values(cols)[cols + ['value']].reset_index(drop=True)
 
 
 def find_depth(data, s='', level=None):
@@ -395,3 +436,16 @@ def to_int(x, index=False):
         return x
     else:
         return _x
+
+
+def concat_with_pipe(x, cols=None):
+    """Concatenate a `pd.Series` separated by `|`, drop `None` or `np.nan`"""
+    cols = cols or x.index
+    return '|'.join([x[i] for i in cols if x[i] not in [None, np.nan]])
+
+
+def reduce_hierarchy(x, depth):
+    """Reduce the hierarchy (depth by `|`) string to the specified level"""
+    _x = x.split('|')
+    depth = len(_x) + depth - 1 if depth < 0 else depth
+    return '|'.join(_x[0:(depth + 1)])

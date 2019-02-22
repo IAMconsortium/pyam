@@ -8,7 +8,7 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, validate, categorize, \
-    require_variable, filter_by_meta, META_IDX, IAMC_IDX
+    require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data
 from pyam.core import _meta_idx, concat
 
 from conftest import TEST_DATA_DIR
@@ -37,6 +37,12 @@ def test_init_df_with_index(test_pd_df):
 def test_init_df_with_float_cols_raises(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.5, 2010: 2010.})
     pytest.raises(ValueError, IamDataFrame, data=_test_df)
+
+
+def test_init_df_with_duplicates_raises(test_df):
+    _df = test_df.timeseries()
+    _df = _df.append(_df.iloc[0]).reset_index()
+    pytest.raises(ValueError, IamDataFrame, data=_df)
 
 
 def test_init_df_with_float_cols(test_pd_df):
@@ -772,7 +778,7 @@ def test_filter_by_int(meta_df):
 def _r5_regions_exp(df):
     df = df.filter(region='World', keep=False)
     df['region'] = 'R5MAF'
-    return df.data.reset_index(drop=True)
+    return sort_data(df.data, df._LONG_IDX)
 
 
 def test_map_regions_r5(reg_df):
@@ -841,7 +847,7 @@ def test_48b():
         ['model', 'scen1', 'SDN', 'var', 'unit', 2, 7],
     ], columns=['model', 'scenario', 'region',
                 'variable', 'unit', 2005, 2010],
-    )).data.reset_index(drop=True)
+    )).data
 
     df = IamDataFrame(pd.DataFrame([
         ['model', 'scen', 'R5MAF', 'var', 'unit', 1, 6],
@@ -850,7 +856,7 @@ def test_48b():
                 'variable', 'unit', 2005, 2010],
     ))
     obs = df.map_regions('iso', region_col='r5_region').data
-    obs = obs[obs.region.isin(['SSD', 'SDN'])].reset_index(drop=True)
+    obs = sort_data(obs[obs.region.isin(['SSD', 'SDN'])], df._LONG_IDX)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 

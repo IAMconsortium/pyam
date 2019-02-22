@@ -20,9 +20,10 @@ from pyam.logger import logger
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
-    read_files,
+    read_file,
     read_pandas,
     format_data,
+    sort_data,
     to_int,
     find_depth,
     pattern_match,
@@ -38,7 +39,6 @@ from pyam.utils import (
     REGION_IDX,
     IAMC_IDX,
     SORT_IDX,
-    LONG_IDX,
     GROUP_IDX
 )
 from pyam.read_ixmp import read_ix
@@ -50,30 +50,29 @@ class IamDataFrame(object):
     It provides a number of diagnostic features (including validation of data,
     completeness of variables provided) as well as a number of visualization
     and plotting tools.
+
+    Parameters
+    ----------
+    data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
+        an instance of an TimeSeries or Scenario (requires `ixmp`),
+        or pd.DataFrame or data file with IAMC-format data columns.
+        A pd.DataFrame can have the required data as columns or index.
+    kwargs:
+        if `value=col`, melt `col` to `value` and use `col` name as `variable`;
+        else, mapping of columns required for an `IamDataFrame` to:
+        - one column in `df`
+        - multiple columns, which will be concatenated by pipe
+        - a string to be used as value for this column
     """
-
     def __init__(self, data, **kwargs):
-        """Initialize an instance of an IamDataFrame
-
-        Parameters
-        ----------
-        data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
-            an instance of an TimeSeries or Scenario (requires `ixmp`),
-            or pd.DataFrame or data file with IAMC-format data columns.
-            A pd.DataFrame can have the required data as columns or index.
-
-            Special support is provided for data files downloaded directly from
-            IIASA SSP and RCP databases. If you run into any problems loading
-            data, please make an issue at:
-            https://github.com/IAMconsortium/pyam/issues
-        """
+        """Initialize an instance of an IamDataFrame"""
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _data = format_data(data.copy())
+            _data = format_data(data.copy(), **kwargs)
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             _data = read_ix(data, **kwargs)
         else:
-            _data = read_files(data, **kwargs)
+            _data = read_file(data, **kwargs)
 
         self.data, self.time_col, self.extra_cols = _data
         # cast time_col to desired format
@@ -181,6 +180,7 @@ class IamDataFrame(object):
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             If True, do operation inplace and return None
+        kwargs are passed through to `IamDataFrame(other, **kwargs)`
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
@@ -224,15 +224,14 @@ class IamDataFrame(object):
             ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
 
         # append other.data (verify integrity for no duplicates)
-        ret.data.set_index(ret._LONG_IDX, inplace=True)
-        _other = other.data.set_index(other._LONG_IDX)
-        ret.data = ret.data.append(_other, verify_integrity=True)\
-            .reset_index(drop=False)
+        _data = ret.data.set_index(ret._LONG_IDX).append(
+            other.data.set_index(other._LONG_IDX), verify_integrity=True)
 
         # merge extra columns in `data` and set `LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
+        ret.data = sort_data(_data.reset_index(), ret._LONG_IDX)
 
         if not inplace:
             return ret
@@ -1501,13 +1500,13 @@ def compare(left, right, left_label='left', right_label='right',
 
 def concat(dfs):
     """Concatenate a series of `pyam.IamDataFrame`-like objects together"""
-    if not hasattr(dfs, '__iter__'):
-        raise TypeError('Input data must be iterable (e.g., list or tuple)')
+    if isstr(dfs) or not hasattr(dfs, '__iter__'):
+        msg = 'Argument must be a non-string iterable (e.g., list or tuple)'
+        raise TypeError(msg)
 
     _df = None
     for df in dfs:
-        if not isinstance(df, IamDataFrame):
-            raise TypeError('Input contains non-`pyam.IamDataFrame`')
+        df = df if isinstance(df, IamDataFrame) else IamDataFrame(df)
         if _df is None:
             _df = copy.deepcopy(df)
         else:
