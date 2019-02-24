@@ -516,7 +516,25 @@ def test_add_panel_label(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_stack_plot_total_negative_emissions(plot_stack_plot_df):
+def test_stack_plot_negative_emissions(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(ax=ax)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions_with_total(plot_stack_plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_stack_plot_df.stack_plot(ax=ax, total=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions_kwargs_passing(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(
+        alpha=0.5,
+        total=True,
+        total_kwargs={"color": "grey", "ls": "--", "lw": 2.0}
+    )
     return fig
