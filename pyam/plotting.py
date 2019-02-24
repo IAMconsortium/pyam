@@ -423,21 +423,103 @@ def stack_plot(df, x='year', y='value', stack='variable',
     # long form to one column per bar group
     _df = reshape_bar_plot(df, x, y, stack)
 
-    #
+    # Line below is for interpolation. On datetimes
+    # I think you'd downcast to seconds first and
+    # then cast back to datetime at the end..?
+    _df.index = _df.index.astype(float)
+
+    time_original = _df.index.values
+    new_times = []
+    first_zero_times = pd.DataFrame(index=["first_zero_time"])
+    both_positive_and_negative = _df.apply(
+        lambda x: (x >= 0).any() and (x < 0).any()
+    )
+
+    for col in _df.loc[:, both_positive_and_negative]:
+        values = _df[col].values
+        for i, val in enumerate(values[:-1]):
+            if np.sign(val) == -1*np.sign(values[i+1]):
+                x_1 = time_original[i]
+                x_2 = time_original[i+1]
+                y_1 = val
+                y_2 = values[i+1]
+
+                first_zero_time = (
+                    x_1
+                    - y_1 * (x_2 - x_1) / (y_2 - y_1)
+                )
+                first_zero_times.loc[:, col] = first_zero_time
+                if first_zero_time not in _df.index.values:
+                    _df.loc[first_zero_time, :] = np.nan
+
+    first_zero_times = first_zero_times.sort_values(
+        by="first_zero_time",
+        axis=1,
+    )
+    first_zero_times
+    _df = _df.reindex(sorted(_df.index)).interpolate(method="values")
+
+    # Sort lines so that negative timeseries are on the right,
+    # positive timeseries are on the left and timeseries which
+    # go from positive to negative are ordered such that the
+    # timeseries which goes negative first is on the right
+    # (case of timeseries which go from negative to positive
+    # is an edge case we haven't thought about as it's unlikely
+    # to apply to us).
+    col_order = [
+        c for c in first_zero_times.columns[::-1]
+    ]
+    for col in _df:
+        if (_df[col] > 0).all():
+            col_order.insert(0, col)
+        elif (_df[col] < 0).all():
+            col_order.append(col)
+        else:  # already covered by `zero_times` sorting
+            continue
+
+    _df = _df[col_order]
 
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
                              colormap=cmap)['color']
     rc = run_control()
-    colors = []
+    colors = {}
     for key in _df.columns:
         c = next(defaults)
-        if 'color' in rc and stack in rc['color'] and\
-                key in rc['color'][stack]:
+        if 'color' in rc and stack in rc['color'] and key in rc['color'][stack]:
             c = rc['color'][stack][key]
-        colors.append(c)
+        colors[key] = c
 
-    ax.stackplot(_df.index, _df.T, labels=_df.columns, colors=colors, **kwargs)
+    negative_only_cumulative = _df.applymap(lambda x: x if x < 0 else 0).cumsum(axis=1)
+    positive_only_cumulative = _df.applymap(lambda x: x if x >= 0 else 0)[
+        col_order[::-1]
+    ].cumsum(axis=1)[
+        col_order
+    ]
+
+    total_kwargs = kwargs.pop("total_kwargs", {})
+    plt_total = kwargs.pop("total", False)
+    time = _df.index.values
+    upper = positive_only_cumulative.iloc[:, 0].values
+    for j, col in enumerate(_df):
+        noc_tr = negative_only_cumulative.iloc[:, j].values
+        try:
+            poc_nr = positive_only_cumulative.iloc[:, j+1].values
+        except IndexError:
+            poc_nr = np.zeros_like(upper)
+        lower = poc_nr.copy()
+        if (noc_tr < 0).any():
+            lower[np.where(poc_nr == 0)] = noc_tr[np.where(poc_nr == 0)]
+
+        ax.fill_between(time, lower, upper, label=col, color=colors[col], **kwargs)
+        upper = lower.copy()
+
+    # add total
+    if plt_total:
+        total_kwargs.setdefault("label", "Total")
+        total_kwargs.setdefault("color", "black")
+        total_kwargs.setdefault("lw", 4.0)
+        ax.plot(time, _df.sum(axis=1), **total_kwargs)
 
     # add legend
     ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
