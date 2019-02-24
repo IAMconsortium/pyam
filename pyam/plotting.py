@@ -423,6 +423,8 @@ def stack_plot(df, x='year', y='value', stack='variable',
     # long form to one column per bar group
     _df = reshape_bar_plot(df, x, y, stack)
 
+    #
+
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
                              colormap=cmap)['color']
