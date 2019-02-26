@@ -6,7 +6,7 @@ import pandas as pd
 from numpy import testing as npt
 
 
-from pyam import IamDataFrame, META_IDX, IAMC_IDX
+from pyam import IamDataFrame, META_IDX, IAMC_IDX, compare
 
 
 RENAME_DF = IamDataFrame(pd.DataFrame([
@@ -179,6 +179,24 @@ def test_rename_append(meta_df):
     ], columns=['model', 'scenario', 'exclude']
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)
+
+
+def test_rename_duplicates():
+    mapping = {'variable': {'test_1': 'test_3'}}
+    pytest.raises(ValueError, RENAME_DF.rename, **mapping)
+
+    obs = RENAME_DF.rename(check_duplicates=False, **mapping)
+
+    exp = IamDataFrame(pd.DataFrame([
+       ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
+       ['model', 'scen', 'region_a', 'test_3', 'unit', 4, 12],
+       ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+
+    assert compare(obs, exp).empty
+    pd.testing.assert_frame_equal(obs.data, exp.data)
 
 
 def test_convert_unit():
