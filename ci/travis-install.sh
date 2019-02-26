@@ -28,4 +28,4 @@ conda create -n testing python=$PYVERSION --yes
 conda install -n testing --yes $(cat "${DIR}/environment-conda-default.txt" | tr '\n' ' ')
 
 # these have to be installed from conda-forge to get right gdal packages
-conda install -n testing -c conda-forge --yes $(cat "${DIR}/environment-conda-default.txt" | tr '\n' ' ')
+conda install -n testing -c conda-forge --yes $(cat "${DIR}/environment-conda-forge.txt" | tr '\n' ' ')
