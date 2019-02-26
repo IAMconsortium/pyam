@@ -68,7 +68,7 @@ def main():
     }
     install_requirements = requirements.install_requirements
     extra_requirements = {
-        'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
+        'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl', 'ipywidgets'],
         'docs': ['sphinx', 'sphinx_rtd_theme'],
         'deploy': ['twine', 'setuptools', 'wheel'],
     }
