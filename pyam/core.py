@@ -608,7 +608,7 @@ class IamDataFrame(object):
         if check_duplicates:
             merged = (
                 _data.loc[rows, self._LONG_IDX].drop_duplicates().append(
-                        _data.loc[~rows, self._LONG_IDX].drop_duplicates())
+                    _data.loc[~rows, self._LONG_IDX].drop_duplicates())
             )
             if any(merged.duplicated()):
                 msg = 'Duplicated rows between original and renamed data!\n{}'

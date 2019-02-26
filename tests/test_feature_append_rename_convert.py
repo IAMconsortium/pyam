@@ -188,9 +188,9 @@ def test_rename_duplicates():
     obs = RENAME_DF.rename(check_duplicates=False, **mapping)
 
     exp = IamDataFrame(pd.DataFrame([
-       ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
-       ['model', 'scen', 'region_a', 'test_3', 'unit', 4, 12],
-       ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
+        ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
+        ['model', 'scen', 'region_a', 'test_3', 'unit', 4, 12],
+        ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
     ], columns=['model', 'scenario', 'region',
                 'variable', 'unit', 2005, 2010],
     ))
