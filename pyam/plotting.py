@@ -43,6 +43,12 @@ _DEFAULT_PROPS = None
 # maximum number of labels after which do not show legends by default
 MAX_LEGEND_LABELS = 13
 
+# default legend kwargs for putting legends outside of plots
+OUTSIDE_LEGEND = {
+    'right': dict(loc='center left', bbox_to_anchor=(1.0, 0.5)),
+    'bottom': dict(loc='lower center', bbox_to_anchor=(0.5, -0.5), ncol=3),
+}
+
 
 def reset_default_props(**kwargs):
     """Reset properties to initial cycle point"""
