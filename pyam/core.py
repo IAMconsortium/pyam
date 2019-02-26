@@ -611,8 +611,9 @@ class IamDataFrame(object):
                         _data.loc[~rows, self._LONG_IDX].drop_duplicates())
             )
             if any(merged.duplicated()):
-                msg = 'duplicates between original and renamed data!'
-                raise ValueError(msg)
+                msg = 'Duplicated rows between original and renamed data!\n{}'
+                conflict_rows = merged.loc[merged.duplicated(), self._LONG_IDX]
+                raise ValueError(msg.format(conflict_rows.drop_duplicates()))
 
         # merge using `groupby().sum()`
         ret.data = _data.groupby(ret._LONG_IDX).sum().reset_index()
