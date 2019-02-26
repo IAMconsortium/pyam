@@ -620,15 +620,15 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def normalize(self, val, cols=None, inplace=False):
+    def normalize(self, value, cols=None, inplace=False):
         """Normalize data to a given value. Currently only supports normalizing to a
         specific time
 
         Parameters
         ----------
-        val: one or more values
-            the values to normalize to (based on `by` argument)
-        col: string or list of strings, default time column
+        value: one or more values
+            the values to normalize to (based on `cols` argument)
+        cols: string or list of strings, default time column
             the columns on which to normalize
         inplace: bool, default False
             if True, do operation inplace and return None
@@ -640,7 +640,7 @@ class IamDataFrame(object):
         df = ret.data
         x = df.set_index(IAMC_IDX)
         # change this if supporting more in the future
-        x['value'] /= x[x[cols] == val]['value']
+        x['value'] /= x[x[cols] == value]['value']
         ret.data = x.reset_index()
         if not inplace:
             return ret
