@@ -5,7 +5,7 @@ ifndef CONDA_PREFIX
 $(error Conda not active, please install conda and then activate it using \`conda activate\`))
 else
 ifeq ($(CONDA_DEFAULT_ENV),base)
-$(error Do not install to conda base environment. Source a different conda environment e.g. \`conda activate pyam\` or \`conda create --name pyam\` and rerun make))
+$(error Do not install to conda base environment. Source a different conda environment e.g. \`conda activate pyam\` or \`conda create --name pyam python=3.7\` and rerun make))
 endif
 VENV_DIR=$(CONDA_PREFIX)
 endif
@@ -72,7 +72,9 @@ test: $(VENV_DIR)  ## run all the tests
 
 .PHONY: virtual-environment
 virtual-environment: $(VENV_DIR)  ## make virtual environment for development
-$(VENV_DIR): $(PIP_REQUIREMENTS) $(CONDA_ENV_FILE)
+$(VENV_DIR): setup.py
+	# TODO: unify with ci install instructions somehow
+	$(CONDA_EXE) install --yes matplotlib==2.1.2 seaborn==0.8.1 pandas==0.22.0
 	$(CONDA_EXE) install --yes -c conda-forge $(shell cat requirements.txt | tr '\n' ' ')
 	# do matplotlib version fiddling for making plots
 	$(CONDA_EXE) uninstall --yes --force matplotlib
