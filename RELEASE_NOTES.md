@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#201](https://github.com/IAMconsortium/pyam/pull/201) Added native support for legends outside of plots with `pyam.plotting.OUTSIDE_LEGEND` with a tutorial
 - [#199](https://github.com/IAMconsortium/pyam/pull/199) Initializing an `IamDataFrame` accepts kwargs to fill or create from the data any missing required columns
 - [#195](https://github.com/IAMconsortium/pyam/pull/195) Fix filtering for `time`, `day` and `hour` to use generic `pattern_match()` (if such a column exists) in 'year'-formmatted IamDataFrames
 - [#192](https://github.com/IAMconsortium/pyam/pull/192) Extend `utils.find_depth()` to optionally return depth (as list of ints) rather than assert level tests
