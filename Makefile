@@ -72,10 +72,10 @@ test: $(VENV_DIR)  ## run all the tests
 
 .PHONY: virtual-environment
 virtual-environment: $(VENV_DIR)  ## make virtual environment for development
-$(VENV_DIR): setup.py
+$(VENV_DIR): setup.py ci/environment-conda-default.txt ci/environment-conda-forge.txt
 	# TODO: unify with ci install instructions somehow
-	$(CONDA_EXE) install --yes matplotlib==2.1.2 seaborn==0.8.1 pandas==0.22.0
-	$(CONDA_EXE) install --yes -c conda-forge $(shell cat requirements.txt | tr '\n' ' ')
+	$(CONDA_EXE) install --yes $(shell cat ci/environment-conda-default.txt | tr '\n' ' ')
+	$(CONDA_EXE) install --yes -c conda-forge $(shell cat ci/environment-conda-forge.txt | tr '\n' ' ')
 	# do matplotlib version fiddling for making plots
 	$(CONDA_EXE) uninstall --yes --force matplotlib
 	$(VENV_DIR)/bin/pip install matplotlib==2.1.2
