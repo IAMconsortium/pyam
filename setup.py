@@ -83,6 +83,7 @@ def main():
     package_data = {
         'pyam': ['region_mappings/*'],
     }
+
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS
     setup_kwargs = {
