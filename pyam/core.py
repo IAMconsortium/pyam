@@ -620,6 +620,29 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
+    def normalize(self, inplace=False, **kwargs):
+        """Normalize data to a given value. Currently only supports normalizing to a
+        specific time
+
+        Parameters
+        ----------
+        inplace: bool, default False
+            if True, do operation inplace and return None
+        kwargs: the values on which to normalize (e.g., `year=2005`)
+        """
+        if len(kwargs) > 1 or self.time_col not in kwargs:
+            raise ValueError('Only time(year)-based normalization supported')
+        ret = copy.deepcopy(self) if not inplace else self
+        df = ret.data
+        # change all below if supporting more in the future
+        cols = self.time_col
+        value = kwargs[self.time_col]
+        x = df.set_index(IAMC_IDX)
+        x['value'] /= x[x[cols] == value]['value']
+        ret.data = x.reset_index()
+        if not inplace:
+            return ret
+
     def aggregate(self, variable, components=None, units=None, append=False):
         """Compute the aggregate of timeseries components or sub-categories
 
