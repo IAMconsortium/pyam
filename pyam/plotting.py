@@ -46,7 +46,7 @@ MAX_LEGEND_LABELS = 13
 # default legend kwargs for putting legends outside of plots
 OUTSIDE_LEGEND = {
     'right': dict(loc='center left', bbox_to_anchor=(1.0, 0.5)),
-    'bottom': dict(loc='lower center', bbox_to_anchor=(0.5, -0.5), ncol=3),
+    'bottom': dict(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3),
 }
 
 
