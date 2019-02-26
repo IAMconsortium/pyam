@@ -976,7 +976,5 @@ def test_normalize(meta_df):
 
 
 def test_normalize_not_time(meta_df):
-    pytest.raises(ValueError, meta_df.normalize, 2005,
-                  cols='variable')
-    pytest.raises(ValueError, meta_df.normalize, 2005,
-                  cols=['model', 'variable'])
+    pytest.raises(ValueError, meta_df.normalize, variable='foo')
+    pytest.raises(ValueError, meta_df.normalize, year=2015, variable='foo')
