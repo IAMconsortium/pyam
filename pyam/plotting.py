@@ -381,7 +381,6 @@ def stack_plot(df, x='year', y='value', stack='variable',
     _df.index = _df.index.astype(float)
 
     time_original = _df.index.values
-    new_times = []
     first_zero_times = pd.DataFrame(index=["first_zero_time"])
     both_positive_and_negative = _df.apply(
         lambda x: (x >= 0).any() and (x < 0).any()
@@ -390,16 +389,13 @@ def stack_plot(df, x='year', y='value', stack='variable',
     for col in _df.loc[:, both_positive_and_negative]:
         values = _df[col].values
         for i, val in enumerate(values[:-1]):
-            if np.sign(val) == -1*np.sign(values[i+1]):
+            if np.sign(val) == -1 * np.sign(values[i + 1]):
                 x_1 = time_original[i]
-                x_2 = time_original[i+1]
+                x_2 = time_original[i + 1]
                 y_1 = val
-                y_2 = values[i+1]
+                y_2 = values[i + 1]
 
-                first_zero_time = (
-                    x_1
-                    - y_1 * (x_2 - x_1) / (y_2 - y_1)
-                )
+                first_zero_time = x_1 - y_1 * (x_2 - x_1) / (y_2 - y_1)
                 first_zero_times.loc[:, col] = first_zero_time
                 if first_zero_time not in _df.index.values:
                     _df.loc[first_zero_time, :] = np.nan
@@ -438,11 +434,14 @@ def stack_plot(df, x='year', y='value', stack='variable',
     colors = {}
     for key in _df.columns:
         c = next(defaults)
-        if 'color' in rc and stack in rc['color'] and key in rc['color'][stack]:
+        c_in_rc = 'color' in rc
+        if c_in_rc and stack in rc['color'] and key in rc['color'][stack]:
             c = rc['color'][stack][key]
         colors[key] = c
 
-    negative_only_cumulative = _df.applymap(lambda x: x if x < 0 else 0).cumsum(axis=1)
+    negative_only_cumulative = _df.applymap(
+        lambda x: x if x < 0 else 0
+    ).cumsum(axis=1)
     positive_only_cumulative = _df.applymap(lambda x: x if x >= 0 else 0)[
         col_order[::-1]
     ].cumsum(axis=1)[
@@ -456,14 +455,15 @@ def stack_plot(df, x='year', y='value', stack='variable',
     for j, col in enumerate(_df):
         noc_tr = negative_only_cumulative.iloc[:, j].values
         try:
-            poc_nr = positive_only_cumulative.iloc[:, j+1].values
+            poc_nr = positive_only_cumulative.iloc[:, j + 1].values
         except IndexError:
             poc_nr = np.zeros_like(upper)
         lower = poc_nr.copy()
         if (noc_tr < 0).any():
             lower[np.where(poc_nr == 0)] = noc_tr[np.where(poc_nr == 0)]
 
-        ax.fill_between(time, lower, upper, label=col, color=colors[col], **kwargs)
+        ax.fill_between(time, lower, upper, label=col,
+                        color=colors[col], **kwargs)
         upper = lower.copy()
 
     # add total
