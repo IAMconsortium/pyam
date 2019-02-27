@@ -132,18 +132,12 @@ def format_data(df, **kwargs):
     if isinstance(df, pd.Series):
         df = df.to_frame()
 
-    # ensure that only either `value` or `variable` custom setting is used
-    _cols = ['value', 'variable']
-    if any([i in kwargs for i in _cols]) and \
-            all([i in kwargs or i in df.columns for i in _cols]):
-        raise ValueError('using both `value` and `variable` is not valid!')
-
-    # if `value` arg is given, melt columns and use column name as `variable`
-    if 'value' in kwargs:
+    # if `value` is given but not `variable`,
+    # melt value columns and use column name as `variable`
+    if 'value' in kwargs and 'variable' not in kwargs:
         value = kwargs.pop('value')
         idx = set(df.columns) & (set(IAMC_IDX) | set(['year', 'time']))
         _df = df.set_index(list(idx))
-        print(_df)
         dfs = []
         for v in value if islistable(value) else [value]:
             if v not in df.columns:
@@ -153,10 +147,11 @@ def format_data(df, **kwargs):
             dfs.append(vdf.reset_index())
         df = pd.concat(dfs).reset_index(drop=True)
 
-    # for other columns, do a rename or concat multiple columns to IAMC-style
+    # otherwise, do a fill-by-value or rename columns or concat to IAMC-style
     for col, value in kwargs.items():
         if col in df:
-            raise ValueError('conflict of kwarg with column in dataframe!')
+            raise ValueError('conflict of kwarg with column `{}` in dataframe!'
+                             .format(col))
 
         if isstr(value) and value in df:
             df.rename(columns={value: col}, inplace=True)

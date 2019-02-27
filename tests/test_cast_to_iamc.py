@@ -51,3 +51,13 @@ def test_cast_by_column_concat(meta_df):
     df = IamDataFrame(df, model='model_a', variable=['var_1', 'var_2'])
     assert compare(meta_df, df).empty
     pd.testing.assert_frame_equal(df.data, meta_df.data)
+
+
+def test_cast_with_variable_and_value(meta_df):
+    pe_df = meta_df.filter(variable='Primary Energy')
+    df = pe_df.data.rename(columns={'value': 'lvl'}).drop('variable', axis=1)
+
+    df = IamDataFrame(df, variable='Primary Energy', value='lvl')
+
+    assert compare(pe_df, df).empty
+    pd.testing.assert_frame_equal(df.data, pe_df.data.reset_index(drop=True))
