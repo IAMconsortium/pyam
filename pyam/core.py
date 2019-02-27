@@ -589,7 +589,9 @@ class IamDataFrame(object):
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(filters)
         idx = ret.meta.index.isin(_make_index(ret.data[rows]))
-        _data = ret.data.copy()
+
+        # if `check_duplicates`, do the rename on a copy until after the check
+        _data = ret.data.copy() if check_duplicates else ret.data
 
         # apply renaming changes
         for col, _mapping in mapping.items():
