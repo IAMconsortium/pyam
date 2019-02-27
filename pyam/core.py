@@ -531,7 +531,8 @@ class IamDataFrame(object):
 
             return df
 
-    def rename(self, mapping=None, inplace=False, append=False, **kwargs):
+    def rename(self, mapping=None, inplace=False, append=False,
+               check_duplicates=True, **kwargs):
         """Rename and aggregate column entries using `groupby.sum()` on values.
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
@@ -551,6 +552,10 @@ class IamDataFrame(object):
             if True, do operation inplace and return None
         append: bool, default False
             if True, append renamed timeseries to IamDataFrame
+        check_duplicates: bool, default True
+            check whether conflict between existing and renamed data exists.
+            If True, raise ValueError; if False, rename and merge
+            with `groupby().sum()`.
         """
         # combine `mapping` arg and mapping kwargs, ensure no rename conflicts
         mapping = mapping or {}
@@ -560,12 +565,16 @@ class IamDataFrame(object):
             raise ValueError(msg)
         mapping.update(kwargs)
 
+        # determine columns that are not `model` or `scenario`
+        data_cols = set(self._LONG_IDX) - set(META_IDX)
+
         # changing index and data columns can cause model-scenario mismatch
         if any(i in mapping for i in META_IDX)\
-                and any(i in mapping for i in ['region', 'variable', 'unit']):
+                and any(i in mapping for i in data_cols):
             msg = 'Renaming index and data cols simultaneously not supported!'
             raise ValueError(msg)
 
+        # translate rename mapping to `filter()` arguments
         filters = {col: _from.keys() for col, _from in mapping.items()}
 
         # if append is True, downselect and append renamed data
@@ -581,6 +590,9 @@ class IamDataFrame(object):
         rows = ret._apply_filters(filters)
         idx = ret.meta.index.isin(_make_index(ret.data[rows]))
 
+        # if `check_duplicates`, do the rename on a copy until after the check
+        _data = ret.data.copy() if check_duplicates else ret.data
+
         # apply renaming changes
         for col, _mapping in mapping.items():
             if col in META_IDX:
@@ -590,11 +602,23 @@ class IamDataFrame(object):
                     raise ValueError('Renaming to non-unique `{}` index!'
                                      .format(col))
                 ret.meta.index = _index.set_index(META_IDX).index
-            elif col not in ['region', 'variable', 'unit']:
+            elif col not in data_cols:
                 raise ValueError('Renaming by `{}` not supported!'.format(col))
-            ret.data.loc[rows, col] = ret.data.loc[rows, col].replace(_mapping)
+            _data.loc[rows, col] = _data.loc[rows, col].replace(_mapping)
 
-        ret.data = ret.data.groupby(ret._LONG_IDX).sum().reset_index()
+        # check if duplicates exist between the renamed and not-renamed data
+        if check_duplicates:
+            merged = (
+                _data.loc[rows, self._LONG_IDX].drop_duplicates().append(
+                    _data.loc[~rows, self._LONG_IDX].drop_duplicates())
+            )
+            if any(merged.duplicated()):
+                msg = 'Duplicated rows between original and renamed data!\n{}'
+                conflict_rows = merged.loc[merged.duplicated(), self._LONG_IDX]
+                raise ValueError(msg.format(conflict_rows.drop_duplicates()))
+
+        # merge using `groupby().sum()`
+        ret.data = _data.groupby(ret._LONG_IDX).sum().reset_index()
 
         if not inplace:
             return ret
@@ -621,8 +645,8 @@ class IamDataFrame(object):
             return ret
 
     def normalize(self, inplace=False, **kwargs):
-        """Normalize data to a given value. Currently only supports normalizing to a
-        specific time
+        """Normalize data to a given value. Currently only supports normalizing
+        to a specific time.
 
         Parameters
         ----------
