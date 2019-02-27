@@ -645,8 +645,8 @@ class IamDataFrame(object):
             return ret
 
     def normalize(self, inplace=False, **kwargs):
-        """Normalize data to a given value. Currently only supports normalizing to a
-        specific time
+        """Normalize data to a given value. Currently only supports normalizing
+        to a specific time.
 
         Parameters
         ----------
