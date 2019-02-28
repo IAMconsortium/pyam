@@ -827,7 +827,10 @@ def _add_legend(ax, handles, labels, legend):
             MAX_LEGEND_LABELS))
     else:
         legend = {} if legend in [True, None] else legend
-        ax.legend(handles, labels, **legend)
+        loc = legend if isstr(legend) else legend.pop('loc', 'best')
+        outside = None if not loc.startswith('outside ') else loc.split(' ')[1]
+        loc = dict(loc=loc) if outside is None else OUTSIDE_LEGEND[outside]
+        ax.legend(handles, labels, **loc, **legend)
 
 
 def set_panel_label(label, ax=None, x=0.05, y=0.9):
