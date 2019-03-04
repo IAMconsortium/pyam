@@ -698,12 +698,6 @@ class IamDataFrame(object):
         else:
             return df_components
 
-    def _variable_components(self, variable):
-        """Get all components of a variable"""
-        var_list = pd.Series(self.data.variable.unique())
-        return var_list[pattern_match(var_list, '{}|*'.format(variable), 0)]
-
-
     def check_aggregate(self, variable, components=None, units=None,
                         exclude_on_fail=False, multiplier=1, **kwargs):
         """Check whether the timeseries data match the aggregation
@@ -836,6 +830,11 @@ class IamDataFrame(object):
             diff = pd.concat([diff], keys=[region], names=['region'])
             diff.index = diff.index.swaplevel(i=-1, j=-2)
             return diff.unstack().rename_axis(None, axis=1)
+
+    def _variable_components(self, variable):
+        """Get all components of a variable"""
+        var_list = pd.Series(self.data.variable.unique())
+        return var_list[pattern_match(var_list, '{}|*'.format(variable), 0)]
 
     def check_internal_consistency(self, **kwargs):
         """Check whether the database is internally consistent
