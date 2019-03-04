@@ -683,10 +683,7 @@ class IamDataFrame(object):
             else return aggregate timeseries
         """
         # default components to all variables one level below `variable`
-        if components is None:
-            var_list = pd.Series(self.data.variable.unique())
-            components = var_list[pattern_match(var_list,
-                                                '{}|*'.format(variable), 0)]
+        components = components or self._variable_components(variable)
 
         if not len(components):
             msg = 'cannot aggregate `{}` because it has no variable components'
@@ -700,6 +697,12 @@ class IamDataFrame(object):
             self.append(df_components, variable=variable, inplace=True)
         else:
             return df_components
+
+    def _variable_components(self, variable):
+        """Get all components of a variable"""
+        var_list = pd.Series(self.data.variable.unique())
+        return var_list[pattern_match(var_list, '{}|*'.format(variable), 0)]
+
 
     def check_aggregate(self, variable, components=None, units=None,
                         exclude_on_fail=False, multiplier=1, **kwargs):
