@@ -678,7 +678,7 @@ class IamDataFrame(object):
             list of variables, defaults to all sub-categories of `variable`
         units: str or list of str, default None
             filter variable and components for given unit(s)
-        append: bool
+        append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
         """
@@ -689,7 +689,7 @@ class IamDataFrame(object):
                                                 '{}|*'.format(variable), 0)]
 
         if not len(components):
-            msg = 'cannot aggregate {} because it has no components'
+            msg = 'cannot aggregate `{}` because it has no variable components'
             logger().info(msg.format(variable))
 
             return
@@ -697,8 +697,7 @@ class IamDataFrame(object):
         df_components = _aggregate_by_variables(self.data, components, units)
 
         if append is True:
-            self.append(pd.concat([df_components], names=['variable'],
-                                  keys=[variable]), inplace=True)
+            self.append(df_components, variable=variable, inplace=True)
         else:
             return df_components
 
