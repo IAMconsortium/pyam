@@ -691,7 +691,8 @@ class IamDataFrame(object):
 
             return
 
-        df_components = _aggregate_by_variables(self.data, components, unit)
+        rows = self._apply_filters(variable=components, unit=unit)
+        df_components = _aggregate_by_col(self.data[rows], 'variable')
 
         if append is True:
             self.append(df_components, variable=variable, inplace=True)
@@ -723,9 +724,9 @@ class IamDataFrame(object):
             return
 
         # filter and groupby data, use `pd.Series.align` for matching index
+        rows = self._apply_filters(variable=variable, unit=unit)
         df_variable, df_components = (
-            _aggregate_by_variables(self.data, variable, unit)
-            .align(df_components)
+            _aggregate_by_col(self.data[rows], 'variable').align(df_components)
         )
 
         # use `np.isclose` for checking match
@@ -1310,15 +1311,10 @@ def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
-def _aggregate_by_variables(df, variables, units=None):
-    variables = [variables] if isstr(variables) else variables
-    df = df[df.variable.isin(variables)]
-
-    if units is not None:
-        units = [units] if isstr(units) else units
-        df = df[df.unit.isin(units)]
-
-    return df.groupby(GROUP_IDX).sum()['value']
+def _aggregate_by_col(df, by):
+    """Aggregate `df` by specified column, return indexed `pd.Series`"""
+    cols = [c for c in list(df.columns) if c not in ['value', by]]
+    return df.groupby(cols).sum()['value']
 
 
 def _aggregate_by_regions(df, regions, units=None):
