@@ -692,12 +692,12 @@ class IamDataFrame(object):
             return
 
         rows = self._apply_filters(variable=components, unit=unit)
-        df_components = _aggregate_by_col(self.data[rows], 'variable')
+        _data = _aggregate_by_col(self.data[rows], 'variable')
 
         if append is True:
-            self.append(df_components, variable=variable, inplace=True)
+            self.append(_data, variable=variable, inplace=True)
         else:
-            return df_components
+            return _data
 
     def check_aggregate(self, variable, components=None, unit=None,
                         exclude_on_fail=False, multiplier=1, **kwargs):
