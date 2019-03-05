@@ -499,6 +499,7 @@ def test_stack_plot_negative_emissions_with_total(plot_stack_plot_df):
 def test_stack_plot_negative_emissions_kwargs_passing(plot_stack_plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_stack_plot_df.stack_plot(
+        ax=ax,
         alpha=0.5,
         total=True,
         total_kwargs={"color": "grey", "ls": "--", "lw": 2.0}

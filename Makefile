@@ -78,9 +78,11 @@ $(VENV_DIR): setup.py ci/environment-conda-default.txt ci/environment-conda-forg
 	$(CONDA_EXE) install --yes -c conda-forge $(shell cat ci/environment-conda-forge.txt | tr '\n' ' ')
 	# do matplotlib version fiddling for making plots
 	$(CONDA_EXE) uninstall --yes --force matplotlib
-	$(VENV_DIR)/bin/pip install matplotlib==2.1.2
 	# Install development setup
 	$(VENV_DIR)/bin/pip install -e .[tests,docs,deploy]
+	# do matplotlib version fiddling for making plots (part 2)
+	$(VENV_DIR)/bin/pip uninstall -y matplotlib
+	$(VENV_DIR)/bin/pip install matplotlib==2.1.2
 	touch $(VENV_DIR)
 
 .PHONY: release-on-conda
