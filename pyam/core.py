@@ -928,6 +928,10 @@ class IamDataFrame(object):
 
         # filter by columns and list of values
         for col, values in filters.items():
+            # treat `_apply_filters(col=None)` as no filter applied
+            if values is None:
+                continue
+
             if col in self.meta.columns:
                 matches = pattern_match(self.meta[col], values, regexp=regexp)
                 cat_idx = self.meta[matches].index
