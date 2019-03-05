@@ -36,10 +36,8 @@ from pyam.utils import (
     islistable,
     META_IDX,
     YEAR_IDX,
-    REGION_IDX,
     IAMC_IDX,
     SORT_IDX,
-    GROUP_IDX
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
@@ -1334,17 +1332,6 @@ def _aggregate(df, by):
     by = [by] if isstr(by) else by
     cols = [c for c in list(df.columns) if c not in ['value'] + by]
     return df.groupby(cols).sum()['value']
-
-
-def _aggregate_by_regions(df, regions, units=None):
-    regions = [regions] if isstr(regions) else regions
-    df = df[df.region.isin(regions)]
-
-    if units is not None:
-        units = [units] if isstr(units) else units
-        df = df[df.unit.isin(units)]
-
-    return df.groupby(REGION_IDX + ['unit']).sum()['value']
 
 
 def _raise_filter_error(col):
