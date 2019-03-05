@@ -765,7 +765,9 @@ class IamDataFrame(object):
             else return aggregate timeseries
         """
         # default subregions to all regions other than `region`
-        subregions = subregions or list(set(self.data.region) - set([region]))
+        if subregions is None:
+            rows = self._apply_filters(variable=variable)
+            subregions = set(self.data[rows].region) - set([region])
 
         if not len(subregions):
             msg = 'cannot aggregate variable `{}` to `{}` because there are'\
