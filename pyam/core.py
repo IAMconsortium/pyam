@@ -798,84 +798,48 @@ class IamDataFrame(object):
         else:
             return _data
 
-    def check_aggregate_regions(self, variable, region='World',
-                                components=None, unit=None,
-                                exclude_on_fail=False, **kwargs):
+    def check_aggregate_region(self, variable, region='World', subregions=None,
+                               components=None, unit=None,
+                               exclude_on_fail=False, **kwargs):
         """Check whether the region timeseries data match the aggregation
         of components
 
         Parameters
         ----------
         variable: str
-            variable to be checked for matching aggregation of components data
-        region: str
-            region to be checked for matching aggregation of components data
+            variable to be checked for matching aggregation of subregions
+        region: str, default 'World'
+            region to be checked for matching aggregation of subregions
+        subregions: list of str
+            list of subregions, defaults to all regions other than `region`
         components: list of str, default None
-            list of regions, defaults to all regions except region
+            list of variables, defaults to all sub-categories of `variable`
+            included in `region` but not in any of `subregions`
         unit: str or list of str, default None
             filter variable and components for given unit(s)
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
         kwargs: passed to `np.isclose()`
         """
-        var_df = self.filter(variable=variable, level=0)
-
-        if components is None:
-            components = list(set(var_df.data.region) - set([region]))
-
-        if not len(components):
-            msg = (
-                'cannot check regional aggregate for `{}` because it has no '
-                'regional components'
-            )
-            logger().info(msg.format(variable))
-
-            return None
+        # compute aggregate from subregions, return None if no subregions
+        df_subregions = self.aggregate_region(variable, region, subregions,
+                                              components, unit)
+        if df_subregions is None:
+            return
 
         # filter and groupby data, use `pd.Series.align` for matching index
-        df_region, df_components = (
-            _aggregate_by_regions(var_df.data, region, unit)
-            .align(_aggregate_by_regions(var_df.data, components, unit))
+        rows = self._apply_filters(region=region, variable=variable, unit=unit)
+        df_region, df_subregions = (
+            _aggregate(self.data[rows], ['region', 'variable'])
+            .align(df_subregions)
         )
-
-        df_components.index = df_components.index.droplevel(
-            "variable"
-        )
-
-        # Add in variables that are included in region totals but which
-        # aren't included in the regional components.
-        # For example, if we are looking at World and Emissions|BC, we need
-        # to add aviation and shipping to the sum of Emissions|BC for each
-        # of World's regional components to do a valid check.
-        different_region = components[0]
-        var_list = pd.Series(self.data.variable.unique())
-        var_components = var_list[pattern_match(var_list,
-                                                '{}|*'.format(variable), 0)]
-        for var_to_add in var_components:
-            var_rows = self.data.variable == var_to_add
-            region_rows = self.data.region == different_region
-            var_has_regional_info = (var_rows & region_rows).any()
-            if not var_has_regional_info:
-                df_var_to_add = self.filter(
-                    region=region, variable=var_to_add
-                ).data.groupby(REGION_IDX + ['unit']).sum()['value']
-
-                df_var_to_add.index = df_var_to_add.index.droplevel('variable')
-
-                if len(df_var_to_add):
-                    df_components = df_components.add(df_var_to_add,
-                                                      fill_value=0)
-
-        df_components = pd.concat([df_components], keys=[variable],
-                                  names=['variable'])
 
         # use `np.isclose` for checking match
-        diff = df_region[~np.isclose(df_region, df_components, **kwargs)]
+        diff = df_region[~np.isclose(df_region, df_subregions, **kwargs)]
 
         if len(diff):
             msg = (
-                '{} - {} of {} data points are not aggregates of regional '
-                'components'
+                '`{}` - {} of {} rows are not aggregates of subregions'
             )
             logger().info(msg.format(variable, len(diff), len(df_region)))
 
