@@ -159,7 +159,7 @@ TEST_STACKPLOT_DF = pd.DataFrame([
     ['World', 'Emissions|CO2|Tar', 'Mt CO2/yr', 0.3, 0.35, 0.35, 0.33],
     ['World', 'Emissions|CO2|Agg', 'Mt CO2/yr', 0.5, -0.1, -0.5, -0.7],
     ['World', 'Emissions|CO2|LUC', 'Mt CO2/yr', -0.3, -0.6, -1.2, -1.0]
-    ],
+],
     columns=['region', 'variable', 'unit', 2005, 2010, 2015, 2020],
 )
 # appease stickler
