@@ -490,7 +490,7 @@ class IamDataFrame(object):
         if year:
             criteria.update({'year': year})
 
-        keep = self._apply_filters(criteria)
+        keep = self._apply_filters(**criteria)
         idx = self.meta.index.difference(_meta_idx(self.data[keep]))
 
         n = len(idx)
@@ -587,7 +587,7 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
 
         # renaming is only applied where a filter matches for all given columns
-        rows = ret._apply_filters(filters)
+        rows = ret._apply_filters(**filters)
         idx = ret.meta.index.isin(_make_index(ret.data[rows]))
 
         # if `check_duplicates`, do the rename on a copy until after the check
@@ -902,7 +902,7 @@ class IamDataFrame(object):
             warnings.warn(msg)
             kwargs.update(filters)
 
-        _keep = self._apply_filters(kwargs)
+        _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
         ret.data = ret.data[_keep]
@@ -914,7 +914,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def _apply_filters(self, filters):
+    def _apply_filters(self, **filters):
         """Determine rows to keep in data for given set of filters
 
         Parameters
