@@ -68,8 +68,10 @@ def main():
     }
     install_requirements = requirements.install_requirements
     extra_requirements = {
-        'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl', 'ipywidgets'],
-        'docs': ['sphinx', 'sphinx_rtd_theme', 'nbconvert', 'jupyter_contrib_nbextensions'],
+        'tests': ['coverage', 'pytest', 'pytest-cov',
+                  'pytest-mpl', 'ipywidgets'],
+        'docs': ['sphinx', 'sphinx_rtd_theme', 'nbconvert',
+                 'jupyter_contrib_nbextensions'],
         'deploy': ['twine', 'setuptools', 'wheel'],
     }
     setup_kwargs = {
