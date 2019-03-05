@@ -692,7 +692,7 @@ class IamDataFrame(object):
             return
 
         rows = self._apply_filters(variable=components, unit=unit)
-        _data = _aggregate_by_col(self.data[rows], 'variable')
+        _data = _aggregate(self.data[rows], 'variable')
 
         if append is True:
             self.append(_data, variable=variable, inplace=True)
@@ -726,7 +726,7 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable, unit=unit)
         df_variable, df_components = (
-            _aggregate_by_col(self.data[rows], 'variable').align(df_components)
+            _aggregate(self.data[rows], 'variable').align(df_components)
         )
 
         # use `np.isclose` for checking match
@@ -1311,9 +1311,10 @@ def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
-def _aggregate_by_col(df, by):
-    """Aggregate `df` by specified column, return indexed `pd.Series`"""
-    cols = [c for c in list(df.columns) if c not in ['value', by]]
+def _aggregate(df, by):
+    """Aggregate `df` by specified column(s), return indexed `pd.Series`"""
+    by = [by] if isstr(by) else by
+    cols = [c for c in list(df.columns) if c not in ['value'] + by]
     return df.groupby(cols).sum()['value']
 
 
