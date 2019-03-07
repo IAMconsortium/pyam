@@ -875,7 +875,7 @@ class IamDataFrame(object):
             if diff_agg is not None:
                 inconsistent_vars[variable + "-aggregate"] = diff_agg
 
-            diff_regional = self.check_aggregate_regions(variable, **kwargs)
+            diff_regional = self.check_aggregate_region(variable, **kwargs)
             if diff_regional is not None:
                 inconsistent_vars[variable + "-regional"] = diff_regional
 
