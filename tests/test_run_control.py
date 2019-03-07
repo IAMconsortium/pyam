@@ -20,6 +20,7 @@ def test_exec():
     obs = df['foo'].values
     assert((exp == obs).all())
 
+    
 def test_no_file():
-    rc = pyam.run_control()
+    rc = run_control()
     pytest.raises(IOError, rc.update, 'no_such_file.yaml')
