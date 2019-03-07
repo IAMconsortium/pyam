@@ -699,8 +699,7 @@ class IamDataFrame(object):
 
     def check_aggregate(self, variable, components=None, unit=None,
                         exclude_on_fail=False, multiplier=1, **kwargs):
-        """Check whether the timeseries data match the aggregation
-        of components or sub-categories
+        """Check whether a timeseries matches the aggregation of its components
 
         Parameters
         ----------
@@ -732,7 +731,7 @@ class IamDataFrame(object):
                                        **kwargs)]
 
         if len(diff):
-            msg = '{} - {} of {} data points are not aggregates of components'
+            msg = '`{}` - {} of {} rows are not aggregates of components'
             logger().info(msg.format(variable, len(diff), len(df_variable)))
 
             if exclude_on_fail:
@@ -768,13 +767,13 @@ class IamDataFrame(object):
             subregions = set(self.data[rows].region) - set([region])
 
         if not len(subregions):
-            msg = 'cannot aggregate variable `{}` to `{}` because there are'\
-                  ' no subregions'
+            msg = 'cannot aggregate variable `{}` to `{}` because it does not'\
+                  ' exist in any subregion'
             logger().info(msg.format(variable, region))
 
             return
 
-        # compute aggregate over all subregions using `rename()´
+        # compute aggregate over all subregions
         subregion_df = self.filter(region=subregions, unit=unit)
         cols = ['region', 'variable']
         _data = _aggregate(subregion_df.filter(variable=variable).data, cols)
