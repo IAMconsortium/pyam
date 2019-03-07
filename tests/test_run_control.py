@@ -1,4 +1,5 @@
 import os
+import pytest
 
 from pyam import IamDataFrame, run_control
 
@@ -18,3 +19,7 @@ def test_exec():
     exp = ['bar'] * len(TEST_DF['scenario'].unique())
     obs = df['foo'].values
     assert((exp == obs).all())
+
+def test_no_file():
+    rc = pyam.run_control()
+    pytest.raises(IOError, rc.update, 'no_such_file.yaml')
