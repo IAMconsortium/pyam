@@ -30,7 +30,7 @@ def test_check_aggregate_fail(meta_df):
     obs = meta_df.check_aggregate('Primary Energy', exclude_on_fail=True)
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'Primary Energy', 'model_a', 'scen_a', 'World', 'EJ/y'
+        'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
     )
 
 
@@ -38,7 +38,7 @@ def test_check_aggregate_top_level(meta_df):
     obs = check_aggregate(meta_df, variable='Primary Energy', year=2005)
     assert len(obs.columns) == 1
     assert obs.index.get_values()[0] == (
-        'Primary Energy', 'model_a', 'scen_a', 'World', 'EJ/y'
+        'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
     )
 
 
@@ -168,7 +168,7 @@ def test_df_check_aggregate_regions_errors(check_aggregate_regional_df):
 
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'World', 'AIM', 'cscen', 'Emissions|N2O', 'Mt N/yr'
+        'AIM', 'cscen', 'World', 'Emissions|N2O', 'Mt N/yr'
     )
 
     obs = check_aggregate_regional_df.check_aggregate_regions(
@@ -177,7 +177,7 @@ def test_df_check_aggregate_regions_errors(check_aggregate_regional_df):
 
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'REUROPE', 'AIM', 'cscen', 'Emissions|N2O', 'Mt N/yr'
+        'AIM', 'cscen', 'REUROPE', 'Emissions|N2O', 'Mt N/yr'
     )
 
 
