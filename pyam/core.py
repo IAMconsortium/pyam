@@ -738,9 +738,7 @@ class IamDataFrame(object):
             if exclude_on_fail:
                 self._exclude_on_fail(diff.index.droplevel([2, 3, 4]))
 
-            diff = pd.concat([diff], keys=[variable], names=['variable'])
-
-            return diff.unstack().rename_axis(None, axis=1)
+            return IamDataFrame(diff, variable=variable).timeseries()
 
     def aggregate_region(self, variable, region='World', subregions=None,
                          components=None, unit=None, append=False):
@@ -846,9 +844,8 @@ class IamDataFrame(object):
             if exclude_on_fail:
                 self._exclude_on_fail(diff.index.droplevel([2, 3]))
 
-            diff = pd.concat([diff], keys=[region], names=['region'])
-            diff.index = diff.index.swaplevel(i=-1, j=-2)
-            return diff.unstack().rename_axis(None, axis=1)
+            col_args = dict(region=region, variable=variable)
+            return IamDataFrame(diff, **col_args).timeseries()
 
     def _variable_components(self, variable):
         """Get all components of a variable"""
