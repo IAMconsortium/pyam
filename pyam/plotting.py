@@ -219,8 +219,8 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None,
         ax.add_feature(cartopy.feature.COASTLINE)
         ax.add_feature(cartopy.feature.BORDERS)
 
-    vmin = vmin or data['value'].min()
-    vmax = vmax or data['value'].max()
+    vmin = vmin if vmin is not None else data['value'].min()
+    vmax = vmax if vmax is not None else data['value'].max()
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
     cmap = plt.get_cmap(cmap)
     scalar_map = cmx.ScalarMappable(norm=norm, cmap=cmap)
