@@ -147,7 +147,7 @@ def format_data(df, **kwargs):
             dfs.append(vdf.reset_index())
         df = pd.concat(dfs).reset_index(drop=True)
 
-    # otherwise, do a fill-by-value or rename columns or concat to IAMC-style
+    # otherwise, rename columns or concat to IAMC-style or do a fill-by-value
     for col, value in kwargs.items():
         if col in df:
             raise ValueError('conflict of kwarg with column `{}` in dataframe!'
