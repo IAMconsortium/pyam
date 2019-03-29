@@ -43,6 +43,12 @@ _DEFAULT_PROPS = None
 # maximum number of labels after which do not show legends by default
 MAX_LEGEND_LABELS = 13
 
+# default legend kwargs for putting legends outside of plots
+OUTSIDE_LEGEND = {
+    'right': dict(loc='center left', bbox_to_anchor=(1.0, 0.5)),
+    'bottom': dict(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3),
+}
+
 
 def reset_default_props(**kwargs):
     """Reset properties to initial cycle point"""
@@ -821,7 +827,11 @@ def _add_legend(ax, handles, labels, legend):
             MAX_LEGEND_LABELS))
     else:
         legend = {} if legend in [True, None] else legend
-        ax.legend(handles, labels, **legend)
+        loc = legend.pop('loc', 'best')
+        outside = loc.split(' ')[1] if loc.startswith('outside ') else False
+        _legend = OUTSIDE_LEGEND[outside] if outside else dict(loc=loc)
+        _legend.update(legend)
+        ax.legend(handles, labels, **_legend)
 
 
 def set_panel_label(label, ax=None, x=0.05, y=0.9):
