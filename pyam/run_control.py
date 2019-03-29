@@ -111,6 +111,8 @@ class RunControl(collections.Mapping):
         check_rel_paths = False
         if hasattr(obj, 'read'):  # it's a file
             obj = obj.read()
+        if isstr(obj) and not os.path.exists(obj):
+            raise IOError('File {} does not exist'.format(obj))
         if isstr(obj) and os.path.exists(obj):
             check_rel_paths = True
             fname = obj
