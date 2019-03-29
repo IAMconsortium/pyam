@@ -20,6 +20,24 @@ def test_cast_from_value_col(meta_df):
     pd.testing.assert_frame_equal(df.data, meta_df.data)
 
 
+def test_cast_from_value_col_and_args(meta_df):
+    # checks for issue [#210](https://github.com/IAMconsortium/pyam/issues/210)
+    df_with_value_cols = pd.DataFrame([
+        ['scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
+        ['scen_a', 'World', 'EJ/y', 2010, 6., 3],
+        ['scen_b', 'World', 'EJ/y', 2005, 2, None],
+        ['scen_b', 'World', 'EJ/y', 2010, 7, None]
+    ],
+        columns=['scenario', 'iso', 'unit', 'year',
+                 'Primary Energy', 'Primary Energy|Coal'],
+    )
+    df = IamDataFrame(df_with_value_cols, model='model_a', region='iso',
+                      value=['Primary Energy', 'Primary Energy|Coal'])
+
+    assert compare(meta_df, df).empty
+    pd.testing.assert_frame_equal(df.data, meta_df.data)
+
+
 def test_cast_with_model_arg_raises():
     df = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 1, 0.5],

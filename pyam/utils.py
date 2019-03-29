@@ -136,10 +136,10 @@ def format_data(df, **kwargs):
     # melt value columns and use column name as `variable`
     if 'value' in kwargs and 'variable' not in kwargs:
         value = kwargs.pop('value')
-        idx = set(df.columns) & (set(IAMC_IDX) | set(['year', 'time']))
-        _df = df.set_index(list(idx))
+        value = value if islistable(value) else [value]
+        _df = df.set_index(list(set(df.columns) - set(value)))
         dfs = []
-        for v in value if islistable(value) else [value]:
+        for v in value:
             if v not in df.columns:
                 raise ValueError('column `{}` does not exist!'.format(v))
             vdf = _df[v].to_frame().rename(columns={v: 'value'})
@@ -147,7 +147,7 @@ def format_data(df, **kwargs):
             dfs.append(vdf.reset_index())
         df = pd.concat(dfs).reset_index(drop=True)
 
-    # otherwise, do a fill-by-value or rename columns or concat to IAMC-style
+    # otherwise, rename columns or concat to IAMC-style or do a fill-by-value
     for col, value in kwargs.items():
         if col in df:
             raise ValueError('conflict of kwarg with column `{}` in dataframe!'
