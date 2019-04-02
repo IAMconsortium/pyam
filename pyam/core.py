@@ -57,6 +57,8 @@ class IamDataFrame(object):
         an instance of an TimeSeries or Scenario (requires `ixmp`),
         or pd.DataFrame or data file with IAMC-format data columns.
         A pd.DataFrame can have the required data as columns or index.
+        Support is provided additionally for R-style data columns for years,
+        like "X2015", etc.
     kwargs:
         if `value=col`, melt `col` to `value` and use `col` name as `variable`;
         else, mapping of columns required for an `IamDataFrame` to:
@@ -64,6 +66,7 @@ class IamDataFrame(object):
         - multiple columns, which will be concatenated by pipe
         - a string to be used as value for this column
     """
+
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         # import data from pd.DataFrame or read from source
