@@ -79,3 +79,14 @@ def test_cast_with_variable_and_value(meta_df):
 
     assert compare(pe_df, df).empty
     pd.testing.assert_frame_equal(df.data, pe_df.data.reset_index(drop=True))
+
+
+def test_cast_from_r_df(test_pd_df):
+    df = test_pd_df.copy()
+    # last two columns are years
+    df.columns = list(df.columns[:-2]) + ['X{}'.format(c)
+                                          for c in df.columns[-2:]]
+    obs = IamDataFrame(df)
+    exp = IamDataFrame(test_pd_df)
+    assert compare(obs, exp).empty
+    pd.testing.assert_frame_equal(obs.data, exp.data)
