@@ -137,15 +137,13 @@ def format_data(df, **kwargs):
         try:
             first = c[0]
             second = c[1:]
-            if first != 'X':
-                # not in the X2015 R-style, fall down to final return statement
-                pass
-            try:
-                #  bingo! was X2015 R-style, return the integer
-                return int(second)
-            except:
-                # nope, not an int, fall down to final return statement
-                pass
+            if first == 'X':
+                try:
+                    #  bingo! was X2015 R-style, return the integer
+                    return int(second)
+                except:
+                    # nope, not an int, fall down to final return statement
+                    pass
         except:
             # not a string/iterable/etc, fall down to final return statement
             pass
