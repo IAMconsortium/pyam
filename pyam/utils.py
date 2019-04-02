@@ -132,6 +132,26 @@ def format_data(df, **kwargs):
     if isinstance(df, pd.Series):
         df = df.to_frame()
 
+    # Check for R-style year columns, converting where necessary
+    def convert_r_columns(c):
+        try:
+            first = c[0]
+            second = c[1:]
+            if first != 'X':
+                # not in the X2015 R-style, fall down to final return statement
+                pass
+            try:
+                #  bingo! was X2015 R-style, return the integer
+                return int(second)
+            except:
+                # nope, not an int, fall down to final return statement
+                pass
+        except:
+            # not a string/iterable/etc, fall down to final return statement
+            pass
+        return c
+    df.columns = map(convert_r_columns, df.columns)
+
     # if `value` is given but not `variable`,
     # melt value columns and use column name as `variable`
     if 'value' in kwargs and 'variable' not in kwargs:
