@@ -59,18 +59,7 @@ PYAM_COLORS = {
     'AR6-SSP4-6.0': "#C47900",
     'AR6-SSP5-3.4-OS': "#7F006E",
     'AR6-SSP5-8.5': "#990002",
-    'AR6-RCP-2.6': "#003466",
-    'AR6-RCP-4.5': "#5492CD",
-    'AR6-RCP-6.0': "#C47900",
-    'AR6-RCP-8.5': "#990002",
-    # AR5 colours from
-    # https://tdaviesbarnard.co.uk/1202/ipcc-official-colors-rcp/
-    'AR5-RCP-2.6': "#0000FF",
-    'AR5-RCP-4.5': "#79BCFF",
-    'AR5-RCP-6.0': "#FF822D",
-    'AR5-RCP-8.5': "#FF0000",
 }
-
 
 def reset_default_props(**kwargs):
     """Reset properties to initial cycle point"""
@@ -143,11 +132,11 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
         # find if any colors in our properties corresponds with special colors
         # we know about
         overlap_idx = np.in1d(values, list(PYAM_COLORS.keys()))
-        if overlap_idx.any():  # some exist in our special set
+
+        if overlap_idx.any(): # some exist in our special set
             keys = np.array(list(d.keys()))[overlap_idx]
             values = np.array(values)[overlap_idx]
-            # translate each from pyam name, like AR6-SSP2-45 to proper color
-            # designation
+            # translate each from pyam name, like AR6-SSP2-45 to proper color designation
             for k, v in zip(keys, values):
                 d[k] = PYAM_COLORS[v]
             # replace props with updated dict without special colors
