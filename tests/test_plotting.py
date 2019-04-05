@@ -84,9 +84,11 @@ def test_line_color(plot_df):
     plot_df.line_plot(ax=ax, color='model', legend=True)
     return fig
 
+
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_PYAM_COLORS(plot_df):
-    # add a family of lines for each color in plotting.PYAM_COLORS separated by a small offset
+    # add a family of lines for each color in plotting.PYAM_COLORS separated by
+    # a small offset
     update = {'color': {'model': {}}}
     _df = plot_df.filter(model='test_model').data.copy()
     dfs = []
