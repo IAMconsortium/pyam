@@ -148,7 +148,7 @@ def format_data(df, **kwargs):
             # not a string/iterable/etc, fall down to final return statement
             pass
         return c
-    df.columns = map(convert_r_columns, df.columns)
+    df.columns = df.columns.map(convert_r_columns)
 
     # if `value` is given but not `variable`,
     # melt value columns and use column name as `variable`
