@@ -90,3 +90,10 @@ def test_cast_from_r_df(test_pd_df):
     exp = IamDataFrame(test_pd_df)
     assert compare(obs, exp).empty
     pd.testing.assert_frame_equal(obs.data, exp.data)
+
+
+def test_cast_from_r_df_err(test_pd_df):
+    df = test_pd_df.copy()
+    # last two columns are years
+    df.columns = list(df.columns[:-2]) + ['Xfoo', 'Xbar']
+    pytest.raises(ValueError, IamDataFrame, df)
