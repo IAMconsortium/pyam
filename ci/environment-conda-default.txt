@@ -1,0 +1,15 @@
+numpy==1.14.0
+pandas==0.22.0
+matplotlib==2.1.2
+seaborn==0.8.1
+six
+pyyaml
+xlrd
+xlsxwriter
+requests
+jupyter
+nbconvert
+pandoc
+pytest
+coveralls
+pytest-cov

@@ -1,0 +1,4 @@
+gdal
+fiona
+geopandas
+cartopy
