@@ -1,4 +1,4 @@
-gdal
-fiona
-geopandas
-cartopy
+gdal==2.3.3
+fiona==1.8.4
+geopandas==0.4.0
+cartopy==0.17.0
