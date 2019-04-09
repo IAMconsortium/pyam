@@ -25,7 +25,8 @@ install:
   - conda create -n testing python="%PYTHON_VERSION%" --yes
   - conda --version
   - activate testing
-  - make virtual-environment
+  - conda install -y numpy pandas pyyaml xlrd xlsxwriter matplotlib==3.0.3 seaborn==0.9.0 six requests jupyter nbconvert
+  - conda install -y -c conda-forge libiconv gdal fiona geopandas cartopy
 
 build: false
 
