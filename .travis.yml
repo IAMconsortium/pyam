@@ -3,13 +3,9 @@ language: sh
 matrix:
     include:
         - os: linux
-          env: PYENV=py35
-        - os: linux
           env: PYENV=py36
         - os: linux
           env: PYENV=py37
-        - os: osx
-          env: PYENV=py35
         - os: osx
           env: PYENV=py36
         - os: osx
@@ -35,6 +31,8 @@ install:
 
 script:
   - conda list
+  - python -c "import os; print(os.environ['PYVERSION'])"
+  - python -c "import sys; print('.'.join([sys.version[0], sys.version[1]]))"
   - python -c "import os, sys; assert os.environ['PYVERSION'] == '.'.join([sys.version[0], sys.version[1]])"
   - make test
   # only test docs once to make sure everything works on most recent python
