@@ -22,10 +22,3 @@ conda update --yes conda
 
 # create named env
 conda create -n testing python=$PYVERSION --yes
-
-# install deps, specific versions are used to guarantee consistency with
-# plotting tests
-conda install -n testing --yes $(cat "${DIR}/environment-conda-default.txt" | tr '\n' ' ')
-
-# these have to be installed from conda-forge to get right gdal packages
-conda install -n testing -c conda-forge --yes $(cat "${DIR}/environment-conda-forge.txt" | tr '\n' ' ')
