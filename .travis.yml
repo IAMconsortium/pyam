@@ -37,4 +37,4 @@ script:
   - cd ..
 
 after_success:
-  - coveralls
+  - cd tests && coveralls
