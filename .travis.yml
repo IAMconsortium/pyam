@@ -23,22 +23,18 @@ before_install:
   - source ./ci/env.sh
   - bash ./ci/travis-install.sh
   - source activate testing
-  # This is required to get FreeType v2.6.1 instead of a newer version.
-  # If this does not happen, then slight changes occur in plots causing
-  # failures.
-  - conda uninstall --yes --force matplotlib
-  - pip install matplotlib==2.1.2
+  - make virtual-environment
 
 install:
-  - pip install -e .[tests]
+  - make install
 
 script:
   - python -c "import os, sys; assert os.environ['PYVERSION'] == sys.version[0]"
-  - py.test tests --verbose --mpl --cov=pyam --cov-config ci/.coveragerc --cov-report term-missing
+  - make test
   # silly problems are there for building docs in windows and py2 (tries to look for py3 jupyter kernel)
   - cd doc
-  - if [[ "${PYENV}" == "py37" && "${TRAVIS_OS_NAME}" != 'windows' ]]; then pip install -r requirements.txt && make html; fi
+  - if [[ "${PYENV}" == "py37" && "${TRAVIS_OS_NAME}" != 'windows' ]]; then make html; fi
   - cd ..
-  
+
 after_success:
-  - coveralls
+  - cd tests && coveralls

@@ -1,0 +1,11 @@
+numpy==1.14.0
+pandas==0.22.0
+pyyaml
+xlrd
+xlsxwriter
+matplotlib==2.1.2
+seaborn==0.8.1
+six
+requests
+jupyter
+nbconvert
