@@ -1,5 +1,4 @@
-libiconv # I have no idea why this is needed, but geopandas fails in py3.6 without it
-gdal==2.3.3
-fiona==1.8.4
-geopandas==0.4.0
-cartopy==0.17.0
+gdal>=2.3.3
+fiona>=1.8.4
+geopandas>=0.4.0
+cartopy>=0.17.0
