@@ -35,7 +35,7 @@ install:
 
 script:
   - conda list
-  - python -c "import os, sys; assert os.environ['PYVERSION'] == '.'.join(sys.version[0], sys.version[1])"
+  - python -c "import os, sys; assert os.environ['PYVERSION'] == '.'.join([sys.version[0], sys.version[1]])"
   - make test
   # silly problems are there for building docs in windows and py2 (tries to look for py3 jupyter kernel)
   - cd doc
