@@ -1,5 +1,5 @@
-numpy==1.14.0
-pandas==0.24.1
+numpy
+pandas
 pyyaml
 xlrd
 xlsxwriter
