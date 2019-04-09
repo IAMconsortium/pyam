@@ -38,7 +38,6 @@ REQUIREMENTS = [
 EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
     'geoplots': ['geopandas', 'cartopy', 'gdal', 'fiona'],
-    'docs': ['sphinx', 'sphinx_rtd_theme'],
     'deploy': ['twine', 'setuptools', 'wheel'],
 }
 

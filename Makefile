@@ -70,6 +70,10 @@ regenerate-test-figures: $(VENV_DIR)  ## re-generate all test figures
 test: $(VENV_DIR)  ## run all the tests
 	$(VENV_DIR)/bin/pytest tests --mpl --cov -rfsxEX --cov-report term-missing
 
+.PHONY: docs
+docs: $(VENV_DIR)  ## make the docs
+	cd doc; make html
+
 .PHONY: virtual-environment
 virtual-environment: $(VENV_DIR)  ## make virtual environment for development
 $(VENV_DIR): setup.py ci/environment-conda-default.txt ci/environment-conda-forge.txt
@@ -79,11 +83,13 @@ $(VENV_DIR): setup.py ci/environment-conda-default.txt ci/environment-conda-forg
 	# do matplotlib version fiddling for making plots
 	$(CONDA_EXE) uninstall --yes --force matplotlib
 	# Install development setup
-	$(VENV_DIR)/bin/pip install -e .[tests,docs,deploy]
+	$(VENV_DIR)/bin/pip install -e .[tests,deploy]
 	# do matplotlib version fiddling for making plots (part 2)
 	$(VENV_DIR)/bin/pip uninstall -y matplotlib
 	$(VENV_DIR)/bin/pip install matplotlib==2.1.2
 	touch $(VENV_DIR)
+	# install docs requirements
+	cd doc; pip install -r requirements.txt
 
 .PHONY: release-on-conda
 release-on-conda:  ## release pyam on conda

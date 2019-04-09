@@ -50,15 +50,13 @@ giants include :code:`numpy` :cite:`numpy`, :code:`matplotlib`
 :cite:`matplotlib`, and :code:`pandas` :cite:`pandas`. Explicit requirements are
 fully enumerated below.
 
-# TODO: fix this up once I've decided where to move everything
-
 The required depedencies for :code:`pyam` are:
 
   .. program-output:: python -c 'import sys; sys.path.append("../.."); import setup; print("\n".join([r for r in setup.REQUIREMENTS]))'
 
 The optional depedencies for :code:`pyam` are:
 
-  .. program-output:: python -c 'import sys; sys.path.append("../.."); import setup; print("\n".join([r for r in setup.EXTRA_REQUIREMENTS['geoplots']]))'
+  .. program-output:: python -c 'import sys; sys.path.append("../.."); import setup; print("\n".join([r for r in setup.EXTRA_REQUIREMENTS["geoplots"]]))'
 
 The depedencies for building this documentation are:
 
