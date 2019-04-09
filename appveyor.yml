@@ -21,12 +21,9 @@ install:
   - set "PATH=%CONDA_ROOT%;%CONDA_ROOT%\Scripts;%CONDA_ROOT%\Library\bin;%PATH%"
 
   # create conda environment
-  - conda update --yes conda
   - conda create -n testing python="%PYTHON_VERSION%" --yes
-  - conda --version
-  - activate testing
-  - conda install -y numpy pandas pyyaml xlrd xlsxwriter matplotlib==3.0.3 seaborn==0.9.0 six requests jupyter nbconvert
-  - conda install -y -c conda-forge libiconv gdal fiona geopandas cartopy
+  - conda activate testing
+  - make virtual-environment
 
 build: false
 
