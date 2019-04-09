@@ -1,11 +1,10 @@
-numpy
-pandas
+numpy==1.14.0
+pandas==0.24.1
 pyyaml
 xlrd
 xlsxwriter
 matplotlib==3.0.3
-
-seaborn==0.8.1
+seaborn==0.9.0
 six
 requests
 jupyter
