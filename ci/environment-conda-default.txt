@@ -3,7 +3,7 @@ pandas==0.22.0
 pyyaml
 xlrd
 xlsxwriter
-matplotlib==2.1.2
+matplotlib==3.0.3
 seaborn==0.8.1
 six
 requests

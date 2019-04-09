@@ -83,13 +83,8 @@ virtual-environment: $(VENV_DIR)  ## make virtual environment for development
 	# TODO: unify with ci install instructions somehow
 	$(CONDA_EXE) install --yes $(shell cat ci/environment-conda-default.txt | tr '\n' ' ')
 	$(CONDA_EXE) install --yes -c conda-forge $(shell cat ci/environment-conda-forge.txt | tr '\n' ' ')
-	# do matplotlib version fiddling for making plots
-	$(CONDA_EXE) uninstall --yes --force matplotlib
 	# Install development setup
 	$(VENV_DIR)/bin/pip install -e .[tests,deploy]
-	# do matplotlib version fiddling for making plots (part 2)
-	$(VENV_DIR)/bin/pip uninstall -y matplotlib
-	$(VENV_DIR)/bin/pip install matplotlib==2.1.2
 	touch $(VENV_DIR)
 	# install docs requirements
 	cd doc; pip install -r requirements.txt
