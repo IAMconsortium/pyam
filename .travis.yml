@@ -3,13 +3,17 @@ language: sh
 matrix:
     include:
         - os: linux
-          env: PYENV=py37
+          env: PYENV=py35
         - os: linux
-          env: PYENV=py27
-        - os: osx
+          env: PYENV=py36
+        - os: linux
           env: PYENV=py37
         - os: osx
-          env: PYENV=py27
+          env: PYENV=py35
+        - os: osx
+          env: PYENV=py36
+        - os: osx
+          env: PYENV=py37
 # Observed on 10-Feb-19, choclatey builds for miniconda3 break
 # see: https://github.com/conda/conda/issues/6064
 # It is not clear how/when this can be fixed, so turn this back off for now
@@ -31,7 +35,7 @@ install:
 
 script:
   - conda list
-  - python -c "import os, sys; assert os.environ['PYVERSION'] == sys.version[0]"
+  - python -c "import os, sys; assert os.environ['PYVERSION'] == '.'.join(sys.version[0], sys.version[1])"
   - make test
   # silly problems are there for building docs in windows and py2 (tries to look for py3 jupyter kernel)
   - cd doc
