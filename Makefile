@@ -70,13 +70,16 @@ regenerate-test-figures: $(VENV_DIR)  ## re-generate all test figures
 test: $(VENV_DIR)  ## run all the tests
 	$(VENV_DIR)/bin/pytest tests --mpl --cov -rfsxEX --cov-report term-missing
 
+.PHONY: install
+install: $(VENV_DIR)  ## install pyam in virtual env
+	$(VENV_DIR)/bin/python setup.py install
+
 .PHONY: docs
 docs: $(VENV_DIR)  ## make the docs
 	cd doc; make html
 
 .PHONY: virtual-environment
 virtual-environment: $(VENV_DIR)  ## make virtual environment for development
-$(VENV_DIR): setup.py ci/environment-conda-default.txt ci/environment-conda-forge.txt
 	# TODO: unify with ci install instructions somehow
 	$(CONDA_EXE) install --yes $(shell cat ci/environment-conda-default.txt | tr '\n' ' ')
 	$(CONDA_EXE) install --yes -c conda-forge $(shell cat ci/environment-conda-forge.txt | tr '\n' ' ')
