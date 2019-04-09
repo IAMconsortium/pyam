@@ -35,7 +35,7 @@ install:
 
 script:
   - conda list
-  - python -c "import os, sys; assert os.environ['PYVERSION'] == '.'.join(sys.version[0], sys.version[1])"
+  - python -c "import os, sys; assert os.environ['PYVERSION'] == '.'.join([sys.version[0], sys.version[1]])"
   - make test
   # only test docs once to make sure everything works on most recent python
   - cd doc
