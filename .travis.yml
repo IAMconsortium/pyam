@@ -30,6 +30,7 @@ install:
   - make install
 
 script:
+  - conda list
   - python -c "import os, sys; assert os.environ['PYVERSION'] == sys.version[0]"
   - make test
   # silly problems are there for building docs in windows and py2 (tries to look for py3 jupyter kernel)
