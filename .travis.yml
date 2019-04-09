@@ -30,7 +30,9 @@ before_install:
   - pip install matplotlib==2.1.2
 
 install:
-  - pip install -e .[tests]
+  # this should only install testing libraries as all others should be installed
+  # with ci/traviss-install.sh
+  - pip install -e .[tests,geoplots]
 
 script:
   - python -c "import os, sys; assert os.environ['PYVERSION'] == sys.version[0]"
@@ -39,6 +41,6 @@ script:
   - cd doc
   - if [[ "${PYENV}" == "py37" && "${TRAVIS_OS_NAME}" != 'windows' ]]; then pip install -r requirements.txt && make html; fi
   - cd ..
-  
+
 after_success:
   - coveralls

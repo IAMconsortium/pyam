@@ -9,8 +9,6 @@ import versioneer
 from setuptools import setup, Command
 from subprocess import call
 
-import requirements
-
 # Thanks to http://patorjk.com/software/taag/
 logo = r"""
  ______   __  __     ______     __    __
@@ -22,6 +20,26 @@ logo = r"""
 
 INFO = {
     'version': '0.1.2',
+}
+
+REQUIREMENTS = [
+    "argparse",
+    "numpy",
+    "requests",
+    "pandas>=0.21.0",
+    "PyYAML",
+    "xlrd",
+    "xlsxwriter",
+    "matplotlib",
+    "seaborn",
+    "six",
+]
+
+EXTRA_REQUIREMENTS = {
+    'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
+    'geoplots': ['geopandas', 'cartopy', 'gdal', 'fiona'],
+    'docs': ['sphinx', 'sphinx_rtd_theme'],
+    'deploy': ['twine', 'setuptools', 'wheel'],
 }
 
 
@@ -66,12 +84,8 @@ def main():
     package_data = {
         'pyam': ['region_mappings/*'],
     }
-    install_requirements = requirements.install_requirements
-    extra_requirements = {
-        'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
-        'docs': ['sphinx', 'sphinx_rtd_theme'],
-        'deploy': ['twine', 'setuptools', 'wheel'],
-    }
+    install_requirements = REQUIREMENTS
+    extra_requirements = EXTRA_REQUIREMENTS
     setup_kwargs = {
         "name": "pyam-iamc",
         "version": versioneer.get_version(),
