@@ -18,6 +18,7 @@ install:
   - set "PATH=%CONDA_ROOT%;%CONDA_ROOT%\Scripts;%CONDA_ROOT%\Library\bin;%PATH%"
 
   # create conda environment
+  - conda update --yes conda
   - conda create -n testing python="%PYTHON_VERSION%" --yes
   - conda activate testing
   - make virtual-environment
