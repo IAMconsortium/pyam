@@ -20,7 +20,8 @@ install:
   # create conda environment
   - conda update --yes conda
   - conda create -n testing python="%PYTHON_VERSION%" --yes
-  - conda activate testing
+  - conda --version
+  - activate testing
   - make virtual-environment
 
 build: false
