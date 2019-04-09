@@ -1,9 +1,6 @@
 
 environment:
   matrix:
-      - PYTHON_VERSION: "2.7"
-        MINICONDA: "C:\\Miniconda-x64"
-        PYTHON_ARCH: "64"
       - PYTHON_VERSION: "3.6"
         MINICONDA: "C:\\Miniconda36-x64"
         PYTHON_ARCH: "64"
@@ -20,9 +17,10 @@ install:
   - set "CONDA_ROOT=C:\Miniconda%BASE_PYTHON_VERSION%%ARCH_LABEL%"
   - set "PATH=%CONDA_ROOT%;%CONDA_ROOT%\Scripts;%CONDA_ROOT%\Library\bin;%PATH%"
 
-  # Dependencies and package install
-  - conda install --yes geopandas cartopy
-  - if "%PYTHON_VERSION%" == "2.7" pip install functools32
+  # create conda environment
+  - conda create -n testing python="%PYTHON_VERSION%" --yes
+  - conda activate testing
+  - make virtual-environment
 
 build: false
 
