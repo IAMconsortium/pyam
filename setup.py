@@ -36,7 +36,7 @@ REQUIREMENTS = [
 ]
 
 EXTRA_REQUIREMENTS = {
-    'tests': ['coverage', 'pytest', 'pytest-cov', 'pytest-mpl'],
+    'tests': ['coverage', 'coveralls', 'pytest', 'pytest-cov', 'pytest-mpl'],
     'geoplots': ['geopandas', 'cartopy', 'gdal', 'fiona'],
     'deploy': ['twine', 'setuptools', 'wheel'],
 }
