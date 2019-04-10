@@ -1,5 +1,9 @@
 .DEFAULT_GOAL := help
 
+CI_DIR=./ci
+CI_ENVIRONMENT_CONDA_DEFAULT_FILE=$(CI_DIR)/environment-conda-default.txt
+CI_ENVIRONMENT_CONDA_FORGE_FILE=$(CI_DIR)/environment-conda-forge.txt
+
 
 ifndef CONDA_PREFIX
 $(error Conda not active, please install conda and then activate it using \`conda activate\`))
@@ -9,7 +13,6 @@ $(error Do not install to conda base environment. Source a different conda envir
 endif
 VENV_DIR=$(CONDA_PREFIX)
 endif
-
 
 define PRINT_HELP_PYSCRIPT
 import re, sys
@@ -80,14 +83,15 @@ docs: $(VENV_DIR)  ## make the docs
 
 .PHONY: virtual-environment
 virtual-environment: $(VENV_DIR)  ## make virtual environment for development
+
+$(VENV_DIR):  $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE)
 	# TODO: unify with ci install instructions somehow
-	$(CONDA_EXE) install --yes $(shell cat ci/environment-conda-default.txt | tr '\n' ' ')
-	$(CONDA_EXE) install --yes -c conda-forge $(shell cat ci/environment-conda-forge.txt | tr '\n' ' ')
+	$(CONDA_EXE) install --yes $(shell cat $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) | tr '\n' ' ')
+	$(CONDA_EXE) install --yes -c conda-forge $(shell cat $(CI_ENVIRONMENT_CONDA_FORGE_FILE) | tr '\n' ' ')
 	# Install development setup
 	$(VENV_DIR)/bin/pip install -e .[tests,deploy]
-	touch $(VENV_DIR)
 	# install docs requirements
-	cd doc; pip install -r requirements.txt
+	cd doc; $(VENV_DIR)/bin/pip install -r requirements.txt
 
 .PHONY: release-on-conda
 release-on-conda:  ## release pyam on conda
