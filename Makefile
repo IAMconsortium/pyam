@@ -86,11 +86,10 @@ virtual-environment: $(VENV_DIR)  ## make virtual environment for development
 
 $(VENV_DIR):  $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE)
 	# TODO: unify with ci install instructions somehow
-	$(CONDA_EXE) install --yes $(shell cat ci/environment-conda-default.txt | tr '\n' ' ')
-	$(CONDA_EXE) install --yes -c conda-forge $(shell cat ci/environment-conda-forge.txt | tr '\n' ' ')
+	$(CONDA_EXE) install --yes $(shell cat $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) | tr '\n' ' ')
+	$(CONDA_EXE) install --yes -c conda-forge $(shell cat $(CI_ENVIRONMENT_CONDA_FORGE_FILE) | tr '\n' ' ')
 	# Install development setup
 	$(VENV_DIR)/bin/pip install -e .[tests,deploy]
-	touch $(VENV_DIR)
 	# install docs requirements
 	cd doc; $(VENV_DIR)/bin/pip install -r requirements.txt
 
