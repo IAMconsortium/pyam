@@ -9,4 +9,5 @@ cloud_sptheme
 nbformat
 ipython
 jupyter
+jupyter_contrib_nbextensions
 pillow
