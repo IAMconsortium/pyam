@@ -24,7 +24,7 @@ before_install:
   - bash ./ci/travis-install-miniconda.sh
   - conda create -n testing python=$PYVERSION --yes
   - source activate testing
-  - make virtual-environment
+  - make -B virtual-environment
 
 install:
   - make install

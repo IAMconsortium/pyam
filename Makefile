@@ -87,7 +87,7 @@ virtual-environment: $(VENV_DIR)  ## make virtual environment for development
 	$(VENV_DIR)/bin/pip install -e .[tests,deploy]
 	touch $(VENV_DIR)
 	# install docs requirements
-	cd doc; pip install -r requirements.txt
+	cd doc; $(VENV_DIR)/bin/pip install -r requirements.txt
 
 .PHONY: release-on-conda
 release-on-conda:  ## release pyam on conda
