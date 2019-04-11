@@ -384,7 +384,7 @@ def pie_plot(df, value='value', category='variable',
 
 
 def stack_plot(df, x='year', y='value', stack='variable',
-               ax=None, legend=True, title=True, cmap=None,
+               ax=None, legend=True, title=True, cmap=None, total=None,
                **kwargs):
     """Plot data as a stack chart.
 
@@ -410,6 +410,11 @@ def stack_plot(df, x='year', y='value', stack='variable',
     cmap : string, optional
         A colormap to use.
         default: None
+    total : bool or dict, optional
+        If True, plot a total line with default pyam settings. If a dict, then
+        plot the total line using the dict key-value pairs as keyword arguments to
+        ax.plot(). If None, do not plot the total line.
+        default : None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
     for col in set(SORT_IDX) - set([x, stack]):
@@ -429,23 +434,28 @@ def stack_plot(df, x='year', y='value', stack='variable',
 
     time_original = _df.index.values
     first_zero_times = pd.DataFrame(index=["first_zero_time"])
+
     both_positive_and_negative = _df.apply(
         lambda x: (x >= 0).any() and (x < 0).any()
     )
-
     for col in _df.loc[:, both_positive_and_negative]:
-        values = _df[col].values
-        for i, val in enumerate(values[:-1]):
-            if np.sign(val) == -1 * np.sign(values[i + 1]):
-                x_1 = time_original[i]
-                x_2 = time_original[i + 1]
-                y_1 = val
-                y_2 = values[i + 1]
+        values = _df[col].dropna().values
+        positive = (values >= 0)
+        negative = (values < 0)
+        crosses = np.argwhere((positive[:-1] & negative[1:])
+                              | (positive[1:] & negative[:-1]))
+        for i, cross in enumerate(crosses):
+            cross = cross[0]  # get location
+            x_1 = time_original[cross]
+            x_2 = time_original[cross + 1]
+            y_1 = values[cross]
+            y_2 = values[cross + 1]
 
-                first_zero_time = x_1 - y_1 * (x_2 - x_1) / (y_2 - y_1)
-                first_zero_times.loc[:, col] = first_zero_time
-                if first_zero_time not in _df.index.values:
-                    _df.loc[first_zero_time, :] = np.nan
+            zero_time = x_1 - y_1 * (x_2 - x_1) / (y_2 - y_1)
+            if i == 0:
+                first_zero_times.loc[:, col] = zero_time
+            if zero_time not in _df.index.values:
+                _df.loc[zero_time, :] = np.nan
 
     first_zero_times = first_zero_times.sort_values(
         by="first_zero_time",
@@ -459,17 +469,11 @@ def stack_plot(df, x='year', y='value', stack='variable',
     # is on the right (case of timeseries which go from negative to positive
     # is an edge case we haven't thought about as it's unlikely to apply to
     # us).
-    col_order = [
-        c for c in first_zero_times.columns[::-1]
-    ]
-    for col in _df:
-        if (_df[col] > 0).all():
-            col_order.insert(0, col)
-        elif (_df[col] < 0).all():
-            col_order.append(col)
-        else:  # already covered by `zero_times` sorting
-            continue
-
+    col_order = (
+        [c for c in _df if (_df[c] > 0).all()]
+        + first_zero_times.columns[::-1].tolist()
+        + [c for c in _df if (_df[c] < 0).all()]
+    )
     _df = _df[col_order]
 
     # explicitly get colors
@@ -484,6 +488,7 @@ def stack_plot(df, x='year', y='value', stack='variable',
             c = rc['color'][stack][key]
         colors[key] = c
 
+    # plot stacks, starting from the top and working our way up to the bottom
     negative_only_cumulative = _df.applymap(
         lambda x: x if x < 0 else 0
     ).cumsum(axis=1)
@@ -492,9 +497,6 @@ def stack_plot(df, x='year', y='value', stack='variable',
     ].cumsum(axis=1)[
         col_order
     ]
-
-    total_kwargs = kwargs.pop("total_kwargs", {})
-    plt_total = kwargs.pop("total", False)
     time = _df.index.values
     upper = positive_only_cumulative.iloc[:, 0].values
     for j, col in enumerate(_df):
@@ -512,11 +514,13 @@ def stack_plot(df, x='year', y='value', stack='variable',
         upper = lower.copy()
 
     # add total
-    if plt_total:
-        total_kwargs.setdefault("label", "Total")
-        total_kwargs.setdefault("color", "black")
-        total_kwargs.setdefault("lw", 4.0)
-        ax.plot(time, _df.sum(axis=1), **total_kwargs)
+    if total is not None:
+        if not isinstance(total, dict):
+            total = {}
+        total.setdefault("label", "Total")
+        total.setdefault("color", "black")
+        total.setdefault("lw", 4.0)
+        ax.plot(time, _df.sum(axis=1), **total)
 
     # add legend
     ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
