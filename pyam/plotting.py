@@ -455,9 +455,10 @@ def stack_plot(df, x='year', y='value', stack='variable',
 
     # Sort lines so that negative timeseries are on the right, positive
     # timeseries are on the left and timeseries which go from positive to
-    # negative are ordered such that the timeseries which goes negative first is
-    # on the right (case of timeseries which go from negative to positive is an
-    # edge case we haven't thought about as it's unlikely to apply to us).
+    # negative are ordered such that the timeseries which goes negative first
+    # is on the right (case of timeseries which go from negative to positive
+    # is an edge case we haven't thought about as it's unlikely to apply to
+    # us).
     col_order = [
         c for c in first_zero_times.columns[::-1]
     ]
