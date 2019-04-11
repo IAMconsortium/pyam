@@ -4,6 +4,7 @@ CI_DIR=./ci
 CI_ENVIRONMENT_CONDA_DEFAULT_FILE=$(CI_DIR)/environment-conda-default.txt
 CI_ENVIRONMENT_CONDA_FORGE_FILE=$(CI_DIR)/environment-conda-forge.txt
 
+
 ifndef CONDA_PREFIX
 $(error Conda not active, please install conda and then activate it using \`conda activate\`))
 else
