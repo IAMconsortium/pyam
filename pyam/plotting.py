@@ -408,8 +408,8 @@ def stack_plot(df, x='year', y='value', stack='variable',
         default: None
     total : bool or dict, optional
         If True, plot a total line with default pyam settings. If a dict, then
-        plot the total line using the dict key-value pairs as keyword arguments to
-        ax.plot(). If None, do not plot the total line.
+        plot the total line using the dict key-value pairs as keyword arguments
+        to ax.plot(). If None, do not plot the total line.
         default : None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
@@ -438,8 +438,9 @@ def stack_plot(df, x='year', y='value', stack='variable',
         values = _df[col].dropna().values
         positive = (values >= 0)
         negative = (values < 0)
-        crosses = np.argwhere((positive[:-1] & negative[1:])
-                              | (positive[1:] & negative[:-1]))
+        pos_to_neg = positive[:-1] & negative[1:]
+        neg_to_pos = positive[1:] & negative[:-1]
+        crosses = np.argwhere(pos_to_neg | neg_to_pos)
         for i, cross in enumerate(crosses):
             cross = cross[0]  # get location
             x_1 = time_original[cross]
@@ -465,11 +466,10 @@ def stack_plot(df, x='year', y='value', stack='variable',
     # is on the right (case of timeseries which go from negative to positive
     # is an edge case we haven't thought about as it's unlikely to apply to
     # us).
-    col_order = (
-        [c for c in _df if (_df[c] > 0).all()]
-        + first_zero_times.columns[::-1].tolist()
-        + [c for c in _df if (_df[c] < 0).all()]
-    )
+    pos_cols = [c for c in _df if (_df[c] > 0).all()]
+    cross_cols = first_zero_times.columns[::-1].tolist()
+    neg_cols = [c for c in _df if (_df[c] < 0).all()]
+    col_order = pos_cols + cross_cols + neg_cols
     _df = _df[col_order]
 
     # explicitly get colors
