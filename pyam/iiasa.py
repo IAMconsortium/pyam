@@ -91,7 +91,8 @@ class Connection(object):
         """
         # at present this reads in all data for all scenarios, it could be sped
         # up in the future to try to query a subset
-        url = self.base_url + 'runs?getOnlyDefaultRuns=false&includeMetadata=true'
+        url = self.base_url + \
+            'runs?getOnlyDefaultRuns=false&includeMetadata=true'
         headers = {'Authorization': 'Bearer {}'.format(self.auth())}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
