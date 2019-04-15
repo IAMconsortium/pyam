@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#219](https://github.com/IAMconsortium/pyam/pull/219) Add ability to query metadata from iiasa data sources
 - [#214](https://github.com/IAMconsortium/pyam/pull/214) Tidy up requirements specifications a little
 - [#213](https://github.com/IAMconsortium/pyam/pull/213) Add support for IPCC colors, see the new tutorial "Using IPCC Color Palattes"
 - [#212](https://github.com/IAMconsortium/pyam/pull/212) Now natively support reading R-style data frames with year columns like "X2015"
