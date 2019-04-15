@@ -20,5 +20,3 @@ fi
 # update conda
 conda update --yes conda
 
-# create named env
-conda create -n testing python=$PYVERSION --yes

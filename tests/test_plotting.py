@@ -3,15 +3,18 @@ import pytest
 import os
 import copy
 import numpy as np
+import pandas as pd
 import pyam
-
+import warnings
 
 # on CI, freetype version 2.6.1 works, but 2.8.0 does not
 # if we want to move to 2.8.0, then we will need to regenerate images
 FREETYPE_VERSION = matplotlib.ft2font.__freetype_version__
-if int(FREETYPE_VERSION.replace('.', '')) > 261:
-    pytest.skip('Freetype version > 2.6.1: {}'.format(FREETYPE_VERSION),
-                allow_module_level=True)
+if int(FREETYPE_VERSION.replace('.', '')) < 291:
+    msg = 'Freetype version < 2.9.1: {}'.format(FREETYPE_VERSION)
+    warnings.warn('test_plotting.py is being skipped due to a '
+                  'Freetype Version mismatch: {}'.format(msg))
+    pytest.skip(msg, allow_module_level=True)
 
 try:
     import cartopy
@@ -79,6 +82,31 @@ def test_line_no_legend(plot_df):
 def test_line_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, color='model', legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_PYAM_COLORS(plot_df):
+    # add a family of lines for each color in plotting.PYAM_COLORS separated by
+    # a small offset
+    update = {'color': {'model': {}}}
+    _df = plot_df.filter(
+        model='test_model',
+        variable='Primary Energy',
+        scenario='test_scenario1',
+    ).data.copy()
+    dfs = []
+    for i, color in enumerate(plotting.PYAM_COLORS):
+        df = _df.copy()
+        model = color
+        df['model'] = model
+        df['value'] += i
+        update['color']['model'][model] = color
+        dfs.append(df)
+    df = pyam.IamDataFrame(pd.concat(dfs))
+    fig, ax = plt.subplots(figsize=(8, 8))
+    with update_run_control(update):
+        df.line_plot(ax=ax, color='model', legend=True)
     return fig
 
 

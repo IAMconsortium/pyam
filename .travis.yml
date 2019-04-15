@@ -3,13 +3,13 @@ language: sh
 matrix:
     include:
         - os: linux
-          env: PYENV=py37
+          env: PYENV=py36
         - os: linux
-          env: PYENV=py27
-        - os: osx
           env: PYENV=py37
         - os: osx
-          env: PYENV=py27
+          env: PYENV=py36
+        - os: osx
+          env: PYENV=py37
 # Observed on 10-Feb-19, choclatey builds for miniconda3 break
 # see: https://github.com/conda/conda/issues/6064
 # It is not clear how/when this can be fixed, so turn this back off for now
@@ -21,17 +21,21 @@ matrix:
 
 before_install:
   - source ./ci/env.sh
-  - bash ./ci/travis-install.sh
+  - bash ./ci/travis-install-miniconda.sh
+  - conda create -n testing python=$PYVERSION --yes
   - source activate testing
-  - make virtual-environment
+  - make -B virtual-environment
 
 install:
   - make install
 
 script:
-  - python -c "import os, sys; assert os.environ['PYVERSION'] == sys.version[0]"
+  - conda list
+  - python -c "import os; print(os.environ['PYVERSION'])"
+  - python -c "import sys; print(sys.version)"
+  - python -c "import os, sys; assert os.environ['PYVERSION'] == '.'.join([sys.version[0], sys.version[2]])"
   - make test
-  # silly problems are there for building docs in windows and py2 (tries to look for py3 jupyter kernel)
+  # only test docs once to make sure everything works on most recent python
   - cd doc
   - if [[ "${PYENV}" == "py37" && "${TRAVIS_OS_NAME}" != 'windows' ]]; then make html; fi
   - cd ..

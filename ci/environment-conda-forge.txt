@@ -1,3 +1,4 @@
+libiconv
 gdal
 fiona
 geopandas
