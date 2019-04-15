@@ -57,6 +57,22 @@ def test_line_plot(plot_df):
     return fig
 
 
+def test_line_plot_cmap(plot_df):
+    # need to provide cmap and color both
+    _plot_df = copy.deepcopy(plot_df)
+    _plot_df.set_meta(meta=[np.nan] * 4, name='test')
+    pytest.raises(ValueError, _plot_df.line_plot, cmap='magma')
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_cmap_color_arg(plot_df):
+    _plot_df = copy.deepcopy(plot_df)
+    _plot_df.set_meta(meta=[np.nan] * 4, name='test')
+    fig, ax = plt.subplots(figsize=(8, 8))
+    _plot_df.line_plot(ax=ax, legend=True, cmap='magma', color='variable')
+    return fig
+
+
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot_dict_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))

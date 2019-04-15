@@ -32,7 +32,7 @@ except ImportError:
 
 from pyam.logger import logger
 from pyam.run_control import run_control
-from pyam.utils import requires_package, SORT_IDX, isstr
+from pyam.utils import requires_package, IAMC_IDX, SORT_IDX, isstr
 
 from pandas.plotting._style import _get_standard_colors
 
@@ -108,9 +108,13 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
     df : pd.DataFrame
         data to be used for style properties
     """
+    if color is None and cmap is not None:
+        raise ValueError('`cmap` must be provided with the `color` argument')
+
     # determine color, marker, and linestyle for each line
-    defaults = default_props(reset=True, num_colors=len(df),
-                             colormap=cmap)
+    n = len(df[color].unique()) if color in df.columns else \
+        len(df[list(set(df.columns) & set(IAMC_IDX))].drop_duplicates())
+    defaults = default_props(reset=True, num_colors=n, colormap=cmap)
 
     props = {}
     rc = run_control()
