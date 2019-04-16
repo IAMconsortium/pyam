@@ -260,7 +260,7 @@ def read_iiasa(name, meta=False, **kwargs):
     name : str
         A valid IIASA database name, see pyam.iiasa.valid_connection_names()
     meta : bool or list of strings
-        If not False, also include metadata (or subset if provided).
+        If not False, also include metadata indicators (or subset if provided).
     kwargs :
         Arguments for pyam.iiasa.Connection.query()
     """
