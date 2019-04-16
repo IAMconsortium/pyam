@@ -72,13 +72,13 @@ class Connection(object):
         Parameter
         ---------
         default : bool, optional, default True
-            Return *only* the default version of each Scenario. 
-            Any (`model`, `scenario`) without a default version is omitted. 
+            Return *only* the default version of each Scenario.
+            Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
         default = 'true' if default else 'false'
-        add_url = 'runs?getOnlyDefaultRuns=' + default
-        url = self.base_url + add_url
+        add_url = 'runs?getOnlyDefaultRuns={}'
+        url = self.base_url + add_url.format(default)
         headers = {'Authorization': 'Bearer {}'.format(self.auth())}
         r = requests.get(url, headers=headers)
         return pd.read_json(r.content, orient='records')
@@ -86,7 +86,7 @@ class Connection(object):
     @lru_cache()
     def available_scenario_metadata(self):
         """
-        List all scenario metadata indicators available in the connected 
+        List all scenario metadata indicators available in the connected
         data source
         """
         url = self.base_url + 'metadata/types'
@@ -102,15 +102,15 @@ class Connection(object):
         Parameter
         ---------
         default : bool, optional, default True
-            Return *only* the default version of each Scenario. 
-            Any (`model`, `scenario`) without a default version is omitted. 
+            Return *only* the default version of each Scenario.
+            Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
         # at present this reads in all data for all scenarios, it could be sped
         # up in the future to try to query a subset
         default = 'true' if default else 'false'
-        add_url = 'runs?getOnlyDefaultRuns=' + default + '&includeMetadata=true'
-        url = self.base_url + add_url
+        add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
+        url = self.base_url + add_url.format(default)
         headers = {'Authorization': 'Bearer {}'.format(self.auth())}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
