@@ -34,9 +34,9 @@ def test_metadata():
     assert 'MESSAGEix-GLOBIOM 1.0' in obs
 
 
-def test_available_metadata():
+def test_available_indicators():
     conn = iiasa.Connection('iamc15')
-    obs = conn.available_scenario_metadata()
+    obs = conn.available_scenario_indicators()
     assert 'carbon price|2050' in list(obs)
 
 

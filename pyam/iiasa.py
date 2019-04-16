@@ -84,7 +84,7 @@ class Connection(object):
         return pd.read_json(r.content, orient='records')
 
     @lru_cache()
-    def available_scenario_metadata(self):
+    def available_scenario_indicators(self):
         """
         List all scenario metadata indicators available in the connected
         data source
