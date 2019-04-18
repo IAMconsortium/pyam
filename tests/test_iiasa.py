@@ -30,13 +30,13 @@ def test_regions():
 
 def test_metadata():
     conn = iiasa.Connection('iamc15')
-    obs = conn.metadata()['model'].values
+    obs = conn.scenario_list()['model'].values
     assert 'MESSAGEix-GLOBIOM 1.0' in obs
 
 
 def test_available_indicators():
     conn = iiasa.Connection('iamc15')
-    obs = conn.available_scenario_indicators()
+    obs = conn.available_metadata()
     assert 'carbon price|2050' in list(obs)
 
 

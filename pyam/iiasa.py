@@ -64,10 +64,10 @@ class Connection(object):
         return r.json()
 
     @lru_cache()
-    def metadata(self, default=True):
+    def scenario_list(self, default=True):
         """
-        Metadata (e.g., models, scenarios, run identifier, etc.) of the
-        connected data source.
+        Metadata regarding the list of scenarios (e.g., models, scenarios, 
+        run identifier, etc.) in the connected data source.
 
         Parameter
         ---------
@@ -84,7 +84,7 @@ class Connection(object):
         return pd.read_json(r.content, orient='records')
 
     @lru_cache()
-    def available_scenario_indicators(self):
+    def available_metadata(self):
         """
         List all scenario metadata indicators available in the connected
         data source
@@ -95,7 +95,7 @@ class Connection(object):
         return pd.read_json(r.content, orient='records')['name']
 
     @lru_cache()
-    def scenario_metadata(self, default=True):
+    def metadata(self, default=True):
         """
         Metadata of scenarios in the connected data source
 
@@ -129,11 +129,11 @@ class Connection(object):
 
     def models(self):
         """All models in the connected data source"""
-        return pd.Series(self.metadata()['model'].unique(), name='model')
+        return pd.Series(self.scenario_list()['model'].unique(), name='model')
 
     def scenarios(self):
         """All scenarios in the connected data source"""
-        return pd.Series(self.metadata()['scenario'].unique(), name='scenario')
+        return pd.Series(self.scenario_list()['scenario'].unique(), name='scenario')
 
     @lru_cache()
     def variables(self):
@@ -174,7 +174,7 @@ class Connection(object):
             return data[matches].unique()
 
         # get unique run ids
-        meta = self.metadata()
+        meta = self.scenario_list()
         meta = meta[meta.is_default]
         models = _match(meta['model'], m_pattern)
         scenarios = _match(meta['scenario'], s_pattern)
@@ -270,7 +270,7 @@ def read_iiasa(name, meta=False, **kwargs):
     df = IamDataFrame(df)
     # metadata
     if meta:
-        mdf = conn.scenario_metadata()
+        mdf = conn.metadata()
         # only data for models/scenarios in df
         mdf = mdf[mdf.model.isin(df['model'].unique()) &
                   mdf.scenario.isin(df['scenario'].unique())]
