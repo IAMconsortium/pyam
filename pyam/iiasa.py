@@ -66,7 +66,7 @@ class Connection(object):
     @lru_cache()
     def scenario_list(self, default=True):
         """
-        Metadata regarding the list of scenarios (e.g., models, scenarios, 
+        Metadata regarding the list of scenarios (e.g., models, scenarios,
         run identifier, etc.) in the connected data source.
 
         Parameter
@@ -129,11 +129,13 @@ class Connection(object):
 
     def models(self):
         """All models in the connected data source"""
-        return pd.Series(self.scenario_list()['model'].unique(), name='model')
+        return pd.Series(self.scenario_list()['model'].unique(),
+                         name='model')
 
     def scenarios(self):
         """All scenarios in the connected data source"""
-        return pd.Series(self.scenario_list()['scenario'].unique(), name='scenario')
+        return pd.Series(self.scenario_list()['scenario'].unique(),
+                         name='scenario')
 
     @lru_cache()
     def variables(self):
