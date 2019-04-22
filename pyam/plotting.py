@@ -510,8 +510,8 @@ def stack_plot(df, x='year', y='value', stack='variable',
         upper = lower.copy()
 
     # add total
-    if total is not None:
-        if not isinstance(total, dict):
+    if (total is not None) and total:  # cover case where total=False
+        if isinstance(total, bool):  # can now assume total=True
             total = {}
         total.setdefault("label", "Total")
         total.setdefault("color", "black")
