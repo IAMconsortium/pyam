@@ -125,6 +125,7 @@ CHECK_AGG_DF = pd.DataFrame([
 )
 
 
+
 CHECK_AGG_REGIONAL_DF = pd.DataFrame([
     ['AIM', 'cscen', 'World', 'Emissions|N2O', 'Mt N/yr', 1.8, 15.6],
     ['AIM', 'cscen', 'World', 'Emissions|N2O|Shipping', 'Mt N/yr', 1, 6],
@@ -148,6 +149,22 @@ CHECK_AGG_REGIONAL_DF = pd.DataFrame([
 ],
     columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
 )
+
+
+TEST_STACKPLOT_DF = pd.DataFrame([
+    ['World', 'Emissions|CO2|Energy|Oil', 'Mt CO2/yr', 2, 3.2, 2.0, 1.8],
+    ['World', 'Emissions|CO2|Energy|Gas', 'Mt CO2/yr', 1.3, 1.6, 1.0, 0.7],
+    ['World', 'Emissions|CO2|Energy|BECCS', 'Mt CO2/yr', 0.0, 0.4, -0.4, 0.3],
+    ['World', 'Emissions|CO2|Cars', 'Mt CO2/yr', 1.6, 3.8, 3.0, 2.5],
+    ['World', 'Emissions|CO2|Tar', 'Mt CO2/yr', 0.3, 0.35, 0.35, 0.33],
+    ['World', 'Emissions|CO2|Agg', 'Mt CO2/yr', 0.5, -0.1, -0.5, -0.7],
+    ['World', 'Emissions|CO2|LUC', 'Mt CO2/yr', -0.3, -0.6, -1.2, -1.0]
+],
+    columns=['region', 'variable', 'unit', 2005, 2010, 2015, 2020],
+)
+# appease stickler
+TEST_STACKPLOT_DF['model'] = 'IMG'
+TEST_STACKPLOT_DF['scenario'] = 'a_scen'
 
 
 TIME_AXES = [
@@ -205,4 +222,10 @@ def reg_df():
 @pytest.fixture(scope="session")
 def plot_df():
     df = IamDataFrame(data=os.path.join(TEST_DATA_DIR, 'plot_data.csv'))
+    yield df
+
+
+@pytest.fixture(scope="session")
+def plot_stack_plot_df():
+    df = IamDataFrame(TEST_STACKPLOT_DF)
     yield df
