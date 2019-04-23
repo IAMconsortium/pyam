@@ -127,6 +127,7 @@ def test_line_PYAM_COLORS(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+<<<<<<< HEAD
 def test_line_PYAM_COLORS(plot_df):
     # add a family of lines for each color in plotting.PYAM_COLORS separated by
     # a small offset
@@ -152,6 +153,8 @@ def test_line_PYAM_COLORS(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+=======
+>>>>>>> 150881072c1ac1c053736f6b48ca4f2b27ca40e0
 def test_line_color_fill_between(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, color='model', fill_between=True, legend=True)
