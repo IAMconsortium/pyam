@@ -133,7 +133,11 @@ class IamDataFrame(object):
                 f(self)
 
     def copy(self):
-        """Return a deepcopy of self"""
+        """Return a deepcopy of self
+
+        Documentation about deepcopy is available
+        `here <https://docs.python.org/2/library/copy.html#copy.deepcopy>`_
+        """
         return copy.deepcopy(self)
 
     def head(self, *args, **kwargs):

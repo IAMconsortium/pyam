@@ -488,7 +488,7 @@ def stack_plot(df, x='year', y='value', stack='variable',
             c = rc['color'][stack][key]
         colors[key] = c
 
-    # plot stacks, starting from the top and working our way up to the bottom
+    # plot stacks, starting from the top and working our way down to the bottom
     negative_only_cumulative = _df.applymap(
         lambda x: x if x < 0 else 0
     ).cumsum(axis=1)
