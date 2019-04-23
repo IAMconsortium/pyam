@@ -132,6 +132,14 @@ class IamDataFrame(object):
                 f = getattr(mod, func)
                 f(self)
 
+    def copy(self):
+        """Return a deepcopy of self
+
+        Documentation about deepcopy is available
+        `here <https://docs.python.org/2/library/copy.html#copy.deepcopy>`_
+        """
+        return copy.deepcopy(self)
+
     def head(self, *args, **kwargs):
         """Identical to pd.DataFrame.head() operating on data"""
         return self.data.head(*args, **kwargs)

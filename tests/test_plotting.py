@@ -529,3 +529,39 @@ def test_add_panel_label(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plotting.set_panel_label('test', ax=ax, x=0.5, y=0.5)
     return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(ax=ax)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions_with_total(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(ax=ax, total=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions_kwargs_def_total(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(
+        alpha=0.5,
+        total=True,
+        ax=ax,
+    )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions_kwargs_custom_total(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(
+        alpha=0.5,
+        total={"color": "grey", "ls": "--", "lw": 2.0},
+        ax=ax,
+    )
+    return fig
