@@ -12,7 +12,7 @@ except ImportError:
 
 from pyam.core import IamDataFrame
 from pyam.logger import logger
-from pyam.utils import META_IDX, isstr, pattern_match
+from pyam.utils import META_IDX, islistable, isstr, pattern_match
 
 # quiet this fool
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -64,23 +64,78 @@ class Connection(object):
         return r.json()
 
     @lru_cache()
-    def metadata(self):
+    def scenario_list(self, default=True):
         """
-        Metadata (e.g., models, scenarios, etc.) in the connected data
-        source
+        Metadata regarding the list of scenarios (e.g., models, scenarios,
+        run identifier, etc.) in the connected data source.
+
+        Parameter
+        ---------
+        default : bool, optional, default True
+            Return *only* the default version of each Scenario.
+            Any (`model`, `scenario`) without a default version is omitted.
+            If :obj:`False`, return all versions.
         """
-        url = self.base_url + 'runs?getOnlyDefaultRuns=false'
+        default = 'true' if default else 'false'
+        add_url = 'runs?getOnlyDefaultRuns={}'
+        url = self.base_url + add_url.format(default)
         headers = {'Authorization': 'Bearer {}'.format(self.auth())}
         r = requests.get(url, headers=headers)
         return pd.read_json(r.content, orient='records')
 
+    @lru_cache()
+    def available_metadata(self):
+        """
+        List all scenario metadata indicators available in the connected
+        data source
+        """
+        url = self.base_url + 'metadata/types'
+        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
+        r = requests.get(url, headers=headers)
+        return pd.read_json(r.content, orient='records')['name']
+
+    @lru_cache()
+    def metadata(self, default=True):
+        """
+        Metadata of scenarios in the connected data source
+
+        Parameter
+        ---------
+        default : bool, optional, default True
+            Return *only* the default version of each Scenario.
+            Any (`model`, `scenario`) without a default version is omitted.
+            If :obj:`False`, return all versions.
+        """
+        # at present this reads in all data for all scenarios, it could be sped
+        # up in the future to try to query a subset
+        default = 'true' if default else 'false'
+        add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
+        url = self.base_url + add_url.format(default)
+        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
+        r = requests.get(url, headers=headers)
+        df = pd.read_json(r.content, orient='records')
+
+        def extract(row):
+            return (
+                pd.concat([row[['model', 'scenario']],
+                           pd.Series(row.metadata)])
+                .to_frame()
+                .T
+                .set_index(['model', 'scenario'])
+            )
+
+        return pd.concat([extract(row) for idx, row in df.iterrows()],
+                         sort=False).reset_index()
+
     def models(self):
         """All models in the connected data source"""
-        return pd.Series(self.metadata()['model'].unique(), name='model')
+        return pd.Series(self.scenario_list()['model'].unique(),
+                         name='model')
 
     def scenarios(self):
         """All scenarios in the connected data source"""
-        return pd.Series(self.metadata()['scenario'].unique(), name='scenario')
+        return pd.Series(self.scenario_list()['scenario'].unique(),
+                         name='scenario')
 
     @lru_cache()
     def variables(self):
@@ -121,7 +176,7 @@ class Connection(object):
             return data[matches].unique()
 
         # get unique run ids
-        meta = self.metadata()
+        meta = self.scenario_list()
         meta = meta[meta.is_default]
         models = _match(meta['model'], m_pattern)
         scenarios = _match(meta['scenario'], s_pattern)
@@ -198,13 +253,37 @@ class Connection(object):
         return df
 
 
-def read_iiasa(name, **kwargs):
+def read_iiasa(name, meta=False, **kwargs):
     """
     Query an IIASA database. See Connection.query() for more documentation
+
+    Parameters
+    ----------
+    name : str
+        A valid IIASA database name, see pyam.iiasa.valid_connection_names()
+    meta : bool or list of strings
+        If not False, also include metadata indicators (or subset if provided).
+    kwargs :
+        Arguments for pyam.iiasa.Connection.query()
     """
     conn = Connection(name)
+    # data
     df = conn.query(**kwargs)
-    return IamDataFrame(df)
+    df = IamDataFrame(df)
+    # metadata
+    if meta:
+        mdf = conn.metadata()
+        # only data for models/scenarios in df
+        mdf = mdf[mdf.model.isin(df['model'].unique()) &
+                  mdf.scenario.isin(df['scenario'].unique())]
+        # get subset of data if meta is a list
+        if islistable(meta):
+            mdf = mdf[['model', 'scenario'] + meta]
+        mdf = mdf.set_index(['model', 'scenario'])
+        # we have to loop here because `set_meta()` can only take series
+        for col in mdf:
+            df.set_meta(mdf[col])
+    return df
 
 
 def read_iiasa_iamc15(**kwargs):
