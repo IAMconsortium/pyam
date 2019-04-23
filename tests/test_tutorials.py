@@ -89,3 +89,14 @@ def test_iiasa_dbs():
     fname = os.path.join(tut_path, 'iiasa_dbs.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
+
+
+@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
+@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
+def test_aggregating_variables_and_plotting_with_negative_values():
+    fname = os.path.join(
+        tut_path,
+        'aggregating_variables_and_plotting_with_negative_values.ipynb'
+    )
+    nb, errors = _notebook_run(fname)
+    assert errors == []

@@ -24,7 +24,7 @@ data = df.filter({'variable': 'Emissions|CO2|*',
 data.interpolate(2015)  # some values are missing
 
 fig, ax = plt.subplots(figsize=(10, 10))
-data.stack_plot(ax=ax)
+data.stack_plot(ax=ax, total=True)
 fig.subplots_adjust(right=0.55)
 plt.show()
 
@@ -37,5 +37,5 @@ data = (df
         .filter({'region': 'World'}, keep=False)
         )
 fig, ax = plt.subplots(figsize=(10, 10))
-data.stack_plot(ax=ax, stack='region', cmap='tab20')
+data.stack_plot(ax=ax, stack='region', cmap='tab20', total=True)
 plt.show()

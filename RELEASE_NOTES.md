@@ -1,7 +1,7 @@
 
 # Next Release
 
-- [#198](https://github.com/IAMconsortium/pyam/pull/198) Update stack plot functionality and add aggregation tutorial.
+- [#198](https://github.com/IAMconsortium/pyam/pull/198) Update stack plot functionality and add aggregation tutorial. Also adds a `copy` method to `IamDataFrame`.
 - [#214](https://github.com/IAMconsortium/pyam/pull/214) Tidy up requirements specifications a little
 - [#212](https://github.com/IAMconsortium/pyam/pull/212) Now natively support reading R-style data frames with year columns like "X2015"
 - [#202](https://github.com/IAMconsortium/pyam/pull/202) Extend the `df.rename()` function with a `check_duplicates (default True)` validation option
