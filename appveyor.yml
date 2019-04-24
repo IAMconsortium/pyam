@@ -1,11 +1,11 @@
 
 environment:
   matrix:
-      - PYTHON_VERSION: "2.7"
-        MINICONDA: "C:\\Miniconda-x64"
-        PYTHON_ARCH: "64"
       - PYTHON_VERSION: "3.6"
         MINICONDA: "C:\\Miniconda36-x64"
+        PYTHON_ARCH: "64"
+      - PYTHON_VERSION: "3.7"
+        MINICONDA: "C:\\Miniconda37-x64"
         PYTHON_ARCH: "64"
 
 init:
@@ -20,14 +20,19 @@ install:
   - set "CONDA_ROOT=C:\Miniconda%BASE_PYTHON_VERSION%%ARCH_LABEL%"
   - set "PATH=%CONDA_ROOT%;%CONDA_ROOT%\Scripts;%CONDA_ROOT%\Library\bin;%PATH%"
 
-  # Dependencies and package install
-  - conda install --yes geopandas cartopy
-  - if "%PYTHON_VERSION%" == "2.7" pip install functools32
+  # create conda environment
+  - conda update --yes conda
+  - conda create -n testing python="%PYTHON_VERSION%" --yes
+  - conda --version
+  - activate testing
+  - conda install -y numpy pandas pyyaml xlrd xlsxwriter matplotlib==3.0.3 seaborn==0.9.0 six requests jupyter nbconvert
+  - conda install -y -c conda-forge libiconv gdal fiona geopandas cartopy
 
 build: false
 
 test_script:
-  - pip install -e .[tests]
+  - conda list
+  - pip install -e .[tests,deploy]
   - pytest -v --mpl tests --mpl-results-path=test-artifacts
 
 artifacts:

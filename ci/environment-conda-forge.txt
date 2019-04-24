@@ -1,0 +1,5 @@
+libiconv
+gdal
+fiona
+geopandas
+cartopy

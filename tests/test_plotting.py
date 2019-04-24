@@ -3,15 +3,18 @@ import pytest
 import os
 import copy
 import numpy as np
+import pandas as pd
 import pyam
-
+import warnings
 
 # on CI, freetype version 2.6.1 works, but 2.8.0 does not
 # if we want to move to 2.8.0, then we will need to regenerate images
 FREETYPE_VERSION = matplotlib.ft2font.__freetype_version__
-if int(FREETYPE_VERSION.replace('.', '')) > 261:
-    pytest.skip('Freetype version > 2.6.1: {}'.format(FREETYPE_VERSION),
-                allow_module_level=True)
+if int(FREETYPE_VERSION.replace('.', '')) < 291:
+    msg = 'Freetype version < 2.9.1: {}'.format(FREETYPE_VERSION)
+    warnings.warn('test_plotting.py is being skipped due to a '
+                  'Freetype Version mismatch: {}'.format(msg))
+    pytest.skip(msg, allow_module_level=True)
 
 try:
     import cartopy
@@ -54,11 +57,33 @@ def test_line_plot(plot_df):
     return fig
 
 
+def test_line_plot_cmap(plot_df):
+    # need to provide cmap and color both
+    _plot_df = copy.deepcopy(plot_df)
+    _plot_df.set_meta(meta=[np.nan] * 4, name='test')
+    pytest.raises(ValueError, _plot_df.line_plot, cmap='magma')
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_cmap_color_arg(plot_df):
+    _plot_df = copy.deepcopy(plot_df)
+    _plot_df.set_meta(meta=[np.nan] * 4, name='test')
+    fig, ax = plt.subplots(figsize=(8, 8))
+    _plot_df.line_plot(ax=ax, legend=True, cmap='magma', color='variable')
+    return fig
+
+
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot_dict_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, legend=dict(
-        loc='center left', bbox_to_anchor=(1.0, 0.5)))
+    plot_df.line_plot(ax=ax, legend=dict(loc='outside right'))
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_bottom_legend(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.line_plot(ax=ax, legend=dict(loc='outside bottom'))
     return fig
 
 
@@ -73,6 +98,31 @@ def test_line_no_legend(plot_df):
 def test_line_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.line_plot(ax=ax, color='model', legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_PYAM_COLORS(plot_df):
+    # add a family of lines for each color in plotting.PYAM_COLORS separated by
+    # a small offset
+    update = {'color': {'model': {}}}
+    _df = plot_df.filter(
+        model='test_model',
+        variable='Primary Energy',
+        scenario='test_scenario1',
+    ).data.copy()
+    dfs = []
+    for i, color in enumerate(plotting.PYAM_COLORS):
+        df = _df.copy()
+        model = color
+        df['model'] = model
+        df['value'] += i
+        update['color']['model'][model] = color
+        dfs.append(df)
+    df = pyam.IamDataFrame(pd.concat(dfs))
+    fig, ax = plt.subplots(figsize=(8, 8))
+    with update_run_control(update):
+        df.line_plot(ax=ax, color='model', legend=True)
     return fig
 
 
@@ -478,4 +528,40 @@ def test_scatter_meta(plot_df):
 def test_add_panel_label(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plotting.set_panel_label('test', ax=ax, x=0.5, y=0.5)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(ax=ax)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions_with_total(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(ax=ax, total=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions_kwargs_def_total(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(
+        alpha=0.5,
+        total=True,
+        ax=ax,
+    )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_negative_emissions_kwargs_custom_total(plot_stack_plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_stack_plot_df.stack_plot(
+        alpha=0.5,
+        total={"color": "grey", "ls": "--", "lw": 2.0},
+        ax=ax,
+    )
     return fig

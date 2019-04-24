@@ -30,8 +30,14 @@ def test_regions():
 
 def test_metadata():
     conn = iiasa.Connection('iamc15')
-    obs = conn.metadata()['model'].values
+    obs = conn.scenario_list()['model'].values
     assert 'MESSAGEix-GLOBIOM 1.0' in obs
+
+
+def test_available_indicators():
+    conn = iiasa.Connection('iamc15')
+    obs = conn.available_metadata()
+    assert 'carbon price|2050' in list(obs)
 
 
 QUERY_DATA_EXP = {
@@ -97,10 +103,13 @@ def test_query_iamc15():
     assert len(df) == 20
 
 
-def test_query_iamc15_list():
+def test_query_iamc15_with_metadata():
     df = iiasa.read_iiasa_iamc15(
         model='MESSAGEix*',
         variable=['Emissions|CO2', 'Primary Energy|Coal'],
-        region='World'
+        region='World',
+        meta=['carbon price|2100 (NPV)', 'category'],
     )
     assert len(df) == 168
+    assert len(df.data) == 168
+    assert len(df.meta) == 7

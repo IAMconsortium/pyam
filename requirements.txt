@@ -1,2 +1,0 @@
-geopandas
-cartopy

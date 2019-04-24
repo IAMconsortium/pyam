@@ -16,18 +16,23 @@ case "${TRAVIS_OS_NAME}" in
 esac
 
 case "${PYENV}" in
-    py27)
-        export PYVERSION=2
-        export CHOCOPATH='miniconda2'
-        export CHOCONAME='miniconda'
+    py35)
+        export PYVERSION=3.5
+        export CHOCOPATH='miniconda3'
+        export CHOCONAME='miniconda3'
+    ;;
+    py36)
+        export PYVERSION=3.6
+        export CHOCOPATH='miniconda3'
+        export CHOCONAME='miniconda3'
     ;;
     py37)
-        export PYVERSION=3
+        export PYVERSION=3.7
         export CHOCOPATH='miniconda3'
         export CHOCONAME='miniconda3'
     ;;
 esac
-export URL="https://repo.anaconda.com/miniconda/Miniconda$PYVERSION-latest-$OSNAME-x86_64.$EXT"
+export URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-$OSNAME-x86_64.$EXT"
 
 if [[ "$TRAVIS_OS_NAME" != 'windows' ]]; then
     export PATH=$HOME/miniconda/bin:$PATH

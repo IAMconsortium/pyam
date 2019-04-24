@@ -32,7 +32,7 @@ except ImportError:
 
 from pyam.logger import logger
 from pyam.run_control import run_control
-from pyam.utils import requires_package, SORT_IDX, isstr
+from pyam.utils import requires_package, IAMC_IDX, SORT_IDX, isstr
 
 from pandas.plotting._style import _get_standard_colors
 
@@ -42,6 +42,34 @@ _DEFAULT_PROPS = None
 
 # maximum number of labels after which do not show legends by default
 MAX_LEGEND_LABELS = 13
+
+# default legend kwargs for putting legends outside of plots
+OUTSIDE_LEGEND = {
+    'right': dict(loc='center left', bbox_to_anchor=(1.0, 0.5)),
+    'bottom': dict(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3),
+}
+
+PYAM_COLORS = {
+    'AR6-SSP1-1.9': "#00AAD0",
+    'AR6-SSP1-2.6': "#003466",
+    'AR6-SSP2-4.5': "#EF550F",
+    'AR6-SSP3-7.0': "#E00000",
+    'AR6-SSP3-LowNTCF': "#E00000",
+    'AR6-SSP4-3.4': "#FFA900",
+    'AR6-SSP4-6.0': "#C47900",
+    'AR6-SSP5-3.4-OS': "#7F006E",
+    'AR6-SSP5-8.5': "#990002",
+    'AR6-RCP-2.6': "#003466",
+    'AR6-RCP-4.5': "#5492CD",
+    'AR6-RCP-6.0': "#C47900",
+    'AR6-RCP-8.5': "#990002",
+    # AR5 colours from
+    # https://tdaviesbarnard.co.uk/1202/ipcc-official-colors-rcp/
+    'AR5-RCP-2.6': "#0000FF",
+    'AR5-RCP-4.5': "#79BCFF",
+    'AR5-RCP-6.0': "#FF822D",
+    'AR5-RCP-8.5': "#FF0000",
+}
 
 
 def reset_default_props(**kwargs):
@@ -80,9 +108,13 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
     df : pd.DataFrame
         data to be used for style properties
     """
+    if color is None and cmap is not None:
+        raise ValueError('`cmap` must be provided with the `color` argument')
+
     # determine color, marker, and linestyle for each line
-    defaults = default_props(reset=True, num_colors=len(df),
-                             colormap=cmap)
+    n = len(df[color].unique()) if color in df.columns else \
+        len(df[list(set(df.columns) & set(IAMC_IDX))].drop_duplicates())
+    defaults = default_props(reset=True, num_colors=n, colormap=cmap)
 
     props = {}
     rc = run_control()
@@ -104,6 +136,22 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
                     props_for_kind[val] = next(defaults[kind])
             props[kind] = props_for_kind
 
+    # update for special properties only if they exist in props
+    if 'color' in props:
+        d = props['color']
+        values = list(d.values())
+        # find if any colors in our properties corresponds with special colors
+        # we know about
+        overlap_idx = np.in1d(values, list(PYAM_COLORS.keys()))
+        if overlap_idx.any():  # some exist in our special set
+            keys = np.array(list(d.keys()))[overlap_idx]
+            values = np.array(values)[overlap_idx]
+            # translate each from pyam name, like AR6-SSP2-45 to proper color
+            # designation
+            for k, v in zip(keys, values):
+                d[k] = PYAM_COLORS[v]
+            # replace props with updated dict without special colors
+            props['color'] = d
     return props
 
 
@@ -219,8 +267,8 @@ def region_plot(df, column='value', ax=None, crs=None, gdf=None,
         ax.add_feature(cartopy.feature.COASTLINE)
         ax.add_feature(cartopy.feature.BORDERS)
 
-    vmin = vmin or data['value'].min()
-    vmax = vmax or data['value'].max()
+    vmin = vmin if vmin is not None else data['value'].min()
+    vmax = vmax if vmax is not None else data['value'].max()
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
     cmap = plt.get_cmap(cmap)
     scalar_map = cmx.ScalarMappable(norm=norm, cmap=cmap)
@@ -336,7 +384,7 @@ def pie_plot(df, value='value', category='variable',
 
 
 def stack_plot(df, x='year', y='value', stack='variable',
-               ax=None, legend=True, title=True, cmap=None,
+               ax=None, legend=True, title=True, cmap=None, total=None,
                **kwargs):
     """Plot data as a stack chart.
 
@@ -362,6 +410,11 @@ def stack_plot(df, x='year', y='value', stack='variable',
     cmap : string, optional
         A colormap to use.
         default: None
+    total : bool or dict, optional
+        If True, plot a total line with default pyam settings. If a dict, then
+        plot the total line using the dict key-value pairs as keyword arguments
+        to ax.plot(). If None, do not plot the total line.
+        default : None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
     for col in set(SORT_IDX) - set([x, stack]):
@@ -375,19 +428,99 @@ def stack_plot(df, x='year', y='value', stack='variable',
     # long form to one column per bar group
     _df = reshape_bar_plot(df, x, y, stack)
 
+    # Line below is for interpolation. On datetimes I think you'd downcast to
+    # seconds first and then cast back to datetime at the end..?
+    _df.index = _df.index.astype(float)
+
+    time_original = _df.index.values
+    first_zero_times = pd.DataFrame(index=["first_zero_time"])
+
+    both_positive_and_negative = _df.apply(
+        lambda x: (x >= 0).any() and (x < 0).any()
+    )
+    for col in _df.loc[:, both_positive_and_negative]:
+        values = _df[col].dropna().values
+        positive = (values >= 0)
+        negative = (values < 0)
+        pos_to_neg = positive[:-1] & negative[1:]
+        neg_to_pos = positive[1:] & negative[:-1]
+        crosses = np.argwhere(pos_to_neg | neg_to_pos)
+        for i, cross in enumerate(crosses):
+            cross = cross[0]  # get location
+            x_1 = time_original[cross]
+            x_2 = time_original[cross + 1]
+            y_1 = values[cross]
+            y_2 = values[cross + 1]
+
+            zero_time = x_1 - y_1 * (x_2 - x_1) / (y_2 - y_1)
+            if i == 0:
+                first_zero_times.loc[:, col] = zero_time
+            if zero_time not in _df.index.values:
+                _df.loc[zero_time, :] = np.nan
+
+    first_zero_times = first_zero_times.sort_values(
+        by="first_zero_time",
+        axis=1,
+    )
+    _df = _df.reindex(sorted(_df.index)).interpolate(method="values")
+
+    # Sort lines so that negative timeseries are on the right, positive
+    # timeseries are on the left and timeseries which go from positive to
+    # negative are ordered such that the timeseries which goes negative first
+    # is on the right (case of timeseries which go from negative to positive
+    # is an edge case we haven't thought about as it's unlikely to apply to
+    # us).
+    pos_cols = [c for c in _df if (_df[c] > 0).all()]
+    cross_cols = first_zero_times.columns[::-1].tolist()
+    neg_cols = [c for c in _df if (_df[c] < 0).all()]
+    col_order = pos_cols + cross_cols + neg_cols
+    _df = _df[col_order]
+
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
                              colormap=cmap)['color']
     rc = run_control()
-    colors = []
+    colors = {}
     for key in _df.columns:
         c = next(defaults)
-        if 'color' in rc and stack in rc['color'] and\
-                key in rc['color'][stack]:
+        c_in_rc = 'color' in rc
+        if c_in_rc and stack in rc['color'] and key in rc['color'][stack]:
             c = rc['color'][stack][key]
-        colors.append(c)
+        colors[key] = c
 
-    ax.stackplot(_df.index, _df.T, labels=_df.columns, colors=colors, **kwargs)
+    # plot stacks, starting from the top and working our way down to the bottom
+    negative_only_cumulative = _df.applymap(
+        lambda x: x if x < 0 else 0
+    ).cumsum(axis=1)
+    positive_only_cumulative = _df.applymap(lambda x: x if x >= 0 else 0)[
+        col_order[::-1]
+    ].cumsum(axis=1)[
+        col_order
+    ]
+    time = _df.index.values
+    upper = positive_only_cumulative.iloc[:, 0].values
+    for j, col in enumerate(_df):
+        noc_tr = negative_only_cumulative.iloc[:, j].values
+        try:
+            poc_nr = positive_only_cumulative.iloc[:, j + 1].values
+        except IndexError:
+            poc_nr = np.zeros_like(upper)
+        lower = poc_nr.copy()
+        if (noc_tr < 0).any():
+            lower[np.where(poc_nr == 0)] = noc_tr[np.where(poc_nr == 0)]
+
+        ax.fill_between(time, lower, upper, label=col,
+                        color=colors[col], **kwargs)
+        upper = lower.copy()
+
+    # add total
+    if (total is not None) and total:  # cover case where total=False
+        if isinstance(total, bool):  # can now assume total=True
+            total = {}
+        total.setdefault("label", "Total")
+        total.setdefault("color", "black")
+        total.setdefault("lw", 4.0)
+        ax.plot(time, _df.sum(axis=1), **total)
 
     # add legend
     ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
@@ -821,7 +954,11 @@ def _add_legend(ax, handles, labels, legend):
             MAX_LEGEND_LABELS))
     else:
         legend = {} if legend in [True, None] else legend
-        ax.legend(handles, labels, **legend)
+        loc = legend.pop('loc', 'best')
+        outside = loc.split(' ')[1] if loc.startswith('outside ') else False
+        _legend = OUTSIDE_LEGEND[outside] if outside else dict(loc=loc)
+        _legend.update(legend)
+        ax.legend(handles, labels, **_legend)
 
 
 def set_panel_label(label, ax=None, x=0.05, y=0.9):
