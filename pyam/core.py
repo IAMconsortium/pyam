@@ -858,7 +858,10 @@ class IamDataFrame(object):
             return IamDataFrame(diff, **col_args).timeseries()
 
     def _variable_components(self, variable):
-        """Get all components of a variable"""
+        """Get all components (sub-categories) of a variable
+        
+        For `variable='foo'`, return `['foo|bar']`, but don't include
+        `'foo|bar|baz'`, which is a sub-sub-category"""
         var_list = pd.Series(self.data.variable.unique())
         return var_list[pattern_match(var_list, '{}|*'.format(variable), 0)]
 
