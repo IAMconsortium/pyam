@@ -1,5 +1,5 @@
 libiconv
 gdal
 fiona
-geopandas
+geopandas<0.5.0
 cartopy
