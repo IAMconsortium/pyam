@@ -82,9 +82,12 @@ a conda environment and then follow the `Makefile`.
 # pyam can be replaced with any other name
 # you don't have to specify your python version if you don't want
 conda create --name pyam pip python=X.Y.Z
-conda activate pyam  # may be source activate pyam or just activate pyam
-
-make virtual-environment
+conda activate pyam  # may be  simply `source activate pyam` or just `activate pyam`
+# use the make file to create your development environment
+# (you only require the -B flag the first time, thereafter you can
+# just run `make virtual-environment` and it will only update if
+# environment definition files have been updaed)
+make -B virtual-environment
 ```
 
 To check everything has installed correctly,
