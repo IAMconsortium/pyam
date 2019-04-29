@@ -75,20 +75,16 @@ pip install -e .
 
 ### Development
 
-To setup a development environment,
+To setup a development environment, the simplest route is to make yourself 
+a conda environment and then follow the `Makefile`. 
 
-```
+```sh
 # pyam can be replaced with any other name
 # you don't have to specify your python version if you don't want
 conda create --name pyam pip python=X.Y.Z
 conda activate pyam  # may be source activate pyam or just activate pyam
-pip install -e .[tests,docs,deploy]
-# install other required packages (e.g. on a Unix like system)
-conda install -c conda-forge $(cat requirements.txt)
-# by hand also works e.g.
-conda install -c conda-forge cartopy geopandas
-# if you want to write notebooks
-pip install notebook nbconvert jupyter_contrib_nbextensions
+
+make virtual-environment
 ```
 
 To check everything has installed correctly,
