@@ -30,7 +30,7 @@ def test_check_aggregate_fail(meta_df):
     obs = meta_df.check_aggregate('Primary Energy', exclude_on_fail=True)
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'Primary Energy', 'model_a', 'scen_a', 'World', 'EJ/y'
+        'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
     )
 
 
@@ -38,7 +38,7 @@ def test_check_aggregate_top_level(meta_df):
     obs = check_aggregate(meta_df, variable='Primary Energy', year=2005)
     assert len(obs.columns) == 1
     assert obs.index.get_values()[0] == (
-        'Primary Energy', 'model_a', 'scen_a', 'World', 'EJ/y'
+        'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
     )
 
 
@@ -51,12 +51,12 @@ def test_df_check_aggregate_pass(check_aggregate_df):
         assert obs is None
 
 
-def test_df_check_aggregate_regions_pass(check_aggregate_df):
-    obs = check_aggregate_df.check_aggregate_regions('Primary Energy')
+def test_df_check_aggregate_region_pass(check_aggregate_df):
+    obs = check_aggregate_df.check_aggregate_region('Primary Energy')
     assert obs is None
 
     for variable in check_aggregate_df.variables():
-        obs = check_aggregate_df.check_aggregate_regions(variable)
+        obs = check_aggregate_df.check_aggregate_region(variable)
         assert obs is None
 
 
@@ -91,7 +91,7 @@ def run_check_agg_fail(pyam_df, tweak_dict, test_type):
                 variable,
             )
         elif 'region' in test_type:
-            obs = pyam_df.check_aggregate_regions(
+            obs = pyam_df.check_aggregate_region(
                 variable,
             )
 
@@ -158,46 +158,46 @@ def test_df_check_aggregate_region_fail_world_only_var(check_aggregate_df):
     )
 
 
-def test_df_check_aggregate_regions_errors(check_aggregate_regional_df):
+def test_df_check_aggregate_region_errors(check_aggregate_regional_df):
     # these tests should fail because our dataframe has continents and regions
     # so checking without providing components leads to double counting and
     # hence failure
-    obs = check_aggregate_regional_df.check_aggregate_regions(
+    obs = check_aggregate_regional_df.check_aggregate_region(
         'Emissions|N2O', 'World'
     )
 
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'World', 'AIM', 'cscen', 'Emissions|N2O', 'Mt N/yr'
+        'AIM', 'cscen', 'World', 'Emissions|N2O', 'Mt N/yr'
     )
 
-    obs = check_aggregate_regional_df.check_aggregate_regions(
+    obs = check_aggregate_regional_df.check_aggregate_region(
         'Emissions|N2O', 'REUROPE'
     )
 
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
-        'REUROPE', 'AIM', 'cscen', 'Emissions|N2O', 'Mt N/yr'
+        'AIM', 'cscen', 'REUROPE', 'Emissions|N2O', 'Mt N/yr'
     )
 
 
-def test_df_check_aggregate_regions_components(check_aggregate_regional_df):
-    obs = check_aggregate_regional_df.check_aggregate_regions(
-        'Emissions|N2O', 'World', components=['REUROPE', 'RASIA']
-    )
-    assert obs is None
-
-    obs = check_aggregate_regional_df.check_aggregate_regions(
-        'Emissions|N2O|Solvents', 'World', components=['REUROPE', 'RASIA']
+def test_df_check_aggregate_region_components(check_aggregate_regional_df):
+    obs = check_aggregate_regional_df.check_aggregate_region(
+        'Emissions|N2O', 'World', subregions=['REUROPE', 'RASIA']
     )
     assert obs is None
 
-    obs = check_aggregate_regional_df.check_aggregate_regions(
-        'Emissions|N2O', 'REUROPE', components=['Germany', 'UK']
+    obs = check_aggregate_regional_df.check_aggregate_region(
+        'Emissions|N2O|Solvents', 'World', subregions=['REUROPE', 'RASIA']
     )
     assert obs is None
 
-    obs = check_aggregate_regional_df.check_aggregate_regions(
-        'Emissions|N2O|Transport', 'REUROPE', components=['Germany', 'UK']
+    obs = check_aggregate_regional_df.check_aggregate_region(
+        'Emissions|N2O', 'REUROPE', subregions=['Germany', 'UK']
+    )
+    assert obs is None
+
+    obs = check_aggregate_regional_df.check_aggregate_region(
+        'Emissions|N2O|Transport', 'REUROPE', subregions=['Germany', 'UK']
     )
     assert obs is None
