@@ -92,7 +92,7 @@ def main():
         'description': 'Analyze & Visualize Assessment Model Results',
         'classifiers': classifiers,
         'license': 'Apache License 2.0',
-        'author": 'Matthew Gidden & Daniel Huppmann',
+        'author': 'Matthew Gidden & Daniel Huppmann',
         'author_email': 'matthew.gidden@gmail.com',
         'url': 'https://github.com/IAMconsortium/pyam',
         'packages': packages,
