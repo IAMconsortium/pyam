@@ -115,6 +115,29 @@ class IamDataFrame(object):
     def __len__(self):
         return self.data.__len__()
 
+    def __sub__(self, other):
+        # confirm data formulated as expected
+        single_var_self = len(self.variables()) == 1
+        single_var_other = len(other.variables()) == 1
+        if  not single_var_self and not single_var_other:
+            raise ValueError('Can only subtract if one operand has a '
+                             'single variable type')
+
+        # get new variable column data
+        left = self.variables()[0] if single_var_self else self['variable']
+        right = other['variable'] if single_var_self else other.variables()[0]
+        varcol = left + ' - ' + right
+
+        # perform subtraction and return
+        df = self.copy()
+        x = df.data.set_index(GROUP_IDX).drop('variable', axis=1)
+        y = other.data.set_index(GROUP_IDX).drop('variable', axis=1)
+
+        df.data.value = (x.value - y.value).values
+        df.data.variable = varcol.values
+        return df
+        
+    
     def _execute_run_control(self):
         for module_block in run_control()['exec']:
             fname = module_block['file']
