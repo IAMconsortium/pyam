@@ -23,21 +23,21 @@ INFO = {
 }
 
 REQUIREMENTS = [
-    "argparse",
-    "numpy",
-    "requests",
-    "pandas>=0.21.0",
-    "PyYAML",
-    "xlrd",
-    "xlsxwriter",
-    "matplotlib",
-    "seaborn",
-    "six",
+    'argparse',
+    'numpy',
+    'requests',
+    'pandas>=0.21.0,!=0.24.0',
+    'PyYAML',
+    'xlrd',
+    'xlsxwriter',
+    'matplotlib',
+    'seaborn',
+    'six',
 ]
 
 EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest', 'pytest-cov', 'pytest-mpl'],
-    'geoplots': ['geopandas', 'cartopy', 'gdal', 'fiona'],
+    'geoplots': ['geopandas<0.5.0', 'cartopy', 'gdal', 'fiona'],
     'deploy': ['twine', 'setuptools', 'wheel'],
 }
 
@@ -61,13 +61,13 @@ class RunTests(Command):
 
 
 CMDCLASS = versioneer.get_cmdclass()
-CMDCLASS.update({"test": RunTests})
+CMDCLASS.update({'test': RunTests})
 
 
 def main():
     print(logo)
     classifiers = [
-        "License :: OSI Approved :: Apache Software License",
+        'License :: OSI Approved :: Apache Software License',
     ]
     packages = [
         'pyam',
@@ -86,21 +86,21 @@ def main():
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS
     setup_kwargs = {
-        "name": "pyam-iamc",
-        "version": versioneer.get_version(),
-        "cmdclass": CMDCLASS,
-        "description": 'Analyze & Visualize Assessment Model Results',
-        "classifiers": classifiers,
-        "license": "Apache License 2.0",
-        "author": 'Matthew Gidden & Daniel Huppmann',
-        "author_email": 'matthew.gidden@gmail.com',
-        "url": 'https://github.com/IAMconsortium/pyam',
-        "packages": packages,
-        "package_dir": pack_dir,
-        "entry_points": entry_points,
-        "package_data": package_data,
-        "install_requires": install_requirements,
-        "extras_require": extra_requirements,
+        'name': 'pyam-iamc',
+        'version': versioneer.get_version(),
+        'cmdclass': CMDCLASS,
+        'description': 'Analyze & Visualize Assessment Model Results',
+        'classifiers': classifiers,
+        'license': 'Apache License 2.0',
+        'author': 'Matthew Gidden & Daniel Huppmann',
+        'author_email': 'matthew.gidden@gmail.com',
+        'url': 'https://github.com/IAMconsortium/pyam',
+        'packages': packages,
+        'package_dir': pack_dir,
+        'entry_points': entry_points,
+        'package_data': package_data,
+        'install_requires': install_requirements,
+        'extras_require': extra_requirements,
     }
     rtn = setup(**setup_kwargs)
 
