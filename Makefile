@@ -52,6 +52,7 @@ publish-on-testpypi: $(VENV_DIR)  ## publish release on test PyPI
 		./venv/bin/twine upload -r testpypi dist/*; \
 	else \
 		echo Working directory is dirty >&2; \
+		echo run git status --porcelain to find dirty files >&2; \
 	fi;
 
 .PHONY: publish-on-pypi
