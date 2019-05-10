@@ -27,6 +27,7 @@
 #. Update on conda-forge:
    - Issue a PR on https://github.com/conda-forge/pyam-feedstock following the
      instructions there for how to edit the `recipe/meta.yaml` file
+   - confirm that any new depedencies are added there
    - Note that you can get the correct SHA256 hash from
      https://pypi.org/project/pyam-iamc/#files once that step has been
      successful
