@@ -64,6 +64,7 @@ publish-on-pypi: $(VENV_DIR)  ## publish release on PyPI
 		$(VENV_DIR)/bin/twine upload dist/*; \
 	else \
 		echo Working directory is dirty >&2; \
+		echo run git status --porcelain to find dirty files >&2; \
 	fi;
 
 .PHONY: regenerate-test-figures
