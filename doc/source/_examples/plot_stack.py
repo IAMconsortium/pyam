@@ -18,9 +18,9 @@ print(df.head())
 ###############################
 # We generated a simple stacked stack chart as below
 
-data = df.filter({'variable': 'Emissions|CO2|*',
-                  'level': 0,
-                  'region': 'World'})
+data = df.filter(variable='Emissions|CO2|*',
+                 level=0,
+                 region='World')
 data.interpolate(2015)  # some values are missing
 
 fig, ax = plt.subplots(figsize=(10, 10))
@@ -33,8 +33,8 @@ plt.show()
 # IamDataFrame can be used.
 
 data = (df
-        .filter({'variable': 'Emissions|CO2'})
-        .filter({'region': 'World'}, keep=False)
+        .filter(variable='Emissions|CO2')
+        .filter(region='World', keep=False)
         )
 fig, ax = plt.subplots(figsize=(10, 10))
 data.stack_plot(ax=ax, stack='region', cmap='tab20', total=True)

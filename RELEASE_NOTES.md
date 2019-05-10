@@ -1,6 +1,19 @@
 
 # Next Release
 
+# Release v0.2.0
+
+## Highlights
+
+- the `filters` argument in `IamDataFrame.filter()` has been deprecated
+- `pd.date_time` now has **experimental** supported for time-related columns
+- plots now support the official IPCC scenario color palatte
+- native support for putting legends outside of plot axes
+- dataframes can now be initialized with default values, making reading raw
+  datasets easier
+
+## Individual Updates
+
 - [#228](https://github.com/IAMconsortium/pyam/pull/228) Update development environment creation instructions and make pandas requirement more specific
 - [#219](https://github.com/IAMconsortium/pyam/pull/219) Add ability to query metadata from iiasa data sources
 - [#214](https://github.com/IAMconsortium/pyam/pull/214) Tidy up requirements specifications a little

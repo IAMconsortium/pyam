@@ -18,9 +18,9 @@ print(df.head())
 ###############################
 # We generated a simple stacked bar chart as below
 
-data = df.filter({'variable': 'Emissions|CO2|*',
-                  'level': 0,
-                  'region': 'World'})
+data = df.filter(variable='Emissions|CO2|*',
+                 level=0,
+                 region='World')
 
 fig, ax = plt.subplots(figsize=(10, 10))
 data.bar_plot(ax=ax, stacked=True)
@@ -40,8 +40,8 @@ plt.show()
 # IamDataFrame can be used.
 
 data = (df
-        .filter({'variable': 'Emissions|CO2'})
-        .filter({'region': 'World'}, keep=False)
+        .filter(variable='Emissions|CO2')
+        .filter(region='World', keep=False)
         )
 fig, ax = plt.subplots(figsize=(10, 10))
 data.bar_plot(ax=ax, bars='region', stacked=True, cmap='tab20')

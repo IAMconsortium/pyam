@@ -18,10 +18,6 @@ logo = r"""
   \/_/     \/_____/   \/_/\/_/   \/_/  \/_/
 """
 
-INFO = {
-    'version': '0.1.2',
-}
-
 REQUIREMENTS = [
     'argparse',
     'numpy',

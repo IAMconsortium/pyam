@@ -65,7 +65,7 @@ The depedencies for building this documentation are:
 	  :literal:
 
 References
-**********
+~~~~~~~~~~
 
 .. bibliography:: refs.bib
    :style: plain

@@ -17,10 +17,10 @@ df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
 ###############################
 # We generated a simple stacked bar chart as below
 
-data = df.filter({'variable': 'Emissions|CO2|*',
-                  'level': 0,
-                  'year': 2050,
-                  'region': 'World'})
+data = df.filter(variable='Emissions|CO2|*',
+                 level=0,
+                 year=2050,
+                 region='World')
 
 fig, ax = plt.subplots(figsize=(10, 10))
 data.pie_plot(ax=ax)
@@ -40,8 +40,8 @@ plt.show()
 # IamDataFrame can be used.
 
 data = (df
-        .filter({'variable': 'Emissions|CO2', 'year': 2050})
-        .filter({'region': 'World'}, keep=False)
+        .filter(variable='Emissions|CO2', year=2050)
+        .filter(region='World', keep=False)
         )
 data.pie_plot(category='region', cmap='tab20')
 plt.show()

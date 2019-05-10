@@ -14,8 +14,8 @@ fname = 'data.csv'
 df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
 
 df = (df
-      .filter({'variable': 'Emissions|CO2', 'year': 2050})
-      .filter({'region': 'World'}, keep=False)
+      .filter(variable='Emissions|CO2', year=2050)
+      .filter(region='World', keep=False)
       .map_regions('iso', region_col='R5_region')
       )
 
