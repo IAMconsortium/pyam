@@ -24,16 +24,12 @@
 1. Run `make publish-on-pypi`
    - note, you need an account on https://pypi.org
    - this will make wheels that all us to be installed via `pip install`
-1. Update on conda-forge:
-   - Issue a PR on https://github.com/conda-forge/pyam-feedstock following the
-     instructions there for how to edit the `recipe/meta.yaml` file
-   - confirm that any new depedencies are added there
-   - Note that you can get the correct SHA256 hash from
-     https://pypi.org/project/pyam-iamc/#files once that step has been
-     successful
 1. Make a new release on Github
    - Make sure that you choose the same tag name as was used earlier
    - Copy the markdown from `RELEASE_NOTES.md` into the release description box
+1. Update on conda-forge:
+   - A PR should automatically be opened by the bot after the Github release
+   - confirm that any new depedencies are added there
 1. Announce it on our mailing list: https://groups.google.com/forum/#!forum/pyam
    - Again, just copy the now rendered HTML from the Github release directly in
      the email
