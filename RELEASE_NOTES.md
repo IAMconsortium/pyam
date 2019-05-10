@@ -6,8 +6,11 @@
 ## Highlights
 
 - the `filters` argument in `IamDataFrame.filter()` has been deprecated
+- `pd.date_time` now has **experimental** supported for time-related columns
 - plots now support the official IPCC scenario color palatte
-- `pd.date_time` now supported for time-related columns
+- native support for putting legends outside of plot axes
+- dataframes can now be initialized with default values, making reading raw
+  datasets easier
 
 ## Individual Updates
 
