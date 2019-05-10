@@ -588,7 +588,7 @@ class IamDataFrame(object):
 
         # if append is True, downselect and append renamed data
         if append:
-            df = self.filter(filters)
+            df = self.filter(**filters)
             # note that `append(other, inplace=True)` returns None
             return self.append(df.rename(mapping), inplace=inplace)
 
@@ -894,7 +894,7 @@ class IamDataFrame(object):
         logger().info('{} non-valid scenario{} will be excluded'
                       .format(len(idx), '' if len(idx) == 1 else 's'))
 
-    def filter(self, filters=None, keep=True, inplace=False, **kwargs):
+    def filter(self, keep=True, inplace=False, **kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
@@ -903,7 +903,7 @@ class IamDataFrame(object):
             keep all scenarios satisfying the filters (if True) or the inverse
         inplace: bool, default False
             if True, do operation inplace and return None
-        filters by kwargs or dict (deprecated):
+        filters by kwargs:
             The following columns are available for filtering:
              - metadata columns: filter by category assignment
              - 'model', 'scenario', 'region', 'variable', 'unit':
@@ -917,12 +917,6 @@ class IamDataFrame(object):
                ('month', 'hour', 'time')
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
         """
-        if filters is not None:
-            msg = '`filters` keyword argument in `filter()` is deprecated ' + \
-                'and will be removed in the next release'
-            warnings.warn(msg)
-            kwargs.update(filters)
-
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
