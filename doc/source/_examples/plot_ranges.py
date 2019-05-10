@@ -16,8 +16,8 @@ fname = 'data.csv'
 df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
 
 df = (df
-      .filter({'variable': 'Emissions|CO2'})
-      .filter({'region': 'World'}, keep=False)
+      .filter(variable='Emissions|CO2')
+      .filter(region='World', keep=False)
       )
 
 print(df.head())

@@ -20,10 +20,10 @@ print(df.head())
 ###############################
 # We generated a simple stacked bar chart as below
 
-data = df.filter({'variable': 'Emissions|CO2|*',
-                  'level': 0,
-                  'region': 'World',
-                  'year': [2040, 2050, 2060]})
+data = df.filter(variable='Emissions|CO2|*',
+                 level=0,
+                 region='World',
+                 year=[2040, 2050, 2060])
 
 fig, ax = plt.subplots(figsize=(6, 6))
 data.bar_plot(ax=ax, stacked=True)
@@ -34,10 +34,10 @@ plt.show()
 # Sometimes stacked bar charts have negative entries - in that case it helps to
 # add a line showing the net value.
 
-data = df.filter({'variable': 'Emissions|CO2|*',
-                  'level': 0,
-                  'region': 'World',
-                  'year': [2040, 2050, 2060]})
+data = df.filter(variable='Emissions|CO2|*',
+                 level=0,
+                 region='World',
+                 year=[2040, 2050, 2060])
 
 fig, ax = plt.subplots(figsize=(6, 6))
 data.bar_plot(ax=ax, stacked=True)
