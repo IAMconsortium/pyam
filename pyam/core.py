@@ -532,7 +532,7 @@ class IamDataFrame(object):
         df = _apply_criteria(self.data, criteria, in_range=False)
 
         if not df.empty:
-            msg = '{} of {} data points to not satisfy the criteria'
+            msg = '{} of {} data points do not satisfy the criteria'
             logger().info(msg.format(len(df), len(self.data)))
 
             if exclude_on_fail and len(df) > 0:
