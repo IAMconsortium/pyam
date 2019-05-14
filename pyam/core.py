@@ -1383,6 +1383,10 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
         msg = 'Unknown checking type: {}'
         raise ValueError(msg.format(check.keys() - valid_checks))
 
+    rows = rows.copy()
+    if 'year' not in rows:
+        rows['year'] = rows['time'].apply(lambda x: x.year)
+
     where_idx = set(rows.index[rows['year'] == check['year']]) \
         if 'year' in check else set(rows.index)
     rows = rows.loc[list(where_idx)]

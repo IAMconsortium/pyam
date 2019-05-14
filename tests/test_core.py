@@ -518,7 +518,13 @@ def test_validate_up(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 6.5}},
                            exclude_on_fail=False)
     assert len(obs) == 1
-    assert obs['year'].values[0] == 2010
+    if 'year' in meta_df.data:
+        assert obs['year'].values[0] == 2010
+    else:
+        assert (
+            pd.to_datetime(obs['time'].values[0])
+            == pd.to_datetime(datetime.datetime(2010, 7, 21))
+        )
 
     assert list(meta_df['exclude']) == [False, False]  # assert none excluded
 
@@ -526,14 +532,30 @@ def test_validate_up(meta_df):
 def test_validate_lo(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 8, 'lo': 2.0}})
     assert len(obs) == 1
-    assert obs['year'].values[0] == 2005
+    if 'year' in meta_df.data:
+        assert obs['year'].values[0] == 2005
+    else:
+        assert (
+            pd.to_datetime(obs['time'].values[0])
+            == pd.to_datetime(datetime.datetime(2005, 6, 17))
+        )
     assert list(obs['scenario'].values) == ['scen_a']
 
 
 def test_validate_both(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 6.5, 'lo': 2.0}})
     assert len(obs) == 2
-    assert list(obs['year'].values) == [2005, 2010]
+    if 'year' in meta_df.data:
+        assert list(obs['year'].values) == [2005, 2010]
+    else:
+        assert (
+            pd.to_datetime(obs['time'].values)
+            == pd.to_datetime([
+                datetime.datetime(2005, 6, 17),
+                datetime.datetime(2010, 7, 21),
+            ])
+        ).all()
+
     assert list(obs['scenario'].values) == ['scen_a', 'scen_b']
 
 
@@ -556,7 +578,13 @@ def test_validate_top_level(meta_df):
     obs = validate(meta_df, criteria={'Primary Energy': {'up': 6.0}},
                    exclude_on_fail=True, variable='Primary Energy')
     assert len(obs) == 1
-    assert obs['year'].values[0] == 2010
+    if 'year' in meta_df.data:
+        assert obs['year'].values[0] == 2010
+    else:
+        assert (
+            pd.to_datetime(obs['time'].values[0])
+            == pd.to_datetime(datetime.datetime(2010, 7, 21))
+        )
     assert list(meta_df['exclude']) == [False, True]
 
 
@@ -971,7 +999,12 @@ def test_normalize(meta_df):
     exp = meta_df.data.copy().reset_index(drop=True)
     exp['value'][1::2] /= exp['value'][::2].values
     exp['value'][::2] /= exp['value'][::2].values
-    obs = meta_df.normalize(year=2005).data.reset_index(drop=True)
+    if "year" in meta_df.data:
+        obs = meta_df.normalize(year=2005).data.reset_index(drop=True)
+    else:
+        obs = meta_df.normalize(
+            time=datetime.datetime(2005, 6, 17)
+        ).data.reset_index(drop=True)
     pd.testing.assert_frame_equal(obs, exp)
 
 
