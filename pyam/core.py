@@ -519,11 +519,13 @@ class IamDataFrame(object):
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude_on_fail=False):
-        """Validate scenarios using criteria on timeseries values. Returns all
-        scenarios which do not match the criteria and prints a log message or
-        returns None, if all scenarios match the criteria.
+        """Validate scenarios using criteria on timeseries values
 
-        When called with `exclude_on_fail=True`, the object will be modified.
+        Returns all scenarios which do not match the criteria and prints a log
+        message or returns None if all scenarios match the criteria.
+
+        When called with `exclude_on_fail=True`, scenarios in the object not
+        satisfying the criteria will be marked as `exclude=True`.
 
         Parameters
         ----------
@@ -1402,12 +1404,13 @@ def _make_index(df, cols=META_IDX):
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
-    """Validate scenarios using criteria on timeseries values. Returns all
-    scenarios which do not match the criteria and prints a log message or
-    returns None, if all scenarios match the criteria.
+    """Validate scenarios using criteria on timeseries values
 
-    When called with `exclude_on_fail=True`, the input object `df` will be
-    modified.
+    Returns all scenarios which do not match the criteria and prints a log
+    message or returns None if all scenarios match the criteria.
+
+    When called with `exclude_on_fail=True`, scenarios in `df` not satisfying
+    the criteria will be marked as `exclude=True` (object modified in place).
 
     Parameters
     ----------
