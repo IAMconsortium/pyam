@@ -8,7 +8,7 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, validate, categorize, \
-    require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data
+    require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
 from pyam.core import _meta_idx, concat
 
 from conftest import TEST_DATA_DIR
@@ -978,3 +978,25 @@ def test_normalize(meta_df):
 def test_normalize_not_time(meta_df):
     pytest.raises(ValueError, meta_df.normalize, variable='foo')
     pytest.raises(ValueError, meta_df.normalize, year=2015, variable='foo')
+
+
+@pytest.mark.parametrize("inplace", [True, False])
+@pytest.mark.parametrize("drop", [True, False])
+def test_swap_time_to_year(test_df, inplace, drop):
+    if "year" in test_df.data:
+        pytest.skip("Can't test conversion if we already have year")
+
+    obs = test_df.swap_time_for_year(inplace=inplace, drop=drop)
+
+    exp = test_df.data
+    exp["year"] = exp["time"].apply(lambda x: x.year)
+    if drop:
+        exp = exp.drop("time", axis="columns")
+    exp = IamDataFrame(exp)
+
+    if inplace:
+        assert obs is None
+        assert compare(test_df, exp).empty
+    else:
+        assert compare(obs, exp).empty
+        assert not compare(test_df, exp).empty
