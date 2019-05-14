@@ -981,22 +981,22 @@ def test_normalize_not_time(meta_df):
 
 
 @pytest.mark.parametrize("inplace", [True, False])
-@pytest.mark.parametrize("drop", [True, False])
-def test_swap_time_to_year(test_df, inplace, drop):
+def test_swap_time_to_year(test_df, inplace):
     if "year" in test_df.data:
-        pytest.skip("Can't test conversion if we already have year")
+        with pytest.raises(ValueError):
+            test_df.swap_time_for_year(inplace=inplace)
+        return
 
-    obs = test_df.swap_time_for_year(inplace=inplace, drop=drop)
-
-    exp = test_df.data
+    exp = test_df.data.copy()
     exp["year"] = exp["time"].apply(lambda x: x.year)
-    if drop:
-        exp = exp.drop("time", axis="columns")
+    exp = exp.drop("time", axis="columns")
     exp = IamDataFrame(exp)
+
+    obs = test_df.swap_time_for_year(inplace=inplace)
 
     if inplace:
         assert obs is None
         assert compare(test_df, exp).empty
     else:
         assert compare(obs, exp).empty
-        assert not compare(test_df, exp).empty
+        assert not "year" in test_df.data.columns

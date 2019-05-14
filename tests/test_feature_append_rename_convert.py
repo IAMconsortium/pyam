@@ -1,5 +1,6 @@
 import copy
 import pytest
+import datetime as dt
 
 import numpy as np
 import pandas as pd
@@ -136,13 +137,18 @@ def test_rename_index(meta_df):
     obs = meta_df.rename(mapping, scenario={'scen_a': 'scen_c'})
 
     # test data changes
+    dts = [dt.datetime(2005, 6, 17), dt.datetime(2010, 7, 21)]
+    times = [2005, 2010] if "year" in meta_df.data else dts
     exp = pd.DataFrame([
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
-    ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX).sort_index()
-    exp.columns = exp.columns.map(int)
+    if "year" in meta_df.data:
+        exp.columns = list(map(int, exp.columns))
+    else:
+        exp.columns = pd.to_datetime(exp.columns)
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
@@ -160,15 +166,20 @@ def test_rename_append(meta_df):
     obs = meta_df.rename(mapping, append=True)
 
     # test data changes
+    dts = [dt.datetime(2005, 6, 17), dt.datetime(2010, 7, 21)]
+    times = [2005, 2010] if "year" in meta_df.data else dts
     exp = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
         ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
-    ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX).sort_index()
-    exp.columns = exp.columns.map(int)
+    if "year" in meta_df.data:
+        exp.columns = list(map(int, exp.columns))
+    else:
+        exp.columns = pd.to_datetime(exp.columns)
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
