@@ -309,6 +309,31 @@ class IamDataFrame(object):
         fill_values['year'] = year
         self.data = self.data.append(fill_values, ignore_index=True)
 
+    def swap_time_for_year(self, inplace=False):
+        """Convert the `time` column to `year`.
+
+        Parameters
+        ----------
+        inplace: bool, default False
+            if True, do operation inplace and return None
+
+        Raises
+        ------
+        ValueError
+            "time" is not a column of `self.data`
+        """
+        if "time" not in self.data:
+            raise ValueError("`time` must be in `self.data` to use this method")
+
+        ret = copy.deepcopy(self) if not inplace else self
+
+        ret.data["year"] = ret.data["time"].apply(lambda x: x.year)
+        ret.data = ret.data.drop("time", axis="columns")
+        ret._LONG_IDX = [v if v != "time" else "year" for v in ret._LONG_IDX]
+
+        if not inplace:
+            return ret
+
     def as_pandas(self, with_metadata=False):
         """Return this as a pd.DataFrame
 
