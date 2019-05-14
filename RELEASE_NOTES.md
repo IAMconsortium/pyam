@@ -1,6 +1,8 @@
 
 # Next Release
 
+- [#236](https://github.com/IAMconsortium/pyam/pull/236) Add `swap_time_for_year` method and confirm datetime column is compatible with pyam features
+
 # Release v0.2.0
 
 ## Highlights
