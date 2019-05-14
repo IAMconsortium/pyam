@@ -323,7 +323,7 @@ class IamDataFrame(object):
             "time" is not a column of `self.data`
         """
         if "time" not in self.data:
-            raise ValueError("`time` must be in `self.data` to use this method")
+            raise ValueError("time column must be datetime to use this method")
 
         ret = copy.deepcopy(self) if not inplace else self
 

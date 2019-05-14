@@ -521,10 +521,8 @@ def test_validate_up(meta_df):
     if 'year' in meta_df.data:
         assert obs['year'].values[0] == 2010
     else:
-        assert (
-            pd.to_datetime(obs['time'].values[0])
-            == pd.to_datetime(datetime.datetime(2010, 7, 21))
-        )
+        exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
+        assert pd.to_datetime(obs['time'].values[0]) == exp_time
 
     assert list(meta_df['exclude']) == [False, False]  # assert none excluded
 
@@ -535,10 +533,9 @@ def test_validate_lo(meta_df):
     if 'year' in meta_df.data:
         assert obs['year'].values[0] == 2005
     else:
-        assert (
-            pd.to_datetime(obs['time'].values[0])
-            == pd.to_datetime(datetime.datetime(2005, 6, 17))
-        )
+        exp_year = pd.to_datetime(datetime.datetime(2005, 6, 17))
+        assert pd.to_datetime(obs['time'].values[0]) == exp_year
+
     assert list(obs['scenario'].values) == ['scen_a']
 
 
@@ -548,13 +545,11 @@ def test_validate_both(meta_df):
     if 'year' in meta_df.data:
         assert list(obs['year'].values) == [2005, 2010]
     else:
-        assert (
-            pd.to_datetime(obs['time'].values)
-            == pd.to_datetime([
-                datetime.datetime(2005, 6, 17),
-                datetime.datetime(2010, 7, 21),
-            ])
-        ).all()
+        exp_time = pd.to_datetime([
+            datetime.datetime(2005, 6, 17),
+            datetime.datetime(2010, 7, 21),
+        ])
+        assert (pd.to_datetime(obs['time'].values) == exp_time).all()
 
     assert list(obs['scenario'].values) == ['scen_a', 'scen_b']
 
@@ -581,10 +576,8 @@ def test_validate_top_level(meta_df):
     if 'year' in meta_df.data:
         assert obs['year'].values[0] == 2010
     else:
-        assert (
-            pd.to_datetime(obs['time'].values[0])
-            == pd.to_datetime(datetime.datetime(2010, 7, 21))
-        )
+        exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
+        assert (pd.to_datetime(obs['time'].values[0]) == exp_time)
     assert list(meta_df['exclude']) == [False, True]
 
 
@@ -1032,4 +1025,4 @@ def test_swap_time_to_year(test_df, inplace):
         assert compare(test_df, exp).empty
     else:
         assert compare(obs, exp).empty
-        assert not "year" in test_df.data.columns
+        assert "year" not in test_df.data.columns

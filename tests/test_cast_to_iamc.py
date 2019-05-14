@@ -7,11 +7,13 @@ from pyam import IamDataFrame, compare
 
 
 def test_cast_from_value_col(meta_df):
+    five = dt.datetime(2005, 6, 17)
+    ten = dt.datetime(2010, 7, 21)
     df_with_value_cols = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'EJ/y', dt.datetime(2005, 6, 17), 1, 0.5],
-        ['model_a', 'scen_a', 'World', 'EJ/y', dt.datetime(2010, 7, 21), 6., 3],
-        ['model_a', 'scen_b', 'World', 'EJ/y', dt.datetime(2005, 6, 17), 2, None],
-        ['model_a', 'scen_b', 'World', 'EJ/y', dt.datetime(2010, 7, 21), 7, None]
+        ['model_a', 'scen_a', 'World', 'EJ/y', five, 1, 0.5],
+        ['model_a', 'scen_a', 'World', 'EJ/y', ten, 6., 3],
+        ['model_a', 'scen_b', 'World', 'EJ/y', five, 2, None],
+        ['model_a', 'scen_b', 'World', 'EJ/y', ten, 7, None]
     ],
         columns=['model', 'scenario', 'region', 'unit', 'time',
                  'Primary Energy', 'Primary Energy|Coal'],

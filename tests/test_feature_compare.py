@@ -4,7 +4,7 @@ import datetime as dt
 
 import numpy as np
 import pandas as pd
-from pyam import compare, IamDataFrame, IAMC_IDX
+from pyam import compare, IAMC_IDX
 
 
 def test_compare(meta_df):
