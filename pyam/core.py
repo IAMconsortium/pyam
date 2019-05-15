@@ -521,6 +521,12 @@ class IamDataFrame(object):
     def validate(self, criteria={}, exclude_on_fail=False):
         """Validate scenarios using criteria on timeseries values
 
+        Returns all scenarios which do not match the criteria and prints a log
+        message or returns None if all scenarios match the criteria.
+
+        When called with `exclude_on_fail=True`, scenarios in the object not
+        satisfying the criteria will be marked as `exclude=True`.
+
         Parameters
         ----------
         criteria: dict
@@ -532,7 +538,7 @@ class IamDataFrame(object):
         df = _apply_criteria(self.data, criteria, in_range=False)
 
         if not df.empty:
-            msg = '{} of {} data points to not satisfy the criteria'
+            msg = '{} of {} data points do not satisfy the criteria'
             logger().info(msg.format(len(df), len(self.data)))
 
             if exclude_on_fail and len(df) > 0:
@@ -1399,6 +1405,12 @@ def _make_index(df, cols=META_IDX):
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     """Validate scenarios using criteria on timeseries values
+
+    Returns all scenarios which do not match the criteria and prints a log
+    message or returns None if all scenarios match the criteria.
+
+    When called with `exclude_on_fail=True`, scenarios in `df` not satisfying
+    the criteria will be marked as `exclude=True` (object modified in place).
 
     Parameters
     ----------
