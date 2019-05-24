@@ -331,6 +331,11 @@ class IamDataFrame(object):
         ret.data = ret.data.drop("time", axis="columns")
         ret._LONG_IDX = [v if v != "time" else "year" for v in ret._LONG_IDX]
 
+        if any(ret.data[ret._LONG_IDX].duplicated()):
+            error_msg = ('swapping time for year will result in duplicate '
+                         'rows in `data`!')
+            raise ValueError(error_msg)
+
         if not inplace:
             return ret
 
