@@ -5,15 +5,14 @@ import pytest
 import pandas as pd
 from pyam import IamDataFrame, compare
 
+from conftest import TEST_DTS
 
 def test_cast_from_value_col(meta_df):
-    five = dt.datetime(2005, 6, 17)
-    ten = dt.datetime(2010, 7, 21)
     df_with_value_cols = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'EJ/y', five, 1, 0.5],
-        ['model_a', 'scen_a', 'World', 'EJ/y', ten, 6., 3],
-        ['model_a', 'scen_b', 'World', 'EJ/y', five, 2, None],
-        ['model_a', 'scen_b', 'World', 'EJ/y', ten, 7, None]
+        ['model_a', 'scen_a', 'World', 'EJ/y', TEST_DTS[0], 1, 0.5],
+        ['model_a', 'scen_a', 'World', 'EJ/y', TEST_DTS[1], 6., 3],
+        ['model_a', 'scen_b', 'World', 'EJ/y', TEST_DTS[0], 2, None],
+        ['model_a', 'scen_b', 'World', 'EJ/y', TEST_DTS[1], 7, None]
     ],
         columns=['model', 'scenario', 'region', 'unit', 'time',
                  'Primary Energy', 'Primary Energy|Coal'],
@@ -30,10 +29,10 @@ def test_cast_from_value_col(meta_df):
 def test_cast_from_value_col_and_args(meta_df):
     # checks for issue [#210](https://github.com/IAMconsortium/pyam/issues/210)
     df_with_value_cols = pd.DataFrame([
-        ['scen_a', 'World', 'EJ/y', dt.datetime(2005, 6, 17), 1, 0.5],
-        ['scen_a', 'World', 'EJ/y', dt.datetime(2010, 7, 21), 6., 3],
-        ['scen_b', 'World', 'EJ/y', dt.datetime(2005, 6, 17), 2, None],
-        ['scen_b', 'World', 'EJ/y', dt.datetime(2010, 7, 21), 7, None]
+        ['scen_a', 'World', 'EJ/y', TEST_DTS[0], 1, 0.5],
+        ['scen_a', 'World', 'EJ/y', TEST_DTS[1], 6., 3],
+        ['scen_b', 'World', 'EJ/y', TEST_DTS[0], 2, None],
+        ['scen_b', 'World', 'EJ/y', TEST_DTS[1], 7, None]
     ],
         columns=['scenario', 'iso', 'unit', 'time',
                  'Primary Energy', 'Primary Energy|Coal'],
@@ -67,7 +66,7 @@ def test_cast_with_model_arg(meta_df):
 
 
 def test_cast_by_column_concat(meta_df):
-    dts = [dt.datetime(2005, 6, 17), dt.datetime(2010, 7, 21)]
+    dts = TEST_DTS
     df = pd.DataFrame([
         ['scen_a', 'World', 'Primary Energy', None, 'EJ/y', 1, 6.],
         ['scen_a', 'World', 'Primary Energy', 'Coal', 'EJ/y', 0.5, 3],

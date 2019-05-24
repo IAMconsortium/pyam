@@ -167,11 +167,14 @@ TEST_STACKPLOT_DF['model'] = 'IMG'
 TEST_STACKPLOT_DF['scenario'] = 'a_scen'
 
 
+TEST_YEARS = [2005, 2010]
+TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
+
 @pytest.fixture(
     scope="function",
     params=[
-        [2005, 2010],
-        [datetime(2005, 6, 17), datetime(2010, 7, 21)],
+        TEST_YEARS,
+        TEST_DTS,
         ['2005-06-17', '2010-07-21'],
         ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
     ]
@@ -198,8 +201,8 @@ def test_pd_df():
 @pytest.fixture(
     scope="function",
     params=[
-        [2005, 2010],
-        [datetime(2005, 6, 17), datetime(2010, 7, 21)],
+        TEST_YEARS,
+        TEST_DTS,
     ]
 )
 def meta_df(request):

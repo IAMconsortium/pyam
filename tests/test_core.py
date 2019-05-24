@@ -11,7 +11,7 @@ from pyam import IamDataFrame, validate, categorize, \
     require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
 from pyam.core import _meta_idx, concat
 
-from conftest import TEST_DATA_DIR
+from conftest import TEST_DATA_DIR, TEST_DTS
 
 
 df_filter_by_meta_matching_idx = pd.DataFrame([
@@ -545,10 +545,7 @@ def test_validate_both(meta_df):
     if 'year' in meta_df.data:
         assert list(obs['year'].values) == [2005, 2010]
     else:
-        exp_time = pd.to_datetime([
-            datetime.datetime(2005, 6, 17),
-            datetime.datetime(2010, 7, 21),
-        ])
+        exp_time = pd.to_datetime(TEST_DTS)
         assert (pd.to_datetime(obs['time'].values) == exp_time).all()
 
     assert list(obs['scenario'].values) == ['scen_a', 'scen_b']

@@ -28,9 +28,9 @@ def test_compare(meta_df):
     exp['scenario'] = 'scen_a'
     exp['region'] = 'World'
     time_col = 'time'
-    if "year" in meta_df.data.columns:
-        exp["year"] = exp["time"].apply(lambda x: x.year)
-        exp = exp.drop("time", axis="columns")
+    if 'year' in meta_df.data.columns:
+        exp['year'] = exp['time'].apply(lambda x: x.year)
+        exp = exp.drop('time', axis='columns')
         time_col = 'year'
 
     exp = exp.set_index(IAMC_IDX + [time_col])
