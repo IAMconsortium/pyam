@@ -138,7 +138,7 @@ def test_rename_index(meta_df):
 
     # test data changes
     dts = [dt.datetime(2005, 6, 17), dt.datetime(2010, 7, 21)]
-    times = [2005, 2010] if "year" in meta_df.data else dts
+    times = [2005, 2010] if 'year' in meta_df.data else dts
     exp = pd.DataFrame([
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
