@@ -170,6 +170,7 @@ TEST_STACKPLOT_DF['scenario'] = 'a_scen'
 TEST_YEARS = [2005, 2010]
 TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
 
+
 @pytest.fixture(
     scope="function",
     params=[

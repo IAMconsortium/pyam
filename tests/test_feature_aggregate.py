@@ -1,6 +1,3 @@
-import datetime as dt
-
-
 import numpy as np
 import pandas as pd
 from pyam import check_aggregate, IAMC_IDX

@@ -1,6 +1,3 @@
-import datetime as dt
-
-
 import pytest
 import pandas as pd
 from pyam import IamDataFrame, compare
