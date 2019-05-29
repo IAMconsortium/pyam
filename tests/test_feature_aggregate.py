@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from pyam import check_aggregate, IAMC_IDX
 
+from conftest import TEST_DTS
 
 def test_do_aggregate_append(meta_df):
     meta_df.rename({'variable': {'Primary Energy': 'Primary Energy|Gas'}},
@@ -9,13 +10,19 @@ def test_do_aggregate_append(meta_df):
     meta_df.aggregate('Primary Energy', append=True)
     obs = meta_df.filter(variable='Primary Energy').timeseries()
 
+    dts = TEST_DTS
+    times = [2005, 2010] if "year" in meta_df.data else dts
     exp = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1.5, 9.],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
     ],
-        columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+        columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX)
-    exp.columns = list(map(int, exp.columns))
+    if "year" in meta_df.data:
+        exp.columns = list(map(int, exp.columns))
+    else:
+        exp.columns = pd.to_datetime(exp.columns)
+
     pd.testing.assert_frame_equal(obs, exp)
 
 

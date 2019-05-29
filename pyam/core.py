@@ -309,6 +309,36 @@ class IamDataFrame(object):
         fill_values['year'] = year
         self.data = self.data.append(fill_values, ignore_index=True)
 
+    def swap_time_for_year(self, inplace=False):
+        """Convert the `time` column to `year`.
+
+        Parameters
+        ----------
+        inplace: bool, default False
+            if True, do operation inplace and return None
+
+        Raises
+        ------
+        ValueError
+            "time" is not a column of `self.data`
+        """
+        if "time" not in self.data:
+            raise ValueError("time column must be datetime to use this method")
+
+        ret = self.copy() if not inplace else self
+
+        ret.data["year"] = ret.data["time"].apply(lambda x: x.year)
+        ret.data = ret.data.drop("time", axis="columns")
+        ret._LONG_IDX = [v if v != "time" else "year" for v in ret._LONG_IDX]
+
+        if any(ret.data[ret._LONG_IDX].duplicated()):
+            error_msg = ('swapping time for year will result in duplicate '
+                         'rows in `data`!')
+            raise ValueError(error_msg)
+
+        if not inplace:
+            return ret
+
     def as_pandas(self, with_metadata=False):
         """Return this as a pd.DataFrame
 
@@ -1363,6 +1393,10 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
     if not set(check.keys()).issubset(valid_checks):
         msg = 'Unknown checking type: {}'
         raise ValueError(msg.format(check.keys() - valid_checks))
+
+    if 'year' not in rows:
+        rows = rows.copy()
+        rows['year'] = rows['time'].apply(lambda x: x.year)
 
     where_idx = set(rows.index[rows['year'] == check['year']]) \
         if 'year' in check else set(rows.index)

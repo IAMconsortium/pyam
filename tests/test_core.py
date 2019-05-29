@@ -8,10 +8,10 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, validate, categorize, \
-    require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data
+    require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
 from pyam.core import _meta_idx, concat
 
-from conftest import TEST_DATA_DIR
+from conftest import TEST_DATA_DIR, TEST_DTS
 
 
 df_filter_by_meta_matching_idx = pd.DataFrame([
@@ -518,7 +518,11 @@ def test_validate_up(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 6.5}},
                            exclude_on_fail=False)
     assert len(obs) == 1
-    assert obs['year'].values[0] == 2010
+    if 'year' in meta_df.data:
+        assert obs['year'].values[0] == 2010
+    else:
+        exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
+        assert pd.to_datetime(obs['time'].values[0]) == exp_time
 
     assert list(meta_df['exclude']) == [False, False]  # assert none excluded
 
@@ -526,14 +530,24 @@ def test_validate_up(meta_df):
 def test_validate_lo(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 8, 'lo': 2.0}})
     assert len(obs) == 1
-    assert obs['year'].values[0] == 2005
+    if 'year' in meta_df.data:
+        assert obs['year'].values[0] == 2005
+    else:
+        exp_year = pd.to_datetime(datetime.datetime(2005, 6, 17))
+        assert pd.to_datetime(obs['time'].values[0]) == exp_year
+
     assert list(obs['scenario'].values) == ['scen_a']
 
 
 def test_validate_both(meta_df):
     obs = meta_df.validate({'Primary Energy': {'up': 6.5, 'lo': 2.0}})
     assert len(obs) == 2
-    assert list(obs['year'].values) == [2005, 2010]
+    if 'year' in meta_df.data:
+        assert list(obs['year'].values) == [2005, 2010]
+    else:
+        exp_time = pd.to_datetime(TEST_DTS)
+        assert (pd.to_datetime(obs['time'].values) == exp_time).all()
+
     assert list(obs['scenario'].values) == ['scen_a', 'scen_b']
 
 
@@ -556,7 +570,11 @@ def test_validate_top_level(meta_df):
     obs = validate(meta_df, criteria={'Primary Energy': {'up': 6.0}},
                    exclude_on_fail=True, variable='Primary Energy')
     assert len(obs) == 1
-    assert obs['year'].values[0] == 2010
+    if 'year' in meta_df.data:
+        assert obs['year'].values[0] == 2010
+    else:
+        exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
+        assert (pd.to_datetime(obs['time'].values[0]) == exp_time)
     assert list(meta_df['exclude']) == [False, True]
 
 
@@ -971,10 +989,51 @@ def test_normalize(meta_df):
     exp = meta_df.data.copy().reset_index(drop=True)
     exp['value'][1::2] /= exp['value'][::2].values
     exp['value'][::2] /= exp['value'][::2].values
-    obs = meta_df.normalize(year=2005).data.reset_index(drop=True)
+    if "year" in meta_df.data:
+        obs = meta_df.normalize(year=2005).data.reset_index(drop=True)
+    else:
+        obs = meta_df.normalize(
+            time=datetime.datetime(2005, 6, 17)
+        ).data.reset_index(drop=True)
     pd.testing.assert_frame_equal(obs, exp)
 
 
 def test_normalize_not_time(meta_df):
     pytest.raises(ValueError, meta_df.normalize, variable='foo')
     pytest.raises(ValueError, meta_df.normalize, year=2015, variable='foo')
+
+
+@pytest.mark.parametrize("inplace", [True, False])
+def test_swap_time_to_year(test_df, inplace):
+    if "year" in test_df.data:
+        return  # year df not relevant for this test
+
+    exp = test_df.data.copy()
+    exp["year"] = exp["time"].apply(lambda x: x.year)
+    exp = exp.drop("time", axis="columns")
+    exp = IamDataFrame(exp)
+
+    obs = test_df.swap_time_for_year(inplace=inplace)
+
+    if inplace:
+        assert obs is None
+        assert compare(test_df, exp).empty
+    else:
+        assert compare(obs, exp).empty
+        assert "year" not in test_df.data.columns
+
+
+@pytest.mark.parametrize("inplace", [True, False])
+def test_swap_time_to_year_errors(test_df, inplace):
+    if "year" in test_df.data:
+        with pytest.raises(ValueError):
+            test_df.swap_time_for_year(inplace=inplace)
+        return
+
+    tdf = test_df.data.copy()
+    tdf["time"] = tdf["time"].apply(
+        lambda x: datetime.datetime(2005, x.month, x.day)
+    )
+
+    with pytest.raises(ValueError):
+        IamDataFrame(tdf).swap_time_for_year(inplace=inplace)
