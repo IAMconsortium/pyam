@@ -325,7 +325,7 @@ class IamDataFrame(object):
         if "time" not in self.data:
             raise ValueError("time column must be datetime to use this method")
 
-        ret = copy.deepcopy(self) if not inplace else self
+        ret = self.copy() if not inplace else self
 
         ret.data["year"] = ret.data["time"].apply(lambda x: x.year)
         ret.data = ret.data.drop("time", axis="columns")
@@ -1388,8 +1388,8 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
         msg = 'Unknown checking type: {}'
         raise ValueError(msg.format(check.keys() - valid_checks))
 
-    rows = rows.copy()
     if 'year' not in rows:
+        rows = rows.copy()
         rows['year'] = rows['time'].apply(lambda x: x.year)
 
     where_idx = set(rows.index[rows['year'] == check['year']]) \
