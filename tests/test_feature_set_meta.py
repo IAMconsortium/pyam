@@ -20,15 +20,11 @@ def test_set_meta_as_named_series(meta_df):
                         labels=[[0], [0], [0]],
                         names=['scenario', 'model', 'region'])
 
-    s = pd.Series(data=[0.3], index=idx)
-    s.name = 'meta_values'
+    s = pd.Series(data=[0.3], index=idx, name='meta_values')
     meta_df.set_meta(s)
 
-    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX)
-    exp.name = 'meta_values'
-
-    obs = meta_df['meta_values']
-    pd.testing.assert_series_equal(obs, exp)
+    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX, name='meta_values')
+    pd.testing.assert_series_equal(meta_df['meta_values'], exp)
 
 
 def test_set_meta_as_unnamed_series(meta_df):
@@ -39,11 +35,8 @@ def test_set_meta_as_unnamed_series(meta_df):
     s = pd.Series(data=[0.3], index=idx)
     meta_df.set_meta(s, name='meta_values')
 
-    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX)
-    exp.name = 'meta_values'
-
-    obs = meta_df['meta_values']
-    pd.testing.assert_series_equal(obs, exp)
+    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX, name='meta_values')
+    pd.testing.assert_series_equal(meta_df['meta_values'], exp)
 
 
 def test_set_meta_non_unique_index_fail(meta_df):
@@ -69,11 +62,8 @@ def test_set_meta_by_df(meta_df):
 
     meta_df.set_meta(meta=0.3, name='meta_values', index=df)
 
-    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX)
-    exp.name = 'meta_values'
-
-    obs = meta_df['meta_values']
-    pd.testing.assert_series_equal(obs, exp)
+    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX, name='meta_values')
+    pd.testing.assert_series_equal(meta_df['meta_values'], exp)
 
 
 def test_set_meta_as_series(meta_df):
@@ -81,9 +71,7 @@ def test_set_meta_as_series(meta_df):
     meta_df.set_meta(s, 'meta_series')
 
     exp = pd.Series(data=[0.3, 0.4], index=EXP_IDX, name='meta_series')
-
-    obs = meta_df['meta_series']
-    pd.testing.assert_series_equal(obs, exp)
+    pd.testing.assert_series_equal(meta_df['meta_series'], exp)
 
 
 def test_set_meta_as_int(meta_df):
@@ -99,9 +87,7 @@ def test_set_meta_as_str(meta_df):
     meta_df.set_meta('testing', name='meta_str')
 
     exp = pd.Series(data=['testing'] * 2, index=EXP_IDX, name='meta_str')
-
-    obs = meta_df['meta_str']
-    pd.testing.assert_series_equal(obs, exp)
+    pd.testing.assert_series_equal(meta_df['meta_str'], exp)
 
 
 def test_set_meta_as_str_list(meta_df):
@@ -116,5 +102,5 @@ def test_set_meta_as_str_by_index(meta_df):
 
     meta_df.set_meta('foo', 'meta_str', idx)
 
-    obs = pd.Series(meta_df['meta_str'].values)
-    pd.testing.assert_series_equal(obs, pd.Series(['foo', None]))
+    exp = pd.Series(data=['foo', None], index=EXP_IDX, name='meta_str')
+    pd.testing.assert_series_equal(meta_df['meta_str'], exp)
