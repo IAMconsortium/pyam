@@ -104,3 +104,33 @@ def test_set_meta_as_str_by_index(meta_df):
 
     exp = pd.Series(data=['foo', None], index=EXP_IDX, name='meta_str')
     pd.testing.assert_series_equal(meta_df['meta_str'], exp)
+
+
+def test_set_meta_from_data(meta_df):
+    meta_df.set_meta_from_data('pe_2005', variable='Primary Energy', year=2005)
+    exp = pd.Series(data=[1., 2.], index=EXP_IDX, name='pe_2005')
+    pd.testing.assert_series_equal(meta_df['pe_2005'], exp)
+
+
+def test_set_meta_from_data_method(meta_df):
+    meta_df.set_meta_from_data('pe_max_yr', variable='Primary Energy',
+                               method=np.max)
+    exp = pd.Series(data=[6., 7.], index=EXP_IDX, name='pe_max_yr')
+    pd.testing.assert_series_equal(meta_df['pe_max_yr'], exp)
+
+
+def test_set_meta_from_data_method_other_column(meta_df):
+    if 'year' in meta_df.data.columns:
+        col, value = 'year',  2010, 
+    else:
+        col, value = 'time', pd.to_datetime('2010-07-21T00:00:00.0')
+    meta_df.set_meta_from_data('pe_max_yr', variable='Primary Energy',
+                               method=np.max, column=col)
+    exp = pd.Series(data=[value] * 2, index=EXP_IDX, name='pe_max_yr')
+    pd.testing.assert_series_equal(meta_df['pe_max_yr'], exp)
+
+
+def test_set_meta_from_data_nonunique(meta_df):
+    # the filtered `data` dataframe is not unique with regard to META_IDX
+    pytest.raises(ValueError, meta_df.set_meta_from_data, 'fail',
+                  variable='Primary Energy')
