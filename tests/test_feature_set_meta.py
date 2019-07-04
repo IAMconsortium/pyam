@@ -121,7 +121,7 @@ def test_set_meta_from_data_method(meta_df):
 
 def test_set_meta_from_data_method_other_column(meta_df):
     if 'year' in meta_df.data.columns:
-        col, value = 'year',  2010, 
+        col, value = 'year', 2010
     else:
         col, value = 'time', pd.to_datetime('2010-07-21T00:00:00.0')
     meta_df.set_meta_from_data('pe_max_yr', variable='Primary Energy',
