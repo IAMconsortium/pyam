@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#241](https://github.com/IAMconsortium/pyam/pull/241) Add `set_meta_from_data` feature
 - [#236](https://github.com/IAMconsortium/pyam/pull/236) Add `swap_time_for_year` method and confirm datetime column is compatible with pyam features
 
 # Release v0.2.0
