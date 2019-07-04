@@ -3,6 +3,10 @@ import numpy as np
 import pandas as pd
 
 
+EXP_IDX = pd.MultiIndex(levels=[['model_a'], ['scen_a', 'scen_b']],
+                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+
+
 def test_set_meta_no_name(meta_df):
     idx = pd.MultiIndex(levels=[['a_scenario'], ['a_model'], ['some_region']],
                         labels=[[0], [0], [0]],
@@ -20,9 +24,7 @@ def test_set_meta_as_named_series(meta_df):
     s.name = 'meta_values'
     meta_df.set_meta(s)
 
-    idx = pd.MultiIndex(levels=[['model_a'], ['scen_a', 'scen_b']],
-                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
-    exp = pd.Series(data=[0.3, np.nan], index=idx)
+    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX)
     exp.name = 'meta_values'
 
     obs = meta_df['meta_values']
@@ -37,9 +39,7 @@ def test_set_meta_as_unnamed_series(meta_df):
     s = pd.Series(data=[0.3], index=idx)
     meta_df.set_meta(s, name='meta_values')
 
-    idx = pd.MultiIndex(levels=[['model_a'], ['scen_a', 'scen_b']],
-                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
-    exp = pd.Series(data=[0.3, np.nan], index=idx)
+    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX)
     exp.name = 'meta_values'
 
     obs = meta_df['meta_values']
@@ -69,9 +69,7 @@ def test_set_meta_by_df(meta_df):
 
     meta_df.set_meta(meta=0.3, name='meta_values', index=df)
 
-    idx = pd.MultiIndex(levels=[['model_a'], ['scen_a', 'scen_b']],
-                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
-    exp = pd.Series(data=[0.3, np.nan], index=idx)
+    exp = pd.Series(data=[0.3, np.nan], index=EXP_IDX)
     exp.name = 'meta_values'
 
     obs = meta_df['meta_values']
@@ -82,12 +80,7 @@ def test_set_meta_as_series(meta_df):
     s = pd.Series([0.3, 0.4])
     meta_df.set_meta(s, 'meta_series')
 
-    idx = pd.MultiIndex(levels=[['model_a'],
-                                ['scen_a', 'scen_b']],
-                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
-
-    exp = pd.Series(data=[0.3, 0.4], index=idx)
-    exp.name = 'meta_series'
+    exp = pd.Series(data=[0.3, 0.4], index=EXP_IDX, name='meta_series')
 
     obs = meta_df['meta_series']
     pd.testing.assert_series_equal(obs, exp)
@@ -96,11 +89,7 @@ def test_set_meta_as_series(meta_df):
 def test_set_meta_as_int(meta_df):
     meta_df.set_meta(3.2, 'meta_int')
 
-    idx = pd.MultiIndex(levels=[['model_a'],
-                                ['scen_a', 'scen_b']],
-                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
-
-    exp = pd.Series(data=[3.2, 3.2], index=idx, name='meta_int')
+    exp = pd.Series(data=[3.2, 3.2], index=EXP_IDX, name='meta_int')
 
     obs = meta_df['meta_int']
     pd.testing.assert_series_equal(obs, exp)
@@ -109,11 +98,7 @@ def test_set_meta_as_int(meta_df):
 def test_set_meta_as_str(meta_df):
     meta_df.set_meta('testing', name='meta_str')
 
-    idx = pd.MultiIndex(levels=[['model_a'],
-                                ['scen_a', 'scen_b']],
-                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
-
-    exp = pd.Series(data=['testing', 'testing'], index=idx, name='meta_str')
+    exp = pd.Series(data=['testing'] * 2, index=EXP_IDX, name='meta_str')
 
     obs = meta_df['meta_str']
     pd.testing.assert_series_equal(obs, exp)
