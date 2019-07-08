@@ -63,14 +63,17 @@ class Connection(object):
             also be supplied.
         """
         valid = valid_connection_names()
-        if name not in valid:
-            raise ValueError('{} is not a valid name. Choose one of {}'.format(
-                name, valid))
+        if name not in valid and application is None:
+            msg = '{} not recognized as a valid connection name. '
+            'Either *also* provide an "application" argument, '
+            'or choose from one of the supported connections: {}.'
+            raise ValueError(msg.format(name, valid))
 
-        logger().info(
-            'You are connected to the {} {}. Please cite as:\n\n{}'
-            .format(name, 'scenario explorer', _CITATIONS[name])
-        )
+        if name in valid:
+            logger().info(
+                'You are connected to the {} {}. Please cite as:\n\n{}'
+                .format(name, 'scenario explorer', _CITATIONS[name])
+            )
 
         self.base_url = _URL_TEMPLATE.format(name)
 
@@ -90,9 +93,6 @@ class Connection(object):
             # request authentication
             headers = {'Accept': 'application/json',
                        'Content-Type': 'application/json'}
-            if application is None and name not in _LOGIN_APP_NAMES:
-                raise ValueError('Must supply "application" argument '
-                                 'for non-valid connection name')
             app = application or _LOGIN_APP_NAMES[name]
             data = {'username': user, 'password': pw, 'application': app}
             response = requests.post(
