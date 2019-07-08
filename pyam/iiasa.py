@@ -20,7 +20,6 @@ logging.getLogger('requests').setLevel(logging.WARNING)
 
 _URL_TEMPLATE = 'https://db1.ene.iiasa.ac.at/{}-api/rest/v2.1/'
 _LOGIN_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/login'
-_ANON_LOGIN_URL = _LOGIN_URL.replace('login', 'anonym')
 
 
 # short names to long names on explorer backends
@@ -79,7 +78,8 @@ class Connection(object):
 
         # get authorization
         if creds is None:  # anonymously
-            self._auth = requests.get(_ANON_LOGIN_URL).json()
+            url = _LOGIN_URL.replace('login', 'anonym')
+            self._auth = requests.get(url).json()
         else:  # read credentials from kwargs
             try:
                 if isinstance(creds, collections.Mapping):
