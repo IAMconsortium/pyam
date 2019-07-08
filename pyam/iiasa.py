@@ -19,7 +19,8 @@ from pyam.utils import META_IDX, islistable, isstr, pattern_match
 logging.getLogger('requests').setLevel(logging.WARNING)
 
 _URL_TEMPLATE = 'https://db1.ene.iiasa.ac.at/{}-api/rest/v2.1/'
-_ANON_AUTH_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/anonym'
+_LOGIN_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/login'
+_ANON_LOGIN_URL = _LOGIN_URL.replace('login', 'anonym')
 
 _CITATIONS = {
     'iamc15': 'D. Huppmann, E. Kriegler, V. Krey, K. Riahi, '
@@ -63,7 +64,7 @@ class Connection(object):
 
         # get authorization
         if creds is None:  # anonymously
-            self._auth = requests.get(_ANON_AUTH_URL).json()
+            self._auth = requests.get(_ANON_LOGIN_URL).json()
         else:  # or via credentials
             try:
                 if isinstance(creds, collections.Mapping):
