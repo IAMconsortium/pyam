@@ -88,8 +88,8 @@ virtual-environment: $(VENV_DIR)  ## make virtual environment for development
 
 $(VENV_DIR):  $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE)
 	# TODO: unify with ci install instructions somehow
-	$(CONDA_EXE) config --add channels conda-forge
-	$(CONDA_EXE) install --yes -c conda-forge $(shell cat $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE) | tr '\n' ' ')
+	$(CONDA_EXE) config --add channels conda-forge # sets conda-forge as highest priority
+	$(CONDA_EXE) install --yes $(shell cat $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE) | tr '\n' ' ')
 	# Install development setup
 	$(VENV_DIR)/bin/pip install -e .[tests,deploy]
 	# install docs requirements
