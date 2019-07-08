@@ -22,6 +22,15 @@ _URL_TEMPLATE = 'https://db1.ene.iiasa.ac.at/{}-api/rest/v2.1/'
 _LOGIN_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/login'
 _ANON_LOGIN_URL = _LOGIN_URL.replace('login', 'anonym')
 
+
+# short names to long names on explorer backends
+# TODO: when adding a new explorer, update this list
+_LOGIN_APP_NAMES = {
+    'iamc15': 'IXSE_SR15',
+}
+
+# short names to citations
+# TODO: when adding a new explorer, update this list
 _CITATIONS = {
     'iamc15': 'D. Huppmann, E. Kriegler, V. Krey, K. Riahi, '
     'J. Rogelj, S.K. Rose, J. Weyant, et al., '
@@ -39,7 +48,7 @@ def valid_connection_names():
 class Connection(object):
     """A class to facilitate querying an IIASA scenario explorer database"""
 
-    def __init__(self, name, creds=None):
+    def __init__(self, name, creds=None, application=None):
         """
         Parameters
         ----------
@@ -49,6 +58,9 @@ class Connection(object):
         creds : list-like or dict, optional
             An ordered container with entries of 'username' and 'password',
             or a dictionary with the same keys.
+        application : str, optional
+            If using non-valid connection name, the application name must
+            also be supplied.
         """
         valid = valid_connection_names()
         if name not in valid:
@@ -65,7 +77,7 @@ class Connection(object):
         # get authorization
         if creds is None:  # anonymously
             self._auth = requests.get(_ANON_LOGIN_URL).json()
-        else:  # or via credentials
+        else:  # read credentials from kwargs
             try:
                 if isinstance(creds, collections.Mapping):
                     user, pw = creds['username'], creds['password']
@@ -75,9 +87,24 @@ class Connection(object):
                 msg = 'Could not read credentials: {}\n{}'.format(
                     creds, str(e))
                 raise type(e)(msg)
+            # request authentication
+            headers = {'Accept': 'application/json',
+                       'Content-Type': 'application/json'}
+            if application is None and name not in _LOGIN_APP_NAMES:
+                raise ValueError('Must supply "application" argument '
+                                 'for non-valid connection name')
+            app = application or _LOGIN_APP_NAMES[name]
+            data = {'username': user, 'password': pw, 'application': app}
+            response = requests.post(
+                _LOGIN_URL, headers=headers, data=json.dumps(data)
+            )
+            self._auth = response.json()
+            if not response.ok:  # auth failed, provide user a nice message
+                msg = 'Login to {} failed with given credentials: {}'
+                raise RuntimeError(msg.format(app, self._auth))
 
     def auth(self):
-        """Anonymous user authentication token"""
+        """User authentication token"""
         return self._auth
 
     @lru_cache()

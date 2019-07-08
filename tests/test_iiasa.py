@@ -7,8 +7,8 @@ import numpy.testing as npt
 from pyam import iiasa
 
 # check to see if we can do online testing of db authentication
-TEST_ENV_USER = 'IIASA-CONN-TEST-USER'
-TEST_ENV_PW = 'IIASA-CONN-TEST-PW'
+TEST_ENV_USER = 'IIASA_CONN_TEST_USER'
+TEST_ENV_PW = 'IIASA_CONN_TEST_PW'
 CONN_ENV_AVAILABLE = TEST_ENV_USER in os.environ and TEST_ENV_PW in os.environ
 CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
     TEST_ENV_USER, TEST_ENV_PW
@@ -23,10 +23,16 @@ def test_anon_conn():
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_tuple():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    iiasa.Connection('iamc15', creds=(user, pw))
+    conn = iiasa.Connection('iamc15', creds=(user, pw))
+    assert isinstance(conn._auth, str)  # and not some other unexpected object
 
 
-def test_anon_conn_raises():
+def test_conn_bad_creds():
+    pytest.raises(RuntimeError, iiasa.Connection,
+                  'iamc15', creds=('_foo', '_bar'))
+
+
+def test_anon_conn_tuple_raises():
     pytest.raises(ValueError, iiasa.Connection, 'foo')
 
 
