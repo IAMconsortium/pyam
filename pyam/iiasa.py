@@ -1,3 +1,4 @@
+import collections
 import json
 import logging
 import requests
@@ -37,13 +38,16 @@ def valid_connection_names():
 class Connection(object):
     """A class to facilitate querying an IIASA scenario explorer database"""
 
-    def __init__(self, name):
+    def __init__(self, name, creds=None):
         """
         Parameters
         ----------
         name : str
             A valid database name. For available options, see
             valid_connection_names().
+        creds : list-like or dict, optional
+            An ordered container with entries of 'username' and 'password',
+            or a dictionary with the same keys.
         """
         valid = valid_connection_names()
         if name not in valid:
@@ -57,7 +61,19 @@ class Connection(object):
 
         self.base_url = _URL_TEMPLATE.format(name)
 
-        self._auth = requests.get(_ANON_AUTH_URL).json()
+        # get authorization
+        if creds is None:  # anonymously
+            self._auth = requests.get(_ANON_AUTH_URL).json()
+        else:  # or via credentials
+            try:
+                if isinstance(creds, collections.Mapping):
+                    user, pw = creds['username'], creds['password']
+                else:
+                    user, pw = creds
+            except Exception as e:
+                msg = 'Could not read credentials: {}\n{}'.format(
+                    creds, str(e))
+                raise type(e)(msg)
 
     def auth(self):
         """Anonymous user authentication token"""

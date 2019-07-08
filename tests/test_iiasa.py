@@ -1,19 +1,44 @@
 import copy
 import pytest
+import os
 
 import numpy.testing as npt
 
 from pyam import iiasa
 
+# check to see if we can do online testing of db authentication
+TEST_ENV_USER = 'IIASA-CONN-TEST-USER'
+TEST_ENV_PW = 'IIASA-CONN-TEST-PW'
+CONN_ENV_AVAILABLE = TEST_ENV_USER in os.environ and TEST_ENV_PW in os.environ
+CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
+    TEST_ENV_USER, TEST_ENV_PW
+)
 
-def test_auth():
+
+def test_anon_conn():
     conn = iiasa.Connection('iamc15')
     assert conn.base_url == 'https://db1.ene.iiasa.ac.at/iamc15-api/rest/v2.1/'
-    conn.auth()
 
 
-def test_connection_raises():
+@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
+def test_conn_creds_tuple():
+    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
+    iiasa.Connection('iamc15', creds=(user, pw))
+
+
+def test_anon_conn_raises():
     pytest.raises(ValueError, iiasa.Connection, 'foo')
+
+
+@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
+def test_conn_creds_dict():
+    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
+    iiasa.Connection('iamc15', creds={'username': user, 'password': pw})
+
+
+def test_conn_creds_dict_raises():
+    pytest.raises(KeyError, iiasa.Connection,
+                  'iamc15', creds={'username': 'foo'})
 
 
 def test_variables():
@@ -49,6 +74,8 @@ QUERY_DATA_EXP = {
         "units": [],
         "times": []
     }
+
+
 }
 
 
