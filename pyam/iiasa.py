@@ -18,7 +18,7 @@ from pyam.utils import META_IDX, islistable, isstr, pattern_match
 logging.getLogger('requests').setLevel(logging.WARNING)
 
 _URL_TEMPLATE = 'https://db1.ene.iiasa.ac.at/{}-api/rest/v2.1/'
-_AUTH_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/anonym'
+_ANON_AUTH_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/anonym'
 
 _CITATIONS = {
     'iamc15': 'D. Huppmann, E. Kriegler, V. Krey, K. Riahi, '
@@ -57,11 +57,11 @@ class Connection(object):
 
         self.base_url = _URL_TEMPLATE.format(name)
 
-    @lru_cache()
+        self._auth = requests.get(_ANON_AUTH_URL).json()
+
     def auth(self):
         """Anonymous user authentication token"""
-        r = requests.get(_AUTH_URL)
-        return r.json()
+        return self._auth
 
     @lru_cache()
     def scenario_list(self, default=True):
