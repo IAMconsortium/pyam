@@ -44,6 +44,37 @@ def valid_connection_names():
     return list(_CITATIONS.keys())
 
 
+def _get_token(creds, name, application):
+    # get anonymous auth if creds
+    if creds is None:  # anonymously
+        url = _LOGIN_URL.replace('login', 'anonym')
+        return requests.get(url).json()
+
+    # otherwise read creds and try to login
+    try:
+        if isinstance(creds, collections.Mapping):
+            user, pw = creds['username'], creds['password']
+        else:
+            user, pw = creds
+    except Exception as e:
+        msg = 'Could not read credentials: {}\n{}'.format(
+            creds, str(e))
+        raise type(e)(msg)
+
+    headers = {'Accept': 'application/json',
+               'Content-Type': 'application/json'}
+    app = application or _LOGIN_APP_NAMES[name]
+    data = {'username': user, 'password': pw, 'application': app}
+    response = requests.post(
+        _LOGIN_URL, headers=headers, data=json.dumps(data)
+    )
+    auth = response.json()
+    if not response.ok:  # auth failed, provide user a nice message
+        msg = 'Login to {} failed with given credentials for user: {}'
+        raise RuntimeError(msg.format(app, user))
+    return auth
+
+
 class Connection(object):
     """A class to facilitate querying an IIASA scenario explorer database"""
 
@@ -74,38 +105,8 @@ class Connection(object):
                 .format(name, 'scenario explorer', _CITATIONS[name])
             )
 
-        self._token = self._get_token(creds, name, application)
+        self._token = _get_token(creds, name, application)
         self.base_url = _URL_TEMPLATE.format(name)
-
-    def _get_token(self, creds, name, application):
-        # get anonymous auth if creds
-        if creds is None:  # anonymously
-            url = _LOGIN_URL.replace('login', 'anonym')
-            return requests.get(url).json()
-
-        # otherwise read creds and try to login
-        try:
-            if isinstance(creds, collections.Mapping):
-                user, pw = creds['username'], creds['password']
-            else:
-                user, pw = creds
-        except Exception as e:
-            msg = 'Could not read credentials: {}\n{}'.format(
-                creds, str(e))
-            raise type(e)(msg)
-
-        headers = {'Accept': 'application/json',
-                   'Content-Type': 'application/json'}
-        app = application or _LOGIN_APP_NAMES[name]
-        data = {'username': user, 'password': pw, 'application': app}
-        response = requests.post(
-            _LOGIN_URL, headers=headers, data=json.dumps(data)
-        )
-        auth = response.json()
-        if not response.ok:  # auth failed, provide user a nice message
-            msg = 'Login to {} failed with given credentials for user: {}'
-            raise RuntimeError(msg.format(app, user))
-        return auth
 
     @lru_cache()
     def scenario_list(self, default=True):
