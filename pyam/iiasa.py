@@ -66,20 +66,23 @@ class Connection(object):
         """
         self._token = _get_token(creds)
 
-        # find all valid connections
-        url = '/'.join([_BASE_URL, 'applications'])
-        headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        response = requests.get(url, headers=headers).json()
-        self._valid_connections = [x['name'] for x in response]
-        if len(self._valid_connections) == 0:
-            raise RuntimeError(
-                'No valid connections found for the provided credentials.'
-            )
-
         # connect if provided a name
         self._connected = None
         if name:
             self.connect(name)
+
+    @property
+    @lru_cache()
+    def valid_connections(self):
+        url = '/'.join([_BASE_URL, 'applications'])
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
+        response = requests.get(url, headers=headers).json()
+        valid = [x['name'] for x in response]
+        if len(valid) == 0:
+            raise RuntimeError(
+                'No valid connections found for the provided credentials.'
+            )
+        return valid
 
     def connect(self, name):
         # TODO: deprecate in next release
@@ -90,7 +93,7 @@ class Connection(object):
             )
             name = 'IXSE_SR15'
 
-        valid = self._valid_connections
+        valid = self.valid_connections
         if name not in valid:
             msg = """
             {} not recognized as a valid connection name.
