@@ -2,6 +2,7 @@ import collections
 import json
 import logging
 import requests
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -18,36 +19,13 @@ from pyam.utils import META_IDX, islistable, isstr, pattern_match
 # quiet this fool
 logging.getLogger('requests').setLevel(logging.WARNING)
 
-_URL_TEMPLATE = 'https://db1.ene.iiasa.ac.at/{}-api/rest/v2.1/'
-_LOGIN_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1/login'
+_BASE_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
 
 
-# short names to long names on explorer backends
-# TODO: when adding a new explorer, update this list
-_LOGIN_APP_NAMES = {
-    'iamc15': 'IXSE_SR15',
-}
-
-# short names to citations
-# TODO: when adding a new explorer, update this list
-_CITATIONS = {
-    'iamc15': 'D. Huppmann, E. Kriegler, V. Krey, K. Riahi, '
-    'J. Rogelj, S.K. Rose, J. Weyant, et al., '
-    'IAMC 1.5C Scenario Explorer and Data hosted by IIASA. '
-    'IIASA & IAMC, 2018. '
-    'doi: 10.22022/SR15/08-2018.15429, '
-    'url: data.ene.iiasa.ac.at/iamc-1.5c-explorer'
-}
-
-
-def valid_connection_names():
-    return list(_CITATIONS.keys())
-
-
-def _get_token(creds, name, application):
+def _get_token(creds):
     # get anonymous auth if creds
     if creds is None:  # anonymously
-        url = _LOGIN_URL.replace('login', 'anonym')
+        url = '/'.join([_BASE_URL, 'anonym'])
         return requests.get(url).json()
 
     # otherwise read creds and try to login
@@ -63,50 +41,76 @@ def _get_token(creds, name, application):
 
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
-    app = application or _LOGIN_APP_NAMES[name]
-    data = {'username': user, 'password': pw, 'application': app}
-    response = requests.post(
-        _LOGIN_URL, headers=headers, data=json.dumps(data)
-    )
-    auth = response.json()
+    data = {'username': user, 'password': pw}
+    url = '/'.join([_BASE_URL, 'login'])
+    response = requests.post(url, headers=headers, data=json.dumps(data))
     if not response.ok:  # auth failed, provide user a nice message
-        msg = 'Login to {} failed with given credentials for user: {}'
-        raise RuntimeError(msg.format(app, user))
-    return auth
+        raise RuntimeError('Login failed for user: {}'.format(user))
+
+    return response.json()
 
 
 class Connection(object):
     """A class to facilitate querying an IIASA scenario explorer database"""
 
-    def __init__(self, name, creds=None, application=None):
+    def __init__(self, name=None, creds=None):
         """
         Parameters
         ----------
-        name : str
+        name : str, optional
             A valid database name. For available options, see
             valid_connection_names().
         creds : list-like or dict, optional
             An ordered container with entries of 'username' and 'password',
             or a dictionary with the same keys.
-        application : str, optional
-            If using non-valid connection name, the application name must
-            also be supplied.
         """
-        valid = valid_connection_names()
-        if name not in valid and application is None:
-            msg = '{} not recognized as a valid connection name. '
-            'Either *also* provide an "application" argument, '
-            'or choose from one of the supported connections: {}.'
-            raise ValueError(msg.format(name, valid))
+        self._token = _get_token(creds)
 
-        if name in valid:
-            logger().info(
-                'You are connected to the {} {}. Please cite as:\n\n{}'
-                .format(name, 'scenario explorer', _CITATIONS[name])
+        # find all valid connections
+        url = '/'.join([_BASE_URL, 'applications'])
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
+        response = requests.get(url, headers=headers).json()
+        self._valid_connections = [x['name'] for x in response]
+        if len(self._valid_connections) == 0:
+            raise RuntimeError(
+                'No valid connections found for the provided credentials'
             )
 
-        self._token = _get_token(creds, name, application)
-        self.base_url = _URL_TEMPLATE.format(name)
+        # connect if provided a name
+        self._connected = None
+        if name:
+            self.connect(name)
+
+    def connect(self, name):
+        # TODO: deprecate in next release
+        if name == 'iamc15':
+            warnings.warn(
+                'The name `iamc15` is deprecated and will be removed in the '
+                'next release. Please use `IXSE_SR15`.'
+            )
+            name = 'IXSE_SR15'
+
+        valid = self._valid_connections
+        if name not in valid:
+            msg = """
+            {} not recognized as a valid connection name. 
+            Choose from one of the supported connections for your user: {}.
+            """
+            raise ValueError(msg.format(name, valid))
+
+        url = '/'.join([_BASE_URL, name, 'config'])
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
+        response = requests.get(url, headers=headers).json()
+        idxs = {x['path']: i for i, x in enumerate(response)}
+
+        self._base_url = response[idxs['baseUrl']]['value']
+        about = response[idxs['uiUrl']]['value']
+
+        self._connected = name
+
+    @property
+    def current_connection(self):
+        return self._connected
 
     @lru_cache()
     def scenario_list(self, default=True):
@@ -123,7 +127,7 @@ class Connection(object):
         """
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}'
-        url = self.base_url + add_url.format(default)
+        url = self._base_url + add_url.format(default)
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         return pd.read_json(r.content, orient='records')
@@ -134,7 +138,7 @@ class Connection(object):
         List all scenario metadata indicators available in the connected
         data source
         """
-        url = self.base_url + 'metadata/types'
+        url = self._base_url + 'metadata/types'
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         return pd.read_json(r.content, orient='records')['name']
@@ -155,7 +159,7 @@ class Connection(object):
         # up in the future to try to query a subset
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
-        url = self.base_url + add_url.format(default)
+        url = self._base_url + add_url.format(default)
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
@@ -185,7 +189,7 @@ class Connection(object):
     @lru_cache()
     def variables(self):
         """All variables in the connected data source"""
-        url = self.base_url + 'ts'
+        url = self._base_url + 'ts'
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
@@ -194,7 +198,7 @@ class Connection(object):
     @lru_cache()
     def regions(self):
         """All regions in the connected data source"""
-        url = self.base_url + 'nodes?hierarchy=%2A'
+        url = self._base_url + 'nodes?hierarchy=%2A'
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
@@ -274,7 +278,7 @@ class Connection(object):
             'Content-Type': 'application/json',
         }
         data = json.dumps(self._query_post_data(**kwargs))
-        url = self.base_url + 'runs/bulk/ts'
+        url = self._base_url + 'runs/bulk/ts'
         r = requests.post(url, headers=headers, data=data)
         # refactor returned json object to be castable to an IamDataFrame
         df = (
