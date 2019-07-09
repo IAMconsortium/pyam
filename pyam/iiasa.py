@@ -74,38 +74,38 @@ class Connection(object):
                 .format(name, 'scenario explorer', _CITATIONS[name])
             )
 
+        self._token = self._get_token(creds, name, application)
         self.base_url = _URL_TEMPLATE.format(name)
 
-        # get authorization
+    def _get_token(self, creds, name, application):
+        # get anonymous auth if creds
         if creds is None:  # anonymously
             url = _LOGIN_URL.replace('login', 'anonym')
-            self._auth = requests.get(url).json()
-        else:  # read credentials from kwargs
-            try:
-                if isinstance(creds, collections.Mapping):
-                    user, pw = creds['username'], creds['password']
-                else:
-                    user, pw = creds
-            except Exception as e:
-                msg = 'Could not read credentials: {}\n{}'.format(
-                    creds, str(e))
-                raise type(e)(msg)
-            # request authentication
-            headers = {'Accept': 'application/json',
-                       'Content-Type': 'application/json'}
-            app = application or _LOGIN_APP_NAMES[name]
-            data = {'username': user, 'password': pw, 'application': app}
-            response = requests.post(
-                _LOGIN_URL, headers=headers, data=json.dumps(data)
-            )
-            self._auth = response.json()
-            if not response.ok:  # auth failed, provide user a nice message
-                msg = 'Login to {} failed with given credentials: {}'
-                raise RuntimeError(msg.format(app, self._auth))
+            return requests.get(url).json()
 
-    def auth(self):
-        """User authentication token"""
-        return self._auth
+        # otherwise read creds and try to login
+        try:
+            if isinstance(creds, collections.Mapping):
+                user, pw = creds['username'], creds['password']
+            else:
+                user, pw = creds
+        except Exception as e:
+            msg = 'Could not read credentials: {}\n{}'.format(
+                creds, str(e))
+            raise type(e)(msg)
+
+        headers = {'Accept': 'application/json',
+                   'Content-Type': 'application/json'}
+        app = application or _LOGIN_APP_NAMES[name]
+        data = {'username': user, 'password': pw, 'application': app}
+        response = requests.post(
+            _LOGIN_URL, headers=headers, data=json.dumps(data)
+        )
+        auth = response.json()
+        if not response.ok:  # auth failed, provide user a nice message
+            msg = 'Login to {} failed with given credentials for user: {}'
+            raise RuntimeError(msg.format(app, user))
+        return auth
 
     @lru_cache()
     def scenario_list(self, default=True):
@@ -123,7 +123,7 @@ class Connection(object):
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}'
         url = self.base_url + add_url.format(default)
-        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         return pd.read_json(r.content, orient='records')
 
@@ -134,7 +134,7 @@ class Connection(object):
         data source
         """
         url = self.base_url + 'metadata/types'
-        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         return pd.read_json(r.content, orient='records')['name']
 
@@ -155,7 +155,7 @@ class Connection(object):
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
         url = self.base_url + add_url.format(default)
-        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
 
@@ -185,7 +185,7 @@ class Connection(object):
     def variables(self):
         """All variables in the connected data source"""
         url = self.base_url + 'ts'
-        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
         return pd.Series(df['variable'].unique(), name='variable')
@@ -194,7 +194,7 @@ class Connection(object):
     def regions(self):
         """All regions in the connected data source"""
         url = self.base_url + 'nodes?hierarchy=%2A'
-        headers = {'Authorization': 'Bearer {}'.format(self.auth())}
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
         return pd.Series(df['name'].unique(), name='region')
@@ -269,7 +269,7 @@ class Connection(object):
         ```
         """
         headers = {
-            'Authorization': 'Bearer {}'.format(self.auth()),
+            'Authorization': 'Bearer {}'.format(self._token),
             'Content-Type': 'application/json',
         }
         data = json.dumps(self._query_post_data(**kwargs))

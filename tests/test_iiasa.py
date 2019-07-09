@@ -24,7 +24,7 @@ def test_anon_conn():
 def test_conn_creds_tuple():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
     conn = iiasa.Connection('iamc15', creds=(user, pw))
-    assert isinstance(conn._auth, str)  # and not some other unexpected object
+    assert isinstance(conn._token, str)  # and not some other unexpected object
 
 
 def test_conn_bad_creds():
