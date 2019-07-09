@@ -98,7 +98,7 @@ class Connection(object):
             """
             raise ValueError(msg.format(name, valid))
 
-        url = '/'.join([_BASE_URL, name, 'config'])
+        url = '/'.join([_BASE_URL, 'applications', name, 'config'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         response = requests.get(url, headers=headers).json()
         idxs = {x['path']: i for i, x in enumerate(response)}

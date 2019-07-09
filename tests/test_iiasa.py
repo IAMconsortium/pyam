@@ -17,14 +17,14 @@ CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
 
 def test_anon_conn():
     conn = iiasa.Connection('iamc15')
-    assert conn.base_url == 'https://db1.ene.iiasa.ac.at/iamc15-api/rest/v2.1/'
+    assert conn.current_connection == 'IXSE_SR15'
 
 
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_tuple():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
     conn = iiasa.Connection('iamc15', creds=(user, pw))
-    assert isinstance(conn._token, str)  # and not some other unexpected object
+    assert conn.current_connection == 'IXSE_SR15'
 
 
 def test_conn_bad_creds():
@@ -39,7 +39,8 @@ def test_anon_conn_tuple_raises():
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_dict():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    iiasa.Connection('iamc15', creds={'username': user, 'password': pw})
+    conn = iiasa.Connection('iamc15', creds={'username': user, 'password': pw})
+    assert conn.current_connection == 'IXSE_SR15'
 
 
 def test_conn_creds_dict_raises():
