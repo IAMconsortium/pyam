@@ -73,7 +73,7 @@ class Connection(object):
         self._valid_connections = [x['name'] for x in response]
         if len(self._valid_connections) == 0:
             raise RuntimeError(
-                'No valid connections found for the provided credentials'
+                'No valid connections found for the provided credentials.'
             )
 
         # connect if provided a name
@@ -93,7 +93,7 @@ class Connection(object):
         valid = self._valid_connections
         if name not in valid:
             msg = """
-            {} not recognized as a valid connection name. 
+            {} not recognized as a valid connection name.
             Choose from one of the supported connections for your user: {}.
             """
             raise ValueError(msg.format(name, valid))
@@ -105,6 +105,7 @@ class Connection(object):
 
         self._base_url = response[idxs['baseUrl']]['value']
         about = response[idxs['uiUrl']]['value']
+        # TODO: reference about page in logger to point to citation
 
         self._connected = name
 
