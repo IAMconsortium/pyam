@@ -138,8 +138,12 @@ def test_query_data_variables():
 
 
 def test_query_IXSE_SR15():
-    df = iiasa.read_iiasa('IXSE_SR15', model='AIM*', scenario='ADVANCE_2020_Med2C',
-                          variable='Emissions|CO2', region='World')
+    df = iiasa.read_iiasa('IXSE_SR15',
+                          model='AIM*',
+                          scenario='ADVANCE_2020_Med2C',
+                          variable='Emissions|CO2',
+                          region='World',
+                          )
     assert len(df) == 20
 
 

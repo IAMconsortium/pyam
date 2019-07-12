@@ -113,8 +113,8 @@ class Connection(object):
         idxs = {x['path']: i for i, x in enumerate(response)}
 
         self._base_url = response[idxs['baseUrl']]['value']
-        # TODO: request the full citation to be added to this metadata intead of
-        # linking to the about page
+        # TODO: request the full citation to be added to this metadata intead
+        # of linking to the about page
         about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
         logger().info(_CITE_MSG.format(name, about))
 
