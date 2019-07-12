@@ -84,7 +84,7 @@ class Connection(object):
         # TODO: deprecate in next release
         if name == 'iamc15':
             warnings.warn(
-                'The name `iamc15` is deprecated and will be removed in the '
+                'The name `iamc15` is deprecated and will be removed in the ' +
                 'next release. Please use `IXSE_SR15`.'
             )
             name = 'IXSE_SR15'
@@ -132,7 +132,7 @@ class Connection(object):
         """
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}'
-        url = self._base_url + add_url.format(default)
+        url = '/'.join([self._base_url, add_url.format(default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         return pd.read_json(r.content, orient='records')
@@ -143,7 +143,7 @@ class Connection(object):
         List all scenario metadata indicators available in the connected
         data source
         """
-        url = self._base_url + 'metadata/types'
+        url = '/'.join([self._base_url, 'metadata/types'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         return pd.read_json(r.content, orient='records')['name']
@@ -164,7 +164,7 @@ class Connection(object):
         # up in the future to try to query a subset
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
-        url = self._base_url + add_url.format(default)
+        url = '/'.join([self._base_url, add_url.format(default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
@@ -194,7 +194,7 @@ class Connection(object):
     @lru_cache()
     def variables(self):
         """All variables in the connected data source"""
-        url = self._base_url + 'ts'
+        url = '/'.join([self._base_url, 'ts'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
@@ -203,7 +203,7 @@ class Connection(object):
     @lru_cache()
     def regions(self):
         """All regions in the connected data source"""
-        url = self._base_url + 'nodes?hierarchy=%2A'
+        url = '/'.join([self._base_url, 'nodes?hierarchy=%2A'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         df = pd.read_json(r.content, orient='records')
@@ -283,7 +283,7 @@ class Connection(object):
             'Content-Type': 'application/json',
         }
         data = json.dumps(self._query_post_data(**kwargs))
-        url = self._base_url + 'runs/bulk/ts'
+        url = '/'.join([self._base_url, 'runs/bulk/ts'])
         r = requests.post(url, headers=headers, data=data)
         # refactor returned json object to be castable to an IamDataFrame
         df = (
