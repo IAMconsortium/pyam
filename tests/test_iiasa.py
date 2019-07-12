@@ -16,6 +16,11 @@ CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
 
 
 def test_anon_conn():
+    conn = iiasa.Connection('IXSE_SR15')
+    assert conn.current_connection == 'IXSE_SR15'
+
+
+def test_anon_conn_warning():
     conn = iiasa.Connection('iamc15')
     assert conn.current_connection == 'IXSE_SR15'
 
@@ -23,13 +28,13 @@ def test_anon_conn():
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_tuple():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection('iamc15', creds=(user, pw))
+    conn = iiasa.Connection('IXSE_SR15', creds=(user, pw))
     assert conn.current_connection == 'IXSE_SR15'
 
 
 def test_conn_bad_creds():
     pytest.raises(RuntimeError, iiasa.Connection,
-                  'iamc15', creds=('_foo', '_bar'))
+                  'IXSE_SR15', creds=('_foo', '_bar'))
 
 
 def test_anon_conn_tuple_raises():
@@ -39,35 +44,36 @@ def test_anon_conn_tuple_raises():
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_dict():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection('iamc15', creds={'username': user, 'password': pw})
+    conn = iiasa.Connection(
+        'IXSE_SR15', creds={'username': user, 'password': pw})
     assert conn.current_connection == 'IXSE_SR15'
 
 
 def test_conn_creds_dict_raises():
     pytest.raises(KeyError, iiasa.Connection,
-                  'iamc15', creds={'username': 'foo'})
+                  'IXSE_SR15', creds={'username': 'foo'})
 
 
 def test_variables():
-    conn = iiasa.Connection('iamc15')
+    conn = iiasa.Connection('IXSE_SR15')
     obs = conn.variables().values
     assert 'Emissions|CO2' in obs
 
 
 def test_regions():
-    conn = iiasa.Connection('iamc15')
+    conn = iiasa.Connection('IXSE_SR15')
     obs = conn.regions().values
     assert 'World' in obs
 
 
 def test_metadata():
-    conn = iiasa.Connection('iamc15')
+    conn = iiasa.Connection('IXSE_SR15')
     obs = conn.scenario_list()['model'].values
     assert 'MESSAGEix-GLOBIOM 1.0' in obs
 
 
 def test_available_indicators():
-    conn = iiasa.Connection('iamc15')
+    conn = iiasa.Connection('IXSE_SR15')
     obs = conn.available_metadata()
     assert 'carbon price|2050' in list(obs)
 
@@ -87,7 +93,7 @@ QUERY_DATA_EXP = {
 
 
 def test_query_data_model_scen():
-    conn = iiasa.Connection('iamc15')
+    conn = iiasa.Connection('IXSE_SR15')
     obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C')
     exp = copy.deepcopy(QUERY_DATA_EXP)
     exp['filters']['runs'] = [2]
@@ -95,7 +101,7 @@ def test_query_data_model_scen():
 
 
 def test_query_data_region():
-    conn = iiasa.Connection('iamc15')
+    conn = iiasa.Connection('IXSE_SR15')
     obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C',
                                 region='*World*')
     exp = copy.deepcopy(QUERY_DATA_EXP)
@@ -105,7 +111,7 @@ def test_query_data_region():
 
 
 def test_query_data_variables():
-    conn = iiasa.Connection('iamc15')
+    conn = iiasa.Connection('IXSE_SR15')
     obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C',
                                 variable='Emissions|CO2*')
     exp = copy.deepcopy(QUERY_DATA_EXP)
@@ -131,19 +137,19 @@ def test_query_data_variables():
         npt.assert_array_equal(obs['filters'][k], exp['filters'][k])
 
 
-def test_query_iamc15():
-    df = iiasa.read_iiasa_iamc15(model='AIM*', scenario='ADVANCE_2020_Med2C',
-                                 variable='Emissions|CO2', region='World')
+def test_query_IXSE_SR15():
+    df = iiasa.read_iiasa('IXSE_SR15', model='AIM*', scenario='ADVANCE_2020_Med2C',
+                          variable='Emissions|CO2', region='World')
     assert len(df) == 20
 
 
-def test_query_iamc15_with_metadata():
-    df = iiasa.read_iiasa_iamc15(
-        model='MESSAGEix*',
-        variable=['Emissions|CO2', 'Primary Energy|Coal'],
-        region='World',
-        meta=['carbon price|2100 (NPV)', 'category'],
-    )
+def test_query_IXSE_SR15_with_metadata():
+    df = iiasa.read_iiasa('IXSE_SR15',
+                          model='MESSAGEix*',
+                          variable=['Emissions|CO2', 'Primary Energy|Coal'],
+                          region='World',
+                          meta=['carbon price|2100 (NPV)', 'category'],
+                          )
     assert len(df) == 168
     assert len(df.data) == 168
     assert len(df.meta) == 7
