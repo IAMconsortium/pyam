@@ -20,6 +20,11 @@ from pyam.utils import META_IDX, islistable, isstr, pattern_match
 logging.getLogger('requests').setLevel(logging.WARNING)
 
 _BASE_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
+_CITE_MSG = """
+You are connected to the {} scenario explorer hosted by IIASA.
+ If you use this data in any published format, please cite the
+ data as provided in the explorer guidelines: {}.
+""".replace('\n', '')
 
 
 def _get_token(creds):
@@ -108,8 +113,10 @@ class Connection(object):
         idxs = {x['path']: i for i, x in enumerate(response)}
 
         self._base_url = response[idxs['baseUrl']]['value']
-        about = response[idxs['uiUrl']]['value']
-        # TODO: reference about page in logger to point to citation
+        # TODO: request the full citation to be added to this metadata intead of
+        # linking to the about page
+        about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
+        logger().info(_CITE_MSG.format(name, about))
 
         self._connected = name
 
