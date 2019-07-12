@@ -338,11 +338,3 @@ def read_iiasa(name, meta=False, **kwargs):
         for col in mdf:
             df.set_meta(mdf[col])
     return df
-
-
-def read_iiasa_iamc15(**kwargs):
-    """
-    Query the IAMC 1.5C Scenario Explorer.
-    See Connection.query() for more documentation
-    """
-    return read_iiasa('iamc15', **kwargs)
