@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#243](https://github.com/IAMconsortium/pyam/pull/243) Update `pyam.iiasa.Connection` to support all public and private database connections. DEPRECATED: the argument 'iamc15' has been deprecated in favor of names as queryable directly from the REST API.
 - [#236](https://github.com/IAMconsortium/pyam/pull/236) Add `swap_time_for_year` method and confirm datetime column is compatible with pyam features
 
 # Release v0.2.0
