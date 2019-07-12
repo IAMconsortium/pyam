@@ -78,10 +78,6 @@ class Connection(object):
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         response = requests.get(url, headers=headers).json()
         valid = [x['name'] for x in response]
-        if len(valid) == 0:
-            raise RuntimeError(
-                'No valid connections found for the provided credentials.'
-            )
         return valid
 
     def connect(self, name):
@@ -94,6 +90,11 @@ class Connection(object):
             name = 'IXSE_SR15'
 
         valid = self.valid_connections
+        if len(valid) == 0:
+            raise RuntimeError(
+                'No valid connections found for the provided credentials.'
+            )
+
         if name not in valid:
             msg = """
             {} not recognized as a valid connection name.
