@@ -476,7 +476,7 @@ class IamDataFrame(object):
         if method is None:
             meta = _data.set_index(META_IDX)[column]
         else:
-            meta = method(_data.groupby(META_IDX))[column]
+            meta = _data.groupby(META_IDX)[column].apply(method)
         self.set_meta(meta, name)
 
     def categorize(self, name, value, criteria,
