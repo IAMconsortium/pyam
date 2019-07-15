@@ -459,7 +459,7 @@ class IamDataFrame(object):
         self.meta[name] = meta[name].combine_first(self.meta[name])
 
     def set_meta_from_data(self, name, method=None, column='value', **kwargs):
-        """Add meta indicators from downselected timeseries data
+        """Add metadata indicators from downselected timeseries `data` of self
 
         Parameters
         ----------
@@ -469,7 +469,7 @@ class IamDataFrame(object):
             method for aggregation, required if downselected data do not yield
             unique values (e.g., `numpy.max()`)
         column: str, optional
-            the column from `data` to be used for the meta indicator
+            the column from `data` to be used to derive the indicator
         kwargs: passed to :meth:`IamDataFrame.filter()` for downselected `data`
         """
         _data = self.filter(**kwargs).data
