@@ -112,11 +112,18 @@ def test_set_meta_from_data(meta_df):
     pd.testing.assert_series_equal(meta_df['pe_2005'], exp)
 
 
-def test_set_meta_from_data_method(meta_df):
+def test_set_meta_from_data_max(meta_df):
     meta_df.set_meta_from_data('pe_max_yr', variable='Primary Energy',
                                method=np.max)
     exp = pd.Series(data=[6., 7.], index=EXP_IDX, name='pe_max_yr')
     pd.testing.assert_series_equal(meta_df['pe_max_yr'], exp)
+
+
+def test_set_meta_from_data_mean(meta_df):
+    meta_df.set_meta_from_data('pe_mean', variable='Primary Energy',
+                               method=np.mean)
+    exp = pd.Series(data=[3.5, 4.5], index=EXP_IDX, name='pe_mean')
+    pd.testing.assert_series_equal(meta_df['pe_mean'], exp)
 
 
 def test_set_meta_from_data_method_other_column(meta_df):
