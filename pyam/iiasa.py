@@ -35,8 +35,7 @@ def _check_response(r, msg='Trouble with request', error=RuntimeError):
 
 
 def _get_token(creds):
-    # get anonymous auth if creds
-    if creds is None:  # anonymously
+    if creds is None:  # get anonymous auth
         url = '/'.join([_BASE_URL, 'anonym'])
         r = requests.get(url)
         _check_response(r, 'Could not get anonymous token')
