@@ -1,6 +1,7 @@
 import copy
 import pytest
 import os
+import yaml
 
 import numpy.testing as npt
 
@@ -22,6 +23,16 @@ def test_anon_conn():
 
 def test_anon_conn_warning():
     conn = iiasa.Connection('iamc15')
+    assert conn.current_connection == 'IXSE_SR15'
+
+
+@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
+def test_conn_creds_file(tmp_path):
+    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
+    path = tmp_path / 'config.yaml'
+    with open(path, 'w') as f:
+        yaml.dump({'username': user, 'password': pw}, f)
+    conn = iiasa.Connection('IXSE_SR15', creds=path)
     assert conn.current_connection == 'IXSE_SR15'
 
 

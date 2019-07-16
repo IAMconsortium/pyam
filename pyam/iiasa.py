@@ -1,8 +1,10 @@
 import collections
 import json
 import logging
+import os
 import requests
 import warnings
+import yaml
 
 import numpy as np
 import pandas as pd
@@ -34,16 +36,25 @@ def _get_token(creds):
         return requests.get(url).json()
 
     # otherwise read creds and try to login
+    filecreds = False
     try:
         if isinstance(creds, collections.Mapping):
             user, pw = creds['username'], creds['password']
+        elif os.path.exists(str(creds)):
+            with open(str(creds), 'r') as stream:
+                creds = yaml.safe_load(stream)
+            user, pw = creds['username'], creds['password']
+            filecreds = True
         else:
             user, pw = creds
     except Exception as e:
         msg = 'Could not read credentials: {}\n{}'.format(
             creds, str(e))
         raise type(e)(msg)
-
+    if not filecreds:
+        warnings.warn('You provided credentials in plain text. DO NOT save ' +
+                      'these in a repository or otherwise post them online')
+    
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
     data = {'username': user, 'password': pw}
@@ -65,9 +76,12 @@ class Connection(object):
         name : str, optional
             A valid database name. For available options, see
             valid_connection_names().
-        creds : list-like or dict, optional
-            An ordered container with entries of 'username' and 'password',
-            or a dictionary with the same keys.
+        creds : str, list-like, or dict, optional
+            Either:
+              - a yaml filename/path with entries of  'username' and 'password'
+                (preferred)
+              - an ordered container (tuple, list, etc.) with the same values
+              - a dictionary with the same keys
         """
         self._token = _get_token(creds)
 
