@@ -28,12 +28,18 @@ You are connected to the {} scenario explorer hosted by IIASA.
  data as provided in the explorer guidelines: {}.
 """.replace('\n', '')
 
+def _check_response(r, msg='Trouble with request', error=RuntimeError):
+    if not r.ok:
+        raise error('{}: {}'.format(msg, str(r)))
+
 
 def _get_token(creds):
     # get anonymous auth if creds
     if creds is None:  # anonymously
         url = '/'.join([_BASE_URL, 'anonym'])
-        return requests.get(url).json()
+        r = requests.get(url)
+        _check_response(r, 'Could not get anonymous token')
+        return r.json()
 
     # otherwise read creds and try to login
     filecreds = False
@@ -59,11 +65,9 @@ def _get_token(creds):
                'Content-Type': 'application/json'}
     data = {'username': user, 'password': pw}
     url = '/'.join([_BASE_URL, 'login'])
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    if not response.ok:  # auth failed, provide user a nice message
-        raise RuntimeError('Login failed for user: {}'.format(user))
-
-    return response.json()
+    r = requests.post(url, headers=headers, data=json.dumps(data))
+    _check_response(r, 'Login failed for user: {}'.format(user))
+    return r.json()
 
 
 class Connection(object):
@@ -95,8 +99,9 @@ class Connection(object):
     def valid_connections(self):
         url = '/'.join([_BASE_URL, 'applications'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        response = requests.get(url, headers=headers).json()
-        valid = [x['name'] for x in response]
+        r = requests.get(url, headers=headers)
+        _check_response(r, 'Could not get valid connection list')
+        valid = [x['name'] for x in r.json()]
         return valid
 
     def connect(self, name):
@@ -123,7 +128,9 @@ class Connection(object):
 
         url = '/'.join([_BASE_URL, 'applications', name, 'config'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        response = requests.get(url, headers=headers).json()
+        r = requests.get(url, headers=headers)
+        _check_response(r, 'Could not get application information')
+        response = r.json()
         idxs = {x['path']: i for i, x in enumerate(response)}
 
         self._base_url = response[idxs['baseUrl']]['value']
@@ -156,6 +163,7 @@ class Connection(object):
         url = '/'.join([self._base_url, add_url.format(default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
+        _check_response(r, 'Could not get scenario list')
         return pd.read_json(r.content, orient='records')
 
     @lru_cache()
@@ -167,6 +175,7 @@ class Connection(object):
         url = '/'.join([self._base_url, 'metadata/types'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
+        _check_response(r)
         return pd.read_json(r.content, orient='records')['name']
 
     @lru_cache()
@@ -188,6 +197,7 @@ class Connection(object):
         url = '/'.join([self._base_url, add_url.format(default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
+        _check_response(r)
         df = pd.read_json(r.content, orient='records')
 
         def extract(row):
@@ -218,6 +228,7 @@ class Connection(object):
         url = '/'.join([self._base_url, 'ts'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
+        _check_response(r)
         df = pd.read_json(r.content, orient='records')
         return pd.Series(df['variable'].unique(), name='variable')
 
@@ -227,6 +238,7 @@ class Connection(object):
         url = '/'.join([self._base_url, 'nodes?hierarchy=%2A'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
+        _check_response(r)
         df = pd.read_json(r.content, orient='records')
         return pd.Series(df['name'].unique(), name='region')
 
@@ -306,6 +318,7 @@ class Connection(object):
         data = json.dumps(self._query_post_data(**kwargs))
         url = '/'.join([self._base_url, 'runs/bulk/ts'])
         r = requests.post(url, headers=headers, data=data)
+        _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         df = (
             pd.read_json(r.content, orient='records')
