@@ -28,6 +28,7 @@ You are connected to the {} scenario explorer hosted by IIASA.
  data as provided in the explorer guidelines: {}.
 """.replace('\n', '')
 
+
 def _check_response(r, msg='Trouble with request', error=RuntimeError):
     if not r.ok:
         raise error('{}: {}'.format(msg, str(r)))
