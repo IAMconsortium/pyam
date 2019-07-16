@@ -54,7 +54,7 @@ def _get_token(creds):
     if not filecreds:
         warnings.warn('You provided credentials in plain text. DO NOT save ' +
                       'these in a repository or otherwise post them online')
-    
+
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
     data = {'username': user, 'password': pw}
