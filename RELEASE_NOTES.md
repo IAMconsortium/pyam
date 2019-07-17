@@ -18,6 +18,7 @@
 
 ## Individual Updates
 
+- [#244](https://github.com/IAMconsortium/pyam/pull/244) add aggregation methods (min/max/avg) to aggregate_ragion and add eighted_average_region function
 - [#228](https://github.com/IAMconsortium/pyam/pull/228) Update development environment creation instructions and make pandas requirement more specific
 - [#219](https://github.com/IAMconsortium/pyam/pull/219) Add ability to query metadata from iiasa data sources
 - [#214](https://github.com/IAMconsortium/pyam/pull/214) Tidy up requirements specifications a little
