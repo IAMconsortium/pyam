@@ -783,7 +783,8 @@ class IamDataFrame(object):
             return IamDataFrame(diff, variable=variable).timeseries()
 
     def aggregate_region(self, variable, region='World', subregions=None,
-                         components=None, append=False):
+                         components=None, append=False,
+                         aggregator='sum', weight_var=None):
         """Compute the aggregate of timeseries over a number of regions
         including variable components only defined at the `region` level
 
@@ -801,6 +802,12 @@ class IamDataFrame(object):
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
+        aggregator: str, default 'sum'
+            aggregator function. One of 'sum', 'avg', 'min', 'max', 'w.avg'
+            w.avg requires weight_var to be provided as well
+        weight_var: str, 
+            weighting variable to be used for calculating weighted average
+            is case aggregator is 'w.avg'
         """
         # default subregions to all regions other than `region`
         if subregions is None:
@@ -813,11 +820,16 @@ class IamDataFrame(object):
             logger().info(msg.format(variable, region))
 
             return
-
+        known_aggregators = ['sum','avg','min','max','w.avg']
+        if not aggregator in known_aggregators:
+            msg = 'cannot aggregate because `{}` aggregator is unknown'\
+                  ' i.e. not in `{}`'
+            logger().error(msg.format(aggregator, known_aggregators))
+            return
         # compute aggregate over all subregions
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
-        _data = _aggregate(subregion_df.filter(variable=variable).data, cols)
+        _data = _aggregate(subregion_df.filter(variable=variable).data, cols, aggregator, weight_var)
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
@@ -1361,11 +1373,20 @@ def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
-def _aggregate(df, by):
+def _aggregate(df, by, aggregator='sum', weight_var=None):
     """Aggregate `df` by specified column(s), return indexed `pd.Series`"""
     by = [by] if isstr(by) else by
     cols = [c for c in list(df.columns) if c not in ['value'] + by]
-    return df.groupby(cols).sum()['value']
+    if aggregator == 'min':
+        _agg_func = np.min
+    elif aggregator == 'max':
+        _agg_func = np.max
+    elif aggregator == 'avg':
+        _agg_func = np.average
+    else:
+        _agg_func = np.sum
+    # return df.groupby(cols).sum()['value']
+    return df.groupby(cols)['value'].agg(_agg_func)
 
 
 def _raise_filter_error(col):
