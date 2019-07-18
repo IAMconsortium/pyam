@@ -805,7 +805,7 @@ class IamDataFrame(object):
         aggregator: str, default 'sum'
             aggregator function. One of 'sum', 'avg', 'min', 'max', 'w.avg'
             w.avg requires weight_var to be provided as well
-        weight_var: str, 
+        weight_var: str,
             weighting variable to be used for calculating weighted average
             is case aggregator is 'w.avg'
         """
@@ -820,8 +820,8 @@ class IamDataFrame(object):
             logger().info(msg.format(variable, region))
 
             return
-        known_aggregators = ['sum','avg','min','max','w.avg']
-        if not aggregator in known_aggregators:
+        known_aggregators = ['sum', 'avg', 'min', 'max', 'w.avg']
+        if aggregator not in known_aggregators:
             msg = 'cannot aggregate because `{}` aggregator is unknown'\
                   ' i.e. not in `{}`'
             logger().error(msg.format(aggregator, known_aggregators))
