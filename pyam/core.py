@@ -829,7 +829,12 @@ class IamDataFrame(object):
         # compute aggregate over all subregions
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
-        _data = _aggregate(subregion_df.filter(variable=variable).data, cols, aggregator, weight_var)
+        if weight_var:
+            weightvar_df = subregion_df.filter(variable=weight_var).data
+        else:
+            weightvar_df = None
+        _data = _aggregate(subregion_df.filter(variable=variable).data, cols,
+                           aggregator, weightvar_df)
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
@@ -1373,11 +1378,23 @@ def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
-def _aggregate(df, by, aggregator='sum', weight_var=None):
+def _aggregate(df, by, aggregator='sum', weightvar_df=None):
     """Aggregate `df` by specified column(s), return indexed `pd.Series`"""
     by = [by] if isstr(by) else by
     cols = [c for c in list(df.columns) if c not in ['value'] + by]
-    if aggregator == 'min':
+    # pick aggregator func (default: sum)
+    if aggregator == 'w.avg' and not weightvar_df.empty:
+        calcdf = pd.merge(df, weightvar_df,
+                          how='left', suffixes=('', '_weight'),
+                          left_on=['model', 'scenario', 'region', 'year'],
+                          right_on=['model', 'scenario', 'region', 'year'])
+        calcdf['value'] = calcdf['value'] * calcdf['value_weight']
+        calcdf = calcdf.groupby(cols)['value', 'value_weight'].agg(np.sum)
+        calcdf['value'] = calcdf['value'] / calcdf['value_weight']
+        ret_df = calcdf.drop('value_weight', axis=1)
+        return ret_df
+        #
+    elif aggregator == 'min':
         _agg_func = np.min
     elif aggregator == 'max':
         _agg_func = np.max
@@ -1385,7 +1402,6 @@ def _aggregate(df, by, aggregator='sum', weight_var=None):
         _agg_func = np.average
     else:
         _agg_func = np.sum
-    # return df.groupby(cols).sum()['value']
     return df.groupby(cols)['value'].agg(_agg_func)
 
 
