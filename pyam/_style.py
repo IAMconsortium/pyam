@@ -1,3 +1,9 @@
+#
+# This file is taken from https://github.com/pandas-dev/pandas as suggested by
+# the pandas-dev mailing list. The goal is to ask the matplotlib devs to
+# eventually incorporate this into matplotlib proper.
+#
+
 # being a bit too dynamic
 import warnings
 
@@ -33,9 +39,11 @@ def _get_standard_colors(
             # need to call list() on the result to copy so we don't
             # modify the global rcParams below
             try:
-                colors = [c["color"] for c in list(plt.rcParams["axes.prop_cycle"])]
+                colors = [c["color"]
+                          for c in list(plt.rcParams["axes.prop_cycle"])]
             except KeyError:
-                colors = list(plt.rcParams.get("axes.color_cycle", list("bgrcmyk")))
+                colors = list(plt.rcParams.get(
+                    "axes.color_cycle", list("bgrcmyk")))
             if isinstance(colors, str):
                 colors = list(colors)
 
@@ -67,7 +75,8 @@ def _get_standard_colors(
         # check whether each character can be convertible to colors
         maybe_color_cycle = _maybe_valid_colors(list(colors))
         if maybe_single_color and maybe_color_cycle and len(colors) > 1:
-            hex_color = [c["color"] for c in list(plt.rcParams["axes.prop_cycle"])]
+            hex_color = [c["color"]
+                         for c in list(plt.rcParams["axes.prop_cycle"])]
             colors = [hex_color[int(colors[1])]]
         elif maybe_single_color:
             colors = [colors]
