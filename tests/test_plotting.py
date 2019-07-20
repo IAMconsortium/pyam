@@ -22,6 +22,13 @@ try:
 except ImportError:
     has_cartopy = False
 
+try:
+    import geopandas
+    has_geopandas = True
+except ImportError:
+    has_geopandas = False
+
+
 import matplotlib.pyplot as plt
 
 from contextlib import contextmanager
@@ -224,6 +231,7 @@ def test_line_plot_2_vars(plot_df):
 
 
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -239,6 +247,7 @@ def test_region():
 
 
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_cbar():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -254,6 +263,7 @@ def test_region_cbar():
 
 
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_cbar_args():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -269,6 +279,7 @@ def test_region_cbar_args():
 
 
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_vmin_vmax():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -286,6 +297,7 @@ def test_region_vmin_vmax():
 
 
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_cmap():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -302,6 +314,7 @@ def test_region_cmap():
 
 
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_crs():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
@@ -318,6 +331,7 @@ def test_region_crs():
 
 
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_map_regions():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_region_data.csv'))
@@ -334,6 +348,7 @@ def test_region_map_regions():
 
 
 @pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
+@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_region_map_regions_legend():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_region_data.csv'))
