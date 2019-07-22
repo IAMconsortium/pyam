@@ -395,7 +395,7 @@ class IamDataFrame(object):
         self.meta['exclude'] = False
 
     def set_meta(self, meta, name=None, index=None):
-        """Add metadata columns as pd.Series, list or value (int/float/str)
+        """Add metadata indicators as pd.Series, list or value (int/float/str)
 
         Parameters
         ----------
@@ -457,6 +457,27 @@ class IamDataFrame(object):
 
         self._new_meta_column(name)
         self.meta[name] = meta[name].combine_first(self.meta[name])
+
+    def set_meta_from_data(self, name, method=None, column='value', **kwargs):
+        """Add metadata indicators from downselected timeseries `data` of self
+
+        Parameters
+        ----------
+        name: str
+            meta column name
+        method: function, optional
+            method for aggregation, required if downselected data do not yield
+            unique values (e.g., `numpy.max()`)
+        column: str, optional
+            the column from `data` to be used to derive the indicator
+        kwargs: passed to :meth:`IamDataFrame.filter()` for downselected `data`
+        """
+        _data = self.filter(**kwargs).data
+        if method is None:
+            meta = _data.set_index(META_IDX)[column]
+        else:
+            meta = _data.groupby(META_IDX)[column].apply(method)
+        self.set_meta(meta, name)
 
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
