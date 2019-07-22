@@ -830,7 +830,6 @@ class IamDataFrame(object):
                          method='sum'):
         """Compute the aggregate of timeseries over a number of regions
         including variable components only defined at the `region` level
-
         Parameters
         ----------
         variable: str
@@ -870,6 +869,7 @@ class IamDataFrame(object):
         cols = ['region', 'variable']
         _data = _aggregate(subregion_df.filter(variable=variable).data, cols,
                            method)
+
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
         region_df = self.filter(region=region)
@@ -1429,7 +1429,7 @@ def _get_method_func(method):
     elif method == 'avg':
         _agg_func = np.average
     elif method == 'sum':
-        _agg_func = np.average
+        _agg_func = np.sum
     else:
         _agg_func = method
     return _agg_func
