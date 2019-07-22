@@ -32,6 +32,8 @@ NUMERIC_TO_STR = dict(zip(range(0, 702),
                           + ['{}{}'.format(i, j) for i, j in itertools.product(
                               string.ascii_uppercase, string.ascii_uppercase)]))
 
+KNOWN_FUNCS = {'min': np.min, 'max': np.max, 'avg': np.average, 'sum': np.sum}
+
 
 def requires_package(pkg, msg, error_type=ImportError):
     """Decorator when a function requires an optional dependency

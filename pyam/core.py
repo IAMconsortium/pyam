@@ -38,6 +38,7 @@ from pyam.utils import (
     YEAR_IDX,
     IAMC_IDX,
     SORT_IDX,
+    KNOWN_FUNCS
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
@@ -1422,18 +1423,16 @@ def _aggregate(df, by, method='sum', weightvar_df=None):
 
 
 def _get_method_func(method):
-    if method == 'min':
-        _agg_func = np.min
-    elif method == 'max':
-        _agg_func = np.max
-    elif method == 'avg':
-        _agg_func = np.average
-    elif method == 'sum':
-        _agg_func = np.sum
-    else:
-        _agg_func = method
-    return _agg_func
+    """Translate a string to a known method"""
+    if not isstr(method):
+        return method
 
+    if method in KNOWN_FUNCS:
+        return KNOWN_FUNCS[method] 
+
+    # raise error if `method` is a string but not in dictionary of known methods
+    raise ValueError('method `{}` is not a known aggregator'.format(method))
+    
 
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))
