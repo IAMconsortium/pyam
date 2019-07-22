@@ -1413,13 +1413,12 @@ def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
-def _aggregate(df, by, method='sum', weightvar_df=None):
+def _aggregate(df, by, method):
     """Aggregate `df` by specified column(s), return indexed `pd.Series`"""
     by = [by] if isstr(by) else by
     cols = [c for c in list(df.columns) if c not in ['value'] + by]
     # pick aggregator func (default: sum)
-    _agg_func = _get_method_func(method)
-    return df.groupby(cols)['value'].agg(_agg_func)
+    return df.groupby(cols)['value'].agg(_get_method_func(method))
 
 
 def _get_method_func(method):
