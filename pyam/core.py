@@ -783,30 +783,22 @@ class IamDataFrame(object):
 
             return IamDataFrame(diff, variable=variable).timeseries()
 
-    def aggregate_region_by_weight(self, variable, region='World',
-                                   subregions=None, components=None,
-                                   append=False, weight_var=None):
-        """Compute the aggregate of timeseries over a number of regions
-         using weighted average (by weight_var) method
+    def aggregate_region_by_weight(self, variable, weight, region='World',
+                                   subregions=None, append=False):
+        """Compute weighted average of a timeseries over multiple regions
          weight_var: str,
             weighting variable to be used for calculating weighted average
             is case aggregator is 'w.avg'
         """
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
-        if weight_var:
-            weightvar_df = subregion_df.filter(variable=weight_var).data
-        else:
-            weightvar_df = None
-        #
-        if not weight_var:
-            msg = 'cannot aggregate because no weight_var arg provided'
-            logger().error(msg)
-            return
-        elif weightvar_df.empty:
+        
+        weightvar_df = subregion_df.filter(variable=weight).data
+
+        if weightvar_df.empty:
             msg = "cannot aggregate because no data found "\
                 "or weight_var='{}'"
-            logger().error(msg.format(weight_var))
+            logger().error(msg.format(weight))
             return
         var_df = subregion_df.filter(variable=variable).data
         # _data = _aggregate(var_df, cols,
