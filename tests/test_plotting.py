@@ -23,7 +23,7 @@ except ImportError:
     has_cartopy = False
 
 try:
-    import geopandas
+    import geopandas  # noqa: F401
     has_geopandas = True
 except ImportError:
     has_geopandas = False
