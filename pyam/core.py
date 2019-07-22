@@ -790,6 +790,9 @@ class IamDataFrame(object):
             weighting variable to be used for calculating weighted average
             is case aggregator is 'w.avg'
         """
+        # default subregions to all regions other than `region`
+        subregions = subregions or self._all_other_regions(region, variable)
+
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
         
@@ -841,9 +844,7 @@ class IamDataFrame(object):
             aggregator function. One of 'sum', 'avg', 'min', 'max'
         """
         # default subregions to all regions other than `region`
-        if subregions is None:
-            rows = self._apply_filters(variable=variable)
-            subregions = set(self.data[rows].region) - set([region])
+        subregions = subregions or self._all_other_regions(region, variable)
 
         if not len(subregions):
             msg = 'cannot aggregate variable `{}` to `{}` because it does not'\
@@ -879,6 +880,12 @@ class IamDataFrame(object):
             self.append(_data, region=region, variable=variable, inplace=True)
         else:
             return _data
+
+    def _all_other_regions(self, region, variable):
+        """Determine subregions as all regions other than `region`"""
+        rows = self._apply_filters(variable=variable)
+        return set(self.data[rows].region) - set([region])
+
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=None, exclude_on_fail=False,
