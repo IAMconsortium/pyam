@@ -791,9 +791,20 @@ class IamDataFrame(object):
     def aggregate_region_by_weight(self, variable, weight, region='World',
                                    subregions=None, append=False):
         """Compute weighted average of a timeseries over multiple regions
-         weight_var: str,
+
+        Parameters
+        ----------
+        variable: str
+            variable for which the aggregate should be computed
+         weight: str
             weighting variable to be used for calculating weighted average
-            is case aggregator is 'w.avg'
+        region: str, default 'World'
+            dimension
+        subregions: list of str
+            list of subregions, defaults to all regions other than `region`
+        append: bool, default False
+            append the aggregate timeseries to `data` and return None,
+            else return aggregate timeseries
         """
         # default subregions to all regions other than `region`
         subregions = subregions or self._all_other_regions(region, variable)
@@ -829,7 +840,9 @@ class IamDataFrame(object):
     def aggregate_region(self, variable, region='World', subregions=None,
                          components=None, append=False):
         """Compute the aggregate of timeseries over a number of regions
-        including variable components only defined at the `region` level
+        
+        This function adds `components` only defined at the `region` level
+
         Parameters
         ----------
         variable: str
