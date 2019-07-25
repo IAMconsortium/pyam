@@ -3,7 +3,6 @@ import importlib
 import itertools
 import os
 import sys
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -788,8 +787,8 @@ class IamDataFrame(object):
 
             return IamDataFrame(diff, variable=variable).timeseries()
 
-    def aggregate_region_by_weight(self, variable, weight, region='World',
-                                   subregions=None, append=False):
+    def weighted_average_region(self, variable, weight, region='World',
+                                subregions=None, append=False):
         """Compute weighted average of a timeseries over multiple regions
 
         Parameters
@@ -811,7 +810,7 @@ class IamDataFrame(object):
 
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
-        
+
         weightvar_df = subregion_df.filter(variable=weight).data
 
         if weightvar_df.empty:
@@ -838,9 +837,9 @@ class IamDataFrame(object):
             return _data
 
     def aggregate_region(self, variable, region='World', subregions=None,
-                         components=None, append=False):
+                         components=None, append=False, method='sum'):
         """Compute the aggregate of timeseries over a number of regions
-        
+
         This function adds `components` only defined at the `region` level
 
         Parameters
@@ -871,7 +870,8 @@ class IamDataFrame(object):
         # compute aggregate over all subregions
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
-        _data = _aggregate(subregion_df.filter(variable=variable).data, cols)
+        _data = _aggregate(subregion_df.filter(variable=variable).data,
+                           cols, method=method)
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
@@ -894,7 +894,6 @@ class IamDataFrame(object):
         """Determine subregions as all regions other than `region`"""
         rows = self._apply_filters(variable=variable)
         return set(self.data[rows].region) - set([region])
-
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=None, exclude_on_fail=False,
@@ -1435,11 +1434,11 @@ def _get_method_func(method):
         return method
 
     if method in KNOWN_FUNCS:
-        return KNOWN_FUNCS[method] 
+        return KNOWN_FUNCS[method]
 
-    # raise error if `method` is a string but not in dictionary of known methods
+    # raise error if `method` is a string but not in dict of known methods
     raise ValueError('method `{}` is not a known aggregator'.format(method))
-    
+
 
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))
