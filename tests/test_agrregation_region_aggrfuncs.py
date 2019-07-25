@@ -2,23 +2,11 @@ import pyam
 import pandas as pd
 import numpy as np
 import math
+import pytest
 
-
-input_filename = 'D:/checks/pyam_aggregation/test_pyam2_w_avg.xlsx'
 all_regs = ['AFR', 'CPA', 'EEU', 'FSU', 'LAM']
 r2_northregs = ['EEU', 'FSU']
 r2_otherregs = ['AFR', 'CPA', 'LAM']
-
-
-def read_file(filename):
-    df = pd.read_excel(filename, None)
-    pdf = pd.concat(
-           [df.get(sheet) for sheet in df.keys()
-               if sheet.startswith('data')])
-    return pyam.IamDataFrame(pdf)
-
-
-# idf = read_file(input_filename)
 
 TEST_DF = pd.DataFrame([
    ['model_a', 'scen_a', 'region_a', 'Primary Energy', 'EJ/y', 1, 6.],
@@ -63,7 +51,7 @@ def test_aggregate_region_min(caplog):
     #
 
 
-def test_3(caplog):
+def test_aggregate_empty_subregions(caplog):
     df = pyam.IamDataFrame(TEST_DF)
     caplog.clear()
     df.aggregate_region('FE', region='R5_OECD.avg',
@@ -72,7 +60,7 @@ def test_3(caplog):
     # pd.testing.assert_frame_equal(TEST_DF, df.data)
 
 
-def test_5(caplog):
+def test_aggregate_unknown_method(caplog):
     """ expect logging.error as there's no "FE' Data"""
     """ https://doc.pytest.org/en/latest/reference.html """
     df = pyam.IamDataFrame(TEST_DF)
@@ -150,18 +138,43 @@ def test_df2_single_region_agg(caplog):
 
 
 def test_df2_single_region_w_agg_with_None(caplog):
-    for m in ['min', 'max', 'sum', 'avg']:
-        df = pyam.IamDataFrame(TEST2_DF)
-        # df.data.loc[df.data['region']='CPA', 2005] = None
-        df.data.loc[df.data['year'] == 2005, 'value'] = None
-        df.weighted_average_region('FE', region='A1_CPA',
-                                   subregions=['CPA'],
-                                   append=True, weight='POP')
-        exp_l = [v for v in list(df.filter(region='CPA',
-                 variable='FE').data.value) if not math.isnan(v)]
-        obj_l = [v for v in list(df.filter(region='A1_CPA').data.value)
-                 if not math.isnan(v)]
-        np.testing.assert_allclose(obj_l, exp_l)
+    df = pyam.IamDataFrame(TEST2_DF)
+    df.data.loc[df.data['year'] == 2005, 'value'] = None
+    df.weighted_average_region('FE', region='A1_CPA',
+                               subregions=['CPA'],
+                               append=True, weight='POP')
+    exp_l = [v for v in list(df.filter(region='CPA',
+             variable='FE').data.value) if not math.isnan(v)]
+    obj_l = [v for v in list(df.filter(region='A1_CPA').data.value)
+             if not math.isnan(v)]
+    np.testing.assert_allclose(obj_l, exp_l)
+
+
+def test_df2_single_region_w_agg_with_var_zero(caplog):
+    df = pyam.IamDataFrame(TEST2_DF)
+    df.data.loc[df.data['variable'] == 'FE', 'value'] = 0.  # None
+    df.weighted_average_region('FE', region='A1_CPA',
+                               subregions=['CPA'],
+                               append=True, weight='POP')
+    exp_l = [v for v in list(df.filter(region='CPA',
+             variable='FE').data.value) if not math.isnan(v)]
+    obj_l = [v for v in list(df.filter(region='A1_CPA').data.value)
+             if not math.isnan(v)]
+    np.testing.assert_allclose(obj_l, exp_l)
+
+
+@pytest.mark.skip(reason="w.avg does not work with zero or None values")
+def test_df2_single_region_w_agg_with_weight_zero(caplog):
+    df = pyam.IamDataFrame(TEST2_DF)
+    df.data.loc[df.data['variable'] == 'POP', 'value'] = 0.  # None
+    df.weighted_average_region('FE', region='A1_CPA',
+                               subregions=['CPA'],
+                               append=True, weight='POP')
+    exp_l = [v for v in list(df.filter(region='CPA',
+             variable='FE').data.value) if not math.isnan(v)]
+    obj_l = [v for v in list(df.filter(region='A1_CPA').data.value)
+             if not math.isnan(v)]
+    np.testing.assert_allclose(obj_l, exp_l)
 
 
 def test_df2_single_region_agg_with_None(caplog):
