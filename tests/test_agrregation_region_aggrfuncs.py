@@ -13,9 +13,7 @@ TEST_DF = pd.DataFrame([
    ['model_a', 'scen_a', 'region_b', 'Primary Energy', 'EJ/y', 2, 12.],
    ['model_a', 'scen_a', 'region_a', 'Price', 'EJ/y', 10, 5.],
    ['model_a', 'scen_a', 'region_b', 'Price', 'EJ/y', 4, 5.],
-],
-   columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
-)
+], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010])
 
 TEST2_DF = pd.DataFrame([
     ['MyModel', 'MyScen', 'AFR', 'FE', 'EJ/yr', 11.2, 16.8, 20.9],
@@ -30,10 +28,8 @@ TEST2_DF = pd.DataFrame([
     ['MyModel', 'MyScen', 'LAM', 'POP', 'million', 552, 584, 643],
     ['MyModel', 'MyScen', 'World', 'FE', 'EJ/yr', 113.1, 142.4, 172.9],
     ['MyModel', 'MyScen', 'World', 'POP', 'million', 3118, 3259, 3579],
-],
-    columns=['model', 'scenario', 'region', 'variable', 'unit',
-             2005, 2010, 2020],
- )
+], columns=['model', 'scenario', 'region', 'variable', 'unit',
+            2005, 2010, 2020])
 
 
 def test_weighted_average_region_basic():
@@ -64,13 +60,12 @@ def test_aggregate_unknown_method(caplog):
     """ expect logging.error as there's no "FE' Data"""
     """ https://doc.pytest.org/en/latest/reference.html """
     df = pyam.IamDataFrame(TEST_DF)
-    df.aggregate_region('FE', region='R5_OECD-w.avg',
-                        subregions=[], append=True, method='ww.avg')
-    for record in caplog.records:
-        # assert record.levelname != 'CRITICAL'
-        assert record.levelname == 'INFO'  # level == logging.level.ERROR
-    assert 'cannot aggregate variable' in caplog.text
-    assert ' because it does not exist in any subregion' in caplog.text
+    pytest.raises(ValueError, df.aggregate_region, 'FE', method='foo')
+    # for record in caplog.records:
+    #    # assert record.levelname != 'CRITICAL'
+    #    assert record.levelname == 'INFO'  # level == logging.level.ERROR
+    #assert 'cannot aggregate variable' in caplog.text
+    #assert ' because it does not exist in any subregion' in caplog.text
     # assert caplog.records[0].levelname == 'ERROR' # actually INFO
     # assert len(idf.data.columns) == 7
 
@@ -163,7 +158,8 @@ def test_df2_single_region_w_agg_with_var_zero(caplog):
     np.testing.assert_allclose(obj_l, exp_l)
 
 
-@pytest.mark.skip(reason="w.avg does not work with zero or None values")
+# @pytest.mark.skip(reason="w.avg does not work with zero or None values")
+@pytest.mark.xfail(reason="w.avg does not work with zero or None values")
 def test_df2_single_region_w_agg_with_weight_zero(caplog):
     df = pyam.IamDataFrame(TEST2_DF)
     df.data.loc[df.data['variable'] == 'POP', 'value'] = 0.  # None
@@ -182,7 +178,7 @@ def test_df2_single_region_agg_with_None(caplog):
     for m in ['min', 'max', 'avg']:  # 'sum',
         df = pyam.IamDataFrame(TEST2_DF)
         # df.data.loc[df.data['region']='CPA', 2005] = None
-        df.data.loc[df.data['year'] == 2005, 'value'] = None
+        df.data.loc[df.data['year'] == 2005, 'value'] = np.nan
         df.aggregate_region('FE', region='A1_CPA', method=m,
                             subregions=['CPA'], append=True)
         exp_l = [v for v in list(df.filter(region='CPA',
