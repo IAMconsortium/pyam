@@ -842,7 +842,7 @@ class IamDataFrame(object):
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
-        region_df = self.filter(region=region)
+        region_df = self.filter(region=region, warn_if_empty=False)
         components = components or (
             set(region_df._variable_components(variable)).difference(
                 subregion_df._variable_components(variable)))
@@ -951,15 +951,17 @@ class IamDataFrame(object):
         logger().info('{} non-valid scenario{} will be excluded'
                       .format(len(idx), '' if len(idx) == 1 else 's'))
 
-    def filter(self, keep=True, inplace=False, **kwargs):
+    def filter(self, keep=True, inplace=False, warn_if_empty=True, **kwargs):
         """Return a filtered IamDataFrame (i.e., a subset of current data)
 
         Parameters
         ----------
-        keep: bool, default True
+        keep: bool
             keep all scenarios satisfying the filters (if True) or the inverse
-        inplace: bool, default False
+        inplace: bool
             if True, do operation inplace and return None
+        warn_if_empty: bool
+            warn in the log ifthe returned `IamDataFrame` is empty
         filters by kwargs:
             The following columns are available for filtering:
              - metadata columns: filter by category assignment
@@ -980,7 +982,7 @@ class IamDataFrame(object):
         ret.data = ret.data[_keep]
 
         idx = _make_index(ret.data)
-        if len(idx) == 0:
+        if warn_if_empty and len(idx) == 0:
             logger().warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
         if not inplace:
