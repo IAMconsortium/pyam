@@ -4,8 +4,6 @@ import numpy as np
 import math
 import pytest
 
-from conftest import TEST_DTS
-
 
 all_regs = ['AFR', 'CPA', 'EEU', 'FSU', 'LAM']
 r2_northregs = ['EEU', 'FSU']
@@ -96,7 +94,7 @@ def test_weighted_average_region_basic(wavg_df):
 
 def test_weighted_average_region_self_weight(wavg_df):
     wavg_df.weighted_average_region('Price', append=True, weight='Price')
-    assert list(wavg_df.filter(region='World').data.value) == [116./14., 5]
+    assert list(wavg_df.filter(region='World').data.value) == [116. / 14., 5]
 
 
 def test_aggregate_empty_subregions_3(wavg_df, caplog):
