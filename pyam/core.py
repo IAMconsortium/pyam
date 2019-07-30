@@ -723,6 +723,7 @@ class IamDataFrame(object):
             list of variables, defaults to all sub-categories of `variable`
         method: func or str
             method to use for aggregation
+            e.g. np.mean, np.sum, ... 'min','max', ...
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
@@ -875,15 +876,17 @@ class IamDataFrame(object):
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
-        region_df = self.filter(region=region)
-        components = components or (
-            set(region_df._variable_components(variable)).difference(
-                subregion_df._variable_components(variable)))
+        # ONLY in case methos is sum/np.sum
+        if method in ['sum', np.sum]:
+            region_df = self.filter(region=region)
+            components = components or (
+                set(region_df._variable_components(variable)).difference(
+                    subregion_df._variable_components(variable)))
 
-        if len(components):
-            rows = region_df._apply_filters(variable=components)
-            _data = _data.add(_aggregate(region_df.data[rows], cols),
-                              fill_value=0)
+            if len(components):
+                rows = region_df._apply_filters(variable=components)
+                _data = _data.add(_aggregate(region_df.data[rows], cols),
+                                  fill_value=0)
 
         if append is True:
             self.append(_data, region=region, variable=variable, inplace=True)
