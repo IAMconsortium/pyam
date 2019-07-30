@@ -876,7 +876,7 @@ class IamDataFrame(object):
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
-        # ONLY in case methos is sum/np.sum
+        # ONLY in case method is sum/np.sum
         if method in ['sum', np.sum]:
             region_df = self.filter(region=region)
             components = components or (
