@@ -956,12 +956,12 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        keep: bool
+        keep: boolean, default True
             keep all scenarios satisfying the filters (if True) or the inverse
-        inplace: bool
+        inplace: boolean, default False
             if True, do operation inplace and return None
-        warn_if_empty: bool
-            warn in the log ifthe returned `IamDataFrame` is empty
+        warn_if_empty: boolean, default True
+            print warning in the log output if returned `IamDataFrame` is empty
         filters by kwargs:
             The following columns are available for filtering:
              - metadata columns: filter by category assignment
