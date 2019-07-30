@@ -4,16 +4,26 @@ import numpy as np
 import math
 import pytest
 
+from conftest import TEST_DTS
+
+
 all_regs = ['AFR', 'CPA', 'EEU', 'FSU', 'LAM']
 r2_northregs = ['EEU', 'FSU']
 r2_otherregs = ['AFR', 'CPA', 'LAM']
 
-TEST_DF = pd.DataFrame([
-   ['model_a', 'scen_a', 'region_a', 'Primary Energy', 'EJ/y', 1, 6.],
-   ['model_a', 'scen_a', 'region_b', 'Primary Energy', 'EJ/y', 2, 12.],
-   ['model_a', 'scen_a', 'region_a', 'Price', 'EJ/y', 10, 5.],
-   ['model_a', 'scen_a', 'region_b', 'Price', 'EJ/y', 4, 5.],
+WAVG_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 'region_a', 'Primary Energy', 'EJ/y', 1, 6.],
+    ['model_a', 'scen_a', 'region_b', 'Primary Energy', 'EJ/y', 2, 12.],
+    ['model_a', 'scen_a', 'region_a', 'Price', 'EJ/y', 10, 5.],
+    ['model_a', 'scen_a', 'region_b', 'Price', 'EJ/y', 4, 5.],
 ], columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010])
+
+
+@pytest.fixture(scope="function")
+def wavg_df():
+    df = pyam.IamDataFrame(data=WAVG_DF)
+    yield df
+
 
 TEST2_DF = pd.DataFrame([
     ['MyModel', 'MyScen', 'AFR', 'FE', 'EJ/yr', 11.2, 16.8, 20.9],
@@ -32,42 +42,98 @@ TEST2_DF = pd.DataFrame([
             2005, 2010, 2020])
 
 
-def test_weighted_average_region_basic():
-    df = pyam.IamDataFrame(TEST_DF)
-    df.weighted_average_region('Price', append=True, weight='Primary Energy')
-    #
-    assert list(df.filter(region='World').data.value) == [6, 5]
+# for record in caplog.records:
+#    # assert record.levelname != 'CRITICAL'
+#    assert record.levelname == 'INFO'  # level == logging.level.ERROR
+# assert 'cannot aggregate variable' in caplog.text
+# assert ' because it does not exist in any subregion' in caplog.text
+# assert caplog.records[0].levelname == 'ERROR' # actually INFO
+# assert len(idf.data.columns) == 7
+# pd.testing.assert_frame_equal(TEST_DF, df.data)
+# @pytest.mark.xfail(reason="xxx")
 
 
-def test_aggregate_region_min(caplog):
-    df = pyam.IamDataFrame(TEST_DF)
+def test_single_region_agg(reg_df):
+    for m in ['min', 'max', 'avg', 'sum']:
+        my_df = pyam.IamDataFrame(reg_df.data)
+        my_df.aggregate_region('Primary Energy', region='A1_MEA', method=m,
+                               subregions=['MEA'], append=True)
+        np.testing.assert_allclose(
+            list(my_df.filter(region='A1_MEA').data.value),
+            list(my_df.filter(region='MEA',
+                              variable='Primary Energy').data.value))
+        assert list(my_df.filter(region='A1_MEA').data.value) == \
+            list(my_df.filter(region='MEA',
+                              variable='Primary Energy').data.value)
+
+
+def test_single_region_agg_nan_value(reg_df):
+    for m in ['min', 'max', 'avg']:
+        my_df = pyam.IamDataFrame(reg_df.data)
+        my_df.data.loc[my_df.data['year'] == 2005, 'value'] = np.nan
+        my_df.aggregate_region('Primary Energy', region='A1_MEA', method=m,
+                               subregions=['MEA'], append=True)
+        assert list(my_df.filter(region='A1_MEA').data.value) == \
+            list(my_df.filter(region='MEA',
+                              variable='Primary Energy').data.dropna()[
+                'value'])
+
+
+def test_single_region_sum_nan_value(reg_df):
+    for m in ['sum']:
+        my_df = pyam.IamDataFrame(reg_df.data)
+        my_df.data.loc[my_df.data['year'] == 2010, 'value'] = np.nan
+        my_df.aggregate_region('Primary Energy', region='A1_MEA', method=m,
+                               subregions=['MEA'], append=True)
+        assert list(my_df.filter(region='A1_MEA').data.value) == [1., 0.]
+
+
+def test_weighted_average_region_basic(wavg_df):
+    wavg_df.weighted_average_region('Price', append=True,
+                                    weight='Primary Energy')
+    assert list(wavg_df.filter(region='World').data.value) == [6, 5]
+
+
+def test_weighted_average_region_self_weight(wavg_df):
+    wavg_df.weighted_average_region('Price', append=True, weight='Price')
+    assert list(wavg_df.filter(region='World').data.value) == [116./14., 5]
+
+
+def test_aggregate_empty_subregions_3(wavg_df, caplog):
     caplog.clear()
-    df.aggregate_region('Price', append=True, method='min')
-    assert list(df.filter(region='World').data.value) == [4, 5]
-    #
-
-
-def test_aggregate_empty_subregions(caplog):
-    df = pyam.IamDataFrame(TEST_DF)
-    caplog.clear()
-    df.aggregate_region('FE', region='R5_OECD.avg',
-                        subregions=[], append=True, method='avg')
+    wavg_df.aggregate_region('FE', region='foo',
+                             subregions=[], append=True, method='avg')
+    assert list(wavg_df.filter(region='foo').data.value) == []
     assert 'cannot aggregate variable' in caplog.text
-    # pd.testing.assert_frame_equal(TEST_DF, df.data)
 
 
-def test_aggregate_unknown_method(caplog):
-    """ expect logging.error as there's no "FE' Data"""
-    """ https://doc.pytest.org/en/latest/reference.html """
-    df = pyam.IamDataFrame(TEST_DF)
-    pytest.raises(ValueError, df.aggregate_region, 'FE', method='foo')
-    # for record in caplog.records:
-    #    # assert record.levelname != 'CRITICAL'
-    #    assert record.levelname == 'INFO'  # level == logging.level.ERROR
-    #assert 'cannot aggregate variable' in caplog.text
-    #assert ' because it does not exist in any subregion' in caplog.text
-    # assert caplog.records[0].levelname == 'ERROR' # actually INFO
-    # assert len(idf.data.columns) == 7
+def test_aggregate_empty_subregions_4(wavg_df, caplog):
+    for m in ['sum', 'min', 'max', 'avg']:
+        caplog.clear()
+        wavg_df.aggregate_region('FE', region='foo',
+                                 subregions=['bar'], append=True, method=m)
+        assert list(wavg_df.filter(region='foo').data.value) == []
+        assert 'Filtered IamDataFrame is empty!' in caplog.text
+
+
+def test_aggregate_empty_subregions_5(wavg_df, caplog):
+    for m in ['sum', 'min', 'max', 'avg']:
+        caplog.clear()
+        wavg_df.aggregate_region('foo', region='foo',
+                                 subregions=[], append=True, method=m)
+        assert list(wavg_df.filter(region='foo').data.value) == []
+        assert 'Filtered IamDataFrame is empty!' in caplog.text
+
+
+# @pytest.mark.xfail(reason="xxx")
+def test_aggregate_empty_subregions_2(reg_df, caplog):
+    for m in ['sum', 'min', 'max', 'avg']:
+        caplog.clear()
+        reg_df.aggregate_region('Primary Energy', region='foo+bar',
+                                subregions=['foo', 'bar'],
+                                append=True, method=m)
+        assert list(reg_df.filter(region='foo+bar').data.value) == []
+        assert 'Filtered IamDataFrame is empty!' in caplog.text
 
 
 def test_df2_sum(caplog):
@@ -116,20 +182,6 @@ def test_df2_avg(caplog):
     pd.testing.assert_frame_equal(df1.data, df2.data)
     np.testing.assert_allclose(
         list(df1.filter(region='R1_world').data.value), [22.62, 28.48, 34.58])
-
-
-def test_df2_single_region_agg(caplog):
-    for m in ['min', 'max', 'sum', 'avg']:
-        df = pyam.IamDataFrame(TEST2_DF)
-        df.aggregate_region('FE', region='A1_CPA', method=m,
-                            subregions=['CPA'], append=True)
-        np.testing.assert_allclose(
-            list(df.filter(region='A1_CPA').data.value),
-            list(df.filter(region='CPA',
-                           variable='FE').data.value))
-        assert list(df.filter(region='A1_CPA').data.value) == \
-            list(df.filter(region='CPA',
-                           variable='FE').data.dropna()['value'])
 
 
 def test_df2_single_region_w_agg_with_None(caplog):
