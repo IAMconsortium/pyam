@@ -855,10 +855,11 @@ class IamDataFrame(object):
             _data = _data.add(_aggregate(region_df.data[rows], cols),
                               fill_value=0)
 
+        kwargs = dict(region=region, variable=variable)
         if append is True:
-            self.append(_data, region=region, variable=variable, inplace=True)
+            self.append(_data, inplace=True, **kwargs)
         else:
-            return _data
+            return IamDataFrame(_data, **kwargs)
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=None, exclude_on_fail=False,
