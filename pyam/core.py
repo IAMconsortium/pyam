@@ -1063,7 +1063,7 @@ class IamDataFrame(object):
             else:
                 _raise_filter_error(col)
 
-            keep &= keep_col
+            keep = np.logical_and(keep, keep_col)
 
         return keep
 
