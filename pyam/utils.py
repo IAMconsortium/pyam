@@ -309,9 +309,14 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=True):
     matching of model/scenario names, variables, regions, and meta columns to
     pseudo-regex (if `regexp == False`) for filtering (str, int, bool)
     """
-    matches = np.array([False] * len(data))
+    # coerce values to a list
     if not isinstance(values, collections.Iterable) or isstr(values):
         values = [values]
+
+    if len(data) == 0 or len(values) == 0:
+        return []
+
+    matches = np.array([False] * len(data))
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.copy()

@@ -4,6 +4,13 @@ from pyam import check_aggregate, IAMC_IDX
 
 from conftest import TEST_DTS
 
+
+def test_missing_region(check_aggregate_df):
+    print(check_aggregate_df['region'])
+    obs = check_aggregate_df.aggregate_region('Primary Energy', region='foo')
+    print(obs['region'])  # there is no region column in returned df
+
+
 def test_do_aggregate_append(meta_df):
     meta_df.rename({'variable': {'Primary Energy': 'Primary Energy|Gas'}},
                    inplace=True)

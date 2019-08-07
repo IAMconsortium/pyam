@@ -844,8 +844,11 @@ class IamDataFrame(object):
         # level below `variable` that are only present in `region`
         region_df = self.filter(region=region)
         components = components or (
-            set(region_df._variable_components(variable)).difference(
-                subregion_df._variable_components(variable)))
+            set(region_df._variable_components(variable))
+            .difference(
+                subregion_df._variable_components(variable)
+            )
+        )
 
         if len(components):
             rows = region_df._apply_filters(variable=components)
