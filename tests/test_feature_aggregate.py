@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pyam import check_aggregate, IAMC_IDX
+from pyam import check_aggregate, IAMC_IDX, IamDataFrame
 
 from conftest import TEST_DTS
 
@@ -73,6 +73,27 @@ def test_df_check_aggregate_region_pass(check_aggregate_df):
         obs = check_aggregate_df.check_aggregate_region(variable)
         assert obs is None
 
+def test_aggregate_region():
+    data = pd.DataFrame([
+        ['TEST', 'scen', 'China', 'Primary Energy', 'EJ/y', 1, 6],
+        ['TEST', 'scen', 'Vietnam', 'Primary Energy', 'EJ/y', 0.75, 5]],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010])
+    df = IamDataFrame(data=data)
+    obs = df.aggregate_region(variable='Primary Energy',
+                              region='R5ASIA',
+                              subregions=['China', 'Vietnam', 'Japan'],
+                              components=[], append=False)
+    assert len(obs) == 2
+
+def test_aggregate_region_missing_all_subregions():
+    data = pd.DataFrame([],
+        columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010])
+    df = IamDataFrame(data=data)
+    obs = df.aggregate_region(variable='Primary Energy',
+                              region='R5ASIA',
+                              subregions=['China', 'Vietnam', 'Japan'],
+                              components=[], append=False)
+    assert len(obs) == 2
 
 def run_check_agg_fail(pyam_df, tweak_dict, test_type):
     mr = pyam_df.data.model == tweak_dict['model']
