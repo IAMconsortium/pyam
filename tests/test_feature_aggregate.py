@@ -4,6 +4,20 @@ from pyam import check_aggregate, IAMC_IDX
 
 from conftest import TEST_DTS
 
+
+def test_missing_region(check_aggregate_df):
+    exp = check_aggregate_df.aggregate_region(
+        'Primary Energy', region='foo', append=False
+    ).data
+    check_aggregate_df.aggregate_region(
+        'Primary Energy', region='foo', append=True
+    )
+    obs = check_aggregate_df.filter(region='foo').data
+    assert len(exp) > 0
+    pd.testing.assert_frame_equal(obs.reset_index(drop=True),
+                                  exp.reset_index(drop=True))
+
+
 def test_do_aggregate_append(meta_df):
     meta_df.rename({'variable': {'Primary Energy': 'Primary Energy|Gas'}},
                    inplace=True)
