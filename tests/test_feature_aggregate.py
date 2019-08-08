@@ -9,7 +9,8 @@ def test_missing_region(check_aggregate_df):
     # for now, this test makes sure that this operation works as expected
     exp = check_aggregate_df.aggregate_region('Primary Energy', region='foo')
     assert len(exp) == 8
-    # # this test should be updated to the below after the return type of aggregate_region() is updated
+    # # this test should be updated to the below after the return type of
+    # # aggregate_region() is updated
     # exp = check_aggregate_df.aggregate_region(
     #     'Primary Energy', region='foo', append=False
     # ).data
