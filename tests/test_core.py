@@ -182,6 +182,13 @@ def test_variable_unit(test_df):
     npt.assert_array_equal(test_df.variables(include_units=True), exp)
 
 
+def test_filter_empty_df():
+    cols = ['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    data = pd.DataFrame([], columns=cols)
+    df = IamDataFrame(data=data)
+    df.filter(variable='foo')
+
+
 def test_filter_variable_and_depth(test_df):
     obs = list(test_df.filter(variable='*rimary*C*', level=0).variables())
     exp = ['Primary Energy|Coal']
