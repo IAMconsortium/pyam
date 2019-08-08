@@ -6,16 +6,20 @@ from conftest import TEST_DTS
 
 
 def test_missing_region(check_aggregate_df):
-    exp = check_aggregate_df.aggregate_region(
-        'Primary Energy', region='foo', append=False
-    ).data
-    check_aggregate_df.aggregate_region(
-        'Primary Energy', region='foo', append=True
-    )
-    obs = check_aggregate_df.filter(region='foo').data
-    assert len(exp) > 0
-    pd.testing.assert_frame_equal(obs.reset_index(drop=True),
-                                  exp.reset_index(drop=True))
+    # for now, this test makes sure that this operation works as expected
+    exp = check_aggregate_df.aggregate_region('Primary Energy', region='foo')
+    assert len(exp) == 8
+    # # this test should be updated to the below after the return type of aggregate_region() is updated
+    # exp = check_aggregate_df.aggregate_region(
+    #     'Primary Energy', region='foo', append=False
+    # ).data
+    # check_aggregate_df.aggregate_region(
+    #     'Primary Energy', region='foo', append=True
+    # )
+    # obs = check_aggregate_df.filter(region='foo').data
+    # assert len(exp) > 0
+    # pd.testing.assert_frame_equal(obs.reset_index(drop=True),
+    #                               exp.reset_index(drop=True))
 
 
 def test_do_aggregate_append(meta_df):
