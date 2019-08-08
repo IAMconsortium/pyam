@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pyam import check_aggregate, IAMC_IDX
+from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 
 from conftest import TEST_DTS
 
@@ -20,6 +20,34 @@ def test_missing_region(check_aggregate_df):
     # assert len(exp) > 0
     # pd.testing.assert_frame_equal(obs.reset_index(drop=True),
     #                               exp.reset_index(drop=True))
+
+
+def test_aggregate_region_extra_subregion():
+    cols = ['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    data = pd.DataFrame([
+        ['TEST', 'scen', 'China', 'Primary Energy', 'EJ/y', 1, 6],
+        ['TEST', 'scen', 'Vietnam', 'Primary Energy', 'EJ/y', 0.75, 5]],
+        columns=cols)
+    df = IamDataFrame(data=data)
+    obs = df.aggregate_region(variable='Primary Energy',
+                              region='R5ASIA',
+                              subregions=['China', 'Vietnam', 'Japan'],
+                              components=[], append=False)
+    assert len(obs) == 2
+
+
+def test_aggregate_region_missing_all_subregions():
+    cols = ['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    data = pd.DataFrame([
+        ['TEST', 'scen', 'foo', 'Primary Energy', 'EJ/y', 1, 6],
+        ['TEST', 'scen', 'bar', 'Primary Energy', 'EJ/y', 0.75, 5]],
+        columns=cols)
+    df = IamDataFrame(data=data)
+    obs = df.aggregate_region(variable='Primary Energy',
+                              region='R5ASIA',
+                              subregions=['China', 'Vietnam', 'Japan']
+                              )
+    assert len(obs) == 0
 
 
 def test_do_aggregate_append(meta_df):
