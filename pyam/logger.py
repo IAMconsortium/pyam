@@ -19,9 +19,9 @@ class ignoreWarnings():
     def __init__(self, level='ERROR'):
         self.level = _LOGGER.getEffectiveLevel()
         _LOGGER.setLevel(level)
-  
+
     def __enter__(self):
         pass
-    
+
     def __exit__(self, exception_type, exception_value, traceback):
         _LOGGER.setLevel(self.level)
