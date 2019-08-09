@@ -12,3 +12,16 @@ def logger():
         _LOGGER = logging.getLogger()
         _LOGGER.setLevel('INFO')
     return _LOGGER
+
+
+class ignoreWarnings():
+    """Fixture to ignore logging messages below `level`"""
+    def __init__(self, level='ERROR'):
+        self.level = _LOGGER.getEffectiveLevel()
+        _LOGGER.setLevel(level)
+  
+    def __enter__(self):
+        pass
+    
+    def __exit__(self, exception_type, exception_value, traceback):
+        _LOGGER.setLevel(self.level)

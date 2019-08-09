@@ -16,7 +16,7 @@ except ImportError:
 
 from pyam import plotting
 
-from pyam.logger import logger
+from pyam.logger import logger, ignoreWarnings
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -842,7 +842,8 @@ class IamDataFrame(object):
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
-        region_df = self.filter(region=region)
+        with ignoreWarnings():
+            region_df = self.filter(region=region)
         components = components or (
             set(region_df._variable_components(variable)).difference(
                 subregion_df._variable_components(variable)))
