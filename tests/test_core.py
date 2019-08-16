@@ -201,8 +201,9 @@ def test_variable_depth_raises(test_df):
     pytest.raises(ValueError, test_df.filter, level='1/')
 
 
-def test_filter_error(test_df):
-    pytest.raises(ValueError, test_df.filter, foo='foo')
+def test_filter_error_illegal_column(test_df):
+    # filtering by column `foo` is not valid
+    pytest.raises(ValueError, test_df.filter, foo='test')
 
 
 def test_filter_year(test_df):
