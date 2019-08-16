@@ -6,5 +6,6 @@ gdal
 fiona
 "geopandas<0.5.0"
 "poppler<0.66"
+kealib==1.4.7
 cython
 cartopy
