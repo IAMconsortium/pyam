@@ -206,6 +206,11 @@ def test_filter_error_illegal_column(test_df):
     pytest.raises(ValueError, test_df.filter, foo='test')
 
 
+def test_filter_error_keep(test_df):
+    # non-starred dict is mis-interpreted as `keep` kwarg, see #253
+    pytest.raises(ValueError, test_df.filter, dict(model='foo'))
+
+
 def test_filter_year(test_df):
     obs = test_df.filter(year=2005)
     if "year" in test_df.data.columns:
