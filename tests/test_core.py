@@ -184,7 +184,7 @@ def test_variable_unit(test_df):
 
 def test_filter_empty_df():
     # test for issue seen in #254
-    cols = ['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
+    cols = IAMC_IDX + [2005, 2010]
     data = pd.DataFrame([], columns=cols)
     df = IamDataFrame(data=data)
     obs = df.filter(variable='foo')

@@ -26,13 +26,13 @@ def test_missing_region(check_aggregate_df):
 def test_aggregate_region_extra_subregion():
     cols = ['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     data = pd.DataFrame([
-        ['TEST', 'scen', 'China', 'Primary Energy', 'EJ/y', 1, 6],
-        ['TEST', 'scen', 'Vietnam', 'Primary Energy', 'EJ/y', 0.75, 5]],
+        ['model_a', 'scen_a', 'foo', 'Primary Energy', 'EJ/y', 1, 6],
+        ['model_a', 'scen_a', 'bar', 'Primary Energy', 'EJ/y', 0.75, 5]],
         columns=cols)
     df = IamDataFrame(data=data)
     obs = df.aggregate_region(variable='Primary Energy',
                               region='R5ASIA',
-                              subregions=['China', 'Vietnam', 'Japan'],
+                              subregions=['foo', 'bar', 'baz'],
                               components=[], append=False)
     assert len(obs) == 2
 
@@ -40,8 +40,8 @@ def test_aggregate_region_extra_subregion():
 def test_aggregate_region_missing_all_subregions():
     cols = ['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
     data = pd.DataFrame([
-        ['TEST', 'scen', 'foo', 'Primary Energy', 'EJ/y', 1, 6],
-        ['TEST', 'scen', 'bar', 'Primary Energy', 'EJ/y', 0.75, 5]],
+        ['model_a', 'scen_a', 'foo', 'Primary Energy', 'EJ/y', 1, 6],
+        ['model_a', 'scen_a', 'bar', 'Primary Energy', 'EJ/y', 0.75, 5]],
         columns=cols)
     df = IamDataFrame(data=data)
     obs = df.aggregate_region(variable='Primary Energy',
