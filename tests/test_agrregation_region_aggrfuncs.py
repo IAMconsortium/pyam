@@ -59,14 +59,7 @@ def test_single_region_agg(reg_df):
         assert list(df.filter(region='A1_MEA').data.value) == \
             list(df.filter(region='MEA',
                            variable='Primary Energy').data.value)
-        # pd.testing.assert_series_equal(
-        #       df.filter(region='A1_MEA').data.value,
-        #       df.filter(region='MEA',  variable='Primary Energy').data.value,
-        #       check_names=False,
-        #       check_categorical=False)
-        np.testing.assert_array_equal(
-                df.filter(region='A1_MEA').data.value,
-                df.filter(region='MEA',  variable='Primary Energy').data.value)
+
 
 def test_single_region_agg_nan_value(reg_df):
     """
@@ -160,7 +153,7 @@ def test_default_method_equals_sum(reg_df, caplog):
     pd.testing.assert_frame_equal(df1.data, df2.data)
     # check sum works as expected
     np.testing.assert_allclose(
-        list(df1.filter(region='R1_world').data.value), [6., 26.,  6., 26.])
+        list(df1.filter(region='R1_world').data.value), [6., 26., 6., 26.])
 
 
 def test_aggregate_region_two_stage_sum(two_stage_df, caplog):
@@ -206,7 +199,7 @@ def test_weighted_average_region_with_var_nan(two_stage_df, caplog):
     as weight is non-zero a non issue
     """
     df = two_stage_df.copy()
-    df.data.loc[df.data['year'] == 2005, 'value'] = np.nan # None
+    df.data.loc[df.data['year'] == 2005, 'value'] = np.nan  # None
     df.weighted_average_region('FE', region='A1_CPA',
                                subregions=['CPA'],
                                append=True, weight='POP')
