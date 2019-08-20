@@ -3,7 +3,6 @@ import importlib
 import itertools
 import os
 import sys
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -16,7 +15,7 @@ except ImportError:
 
 from pyam import plotting
 
-from pyam.logger import logger, ignoreWarnings
+from pyam.logger import logger, adjust_log_level
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -842,7 +841,7 @@ class IamDataFrame(object):
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
-        with ignoreWarnings():
+        with adjust_log_level():
             region_df = self.filter(region=region)
         components = components or (
             set(region_df._variable_components(variable)).difference(

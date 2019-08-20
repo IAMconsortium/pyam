@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import logging
 
 # globally accessible logger
@@ -14,14 +15,10 @@ def logger():
     return _LOGGER
 
 
-class ignoreWarnings():
-    """Fixture to ignore logging messages below `level`"""
-    def __init__(self, level='ERROR'):
-        self.level = _LOGGER.getEffectiveLevel()
-        _LOGGER.setLevel(level)
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        _LOGGER.setLevel(self.level)
+@contextmanager
+def adjust_log_level(level='ERROR'):
+    """Context manager to change log level"""
+    old_level = _LOGGER.getEffectiveLevel()
+    _LOGGER.setLevel(level)
+    yield
+    _LOGGER.setLevel(old_level)
