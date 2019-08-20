@@ -323,9 +323,9 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=True):
             pattern = re.compile(_escape_regexp(s) + '$' if not regexp else s)
             subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
-            matches |= (_data.isin(subset) & depth)
+            matches = np.logical_or(matches, _data.isin(subset) & depth)
         else:
-            matches |= data == s
+            matches = np.logical_or(matches, data == s)
     return matches
 
 
