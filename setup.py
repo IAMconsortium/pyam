@@ -22,7 +22,7 @@ REQUIREMENTS = [
     'argparse',
     'numpy',
     'requests',
-    'pandas>=0.21.0,!=0.24.0',
+    'pandas>0.24',
     'PyYAML',
     'xlrd',
     'xlsxwriter',
