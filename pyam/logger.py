@@ -1,5 +1,5 @@
-from contextlib import contextmanager
 import logging
+from contextlib import contextmanager
 
 # globally accessible logger
 _LOGGER = None
@@ -18,7 +18,8 @@ def logger():
 @contextmanager
 def adjust_log_level(level='ERROR'):
     """Context manager to change log level"""
-    old_level = _LOGGER.getEffectiveLevel()
-    _LOGGER.setLevel(level)
+    _logger = logger()
+    old_level = _logger.getEffectiveLevel()
+    _logger.setLevel(level)
     yield
-    _LOGGER.setLevel(old_level)
+    _logger.setLevel(old_level)
