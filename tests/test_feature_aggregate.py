@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
+import pytest
 
 from conftest import TEST_DTS
 
@@ -71,6 +72,11 @@ def test_do_aggregate_append(meta_df):
         exp.columns = pd.to_datetime(exp.columns)
 
     pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_aggregate_unknown_method(reg_df):
+    pytest.raises(ValueError, reg_df.aggregate_region, 'Primary Energy',
+                  method='foo')
 
 
 def test_check_aggregate_pass(check_aggregate_df):
