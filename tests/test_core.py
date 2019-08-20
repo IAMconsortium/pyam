@@ -208,7 +208,7 @@ def test_filter_error_illegal_column(test_df):
 
 def test_filter_error_keep(test_df):
     # string or non-starred dict was mis-interpreted as `keep` kwarg, see #253
-    pytest.raises(ValueError, test_df.filter, model='foo')
+    pytest.raises(ValueError, test_df.filter, model='foo', keep=1)
     pytest.raises(ValueError, test_df.filter, dict(model='foo'))
 
 
