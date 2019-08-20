@@ -723,7 +723,7 @@ class IamDataFrame(object):
             list of variables, defaults to all sub-categories of `variable`
         method: func or str
             method to use for aggregation
-            e.g. np.mean, np.sum, ... 'min','max', ...
+            e.g. np.mean, np.sum, ... 'min', 'max', ...
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
@@ -756,7 +756,7 @@ class IamDataFrame(object):
         components: list of str, default None
             list of variables, defaults to all sub-categories of `variable`
         method: func or str
-            method to use for aggregation
+            method to use for aggregation, e.g. ['mean', np.min]
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
         multiplier: number, default 1
@@ -815,13 +815,10 @@ class IamDataFrame(object):
         weightvar_df = subregion_df.filter(variable=weight).data
 
         if weightvar_df.empty:
-            msg = "cannot aggregate because no data found "\
-                "or weight_var='{}'"
-            logger().error(msg.format(weight))
+            msg = "cannot aggregate because no weights found "
+            logger().error(msg)
             return
         var_df = subregion_df.filter(variable=variable).data
-        # _data = _aggregate(var_df, cols,
-        #                    method='w.avg', weightvar_df=weightvar_df)
         cols = [c for c in list(var_df.columns) if c not in ['value'] + cols]
         calcdf = pd.merge(var_df, weightvar_df,
                           how='left', suffixes=('', '_weight'),
@@ -841,7 +838,9 @@ class IamDataFrame(object):
                          components=None, append=False, method='sum'):
         """Compute the aggregate of timeseries over a number of regions
 
-        This function adds `components` only defined at the `region` level
+        This function aggregates the variable across subregions.
+        When the specified method is sum, it also adds components
+        that are only defined at the region level.
 
         Parameters
         ----------
