@@ -201,8 +201,15 @@ def test_variable_depth_raises(test_df):
     pytest.raises(ValueError, test_df.filter, level='1/')
 
 
-def test_filter_error(test_df):
-    pytest.raises(ValueError, test_df.filter, foo='foo')
+def test_filter_error_illegal_column(test_df):
+    # filtering by column `foo` is not valid
+    pytest.raises(ValueError, test_df.filter, foo='test')
+
+
+def test_filter_error_keep(test_df):
+    # string or non-starred dict was mis-interpreted as `keep` kwarg, see #253
+    pytest.raises(ValueError, test_df.filter, model='foo', keep=1)
+    pytest.raises(ValueError, test_df.filter, dict(model='foo'))
 
 
 def test_filter_year(test_df):

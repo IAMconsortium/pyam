@@ -974,6 +974,10 @@ class IamDataFrame(object):
                ('month', 'hour', 'time')
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
         """
+        if not isinstance(keep, bool):
+            msg = '`filter(keep={}, ...)` is not valid, must be boolean'
+            raise ValueError(msg.format(keep))
+
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = copy.deepcopy(self) if not inplace else self
