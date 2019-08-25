@@ -27,7 +27,7 @@ including a detailed description of the new feature and unit tests
 to illustrate the intended functionality.
 Code submitted via pull requests must adhere to the `pep8`_ style formats.
 
-We do not require anyone to sign a *Contributor License Agreement*, because we
+We do not require users to sign a *Contributor License Agreement*, because we
 believe that when posting ideas or submitting code to an open-source project,
 it should be obvious and self-evident that any such contributions
 are made in the spirit of open collaborative development.
