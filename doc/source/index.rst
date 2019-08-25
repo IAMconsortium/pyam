@@ -7,15 +7,11 @@
 
 Release v\ |version|.
 
-|rtd| |pypi| |conda| |license| |latest|
+|pypi| |conda| |license| |latest|
 
-|travis| |appveyor| |coveralls|
+|rtd| |travis| |appveyor| |coveralls|
 
 |joss| |doi|
-
-.. |rtd| image:: https://readthedocs.org/projects/pyam-iamc/badge/?version=latest
-   :target: https://pyam-iamc.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
@@ -28,6 +24,10 @@ Release v\ |version|.
 
 .. |latest| image:: https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg
    :target: https://anaconda.org/conda-forge/pyam
+
+.. |rtd| image:: https://readthedocs.org/projects/pyam-iamc/badge/?version=latest
+   :target: https://pyam-iamc.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 .. |travis| image:: https://travis-ci.org/IAMconsortium/pyam.svg?branch=master
    :target: https://travis-ci.org/IAMconsortium/pyam
