@@ -4,9 +4,11 @@ Have a question? Get in touch!
 
 - Send bug reports, suggest new features or view the source code `on GitHub`_,
 - Reach out via our community mailing list hosted by `groups.io`_,
+- Or send an email to pyam+owner@groups.io to join our Slack_ workspace!
 
 .. _on GitHub: http://github.com/IAMconsortium/pyam
 .. _`groups.io`: https://groups.io/g/pyam
+.. _Slack: https://slack.com
 
 
 Interested in Contributing? Welcome to the team!
