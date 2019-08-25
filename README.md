@@ -2,7 +2,7 @@ pyam: a Python toolkit for Integrated Assessment Modeling
 =========================================================
 
 **Documentation: http://software.ene.iiasa.ac.at/pyam**
-**Questions? Start a discussion on our [listserv](https://groups.google.com/forum/#!forum/pyam)**
+**Questions? Start a discussion on our [mailing list](https://groups.io/g/pyam)**
 
 Overview and scope
 ------------------

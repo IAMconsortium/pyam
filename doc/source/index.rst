@@ -53,9 +53,6 @@ The source code for **pyam** is available on `Github`_.
 .. _`Github`:
    https://github.com/IAMconsortium/pyam
 
-.. _`groups.google.com/d/forum/pyam` :
-   https://groups.google.com/d/forum/pyam
-
 Overview
 --------
 

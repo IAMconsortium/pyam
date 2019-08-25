@@ -2,11 +2,11 @@
 Have a question? Get in touch!
 ------------------------------
 
-- Report bugs, suggest features or view the source code `on GitHub`_.
-- For less well defined questions or ideas, use the `mailing list`_.
+- Send bug reports, suggest new features or view the source code `on GitHub`_,
+- Reach out via our community mailing list hosted by `groups.io`_,
 
-.. _mailing list: https://groups.google.com/forum/#!forum/pyam
 .. _on GitHub: http://github.com/IAMconsortium/pyam
+.. _`groups.io`: https://groups.io/g/pyam
 
 
 Interested in Contributing? Welcome to the team!

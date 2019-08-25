@@ -30,7 +30,7 @@
 1. Update on conda-forge:
    - A PR should automatically be opened by the bot after the Github release
    - confirm that any new depedencies are added there
-1. Announce it on our mailing list: https://groups.google.com/forum/#!forum/pyam
+1. Announce it on our mailing list: https://groups.io/g/pyam
    - Again, just copy the now rendered HTML from the Github release directly in
      the email
 1. Confirm that the doc page is updated to the latest release: https://pyam-iamc.readthedocs.io/
