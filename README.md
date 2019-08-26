@@ -1,7 +1,8 @@
 pyam: a Python toolkit for Integrated Assessment Modeling
 =========================================================
 
-**Documentation: http://software.ene.iiasa.ac.at/pyam**
+**Documentation on [Read the Docs](https://pyam-iamc.readthedocs.io)**
+
 **Questions? Start a discussion on our [mailing list](https://groups.io/g/pyam)**
 
 Overview and scope
@@ -64,8 +65,8 @@ see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 Install
 -------
 
-For basic instructions see our
-[website](http://software.ene.iiasa.ac.at/pyam/install.html).
+For basic instructions,
+[read the docs](https://pyam-iamc.readthedocs.io/en/stable/install.html).
 
 To install from source after cloning this repository, simply run
 
