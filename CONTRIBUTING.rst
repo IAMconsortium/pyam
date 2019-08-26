@@ -2,11 +2,14 @@
 Have a question? Get in touch!
 ------------------------------
 
-- Report bugs, suggest features or view the source code `on GitHub`_.
-- For less well defined questions or ideas, use the `mailing list`_.
+- Send bug reports, suggest new features or view the source code `on GitHub`_,
+- Reach out via our community mailing list hosted by `groups.io`_,
+- Or send us an `email`_ to join our Slack_ workspace!
 
-.. _mailing list: https://groups.google.com/forum/#!forum/pyam
 .. _on GitHub: http://github.com/IAMconsortium/pyam
+.. _`groups.io`: https://groups.io/g/pyam
+.. _`email`: mailto:pyam+owner@groups.io?subject=[pyam]%20Please%20add%20me%20to%20the%20Slack%20workspace
+.. _Slack: https://slack.com
 
 
 Interested in Contributing? Welcome to the team!
@@ -25,7 +28,7 @@ including a detailed description of the new feature and unit tests
 to illustrate the intended functionality.
 Code submitted via pull requests must adhere to the `pep8`_ style formats.
 
-We do not require anyone to sign a *Contributor License Agreement*, because we
+We do not require users to sign a *Contributor License Agreement*, because we
 believe that when posting ideas or submitting code to an open-source project,
 it should be obvious and self-evident that any such contributions
 are made in the spirit of open collaborative development.
