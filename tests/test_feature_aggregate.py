@@ -87,7 +87,7 @@ def test_check_internal_consistency_no_world_for_variable_error(check_aggregate_
     test_df = check_aggregate_df.filter(
         variable='Emissions|CH4', region='World', keep=False
     )
-    # what should happen here? at the moment it's a cryptic error..
+    # TODO: check warning is raised about Emissions|CH4 not existing in World
     test_df.check_internal_consistency()
 
 
@@ -300,5 +300,5 @@ def test_aggregate_region_components_handling(check_aggregate_regional_df,
 
 def test_check_aggregate_region_no_world(check_aggregate_regional_df):
     test_df = check_aggregate_regional_df.filter(region='World', keep=False)
-    # what do we want to happen here, at the moment the error is cryptic?
+    # TODO: check warning is raised about Emissions|N2O not existing in World
     test_df.check_aggregate_region('Emissions|N2O', region='World')
