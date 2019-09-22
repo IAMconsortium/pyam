@@ -889,11 +889,10 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(region=region, variable=variable)
         if not rows.any():
-            msg = 'variable `{}` does not exsit in region `{}`'
+            msg = 'variable `{}` does not exist in region `{}`'
             logger().info(msg.format(variable, region))
-
             return
-        
+
         df_region, df_subregions = (
             _aggregate(self.data[rows], ['region', 'variable'])
             .align(df_subregions)

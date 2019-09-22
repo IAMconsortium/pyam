@@ -1,4 +1,5 @@
 import pytest
+import logging
 
 import numpy as np
 import pandas as pd
@@ -82,13 +83,16 @@ def test_check_aggregate_pass(check_aggregate_df):
     assert obs is None
 
 
-def test_check_internal_consistency_no_world_for_variable_error(check_aggregate_df):
+def test_check_internal_consistency_no_world_for_variable(check_aggregate_df, caplog):
     assert check_aggregate_df.check_internal_consistency() is None
     test_df = check_aggregate_df.filter(
         variable='Emissions|CH4', region='World', keep=False
     )
-    # TODO: check warning is raised about Emissions|CH4 not existing in World
+    caplog.set_level(logging.INFO)
     test_df.check_internal_consistency()
+    warn_idx = caplog.messages.index("variable `Emissions|CH4` does not exist "
+                                     "in region `World`")
+    assert caplog.records[warn_idx].levelname == "INFO"
 
 
 def test_check_aggregate_fail(meta_df):
@@ -298,7 +302,9 @@ def test_aggregate_region_components_handling(check_aggregate_regional_df,
     pd.testing.assert_series_equal(res, exp)
 
 
-def test_check_aggregate_region_no_world(check_aggregate_regional_df):
+def test_check_aggregate_region_no_world(check_aggregate_regional_df, caplog):
     test_df = check_aggregate_regional_df.filter(region='World', keep=False)
-    # TODO: check warning is raised about Emissions|N2O not existing in World
     test_df.check_aggregate_region('Emissions|N2O', region='World')
+    warn_idx = caplog.messages.index("variable `Emissions|N2O` does not exist "
+                                     "in region `World`")
+    assert caplog.records[warn_idx].levelname == "INFO"
