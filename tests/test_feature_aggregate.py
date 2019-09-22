@@ -83,7 +83,9 @@ def test_check_aggregate_pass(check_aggregate_df):
     assert obs is None
 
 
-def test_check_internal_consistency_no_world_for_variable(check_aggregate_df, caplog):
+def test_check_internal_consistency_no_world_for_variable(
+    check_aggregate_df, caplog
+):
     assert check_aggregate_df.check_internal_consistency() is None
     test_df = check_aggregate_df.filter(
         variable='Emissions|CH4', region='World', keep=False
