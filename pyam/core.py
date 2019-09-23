@@ -844,9 +844,12 @@ class IamDataFrame(object):
         with adjust_log_level():
             region_df = self.filter(region=region)
 
+        rdf_components = region_df._variable_components(variable, level=None)
+        srdf_components = subregion_df._variable_components(variable,
+                                                            level=None)
         components = components or (
-            set(region_df._variable_components(variable, all=True)).difference(
-                subregion_df._variable_components(variable, all=True)))
+            set(rdf_components).difference(srdf_components)
+        )
 
         if len(components):
             rows = region_df._apply_filters(variable=components)
@@ -907,16 +910,15 @@ class IamDataFrame(object):
             col_args = dict(region=region, variable=variable)
             return IamDataFrame(diff, **col_args).timeseries()
 
-    def _variable_components(self, variable, all=False):
+    def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
 
-        If `all`, for `variable='foo'`, return `['foo|bar']`, but don't include
-        `'foo|bar|baz'`, which is a sub-sub-category. Otherwise return all
-        variables below `variable` in the hierarchy"""
+        If `level=0`, for `variable='foo'`, return `['foo|bar']`, but don't
+        include `'foo|bar|baz'`, which is a sub-sub-category. If `level=None`,
+        all variables below `variable` in the hierarchy are returned."""
         var_list = pd.Series(self.data.variable.unique())
-        if all:
-            return var_list[pattern_match(var_list, '{}|*'.format(variable))]
-        return var_list[pattern_match(var_list, '{}|*'.format(variable), 0)]
+        return var_list[pattern_match(var_list, '{}|*'.format(variable),
+                                      level=level)]
 
     def check_internal_consistency(self, **kwargs):
         """Check whether the database is internally consistent
