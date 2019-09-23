@@ -242,7 +242,7 @@ def test_df_check_aggregate_region_components(check_aggregate_regional_df):
     assert obs is None
 
     obs = check_aggregate_regional_df.check_aggregate_region(
-        'Emissions|N2O|Solvents', 'World', subregions=['REUROPE', 'RASIA']
+        'Emissions|N2O|Ind|Solvents', 'World', subregions=['REUROPE', 'RASIA']
     )
     assert obs is None
 
@@ -252,6 +252,6 @@ def test_df_check_aggregate_region_components(check_aggregate_regional_df):
     assert obs is None
 
     obs = check_aggregate_regional_df.check_aggregate_region(
-        'Emissions|N2O|Transport', 'REUROPE', subregions=['Germany', 'UK']
+        'Emissions|N2O|Ind|Transport', 'REUROPE', subregions=['Germany', 'UK']
     )
     assert obs is None
