@@ -100,7 +100,7 @@ def test_append_extra_col(test_df, shuffle_cols):
     base_df = IamDataFrame(base_data)
 
     other_data = base_data[base_data["variable"] == "Primary Energy"].copy()
-    other_data["variable"] ="Primary Energy|Gas"
+    other_data["variable"] = "Primary Energy|Gas"
     other_df = IamDataFrame(other_data)
 
     if shuffle_cols:
@@ -110,6 +110,7 @@ def test_append_extra_col(test_df, shuffle_cols):
         other_df._LONG_IDX[c2_idx] = "col_1"
 
     res = base_df.append(other_df)
+
     def check_meta_is(iamdf, meta_col, val):
         for checker in [iamdf.timeseries().reset_index(), iamdf.data]:
             meta_vals = checker[meta_col].unique()

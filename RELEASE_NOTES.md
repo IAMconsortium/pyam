@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#269](https://github.com/IAMconsortium/pyam/pull/269) Ensure append doesn't accidentally swap indexes
 - [#268](https://github.com/IAMconsortium/pyam/pull/268) Update `aggregate_region` so it can find variables below sub-cateogories too
 - [#261](https://github.com/IAMconsortium/pyam/pull/261) Add a check that `keep` in `filter()` is a boolean
 - [#254](https://github.com/IAMconsortium/pyam/pull/254) Hotfix for aggregating missing regions and filtering empty dataframes
