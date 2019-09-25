@@ -816,8 +816,9 @@ class IamDataFrame(object):
         subregions: list of str
             list of subregions, defaults to all regions other than `region`
         components: list of str
-            list of variables, defaults to all sub-categories of `variable`
-            included in `region` but not in any of `subregions`
+            list of variables to include in the aggregate from the `region`
+            level, defaults to all sub-categories of `variable` included in
+            `region` but not in any of `subregions`
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
