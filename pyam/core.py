@@ -816,8 +816,9 @@ class IamDataFrame(object):
         subregions: list of str
             list of subregions, defaults to all regions other than `region`
         components: list of str
-            list of variables, defaults to all sub-categories of `variable`
-            included in `region` but not in any of `subregions`
+            list of variables to include in the aggregate from the `region`
+            level, defaults to all sub-categories of `variable` included in
+            `region` but not in any of `subregions`
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
@@ -843,9 +844,10 @@ class IamDataFrame(object):
         # level below `variable` that are only present in `region`
         with adjust_log_level():
             region_df = self.filter(region=region)
-        components = components or (
-            set(region_df._variable_components(variable)).difference(
-                subregion_df._variable_components(variable)))
+
+        rdf_comps = region_df._variable_components(variable, level=None)
+        srdf_comps = subregion_df._variable_components(variable, level=None)
+        components = components or set(rdf_comps).difference(srdf_comps)
 
         if len(components):
             rows = region_df._apply_filters(variable=components)
@@ -906,13 +908,15 @@ class IamDataFrame(object):
             col_args = dict(region=region, variable=variable)
             return IamDataFrame(diff, **col_args).timeseries()
 
-    def _variable_components(self, variable):
-        """Get all components (sub-categories) of a variable
+    def _variable_components(self, variable, level=0):
+        """Get all components (sub-categories) of a variable for a given level
 
-        For `variable='foo'`, return `['foo|bar']`, but don't include
-        `'foo|bar|baz'`, which is a sub-sub-category"""
+        If `level=0`, for `variable='foo'`, return `['foo|bar']`, but don't
+        include `'foo|bar|baz'`, which is a sub-sub-category. If `level=None`,
+        all variables below `variable` in the hierarchy are returned."""
         var_list = pd.Series(self.data.variable.unique())
-        return var_list[pattern_match(var_list, '{}|*'.format(variable), 0)]
+        return var_list[pattern_match(var_list, '{}|*'.format(variable),
+                                      level=level)]
 
     def check_internal_consistency(self, **kwargs):
         """Check whether the database is internally consistent
