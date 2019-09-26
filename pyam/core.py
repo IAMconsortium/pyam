@@ -845,12 +845,9 @@ class IamDataFrame(object):
         with adjust_log_level():
             region_df = self.filter(region=region)
 
-        rdf_components = region_df._variable_components(variable, level=None)
-        srdf_components = subregion_df._variable_components(variable,
-                                                            level=None)
-        components = components or (
-            set(rdf_components).difference(srdf_components)
-        )
+        rdf_comps = region_df._variable_components(variable, level=None)
+        srdf_comps = subregion_df._variable_components(variable, level=None)
+        components = components or set(rdf_comps).difference(srdf_comps)
 
         if len(components):
             rows = region_df._apply_filters(variable=components)
