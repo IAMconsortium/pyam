@@ -580,3 +580,20 @@ def test_stack_plot_negative_emissions_kwargs_custom_total(plot_stack_plot_df):
         ax=ax,
     )
     return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stack_plot_missing_zero_issue_266(plot_stack_plot_df):
+    df = pyam.IamDataFrame(pd.DataFrame([
+        ['a', 1, 2, 3, 4],
+        ['b', 0, 1, 2, 3],
+        ['c', -1, 1, -1, 1],
+        ['d', 1, 1, 1, -1]
+        ],
+        columns=['variable', 2010, 2020, 2030, 2040],
+    ), model='model_a', scenario='scen_a', region='World', unit='some_unit')
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+    df.stack_plot(ax=ax)
+
+    return fig
