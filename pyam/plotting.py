@@ -472,7 +472,7 @@ def stack_plot(df, x='year', y='value', stack='variable',
     # is on the right (case of timeseries which go from negative to positive
     # is an edge case we haven't thought about as it's unlikely to apply to
     # us).
-    pos_cols = [c for c in _df if (_df[c] > 0).all()]
+    pos_cols = [c for c in _df if (_df[c] >= 0).all()]
     cross_cols = first_zero_times.columns[::-1].tolist()
     neg_cols = [c for c in _df if (_df[c] < 0).all()]
     col_order = pos_cols + cross_cols + neg_cols

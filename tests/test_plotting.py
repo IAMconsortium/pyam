@@ -587,7 +587,7 @@ def test_stack_plot_missing_zero_issue_266(plot_stack_plot_df):
     df = pyam.IamDataFrame(pd.DataFrame([
         ['a', 1, 2, 3, 4],
         ['b', 0, 1, 2, 3],
-        ['c', -1, 1, -1, 1],
+        ['c', -1, 1, -1, -1],
         ['d', 1, 1, 1, -1]
         ],
         columns=['variable', 2010, 2020, 2030, 2040],
