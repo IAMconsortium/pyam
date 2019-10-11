@@ -321,9 +321,13 @@ class Connection(object):
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         df = pd.read_json(r.content, orient='records')
+        df = pd.DataFrame(data = df,
+                          columns=['meta', 'model', 'region', 'runId',
+                                   'scenario', 'time', 'unit', 'value',
+                                   'variable', 'version', 'year'])
         if df.empty:
             return df
-        df.drop(columns='runId').rename(columns={'time': 'subannual'})
+        df = df.drop(columns='runId').rename(columns={'time': 'subannual'})
         # check if returned dataframe has subannual disaggregation, drop if not
         if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
             df.drop(columns='subannual', inplace=True)
