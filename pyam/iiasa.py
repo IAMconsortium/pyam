@@ -320,11 +320,10 @@ class Connection(object):
         r = requests.post(url, headers=headers, data=data)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
-        df = (
-            pd.read_json(r.content, orient='records')
-            .drop(columns='runId')
-            .rename(columns={'time': 'subannual'})
-        )
+        df = pd.read_json(r.content, orient='records')
+        if df.empty:
+            return df
+        df.drop(columns='runId').rename(columns={'time': 'subannual'})
         # check if returned dataframe has subannual disaggregation, drop if not
         if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
             df.drop(columns='subannual', inplace=True)
@@ -341,7 +340,7 @@ class Connection(object):
         return df
 
 
-def read_iiasa(name, meta=False, **kwargs):
+def read_iiasa(name, meta=False, creds=None, **kwargs):
     """
     Query an IIASA database. See Connection.query() for more documentation
 
@@ -354,9 +353,9 @@ def read_iiasa(name, meta=False, **kwargs):
     kwargs :
         Arguments for pyam.iiasa.Connection.query()
     """
-    conn = Connection(name)
+    conn = Connection(name, creds)
     # data
-    df = conn.query(**kwargs)
+    df = conn.query(creds=creds, **kwargs)
     df = IamDataFrame(df)
     # metadata
     if meta:

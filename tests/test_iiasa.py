@@ -157,6 +157,17 @@ def test_query_IXSE_SR15():
                           )
     assert len(df) == 20
 
+def test_query_IXSE_AR6():
+    with pytest.raises(RuntimeError) as excinfo:
+        df = iiasa.read_iiasa('IXSE_AR6',
+                              scenario='ADVANCE_2020_WB2C',
+                              model='AIM/CGE 2.0',
+                              region='World',
+                              variable='Emissions|CO2|Energy|Demand|Transportation',
+                              creds=dict(username='mahamba', password='verysecret')
+                              )
+    assert str(excinfo.value).startswith('Login failed for user: mahamba')
+
 
 def test_query_IXSE_SR15_with_metadata():
     df = iiasa.read_iiasa('IXSE_SR15',
