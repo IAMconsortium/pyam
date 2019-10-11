@@ -321,7 +321,7 @@ class Connection(object):
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         df = pd.read_json(r.content, orient='records')
-        df = pd.DataFrame(data = df,
+        df = pd.DataFrame(data=df,
                           columns=['meta', 'model', 'region', 'runId',
                                    'scenario', 'time', 'unit', 'value',
                                    'variable', 'version', 'year'])
