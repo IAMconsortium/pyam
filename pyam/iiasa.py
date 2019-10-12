@@ -31,7 +31,7 @@ You are connected to the {} scenario explorer hosted by IIASA.
 
 def _check_response(r, msg='Trouble with request', error=RuntimeError):
     if not r.ok:
-        raise error('{}: {}'.format(msg, str(r)))
+        raise error('{}: {}'.format(msg, str(r.content)))
 
 
 def _get_token(creds):
@@ -321,13 +321,14 @@ class Connection(object):
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         df = pd.read_json(r.content, orient='records')
-        df = pd.DataFrame(data=df,
-                          columns=['meta', 'model', 'region', 'runId',
-                                   'scenario', 'time', 'unit', 'value',
-                                   'variable', 'version', 'year'])
-        if df.empty:
-            return df
-        df = df.drop(columns='runId').rename(columns={'time': 'subannual'})
+        columns = ['model', 'scenario', 'variable', 'unit',
+                   'region', 'year', 'value', 'time', 'meta',
+                   'runId', 'version']
+        df = pd.DataFrame(data=df, columns=columns)
+        # replace missing meta (for backward compatibility)
+        df.fillna({'meta': 0}, inplace=True)
+        df.drop(columns='runId', inplace=True)
+        df.rename(columns={'time': 'subannual'}, inplace=True)
         # check if returned dataframe has subannual disaggregation, drop if not
         if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
             df.drop(columns='subannual', inplace=True)
