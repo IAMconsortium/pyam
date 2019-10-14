@@ -31,7 +31,7 @@ You are connected to the {} scenario explorer hosted by IIASA.
 
 def _check_response(r, msg='Trouble with request', error=RuntimeError):
     if not r.ok:
-        raise error('{}: {}'.format(msg, str(r.content)))
+        raise error('{}: {}'.format(msg, str(r.text)))
 
 
 def _get_token(creds):
