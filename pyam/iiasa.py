@@ -337,7 +337,7 @@ class Connection(object):
             df[META_IDX + ['version']].drop_duplicates()
             .groupby(META_IDX).count().version
         )
-        if max(lst) > 1:
+        if not lst.empty and max(lst) > 1:
             raise ValueError('multiple versions for {}'.format(
                 lst[lst > 1].index.to_list()))
         df.drop(columns='version', inplace=True)
