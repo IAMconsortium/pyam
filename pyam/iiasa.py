@@ -279,7 +279,13 @@ class Connection(object):
 
         # get unique other values
         variables = _match(self.variables(), v_pattern)
+        # pass empty list to API if all variables selected
+        if len(variables) == len(self.variables()):
+            variables = []
         regions = _match(self.regions(), r_pattern)
+        # pass empty list to API if all regions selected
+        if len(regions) == len(self.regions()):
+            regions = []
 
         data = {
             "filters": {
