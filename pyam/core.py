@@ -232,8 +232,9 @@ class IamDataFrame(object):
             ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
 
         # append other.data (verify integrity for no duplicates)
-        _data = ret.data.set_index(ret._LONG_IDX).append(
-            other.data.set_index(other._LONG_IDX), verify_integrity=True)
+        _data = ret.data.set_index(sorted(ret._LONG_IDX)).append(
+            other.data.set_index(sorted(other._LONG_IDX)),
+            verify_integrity=True)
 
         # merge extra columns in `data` and set `LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols

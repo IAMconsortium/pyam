@@ -91,6 +91,37 @@ def test_append_same_scenario(meta_df):
     npt.assert_array_equal(ts.iloc[2], ts.iloc[3])
 
 
+@pytest.mark.parametrize("shuffle_cols", [True, False])
+def test_append_extra_col(test_df, shuffle_cols):
+    base_data = test_df.data.copy()
+
+    base_data["col_1"] = "hi"
+    base_data["col_2"] = "bye"
+    base_df = IamDataFrame(base_data)
+
+    other_data = base_data[base_data["variable"] == "Primary Energy"].copy()
+    other_data["variable"] = "Primary Energy|Gas"
+    other_df = IamDataFrame(other_data)
+
+    if shuffle_cols:
+        c1_idx = other_df._LONG_IDX.index("col_1")
+        c2_idx = other_df._LONG_IDX.index("col_2")
+        other_df._LONG_IDX[c1_idx] = "col_2"
+        other_df._LONG_IDX[c2_idx] = "col_1"
+
+    res = base_df.append(other_df)
+
+    def check_meta_is(iamdf, meta_col, val):
+        for checker in [iamdf.timeseries().reset_index(), iamdf.data]:
+            meta_vals = checker[meta_col].unique()
+            assert len(meta_vals) == 1, meta_vals
+            assert meta_vals[0] == val, meta_vals
+
+    # ensure meta merged correctly
+    check_meta_is(res, "col_1", "hi")
+    check_meta_is(res, "col_2", "bye")
+
+
 def test_append_duplicates(test_df_year):
     other = copy.deepcopy(test_df_year)
     pytest.raises(ValueError, test_df_year.append, other=other)
