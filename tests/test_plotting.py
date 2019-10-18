@@ -1,15 +1,18 @@
-from conftest import IMAGE_BASELINE_DIR, TEST_DATA_DIR
-from pyam import IamDataFrame, plotting, run_control, reset_rc_defaults
-from contextlib import contextmanager
-import matplotlib.pyplot as plt
 import matplotlib
 import pytest
 import os
 import copy
+import warnings
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+from contextlib import contextmanager
+
 import pyam
-import warnings
+from pyam import plotting, run_control, reset_rc_defaults
+from conftest import IMAGE_BASELINE_DIR
 
 # on CI, freetype version 2.6.1 works, but 2.8.0 does not
 # if we want to move to 2.8.0, then we will need to regenerate images
