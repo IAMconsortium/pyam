@@ -1,7 +1,7 @@
 
 # Next Release
 
-- [#275](https://github.com/IAMconsortium/pyam/pull/275) Completely removes all features related to region plotting, noably `map_regions()`, `region_plot()`, and `read_shapefile()`
+- [#275](https://github.com/IAMconsortium/pyam/pull/275) Completely removes all features related to region plotting, notably `region_plot()` and `read_shapefile()`
 - [#269](https://github.com/IAMconsortium/pyam/pull/269) Ensure append doesn't accidentally swap indexes
 - [#268](https://github.com/IAMconsortium/pyam/pull/268) Update `aggregate_region` so it can find variables below sub-cateogories too
 - [#267](https://github.com/IAMconsortium/pyam/pull/267) Make clear error message if variable-region pair is missing when `check_aggregate_region` is called

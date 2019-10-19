@@ -683,6 +683,107 @@ def _r5_regions_exp(df):
     return sort_data(df.data, df._LONG_IDX)
 
 
+def test_map_regions_r5(reg_df):
+    obs = reg_df.map_regions('r5_region').data
+    exp = _r5_regions_exp(reg_df)
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_map_regions_r5_region_col(reg_df):
+    df = reg_df.filter(model='MESSAGE-GLOBIOM')
+    obs = df.map_regions(
+        'r5_region', region_col='MESSAGE-GLOBIOM.REGION').data
+    exp = _r5_regions_exp(df)
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_map_regions_r5_inplace(reg_df):
+    exp = _r5_regions_exp(reg_df)
+    reg_df.map_regions('r5_region', inplace=True)
+    obs = reg_df.data
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_map_regions_r5_agg(reg_df):
+    columns = reg_df.data.columns
+    obs = reg_df.map_regions('r5_region', agg='sum').data
+
+    exp = _r5_regions_exp(reg_df)
+    grp = list(columns)
+    grp.remove('value')
+    exp = exp.groupby(grp).sum().reset_index()
+    exp = exp[columns]
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_48a():
+    # tests fix for #48 mapping many->few
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SSD', 'var', 'unit', 1, 6],
+        ['model', 'scen', 'SDN', 'var', 'unit', 2, 7],
+        ['model', 'scen1', 'SSD', 'var', 'unit', 2, 7],
+        ['model', 'scen1', 'SDN', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+
+    exp = _r5_regions_exp(df)
+    columns = df.data.columns
+    grp = list(columns)
+    grp.remove('value')
+    exp = exp.groupby(grp).sum().reset_index()
+    exp = exp[columns]
+
+    obs = df.map_regions('r5_region', region_col='iso', agg='sum').data
+
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_48b():
+    # tests fix for #48 mapping few->many
+
+    exp = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'SSD', 'var', 'unit', 1, 6],
+        ['model', 'scen', 'SDN', 'var', 'unit', 1, 6],
+        ['model', 'scen1', 'SSD', 'var', 'unit', 2, 7],
+        ['model', 'scen1', 'SDN', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    )).data
+
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'R5MAF', 'var', 'unit', 1, 6],
+        ['model', 'scen1', 'R5MAF', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+    obs = df.map_regions('iso', region_col='r5_region').data
+    obs = sort_data(obs[obs.region.isin(['SSD', 'SDN'])], df._LONG_IDX)
+
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
+def test_48c():
+    # tests fix for #48 mapping few->many, dropping duplicates
+
+    exp = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'AGO', 'var', 'unit', 1, 6],
+        ['model', 'scen1', 'AGO', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    )).data.reset_index(drop=True)
+
+    df = IamDataFrame(pd.DataFrame([
+        ['model', 'scen', 'R5MAF', 'var', 'unit', 1, 6],
+        ['model', 'scen1', 'R5MAF', 'var', 'unit', 2, 7],
+    ], columns=['model', 'scenario', 'region',
+                'variable', 'unit', 2005, 2010],
+    ))
+    obs = df.map_regions('iso', region_col='r5_region',
+                         remove_duplicates=True).data
+    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+
+
 def test_pd_filter_by_meta(meta_df):
     data = df_filter_by_meta_matching_idx.set_index(['model', 'region'])
 

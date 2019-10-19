@@ -1293,6 +1293,95 @@ class IamDataFrame(object):
         ax = plotting.scatter(df.dropna(), x, y, **kwargs)
         return ax
 
+    def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
+                    region_col=None, remove_duplicates=False, inplace=False):
+        """Plot regional data for a single model, scenario, variable, and year
+
+        see pyam.plotting.region_plot() for all available options
+
+        Parameters
+        ----------
+        map_col: string
+            The column used to map new regions to. Common examples include
+            iso and 5_region.
+        agg: string, optional
+            Perform a data aggregation. Options include: sum.
+        copy_col: string, optional
+            Copy the existing region data into a new column for later use.
+        fname: string, optional
+            Use a non-default region mapping file
+        region_col: string, optional
+            Use a non-default column name for regions to map from.
+        remove_duplicates: bool, optional, default: False
+            If there are duplicates in the mapping from one regional level to
+            another, then remove these duplicates by counting the most common
+            mapped value.
+            This option is most useful when mapping from high resolution
+            (e.g., model regions) to low resolution (e.g., 5_region).
+        inplace : bool, default False
+            if True, do operation inplace and return None
+        """
+        models = self.meta.index.get_level_values('model').unique()
+        fname = fname or run_control()['region_mapping']['default']
+        mapping = read_pandas(fname).rename(str.lower, axis='columns')
+        map_col = map_col.lower()
+
+        ret = copy.deepcopy(self) if not inplace else self
+        _df = ret.data
+        columns_orderd = _df.columns
+
+        # merge data
+        dfs = []
+        for model in models:
+            df = _df[_df['model'] == model]
+            _col = region_col or '{}.REGION'.format(model)
+            _map = mapping.rename(columns={_col.lower(): 'region'})
+            _map = _map[['region', map_col]].dropna().drop_duplicates()
+            _map = _map[_map['region'].isin(_df['region'])]
+            if remove_duplicates and _map['region'].duplicated().any():
+                # find duplicates
+                where_dup = _map['region'].duplicated(keep=False)
+                dups = _map[where_dup]
+                logger().warning("""
+                Duplicate entries found for the following regions.
+                Mapping will occur only for the most common instance.
+                {}""".format(dups['region'].unique()))
+                # get non duplicates
+                _map = _map[~where_dup]
+                # order duplicates by the count frequency
+                dups = (dups
+                        .groupby(['region', map_col])
+                        .size()
+                        .reset_index(name='count')
+                        .sort_values(by='count', ascending=False)
+                        .drop('count', axis=1))
+                # take top occurance
+                dups = dups[~dups['region'].duplicated(keep='first')]
+                # combine them back
+                _map = pd.concat([_map, dups])
+            if copy_col is not None:
+                df[copy_col] = df['region']
+
+            df = (df
+                  .merge(_map, on='region')
+                  .drop('region', axis=1)
+                  .rename(columns={map_col: 'region'})
+                  )
+            dfs.append(df)
+        df = pd.concat(dfs)
+
+        # perform aggregations
+        if agg == 'sum':
+            df = df.groupby(self._LONG_IDX).sum().reset_index()
+
+        ret.data = (df
+                    .reindex(columns=columns_orderd)
+                    .sort_values(SORT_IDX)
+                    .reset_index(drop=True)
+                    )
+        if not inplace:
+            return ret
+
 
 def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
