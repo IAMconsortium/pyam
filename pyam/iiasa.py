@@ -329,11 +329,13 @@ class Connection(object):
         df = pd.read_json(r.content, orient='records')
         columns = ['model', 'scenario', 'variable', 'unit',
                    'region', 'year', 'value', 'time', 'meta',
-                   'runId', 'version']
-        df = pd.DataFrame(data=df, columns=columns)
+                   'version']
+        df = pd.read_json(r.content, orient='records')
+        # drop unknown and non-necessary columns
+        drop = list(set(df.columns) - set(columns))
+        df.drop(columns=drop, inplace=True)
         # replace missing meta (for backward compatibility)
         df.fillna({'meta': 0}, inplace=True)
-        df.drop(columns='runId', inplace=True)
         df.rename(columns={'time': 'subannual'}, inplace=True)
         # check if returned dataframe has subannual disaggregation, drop if not
         if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
@@ -343,7 +345,7 @@ class Connection(object):
             df[META_IDX + ['version']].drop_duplicates()
             .groupby(META_IDX).count().version
         )
-        if not lst.empty and max(lst) > 1:
+        if len(lst) > 1 and max(lst) > 1:
             raise ValueError('multiple versions for {}'.format(
                 lst[lst > 1].index.to_list()))
         df.drop(columns='version', inplace=True)
@@ -361,12 +363,14 @@ def read_iiasa(name, meta=False, creds=None, **kwargs):
         A valid IIASA database name, see pyam.iiasa.valid_connection_names()
     meta : bool or list of strings
         If not False, also include metadata indicators (or subset if provided).
+    creds : dict
+        Credentials to access IXMP and authentication service APIs (username/password)
     kwargs :
         Arguments for pyam.iiasa.Connection.query()
     """
     conn = Connection(name, creds)
     # data
-    df = conn.query(creds=creds, **kwargs)
+    df = conn.query(**kwargs)
     df = IamDataFrame(df)
     # metadata
     if meta:
