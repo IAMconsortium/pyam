@@ -364,7 +364,8 @@ def read_iiasa(name, meta=False, creds=None, **kwargs):
     meta : bool or list of strings
         If not False, also include metadata indicators (or subset if provided).
     creds : dict
-        Credentials to access IXMP and authentication service APIs (username/password)
+        Credentials to access IXMP and authentication service APIs
+        (username/password)
     kwargs :
         Arguments for pyam.iiasa.Connection.query()
     """
