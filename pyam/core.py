@@ -1382,15 +1382,6 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def region_plot(self, **kwargs):
-        """Plot regional data for a single model, scenario, variable, and year
-
-        see pyam.plotting.region_plot() for all available options
-        """
-        df = self.as_pandas(with_metadata=True)
-        ax = plotting.region_plot(df, **kwargs)
-        return ax
-
 
 def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index

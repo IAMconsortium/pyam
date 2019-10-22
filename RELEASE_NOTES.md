@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#275](https://github.com/IAMconsortium/pyam/pull/275) Completely removes all features related to region plotting, notably `region_plot()` and `read_shapefile()`
 - [#270](https://github.com/IAMconsortium/pyam/pull/270) Include variables with zeros in `stack_plot`  (see [#266](https://github.com/IAMconsortium/pyam/issues/266))
 - [#269](https://github.com/IAMconsortium/pyam/pull/269) Ensure append doesn't accidentally swap indexes
 - [#268](https://github.com/IAMconsortium/pyam/pull/268) Update `aggregate_region` so it can find variables below sub-cateogories too

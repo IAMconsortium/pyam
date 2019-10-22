@@ -1,26 +1,12 @@
 import itertools
 import warnings
 
-try:
-    import cartopy
-    cartopy_message = 'all good!'
-except ImportError as e:
-    cartopy = None
-    cartopy_message = str(e)
-
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
-
-try:
-    import geopandas as gpd
-    gpd_message = 'all good!'
-except ImportError as e:
-    gpd = None
-    gpd_message = str(e)
 
 from collections import defaultdict, Iterable
 from contextlib import contextmanager
@@ -183,139 +169,6 @@ def reshape_bar_plot(df, x, y, bars):
         df = df.drop_duplicates(idx, keep='last')
     df = df.set_index(idx)[y].unstack(x).T
     return df
-
-
-@requires_package(gpd, 'Requires geopandas: ' + gpd_message)
-@lru_cache()
-def read_shapefile(fname, region_col=None, **kwargs):
-    """Read a shapefile for use in regional plots. Shapefiles must have a
-    column denoted as "region".
-
-    Parameters
-    ----------
-    fname : string
-        path to shapefile to be read by geopandas
-    region_col : string, default None
-        if provided, rename a column in the shapefile to "region"
-    """
-    gdf = gpd.read_file(fname, **kwargs)
-    if region_col is not None:
-        gdf = gdf.rename(columns={region_col: 'region'})
-    if 'region' not in gdf.columns:
-        raise IOError('Must provide a region column')
-    gdf['region'] = gdf['region'].str.upper()
-    return gdf
-
-
-@requires_package(gpd, 'Requires geopandas: ' + gpd_message)
-@requires_package(cartopy, 'Requires cartopy: ' + cartopy_message)
-def region_plot(df, column='value', ax=None, crs=None, gdf=None,
-                add_features=True, vmin=None, vmax=None, cmap=None,
-                cbar=True, legend=False, title=True):
-    """Plot data on a map.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
-    column : string, optional, default: 'value'
-        The column to use for plotting values
-    ax : matplotlib.Axes, optional
-    crs : cartopy.crs, optional
-        The crs to plot, PlateCarree is used by default.
-    gdf : geopandas.GeoDataFrame, optional
-        The geometries to plot. The gdf must have a "region" column.
-    add_features : bool, optional, default: True
-        If true, add land, ocean, coastline, and border features.
-    vmin : numeric, optional
-        The minimum value to plot.
-    vmax : numeric, optional
-        The maximum value to plot.
-    cmap : string, optional
-        The colormap to use.
-    cbar : bool or dictionary, optional, default: True
-        Add a colorbar. If a dictionary is provided, it will be used as keyword
-        arguments in creating the colorbar.
-    legend : bool or dictionary, optional, default: False
-        Add a legend. If a dictionary is provided, it will be used as keyword
-        arguments in creating the legend.
-    title : bool or string, optional
-        Display a default or custom title.
-    """
-    for col in ['model', 'scenario', 'year', 'variable']:
-        if len(df[col].unique()) > 1:
-            msg = 'Can not plot multiple {}s in region_plot'
-            raise ValueError(msg.format(col))
-
-    crs = crs or cartopy.crs.PlateCarree()
-    if ax is None:
-        fig, ax = plt.subplots(subplot_kw=dict(projection=crs))
-    elif not isinstance(ax, cartopy.mpl.geoaxes.GeoAxesSubplot):
-        msg = 'Must provide a cartopy axes object, not: {}'
-        raise ValueError(msg.format(type(ax)))
-
-    gdf = gdf or read_shapefile(gpd.datasets.get_path('naturalearth_lowres'),
-                                region_col='iso_a3')
-    data = gdf.merge(df, on='region', how='inner').to_crs(crs.proj4_init)
-    if data.empty:  # help users with iso codes
-        df['region'] = df['region'].str.upper()
-        data = gdf.merge(df, on='region', how='inner').to_crs(crs.proj4_init)
-    if data.empty:
-        raise ValueError('No data to plot')
-
-    if add_features:
-        ax.add_feature(cartopy.feature.LAND)
-        ax.add_feature(cartopy.feature.OCEAN)
-        ax.add_feature(cartopy.feature.COASTLINE)
-        ax.add_feature(cartopy.feature.BORDERS)
-
-    vmin = vmin if vmin is not None else data['value'].min()
-    vmax = vmax if vmax is not None else data['value'].max()
-    norm = colors.Normalize(vmin=vmin, vmax=vmax)
-    cmap = plt.get_cmap(cmap)
-    scalar_map = cmx.ScalarMappable(norm=norm, cmap=cmap)
-    labels = []
-    handles = []
-    for _, row in data.iterrows():
-        label = row['label'] if 'label' in row else row['region']
-        color = scalar_map.to_rgba(row['value'])
-        ax.add_geometries(
-            [row['geometry']],
-            crs,
-            facecolor=color,
-            label=label,
-        )
-        if label not in labels:
-            labels.append(label)
-            handle = mpatches.Rectangle((0, 0), 5, 5, facecolor=color)
-            handles.append(handle)
-
-    if cbar:
-        scalar_map._A = []  # for some reason you have to clear this
-        if cbar is True:  # use some defaults
-            cbar = dict(
-                fraction=0.022,  # these are magic numbers
-                pad=0.02,       # that just seem to "work"
-            )
-        plt.colorbar(scalar_map, ax=ax, **cbar)
-
-    if legend is not False:
-        if legend is True:  # use some defaults
-            legend = dict(
-                bbox_to_anchor=(1.32, 0.5) if cbar else (1.2, 0.5),
-                loc='right',
-            )
-        _add_legend(ax, handles, labels, legend)
-
-    if title:
-        var = df['variable'].unique()[0]
-        unit = df['unit'].unique()[0]
-        year = df['year'].unique()[0]
-        default_title = '{} ({}) in {}'.format(var, unit, year)
-        title = default_title if title is True else title
-        ax.set_title(title)
-
-    return ax
 
 
 def pie_plot(df, value='value', category='variable',

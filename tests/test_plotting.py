@@ -2,10 +2,17 @@ import matplotlib
 import pytest
 import os
 import copy
+import warnings
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+from contextlib import contextmanager
+
 import pyam
-import warnings
+from pyam import plotting, run_control, reset_rc_defaults
+from conftest import IMAGE_BASELINE_DIR
 
 # on CI, freetype version 2.6.1 works, but 2.8.0 does not
 # if we want to move to 2.8.0, then we will need to regenerate images
@@ -16,26 +23,6 @@ if int(FREETYPE_VERSION.replace('.', '')) < 291:
                   'Freetype Version mismatch: {}'.format(msg))
     pytest.skip(msg, allow_module_level=True)
 
-try:
-    import cartopy
-    has_cartopy = True
-except ImportError:
-    has_cartopy = False
-
-try:
-    import geopandas  # noqa: F401
-    has_geopandas = True
-except ImportError:
-    has_geopandas = False
-
-
-import matplotlib.pyplot as plt
-
-from contextlib import contextmanager
-
-from pyam import IamDataFrame, plotting, run_control, reset_rc_defaults
-
-from conftest import IMAGE_BASELINE_DIR, TEST_DATA_DIR
 
 IS_WINDOWS = os.name == 'nt'
 TOLERANCE = 6 if IS_WINDOWS else 2
@@ -226,141 +213,6 @@ def test_line_plot_2_vars(plot_df):
     (plot_df
      .filter(model='test_model', scenario='test_scenario')
      .line_plot(x='Primary Energy|Coal', y='Primary Energy', ax=ax, legend=False)
-     )
-    return fig
-
-
-@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
-@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
-@pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_region():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
-    fig, ax = plt.subplots(
-        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    (df
-        .region_plot(
-            ax=ax,
-            cbar=False,
-        )
-     )
-    return fig
-
-
-@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
-@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
-@pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_region_cbar():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
-    fig, ax = plt.subplots(
-        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    (df
-        .region_plot(
-            ax=ax,
-            cbar=True,
-        )
-     )
-    return fig
-
-
-@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
-@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
-@pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_region_cbar_args():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
-    fig, ax = plt.subplots(
-        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    (df
-        .region_plot(
-            ax=ax,
-            cbar={'extend': 'both'},
-        )
-     )
-    return fig
-
-
-@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
-@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
-@pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_region_vmin_vmax():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
-    fig, ax = plt.subplots(
-        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    (df
-        .region_plot(
-            ax=ax,
-            vmin=0.2,
-            vmax=0.4,
-            cbar=False,
-        )
-     )
-    return fig
-
-
-@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
-@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
-@pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_region_cmap():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
-    fig, ax = plt.subplots(
-        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    (df
-        .region_plot(
-            ax=ax,
-            cmap='magma_r',
-            cbar=False,
-        )
-     )
-    return fig
-
-
-@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
-@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
-@pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_region_crs():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_iso_data.csv'))
-    crs = cartopy.crs.Robinson()
-    fig, ax = plt.subplots(subplot_kw={'projection': crs}, figsize=(10, 7))
-    (df
-        .region_plot(
-            ax=ax,
-            crs=crs,
-            cbar=False,
-        )
-     )
-    return fig
-
-
-@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
-@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
-@pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_region_map_regions():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_region_data.csv'))
-    fig, ax = plt.subplots(
-        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    (df
-        .map_regions('iso')
-        .region_plot(
-            ax=ax,
-            cbar=False,
-        )
-     )
-    return fig
-
-
-@pytest.mark.skipif(not has_cartopy, reason="requires cartopy")
-@pytest.mark.skipif(not has_geopandas, reason="requires geopandas")
-@pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_region_map_regions_legend():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'plot_region_data.csv'))
-    fig, ax = plt.subplots(
-        subplot_kw={'projection': cartopy.crs.PlateCarree()}, figsize=(10, 7))
-    (df
-        .map_regions('iso')
-        .region_plot(
-            ax=ax,
-            legend=True,
-            cbar=False,
-        )
      )
     return fig
 
