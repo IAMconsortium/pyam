@@ -10,6 +10,7 @@
 - [#243](https://github.com/IAMconsortium/pyam/pull/243) Update `pyam.iiasa.Connection` to support all public and private database connections. DEPRECATED: the argument 'iamc15' has been deprecated in favor of names as queryable directly from the REST API.
 - [#241](https://github.com/IAMconsortium/pyam/pull/241) Add `set_meta_from_data` feature
 - [#236](https://github.com/IAMconsortium/pyam/pull/236) Add `swap_time_for_year` method and confirm datetime column is compatible with pyam features
+- [#273](https://github.com/IAMconsortium/pyam/pull/273) Fix several issues accessing IXMP API (passing correct credentials, improve reliability for optional fields in result payload) 
 
 # Release v0.2.0
 
