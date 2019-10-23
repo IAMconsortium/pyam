@@ -345,6 +345,8 @@ class Connection(object):
             df[META_IDX + ['version']].drop_duplicates()
             .groupby(META_IDX).count().version
         )
+        # checking if there are multiple versions
+        # for every model/scenario combination
         if len(lst) > 1 and max(lst) > 1:
             raise ValueError('multiple versions for {}'.format(
                 lst[lst > 1].index.to_list()))
