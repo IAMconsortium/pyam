@@ -1382,6 +1382,58 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
+    def subtract(self, other, join_col, new_name):
+        """
+        Subtract data in ``other`` from ``self``
+
+        Parameters
+        ----------
+        other : pyam.IamDataFrame
+            Object containing data to subtract
+
+        join_col : str
+            Column to use to subtract the two sets of data (e.g. ``variable``)
+
+        new_name : str
+            Name to assign to ``join_col`` in the output timeseries
+
+        Raises
+        ------
+        ValueError
+            The metadata columns in ``self`` and ``other`` are not identical
+
+        ValueError
+            ``self`` or ``other`` contains more than value for ``join_col``
+
+        NotImplementedError
+            The type of ``other`` is not yet supported
+        """
+        if not isinstance(other, IamDataFrame):
+            raise NotImplementedError
+
+        too_many_vals_error = "`{}` contains more than one entry for `{}`"
+        if len(self[join_col].unique()) > 1:
+            raise ValueError(too_many_vals_error.format("self", join_col))
+
+        if len(other[join_col].unique()) > 1:
+            raise ValueError(too_many_vals_error.format("other", join_col))
+
+        s_ts = self.timeseries()
+        o_ts = other.timeseries()
+
+        if set(s_ts.index.names) != set(o_ts.index.names):
+            raise ValueError("Metadata column in ``other`` is not identical to ``self``")
+
+        idx = s_ts.index.names
+        idx_tmp = list(set(idx) - set([join_col]) - {"value"})
+
+        s_ts = s_ts.reset_index().set_index(idx_tmp).drop(join_col, axis="columns")
+        o_ts = o_ts.reset_index().set_index(idx_tmp).drop(join_col, axis="columns")
+
+        res = (s_ts - o_ts).reset_index()
+        res[join_col] = new_name
+
+        return IamDataFrame(res)
 
 def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
