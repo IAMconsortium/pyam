@@ -34,9 +34,9 @@ def _check_response(r, msg='Trouble with request', error=RuntimeError):
         raise error('{}: {}'.format(msg, str(r.text)))
 
 
-def _get_token(creds):
+def _get_token(creds, base_url):
     if creds is None:  # get anonymous auth
-        url = '/'.join([_BASE_URL, 'anonym'])
+        url = '/'.join([base_url, 'anonym'])
         r = requests.get(url)
         _check_response(r, 'Could not get anonymous token')
         return r.json()
@@ -64,7 +64,7 @@ def _get_token(creds):
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
     data = {'username': user, 'password': pw}
-    url = '/'.join([_BASE_URL, 'login'])
+    url = '/'.join([base_url, 'login'])
     r = requests.post(url, headers=headers, data=json.dumps(data))
     _check_response(r, 'Login failed for user: {}'.format(user))
     return r.json()
@@ -73,7 +73,7 @@ def _get_token(creds):
 class Connection(object):
     """A class to facilitate querying an IIASA scenario explorer database"""
 
-    def __init__(self, name=None, creds=None):
+    def __init__(self, name=None, creds=None, base_url=_BASE_URL):
         """
         Parameters
         ----------
@@ -86,8 +86,10 @@ class Connection(object):
                 (preferred)
               - an ordered container (tuple, list, etc.) with the same values
               - a dictionary with the same keys
+        base_url: str, custom authentication server URL
         """
-        self._token = _get_token(creds)
+        self._base_url = base_url
+        self._token = _get_token(creds, base_url=self._base_url)
 
         # connect if provided a name
         self._connected = None
@@ -97,7 +99,7 @@ class Connection(object):
     @property
     @lru_cache()
     def valid_connections(self):
-        url = '/'.join([_BASE_URL, 'applications'])
+        url = '/'.join([self._base_url, 'applications'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get valid connection list')
@@ -126,7 +128,7 @@ class Connection(object):
             """
             raise ValueError(msg.format(name, valid))
 
-        url = '/'.join([_BASE_URL, 'applications', name, 'config'])
+        url = '/'.join([self._base_url, 'applications', name, 'config'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get application information')
@@ -323,19 +325,20 @@ class Connection(object):
         }
         data = json.dumps(self._query_post_data(**kwargs))
         url = '/'.join([self._base_url, 'runs/bulk/ts'])
+        logger().debug('Querying timeseries data from {} with filter {}'.format(url, data))
         r = requests.post(url, headers=headers, data=data)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         df = pd.read_json(r.content, orient='records')
+        logger().debug('Response size is {0} bytes, {1} records'.format(len(r.content), len(df)))
         columns = ['model', 'scenario', 'variable', 'unit',
                    'region', 'year', 'value', 'time', 'meta',
                    'version']
-        df = pd.read_json(r.content, orient='records')
-        # drop unknown and non-necessary columns
-        drop = list(set(df.columns) - set(columns))
-        df.drop(columns=drop, inplace=True)
+        # keep only known columns or init empty df
+        df = pd.DataFrame(data=df, columns=columns)
         # replace missing meta (for backward compatibility)
         df.fillna({'meta': 0}, inplace=True)
+        df.fillna({'time': 0}, inplace=True)
         df.rename(columns={'time': 'subannual'}, inplace=True)
         # check if returned dataframe has subannual disaggregation, drop if not
         if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
@@ -355,7 +358,7 @@ class Connection(object):
         return df
 
 
-def read_iiasa(name, meta=False, creds=None, **kwargs):
+def read_iiasa(name, meta=False, creds=None, base_url=_BASE_URL, **kwargs):
     """
     Query an IIASA database. See Connection.query() for more documentation
 
@@ -368,10 +371,12 @@ def read_iiasa(name, meta=False, creds=None, **kwargs):
     creds : dict
         Credentials to access IXMP and authentication service APIs
         (username/password)
+    base_url: str
+        Authentication server URL
     kwargs :
         Arguments for pyam.iiasa.Connection.query()
     """
-    conn = Connection(name, creds)
+    conn = Connection(name, creds, base_url)
     # data
     df = conn.query(**kwargs)
     df = IamDataFrame(df)
