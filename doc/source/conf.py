@@ -139,6 +139,9 @@ html_theme = 'alabaster'
 # documentation.
 html_theme_options = {
     'logo': 'logo.svg',
+    'logo_name': True,
+    'description': 'analysis & visualization of integrated-assessment scenarios',
+    'sidebar_width': '225px',
     'github_button': True,
     'github_user': 'iamconsortium',
     'github_repo': 'pyam',
