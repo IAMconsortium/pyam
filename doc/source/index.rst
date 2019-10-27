@@ -44,35 +44,35 @@ Release v\ |version|.
 .. |doi| image:: https://zenodo.org/badge/113359260.svg
    :target: https://zenodo.org/badge/latestdoi/113359260
 
-The **pyam** Python package provides a suite of diagnostic tools and functions
-for analyzing and visualizing input data and scenario results
-of your favorite integrated-assessment model(s).
-
-The source code for **pyam** is available on `Github`_.
-
-.. _`Github`:
-   https://github.com/IAMconsortium/pyam
-
 Overview
 --------
 
-Some of the **pyam** features include:
- - Easily filter and manipulate data in the `IAMC`_ timeseries format
- - An interface similar in feel and style to `pandas.DataFrame`_
- - Advanced visualization and plotting functions.
- - Diagnostic checks for non-reported variables or timeseries values
-   to analyze and validate scenario data.
- - Categorization of scenarios according to timeseries data
-   or metadata for further analysis.
+The open-source Python package :code:`pyam` provides a suite of tools and functions
+for analyzing and visualizing input data (i.e., assumptions/parametrization) 
+and results (model output) of integrated-assessment scenarios.
 
-.. _`IAMC`:
-   https://data.ene.iiasa.ac.at/database
+Key features:
+~~~~~~~~~~~~~
+
+ - Simple analysis of timeseries data in the IAMC format (more about `that`_)
+   with an interface similar in feel and style to the widely
+   used `pandas.DataFrame`_
+ - Advanced visualization and plotting function (see the `gallery`_)
+ - Diagnostic checks for scripted validation of scenario data and results
+
+The source code for :code:`pyam` is available on `Github`_.
+
+.. _`that`:
+   data.html
+
+.. _`gallery`:
+   examples/index.html
 
 .. _`pandas.DataFrame`:
    https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 
-After installing, check out our tutorials or our plotting gallery to get
-started.
+.. _`Github`:
+   https://github.com/IAMconsortium/pyam
 
 Documentation
 -------------
