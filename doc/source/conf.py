@@ -15,6 +15,7 @@
 import sys
 import os
 import shlex
+from datetime import datetime
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -69,7 +70,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyam'
-copyright = u'2018, Matthew Gidden & Daniel Huppmann'
+year = datetime.now().year
+copyright = '{}, Matthew Gidden & Daniel Huppmann'.format(year)
 author = u'Matthew Gidden & Daniel Huppmann'
 
 # The version info for the project you're documenting, acts as replacement for
