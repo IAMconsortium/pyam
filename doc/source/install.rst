@@ -51,6 +51,6 @@ The depedencies for building this documentation are:
 References
 ----------
 
-.. bibliography:: refs.bib
+.. bibliography:: _bib/install.bib
    :style: plain
-   :all:
+   :cited:
