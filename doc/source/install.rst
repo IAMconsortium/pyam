@@ -1,29 +1,28 @@
 .. _install:
 
-Install
-*******
+Installation
+============
 
-The most basic installation of :code:`pyam` is trivial.
+Via your favourite Python Package Management System
+---------------------------------------------------
 
-Via Conda
-~~~~~~~~~
+Conda
+~~~~~
 
 .. code-block:: bash
 
     conda install -c conda-forge pyam
 
-Via Pip
-~~~~~~~
-
-:code:`pyam` can also be installed via pip.
+Pip
+~~~
 
 .. code-block:: bash
 
     pip install pyam-iamc
 
 
-From Source
-~~~~~~~~~~~
+Installing From Source
+----------------------
 
 :code:`pyam` can also be installed from source.
 
@@ -31,8 +30,8 @@ From Source
 
     pip install -e git+https://github.com/IAMconsortium/pyam.git#egg=pyam
 
-Depedencies
-~~~~~~~~~~~
+Dependencies
+------------
 
 Like any software project, we stand on the shoulders of giants. Our particular
 giants include :code:`numpy` :cite:`numpy`, :code:`matplotlib`
@@ -50,7 +49,7 @@ The depedencies for building this documentation are:
 	  :literal:
 
 References
-~~~~~~~~~~
+----------
 
 .. bibliography:: refs.bib
    :style: plain
