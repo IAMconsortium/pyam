@@ -1,10 +1,6 @@
 **pyam**: analysis and visualization of integrated-assessment scenarios
 =======================================================================
 
-.. |br| raw:: html
-
-    <br>
-
 Release v\ |version|.
 
 |pypi| |conda| |license| |latest|
@@ -47,22 +43,23 @@ Release v\ |version|.
 Overview
 --------
 
-The open-source Python package :code:`pyam` provides a suite of tools and functions
-for analyzing and visualizing input data (i.e., assumptions/parametrization) 
+The open-source Python package |pyam| :cite:`Gidden:2019:pyam`
+provides a suite of tools and functions for analyzing and visualizing
+input data (i.e., assumptions/parametrization) 
 and results (model output) of integrated-assessment scenarios.
 
 Key features:
 ~~~~~~~~~~~~~
 
- - Simple analysis of timeseries data in the IAMC format (more about `that`_)
+ - Simple analysis of timeseries data in the IAMC format (more about it `here`_)
    with an interface similar in feel and style to the widely
    used `pandas.DataFrame`_
  - Advanced visualization and plotting function (see the `gallery`_)
  - Diagnostic checks for scripted validation of scenario data and results
 
-The source code for :code:`pyam` is available on `Github`_.
+The source code for |pyam| is available on `Github`_.
 
-.. _`that`:
+.. _`here`:
    data.html
 
 .. _`gallery`:
@@ -90,6 +87,13 @@ Table of Contents
 License
 -------
 
-:code:`pyam` is available under the open source `Apache License`_.
+|pyam| is available under the open source `Apache License`_.
 
 .. _Apache License: http://www.apache.org/licenses/LICENSE-2.0.html
+
+Scientific reference
+--------------------
+
+.. bibliography:: _bib/index.bib
+   :style: plain
+   :all:
