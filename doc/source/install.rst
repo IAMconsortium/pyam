@@ -3,8 +3,8 @@
 Installation
 ============
 
-Via your favourite Python Package Management System
----------------------------------------------------
+Via your favourite Python Package Manager
+-----------------------------------------
 
 Conda
 ~~~~~
