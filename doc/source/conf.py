@@ -12,10 +12,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
-import shlex
 from datetime import datetime
+import pyam
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -80,7 +78,6 @@ author = u'Matthew Gidden & Daniel Huppmann'
 # built documents.
 #
 # The short X.Y version.
-import pyam
 version = pyam.__version__
 # The full version, including alpha/beta/rc tags.
 release = pyam.__version__
@@ -134,7 +131,6 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'cloud'
 html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -162,7 +158,7 @@ html_theme_path = ['_templates']
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = None
+#html_logo = None
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -237,7 +233,7 @@ html_sidebars = {
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pyamdoc'
+htmlhelp_basename = 'pyam-docs'
 
 # -- Options for LaTeX output ---------------------------------------------
 
