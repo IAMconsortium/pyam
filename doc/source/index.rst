@@ -74,19 +74,18 @@ The source code for :code:`pyam` is available on `Github`_.
 .. _`Github`:
    https://github.com/IAMconsortium/pyam
 
-Documentation
--------------
+Table of Contents
+-----------------
 
 .. toctree::
    :maxdepth: 1
 
    install
+   contributing
    data
    tutorials
    examples/index
    api
-
-.. include:: ../../CONTRIBUTING.rst
 
 License
 -------
