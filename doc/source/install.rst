@@ -24,7 +24,7 @@ Pip
 Installing From Source
 ----------------------
 
-:code:`pyam` can also be installed from source.
+|pyam| can also be installed from source.
 
 .. code-block:: bash
 
@@ -38,7 +38,7 @@ giants include :code:`numpy` :cite:`numpy`, :code:`matplotlib`
 :cite:`matplotlib`, and :code:`pandas` :cite:`pandas`. Explicit requirements are
 fully enumerated below.
 
-The required depedencies for :code:`pyam` are:
+The required depedencies for |pyam| are:
 
   .. program-output:: python -c 'import sys; sys.path.append("../.."); import setup; print("\n".join([r for r in setup.REQUIREMENTS]))'
 
