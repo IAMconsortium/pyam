@@ -44,7 +44,7 @@ The required depedencies for |pyam| are:
 
 The depedencies for building this documentation are:
 
-  .. include:: ../requirements.txt
+  .. include:: ../environment.yml
 	  :start-line: 0
 	  :literal:
 
