@@ -12,6 +12,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+# has to go first for environment setup reasons
+import matplotlib
+matplotlib.use('agg')
+
 from datetime import datetime
 import pyam
 
