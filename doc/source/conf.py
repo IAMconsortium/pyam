@@ -12,9 +12,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
-import shlex
+from datetime import datetime
+import pyam
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -31,6 +30,7 @@ import shlex
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinxcontrib.fulltoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
@@ -69,7 +69,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'pyam'
-copyright = u'2018, Matthew Gidden & Daniel Huppmann'
+year = datetime.now().year
+copyright = '{}, Matthew Gidden & Daniel Huppmann'.format(year)
 author = u'Matthew Gidden & Daniel Huppmann'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -77,7 +78,6 @@ author = u'Matthew Gidden & Daniel Huppmann'
 # built documents.
 #
 # The short X.Y version.
-import pyam
 version = pyam.__version__
 # The full version, including alpha/beta/rc tags.
 release = pyam.__version__
@@ -131,19 +131,23 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#html_theme = 'cloud'
-
-sys.path.append(os.path.abspath('_themes'))
-html_theme_path = ['_themes']
-html_theme = 'kr'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {
+    'logo': 'logo.svg',
+    'logo_name': True,
+    'description': 'analysis & visualization of integrated-assessment scenarios',
+    'sidebar_width': '225px',
+    'github_button': True,
+    'github_user': 'iamconsortium',
+    'github_repo': 'pyam',
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = ['_templates']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -154,7 +158,7 @@ html_theme = 'kr'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = '_static/logo.svg'
+#html_logo = None
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -180,7 +184,9 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    '**': ['about.html', 'navigation.html', 'searchbox.html']
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -227,7 +233,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pyamdoc'
+htmlhelp_basename = 'pyam-docs'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -313,3 +319,15 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+
+# prolog for all rst files
+rst_prolog = """
+
+.. |pyam| replace:: :class:`pyam`
+
+.. |br| raw:: html
+
+    <br>
+
+"""

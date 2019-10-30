@@ -1,10 +1,6 @@
 **pyam**: analysis and visualization of integrated-assessment scenarios
 =======================================================================
 
-.. |br| raw:: html
-
-    <br>
-
 Release v\ |version|.
 
 |pypi| |conda| |license| |latest|
@@ -44,53 +40,60 @@ Release v\ |version|.
 .. |doi| image:: https://zenodo.org/badge/113359260.svg
    :target: https://zenodo.org/badge/latestdoi/113359260
 
-The **pyam** Python package provides a suite of diagnostic tools and functions
-for analyzing and visualizing input data and scenario results
-of your favorite integrated-assessment model(s).
-
-The source code for **pyam** is available on `Github`_.
-
-.. _`Github`:
-   https://github.com/IAMconsortium/pyam
-
 Overview
 --------
 
-Some of the **pyam** features include:
- - Easily filter and manipulate data in the `IAMC`_ timeseries format
- - An interface similar in feel and style to `pandas.DataFrame`_
- - Advanced visualization and plotting functions.
- - Diagnostic checks for non-reported variables or timeseries values
-   to analyze and validate scenario data.
- - Categorization of scenarios according to timeseries data
-   or metadata for further analysis.
+The open-source Python package |pyam| :cite:`Gidden:2019:pyam`
+provides a suite of tools and functions for analyzing and visualizing
+input data (i.e., assumptions/parametrization) 
+and results (model output) of integrated-assessment scenarios.
 
-.. _`IAMC`:
-   https://data.ene.iiasa.ac.at/database
+Key features:
+~~~~~~~~~~~~~
+
+ - Simple analysis of timeseries data in the IAMC format (more about it `here`_)
+   with an interface similar in feel and style to the widely
+   used `pandas.DataFrame`_
+ - Advanced visualization and plotting function (see the `gallery`_)
+ - Diagnostic checks for scripted validation of scenario data and results
+
+The source code for |pyam| is available on `Github`_.
+
+.. _`here`:
+   data.html
+
+.. _`gallery`:
+   examples/index.html
 
 .. _`pandas.DataFrame`:
    https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 
-After installing, check out our tutorials or our plotting gallery to get
-started.
+.. _`Github`:
+   https://github.com/IAMconsortium/pyam
 
-Documentation
--------------
+Table of Contents
+-----------------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    install
+   contributing
    data
    tutorials
    examples/index
    api
 
-.. include:: ../../CONTRIBUTING.rst
-
 License
 -------
 
-:code:`pyam` is available under the open source `Apache License`_.
+|pyam| is available under the open source `Apache License`_.
 
 .. _Apache License: http://www.apache.org/licenses/LICENSE-2.0.html
+
+Scientific reference
+--------------------
+
+.. bibliography:: _bib/index.bib
+   :style: plain
+   :all:
