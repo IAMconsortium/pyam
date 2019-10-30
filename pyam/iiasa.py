@@ -325,12 +325,14 @@ class Connection(object):
         }
         data = json.dumps(self._query_post_data(**kwargs))
         url = '/'.join([self._base_url, 'runs/bulk/ts'])
-        logger().debug('Querying timeseries data from {} with filter {}'.format(url, data))
+        logger().debug('Querying timeseries data '
+                       'from {} with filter {}'.format(url, data))
         r = requests.post(url, headers=headers, data=data)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         df = pd.read_json(r.content, orient='records')
-        logger().debug('Response size is {0} bytes, {1} records'.format(len(r.content), len(df)))
+        logger().debug('Response size is {0} bytes, '
+                       '{1} records'.format(len(r.content), len(df)))
         columns = ['model', 'scenario', 'variable', 'unit',
                    'region', 'year', 'value', 'time', 'meta',
                    'version']
