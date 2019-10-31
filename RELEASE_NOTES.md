@@ -1,5 +1,14 @@
 
-# Next Release
+# Release v0.3.0
+
+## Highlights
+
+- Streamlined generation of quantitative metadata indicators from timeseries data using `set_meta_from_data()`
+- Better support for accessing public and private IIASA scenario explorer databases via the REST API
+- More extensive documentation of the `pyam` data model and the IAMC format
+- Compatible with recent `pandas` v0.25
+
+## Individual Updates
 
 - [#277](https://github.com/IAMconsortium/pyam/pull/277) Restructure and extend the docs pages, switch to RTD-supported theme
 - [#275](https://github.com/IAMconsortium/pyam/pull/275) Completely removes all features related to region plotting, notably `region_plot()` and `read_shapefile()`
