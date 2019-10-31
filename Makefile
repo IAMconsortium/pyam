@@ -4,6 +4,9 @@ CI_DIR=./ci
 CI_ENVIRONMENT_CONDA_DEFAULT_FILE=$(CI_DIR)/environment-conda-default.txt
 CI_ENVIRONMENT_CONDA_FORGE_FILE=$(CI_DIR)/environment-conda-forge.txt
 
+DOC_DIR=./doc
+DOC_ENVIRONMENT_CONDA_FILE=$(DOC_DIR)/environment.yml
+
 
 ifndef CONDA_PREFIX
 $(error Conda not active, please install conda and then activate it using \`conda activate\`))
@@ -93,8 +96,10 @@ $(VENV_DIR):  $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_
 	# Install development setup
 	$(VENV_DIR)/bin/pip install -e .[tests,deploy]
 	# install docs requirements
-	cd doc; $(VENV_DIR)/bin/pip install -r requirements.txt
-	touch $(VENV_DIR)
+	# --name $(CONDA_DEFAULT_ENV) ensures we install in active environment (check at
+	# top of Makefile ensures that environment is not the base one)
+	$(CONDA_EXE) env update --name $(CONDA_DEFAULT_ENV) --file $(DOC_ENVIRONMENT_CONDA_FILE)
+# 	touch $(VENV_DIR)
 
 .PHONY: release-on-conda
 release-on-conda:  ## release pyam on conda

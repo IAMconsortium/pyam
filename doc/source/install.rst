@@ -40,11 +40,11 @@ fully enumerated below.
 
 The required depedencies for |pyam| are:
 
-  .. program-output:: python -c 'import sys; sys.path.append("../.."); import setup; print("\n".join([r for r in setup.REQUIREMENTS]))'
+  .. program-output:: python -c 'import sys; sys.path.insert(0, "../.."); from setup import REQUIREMENTS; print("\n".join([r for r in REQUIREMENTS]))'
 
 The depedencies for building this documentation are:
 
-  .. include:: ../requirements.txt
+  .. include:: ../environment.yml
 	  :start-line: 0
 	  :literal:
 

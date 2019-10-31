@@ -8,11 +8,7 @@ in the source code.
 Dependencies
 ------------
 
-1. `Sphinx <http://sphinx-doc.org/>`_ v1.1.2 or higher
-2. `sphinxcontrib.bibtex`
-3. `sphinxcontrib-fulltoc`
-4. `numpydoc`
-5. `cloud_sptheme`
+These can be found in ``environment.yml``.
 
 Writing in Restructed Text
 --------------------------

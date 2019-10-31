@@ -1,8 +1,8 @@
-name: pyam-docs
 channels:
   - oggm
 dependencies:
   - oggm-deps
+  - pip
   - pip:
     - ipython==7.2.0
     - matplotlib==3.0.2

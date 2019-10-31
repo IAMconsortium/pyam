@@ -26,7 +26,7 @@ REQUIREMENTS = [
     'PyYAML',
     'xlrd',
     'xlsxwriter',
-    'matplotlib',
+    'matplotlib<=3.0.2',
     'seaborn',
     'six',
 ]
