@@ -1,5 +1,13 @@
 
-# Steps required for a release
+# Release procedure
+
+## Required accounts and admin privileges
+
+- pip: https://pypi.org/project/pyam-iamc/ and https://test.pypi.org/project/pyam-iamc/
+- conda: https://github.com/conda-forge/pyam-feedstock/
+- rtd: https://readthedocs.org/projects/pyam-iamc/
+
+## Steps for publishing a new release
 
 1. Make a release candidate branch and pull request it into master with the following updates:
    1. Deprecate any stated portion of the API (you can find them by searching the code base for "deprecate")
