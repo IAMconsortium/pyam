@@ -34,11 +34,13 @@
    - this will make wheels that allow `pyam` to be installed via `pip install`
    - check that the new version is available at https://pypi.org/project/pyam-iamc/
 1. Make a new release on Github
-   - Make sure that you choose the same tag name as was used earlier
-   - Copy the markdown from `RELEASE_NOTES.md` into the release description box
-1. Update on conda-forge:
-   - A PR should automatically be opened by the bot after the Github release
+   - make sure that you choose the tag name defined above
+   - copy the release summary from `RELEASE_NOTES.md` into the description box
+1. Update on `conda-forge`
+   - a PR should automatically be opened by the bot after the Github release
    - confirm that any new depedencies are added there
+   - merge the PR
+   - check that the new version is available at https://anaconda.org/conda-forge/pyam
 1. Announce it on our mailing list: https://groups.io/g/pyam
    - Again, just copy the now rendered HTML from the Github release directly in
      the email
