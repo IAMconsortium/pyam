@@ -22,18 +22,17 @@
      - **THIS IS NOT THE TAGGED COMMIT WE WILL DISTRIBUTE, IT IS ONLY FOR TESTING**
 	 - **DO NOT PUSH THIS TAG TO UPSTREAM**
   1. Run `make publish-on-testpypi`
-     - this should "just work" if it does not, fix any issues, retag (`git tag
-       -d` then `git tag`), and try again
-	 - note, you need an account on https://test.pypi.org
-  1. Once successful, delete the tag, and merge the candidate PR into master on Github
-1. Switch to now updated master branch: `git checkout master` and `git pull upstream master`
+     - this should "just work" - if it does not, fix any issues,
+       retag (`git tag -d` then `git tag`), and try again
+  1. Once successful, delete the tag, and merge the candidate PR into `master` on Github
+1. Switch to the now-updated master branch: `git checkout master` and `git pull upstream master`
 1. Tag the release number: `git tag v<release version>`, e.g., `git tag v1.2.0`
    - `versioneer` automatically updates the version number based on the tag
    - this is now the official tagged commit
 1. Push the tag upstream: `git push upstream --tags`
 1. Run `make publish-on-pypi`
-   - note, you need an account on https://pypi.org
-   - this will make wheels that all us to be installed via `pip install`
+   - this will make wheels that allow `pyam` to be installed via `pip install`
+   - check that the new version is available at https://pypi.org/project/pyam-iamc/
 1. Make a new release on Github
    - Make sure that you choose the same tag name as was used earlier
    - Copy the markdown from `RELEASE_NOTES.md` into the release description box
