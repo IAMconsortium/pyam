@@ -41,9 +41,11 @@
    - confirm that any new depedencies are added there
    - merge the PR
    - check that the new version is available at https://anaconda.org/conda-forge/pyam
+1. Confirm that the doc pages are updated on https://pyam-iamc.readthedocs.io/
+   - both the **latest** and the **stable** versions point to the new release
+   - the new release has been added to the list of available versions
+1. Add a new line "# Next Release" at the top of `RELEASE_NOTES.md` and commit to `master`
 1. Announce it on our mailing list: https://groups.io/g/pyam
-   - Again, just copy the now rendered HTML from the Github release directly in
-     the email
-1. Confirm that the doc page is updated to the latest release: https://pyam-iamc.readthedocs.io/
+   - again, copy the rendered HTML from the Github release directly in the email
 
 And that's it! Whew...
