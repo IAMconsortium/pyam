@@ -9,12 +9,14 @@
 
 ## Steps for publishing a new release
 
-1. Make a release candidate branch and pull request it into master with the following updates:
-   1. Deprecate any stated portion of the API (you can find them by searching the code base for "deprecate")
-   1. Update `RELEASE_NOTES.md` (see the examples of other releases)
-	  - create new section under "# Next Release" with "# Release v<release version>"
-	  - For this new release, add a "Highlights section" with some of the most important updates
-      - Make a new heading "## Individual Updates" before the PR listing
+1. Make a release candidate branch (e.g., `rc_v<release version>`)
+   and pull request it into `master` with the following updates:
+   1. Deprecate any stated portion of the API
+      (you can find them by searching the code base for "deprecate")
+   1. Update `RELEASE_NOTES.md` (see the examples of previous releases)
+	  - replace "# Next Release" with "# Release v<release version>"
+	  - for this new release, add a "## Highlights" section with the most important updates & changes
+      - add a new heading "## Individual Updates" before the PR listing
   1. Confirm that the PR passes all tests and checks
   1. Tag the release number: `git tag v<release version>`, e.g., `git tag v1.2.0`
      - **THIS IS NOT THE TAGGED COMMIT WE WILL DISTRIBUTE, IT IS ONLY FOR TESTING**
