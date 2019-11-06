@@ -1389,13 +1389,14 @@ class IamDataFrame(object):
         Parameters
         ----------
         other : pyam.IamDataFrame
-            Object containing data to subtract
+            Object containing timeseries data to subtract
 
         join_col : str
             Column to use to subtract the two sets of data (e.g. ``variable``)
 
         new_name : str
-            Name to assign to ``join_col`` in the output timeseries
+            String to write in ``join_col`` in the output timeseries e.g.
+            (``variable 1 - variable 2``)
 
         Raises
         ------
@@ -1411,26 +1412,27 @@ class IamDataFrame(object):
         if not isinstance(other, IamDataFrame):
             raise NotImplementedError
 
-        too_many_vals_error = "`{}` contains more than one entry for `{}`"
+        too_many_vals_error = "`{}` contains more than one `{}`"
         if len(self[join_col].unique()) > 1:
             raise ValueError(too_many_vals_error.format("self", join_col))
 
         if len(other[join_col].unique()) > 1:
             raise ValueError(too_many_vals_error.format("other", join_col))
 
-        s_ts = self.timeseries()
-        o_ts = other.timeseries()
+        s_data = self.data.copy()
+        o_data = other.data.copy()
 
-        if set(s_ts.index.names) != set(o_ts.index.names):
-            raise ValueError("Metadata column in ``other`` is not identical to ``self``")
+        # use append's check here
+        # if set(s_data.index.names) != set(o_data.index.names):
+        #     raise ValueError("Metadata column in ``other`` is not identical to ``self``")
 
-        idx = s_ts.index.names
+        idx = s_data.columns.tolist()
         idx_tmp = list(set(idx) - set([join_col]) - {"value"})
 
-        s_ts = s_ts.reset_index().set_index(idx_tmp).drop(join_col, axis="columns")
-        o_ts = o_ts.reset_index().set_index(idx_tmp).drop(join_col, axis="columns")
+        s_data = s_data.set_index(idx_tmp).drop(join_col, axis="columns")
+        o_data = o_data.set_index(idx_tmp).drop(join_col, axis="columns")
 
-        res = (s_ts - o_ts).reset_index()
+        res = (s_data - o_data).reset_index()
         res[join_col] = new_name
 
         return IamDataFrame(res)
