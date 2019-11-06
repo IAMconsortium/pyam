@@ -1422,9 +1422,10 @@ class IamDataFrame(object):
         s_data = self.data.copy()
         o_data = other.data.copy()
 
-        # use append's check here
-        # if set(s_data.index.names) != set(o_data.index.names):
-        #     raise ValueError("Metadata column in ``other`` is not identical to ``self``")
+        diff_meta = set(self.meta.columns) != set(other.meta.columns)
+        if diff_meta:
+            raise ValueError("Metadata columns in `other` are not identical to "
+                             "`self`")
 
         idx = s_data.columns.tolist()
         idx_tmp = list(set(idx) - set([join_col]) - {"value"})

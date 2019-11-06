@@ -110,6 +110,6 @@ def test_different_index_error(test_df):
     # why doesn't the meta column appear when you call .timeseries()?
     odf.set_meta("value", "extra_col")
 
-    error_msg = re.escape("Metadata column in ``other`` is not identical to ``self``")
+    error_msg = re.escape("Metadata columns in ``other`` are not identical to ``self``")
     with pytest.raises(ValueError, match=error_msg):
         tdf.subtract(odf, "variable", "irrelevant")
