@@ -235,13 +235,27 @@ class Connection(object):
         return pd.Series(df['variable'].unique(), name='variable')
 
     @lru_cache()
-    def regions(self):
-        """All regions in the connected data source"""
+    def regions(self, include_synonyms=False):
+        """All regions in the connected data source
+
+        :param include_synonyms: whether to include synonyms
+        """
         url = '/'.join([self._base_url, 'nodes?hierarchy=%2A'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        r = requests.get(url, headers=headers)
+        params = {'includeSynonyms': include_synonyms}
+        r = requests.get(url, headers=headers, params=params)
         _check_response(r)
         df = pd.read_json(r.content, orient='records')
+        if include_synonyms:
+            # split synonyms into columns synonym_0, synonym_1 etc
+            synonyms = df['synonyms'].apply(pd.Series)
+            synonyms = synonyms.rename(columns=lambda x: 'synonym_' + str(x))
+            # remove synonym_0 if no synonyms retrieved at all
+            synonyms = synonyms.dropna(axis=1)
+            df = pd.concat([df[:], synonyms[:]], axis=1)
+            df = df.drop(columns=['id', 'synonyms', 'parent', 'hierarchy'])
+            df = df.rename(columns={'name': 'region'})
+            return df
         return pd.Series(df['name'].unique(), name='region')
 
     def _query_post_data(self, **kwargs):

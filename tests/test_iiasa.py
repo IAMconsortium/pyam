@@ -76,6 +76,12 @@ def test_regions():
     obs = conn.regions().values
     assert 'World' in obs
 
+# API changes to return synonyms not yet deployed to SR15
+# def test_regions_with_synonyms():
+#     conn = iiasa.Connection('IXSE_SR15')
+#     obs = conn.regions(include_synonyms=True)
+#     assert 'World' in obs
+
 
 def test_metadata():
     conn = iiasa.Connection('IXSE_SR15')
