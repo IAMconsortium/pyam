@@ -251,7 +251,7 @@ class Connection(object):
             synonyms = df['synonyms'].apply(pd.Series)
             synonyms = synonyms.rename(columns=lambda x: 'synonym_' + str(x))
             # remove synonym_0 if no synonyms retrieved at all
-            synonyms = synonyms.dropna(axis=1)
+            synonyms = synonyms.dropna(axis=1, how='all')
             df = pd.concat([df[:], synonyms[:]], axis=1)
             df = df.drop(columns=['id', 'synonyms', 'parent', 'hierarchy'])
             df = df.rename(columns={'name': 'region'})
