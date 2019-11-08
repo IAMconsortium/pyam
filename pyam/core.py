@@ -174,9 +174,10 @@ class IamDataFrame(object):
 
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
-        """Append any castable object to this IamDataFrame.
-        Columns in `other.meta` that are not in `self.meta` are always merged,
-        duplicate region-variable-unit-year rows raise a ValueError.
+        """Append any castable object to this ``IamDataFrame``
+
+        Columns in ``other.meta`` that are not in ``self.meta`` are merged.
+        Conflicting region-variable-unit-year rows raise a ``ValueError``.
 
         Parameters
         ----------
@@ -208,7 +209,7 @@ class IamDataFrame(object):
             other.data.set_index(sorted(other._LONG_IDX)),
             verify_integrity=True)
 
-        # merge extra columns in `data` and set `LONG_IDX`
+        # merge extra columns in `data` and set `self._LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols

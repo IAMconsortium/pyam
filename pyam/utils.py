@@ -280,12 +280,12 @@ def merge_meta(left, right, ignore_meta_conflict=False):
                 msg = 'conflict in `meta` for scenarios {}'.format(
                     [i for i in pd.DataFrame(index=conflict_idx).index])
                 raise ValueError(msg)
-        #
+        # merge new columns
         cols = [i for i in right.columns if i not in left.columns]
         left = left.merge(right.loc[sect, cols], how='outer',
                           left_index=True, right_index=True)
 
-    # join other.meta for new scenarios (`diff`)
+    # join `other.meta` for new scenarios (`diff`)
     if not diff.empty:
         left = left.append(right.loc[diff, :], sort=False)
 
