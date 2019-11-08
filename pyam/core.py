@@ -201,7 +201,7 @@ class IamDataFrame(object):
         ret = copy.deepcopy(self) if not inplace else self
 
         # merge `meta` tables
-        merge_meta(ret, other, ignore_meta_conflict)
+        ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
         _data = ret.data.set_index(sorted(ret._LONG_IDX)).append(
