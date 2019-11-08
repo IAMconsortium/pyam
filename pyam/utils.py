@@ -289,9 +289,7 @@ def merge_meta(ret, other, ignore_meta_conflict):
 
     # join other.meta for new scenarios
     if not diff.empty:
-        sort_kwarg = {} if int(pd.__version__.split('.')[1]) < 23 \
-            else dict(sort=False)
-        ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
+        ret.meta = ret.meta.append(other.meta.loc[diff, :], sort=False)
 
 def find_depth(data, s='', level=None):
     """
