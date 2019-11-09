@@ -8,9 +8,17 @@ from pyam import IamDataFrame
 from conftest import TEST_DATA_DIR
 
 
-def test_read_csv():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
-    assert list(df.variables()) == ['Primary Energy']
+def test_io_csv(meta_df):
+    # write to csv
+    fname = 'foo_testing.csv'
+    meta_df.to_csv(fname)
+
+    # read from csv
+    import_df = IamDataFrame(fname)
+
+    # assert that `data` tables are equal and delete file
+    pd.testing.assert_frame_equal(meta_df.data, import_df.data)
+    os.remove(fname)
 
 
 @pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
@@ -43,12 +51,5 @@ def test_load_rcp_database_downloaded_file(test_df_year):
 def test_to_excel(test_df):
     fname = 'foo_testing.xlsx'
     test_df.to_excel(fname)
-    assert os.path.exists(fname)
-    os.remove(fname)
-
-
-def test_to_csv(test_df):
-    fname = 'foo_testing.csv'
-    test_df.to_csv(fname)
     assert os.path.exists(fname)
     os.remove(fname)
