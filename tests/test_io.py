@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+import pytest
 
 from pyam import IamDataFrame
 
@@ -12,9 +13,10 @@ def test_read_csv():
     assert list(df.variables()) == ['Primary Energy']
 
 
-def test_load_metadata(meta_df):
-    meta_df.load_metadata(os.path.join(
-        TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='meta')
+@pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
+def test_load_metadata(meta_df, args):
+    file = os.path.join(TEST_DATA_DIR, 'testing_metadata.xlsx')
+    meta_df.load_meta(file, **args)
     obs = meta_df.meta
 
     dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a', 'scen_b'],
