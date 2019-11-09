@@ -1134,25 +1134,42 @@ class IamDataFrame(object):
         if close:
             excel_writer.close()
 
-    def export_metadata(self, path):
-        """Export metadata to Excel
+    def export_metadata(self, excel_writer, sheet_name='meta'):
+        """Deprecated, see :method:`export_meta()`"""
+        msg = 'This function will be removed in future versions. {}'
+        logger().error(msg.format('Use `export_meta() instead`!'))
+        self.load_meta(excel_writer, sheet_name='meta')
+
+    def export_meta(self, excel_writer, sheet_name='meta'):
+        """Write the ``meta`` table of this object to an Excel sheet
 
         Parameters
         ----------
-        path: string
-            path/filename for xlsx file of metadata export
+        excel_writer: string or ExcelWriter object
+            file path or existing ExcelWriter
+        sheet_name: string
+            name of sheet which will contain ``IamDataFrame.meta`` table
         """
-        writer = pd.ExcelWriter(path)
-        write_sheet(writer, 'meta', self.meta, index=True)
-        writer.save()
+        if not isinstance(excel_writer, pd.ExcelWriter):
+            close = True
+            excel_writer = pd.ExcelWriter(excel_writer)
+        write_sheet(excel_writer, sheet_name, self.meta, index=True)
+        if close:
+            excel_writer.close()
 
     def load_metadata(self, path, *args, **kwargs):
-        """Load metadata exported from `pyam.IamDataFrame` instance
+        """Deprecated, see :method:`load_meta()`"""
+        msg = 'This function will be removed in future versions. {}'
+        logger().error(msg.format('Use `load_meta() instead`!'))
+        self.load_meta(path, *args, **kwargs)
+
+    def load_meta(self, path, *args, **kwargs):
+        """Load ``meta`` table  exported from a ``pyam.IamDataFrame`` instance
 
         Parameters
         ----------
         path: string
-            xlsx file with metadata exported from `pyam.IamDataFrame` instance
+            xlsx or csv file path to ``meta`` table
         """
         if not os.path.exists(path):
             raise ValueError("no metadata file '" + path + "' found!")
