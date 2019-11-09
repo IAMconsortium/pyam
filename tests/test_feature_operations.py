@@ -190,3 +190,117 @@ def test_meta_conflict(test_df, ignore_meta_conflict):
         )
         with pytest.raises(ValueError, match=error_msg):
             tdf.subtract(odf, "variable", "irrelevant")
+
+
+def test_subtraction_different_scenarios(check_aggregate_df):
+    """
+    Test that only the model-scenario combos which have common variables remain
+    once subtraction is done
+    """
+    tdf = check_aggregate_df.filter(variable="Emissions|CO2", region="R5ASIA")
+    sdf = check_aggregate_df.filter(
+        variable="Emissions|CO2|Cars", region="R5ASIA"
+    )
+    # filter out one model-scenario combo, these shouldn't appear in the result
+    drop_model_scenario_combo = ("IMG", "a_scen")
+    sdf = sdf.filter(
+        model=drop_model_scenario_combo[0],
+        scenario=drop_model_scenario_combo[1],
+        keep=False,
+    )
+
+    sub_variable_name = "test axis"
+
+    join_col = "variable"
+    tdf_ts = tdf.timeseries()
+    sdf_ts = sdf.timeseries()
+    idx = tdf_ts.index.names
+    idx_tmp = list(set(idx) - set([join_col]) - {"value"})
+
+    tdf_ts = (
+        tdf_ts
+        .reset_index()
+        .set_index(idx_tmp)
+        .drop(join_col, axis="columns")
+    )
+    sdf_ts = (
+        sdf_ts
+        .reset_index()
+        .set_index(idx_tmp)
+        .drop(join_col, axis="columns")
+    )
+
+    exp = (tdf_ts - sdf_ts).reset_index()
+    exp[join_col] = sub_variable_name
+    exp = IamDataFrame(exp)
+
+    res = tdf.subtract(sdf, join_col, sub_variable_name)
+
+    pd.testing.assert_frame_equal(
+        exp.timeseries(), res.timeseries(), check_like=True
+    )
+
+    # test meta doesn't include the dropped columns
+    rmi = res.meta.index
+    dm = rmi.get_level_values("model") == drop_model_scenario_combo[0]
+    ds = rmi.get_level_values("scenario") == drop_model_scenario_combo[1]
+    assert res.meta[dm & ds].empty
+
+
+def test_subtraction_different_variables(check_aggregate_df):
+    """
+    Test that only the variables and regions which have common model-scenario
+    combos remain once subtraction is done
+    """
+    tdf = check_aggregate_df.filter(
+        model="IMG", scenario="a_scen", variable="Primary Energy|*"
+    )
+    sdf = check_aggregate_df.filter(
+        model="IMG", scenario="a_scen_2", variable="Primary Energy|*"
+    )
+    # filter out one variable region combo, it shouldn't appear in the result
+    drop_variable_region_combo = ("Primary Energy|Coal", "R5REF")
+    sdf = sdf.filter(
+        variable=drop_variable_region_combo[0],
+        region=drop_variable_region_combo[1],
+        keep=False,
+    )
+
+    sub_scenario_name = "custom scen"
+
+    join_col = "scenario"
+    tdf_ts = tdf.timeseries()
+    sdf_ts = sdf.timeseries()
+    idx = tdf_ts.index.names
+    idx_tmp = list(set(idx) - set([join_col]) - {"value"})
+
+    tdf_ts = (
+        tdf_ts
+        .reset_index()
+        .set_index(idx_tmp)
+        .drop(join_col, axis="columns")
+    )
+    sdf_ts = (
+        sdf_ts
+        .reset_index()
+        .set_index(idx_tmp)
+        .drop(join_col, axis="columns")
+    )
+
+    exp = (tdf_ts - sdf_ts).reset_index()
+    exp[join_col] = sub_scenario_name
+    exp = IamDataFrame(exp)
+
+    res = tdf.subtract(sdf, join_col, sub_scenario_name)
+    pd.testing.assert_frame_equal(
+        exp.timeseries(), res.timeseries(), check_like=True
+    )
+
+    # test meta is reset as we have a new scenario
+    pd.testing.assert_frame_equal(
+        res.meta,
+        pd.DataFrame(
+            [["IMG", sub_scenario_name, False]],
+            columns=["model", "scenario", "exclude"]
+        ).set_index(["model", 'scenario'])
+    )
