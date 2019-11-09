@@ -1355,7 +1355,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def subtract(self, other, join_col, new_name, ignore_meta_conflict=False):
+    def subtract(self, other, axis, new_name, ignore_meta_conflict=False):
         """
         Subtract data in ``other`` from ``self``
 
@@ -1364,8 +1364,8 @@ class IamDataFrame(object):
         other : pyam.IamDataFrame
             Object containing timeseries data to subtract
 
-        join_col : str
-            Column to use to subtract the two sets of data (e.g. ``variable``)
+        axis : str
+            Column to use when subtracting the two sets of data (e.g. ``variable``)
 
         new_name : str
             String to write in ``join_col`` in the output timeseries e.g.
@@ -1391,11 +1391,11 @@ class IamDataFrame(object):
             raise NotImplementedError
 
         too_many_vals_error = "`{}` contains more than one `{}`"
-        if len(self[join_col].unique()) > 1:
-            raise ValueError(too_many_vals_error.format("self", join_col))
+        if len(self[axis].unique()) > 1:
+            raise ValueError(too_many_vals_error.format("self", axis))
 
-        if len(other[join_col].unique()) > 1:
-            raise ValueError(too_many_vals_error.format("other", join_col))
+        if len(other[axis].unique()) > 1:
+            raise ValueError(too_many_vals_error.format("other", axis))
 
         out_meta = merge_meta(self.meta, other.meta, ignore_meta_conflict)
 
@@ -1403,13 +1403,13 @@ class IamDataFrame(object):
         o_data = other.data.copy()
 
         idx = s_data.columns.tolist()
-        idx_tmp = list(set(idx) - set([join_col]) - {"value"})
+        idx_tmp = list(set(idx) - set([axis]) - {"value"})
 
-        s_data = s_data.set_index(idx_tmp).drop(join_col, axis="columns")
-        o_data = o_data.set_index(idx_tmp).drop(join_col, axis="columns")
+        s_data = s_data.set_index(idx_tmp).drop(axis, axis="columns")
+        o_data = o_data.set_index(idx_tmp).drop(axis, axis="columns")
 
         res = (s_data - o_data).reset_index()
-        res[join_col] = new_name
+        res[axis] = new_name
 
         res = IamDataFrame(res)
         res.meta = out_meta
