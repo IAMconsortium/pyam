@@ -1099,7 +1099,7 @@ class IamDataFrame(object):
         return df
 
     def to_csv(self, path, iamc_index=False, **kwargs):
-        """Write timeseries data to a csv file
+        """Write timeseries data of this object to a csv file
 
         Parameters
         ----------
