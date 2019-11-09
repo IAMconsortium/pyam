@@ -26,14 +26,14 @@ def test_load_metadata(meta_df, args):
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
-def test_load_SSP_database_downloaded_file(test_df_year):
+def test_load_ssp_database_downloaded_file(test_df_year):
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
     )
     pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df_year.as_pandas())
 
 
-def test_load_RCP_database_downloaded_file(test_df_year):
+def test_load_rcp_database_downloaded_file(test_df_year):
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_RCP_database_raw_download.xlsx')
     )
