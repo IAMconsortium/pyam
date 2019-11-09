@@ -1373,7 +1373,8 @@ class IamDataFrame(object):
 
         ignore_meta_conflict : bool, default False
             If False and ``other`` is an IamDataFrame, raise an error if
-            any meta columns present in ``self`` and ``other`` are not identical.
+            any meta columns present in ``self`` and ``other`` are not
+            identical.
 
         Raises
         ------

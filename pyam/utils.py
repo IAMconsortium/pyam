@@ -273,8 +273,8 @@ def merge_meta(left, right, ignore_meta_conflict=False):
         Second meta table
 
     ignore_meta_conflict : bool, default False
-            If False, raise an error if any meta columns present in ``left`` and
-            ``right`` are not identical.
+        If False, raise an error if any meta columns present in ``left`` and
+        ``right`` are not identical.
 
     Raises
     ------
