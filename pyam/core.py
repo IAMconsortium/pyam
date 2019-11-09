@@ -23,6 +23,7 @@ from pyam.utils import (
     read_pandas,
     format_data,
     sort_data,
+    merge_meta,
     to_int,
     find_depth,
     pattern_match,
@@ -173,9 +174,10 @@ class IamDataFrame(object):
 
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
-        """Append any castable object to this IamDataFrame.
-        Columns in `other.meta` that are not in `self.meta` are always merged,
-        duplicate region-variable-unit-year rows raise a ValueError.
+        """Append any castable object to this ``IamDataFrame``
+
+        Columns in ``other.meta`` that are not in ``self.meta`` are merged.
+        Conflicting region-variable-unit-year rows raise a ``ValueError``.
 
         Parameters
         ----------
@@ -199,44 +201,15 @@ class IamDataFrame(object):
 
         ret = copy.deepcopy(self) if not inplace else self
 
-        diff = other.meta.index.difference(ret.meta.index)
-        intersect = other.meta.index.intersection(ret.meta.index)
-
-        # merge other.meta columns not in self.meta for existing scenarios
-        if not intersect.empty:
-            # if not ignored, check that overlapping meta dataframes are equal
-            if not ignore_meta_conflict:
-                cols = [i for i in other.meta.columns if i in ret.meta.columns]
-                if not ret.meta.loc[intersect, cols].equals(
-                        other.meta.loc[intersect, cols]):
-                    conflict_idx = (
-                        pd.concat([ret.meta.loc[intersect, cols],
-                                   other.meta.loc[intersect, cols]]
-                                  ).drop_duplicates()
-                        .index.drop_duplicates()
-                    )
-                    msg = 'conflict in `meta` for scenarios {}'.format(
-                        [i for i in pd.DataFrame(index=conflict_idx).index])
-                    raise ValueError(msg)
-
-            cols = [i for i in other.meta.columns if i not in ret.meta.columns]
-            _meta = other.meta.loc[intersect, cols]
-            ret.meta = ret.meta.merge(_meta, how='outer',
-                                      left_index=True, right_index=True)
-
-        # join other.meta for new scenarios
-        if not diff.empty:
-            # sorting not supported by ` pd.append()`  prior to version 23
-            sort_kwarg = {} if int(pd.__version__.split('.')[1]) < 23 \
-                else dict(sort=False)
-            ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
+        # merge `meta` tables
+        ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
         _data = ret.data.set_index(sorted(ret._LONG_IDX)).append(
             other.data.set_index(sorted(other._LONG_IDX)),
             verify_integrity=True)
 
-        # merge extra columns in `data` and set `LONG_IDX`
+        # merge extra columns in `data` and set `self._LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
