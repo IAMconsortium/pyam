@@ -16,6 +16,7 @@ from pyam import IamDataFrame
 #   - subtracting arrays
 #   - other operations e.g. multiplication, addition, division
 
+
 def test_subtraction_with_self(check_aggregate_df):
     tdf = check_aggregate_df.filter(variable="Primary Energy")
     res = tdf.subtract(tdf, "variable", "zero")
@@ -113,7 +114,10 @@ def test_different_meta_res(test_df, ignore_meta_conflict):
 
     if ignore_meta_conflict:
         res = tdf.subtract(
-            odf, "variable", "irrelevant", ignore_meta_conflict=ignore_meta_conflict
+            odf,
+            "variable",
+            "irrelevant",
+            ignore_meta_conflict=ignore_meta_conflict,
         )
         pd.testing.assert_frame_equal(res.meta, tdf.meta)
     else:
@@ -133,7 +137,10 @@ def test_meta_conflict(test_df, ignore_meta_conflict):
 
     if ignore_meta_conflict:
         res = tdf.subtract(
-            odf, "variable", "irrelevant", ignore_meta_conflict=ignore_meta_conflict
+            odf,
+            "variable",
+            "irrelevant",
+            ignore_meta_conflict=ignore_meta_conflict,
         )
         pd.testing.assert_frame_equal(res.meta, tdf.meta)
     else:
