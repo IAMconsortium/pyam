@@ -50,8 +50,18 @@ def test_subtraction(check_aggregate_df):
     idx = tdf_ts.index.names
     idx_tmp = list(set(idx) - set([join_col]) - {"value"})
 
-    tdf_ts = tdf_ts.reset_index().set_index(idx_tmp).drop(join_col, axis="columns")
-    sdf_ts = sdf_ts.reset_index().set_index(idx_tmp).drop(join_col, axis="columns")
+    tdf_ts = (
+        tdf_ts
+        .reset_index()
+        .set_index(idx_tmp)
+        .drop(join_col, axis="columns")
+    )
+    sdf_ts = (
+        sdf_ts
+        .reset_index()
+        .set_index(idx_tmp)
+        .drop(join_col, axis="columns")
+    )
 
     exp = (tdf_ts - sdf_ts).reset_index()
     exp[join_col] = sub_var_name
@@ -59,7 +69,9 @@ def test_subtraction(check_aggregate_df):
 
     res = tdf.subtract(sdf, "variable", sub_var_name)
 
-    pd.testing.assert_frame_equal(exp.timeseries(), res.timeseries(), check_like=True)
+    pd.testing.assert_frame_equal(
+        exp.timeseries(), res.timeseries(), check_like=True
+    )
 
 
 def test_subtraction_scenarios(check_aggregate_df):
@@ -71,8 +83,12 @@ def test_subtraction_scenarios(check_aggregate_df):
         "Primary Energy|Coal",
         "Primary Energy|Gas",
     ]
-    tdf = check_aggregate_df.filter(model="MSG-GLB", scenario="a_scen", variable=tvs)
-    sdf = check_aggregate_df.filter(model="MSG-GLB", scenario="a_scen_2", variable=tvs)
+    tdf = check_aggregate_df.filter(
+        model="MSG-GLB", scenario="a_scen", variable=tvs
+    )
+    sdf = check_aggregate_df.filter(
+        model="MSG-GLB", scenario="a_scen_2", variable=tvs
+    )
     sub_scenario_name = "a_scen - a_scen_2"
 
     join_col = "scenario"
@@ -81,8 +97,18 @@ def test_subtraction_scenarios(check_aggregate_df):
     idx = tdf_ts.index.names
     idx_tmp = list(set(idx) - set([join_col]) - {"value"})
 
-    tdf_ts = tdf_ts.reset_index().set_index(idx_tmp).drop(join_col, axis="columns")
-    sdf_ts = sdf_ts.reset_index().set_index(idx_tmp).drop(join_col, axis="columns")
+    tdf_ts = (
+        tdf_ts
+        .reset_index()
+        .set_index(idx_tmp)
+        .drop(join_col, axis="columns")
+    )
+    sdf_ts = (
+        sdf_ts
+        .reset_index()
+        .set_index(idx_tmp)
+        .drop(join_col, axis="columns")
+    )
 
     exp = (tdf_ts - sdf_ts).reset_index()
     exp[join_col] = sub_scenario_name
@@ -90,7 +116,9 @@ def test_subtraction_scenarios(check_aggregate_df):
 
     res = tdf.subtract(sdf, "scenario", sub_scenario_name)
 
-    pd.testing.assert_frame_equal(exp.timeseries(), res.timeseries(), check_like=True)
+    pd.testing.assert_frame_equal(
+        exp.timeseries(), res.timeseries(), check_like=True
+    )
 
 
 @pytest.mark.parametrize("failing_type", (
