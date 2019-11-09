@@ -10,10 +10,15 @@ from conftest import TEST_DATA_DIR
 
 def test_io_csv(meta_df):
     # write to csv
-    fname = 'foo_testing.csv'
-    meta_df.to_csv(fname)
+    file = 'foo_testing.csv'
+    meta_df.to_csv(file)
 
     # read from csv
+    import_df = IamDataFrame(file)
+
+    # assert that `data` tables are equal and delete file
+    pd.testing.assert_frame_equal(meta_df.data, import_df.data)
+    os.remove(file)
     import_df = IamDataFrame(fname)
 
     # assert that `data` tables are equal and delete file
