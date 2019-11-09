@@ -1547,7 +1547,8 @@ class IamDataFrame(object):
             Object containing timeseries data to subtract
 
         axis : str
-            Column to use when subtracting the two sets of data (e.g. ``variable``)
+            Column to use when subtracting the two sets of data
+            (e.g. ``variable``)
 
         new_name : str
             String to write in ``join_col`` in the output timeseries e.g.
@@ -1579,6 +1580,7 @@ class IamDataFrame(object):
         if len(other[axis].unique()) > 1:
             raise ValueError(too_many_vals_error.format("other", axis))
 
+        # do this operation here so meta conflicts are raised early
         out_meta = merge_meta(self.meta, other.meta, ignore_meta_conflict)
 
         s_data = self.data.copy()
@@ -1594,7 +1596,15 @@ class IamDataFrame(object):
         res[axis] = new_name
 
         res = IamDataFrame(res)
-        res.meta = out_meta
+
+        # final meta wrangling
+        keep_meta_idx = out_meta.index.intersection(_meta_idx(res.data))
+        if keep_meta_idx.empty:
+            # nothing common after doing subtraction, stick with empty meta
+            pass
+        else:
+            # just keep the scenarios that survived the nan removal
+            res.meta = out_meta.loc[keep_meta_idx]
 
         return res
 

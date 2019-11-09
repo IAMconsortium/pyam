@@ -86,9 +86,13 @@ def test_subtraction_scenarios(check_aggregate_df):
     tdf = check_aggregate_df.filter(
         model="MSG-GLB", scenario="a_scen", variable=tvs
     )
+    tdf.set_meta("value", "new_meta_col")
+
     sdf = check_aggregate_df.filter(
         model="MSG-GLB", scenario="a_scen_2", variable=tvs
     )
+    sdf.set_meta("other value", "new_meta_col")
+
     sub_scenario_name = "a_scen - a_scen_2"
 
     join_col = "scenario"
@@ -118,6 +122,15 @@ def test_subtraction_scenarios(check_aggregate_df):
 
     pd.testing.assert_frame_equal(
         exp.timeseries(), res.timeseries(), check_like=True
+    )
+
+    # test meta is reset
+    pd.testing.assert_frame_equal(
+        res.meta,
+        pd.DataFrame(
+            [["MSG-GLB", "a_scen - a_scen_2", False]],
+            columns=["model", "scenario", "exclude"]
+        ).set_index(["model", 'scenario'])
     )
 
 
