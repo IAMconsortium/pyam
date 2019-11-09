@@ -1355,7 +1355,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def subtract(self, other, join_col, new_name):
+    def subtract(self, other, join_col, new_name, ignore_meta_conflict=False):
         """
         Subtract data in ``other`` from ``self``
 
@@ -1370,6 +1370,10 @@ class IamDataFrame(object):
         new_name : str
             String to write in ``join_col`` in the output timeseries e.g.
             (``variable 1 - variable 2``)
+
+        ignore_meta_conflict : bool, default False
+            If False and ``other`` is an IamDataFrame, raise an error if
+            any meta columns present in ``self`` and ``other`` are not identical.
 
         Raises
         ------
@@ -1392,13 +1396,10 @@ class IamDataFrame(object):
         if len(other[join_col].unique()) > 1:
             raise ValueError(too_many_vals_error.format("other", join_col))
 
+        out_meta = merge_meta(self.meta, other.meta, ignore_meta_conflict)
+
         s_data = self.data.copy()
         o_data = other.data.copy()
-
-        diff_meta = set(self.meta.columns) != set(other.meta.columns)
-        if diff_meta:
-            raise ValueError("Metadata columns in `other` are not identical to "
-                             "`self`")
 
         idx = s_data.columns.tolist()
         idx_tmp = list(set(idx) - set([join_col]) - {"value"})
@@ -1409,7 +1410,10 @@ class IamDataFrame(object):
         res = (s_data - o_data).reset_index()
         res[join_col] = new_name
 
-        return IamDataFrame(res)
+        res = IamDataFrame(res)
+        res.meta = out_meta
+
+        return res
 
 def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index

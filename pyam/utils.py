@@ -261,7 +261,31 @@ def sort_data(data, cols):
 
 
 def merge_meta(left, right, ignore_meta_conflict=False):
-    """Merge two ``meta`` tables; raise if values are in conflict (optional)"""
+    """
+    Merge two ``meta`` tables
+
+    Parameters
+    ----------
+    left : pd.Dataframe
+        First meta table
+
+    right : pd.Dataframe
+        Second meta table
+
+    ignore_meta_conflict : bool, default False
+            If False, raise an error if any meta columns present in ``left`` and
+            ``right`` are not identical.
+
+    Raises
+    ------
+    ValueError
+        Values are in conflict and ``ignore_meta_conflict`` is ``False``
+
+    Returns
+    -------
+    pd.DataFrame
+        Joined metadata tables
+    """
     left = left.copy()  # make a copy to not change the original object
     diff = right.index.difference(left.index)
     sect = right.index.intersection(left.index)

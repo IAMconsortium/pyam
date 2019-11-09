@@ -104,12 +104,41 @@ def test_failing_types_error(test_df, failing_type):
         test_df.subtract(failing_type, "variable", "irrelevant")
 
 
-def test_different_index_error(test_df):
+@pytest.mark.parametrize("ignore_meta_conflict", (True, False))
+def test_different_meta_res(test_df, ignore_meta_conflict):
     tdf = test_df.filter(variable="Primary Energy")
     odf = tdf.copy()
-    # why doesn't the meta column appear when you call .timeseries()?
-    odf.set_meta("value", "extra_col")
+    tdf.set_meta("value", "extra_col")
+    odf.set_meta("conflict value", "extra_col")
 
-    error_msg = re.escape("Metadata columns in ``other`` are not identical to ``self``")
-    with pytest.raises(ValueError, match=error_msg):
-        tdf.subtract(odf, "variable", "irrelevant")
+    if ignore_meta_conflict:
+        res = tdf.subtract(
+            odf, "variable", "irrelevant", ignore_meta_conflict=ignore_meta_conflict
+        )
+        pd.testing.assert_frame_equal(res.meta, tdf.meta)
+    else:
+        error_msg = re.escape(
+            "conflict in `meta` for scenarios [('model_a', 'scen_a')]"
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            tdf.subtract(odf, "variable", "irrelevant")
+
+
+@pytest.mark.parametrize("ignore_meta_conflict", (True, False))
+def test_meta_conflict(test_df, ignore_meta_conflict):
+    tdf = test_df.filter(variable="Primary Energy")
+    odf = tdf.copy()
+    tdf.set_meta("value", "extra_col")
+    odf.set_meta("conflict value", "extra_col")
+
+    if ignore_meta_conflict:
+        res = tdf.subtract(
+            odf, "variable", "irrelevant", ignore_meta_conflict=ignore_meta_conflict
+        )
+        pd.testing.assert_frame_equal(res.meta, tdf.meta)
+    else:
+        error_msg = re.escape(
+            "conflict in `meta` for scenarios [('model_a', 'scen_a')]"
+        )
+        with pytest.raises(ValueError, match=error_msg):
+            tdf.subtract(odf, "variable", "irrelevant")
