@@ -7,9 +7,9 @@ Scenario data following the IAMC format
 .. figure:: _static/iamc_logo.jpg
    :width: 120px
    :align: right
-   
+
    `IAMC website`_
-   
+
 .. _`IAMC Website`: http://www.globalchange.umd.edu/iamc/
 
 Over the past decade, the Integrated Assessment Modeling Consortium (IAMC)
@@ -100,6 +100,22 @@ which returns a :class:`pandas.DataFrame` with the index :code:`pyam.IAMC_IDX =
 
 .. _`docs`: https://pandas.pydata.org/pandas-docs/stable/reference/frame.html
 
+The :code:`meta` table
+----------------------
+
+As mentioned above, every :class:`pyam.IamDataFrame` contains a :code:`meta` attribute
+which is its metadata table.
+
+More to be written here, questions I have now which might guide writing:
+
+   - How is ``meta`` meant to be treated? It is only for metadata on a model-scenario level right? It is not intended for timeseries by timeseries level metadata.
+
+   - Any timeseries by timeseries metadata needs to go in the ``data`` table? If you're going to put metadata in the ``data`` table, every single point will need to have a value as :class:`pyam.IamDataFrame` removes any rows containing any ``np.nan`` values.
+
+   - The advantage of having metadata only at the model-scenario level is its easy to plot with and it keeps it relatively small (which makes filtering faster)? The disadvantage is that you can't do timeseries level metadata easily (so some filtering is more difficult than it needs to be?)?
+
+   - As far as possible, :code:`pyam` attempts to keep metadata information when performing operations. The metadata information is kept using ``pyam.utils.merge_meta`` which will raise conflicts as appropriate.
+
 Filtering
 ---------
 
@@ -119,6 +135,7 @@ The returned object is a :class:`pandas.DataFrame` down-selected to those
 models-and-scenarios where the :code:`meta` column satisfies the criteria given
 by :code:`col=...` .
 Optionally, the :code:`meta` columns are joined to the returned dataframe.
+
 
 References
 ----------
