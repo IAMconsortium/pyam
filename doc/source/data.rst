@@ -144,7 +144,6 @@ models-and-scenarios where the :code:`meta` column satisfies the criteria given
 by :code:`col=...` .
 Optionally, the :code:`meta` columns are joined to the returned dataframe.
 
-
 References
 ----------
 
