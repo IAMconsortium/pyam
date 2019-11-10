@@ -1184,9 +1184,6 @@ class IamDataFrame(object):
         path: string
             xlsx or csv file path to ``meta`` table
         """
-        if not os.path.exists(path):
-            raise ValueError("no metadata file '" + path + "' found!")
-
         if path.endswith('csv'):
             df = pd.read_csv(path, *args, **kwargs)
         else:

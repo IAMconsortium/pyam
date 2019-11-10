@@ -98,8 +98,6 @@ def write_sheet(writer, name, df, index=False):
 
 def read_pandas(fname, *args, **kwargs):
     """Read a file and return a pd.DataFrame"""
-    if not os.path.exists(fname):
-        raise ValueError('no data file `{}` found!'.format(fname))
     if fname.endswith('csv'):
         df = pd.read_csv(fname, *args, **kwargs)
     else:
