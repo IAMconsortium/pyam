@@ -1,9 +1,11 @@
+import logging
+
 from pyam.core import *
 from pyam.utils import *
 from pyam.statistics import *
 from pyam.timeseries import *
 from pyam.read_ixmp import *
-from pyam.logger import *
+from pyam.logging import *
 from pyam.run_control import *
 from pyam.iiasa import read_iiasa  # noqa: F401
 
@@ -23,3 +25,5 @@ except Exception:
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())

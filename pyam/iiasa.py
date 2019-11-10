@@ -15,9 +15,9 @@ except ImportError:
     from functools32 import lru_cache
 
 from pyam.core import IamDataFrame
-from pyam.logger import logger
 from pyam.utils import META_IDX, islistable, isstr, pattern_match
 
+logger = logging.getLogger(__name__)
 # quiet this fool
 logging.getLogger('requests').setLevel(logging.WARNING)
 

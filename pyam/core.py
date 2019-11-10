@@ -1,6 +1,7 @@
 import copy
 import importlib
 import itertools
+import logging
 import os
 import sys
 
@@ -15,7 +16,7 @@ except ImportError:
 
 from pyam import plotting
 
-from pyam.logger import logger, adjust_log_level
+from pyam.logging import adjust_log_level
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -40,6 +41,8 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
+
+logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
@@ -512,14 +515,14 @@ class IamDataFrame(object):
         idx = _meta_idx(rows)
 
         if len(idx) == 0:
-            logger().info("No scenarios satisfy the criteria")
+            logger.info("No scenarios satisfy the criteria")
             return  # EXIT FUNCTION
 
         # update metadata dataframe
         self._new_meta_column(name)
         self.meta.loc[idx, name] = value
         msg = '{} scenario{} categorized as `{}: {}`'
-        logger().info(msg.format(len(idx), '' if len(idx) == 1 else 's',
+        logger.info(msg.format(len(idx), '' if len(idx) == 1 else 's',
                                  name, value))
 
     def _new_meta_column(self, name):
@@ -555,7 +558,7 @@ class IamDataFrame(object):
 
         n = len(idx)
         if n == 0:
-            logger().info('All scenarios have the required variable `{}`'
+            logger.info('All scenarios have the required variable `{}`'
                           .format(variable))
             return
 
@@ -566,7 +569,7 @@ class IamDataFrame(object):
             self.meta.loc[idx, 'exclude'] = True
             msg += ', marked as `exclude: True` in metadata'
 
-        logger().info(msg.format(n, variable))
+        logger.info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
 
     def validate(self, criteria={}, exclude_on_fail=False):
@@ -590,7 +593,7 @@ class IamDataFrame(object):
 
         if not df.empty:
             msg = '{} of {} data points do not satisfy the criteria'
-            logger().info(msg.format(len(df), len(self.data)))
+            logger.info(msg.format(len(df), len(self.data)))
 
             if exclude_on_fail and len(df) > 0:
                 self._exclude_on_fail(df)
@@ -751,7 +754,7 @@ class IamDataFrame(object):
 
         if not len(components):
             msg = 'cannot aggregate variable `{}` because it has no components'
-            logger().info(msg.format(variable))
+            logger.info(msg.format(variable))
 
             return
 
@@ -796,7 +799,7 @@ class IamDataFrame(object):
 
         if len(diff):
             msg = '`{}` - {} of {} rows are not aggregates of components'
-            logger().info(msg.format(variable, len(diff), len(df_variable)))
+            logger.info(msg.format(variable, len(diff), len(df_variable)))
 
             if exclude_on_fail:
                 self._exclude_on_fail(diff.index.droplevel([2, 3, 4]))
@@ -832,7 +835,7 @@ class IamDataFrame(object):
         if not len(subregions):
             msg = 'cannot aggregate variable `{}` to `{}` because it does not'\
                   ' exist in any subregion'
-            logger().info(msg.format(variable, region))
+            logger.info(msg.format(variable, region))
 
             return
 
@@ -843,7 +846,7 @@ class IamDataFrame(object):
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
-        with adjust_log_level():
+        with adjust_log_level(logger):
             region_df = self.filter(region=region)
 
         rdf_comps = region_df._variable_components(variable, level=None)
@@ -891,7 +894,7 @@ class IamDataFrame(object):
         rows = self._apply_filters(region=region, variable=variable)
         if not rows.any():
             msg = 'variable `{}` does not exist in region `{}`'
-            logger().info(msg.format(variable, region))
+            logger.info(msg.format(variable, region))
             return
 
         df_region, df_subregions = (
@@ -906,7 +909,7 @@ class IamDataFrame(object):
             msg = (
                 '`{}` - {} of {} rows are not aggregates of subregions'
             )
-            logger().info(msg.format(variable, len(diff), len(df_region)))
+            logger.info(msg.format(variable, len(diff), len(df_region)))
 
             if exclude_on_fail:
                 self._exclude_on_fail(diff.index.droplevel([2, 3]))
@@ -958,7 +961,7 @@ class IamDataFrame(object):
         """Assign a selection of scenarios as `exclude: True` in meta"""
         idx = df if isinstance(df, pd.MultiIndex) else _meta_idx(df)
         self.meta.loc[idx, 'exclude'] = True
-        logger().info('{} non-valid scenario{} will be excluded'
+        logger.info('{} non-valid scenario{} will be excluded'
                       .format(len(idx), '' if len(idx) == 1 else 's'))
 
     def filter(self, keep=True, inplace=False, **kwargs):
@@ -995,7 +998,7 @@ class IamDataFrame(object):
 
         idx = _make_index(ret.data)
         if len(idx) == 0:
-            logger().warning('Filtered IamDataFrame is empty!')
+            logger.warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
         if not inplace:
             return ret
@@ -1177,7 +1180,7 @@ class IamDataFrame(object):
         n_invalid = len(df) - len(idx)
         if n_invalid > 0:
             msg = 'Ignoring {} scenario{} from imported metadata'
-            logger().info(msg.format(n_invalid, 's' if n_invalid > 1 else ''))
+            logger.info(msg.format(n_invalid, 's' if n_invalid > 1 else ''))
 
         if idx.empty:
             raise ValueError('No valid scenarios in imported metadata file!')
@@ -1186,7 +1189,7 @@ class IamDataFrame(object):
 
         # Merge in imported metadata
         msg = 'Importing metadata for {} scenario{} (for total of {})'
-        logger().info(msg.format(len(df), 's' if len(df) > 1 else '',
+        logger.info(msg.format(len(df), 's' if len(df) > 1 else '',
                                  len(self.meta)))
 
         for col in df.columns:
@@ -1342,7 +1345,7 @@ class IamDataFrame(object):
                 # find duplicates
                 where_dup = _map['region'].duplicated(keep=False)
                 dups = _map[where_dup]
-                logger().warning("""
+                logger.warning("""
                 Duplicate entries found for the following regions.
                 Mapping will occur only for the most common instance.
                 {}""".format(dups['region'].unique()))

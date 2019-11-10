@@ -1,4 +1,5 @@
 import itertools
+import logging
 import warnings
 
 import matplotlib.pyplot as plt
@@ -16,13 +17,14 @@ try:
 except ImportError:
     from functools32 import lru_cache
 
-from pyam.logger import logger
 from pyam.run_control import run_control
 from pyam.utils import requires_package, IAMC_IDX, SORT_IDX, isstr
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
 from pyam._style import _get_standard_colors
+
+logger = logging.getLogger(__name__)
 
 # line colors, markers, and styles that are cycled through when not
 # explicitly declared

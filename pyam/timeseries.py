@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-
+import logging
 import numpy as np
-from pyam.logger import logger
 from pyam.utils import isstr, to_int
+
+logger = logging.getLogger(__name__)
 
 # %%
 

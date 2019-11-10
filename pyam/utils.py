@@ -1,5 +1,6 @@
 import os
 import itertools
+import logging
 import string
 import six
 import re
@@ -17,7 +18,7 @@ try:
 except ImportError:
     pass
 
-from pyam.logger import logger
+logger = logging.getLogger(__name__)
 
 # common indicies
 META_IDX = ['model', 'scenario']
