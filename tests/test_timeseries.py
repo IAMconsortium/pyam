@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import logging
 
 import numpy as np
 import pandas as pd
-from pyam.logger import logger
 from pyam import fill_series, cumulative, cross_threshold, to_int
 import pytest
 
@@ -32,11 +32,11 @@ def test_cumulative():
 
 def test_cumulative_out_of_range():
     # set logger level to exclude warnings in unit test output
-    logger().setLevel('ERROR')
+    logging.getLogger("pyam").setLevel('ERROR')
     # note that the series is not order and the index is defined as float
     y = pd.Series(data=[np.nan, 1, 3, 1], index=[2002., 2005., 2007., 2013.])
     assert cumulative(y, 2008, 2015) is np.nan
-    logger().setLevel('NOTSET')
+    logging.getLogger("pyam").setLevel('NOTSET')
 
 
 def test_cross_treshold():

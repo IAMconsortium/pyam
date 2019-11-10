@@ -807,7 +807,7 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
 
 def _add_legend(ax, handles, labels, legend):
     if legend is None and len(labels) >= MAX_LEGEND_LABELS:
-        logger().info('>={} labels, not applying legend'.format(
+        logger.info('>={} labels, not applying legend'.format(
             MAX_LEGEND_LABELS))
     else:
         legend = {} if legend in [True, None] else legend

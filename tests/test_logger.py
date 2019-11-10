@@ -3,7 +3,7 @@ import sys
 
 
 def test_logger_namespacing(test_df, caplog):
-    with caplog.at_level(logging.INFO, logger="pyam"):
+    with caplog.at_level(logging.INFO, logger="pyam.core"):
         test_df.filter(model="junk")
 
     assert caplog.record_tuples == [(
@@ -17,7 +17,7 @@ def test_adjusting_logger_level(test_df, caplog):
     def throw_warning():
         logging.warning("This is a root warning")
 
-    with caplog.at_level(logging.INFO, logger="pyam"):
+    with caplog.at_level(logging.INFO, logger="pyam.core"):
         test_df.filter(model="junk")
         throw_warning()
 
@@ -27,7 +27,7 @@ def test_adjusting_logger_level(test_df, caplog):
     ]
 
     caplog.clear()
-    with caplog.at_level(logging.ERROR, logger="pyam"):
+    with caplog.at_level(logging.ERROR, logger="pyam.core"):
         test_df.filter(model="junk")
         throw_warning()
 
