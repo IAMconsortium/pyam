@@ -44,7 +44,7 @@ def test_io_xlsx(meta_df, meta_args):
 
 
 @pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
-def test_load_metadata(meta_df, args):
+def test_load_meta(meta_df, args):
     file = os.path.join(TEST_DATA_DIR, 'testing_metadata.xlsx')
     meta_df.load_meta(file, **args)
     obs = meta_df.meta
