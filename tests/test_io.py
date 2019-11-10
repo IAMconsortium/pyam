@@ -19,11 +19,20 @@ def test_io_csv(meta_df):
     # assert that `data` tables are equal and delete file
     pd.testing.assert_frame_equal(meta_df.data, import_df.data)
     os.remove(file)
-    import_df = IamDataFrame(fname)
 
-    # assert that `data` tables are equal and delete file
+
+def test_io_xlsx(meta_df):
+    # write to xlsx
+    file = 'testing_io_write_read.xlsx'
+    meta_df.to_excel(file)
+
+    # read from xlsx
+    import_df = IamDataFrame(file)
+
+    # assert that `data` and `meta` tables are equal and delete file
     pd.testing.assert_frame_equal(meta_df.data, import_df.data)
-    os.remove(fname)
+
+    os.remove(file)
 
 
 @pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
@@ -51,10 +60,3 @@ def test_load_rcp_database_downloaded_file(test_df_year):
         TEST_DATA_DIR, 'test_RCP_database_raw_download.xlsx')
     )
     pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df_year.as_pandas())
-
-
-def test_to_excel(test_df):
-    fname = 'foo_testing.xlsx'
-    test_df.to_excel(fname)
-    assert os.path.exists(fname)
-    os.remove(fname)
