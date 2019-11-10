@@ -10,7 +10,7 @@ from conftest import TEST_DATA_DIR
 
 def test_io_csv(meta_df):
     # write to csv
-    file = 'foo_testing.csv'
+    file = 'testing_io_write_read.csv'
     meta_df.to_csv(file)
 
     # read from csv
