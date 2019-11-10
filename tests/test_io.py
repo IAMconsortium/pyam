@@ -21,16 +21,20 @@ def test_io_csv(meta_df):
     os.remove(file)
 
 
-def test_io_xlsx(meta_df):
+@pytest.mark.parametrize("meta_args", [
+    [{}, {}],
+    [dict(include_meta='foo'), dict(meta_sheet_name='foo')]
+])
+def test_io_xlsx(meta_df, meta_args):
     # add column to `meta`
     meta_df.set_meta(['a', 'b'], 'string')
 
     # write to xlsx
     file = 'testing_io_write_read.xlsx'
-    meta_df.to_excel(file)
+    meta_df.to_excel(file, **meta_args[0])
 
     # read from xlsx
-    import_df = IamDataFrame(file)
+    import_df = IamDataFrame(file, **meta_args[1])
 
     # assert that `data` and `meta` tables are equal and delete file
     pd.testing.assert_frame_equal(meta_df.data, import_df.data)
