@@ -87,6 +87,12 @@ class IamDataFrame(object):
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
 
+        # if initialized from xlsx, try to load `meta` table from file
+        meta_sheet = kwargs.get('meta_sheet_name', 'meta')
+        if isstr(data) and data.endswith('.xlsx') and meta_sheet is not False\
+                and meta_sheet in pd.ExcelFile(data).sheet_names:
+            self.load_meta(data, sheet_name=meta_sheet)
+
         # execute user-defined code
         if 'exec' in run_control():
             self._execute_run_control()
@@ -1111,19 +1117,22 @@ class IamDataFrame(object):
         """
         self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
-    def to_excel(self, excel_writer, sheet_name='data',
-                 iamc_index=False, **kwargs):
-        """Write timeseries data to Excel format
+    def to_excel(self, excel_writer, sheet_name='data', iamc_index=False,
+                 include_meta=True, **kwargs):
+        """Write object to an Excel sheet
 
         Parameters
         ----------
         excel_writer: string or ExcelWriter object
             file path or existing ExcelWriter
-        sheet_name: string, default 'data'
-            name of sheet which will contain `IamDataFrame.timeseries()` data
+        sheet_name: string
+            name of sheet which will contain ``IamDataFrame.timeseries()`` data
         iamc_index: bool, default False
-            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all `data` columns
+            if True, use ``['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all ``data`` columns
+        include_meta: boolean or string
+            if True, write ``meta`` to an Excel sheet 'meta' (default);
+            if this is a string, use it as sheet name
         """
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
@@ -1131,6 +1140,10 @@ class IamDataFrame(object):
         self._to_file_format(iamc_index)\
             .to_excel(excel_writer, sheet_name=sheet_name, index=False,
                       **kwargs)
+        # replace `True` by `'meta'` as default sheet name
+        include_meta = 'meta' if include_meta is True else include_meta
+        if isstr(include_meta):
+            write_sheet(excel_writer, include_meta, self.meta, index=True)
         if close:
             excel_writer.close()
 
