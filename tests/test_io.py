@@ -22,6 +22,9 @@ def test_io_csv(meta_df):
 
 
 def test_io_xlsx(meta_df):
+    # add column to `meta`
+    meta_df.set_meta(['a', 'b'], 'string')
+
     # write to xlsx
     file = 'testing_io_write_read.xlsx'
     meta_df.to_excel(file)
@@ -31,6 +34,7 @@ def test_io_xlsx(meta_df):
 
     # assert that `data` and `meta` tables are equal and delete file
     pd.testing.assert_frame_equal(meta_df.data, import_df.data)
+    pd.testing.assert_frame_equal(meta_df.meta, import_df.meta)
 
     os.remove(file)
 
