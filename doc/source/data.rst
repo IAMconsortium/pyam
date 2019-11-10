@@ -120,7 +120,7 @@ A word of warning when adding data point by data point metadata.
 Hence, if you're adding metadata to :code:`data`, you need to make sure that you **add it to every single row**.
 Any rows which aren't assigned a value will be dropped by :code:`pyam` or will cause it to behave unexpectedly.
 
-This begs the question, why does :code:`pyam` drop any data rows which have any :code:`NaN` values.
+This begs the question, why does :code:`pyam` drop any data rows which have any :code:`NaN` values?
 The reason is that pandas does not play nicely with :code:`NaN` in many cases (see e.g. `here <https://stackoverflow.com/a/18431417>`_ and `here <https://stackoverflow.com/a/13606221>`_).
 Hence it is simpler to remove all the :code:`NaN`'s, ensuring that :code:`pyam` has a clean dataset on which to operate.
 
