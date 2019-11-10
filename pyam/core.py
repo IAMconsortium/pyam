@@ -62,6 +62,15 @@ class IamDataFrame(object):
         - one column in `df`
         - multiple columns, which will be concatenated by pipe
         - a string to be used as value for this column
+
+    Notes
+    -----
+    When initializing an :class:`IamDataFrame` from an :code:`xlsx` file,
+    :code:`pyam` will per default look for the sheets 'data' and 'meta' to
+    populate the respective tables. Custom sheet names can be specified with
+    the kwargs :code:`sheet_name` (for :code:`data`) and :code:`meta_sheet_name`
+    (for meta). Calling the class with :code:`meta_sheet_name=False` will skip
+    the import of the :code:`meta` table.
     """
 
     def __init__(self, data, **kwargs):
