@@ -68,9 +68,9 @@ class IamDataFrame(object):
     When initializing an :class:`IamDataFrame` from an :code:`xlsx` file,
     :code:`pyam` will per default look for the sheets 'data' and 'meta' to
     populate the respective tables. Custom sheet names can be specified with
-    the kwargs :code:`sheet_name` (for :code:`data`) and :code:`meta_sheet_name`
-    (for meta). Calling the class with :code:`meta_sheet_name=False` will skip
-    the import of the :code:`meta` table.
+    the kwargs :code:`sheet_name` (:code:`data`) and :code:`meta_sheet_name`
+    (:code:`meta`). Calling the class with :code:`meta_sheet_name=False` will
+    skip the import of the :code:`meta` table.
     """
 
     def __init__(self, data, **kwargs):
@@ -92,11 +92,11 @@ class IamDataFrame(object):
 
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
 
-        # define a dataframe for categorization and other metadata indicators
+        # define `meta` dataframe for categorization & quantitative indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
 
-        # if initialized from xlsx, try to load `meta` table from file
+        # if initializing from xlsx, try to load `meta` table from file
         meta_sheet = kwargs.get('meta_sheet_name', 'meta')
         if isstr(data) and data.endswith('.xlsx') and meta_sheet is not False\
                 and meta_sheet in pd.ExcelFile(data).sheet_names:
@@ -1137,10 +1137,10 @@ class IamDataFrame(object):
         sheet_name: string
             name of sheet which will contain ``IamDataFrame.timeseries()`` data
         iamc_index: bool, default False
-            if True, use ``['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all ``data`` columns
+            if True, use :code:`['model', 'scenario', 'region', 'variable',
+            'unit']`; else, use all :code:`data` columns
         include_meta: boolean or string
-            if True, write ``meta`` to an Excel sheet 'meta' (default);
+            if True, write :code:`meta` to an Excel sheet 'meta' (default);
             if this is a string, use it as sheet name
         """
         if not isinstance(excel_writer, pd.ExcelWriter):
