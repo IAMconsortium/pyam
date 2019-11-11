@@ -15,7 +15,7 @@ except ImportError:
 
 from pyam import plotting
 
-from pyam.logger import logger, adjust_log_level
+from pyam.logger import logger, adjust_log_level, deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -1158,8 +1158,7 @@ class IamDataFrame(object):
 
     def export_metadata(self, excel_writer, sheet_name='meta'):
         """Deprecated, see :method:`export_meta()`"""
-        msg = 'This function will be removed in future versions. {}'
-        logger().error(msg.format('Use `export_meta() instead`!'))
+        deprecation_warning('Use `export_meta() instead`!')
         self.load_meta(excel_writer, sheet_name='meta')
 
     def export_meta(self, excel_writer, sheet_name='meta'):
@@ -1181,8 +1180,7 @@ class IamDataFrame(object):
 
     def load_metadata(self, path, *args, **kwargs):
         """Deprecated, see :method:`load_meta()`"""
-        msg = 'This function will be removed in future versions. {}'
-        logger().error(msg.format('Use `load_meta() instead`!'))
+        deprecation_warning('Use `load_meta() instead`!')
         self.load_meta(path, *args, **kwargs)
 
     def load_meta(self, path, *args, **kwargs):
