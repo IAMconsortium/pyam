@@ -1159,7 +1159,7 @@ class IamDataFrame(object):
     def export_metadata(self, excel_writer, sheet_name='meta'):
         """Deprecated, see :method:`export_meta()`"""
         deprecation_warning('Use `export_meta() instead`!')
-        self.load_meta(excel_writer, sheet_name='meta')
+        self.export_meta(excel_writer, sheet_name='meta')
 
     def export_meta(self, excel_writer, sheet_name='meta'):
         """Write the ``meta`` table of this object to an Excel sheet
