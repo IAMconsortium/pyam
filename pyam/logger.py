@@ -28,4 +28,4 @@ def adjust_log_level(level='ERROR'):
 def deprecation_warning(msg):
     """Write deprecation warning to log"""
     warn = 'This method is deprecated and will be removed in future versions.'
-    logger().warning('{} {}'.format(warn, msg)
+    logger().warning('{} {}'.format(warn, msg))
