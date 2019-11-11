@@ -105,24 +105,22 @@ The :code:`meta` table
 
 As mentioned above, every :class:`pyam.IamDataFrame` contains a :code:`meta` attribute
 which is its metadata table.
-This metadata table is intended to contain metadata at the scenario-model level only.
+This metadata table is intended to contain **metadata at the scenario-model level** only.
 For example, the temperature category a scenario falls into (e.g.'Below 1.5°C', 'Between 1.5°C and 2.0°C' etc.).
 
-As far as possible, :code:`pyam` attempts to keep the information in :code:`meta` consistent with :code:`data` when performing operations.
-The metadata information is kept using ``pyam.utils.merge_meta``, which will raise conflicts as appropriate.
-
-The metadata table is not intended for data point by data point metadata.
-If you want to have metadata with this level then you should simply operate on the :code:`data` attribute of the :class:`pyam.IamDataFrame`.
+The metadata table is not intended for specific metadata per individual data point.
+If you want to have metadata at this level, then you should operate on the :code:`data` attribute of the :class:`pyam.IamDataFrame`.
 For example, you could specify whether a given data point is the result of an interpolation or not.
 
-A word of warning when adding data point by data point metadata.
-:code:`pyam` drops any data rows which have any :code:`NaN` values.
+A word of warning for adding data point-specific metadata: :code:`pyam` drops any data rows which have any :code:`NaN` values.
+Similarly, if rows which do not have assigned values, those rows will be dropped by :code:`pyam` or will cause it to behave unexpectedly.
 Hence, if you're adding metadata to :code:`data`, you need to make sure that you **add it to every single row**.
-Any rows which aren't assigned a value will be dropped by :code:`pyam` or will cause it to behave unexpectedly.
-
 This begs the question, why does :code:`pyam` drop any data rows which have any :code:`NaN` values?
 The reason is that pandas does not play nicely with :code:`NaN` in many cases (see e.g. `here <https://stackoverflow.com/a/18431417>`_ and `here <https://stackoverflow.com/a/13606221>`_).
 Hence it is simpler to remove all the :code:`NaN`'s, ensuring that :code:`pyam` has a clean dataset on which to operate.
+
+As far as possible, :code:`pyam` attempts to keep the information in :code:`meta` consistent with :code:`data` when performing operations.
+The metadata information is kept using ``pyam.utils.merge_meta``, which will raise conflicts as appropriate.
 
 Filtering
 ---------
