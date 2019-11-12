@@ -15,9 +15,9 @@ except ImportError:
     from functools32 import lru_cache
 
 from pyam.core import IamDataFrame
-from pyam.logger import logger
 from pyam.utils import META_IDX, islistable, isstr, pattern_match
 
+logger = logging.getLogger(__name__)
 # quiet this fool
 logging.getLogger('requests').setLevel(logging.WARNING)
 
@@ -139,7 +139,7 @@ class Connection(object):
         # TODO: request the full citation to be added to this metadata intead
         # of linking to the about page
         about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
-        logger().info(_CITE_MSG.format(name, about))
+        logger.info(_CITE_MSG.format(name, about))
 
         self._connected = name
 
@@ -325,13 +325,13 @@ class Connection(object):
         }
         data = json.dumps(self._query_post_data(**kwargs))
         url = '/'.join([self._base_url, 'runs/bulk/ts'])
-        logger().debug('Querying timeseries data '
+        logger.debug('Querying timeseries data '
                        'from {} with filter {}'.format(url, data))
         r = requests.post(url, headers=headers, data=data)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         df = pd.read_json(r.content, orient='records')
-        logger().debug('Response size is {0} bytes, '
+        logger.debug('Response size is {0} bytes, '
                        '{1} records'.format(len(r.content), len(df)))
         columns = ['model', 'scenario', 'variable', 'unit',
                    'region', 'year', 'value', 'time', 'meta',

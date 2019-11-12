@@ -1,5 +1,6 @@
 import os
 import itertools
+import logging
 import string
 import six
 import re
@@ -17,7 +18,7 @@ try:
 except ImportError:
     pass
 
-from pyam.logger import logger
+logger = logging.getLogger(__name__)
 
 # common indicies
 META_IDX = ['model', 'scenario']
@@ -117,7 +118,7 @@ def read_file(fname, *args, **kwargs):
     if not isstr(fname):
         raise ValueError('reading multiple files not supported, '
                          'please use `pyam.IamDataFrame.append()`')
-    logger().info('Reading `{}`'.format(fname))
+    logger.info('Reading `{}`'.format(fname))
     format_kwargs = {}
     # extract kwargs that are intended for `format_data`
     for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:
@@ -185,7 +186,7 @@ def format_data(df, **kwargs):
     df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
 
     if 'notes' in df.columns:  # this came from the database
-        logger().info('Ignoring notes column in dataframe')
+        logger.info('Ignoring notes column in dataframe')
         df.drop(columns='notes', inplace=True)
         col = df.columns[0]  # first column has database copyright notice
         df = df[~df[col].str.contains('database', case=False)]

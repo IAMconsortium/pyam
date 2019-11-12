@@ -90,7 +90,7 @@ def test_check_internal_consistency_no_world_for_variable(
     test_df = check_aggregate_df.filter(
         variable='Emissions|CH4', region='World', keep=False
     )
-    caplog.set_level(logging.INFO)
+    caplog.set_level(logging.INFO, logger="pyam.core")
     test_df.check_internal_consistency()
     warn_idx = caplog.messages.index("variable `Emissions|CH4` does not exist "
                                      "in region `World`")
@@ -306,6 +306,7 @@ def test_aggregate_region_components_handling(check_aggregate_regional_df,
 
 def test_check_aggregate_region_no_world(check_aggregate_regional_df, caplog):
     test_df = check_aggregate_regional_df.filter(region='World', keep=False)
+    caplog.set_level(logging.INFO, logger="pyam.core")
     test_df.check_aggregate_region('Emissions|N2O', region='World')
     warn_idx = caplog.messages.index("variable `Emissions|N2O` does not exist "
                                      "in region `World`")

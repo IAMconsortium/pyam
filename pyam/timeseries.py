@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-
+import logging
 import numpy as np
-from pyam.logger import logger
 from pyam.utils import isstr, to_int
+
+logger = logging.getLogger(__name__)
 
 # %%
 
@@ -51,11 +52,11 @@ def cumulative(x, first_year, last_year):
     # if the timeseries does not cover the range `[first_year, last_year]`,
     # return nan to avoid erroneous aggregation
     if min(x.index) > first_year:
-        logger().warning('the timeseries `{}` does not start by {}'.format(
+        logger.warning('the timeseries `{}` does not start by {}'.format(
             x.name or x, first_year))
         return np.nan
     if max(x.index) < last_year:
-        logger().warning('the timeseries `{}` does not extend until {}'
+        logger.warning('the timeseries `{}` does not extend until {}'
                          .format(x.name or x, last_year))
         return np.nan
 
