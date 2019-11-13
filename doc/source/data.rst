@@ -129,6 +129,13 @@ climate model providing different values for the variable
 :code:`Temperature|Global Mean` derived from the emissions timeseries of a
 scenario.
 
+.. warning::
+
+    Not all :class:`pyam` functions currently support the use with continuous
+    time or custom columns of the :code:`data` table. Please reach out via the 
+    mailing list or GitHub issues if you are not sure whether your use cases
+    is supported.
+
 The :code:`meta` table
 ----------------------
 
