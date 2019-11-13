@@ -79,26 +79,37 @@ mode (beta):
 Please reach out to the developers to get more information on this
 ongoing work.
 
-The :class:`pyam.IamDataFrame` class
-------------------------------------
+The :class:`IamDataFrame` class
+-------------------------------
 
 A :class:`pyam.IamDataFrame` instance is a wrapper for
-two :class:`pandas.DataFrame` instances (read the `docs`_):
+two :class:`pandas.DataFrame` instances (i.e., tables, read the `pandas docs`_
+for more information).
 
- - :code:`data`: The data table is a dataframe containing the timeseries data
-   in "long format". It has the columns of the long data format :code:`['model',
-   'scenario', 'region', 'unit', 'year', 'value']`.
+.. _`pandas docs`: https://pandas.pydata.org/pandas-docs/stable/reference/frame.html
 
- - :code:`meta`: The meta table is a dataframe containing categorisation and
-   descriptive indicators. It has the index :code:`pyam.META_IDX = ['model',
-   'scenario']`.
+The :code:`data` table
+~~~~~~~~~~~~~~~~~~~~~~
 
-The standard output format is the IAMC-style "wide format", see the example
-above. This format can be accessed using :meth:`pyam.IamDataFrame.timeseries`,
-which returns a :class:`pandas.DataFrame` with the index :code:`pyam.IAMC_IDX =
-['model', 'scenario', 'region', 'variable', 'unit']` and the timesteps as columns.
+This table contains the timeseries data related to an ensemble of scenarios.
+It is structured in *long format*, where each datapoint is one row. In contrast,
+the standard IAMC-style format is in *wide format* (see the example above),
+where each timeseries is one row and the timesteps are represented as columns.
 
-.. _`docs`: https://pandas.pydata.org/pandas-docs/stable/reference/frame.html
+While long-format tables have advantages for the internal implementation of many
+:class:`pyam` functions, wide-format tables are more intuitive to users.
+The method :meth:`timeseries() <pyam.IamDataFrame.timeseries>` converts between
+the formats and returns a :class:`pandas.DataFrame` in wide format.
+Exporting an :class:`IamDataFrame` to file using
+:meth:`to_excel() <pyam.IamDataFrame.to_excel>` or
+:meth:`to_csv() <pyam.IamDataFrame.to_csv>` also writes the data table
+in wide format.
+
+The columns of the :code:`data` table are :code:`['model', 'scenario', 'region',
+'unit', <time_format>, 'value']`, where :code:`time_format` is :code:`year`
+when timesteps are given in years (as :class:`int`) or :code:`time` when time
+is represented on a continuous scale (as :class:`pandas.datetime`. Not all
+:class:`pyam` functions currently support the second use case.
 
 The :code:`meta` table
 ----------------------
