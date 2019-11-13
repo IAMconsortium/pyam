@@ -150,15 +150,15 @@ CO2 emissions until the end of the century.
 :meth:`append() <pyam.IamDataFrame.append>`).
 See :meth:`utils.merge_meta() <pyam.utils.merge_meta>` for details.
 
-A word of warning for adding data point-specific metadata: :code:`pyam` drops any data rows which have any :code:`NaN` values.
-Similarly, if rows which do not have assigned values, those rows will be dropped by :code:`pyam` or will cause it to behave unexpectedly.
-Hence, if you're adding metadata to :code:`data`, you need to make sure that you **add it to every single row**.
-This begs the question, why does :code:`pyam` drop any data rows which have any :code:`NaN` values?
-The reason is that pandas does not play nicely with :code:`NaN` in many cases (see e.g. `here <https://stackoverflow.com/a/18431417>`_ and `here <https://stackoverflow.com/a/13606221>`_).
-Hence it is simpler to remove all the :code:`NaN`'s, ensuring that :code:`pyam` has a clean dataset on which to operate.
+.. note::
 
-As far as possible, :code:`pyam` attempts to keep the information in :code:`meta` consistent with :code:`data` when performing operations.
-The metadata information is kept using ``pyam.utils.merge_meta``, which will raise conflicts as appropriate.
+    The :code:`meta` table is not intended for annotations of individual
+    data points. If you want to add meta information at this level (e.g., 
+    which stylized climate model provided the variable
+    :code:`Temperature|Global Mean`, or whether a data point is from the 
+    original data source or the result of an operation), this should operate on
+    the :code:`data` table of the :class:`IamDataFrame` using the
+    custom-columns feature (see above).
 
 Filtering
 ---------
