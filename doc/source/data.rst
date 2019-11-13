@@ -71,13 +71,16 @@ represented as integer values.
 Two additional use cases are currently supported by :code:`pyam` in development
 mode (beta):
 
- - using representative sub-annual timesteps
+ - using representative sub-annual timesteps via the :code:`extra_cols` feature
+   (see the section on `custom data columns`__)
 
  - using continuous time via :class:`pandas.datetime`, replacing the name of
    the :code:`year` column by :code:`time`
 
 Please reach out to the developers to get more information on this
 ongoing work.
+
+__ extra_cols_
 
 The :class:`IamDataFrame` class
 -------------------------------
@@ -105,11 +108,26 @@ Exporting an :class:`IamDataFrame` to file using
 :meth:`to_csv() <pyam.IamDataFrame.to_csv>` also writes the data table
 in wide format.
 
+The standard columns
+^^^^^^^^^^^^^^^^^^^^
+
 The columns of the :code:`data` table are :code:`['model', 'scenario', 'region',
 'unit', <time_format>, 'value']`, where :code:`time_format` is :code:`year`
 when timesteps are given in years (as :class:`int`) or :code:`time` when time
-is represented on a continuous scale (as :class:`pandas.datetime`. Not all
-:class:`pyam` functions currently support the second use case.
+is represented on a continuous scale (as :class:`pandas.datetime`.
+
+.. _extra_cols:
+
+Custom columns of the :code:`data` table
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If an :class:`IamDataFrame` is initialised with columns that are neither in the
+list above nor can be interpreted as time dimension (in wide format), these
+columns are included in the :code:`data` table as :code:`extra_cols`.
+This feature can be used, for example, to distinguish between multiple stylized
+climate model providing different values for the variable
+:code:`Temperature|Global Mean` derived from the emissions timeseries of a
+scenario.
 
 The :code:`meta` table
 ----------------------
