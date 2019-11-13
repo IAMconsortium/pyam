@@ -136,6 +136,21 @@ scenario.
     mailing list or GitHub issues if you are not sure whether your use cases
     is supported.
 
+.. warning::
+
+    A word of warning for adding data-point-specific annotations using custom
+    columns: :class:`pyam` drops any data rows which have :code:`NaN` values.
+    Hence, if you're adding meta information to :code:`data`, you need to make
+    sure that you **add a value to every single row**.
+
+    The reason for that implementation is that pandas does not work as expected
+    with :code:`NaN` in many cases
+    (see `here <https://stackoverflow.com/a/18431417>`_ and
+    `here <https://stackoverflow.com/a/13606221>`_).
+    Therefore, it is simpler to remove :code:`NaN`'s to ensure that :class:`pyam`
+    has a clean dataset on which to operate.
+
+
 The :code:`meta` table
 ~~~~~~~~~~~~~~~~~~~~~~
 
