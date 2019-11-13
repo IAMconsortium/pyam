@@ -137,16 +137,18 @@ scenario.
     is supported.
 
 The :code:`meta` table
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
-As mentioned above, every :class:`pyam.IamDataFrame` contains a :code:`meta` attribute
-which is its metadata table.
-This metadata table is intended to contain **metadata at the scenario-model level** only.
-For example, the temperature category a scenario falls into (e.g.'Below 1.5°C', 'Between 1.5°C and 2.0°C' etc.).
+This table is intended for categorisation and quantitative indicators at the
+model-scenario level. Examples in the `SR15`_ context are the warming category 
+('Below 1.5°C', '1.5°C with low overshoot', etc.) and the cumulative
+CO2 emissions until the end of the century.
 
-The metadata table is not intended for specific metadata per individual data point.
-If you want to have metadata at this level, then you should operate on the :code:`data` attribute of the :class:`pyam.IamDataFrame`.
-For example, you could specify whether a given data point is the result of an interpolation or not.
+:class:`pyam` attempts to keep the information in :code:`meta` consistent with
+:code:`data` when performing operations (e.g.,
+:meth:`rename() <pyam.IamDataFrame.rename>`,
+:meth:`append() <pyam.IamDataFrame.append>`).
+See :meth:`utils.merge_meta() <pyam.utils.merge_meta>` for details.
 
 A word of warning for adding data point-specific metadata: :code:`pyam` drops any data rows which have any :code:`NaN` values.
 Similarly, if rows which do not have assigned values, those rows will be dropped by :code:`pyam` or will cause it to behave unexpectedly.
