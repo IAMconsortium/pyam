@@ -72,15 +72,13 @@ Two additional use cases are currently supported by :class:`pyam` in development
 mode (beta):
 
  - using representative sub-annual timesteps via the :code:`extra_cols` feature
-   (see the section on `custom data columns`__)
+   (see the section on `custom columns`_ in the :code:`data` table)
 
  - using continuous time via :class:`pandas.datetime`, replacing the name of
    the :code:`year` column by :code:`time`
 
 Please reach out to the developers to get more information on this
 ongoing work.
-
-__ extra_cols_
 
 The :class:`IamDataFrame` class
 -------------------------------
@@ -116,7 +114,7 @@ The columns of the :code:`data` table are :code:`['model', 'scenario', 'region',
 when timesteps are given in years (as :class:`int`) or :code:`time` when time
 is represented on a continuous scale (as :class:`pandas.datetime`.
 
-.. _extra_cols:
+.. _`custom columns`:
 
 Custom columns of the :code:`data` table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -173,7 +171,7 @@ See :meth:`utils.merge_meta() <pyam.utils.merge_meta>` for details.
     :code:`Temperature|Global Mean`, or whether a data point is from the 
     original data source or the result of an operation), this should operate on
     the :code:`data` table of the :class:`IamDataFrame` using the
-    custom-columns feature (see above).
+    custom-columns feature (see `custom columns`_ above).
 
 Filtering
 ---------
