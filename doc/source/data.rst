@@ -1,8 +1,8 @@
 Data Model
 ==========
 
-Scenario data following the IAMC format
----------------------------------------
+The IAMC timeseries format for scenario data
+--------------------------------------------
 
 .. figure:: _static/iamc_logo.jpg
    :width: 120px
@@ -136,9 +136,9 @@ scenario.
 
 .. warning::
 
-    A word of warning for adding data-point-specific annotations using custom
-    columns: :class:`pyam` drops any data rows which have :code:`NaN` values.
-    Hence, if you're adding meta information to :code:`data`, you need to make
+    A word of warning for adding annotations relating to custom columns:
+    :class:`pyam` drops any data rows which have :code:`NaN` values.
+    Hence, if you are adding meta information to :code:`data`, you need to make
     sure that you **add a value to every single row**.
 
     The reason for that implementation is that pandas does not work as expected
@@ -147,7 +147,6 @@ scenario.
     `here <https://stackoverflow.com/a/13606221>`_).
     Therefore, it is simpler to remove :code:`NaN`'s to ensure that
     :class:`pyam` has a clean dataset on which to operate.
-
 
 The :code:`meta` table
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -178,16 +177,17 @@ Filtering
 
 The |pyam| package provides two methods for filtering scenario data:
 
-An existing `class`:IamDataFrame can be filtered using
-:meth:`pyam.IamDataFrame.filter(col=...) <pyam.IamDataFrame.filter>`,
-where :code:`col` can be any column of the
-:code:`data` table (i.e., `['model', 'scenario', 'region', 'unit', 'year']`)
-or any column of the :code:`meta` table. The returned object is
-a new :class:`pyam.IamDataFrame` instance.
+An existing :class:`IamDataFrame` can be filtered using
+:meth:`filter(col=...) <pyam.IamDataFrame.filter>`,
+where :code:`col` can be any column of the :code:`data` table (i.e.,
+:code:`['model', 'scenario', 'region', 'unit', 'year'/'time']` or any `custom
+columns`_), or a column of the :code:`meta` table. The returned object is
+a new :class:`IamDataFrame` instance.
 
-A :class:`pandas.DataFrame` with columns or index :code:`['model', 'scenario']`
-can be filtered by any :code:`meta` columns from a :code:`pyam.IamDataFrame`
-using :func:`pyam.filter_by_meta(data, df, col=..., join_meta=False) <pyam.filter_by_meta>`.
+A :class:`pandas.DataFrame` (:code:`data`) with columns or index
+:code:`['model', 'scenario']` can be filtered by any :code:`meta` columns from
+an :class:`IamDataFrame` (:code:`df`) using 
+:meth:`pyam.filter_by_meta(data, df, col=..., join_meta=False) <pyam.filter_by_meta>`.
 The returned object is a :class:`pandas.DataFrame` down-selected to those
 models-and-scenarios where the :code:`meta` column satisfies the criteria given
 by :code:`col=...` .
