@@ -68,7 +68,7 @@ In its original design, the IAMC data format (see above) assumed that the
 temporal dimension of any scenario data was restricted to full years
 represented as integer values.
 
-Two additional use cases are currently supported by :code:`pyam` in development
+Two additional use cases are currently supported by :class:`pyam` in development
 mode (beta):
 
  - using representative sub-annual timesteps via the :code:`extra_cols` feature
@@ -147,8 +147,8 @@ scenario.
     with :code:`NaN` in many cases
     (see `here <https://stackoverflow.com/a/18431417>`_ and
     `here <https://stackoverflow.com/a/13606221>`_).
-    Therefore, it is simpler to remove :code:`NaN`'s to ensure that :class:`pyam`
-    has a clean dataset on which to operate.
+    Therefore, it is simpler to remove :code:`NaN`'s to ensure that
+    :class:`pyam` has a clean dataset on which to operate.
 
 
 The :code:`meta` table
