@@ -1,6 +1,7 @@
 
 # Next Release
 
+- [#290](https://github.com/IAMconsortium/pyam/pull/290) Add warning message if nan rows are detected in init data
 - [#288](https://github.com/IAMconsortium/pyam/pull/288) Put `pyam` logger in its own namespace (see [here](https://docs.python-guide.org/writing/logging/#logging-in-a-library>))
 
 # Release v0.3.0
