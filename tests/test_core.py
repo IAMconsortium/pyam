@@ -145,8 +145,8 @@ def test_init_dropping_nans_message(test_pd_df, caplog):
     res = IamDataFrame(tdf)
     assert "Primary Energy|Coal" not in res.variables().tolist()
 
-    drop_message = "dropping na rows"
-    message_idx = caplog.messages.index[drop_message]
+    drop_message = "dropping rows containing any na values"
+    message_idx = caplog.messages.index(drop_message)
     assert caplog.records[message_idx].levelno == logging.WARNING
 
 

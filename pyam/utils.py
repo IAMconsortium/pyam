@@ -246,7 +246,9 @@ def format_data(df, **kwargs):
 
     # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
-    df.dropna(inplace=True)
+    if df.isnull().any().any():
+        logger.warning("dropping rows containing any na values")
+        df.dropna(inplace=True)
 
     # check for duplicates and return sorted data
     idx_cols = IAMC_IDX + [time_col] + extra_cols
