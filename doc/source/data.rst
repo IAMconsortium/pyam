@@ -84,7 +84,7 @@ The :class:`IamDataFrame` class
 -------------------------------
 
 A :class:`pyam.IamDataFrame` instance is a wrapper for
-two :class:`pandas.DataFrame` instances (i.e., tables, read the `pandas docs`_
+two :class:`pandas.DataFrame` instances (i.e., tables, see the `pandas docs`_
 for more information).
 
 .. _`pandas docs`: https://pandas.pydata.org/pandas-docs/stable/reference/frame.html
