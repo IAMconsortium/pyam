@@ -255,7 +255,8 @@ def format_data(df, **kwargs):
 
     if df.empty:
         logger.warning(
-            'Formatted data is empty! (perhaps there is a column full of nans?)'
+            'Formatted data is empty! (perhaps there is a column full of '
+            'nans?)'
         )
 
     return sort_data(df, idx_cols), time_col, extra_cols
