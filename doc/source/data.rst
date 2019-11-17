@@ -112,26 +112,26 @@ The standard columns
 The columns of the :code:`data` table are :code:`['model', 'scenario', 'region',
 'unit', <time_format>, 'value']`, where :code:`time_format` is :code:`year`
 when timesteps are given in years (as :class:`int`) or :code:`time` when time
-is represented on a continuous scale (as :class:`pandas.datetime`.
+is represented on a continuous scale (as :class:`pandas.datetime`).
 
 .. _`custom columns`:
 
 Custom columns of the :code:`data` table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If an :class:`IamDataFrame` is initialised with columns that are neither in the
-list above nor can be interpreted as time dimension (in wide format), these
+If an :class:`IamDataFrame` is initialised with columns that are not in the
+list above nor interpreted as belonging to the time dimension (in wide format), these
 columns are included in the :code:`data` table as :code:`extra_cols`.
-This feature can be used, for example, to distinguish between multiple stylized
-climate model providing different values for the variable
-:code:`Temperature|Global Mean` derived from the emissions timeseries of a
-scenario.
+This feature can be used, for example, to distinguish between multiple
+climate models providing different values for the variable
+:code:`Temperature|Global Mean`
+.
 
 .. warning::
 
-    Not all :class:`pyam` functions currently support the use with continuous
-    time or custom columns of the :code:`data` table. Please reach out via the 
-    mailing list or GitHub issues if you are not sure whether your use cases
+    Not all :class:`pyam` functions currently support the continuous
+    time or custom columns in a :code:`data` table. Please reach out via the 
+    mailing list or GitHub issues if you are not sure whether your use case
     is supported.
 
 .. warning::
