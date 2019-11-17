@@ -137,15 +137,17 @@ def test_init_datetime_subclass_long_timespan(test_pd_df):
     assert df["time"].min() == tmin
 
 
-def test_init_dropping_nans_message(test_pd_df, caplog):
+def test_init_empty_message(test_pd_df, caplog):
     tdf = test_pd_df.copy()
     tdf["extra_col"] = "test_val"
-    tdf["extra_col"][tdf["variable"] == "Primary Energy|Coal"] = np.nan
+    tdf["extra_col"] = np.nan
 
     res = IamDataFrame(tdf)
     assert "Primary Energy|Coal" not in res.variables().tolist()
 
-    drop_message = "dropping rows containing any na values"
+    drop_message = (
+        "Formatted data is empty! (perhaps there is a column full of nans?)"
+    )
     message_idx = caplog.messages.index(drop_message)
     assert caplog.records[message_idx].levelno == logging.WARNING
 

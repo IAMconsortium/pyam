@@ -246,14 +246,17 @@ def format_data(df, **kwargs):
 
     # cast value columns to numeric, drop NaN's, sort data
     df['value'] = df['value'].astype('float64')
-    if df.isnull().any().any():
-        logger.warning("dropping rows containing any na values")
-        df.dropna(inplace=True)
+    df.dropna(inplace=True)
 
     # check for duplicates and return sorted data
     idx_cols = IAMC_IDX + [time_col] + extra_cols
     if any(df[idx_cols].duplicated()):
         raise ValueError('duplicate rows in `data`!')
+
+    if df.empty:
+        logger.warning(
+            'Formatted data is empty! (perhaps there is a column full of nans?)'
+        )
 
     return sort_data(df, idx_cols), time_col, extra_cols
 
