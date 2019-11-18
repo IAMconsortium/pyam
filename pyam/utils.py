@@ -253,6 +253,12 @@ def format_data(df, **kwargs):
     if any(df[idx_cols].duplicated()):
         raise ValueError('duplicate rows in `data`!')
 
+    if df.empty:
+        logger.warning(
+            'Formatted data is empty! (perhaps there is a column full of '
+            'nans?)'
+        )
+
     return sort_data(df, idx_cols), time_col, extra_cols
 
 
