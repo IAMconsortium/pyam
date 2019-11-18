@@ -136,20 +136,6 @@ def test_init_datetime_subclass_long_timespan(test_pd_df):
     assert df["time"].min() == tmin
 
 
-def test_to_excel(test_df):
-    fname = 'foo_testing.xlsx'
-    test_df.to_excel(fname)
-    assert os.path.exists(fname)
-    os.remove(fname)
-
-
-def test_to_csv(test_df):
-    fname = 'foo_testing.csv'
-    test_df.to_csv(fname)
-    assert os.path.exists(fname)
-    os.remove(fname)
-
-
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['model_a']
 
@@ -475,11 +461,6 @@ def test_timeseries(test_df):
     npt.assert_array_equal(obs, exp)
 
 
-def test_read_pandas():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
-    assert list(df.variables()) == ['Primary Energy']
-
-
 def test_filter_meta_index(meta_df):
     obs = meta_df.filter(scenario='scen_b').meta.index
     exp = pd.MultiIndex(levels=[['model_a'], ['scen_b']],
@@ -622,32 +603,6 @@ def test_category_top_level(meta_df):
                variable='Primary Energy')
     obs = meta_df['category']
     pd.testing.assert_series_equal(obs, exp)
-
-
-def test_load_metadata(meta_df):
-    meta_df.load_metadata(os.path.join(
-        TEST_DATA_DIR, 'testing_metadata.xlsx'), sheet_name='meta')
-    obs = meta_df.meta
-
-    dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a', 'scen_b'],
-           'category': ['imported', np.nan], 'exclude': [False, False]}
-    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
-    pd.testing.assert_series_equal(obs['exclude'], exp['exclude'])
-    pd.testing.assert_series_equal(obs['category'], exp['category'])
-
-
-def test_load_SSP_database_downloaded_file(test_df_year):
-    obs_df = IamDataFrame(os.path.join(
-        TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
-    )
-    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df_year.as_pandas())
-
-
-def test_load_RCP_database_downloaded_file(test_df_year):
-    obs_df = IamDataFrame(os.path.join(
-        TEST_DATA_DIR, 'test_RCP_database_raw_download.xlsx')
-    )
-    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df_year.as_pandas())
 
 
 def test_interpolate(test_df_year):
