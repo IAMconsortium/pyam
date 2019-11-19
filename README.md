@@ -1,5 +1,5 @@
-pyam: a Python toolkit for Integrated Assessment Modeling
-=========================================================
+pyam: analysis and visualization of integrated-assessment scenarios
+===================================================================
 
 **Documentation on [Read the Docs](https://pyam-iamc.readthedocs.io)**
 
@@ -8,18 +8,22 @@ pyam: a Python toolkit for Integrated Assessment Modeling
 Overview and scope
 ------------------
 
-The ``pyam`` package provides a range of diagnostic tools and functions
-for analyzing and working with IAMC-format timeseries data.
+The open-source Python package ``pyam`` provides a suite of tools and functions
+for analyzing and visualizing input data (i.e., assumptions/parametrization) 
+and results (model output) of integrated-assessment scenarios.
+
+Key features:
+
+ - Simple analysis of timeseries data in the IAMC format
+   (more about it [here](https://pyam-iamc.readthedocs.io/en/stable/data.html))
+   with an interface similar in feel and style to the widely
+   used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
+ - Advanced visualization and plotting functions
+   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/examples/index.html))
+ - Diagnostic checks for scripted validation of scenario data and results
 
 Features:
 - Summary of models, scenarios, variables, and regions included in a snapshot.
-- Display of timeseries data as pandas.DataFrame with IAMC-specific filtering
-  options.
-- Simple visualization and plotting functions.
-- Diagnostic checks for non-reported variables or timeseries data to identify
-  outliers and potential reporting issues.
-- Categorization of scenarios according to timeseries data or meta-identifiers
-  for further analysis.
 
 The package can be used with timeseries data that follows the data template
 convention of the [Integrated Assessment Modeling Consortium](http://www.globalchange.umd.edu/iamc/) (IAMC).
