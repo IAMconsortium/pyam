@@ -22,27 +22,30 @@ Key features:
    (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/examples/index.html))
  - Diagnostic checks for scripted validation of scenario data and results
 
-Features:
-- Summary of models, scenarios, variables, and regions included in a snapshot.
+Data model
+----------
 
-The package can be used with timeseries data that follows the data template
-convention of the [Integrated Assessment Modeling Consortium](http://www.globalchange.umd.edu/iamc/) (IAMC).
-An illustrative example is shown below;
-see [data.ene.iiasa.ac.at/database](http://data.ene.iiasa.ac.at/database/)
-for more information.
+An illustrative example of the timeseries format developed by the
+[Integrated Assessment Modeling Consortium](http://www.globalchange.umd.edu/iamc/) (IAMC)
+is shown below.
+The row is taken from the [IAMC 1.5°C scenario explorer](https://data.ene.iiasa.ac.at/iamc-1.5c-explorer),
+showing a scenario from the [CD-LINKS](https://www.cd-links.org) project.
+[Read the docs](https://pyam-iamc.readthedocs.io/en/stable/data.html)
+for more information on the IAMC format and the ``pyam`` data model.
 
-| **model**    | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
-|--------------|--------------|------------|----------------|----------|----------|----------|----------|
-| MESSAGE V.4  | AMPERE3-Base | World      | Primary Energy | EJ/y     |    454.5 |    479.6 |      ... |
-| ...          | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
+| **model** | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
+|-----------|--------------|------------|----------------|----------|----------|----------|----------|
+| MESSAGE   | CD-LINKS 400 | World      | Primary Energy | EJ/y     |    454.5 |    479.6 |      ... |
+| ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
 
 
 Tutorial
 --------
 
-A comprehensive tutorial for the basic functions is included
-in [the first tutorial](doc/source/tutorials/pyam_first_steps.ipynb)
-using a partial snapshot of the IPCC AR5 scenario database.
+An introduction to the basic functions is shown
+in [the "first-steps" notebook](doc/source/tutorials/pyam_first_steps.ipynb).
+
+More tutorials are available in the folder [doc/source/tutorials](doc/source/tutorials).
 
 Documentation
 -------------
