@@ -148,6 +148,11 @@ class IamDataFrame(object):
         """Identical to pd.DataFrame.tail() operating on data"""
         return self.data.tail(*args, **kwargs)
 
+    @property
+    def empty(self):
+        """Indicator whether ``IamDataFrame`` is empty"""
+        return self.data.empty
+
     def models(self):
         """Get a list of models"""
         return pd.Series(self.meta.index.levels[0])
