@@ -389,7 +389,7 @@ class IamDataFrame(object):
         Raises
         ------
         AttributeError
-            `IamDataFrame` is empty
+            ``IamDataFrame`` is empty
         ValueError
             reducing to IAMC-index yields an index with duplicates
         """
