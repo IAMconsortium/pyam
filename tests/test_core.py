@@ -496,6 +496,11 @@ def test_timeseries(test_df):
     npt.assert_array_equal(obs, exp)
 
 
+def test_timeseries_raises(test_df_year):
+    _df = test_df_year.filter(model='foo')
+    pytest.raises(AttributeError, _df.timeseries)
+
+
 def test_read_pandas():
     df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
     assert list(df.variables()) == ['Primary Energy']

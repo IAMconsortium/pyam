@@ -385,7 +385,17 @@ class IamDataFrame(object):
         iamc_index: bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all `data` columns
+
+        Raises
+        ------
+        AttributeError
+            `IamDataFrame` is empty
+        ValueError
+            reducing to IAMC-index yields an index with duplicates
         """
+        if self.empty:
+            raise AttributeError('this `IamDataFrame` is empty')
+
         index = IAMC_IDX if iamc_index else IAMC_IDX + self.extra_cols
         df = (
             self.data
