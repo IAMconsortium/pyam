@@ -39,8 +39,8 @@ def _notebook_run(path, kernel=None, timeout=60, capsys=None):
     fname = os.path.join(here, 'test.ipynb')
     args = [
         "jupyter", "nbconvert", "--to", "notebook", "--execute",
-        "--ExecutePreprocessor.timeout={}",
-        "--ExecutePreprocessor.kernel_name={}".format(timeout, kernel),
+        "--ExecutePreprocessor.timeout={}".format(timeout),
+        "--ExecutePreprocessor.kernel_name={}".format(kernel),
         "--output", fname, path]
     subprocess.check_call(args)
 
