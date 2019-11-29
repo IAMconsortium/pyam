@@ -28,7 +28,7 @@ tut_path = os.path.join(here, '..', 'doc', 'source', 'tutorials')
 # https://blog.thedataincubator.com/2016/06/testing-jupyter-notebooks/
 
 
-def _notebook_run(path, kernel=None, capsys=None):
+def _notebook_run(path, kernel=None, timeout=60, capsys=None):
     """Execute a notebook via nbconvert and collect output.
     :returns (parsed nb object, execution errors)
     """
@@ -39,8 +39,8 @@ def _notebook_run(path, kernel=None, capsys=None):
     fname = os.path.join(here, 'test.ipynb')
     args = [
         "jupyter", "nbconvert", "--to", "notebook", "--execute",
-        "--ExecutePreprocessor.timeout=60",
-        "--ExecutePreprocessor.kernel_name={}".format(kernel),
+        "--ExecutePreprocessor.timeout={}",
+        "--ExecutePreprocessor.kernel_name={}".format(timeout, kernel),
         "--output", fname, path]
     subprocess.check_call(args)
 
@@ -87,7 +87,7 @@ def test_pyam_logo():
 @pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_iiasa_dbs():
     fname = os.path.join(tut_path, 'iiasa_dbs.ipynb')
-    nb, errors = _notebook_run(fname)
+    nb, errors = _notebook_run(fname, timeout=600)
     assert errors == []
 
 
