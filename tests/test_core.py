@@ -487,11 +487,6 @@ def test_timeseries_raises(test_df_year):
     pytest.raises(ValueError, _df.timeseries)
 
 
-def test_read_pandas():
-    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
-    assert list(df.variables()) == ['Primary Energy']
-
-
 def test_filter_meta_index(meta_df):
     obs = meta_df.filter(scenario='scen_b').meta.index
     exp = pd.MultiIndex(levels=[['model_a'], ['scen_b']],
