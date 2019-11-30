@@ -163,6 +163,11 @@ class IamDataFrame(object):
         """Identical to pd.DataFrame.tail() operating on data"""
         return self.data.tail(*args, **kwargs)
 
+    @property
+    def empty(self):
+        """Indicator whether ``IamDataFrame`` is empty"""
+        return self.data.empty
+
     def models(self):
         """Get a list of models"""
         return pd.Series(self.meta.index.levels[0])
@@ -388,14 +393,24 @@ class IamDataFrame(object):
         return list(cols)
 
     def timeseries(self, iamc_index=False):
-        """Returns a pd.DataFrame in wide format (years or timedate as columns)
+        """Returns a pd.DataFrame in wide format (years or datetime as columns)
 
         Parameters
         ----------
         iamc_index: bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all `data` columns
+
+        Raises
+        ------
+        ValueError
+            ``IamDataFrame`` is empty
+        ValueError
+            reducing to IAMC-index yields an index with duplicates
         """
+        if self.empty:
+            raise ValueError('this `IamDataFrame` is empty')
+
         index = IAMC_IDX if iamc_index else IAMC_IDX + self.extra_cols
         df = (
             self.data

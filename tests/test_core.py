@@ -152,6 +152,11 @@ def test_init_empty_message(test_pd_df, caplog):
     assert caplog.records[message_idx].levelno == logging.WARNING
 
 
+def test_empty_attribute(test_df_year):
+    assert not test_df_year.empty
+    assert test_df_year.filter(model='foo').empty
+
+
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['model_a']
 
@@ -475,6 +480,16 @@ def test_timeseries(test_df):
                                         columns=['years'], values='value')
     obs = test_df.filter(variable='Primary Energy').timeseries()
     npt.assert_array_equal(obs, exp)
+
+
+def test_timeseries_raises(test_df_year):
+    _df = test_df_year.filter(model='foo')
+    pytest.raises(ValueError, _df.timeseries)
+
+
+def test_read_pandas():
+    df = IamDataFrame(os.path.join(TEST_DATA_DIR, 'testing_data_2.csv'))
+    assert list(df.variables()) == ['Primary Energy']
 
 
 def test_filter_meta_index(meta_df):
