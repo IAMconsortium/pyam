@@ -378,7 +378,7 @@ class IamDataFrame(object):
         return list(cols)
 
     def timeseries(self, iamc_index=False):
-        """Returns a pd.DataFrame in wide format (years or timedate as columns)
+        """Returns a pd.DataFrame in wide format (years or datetime as columns)
 
         Parameters
         ----------
