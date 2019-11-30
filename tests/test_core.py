@@ -152,6 +152,11 @@ def test_init_empty_message(test_pd_df, caplog):
     assert caplog.records[message_idx].levelno == logging.WARNING
 
 
+def test_empty_attribute(test_df_year):
+    assert not test_df_year.empty
+    assert test_df_year.filter(model='foo').empty
+
+
 def test_to_excel(test_df):
     fname = 'foo_testing.xlsx'
     test_df.to_excel(fname)
@@ -489,6 +494,11 @@ def test_timeseries(test_df):
                                         columns=['years'], values='value')
     obs = test_df.filter(variable='Primary Energy').timeseries()
     npt.assert_array_equal(obs, exp)
+
+
+def test_timeseries_raises(test_df_year):
+    _df = test_df_year.filter(model='foo')
+    pytest.raises(ValueError, _df.timeseries)
 
 
 def test_read_pandas():
