@@ -388,13 +388,13 @@ class IamDataFrame(object):
 
         Raises
         ------
-        AttributeError
+        ValueError
             ``IamDataFrame`` is empty
         ValueError
             reducing to IAMC-index yields an index with duplicates
         """
         if self.empty:
-            raise AttributeError('this `IamDataFrame` is empty')
+            raise ValueError('this `IamDataFrame` is empty')
 
         index = IAMC_IDX if iamc_index else IAMC_IDX + self.extra_cols
         df = (
