@@ -498,7 +498,7 @@ def test_timeseries(test_df):
 
 def test_timeseries_raises(test_df_year):
     _df = test_df_year.filter(model='foo')
-    pytest.raises(AttributeError, _df.timeseries)
+    pytest.raises(ValueError, _df.timeseries)
 
 
 def test_read_pandas():
