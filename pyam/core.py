@@ -16,7 +16,7 @@ except ImportError:
 
 from pyam import plotting
 
-from pyam.logging import adjust_log_level
+from pyam.logging import adjust_log_level, deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -65,6 +65,15 @@ class IamDataFrame(object):
         - one column in `df`
         - multiple columns, which will be concatenated by pipe
         - a string to be used as value for this column
+
+    Notes
+    -----
+    When initializing an :class:`IamDataFrame` from an :code:`xlsx` file,
+    :class:`pyam` will per default look for the sheets 'data' and 'meta' to
+    populate the respective tables. Custom sheet names can be specified with
+    the kwargs :code:`sheet_name` (:code:`data`) and :code:`meta_sheet_name`
+    (:code:`meta`). Calling the class with :code:`meta_sheet_name=False` will
+    skip the import of the :code:`meta` table.
     """
 
     def __init__(self, data, **kwargs):
@@ -86,9 +95,15 @@ class IamDataFrame(object):
 
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
 
-        # define a dataframe for categorization and other metadata indicators
+        # define `meta` dataframe for categorization & quantitative indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
+
+        # if initializing from xlsx, try to load `meta` table from file
+        meta_sheet = kwargs.get('meta_sheet_name', 'meta')
+        if isstr(data) and data.endswith('.xlsx') and meta_sheet is not False\
+                and meta_sheet in pd.ExcelFile(data).sheet_names:
+            self.load_meta(data, sheet_name=meta_sheet)
 
         # execute user-defined code
         if 'exec' in run_control():
@@ -1117,7 +1132,7 @@ class IamDataFrame(object):
         return df
 
     def to_csv(self, path, iamc_index=False, **kwargs):
-        """Write timeseries data to a csv file
+        """Write timeseries data of this object to a csv file
 
         Parameters
         ----------
@@ -1129,19 +1144,22 @@ class IamDataFrame(object):
         """
         self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
-    def to_excel(self, excel_writer, sheet_name='data',
-                 iamc_index=False, **kwargs):
-        """Write timeseries data to Excel format
+    def to_excel(self, excel_writer, sheet_name='data', iamc_index=False,
+                 include_meta=True, **kwargs):
+        """Write object to an Excel sheet
 
         Parameters
         ----------
         excel_writer: string or ExcelWriter object
             file path or existing ExcelWriter
-        sheet_name: string, default 'data'
-            name of sheet which will contain `IamDataFrame.timeseries()` data
+        sheet_name: string
+            name of sheet which will contain ``IamDataFrame.timeseries()`` data
         iamc_index: bool, default False
-            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all `data` columns
+            if True, use :code:`['model', 'scenario', 'region', 'variable',
+            'unit']`; else, use all :code:`data` columns
+        include_meta: boolean or string
+            if True, write :code:`meta` to an Excel sheet 'meta' (default);
+            if this is a string, use it as sheet name
         """
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
@@ -1149,32 +1167,50 @@ class IamDataFrame(object):
         self._to_file_format(iamc_index)\
             .to_excel(excel_writer, sheet_name=sheet_name, index=False,
                       **kwargs)
+        # replace `True` by `'meta'` as default sheet name
+        include_meta = 'meta' if include_meta is True else include_meta
+        if isstr(include_meta):
+            write_sheet(excel_writer, include_meta, self.meta, index=True)
         if close:
             excel_writer.close()
 
-    def export_metadata(self, path):
-        """Export metadata to Excel
+    def export_metadata(self, excel_writer, sheet_name='meta'):
+        """Deprecated, see :method:`export_meta()`"""
+        # TODO: deprecate in next release
+        deprecation_warning('Use `export_meta() instead`!')
+        self.export_meta(excel_writer, sheet_name='meta')
+
+    def export_meta(self, excel_writer, sheet_name='meta'):
+        """Write the ``meta`` table of this object to an Excel sheet
 
         Parameters
         ----------
-        path: string
-            path/filename for xlsx file of metadata export
+        excel_writer: string or ExcelWriter object
+            file path or existing ExcelWriter
+        sheet_name: string
+            name of sheet which will contain ``IamDataFrame.meta`` table
         """
-        writer = pd.ExcelWriter(path)
-        write_sheet(writer, 'meta', self.meta, index=True)
-        writer.save()
+        if not isinstance(excel_writer, pd.ExcelWriter):
+            close = True
+            excel_writer = pd.ExcelWriter(excel_writer)
+        write_sheet(excel_writer, sheet_name, self.meta, index=True)
+        if close:
+            excel_writer.close()
 
     def load_metadata(self, path, *args, **kwargs):
-        """Load metadata exported from `pyam.IamDataFrame` instance
+        """Deprecated, see :method:`load_meta()`"""
+        # TODO: deprecate in next release
+        deprecation_warning('Use `load_meta() instead`!')
+        self.load_meta(path, *args, **kwargs)
+
+    def load_meta(self, path, *args, **kwargs):
+        """Load ``meta`` table  exported from a ``pyam.IamDataFrame`` instance
 
         Parameters
         ----------
         path: string
-            xlsx file with metadata exported from `pyam.IamDataFrame` instance
+            xlsx or csv file path to ``meta`` table
         """
-        if not os.path.exists(path):
-            raise ValueError("no metadata file '" + path + "' found!")
-
         if path.endswith('csv'):
             df = pd.read_csv(path, *args, **kwargs)
         else:
