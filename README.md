@@ -98,7 +98,7 @@ conda activate pyam  # may be  simply `source activate pyam` or just `activate p
 make -B virtual-environment
 ```
 
-To check everything has installed correctly,
+To check everything has installed correctly, run
 
 ```
 pytest tests
