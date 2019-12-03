@@ -35,7 +35,7 @@ for more information on the IAMC format and the ``pyam`` data model.
 
 | **model** | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
 |-----------|--------------|------------|----------------|----------|----------|----------|----------|
-| MESSAGE   | CD-LINKS 400 | World      | Primary Energy | EJ/y     |    454.5 |    479.6 |      ... |
+| MESSAGE   | CD-LINKS 400 | World      | Primary Energy | EJ/y     |    462.5 |    500.7 |      ... |
 | ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
 
 
