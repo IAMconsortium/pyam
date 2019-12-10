@@ -39,19 +39,24 @@ for more information on the IAMC format and the ``pyam`` data model.
 | ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
 
 
-Tutorial
---------
+Tutorials
+---------
 
 An introduction to the basic functions is shown
 in [the "first-steps" notebook](doc/source/tutorials/pyam_first_steps.ipynb).
 
-More tutorials are available in the folder [doc/source/tutorials](doc/source/tutorials).
+All tutorials are available in rendered format (i.e., with output) as part of
+the [online documentation](https://pyam-iamc.readthedocs.io/en/stable/tutorials.html).
+The source code of the tutorials notebooks is available
+in the folder [doc/source/tutorials](doc/source/tutorials) of this repository.
 
 Documentation
 -------------
 
-The documentation pages can be built locally.
-See the instruction in [doc/README](doc/README.md).
+The complete documentation is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io).
+
+The documentation pages can be built locally,
+refer to the instruction in [doc/README](doc/README.md).
 
 Authors
 -------
