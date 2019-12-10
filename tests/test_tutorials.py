@@ -68,8 +68,8 @@ def test_pyam_first_steps(capsys):
 
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
 @pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
-def test_checking_databases():
-    fname = os.path.join(tut_path, 'checking_databases.ipynb')
+def test_checking_consistency():
+    fname = os.path.join(tut_path, 'checking_consistency.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
 
