@@ -344,7 +344,9 @@ class Connection(object):
         r = requests.post(url, headers=headers, data=data)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
-        df = pd.read_json(r.content, orient='records')
+        dtype = dict(model=str, scenario=str, variable=str, unit=str,
+                     region=str, year=int, value=float, version=int)
+        df = pd.read_json(r.content, orient='records', dtype=dtype)
         logger.debug('Response size is {0} bytes, '
                        '{1} records'.format(len(r.content), len(df)))
         columns = ['model', 'scenario', 'variable', 'unit',
