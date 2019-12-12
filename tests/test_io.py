@@ -29,18 +29,20 @@ def test_io_xlsx(meta_df, meta_args):
     # add column to `meta`
     meta_df.set_meta(['a', 'b'], 'string')
 
-    # write to xlsx
+    # write to xlsx (direct file name and ExcelWriter, see bug report #300)
     file = 'testing_io_write_read.xlsx'
-    meta_df.to_excel(file, **meta_args[0])
+    for f in [file, pd.ExcelWriter(file)]:
+        meta_df.to_excel(f, **meta_args[0])
+        if isinstance(f, pd.ExcelWriter):
+            f.close()
 
-    # read from xlsx
-    import_df = IamDataFrame(file, **meta_args[1])
+        # read from xlsx
+        import_df = IamDataFrame(file, **meta_args[1])
 
-    # assert that `data` and `meta` tables are equal and delete file
-    pd.testing.assert_frame_equal(meta_df.data, import_df.data)
-    pd.testing.assert_frame_equal(meta_df.meta, import_df.meta)
-
-    os.remove(file)
+        # assert that `data` and `meta` tables are equal and delete file
+        pd.testing.assert_frame_equal(meta_df.data, import_df.data)
+        pd.testing.assert_frame_equal(meta_df.meta, import_df.meta)
+        os.remove(file)
 
 
 @pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])

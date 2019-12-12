@@ -1161,6 +1161,7 @@ class IamDataFrame(object):
             if True, write :code:`meta` to an Excel sheet 'meta' (default);
             if this is a string, use it as sheet name
         """
+        close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
             excel_writer = pd.ExcelWriter(excel_writer)
@@ -1171,6 +1172,8 @@ class IamDataFrame(object):
         include_meta = 'meta' if include_meta is True else include_meta
         if isstr(include_meta):
             write_sheet(excel_writer, include_meta, self.meta, index=True)
+
+        # close the file if `excel_writer` arg was a file name
         if close:
             excel_writer.close()
 
