@@ -239,23 +239,33 @@ class Connection(object):
         """All regions in the connected data source
 
         :param include_synonyms: whether to include synonyms
+               (possibly leading to duplicate region names for
+               regions with more than one synonym)
         """
         url = '/'.join([self._base_url, 'nodes?hierarchy=%2A'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         params = {'includeSynonyms': include_synonyms}
         r = requests.get(url, headers=headers, params=params)
         _check_response(r)
-        df = pd.read_json(r.content, orient='records')
-        if include_synonyms:
-            # split synonyms into columns synonym_0, synonym_1 etc
-            synonyms = df['synonyms'].apply(pd.Series)
-            synonyms = synonyms.rename(columns=lambda x: 'synonym_' + str(x))
-            # remove synonym_0 if no synonyms retrieved at all
-            synonyms = synonyms.dropna(axis=1, how='all')
-            df = pd.concat([df[:], synonyms[:]], axis=1)
-            df = df.drop(columns=['id', 'synonyms', 'parent', 'hierarchy'])
-            df = df.rename(columns={'name': 'region'})
+        return self.convert_regions_payload(r.content, include_synonyms)
+
+    @staticmethod
+    def convert_regions_payload(response, include_synonyms):
+        df = pd.read_json(response, orient='records')
+        if df.empty:
             return df
+        if 'synonyms' not in df.columns:
+            df['synonyms'] = [list()] * len(df)
+        df = df.astype({
+            'id': str,
+            'name': str,
+            'hierarchy': str,
+            'parent': str,
+            'synonyms': object
+        })
+        if include_synonyms:
+            df = df[['name', 'synonyms']].explode('synonyms')
+            return df.rename(columns={'name': 'region', 'synonyms': 'synonym'})
         return pd.Series(df['name'].unique(), name='region')
 
     def _query_post_data(self, **kwargs):

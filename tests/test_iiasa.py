@@ -80,9 +80,45 @@ def test_regions():
 def test_regions_with_synonyms():
     conn = iiasa.Connection('IXSE_SR15')
     obs = conn.regions(include_synonyms=True)
-    assert 'synonym_0' in obs.columns
+    assert 'synonym' in obs.columns
     assert (obs[obs.region == 'R5ROWO']
-            .synonym_0 == 'Rest of the World (R5)').all()
+            .synonym == 'Rest of the World (R5)').all()
+
+
+def test_regions_empty_response():
+    obs = iiasa.Connection.convert_regions_payload('[]', include_synonyms=True)
+    assert obs.empty
+
+
+def test_regions_no_synonyms_response():
+    json = '[{"id":1,"name":"World","parent":"World","hierarchy":"common"}]'
+    obs = iiasa.Connection.convert_regions_payload(json, include_synonyms=True)
+    assert not obs.empty
+
+
+def test_regions_with_synonyms_response():
+    json = '''
+    [
+        {
+            "id":1,"name":"World","parent":"World","hierarchy":"common",
+            "synonyms":[]
+        },
+        {
+            "id":2,"name":"USA","parent":"World","hierarchy":"country",
+            "synonyms":["US","United States"]
+        },
+        {
+            "id":3,"name":"Germany","parent":"World","hierarchy":"country",
+            "synonyms":["Deutschland","DE"]
+        }
+    ]
+    '''
+    obs = iiasa.Connection.convert_regions_payload(json, include_synonyms=True)
+    assert not obs.empty
+    assert (obs[obs.region == 'USA']
+            .synonym.isin(['US', 'United States'])).all()
+    assert (obs[obs.region == 'Germany']
+            .synonym.isin(['Deutschland', 'DE'])).all()
 
 
 def test_metadata():
