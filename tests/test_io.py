@@ -7,6 +7,8 @@ from pyam import IamDataFrame
 
 from conftest import TEST_DATA_DIR
 
+FILTER_ARGS = dict(scenario='scen_a')
+
 
 def test_io_csv(meta_df):
     # write to csv
@@ -59,14 +61,16 @@ def test_load_meta(meta_df, args):
 
 
 def test_load_ssp_database_downloaded_file(test_df_year):
+    exp = test_df_year.filter(**FILTER_ARGS).as_pandas()
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
     )
-    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df_year.as_pandas())
+    pd.testing.assert_frame_equal(obs_df.as_pandas(), exp)
 
 
 def test_load_rcp_database_downloaded_file(test_df_year):
+    exp = test_df_year.filter(**FILTER_ARGS).as_pandas()
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_RCP_database_raw_download.xlsx')
     )
-    pd.testing.assert_frame_equal(obs_df.as_pandas(), test_df_year.as_pandas())
+    pd.testing.assert_frame_equal(obs_df.as_pandas(), exp)

@@ -634,17 +634,13 @@ def test_category_top_level(meta_df):
 
 def test_interpolate(test_df_year):
     test_df_year.interpolate(2007)
-    dct = {'model': ['a_model'] * 3, 'scenario': ['a_scenario'] * 3,
-           'years': [2005, 2007, 2010], 'value': [1, 3, 6]}
-    exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
-                                        columns=['years'], values='value')
-    variable = {'variable': 'Primary Energy'}
-    obs = test_df_year.filter(**variable).timeseries()
-    npt.assert_array_equal(obs, exp)
+    obs = test_df_year.filter(year=2007).data['value'].reset_index(drop=True)
+    exp = pd.Series([3, 1.5, 4], name='value')
+    pd.testing.assert_series_equal(obs, exp)
 
-    # redo the inpolation and check that no duplicates are added
+    # redo the interpolation and check that no duplicates are added
     test_df_year.interpolate(2007)
-    assert not test_df_year.filter(**variable).data.duplicated().any()
+    assert not test_df_year.filter().data.duplicated().any()
 
 
 def test_filter_by_bool(meta_df):
