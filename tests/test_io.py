@@ -10,16 +10,16 @@ from conftest import TEST_DATA_DIR
 FILTER_ARGS = dict(scenario='scen_a')
 
 
-def test_io_csv(meta_df):
+def test_io_csv(test_df):
     # write to csv
     file = 'testing_io_write_read.csv'
-    meta_df.to_csv(file)
+    test_df.to_csv(file)
 
     # read from csv
     import_df = IamDataFrame(file)
 
     # assert that `data` tables are equal and delete file
-    pd.testing.assert_frame_equal(meta_df.data, import_df.data)
+    pd.testing.assert_frame_equal(test_df.data, import_df.data)
     os.remove(file)
 
 
@@ -27,14 +27,14 @@ def test_io_csv(meta_df):
     [{}, {}],
     [dict(include_meta='foo'), dict(meta_sheet_name='foo')]
 ])
-def test_io_xlsx(meta_df, meta_args):
+def test_io_xlsx(test_df, meta_args):
     # add column to `meta`
-    meta_df.set_meta(['a', 'b'], 'string')
+    test_df.set_meta(['a', 'b'], 'string')
 
     # write to xlsx (direct file name and ExcelWriter, see bug report #300)
     file = 'testing_io_write_read.xlsx'
     for f in [file, pd.ExcelWriter(file)]:
-        meta_df.to_excel(f, **meta_args[0])
+        test_df.to_excel(f, **meta_args[0])
         if isinstance(f, pd.ExcelWriter):
             f.close()
 
@@ -42,16 +42,16 @@ def test_io_xlsx(meta_df, meta_args):
         import_df = IamDataFrame(file, **meta_args[1])
 
         # assert that `data` and `meta` tables are equal and delete file
-        pd.testing.assert_frame_equal(meta_df.data, import_df.data)
-        pd.testing.assert_frame_equal(meta_df.meta, import_df.meta)
+        pd.testing.assert_frame_equal(test_df.data, import_df.data)
+        pd.testing.assert_frame_equal(test_df.meta, import_df.meta)
         os.remove(file)
 
 
 @pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
-def test_load_meta(meta_df, args):
+def test_load_meta(test_df, args):
     file = os.path.join(TEST_DATA_DIR, 'testing_metadata.xlsx')
-    meta_df.load_meta(file, **args)
-    obs = meta_df.meta
+    test_df.load_meta(file, **args)
+    obs = test_df.meta
 
     dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a', 'scen_b'],
            'category': ['imported', np.nan], 'exclude': [False, False]}

@@ -30,20 +30,20 @@ EXP_RENAME_DF = IamDataFrame(pd.DataFrame([
 )).data.sort_values(by='region').reset_index(drop=True)
 
 
-def test_append_other_scenario(meta_df):
-    other = meta_df.filter(scenario='scen_b')\
+def test_append_other_scenario(test_df):
+    other = test_df.filter(scenario='scen_b')\
         .rename({'scenario': {'scen_b': 'scen_c'}})
 
-    meta_df.set_meta([0, 1], name='col1')
-    meta_df.set_meta(['a', 'b'], name='col2')
+    test_df.set_meta([0, 1], name='col1')
+    test_df.set_meta(['a', 'b'], name='col2')
 
     other.set_meta(2, name='col1')
     other.set_meta('x', name='col3')
 
-    df = meta_df.append(other)
+    df = test_df.append(other)
 
     # check that the original meta dataframe is not updated
-    obs = meta_df.meta.index.get_level_values(1)
+    obs = test_df.meta.index.get_level_values(1)
     npt.assert_array_equal(obs, ['scen_a', 'scen_b'])
 
     # assert that merging of meta works as expected
@@ -63,26 +63,26 @@ def test_append_other_scenario(meta_df):
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
-def test_append_same_scenario(meta_df):
-    other = meta_df.filter(scenario='scen_b')\
+def test_append_same_scenario(test_df):
+    other = test_df.filter(scenario='scen_b')\
         .rename({'variable': {'Primary Energy': 'Primary Energy clone'}})
 
-    meta_df.set_meta([0, 1], name='col1')
+    test_df.set_meta([0, 1], name='col1')
 
     other.set_meta(2, name='col1')
     other.set_meta('b', name='col2')
 
     # check that non-matching meta raise an error
-    pytest.raises(ValueError, meta_df.append, other=other)
+    pytest.raises(ValueError, test_df.append, other=other)
 
     # check that ignoring meta conflict works as expetced
-    df = meta_df.append(other, ignore_meta_conflict=True)
+    df = test_df.append(other, ignore_meta_conflict=True)
 
     # check that the new meta.index is updated, but not the original one
-    npt.assert_array_equal(meta_df.meta.columns, ['exclude', 'col1'])
+    npt.assert_array_equal(test_df.meta.columns, ['exclude', 'col1'])
 
     # assert that merging of meta works as expected
-    exp = meta_df.meta.copy()
+    exp = test_df.meta.copy()
     exp['col2'] = [np.nan, 'b']
     pd.testing.assert_frame_equal(df.meta, exp)
 
@@ -148,38 +148,38 @@ def test_rename_data_cols_by_mixed():
     pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
-def test_rename_conflict(meta_df):
+def test_rename_conflict(test_df):
     mapping = {'scenario': {'scen_a': 'scen_b'}}
-    pytest.raises(ValueError, meta_df.rename, mapping, **mapping)
+    pytest.raises(ValueError, test_df.rename, mapping, **mapping)
 
 
-def test_rename_index_data_fail(meta_df):
+def test_rename_index_data_fail(test_df):
     mapping = {'scenario': {'scen_a': 'scen_c'},
                'variable': {'Primary Energy|Coal': 'Primary Energy|Gas'}}
-    pytest.raises(ValueError, meta_df.rename, mapping)
+    pytest.raises(ValueError, test_df.rename, mapping)
 
 
-def test_rename_index_fail_duplicates(meta_df):
+def test_rename_index_fail_duplicates(test_df):
     mapping = {'scenario': {'scen_a': 'scen_b'}}
-    pytest.raises(ValueError, meta_df.rename, mapping)
+    pytest.raises(ValueError, test_df.rename, mapping)
 
 
-def test_rename_index(meta_df):
+def test_rename_index(test_df):
     mapping = {'model': {'model_a': 'model_b'}}
-    obs = meta_df.rename(mapping, scenario={'scen_a': 'scen_c'})
+    obs = test_df.rename(mapping, scenario={'scen_a': 'scen_c'})
 
     # test data changes
-    dts = TEST_DTS
-    times = [2005, 2010] if 'year' in meta_df.data else dts
+    times = [2005, 2010] if 'year' in test_df.data else TEST_DTS
     exp = pd.DataFrame([
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX).sort_index()
-    if "year" in meta_df.data:
+    if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
     else:
+        obs.data.time = obs.data.time.dt.normalize()
         exp.columns = pd.to_datetime(exp.columns)
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
@@ -192,14 +192,13 @@ def test_rename_index(meta_df):
     pd.testing.assert_frame_equal(obs.meta, exp)
 
 
-def test_rename_append(meta_df):
+def test_rename_append(test_df):
     mapping = {'model': {'model_a': 'model_b'},
                'scenario': {'scen_a': 'scen_c'}}
-    obs = meta_df.rename(mapping, append=True)
+    obs = test_df.rename(mapping, append=True)
 
     # test data changes
-    dts = [dt.datetime(2005, 6, 17), dt.datetime(2010, 7, 21)]
-    times = [2005, 2010] if "year" in meta_df.data else dts
+    times = [2005, 2010] if "year" in test_df.data else TEST_DTS
     exp = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
         ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
@@ -208,9 +207,10 @@ def test_rename_append(meta_df):
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX).sort_index()
-    if "year" in meta_df.data:
+    if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
     else:
+        obs.data.time = obs.data.time.dt.normalize()
         exp.columns = pd.to_datetime(exp.columns)
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 

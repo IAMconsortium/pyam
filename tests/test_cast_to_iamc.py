@@ -4,43 +4,39 @@ from pyam import IamDataFrame, compare
 
 from conftest import TEST_DTS
 
-def test_cast_from_value_col(meta_df):
+def test_cast_from_value_col(test_df_year):
     df_with_value_cols = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'EJ/y', TEST_DTS[0], 1, 0.5],
-        ['model_a', 'scen_a', 'World', 'EJ/y', TEST_DTS[1], 6., 3],
-        ['model_a', 'scen_b', 'World', 'EJ/y', TEST_DTS[0], 2, None],
-        ['model_a', 'scen_b', 'World', 'EJ/y', TEST_DTS[1], 7, None]
+        ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
+        ['model_a', 'scen_a', 'World', 'EJ/y', 2010, 6., 3],
+        ['model_a', 'scen_b', 'World', 'EJ/y', 2005, 2, None],
+        ['model_a', 'scen_b', 'World', 'EJ/y', 2010, 7, None]
     ],
-        columns=['model', 'scenario', 'region', 'unit', 'time',
+        columns=['model', 'scenario', 'region', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
     )
     df = IamDataFrame(df_with_value_cols,
                       value=['Primary Energy', 'Primary Energy|Coal'])
-    if "year" in meta_df.data.columns:
-        df = df.swap_time_for_year()
 
-    assert compare(meta_df, df).empty
-    pd.testing.assert_frame_equal(df.data, meta_df.data, check_like=True)
+    assert compare(test_df_year, df).empty
+    pd.testing.assert_frame_equal(df.data, test_df_year.data, check_like=True)
 
 
-def test_cast_from_value_col_and_args(meta_df):
+def test_cast_from_value_col_and_args(test_df_year):
     # checks for issue [#210](https://github.com/IAMconsortium/pyam/issues/210)
     df_with_value_cols = pd.DataFrame([
-        ['scen_a', 'World', 'EJ/y', TEST_DTS[0], 1, 0.5],
-        ['scen_a', 'World', 'EJ/y', TEST_DTS[1], 6., 3],
-        ['scen_b', 'World', 'EJ/y', TEST_DTS[0], 2, None],
-        ['scen_b', 'World', 'EJ/y', TEST_DTS[1], 7, None]
+        ['scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
+        ['scen_a', 'World', 'EJ/y', 2010, 6., 3],
+        ['scen_b', 'World', 'EJ/y', 2005, 2, None],
+        ['scen_b', 'World', 'EJ/y', 2010, 7, None]
     ],
-        columns=['scenario', 'iso', 'unit', 'time',
+        columns=['scenario', 'iso', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
     )
     df = IamDataFrame(df_with_value_cols, model='model_a', region='iso',
                       value=['Primary Energy', 'Primary Energy|Coal'])
-    if "year" in meta_df.data.columns:
-        df = df.swap_time_for_year()
 
-    assert compare(meta_df, df).empty
-    pd.testing.assert_frame_equal(df.data, meta_df.data, check_like=True)
+    assert compare(test_df_year, df).empty
+    pd.testing.assert_frame_equal(df.data, test_df_year.data, check_like=True)
 
 
 def test_cast_with_model_arg_raises():
@@ -53,35 +49,32 @@ def test_cast_with_model_arg_raises():
     pytest.raises(ValueError, IamDataFrame, df, model='foo')
 
 
-def test_cast_with_model_arg(meta_df):
-    df = meta_df.timeseries().reset_index()
+def test_cast_with_model_arg(test_df):
+    df = test_df.timeseries().reset_index()
     df.rename(columns={'model': 'foo'}, inplace=True)
 
     df = IamDataFrame(df, model='foo')
-    assert compare(meta_df, df).empty
-    pd.testing.assert_frame_equal(df.data, meta_df.data)
+    assert compare(test_df, df).empty
+    pd.testing.assert_frame_equal(df.data, test_df.data)
 
 
-def test_cast_by_column_concat(meta_df):
-    dts = TEST_DTS
+def test_cast_by_column_concat(test_df_year):
     df = pd.DataFrame([
         ['scen_a', 'World', 'Primary Energy', None, 'EJ/y', 1, 6.],
         ['scen_a', 'World', 'Primary Energy', 'Coal', 'EJ/y', 0.5, 3],
         ['scen_b', 'World', 'Primary Energy', None, 'EJ/y', 2, 7],
     ],
-        columns=['scenario', 'region', 'var_1', 'var_2', 'unit'] + dts,
+        columns=['scenario', 'region', 'var_1', 'var_2', 'unit', 2005, 2010],
     )
 
     df = IamDataFrame(df, model='model_a', variable=['var_1', 'var_2'])
-    if "year" in meta_df.data.columns:
-        df = df.swap_time_for_year()
 
-    assert compare(meta_df, df).empty
-    pd.testing.assert_frame_equal(df.data, meta_df.data, check_like=True)
+    assert compare(test_df_year, df).empty
+    pd.testing.assert_frame_equal(df.data, test_df_year.data, check_like=True)
 
 
-def test_cast_with_variable_and_value(meta_df):
-    pe_df = meta_df.filter(variable='Primary Energy')
+def test_cast_with_variable_and_value(test_df):
+    pe_df = test_df.filter(variable='Primary Energy')
     df = pe_df.data.rename(columns={'value': 'lvl'}).drop('variable', axis=1)
 
     df = IamDataFrame(df, variable='Primary Energy', value='lvl')

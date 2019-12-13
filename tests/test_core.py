@@ -457,19 +457,19 @@ def test_filter_year_with_time_col(test_pd_df):
     pd.testing.assert_frame_equal(obs, exp[0:2])
 
 
-def test_filter_as_kwarg(meta_df):
-    obs = list(meta_df.filter(variable='Primary Energy|Coal').scenarios())
+def test_filter_as_kwarg(test_df):
+    obs = list(test_df.filter(variable='Primary Energy|Coal').scenarios())
     assert obs == ['scen_a']
 
 
-def test_filter_keep_false(meta_df):
-    df = meta_df.filter(variable='Primary Energy|Coal', year=2005, keep=False)
+def test_filter_keep_false(test_df):
+    df = test_df.filter(variable='Primary Energy|Coal', year=2005, keep=False)
     obs = df.data[df.data.scenario == 'scen_a'].value
     npt.assert_array_equal(obs, [1, 6, 3])
 
 
-def test_filter_by_regexp(meta_df):
-    obs = meta_df.filter(scenario='sce._a$', regexp=True)
+def test_filter_by_regexp(test_df):
+    obs = test_df.filter(scenario='sce._a$', regexp=True)
     assert obs['scenario'].unique() == 'scen_a'
 
 
@@ -488,147 +488,149 @@ def test_timeseries_raises(test_df_year):
     pytest.raises(ValueError, _df.timeseries)
 
 
-def test_filter_meta_index(meta_df):
-    obs = meta_df.filter(scenario='scen_b').meta.index
+def test_filter_meta_index(test_df):
+    obs = test_df.filter(scenario='scen_b').meta.index
     exp = pd.MultiIndex(levels=[['model_a'], ['scen_b']],
                         labels=[[0], [0]],
                         names=['model', 'scenario'])
     pd.testing.assert_index_equal(obs, exp)
 
 
-def test_meta_idx(meta_df):
+def test_meta_idx(test_df):
     # assert that the `drop_duplicates()` in `_meta_idx()` returns right length
-    assert len(_meta_idx(meta_df.data)) == 2
+    assert len(_meta_idx(test_df.data)) == 2
 
 
-def test_require_variable(meta_df):
-    obs = meta_df.require_variable(variable='Primary Energy|Coal',
+def test_require_variable(test_df):
+    obs = test_df.require_variable(variable='Primary Energy|Coal',
                                    exclude_on_fail=True)
     assert len(obs) == 1
     assert obs.loc[0, 'scenario'] == 'scen_b'
 
-    assert list(meta_df['exclude']) == [False, True]
+    assert list(test_df['exclude']) == [False, True]
 
 
-def test_require_variable_top_level(meta_df):
-    obs = require_variable(meta_df, variable='Primary Energy|Coal',
+def test_require_variable_top_level(test_df):
+    obs = require_variable(test_df, variable='Primary Energy|Coal',
                            exclude_on_fail=True)
     assert len(obs) == 1
     assert obs.loc[0, 'scenario'] == 'scen_b'
 
-    assert list(meta_df['exclude']) == [False, True]
+    assert list(test_df['exclude']) == [False, True]
 
 
-def test_validate_all_pass(meta_df):
-    obs = meta_df.validate(
+def test_validate_all_pass(test_df):
+    obs = test_df.validate(
         {'Primary Energy': {'up': 10}}, exclude_on_fail=True)
     assert obs is None
-    assert len(meta_df.data) == 6  # data unchanged
+    assert len(test_df.data) == 6  # data unchanged
 
-    assert list(meta_df['exclude']) == [False, False]  # none excluded
+    assert list(test_df['exclude']) == [False, False]  # none excluded
 
 
-def test_validate_nonexisting(meta_df):
-    obs = meta_df.validate({'Primary Energy|Coal': {'up': 2}},
+def test_validate_nonexisting(test_df):
+    obs = test_df.validate({'Primary Energy|Coal': {'up': 2}},
                            exclude_on_fail=True)
     assert len(obs) == 1
     assert obs['scenario'].values[0] == 'scen_a'
 
-    assert list(meta_df['exclude']) == [True, False]  # scenario with failed
+    assert list(test_df['exclude']) == [True, False]  # scenario with failed
     # validation excluded, scenario with non-defined value passes validation
 
 
-def test_validate_up(meta_df):
-    obs = meta_df.validate({'Primary Energy': {'up': 6.5}},
+def test_validate_up(test_df):
+    obs = test_df.validate({'Primary Energy': {'up': 6.5}},
                            exclude_on_fail=False)
     assert len(obs) == 1
-    if 'year' in meta_df.data:
+    if 'year' in test_df.data:
         assert obs['year'].values[0] == 2010
     else:
         exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
-        assert pd.to_datetime(obs['time'].values[0]) == exp_time
+        print(exp_time)
+        assert pd.to_datetime(obs['time'].values[0]).date() == exp_time
 
-    assert list(meta_df['exclude']) == [False, False]  # assert none excluded
+    assert list(test_df['exclude']) == [False, False]  # assert none excluded
 
 
-def test_validate_lo(meta_df):
-    obs = meta_df.validate({'Primary Energy': {'up': 8, 'lo': 2.0}})
+def test_validate_lo(test_df):
+    obs = test_df.validate({'Primary Energy': {'up': 8, 'lo': 2.0}})
     assert len(obs) == 1
-    if 'year' in meta_df.data:
+    if 'year' in test_df.data:
         assert obs['year'].values[0] == 2005
     else:
         exp_year = pd.to_datetime(datetime.datetime(2005, 6, 17))
-        assert pd.to_datetime(obs['time'].values[0]) == exp_year
+        assert pd.to_datetime(obs['time'].values[0]).date() == exp_year
 
     assert list(obs['scenario'].values) == ['scen_a']
 
 
-def test_validate_both(meta_df):
-    obs = meta_df.validate({'Primary Energy': {'up': 6.5, 'lo': 2.0}})
+def test_validate_both(test_df):
+    obs = test_df.validate({'Primary Energy': {'up': 6.5, 'lo': 2.0}})
     assert len(obs) == 2
-    if 'year' in meta_df.data:
+    if 'year' in test_df.data:
         assert list(obs['year'].values) == [2005, 2010]
     else:
         exp_time = pd.to_datetime(TEST_DTS)
+        obs.time = obs.time.dt.normalize()
         assert (pd.to_datetime(obs['time'].values) == exp_time).all()
 
     assert list(obs['scenario'].values) == ['scen_a', 'scen_b']
 
 
-def test_validate_year(meta_df):
-    obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
+def test_validate_year(test_df):
+    obs = test_df.validate({'Primary Energy': {'up': 5.0, 'year': 2005}},
                            exclude_on_fail=False)
     assert obs is None
 
-    obs = meta_df.validate({'Primary Energy': {'up': 5.0, 'year': 2010}},
+    obs = test_df.validate({'Primary Energy': {'up': 5.0, 'year': 2010}},
                            exclude_on_fail=False)
     assert len(obs) == 2
 
 
-def test_validate_exclude(meta_df):
-    meta_df.validate({'Primary Energy': {'up': 6.0}}, exclude_on_fail=True)
-    assert list(meta_df['exclude']) == [False, True]
+def test_validate_exclude(test_df):
+    test_df.validate({'Primary Energy': {'up': 6.0}}, exclude_on_fail=True)
+    assert list(test_df['exclude']) == [False, True]
 
 
-def test_validate_top_level(meta_df):
-    obs = validate(meta_df, criteria={'Primary Energy': {'up': 6.0}},
+def test_validate_top_level(test_df):
+    obs = validate(test_df, criteria={'Primary Energy': {'up': 6.0}},
                    exclude_on_fail=True, variable='Primary Energy')
     assert len(obs) == 1
-    if 'year' in meta_df.data:
+    if 'year' in test_df.data:
         assert obs['year'].values[0] == 2010
     else:
         exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
-        assert (pd.to_datetime(obs['time'].values[0]) == exp_time)
-    assert list(meta_df['exclude']) == [False, True]
+        assert (pd.to_datetime(obs['time'].values[0]).date() == exp_time)
+    assert list(test_df['exclude']) == [False, True]
 
 
-def test_category_none(meta_df):
-    meta_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
-    assert 'category' not in meta_df.meta.columns
+def test_category_none(test_df):
+    test_df.categorize('category', 'Testing', {'Primary Energy': {'up': 0.8}})
+    assert 'category' not in test_df.meta.columns
 
 
-def test_category_pass(meta_df):
+def test_category_pass(test_df):
     dct = {'model': ['model_a', 'model_a'],
            'scenario': ['scen_a', 'scen_b'],
            'category': ['foo', None]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    meta_df.categorize('category', 'foo', {'Primary Energy':
+    test_df.categorize('category', 'foo', {'Primary Energy':
                                            {'up': 6, 'year': 2010}})
-    obs = meta_df['category']
+    obs = test_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_category_top_level(meta_df):
+def test_category_top_level(test_df):
     dct = {'model': ['model_a', 'model_a'],
            'scenario': ['scen_a', 'scen_b'],
            'category': ['foo', None]}
     exp = pd.DataFrame(dct).set_index(['model', 'scenario'])['category']
 
-    categorize(meta_df, 'category', 'foo',
+    categorize(test_df, 'category', 'foo',
                criteria={'Primary Energy': {'up': 6, 'year': 2010}},
                variable='Primary Energy')
-    obs = meta_df['category']
+    obs = test_df['category']
     pd.testing.assert_series_equal(obs, exp)
 
 
@@ -643,15 +645,15 @@ def test_interpolate(test_df_year):
     assert not test_df_year.filter().data.duplicated().any()
 
 
-def test_filter_by_bool(meta_df):
-    meta_df.set_meta([True, False], name='exclude')
-    obs = meta_df.filter(exclude=True)
+def test_filter_by_bool(test_df):
+    test_df.set_meta([True, False], name='exclude')
+    obs = test_df.filter(exclude=True)
     assert obs['scenario'].unique() == 'scen_a'
 
 
-def test_filter_by_int(meta_df):
-    meta_df.set_meta([1, 2], name='test')
-    obs = meta_df.filter(test=[1, 3])
+def test_filter_by_int(test_df):
+    test_df.set_meta([1, 2], name='test')
+    obs = test_df.filter(test=[1, 3])
     assert obs['scenario'].unique() == 'scen_a'
 
 
@@ -762,13 +764,13 @@ def test_48c():
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
 
-def test_pd_filter_by_meta(meta_df):
+def test_pd_filter_by_meta(test_df):
     data = df_filter_by_meta_matching_idx.set_index(['model', 'region'])
 
-    meta_df.set_meta([True, False], 'boolean')
-    meta_df.set_meta(0, 'integer')
+    test_df.set_meta([True, False], 'boolean')
+    test_df.set_meta(0, 'integer')
 
-    obs = filter_by_meta(data, meta_df, join_meta=True,
+    obs = filter_by_meta(data, test_df, join_meta=True,
                          boolean=True, integer=None)
     obs = obs.reindex(columns=['scenario', 'col', 'boolean', 'integer'])
 
@@ -779,13 +781,13 @@ def test_pd_filter_by_meta(meta_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_pd_filter_by_meta_no_index(meta_df):
+def test_pd_filter_by_meta_no_index(test_df):
     data = df_filter_by_meta_matching_idx
 
-    meta_df.set_meta([True, False], 'boolean')
-    meta_df.set_meta(0, 'int')
+    test_df.set_meta([True, False], 'boolean')
+    test_df.set_meta(0, 'int')
 
-    obs = filter_by_meta(data, meta_df, join_meta=True,
+    obs = filter_by_meta(data, test_df, join_meta=True,
                          boolean=True, int=None)
     obs = obs.reindex(columns=META_IDX + ['region', 'col', 'boolean', 'int'])
 
@@ -796,11 +798,11 @@ def test_pd_filter_by_meta_no_index(meta_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_pd_filter_by_meta_nonmatching_index(meta_df):
+def test_pd_filter_by_meta_nonmatching_index(test_df):
     data = df_filter_by_meta_nonmatching_idx
-    meta_df.set_meta(['a', 'b'], 'string')
+    test_df.set_meta(['a', 'b'], 'string')
 
-    obs = filter_by_meta(data, meta_df, join_meta=True, string='b')
+    obs = filter_by_meta(data, test_df, join_meta=True, string='b')
     obs = obs.reindex(columns=['scenario', 2010, 2020, 'string'])
 
     exp = data.iloc[2:3].copy()
@@ -809,11 +811,11 @@ def test_pd_filter_by_meta_nonmatching_index(meta_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_pd_join_by_meta_nonmatching_index(meta_df):
+def test_pd_join_by_meta_nonmatching_index(test_df):
     data = df_filter_by_meta_nonmatching_idx
-    meta_df.set_meta(['a', 'b'], 'string')
+    test_df.set_meta(['a', 'b'], 'string')
 
-    obs = filter_by_meta(data, meta_df, join_meta=True, string=None)
+    obs = filter_by_meta(data, test_df, join_meta=True, string=None)
     obs = obs.reindex(columns=['scenario', 2010, 2020, 'string'])
 
     exp = data.copy()
@@ -830,8 +832,8 @@ def test_concat_fails_notdf():
     pytest.raises(TypeError, concat, 'foo')
 
 
-def test_concat(meta_df):
-    left = IamDataFrame(meta_df.data.copy())
+def test_concat(test_df):
+    left = IamDataFrame(test_df.data.copy())
     right = left.data.copy()
     right['model'] = 'not left'
     right = IamDataFrame(right)
@@ -847,22 +849,22 @@ def test_concat(meta_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_normalize(meta_df):
-    exp = meta_df.data.copy().reset_index(drop=True)
+def test_normalize(test_df):
+    exp = test_df.data.copy().reset_index(drop=True)
     exp['value'][1::2] /= exp['value'][::2].values
     exp['value'][::2] /= exp['value'][::2].values
-    if "year" in meta_df.data:
-        obs = meta_df.normalize(year=2005).data.reset_index(drop=True)
+    if "year" in test_df.data:
+        obs = test_df.normalize(year=2005).data.reset_index(drop=True)
     else:
-        obs = meta_df.normalize(
+        obs = test_df.normalize(
             time=datetime.datetime(2005, 6, 17)
         ).data.reset_index(drop=True)
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_normalize_not_time(meta_df):
-    pytest.raises(ValueError, meta_df.normalize, variable='foo')
-    pytest.raises(ValueError, meta_df.normalize, year=2015, variable='foo')
+def test_normalize_not_time(test_df):
+    pytest.raises(ValueError, test_df.normalize, variable='foo')
+    pytest.raises(ValueError, test_df.normalize, year=2015, variable='foo')
 
 
 @pytest.mark.parametrize("inplace", [True, False])

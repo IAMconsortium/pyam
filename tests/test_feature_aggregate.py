@@ -54,26 +54,26 @@ def test_aggregate_region_missing_all_subregions():
     assert len(obs) == 0
 
 
-def test_do_aggregate_append(meta_df):
-    meta_df.rename({'variable': {'Primary Energy': 'Primary Energy|Gas'}},
+def test_do_aggregate_append(test_df):
+    test_df.rename({'variable': {'Primary Energy': 'Primary Energy|Gas'}},
                    inplace=True)
-    meta_df.aggregate('Primary Energy', append=True)
-    obs = meta_df.filter(variable='Primary Energy').timeseries()
+    test_df.aggregate('Primary Energy', append=True)
+    df = test_df.filter(variable='Primary Energy')
 
-    dts = TEST_DTS
-    times = [2005, 2010] if "year" in meta_df.data else dts
+    times = [2005, 2010] if "year" in test_df.data else TEST_DTS
     exp = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1.5, 9.],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
     ],
         columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX)
-    if "year" in meta_df.data:
+    if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
     else:
+        df.data.time = df.data.time.dt.normalize()
         exp.columns = pd.to_datetime(exp.columns)
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pd.testing.assert_frame_equal(df.timeseries(), exp)
 
 
 def test_check_aggregate_pass(check_aggregate_df):
@@ -97,16 +97,16 @@ def test_check_internal_consistency_no_world_for_variable(
     assert caplog.records[warn_idx].levelname == "INFO"
 
 
-def test_check_aggregate_fail(meta_df):
-    obs = meta_df.check_aggregate('Primary Energy', exclude_on_fail=True)
+def test_check_aggregate_fail(test_df):
+    obs = test_df.check_aggregate('Primary Energy', exclude_on_fail=True)
     assert len(obs.columns) == 2
     assert obs.index.get_values()[0] == (
         'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
     )
 
 
-def test_check_aggregate_top_level(meta_df):
-    obs = check_aggregate(meta_df, variable='Primary Energy', year=2005)
+def test_check_aggregate_top_level(test_df):
+    obs = check_aggregate(test_df, variable='Primary Energy', year=2005)
     assert len(obs.columns) == 1
     assert obs.index.get_values()[0] == (
         'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
