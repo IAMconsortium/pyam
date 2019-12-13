@@ -167,7 +167,7 @@ def test_model(test_df):
 
 
 def test_scenario(test_df):
-    exp = pd.Series(data=['scen_a'], name='scenario')
+    exp = pd.Series(data=['scen_a', 'scen_b'], name='scenario')
     pd.testing.assert_series_equal(test_df.scenarios(), exp)
 
 
@@ -478,7 +478,8 @@ def test_timeseries(test_df):
            'years': [2005, 2010], 'value': [1, 6]}
     exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
                                         columns=['years'], values='value')
-    obs = test_df.filter(variable='Primary Energy').timeseries()
+    obs = test_df.filter(scenario='scen_a',
+                         variable='Primary Energy').timeseries()
     npt.assert_array_equal(obs, exp)
 
 

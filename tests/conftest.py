@@ -189,8 +189,7 @@ TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
     ]
 )
 def test_df(request):
-    tdf = TEST_DF.iloc[:2]
-    tdf = tdf.rename({2005: request.param[0], 2010: request.param[1]},
+    tdf = TEST_DF.rename({2005: request.param[0], 2010: request.param[1]},
                      axis="columns")
     df = IamDataFrame(data=tdf)
     yield df
