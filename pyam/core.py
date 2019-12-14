@@ -843,7 +843,7 @@ class IamDataFrame(object):
             return IamDataFrame(diff, variable=variable).timeseries()
 
     def aggregate_region(self, variable, region='World', subregions=None,
-                         components=False, method='sum', weights=None,
+                         components=False, method='sum', weight=None,
                          append=False):
         """Compute the aggregate of timeseries over a number of regions
         including variable components only defined at the `region` level
@@ -863,14 +863,14 @@ class IamDataFrame(object):
             or explicit list of variables
         method: func or str, default 'sum'
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
-        weights: str, default None
-            variable to use as weights for the aggregation
+        weight: str, default None
+            variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
         """
-        if weights is not None and components is not False:
+        if weight is not None and components is not False:
             msg = 'using weights and components in one operation not supported'
             raise ValueError(msg)
 
@@ -888,12 +888,12 @@ class IamDataFrame(object):
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
         rows = subregion_df._apply_filters(variable=variable)
-        if weights is None:
+        if weight is None:
             _data = _aggregate(subregion_df.data[rows], cols, method=method)
         else:
-            weight_rows = subregion_df._apply_filters(variable=weights)
-            _data = _aggregate_weights(subregion_df.data[rows],
-                                       subregion_df.data[weight_rows], method)
+            weight_rows = subregion_df._apply_filters(variable=weight)
+            _data = _aggregate_weight(subregion_df.data[rows],
+                                      subregion_df.data[weight_rows], method)
 
         # if not `components=False`, add components at the `region` level
         if components is not False:
@@ -919,7 +919,7 @@ class IamDataFrame(object):
             return _data
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
-                               components=False, method='sum', weights=None,
+                               components=False, method='sum', weight=None,
                                exclude_on_fail=False, **kwargs):
         """Check whether the region timeseries data match the aggregation
         of components
@@ -939,8 +939,8 @@ class IamDataFrame(object):
             or explicit list of variables
         method: func or str, default 'sum'
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
-        weights: str, default None
-            variable to use as weights for the aggregation
+        weight: str, default None
+            variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
@@ -948,7 +948,7 @@ class IamDataFrame(object):
         """
         # compute aggregate from subregions, return None if no subregions
         df_subregions = self.aggregate_region(variable, region, subregions,
-                                              components, method, weights)
+                                              components, method, weight)
         if df_subregions is None:
             return
 
@@ -1490,14 +1490,14 @@ def _aggregate(df, by, method=np.sum):
     return df.groupby(cols)['value'].agg(_get_method_func(method))
 
 
-def _aggregate_weights(df, weights, method):
+def _aggregate_weight(df, weight, method):
     """Aggregate `df` by regions with weights, return indexed `pd.Series`"""
     # only summation allowed with weights
     if method not in ['sum', np.sum]:
         raise ValueError('only method `np.sum` allowed for weighted average')
 
     _data = _get_value_col(df, YEAR_IDX)
-    _weight = _get_value_col(weights, YEAR_IDX)
+    _weight = _get_value_col(weight, YEAR_IDX)
 
     cols = META_IDX + ['year']
     return (_data * _weight).groupby(cols).sum() / _weight.groupby(cols).sum()
