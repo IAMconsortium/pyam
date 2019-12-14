@@ -865,6 +865,7 @@ class IamDataFrame(object):
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         weights: str, default None
             variable to use as weights for the aggregation
+            (currently only supported with `method='sum'`)
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
@@ -907,7 +908,7 @@ class IamDataFrame(object):
             return _data
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
-                               components=False, method='sum', weights='sum',
+                               components=False, method='sum', weights=None,
                                exclude_on_fail=False, **kwargs):
         """Check whether the region timeseries data match the aggregation
         of components
@@ -929,6 +930,7 @@ class IamDataFrame(object):
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         weights: str, default None
             variable to use as weights for the aggregation
+            (currently only supported with `method='sum'`)
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
         kwargs: passed to `np.isclose()`
