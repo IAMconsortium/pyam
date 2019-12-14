@@ -870,6 +870,10 @@ class IamDataFrame(object):
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
         """
+        if weights is not None and components is not False:
+            msg = 'using weights and components in one operation not supported'
+            raise ValueError(msg)
+
         # default subregions to all regions other than `region`
         subregions = subregions or self._all_other_regions(region, variable)
 
@@ -884,7 +888,12 @@ class IamDataFrame(object):
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
         rows = subregion_df._apply_filters(variable=variable)
-        _data = _aggregate(subregion_df.data[rows], cols, method=method)
+        if weights is None:
+            _data = _aggregate(subregion_df.data[rows], cols, method=method)
+        else:
+            weight_rows = subregion_df._apply_filters(variable=weights)
+            _data = _aggregate_weights(subregion_df.data[rows],
+                                       subregion_df.data[weight_rows], method)
 
         # if not `components=False`, add components at the `region` level
         if components is not False:
@@ -1481,6 +1490,19 @@ def _aggregate(df, by, method=np.sum):
     return df.groupby(cols)['value'].agg(_get_method_func(method))
 
 
+def _aggregate_weights(df, weights, method):
+    """Aggregate `df` by regions with weights, return indexed `pd.Series`"""
+    # only summation allowed with weights
+    if method not in ['sum', np.sum]:
+        raise ValueError('only method `np.sum` allowed for weighted average')
+
+    _data = _get_value_col(df, YEAR_IDX)
+    _weight = _get_value_col(weights, YEAR_IDX)
+
+    cols = META_IDX + ['year']
+    return (_data * _weight).groupby(cols).sum() / _weight.groupby(cols).sum()
+
+
 def _get_method_func(method):
     """Translate a string to a known method"""
     if not isstr(method):
@@ -1492,6 +1514,10 @@ def _get_method_func(method):
     # raise error if `method` is a string but not in dict of known methods
     raise ValueError('method `{}` is not a known aggregator'.format(method))
 
+
+def _get_value_col(df, cols):
+    """Return the value column as `pd.Series with `cols` as index"""
+    return df.set_index(cols)['value']
 
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))
