@@ -906,11 +906,6 @@ class IamDataFrame(object):
         else:
             return _data
 
-    def _all_other_regions(self, region, variable):
-        """Determine subregions as all regions other than `region`"""
-        rows = self._apply_filters(variable=variable)
-        return set(self.data[rows].region) - set([region])
-
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=False, method='sum', weights='sum',
                                exclude_on_fail=False, **kwargs):
@@ -970,6 +965,11 @@ class IamDataFrame(object):
 
             col_args = dict(region=region, variable=variable)
             return IamDataFrame(diff, **col_args).timeseries()
+
+    def _all_other_regions(self, region, variable):
+        """Determine subregions as all regions other than `region`"""
+        rows = self._apply_filters(variable=variable)
+        return set(self.data[rows].region) - set([region])
 
     def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
