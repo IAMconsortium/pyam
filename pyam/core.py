@@ -777,8 +777,7 @@ class IamDataFrame(object):
         components: list of str, default None
             list of variables, defaults to all sub-categories of `variable`
         method: func or str
-            method to use for aggregation
-            e.g. np.mean, np.sum, ... 'min', 'max', ...
+            method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
@@ -811,7 +810,7 @@ class IamDataFrame(object):
         components: list of str, default None
             list of variables, defaults to all sub-categories of `variable`
         method: func or str
-            method to use for aggregation, e.g. ['mean', np.min]
+            method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
         multiplier: number, default 1
@@ -844,7 +843,7 @@ class IamDataFrame(object):
             return IamDataFrame(diff, variable=variable).timeseries()
 
     def aggregate_region(self, variable, region='World', subregions=None,
-                         components=None, append=False, method='sum'):
+                         components=None, method='sum', append=False):
         """Compute the aggregate of timeseries over a number of regions
         including variable components only defined at the `region` level
 
@@ -860,6 +859,8 @@ class IamDataFrame(object):
             list of variables to include in the aggregate from the `region`
             level, defaults to all sub-categories of `variable` included in
             `region` but not in any of `subregions`
+        method: func or str
+            method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
