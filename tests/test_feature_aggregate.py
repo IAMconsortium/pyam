@@ -129,11 +129,11 @@ def test_df_check_aggregate_pass(check_aggregate_df):
 
 
 def test_df_check_aggregate_region_pass(check_aggregate_df):
-    obs = check_aggregate_df.check_aggregate_region('Primary Energy')
+    obs = check_aggregate_df.check_aggregate_region('Primary Energy', components=True)
     assert obs is None
 
     for variable in check_aggregate_df.variables():
-        obs = check_aggregate_df.check_aggregate_region(variable)
+        obs = check_aggregate_df.check_aggregate_region(variable, components=True)
         assert obs is None
 
 
@@ -169,7 +169,7 @@ def run_check_agg_fail(pyam_df, tweak_dict, test_type):
             )
         elif 'region' in test_type:
             obs = pyam_df.check_aggregate_region(
-                variable,
+                variable, components=True
             )
 
         if obs is not None:
@@ -260,34 +260,39 @@ def test_df_check_aggregate_region_errors(check_aggregate_regional_df):
 
 def test_df_check_aggregate_region_components(check_aggregate_regional_df):
     obs = check_aggregate_regional_df.check_aggregate_region(
-        'Emissions|N2O', 'World', subregions=['REUROPE', 'RASIA']
+        'Emissions|N2O', 'World', subregions=['REUROPE', 'RASIA'],
+        components=True
     )
     assert obs is None
 
     obs = check_aggregate_regional_df.check_aggregate_region(
-        'Emissions|N2O|Ind|Solvents', 'World', subregions=['REUROPE', 'RASIA']
+        'Emissions|N2O|Ind|Solvents', 'World', subregions=['REUROPE', 'RASIA'],
+        components=True
     )
     assert obs is None
 
     obs = check_aggregate_regional_df.check_aggregate_region(
-        'Emissions|N2O', 'REUROPE', subregions=['Germany', 'UK']
+        'Emissions|N2O', 'REUROPE', subregions=['Germany', 'UK'],
+        components=True
     )
     assert obs is None
 
     obs = check_aggregate_regional_df.check_aggregate_region(
-        'Emissions|N2O', 'RASIA', subregions=['China', 'Japan']
+        'Emissions|N2O', 'RASIA', subregions=['China', 'Japan'],
+        components=True
     )
     assert obs is None
 
     obs = check_aggregate_regional_df.check_aggregate_region(
-        'Emissions|N2O|Ind|Transport', 'REUROPE', subregions=['Germany', 'UK']
+        'Emissions|N2O|Ind|Transport', 'REUROPE', subregions=['Germany', 'UK'],
+        components=True
     )
     assert obs is None
 
 
 @pytest.mark.parametrize("components,exp_vals", (
     # should find sub-components including nested bunkers
-    (None, [1.9, 15.7]),
+    (True, [1.9, 15.7]),
     # should only add AFOLU onto regional sum, not Shipping emissions
     (["Emissions|N2O|AFOLU"], [0.9, 9.7]),
     # specifying Ind leads to double counting (and not skipping AFOLU) but as

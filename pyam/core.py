@@ -843,7 +843,7 @@ class IamDataFrame(object):
             return IamDataFrame(diff, variable=variable).timeseries()
 
     def aggregate_region(self, variable, region='World', subregions=None,
-                         components=None, method='sum', append=False):
+                         components=False, method='sum', append=False):
         """Compute the aggregate of timeseries over a number of regions
         including variable components only defined at the `region` level
 
@@ -855,10 +855,11 @@ class IamDataFrame(object):
             dimension
         subregions: list of str
             list of subregions, defaults to all regions other than `region`
-        components: list of str
-            list of variables to include in the aggregate from the `region`
-            level, defaults to all sub-categories of `variable` included in
-            `region` but not in any of `subregions`
+        components: bool or list of str, default False
+            variables at the `region` level to be included in the aggregation
+            (ignored if False); if `True`, use all sub-categories of `variable`
+            included in `region` but not in any of the `subregions`;
+            or explicit list of variables
         method: func or str
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         append: bool, default False
@@ -886,11 +887,13 @@ class IamDataFrame(object):
         with adjust_log_level(logger):
             region_df = self.filter(region=region)
 
-        rdf_comps = region_df._variable_components(variable, level=None)
-        srdf_comps = subregion_df._variable_components(variable, level=None)
-        components = components or set(rdf_comps).difference(srdf_comps)
+        # if `True`, auto-detect `components` at the `region` level
+        if components is True:
+            r_comps = region_df._variable_components(variable, level=None)
+            sr_comps = subregion_df._variable_components(variable, level=None)
+            components = set(r_comps).difference(sr_comps)
 
-        if len(components):
+        if components is not False and len(components):
             rows = region_df._apply_filters(variable=components)
             _data = _data.add(_aggregate(region_df.data[rows], cols),
                               fill_value=0)
@@ -906,7 +909,7 @@ class IamDataFrame(object):
         return set(self.data[rows].region) - set([region])
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
-                               components=None, exclude_on_fail=False,
+                               components=False, exclude_on_fail=False,
                                **kwargs):
         """Check whether the region timeseries data match the aggregation
         of components
@@ -919,9 +922,11 @@ class IamDataFrame(object):
             region to be checked for matching aggregation of subregions
         subregions: list of str
             list of subregions, defaults to all regions other than `region`
-        components: list of str, default None
-            list of variables, defaults to all sub-categories of `variable`
-            included in `region` but not in any of `subregions`
+        components: bool or list of str, default False
+            variables at the `region` level to be included in the aggregation
+            (ignored if False); if `True`, use all sub-categories of `variable`
+            included in `region` but not in any of the `subregions`;
+            or explicit list of variables
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
         kwargs: passed to `np.isclose()`
@@ -970,7 +975,7 @@ class IamDataFrame(object):
                                       level=level)]
 
     def check_internal_consistency(self, **kwargs):
-        """Check whether the database is internally consistent
+        """Check whether a scenario ensemble is internally consistent
 
         We check that all variables are equal to the sum of their sectoral
         components and that all the regions add up to the World total. If
@@ -993,7 +998,8 @@ class IamDataFrame(object):
             if diff_agg is not None:
                 inconsistent_vars[variable + "-aggregate"] = diff_agg
 
-            diff_regional = self.check_aggregate_region(variable, **kwargs)
+            diff_regional = self.check_aggregate_region(variable,
+                        components=True, **kwargs)
             if diff_regional is not None:
                 inconsistent_vars[variable + "-regional"] = diff_regional
 
