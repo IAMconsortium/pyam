@@ -882,8 +882,8 @@ class IamDataFrame(object):
         # compute aggregate over all subregions
         subregion_df = self.filter(region=subregions)
         cols = ['region', 'variable']
-        _data = _aggregate(subregion_df.filter(variable=variable).data,
-                           cols, method=method)
+        rows = subregion_df._apply_filters(variable=variable)
+        _data = _aggregate(subregion_df.data[rows], cols, method=method)
 
         # add components at the `region` level, defaults to all variables one
         # level below `variable` that are only present in `region`
