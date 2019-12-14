@@ -886,21 +886,23 @@ class IamDataFrame(object):
         rows = subregion_df._apply_filters(variable=variable)
         _data = _aggregate(subregion_df.data[rows], cols, method=method)
 
-        # add components at the `region` level, defaults to all variables one
-        # level below `variable` that are only present in `region`
-        with adjust_log_level(logger):
-            region_df = self.filter(region=region)
+        # if not `components=False`, add components at the `region` level
+        if components is not False:
+            with adjust_log_level(logger):
+                region_df = self.filter(region=region)
 
-        # if `True`, auto-detect `components` at the `region` level
-        if components is True:
-            r_comps = region_df._variable_components(variable, level=None)
-            sr_comps = subregion_df._variable_components(variable, level=None)
-            components = set(r_comps).difference(sr_comps)
+            # if `True`, auto-detect `components` at the `region` level,
+            # defaults to variables below `variable` only present in `region`
+            if components is True:
+                level = dict(level=None)
+                r_comps = region_df._variable_components(variable, **level)
+                sr_comps = subregion_df._variable_components(variable, **level)
+                components = set(r_comps).difference(sr_comps)
 
-        if components is not False and len(components):
-            rows = region_df._apply_filters(variable=components)
-            _data = _data.add(_aggregate(region_df.data[rows], cols),
-                              fill_value=0)
+            if len(components):
+                rows = region_df._apply_filters(variable=components)
+                _data = _data.add(_aggregate(region_df.data[rows], cols),
+                                  fill_value=0)
 
         if append is True:
             self.append(_data, region=region, variable=variable, inplace=True)
