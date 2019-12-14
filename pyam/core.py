@@ -776,7 +776,7 @@ class IamDataFrame(object):
             variable for which the aggregate should be computed
         components: list of str, default None
             list of variables, defaults to all sub-categories of `variable`
-        method: func or str
+        method: func or str, default 'sum'
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
@@ -809,7 +809,7 @@ class IamDataFrame(object):
             variable to be checked for matching aggregation of sub-categories
         components: list of str, default None
             list of variables, defaults to all sub-categories of `variable`
-        method: func or str
+        method: func or str, default 'sum'
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
@@ -843,7 +843,8 @@ class IamDataFrame(object):
             return IamDataFrame(diff, variable=variable).timeseries()
 
     def aggregate_region(self, variable, region='World', subregions=None,
-                         components=False, method='sum', append=False):
+                         components=False, method='sum', weights=None,
+                         append=False):
         """Compute the aggregate of timeseries over a number of regions
         including variable components only defined at the `region` level
 
@@ -860,8 +861,10 @@ class IamDataFrame(object):
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
             or explicit list of variables
-        method: func or str
+        method: func or str, default 'sum'
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
+        weights: str, default None
+            variable to use as weights for the aggregation
         append: bool, default False
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
@@ -909,8 +912,8 @@ class IamDataFrame(object):
         return set(self.data[rows].region) - set([region])
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
-                               components=False, exclude_on_fail=False,
-                               **kwargs):
+                               components=False, method='sum', weights='sum',
+                               exclude_on_fail=False, **kwargs):
         """Check whether the region timeseries data match the aggregation
         of components
 
@@ -927,13 +930,17 @@ class IamDataFrame(object):
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
             or explicit list of variables
+        method: func or str, default 'sum'
+            method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
+        weights: str, default None
+            variable to use as weights for the aggregation
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
         kwargs: passed to `np.isclose()`
         """
         # compute aggregate from subregions, return None if no subregions
         df_subregions = self.aggregate_region(variable, region, subregions,
-                                              components)
+                                              components, method, weights)
         if df_subregions is None:
             return
 
