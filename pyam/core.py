@@ -967,7 +967,7 @@ class IamDataFrame(object):
             return IamDataFrame(diff, **col_args).timeseries()
 
     def _all_other_regions(self, region, variable):
-        """Determine subregions as all regions other than `region`"""
+        """Return list of regions other than `region` containing `variable`"""
         rows = self._apply_filters(variable=variable)
         return set(self.data[rows].region) - set([region])
 
