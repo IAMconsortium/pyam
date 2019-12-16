@@ -181,7 +181,7 @@ TEST_TIME_STR = ['2005-06-17', '2010-07-21']
 TEST_TIME_STR_HR = ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
 
 
-# IamDataFrame with four different time formats
+# minimal IamDataFrame with four different time formats
 @pytest.fixture(
     scope="function",
     params=[
@@ -198,14 +198,14 @@ def test_df(request):
     yield df
 
 
-# IamDataFrame for testing specifically for 'year'-column feature
+# minimal IamDataFrame for specifically testing 'year'-column features
 @pytest.fixture(scope="function")
 def test_df_year():
     df = IamDataFrame(data=TEST_DF)
     yield df
 
 
-# standard test data as pandas.DataFrame (only 'year' time format)
+# minimal test data provided as pandas.DataFrame (only 'year' time format)
 @pytest.fixture(scope="function")
 def test_pd_df():
     yield TEST_DF.copy()
