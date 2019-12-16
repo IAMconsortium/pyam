@@ -12,7 +12,7 @@ from conftest import TEST_DTS
 def test_aggregate_region(aggregate_df):
     df = aggregate_df
 
-    # Primary energy is a direct sum
+    # primary energy is a direct sum
     assert df.check_aggregate_region('Primary Energy') is None
 
     # CO2 emissions have "bunkers" only defined at the region level
@@ -24,12 +24,33 @@ def test_aggregate_region(aggregate_df):
     _df = df.rename(variable={'Emissions|CO2|Bunkers': 'foo'})
     assert _df.check_aggregate_region(v, components=['foo']) is None
 
-    # Carbon price has to be weighted by emissions
+    # carbon price has to be weighted by emissions
     assert df.check_aggregate_region('Price|Carbon') is not None
     assert df.check_aggregate_region('Price|Carbon', weight=v) is None
 
     # setting both weight and components raises an error
     pytest.raises(ValueError, df.aggregate_region, v, components=True,
+                  weight='bar')
+
+    # use other method (max) both as string and passing the function
+    idx = ['model', 'scenario', 'unit', 'year']
+    exp = pd.DataFrame([
+        ['model_a', 'scen_a', 'USD/tCO2', 2005, 10.0],
+        ['model_a', 'scen_a', 'USD/tCO2', 2010, 30.0]
+    ],
+        columns=idx+['value']
+    ).set_index(idx).value
+    obs = df.aggregate_region('Price|Carbon', method='max')
+    pd.testing.assert_series_equal(obs, exp)
+
+    obs = df.aggregate_region('Price|Carbon', method=np.max)
+    pd.testing.assert_series_equal(obs, exp)
+
+    # using illegal method raises an error
+    pytest.raises(ValueError, df.aggregate_region, v, method='foo')
+
+    # using weight and method other than 'sum' raises an error
+    pytest.raises(ValueError, df.aggregate_region, v, method='max',
                   weight='bar')
 
 
