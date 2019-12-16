@@ -9,6 +9,30 @@ from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 from conftest import TEST_DTS
 
 
+def test_aggregate_region(aggregate_df):
+    df = aggregate_df
+
+    # Primary energy is a direct sum
+    assert df.check_aggregate_region('Primary Energy') is None
+
+    # CO2 emissions have "bunkers" only defined at the region level
+    v = 'Emissions|CO2'
+    assert df.check_aggregate_region(v) is not None
+    assert df.check_aggregate_region(v, components=True) is None
+
+    # rename emissions of bunker to test setting components as list
+    _df = df.rename(variable={'Emissions|CO2|Bunkers': 'foo'})
+    assert _df.check_aggregate_region(v, components=['foo']) is None
+
+    # Carbon price has to be weighted by emissions
+    assert df.check_aggregate_region('Price|Carbon') is not None
+    assert df.check_aggregate_region('Price|Carbon', weight=v) is None
+
+    # setting both weight and components raises an error
+    pytest.raises(ValueError, df.aggregate_region, v, components=True,
+                  weight='bar')
+
+
 def test_missing_region(check_aggregate_df):
     # for now, this test makes sure that this operation works as expected
     exp = check_aggregate_df.aggregate_region('Primary Energy', region='foo')
