@@ -9,10 +9,45 @@ from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 from conftest import TEST_DTS
 
 
+def test_aggregate(aggregate_df):
+    df = aggregate_df
+
+    # primary energy is a direct sum (within each region)
+    assert df.check_aggregate('Primary Energy') is None
+
+    # rename sub-category to test setting components as list
+    _df = df.rename(variable={'Primary Energy|Wind':'foo'})
+    assert _df.check_aggregate('Primary Energy') is not None
+    components = ['Primary Energy|Coal', 'foo']
+    assert _df.check_aggregate('Primary Energy', components=components) is None
+
+    # use other method (max) both as string and passing the function
+    idx = ['model', 'scenario', 'region', 'unit', 'year']
+    exp = pd.DataFrame([
+        ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 7.0],
+        ['model_a', 'scen_a', 'World', 'EJ/y', 2010, 10.0],
+        ['model_a', 'scen_a', 'reg_a', 'EJ/y', 2005, 5.0],
+        ['model_a', 'scen_a', 'reg_a', 'EJ/y', 2010, 7.0],
+        ['model_a', 'scen_a', 'reg_b', 'EJ/y', 2005, 2.0],
+        ['model_a', 'scen_a', 'reg_b', 'EJ/y', 2010, 3.0],
+
+    ],
+        columns=idx+['value']
+    ).set_index(idx).value
+    obs = df.aggregate('Primary Energy', method='max')
+    pd.testing.assert_series_equal(obs, exp)
+
+    obs = df.aggregate('Primary Energy', method=np.max)
+    pd.testing.assert_series_equal(obs, exp)
+
+    # using illegal method raises an error
+    pytest.raises(ValueError, df.aggregate, 'Primary Energy', method='foo')
+
+
 def test_aggregate_region(aggregate_df):
     df = aggregate_df
 
-    # primary energy is a direct sum
+    # primary energy is a direct sum (across regions)
     assert df.check_aggregate_region('Primary Energy') is None
 
     # CO2 emissions have "bunkers" only defined at the region level
