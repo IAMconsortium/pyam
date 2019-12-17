@@ -768,7 +768,7 @@ class IamDataFrame(object):
             return ret
 
     def aggregate(self, variable, components=None, method='sum', append=False):
-        """Compute the aggregate of timeseries components or sub-categories
+        """Aggregate timeseries components or sub-categories within each region
 
         Parameters
         ----------
@@ -845,8 +845,10 @@ class IamDataFrame(object):
     def aggregate_region(self, variable, region='World', subregions=None,
                          components=False, method='sum', weight=None,
                          append=False):
-        """Compute the aggregate of timeseries over a number of regions
-        including variable components only defined at the `region` level
+        """Aggregate a timeseries over a number of subregions
+
+        This function allows to add variable sub-categories that are only
+        defined at the  `region` level by setting `components=True`
 
         Parameters
         ----------
@@ -921,8 +923,7 @@ class IamDataFrame(object):
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=False, method='sum', weight=None,
                                exclude_on_fail=False, **kwargs):
-        """Check whether the region timeseries data match the aggregation
-        of components
+        """Check whether a timeseries matches the aggregation across subregions
 
         Parameters
         ----------
