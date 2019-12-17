@@ -24,9 +24,14 @@ def test_aggregate_region(aggregate_df):
     _df = df.rename(variable={'Emissions|CO2|Bunkers': 'foo'})
     assert _df.check_aggregate_region(v, components=['foo']) is None
 
-    # carbon price has to be weighted by emissions
+    # carbon price shouldn't be summed but be weighted by emissions
     assert df.check_aggregate_region('Price|Carbon') is not None
     assert df.check_aggregate_region('Price|Carbon', weight=v) is None
+
+    # inconsistent index of variable and weight raises an error
+    _df = df.filter(variable='Emissions|CO2', region='reg_b', keep=False)
+    pytest.raises(ValueError, _df.aggregate_region, 'Price|Carbon',
+                  weight='Emissions|CO2')
 
     # setting both weight and components raises an error
     pytest.raises(ValueError, df.aggregate_region, v, components=True,

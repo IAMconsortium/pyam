@@ -1499,6 +1499,9 @@ def _aggregate_weight(df, weight, method):
     _data = _get_value_col(df, YEAR_IDX)
     _weight = _get_value_col(weight, YEAR_IDX)
 
+    if not _data.index.equals(_weight.index):
+        raise ValueError('inconsistent index between variable and weight')
+
     cols = META_IDX + ['year']
     return (_data * _weight).groupby(cols).sum() / _weight.groupby(cols).sum()
 
@@ -1516,8 +1519,9 @@ def _get_method_func(method):
 
 
 def _get_value_col(df, cols):
-    """Return the value column as `pd.Series with `cols` as index"""
-    return df.set_index(cols)['value']
+    """Return the value column as `pd.Series sorted by index"""
+    return df.set_index(cols)['value'].sort_index()
+
 
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))
