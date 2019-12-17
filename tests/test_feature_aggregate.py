@@ -3,7 +3,6 @@ import logging
 
 import numpy as np
 import pandas as pd
-import pytest
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 
 from conftest import TEST_DTS
@@ -16,7 +15,7 @@ def test_aggregate(aggregate_df):
     assert df.check_aggregate('Primary Energy') is None
 
     # rename sub-category to test setting components as list
-    _df = df.rename(variable={'Primary Energy|Wind':'foo'})
+    _df = df.rename(variable={'Primary Energy|Wind': 'foo'})
     assert _df.check_aggregate('Primary Energy') is not None
     components = ['Primary Energy|Coal', 'foo']
     assert _df.check_aggregate('Primary Energy', components=components) is None
@@ -32,7 +31,7 @@ def test_aggregate(aggregate_df):
         ['model_a', 'scen_a', 'reg_b', 'EJ/y', 2010, 3.0],
 
     ],
-        columns=idx+['value']
+        columns=idx + ['value']
     ).set_index(idx).value
     obs = df.aggregate('Primary Energy', method='max')
     pd.testing.assert_series_equal(obs, exp)
@@ -78,7 +77,7 @@ def test_aggregate_region(aggregate_df):
         ['model_a', 'scen_a', 'USD/tCO2', 2005, 10.0],
         ['model_a', 'scen_a', 'USD/tCO2', 2010, 30.0]
     ],
-        columns=idx+['value']
+        columns=idx + ['value']
     ).set_index(idx).value
     obs = df.aggregate_region('Price|Carbon', method='max')
     pd.testing.assert_series_equal(obs, exp)
@@ -214,11 +213,12 @@ def test_df_check_aggregate_pass(check_aggregate_df):
 
 
 def test_df_check_aggregate_region_pass(check_aggregate_df):
-    obs = check_aggregate_df.check_aggregate_region('Primary Energy', components=True)
+    comp = dict(components=True)
+    obs = check_aggregate_df.check_aggregate_region('Primary Energy', **comp)
     assert obs is None
 
     for variable in check_aggregate_df.variables():
-        obs = check_aggregate_df.check_aggregate_region(variable, components=True)
+        obs = check_aggregate_df.check_aggregate_region(variable, **comp)
         assert obs is None
 
 
