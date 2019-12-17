@@ -36,6 +36,8 @@ FULL_FEATURE_DF = pd.DataFrame([
     ['reg_a', 'Primary Energy|Wind', 'EJ/y', 1, 2],
     ['reg_b', 'Primary Energy|Wind', 'EJ/y', 2, 3],
     ['World', 'Emissions|CO2', 'EJ/y', 10, 14],
+    ['World', 'Emissions|CO2|Energy', 'EJ/y', 6, 8],
+    ['World', 'Emissions|CO2|AFOLU', 'EJ/y', 3, 4],
     ['World', 'Emissions|CO2|Bunkers', 'EJ/y', 1, 2],
     ['reg_a', 'Emissions|CO2', 'EJ/y', 6, 8],
     ['reg_a', 'Emissions|CO2|Energy', 'EJ/y', 4, 5],
