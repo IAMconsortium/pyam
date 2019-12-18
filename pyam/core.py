@@ -875,8 +875,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str
-            variable for which the aggregate should be computed
+        variable: str or list of str
+            variable(s) for which the aggregate will be computed
         region: str, default 'World'
             dimension
         subregions: list of str
@@ -895,6 +895,10 @@ class IamDataFrame(object):
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
         """
+        if not isstr(variable) and components is not False:
+            msg = 'aggregating by list of variables with components is not supported'
+            raise ValueError(msg)
+
         if weight is not None and components is not False:
             msg = 'using weights and components in one operation not supported'
             raise ValueError(msg)
@@ -911,10 +915,10 @@ class IamDataFrame(object):
 
         # compute aggregate over all subregions
         subregion_df = self.filter(region=subregions)
-        cols = ['region', 'variable']
         rows = subregion_df._apply_filters(variable=variable)
         if weight is None:
-            _data = _aggregate(subregion_df.data[rows], cols, method=method)
+            col = 'region'
+            _data = _aggregate(subregion_df.data[rows], col, method=method)
         else:
             weight_rows = subregion_df._apply_filters(variable=weight)
             _data = _aggregate_weight(subregion_df.data[rows],
@@ -934,12 +938,14 @@ class IamDataFrame(object):
                 components = set(r_comps).difference(sr_comps)
 
             if len(components):
+                # rename all components to `variable` and aggregate
                 rows = region_df._apply_filters(variable=components)
-                _data = _data.add(_aggregate(region_df.data[rows], cols),
-                                  fill_value=0)
+                _df = region_df.data[rows].copy()
+                _df['variable'] = variable
+                _data = _data.add(_aggregate(_df, 'region'), fill_value=0)
 
         if append is True:
-            self.append(_data, region=region, variable=variable, inplace=True)
+            self.append(_data, region=region, inplace=True)
         else:
             return _data
 
@@ -950,8 +956,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str
-            variable to be checked for matching aggregation of subregions
+        variable: str or list of str
+            variable(s) to be checked for matching aggregation of subregions
         region: str, default 'World'
             region to be checked for matching aggregation of subregions
         subregions: list of str
@@ -984,7 +990,7 @@ class IamDataFrame(object):
             return
 
         df_region, df_subregions = (
-            _aggregate(self.data[rows], ['region', 'variable'])
+            _aggregate(self.data[rows], 'region')
             .align(df_subregions)
         )
 
@@ -1000,8 +1006,7 @@ class IamDataFrame(object):
             if exclude_on_fail:
                 self._exclude_on_fail(diff.index.droplevel([2, 3]))
 
-            col_args = dict(region=region, variable=variable)
-            return IamDataFrame(diff, **col_args).timeseries()
+            return IamDataFrame(diff, region=region).timeseries()
 
     def _all_other_regions(self, region, variable):
         """Return list of regions other than `region` containing `variable`"""
