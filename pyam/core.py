@@ -1010,7 +1010,46 @@ class IamDataFrame(object):
 
             return IamDataFrame(diff, region=region).timeseries()
 
-    def _all_other_regions(self, region, variable):
+    def downscale_region(self, variable, proxy, region='World',
+                         subregions=None, append=False):
+        """Downscale a timeseries to a number of subregions
+
+        Parameters
+        ----------
+        variable: str or list of str
+            variable(s) to be downscaled
+        proxy: str
+            variable to be used as proxy (i.e, weight) for the downscaling
+        region: str, default 'World'
+            dimension
+        subregions: list of str
+            list of subregions, defaults to all regions other than `region`
+        append: bool, default False
+            append the downscaled timeseries to `self` and return None,
+            else return downscaled data as new `IamDataFrame`
+        """
+        # get default subregions if not specified
+        subregions = subregions or self._all_other_regions(region)
+
+        # filter relevant data, transform to `pd.Series` with appropriate index
+        _df = self.data[self._apply_filters(variable=proxy, region=subregions)]
+        _proxy = _df.set_index(self._get_cols(['region', 'year'])).value
+        _total = _df.groupby(self._get_cols(['year'])).value.sum()
+
+        _value = (
+            self.data[self._apply_filters(variable=variable, region=region)]
+            .set_index(self._get_cols(['variable', 'unit', 'year'])).value
+        )
+
+        # compute downscaled data
+        _data = _value * _proxy / _total
+
+        if append is True:
+            self.append(_data, inplace=True)
+        else:
+            return IamDataFrame(_data)
+
+    def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
         rows = self._apply_filters(variable=variable)
         return set(self.data[rows].region) - set([region])
@@ -1025,6 +1064,10 @@ class IamDataFrame(object):
         var_list = pd.Series(self.data.variable.unique())
         return var_list[pattern_match(var_list, '{}|*'.format(variable),
                                       level=level)]
+
+    def _get_cols(self, cols):
+        """Return a list of columns of `self.data`"""
+        return META_IDX + cols + self.extra_cols
 
     def check_internal_consistency(self, **kwargs):
         """Check whether a scenario ensemble is internally consistent
