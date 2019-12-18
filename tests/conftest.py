@@ -8,7 +8,7 @@ import pandas as pd
 
 
 from datetime import datetime
-from pyam import IamDataFrame
+from pyam import IamDataFrame, IAMC_IDX
 
 
 here = os.path.dirname(os.path.realpath(__file__))
@@ -21,7 +21,7 @@ TEST_DF = pd.DataFrame([
     ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
     ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
 ],
-    columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
+    columns=IAMC_IDX + [2005, 2010],
 )
 
 
@@ -61,7 +61,7 @@ REG_DF = pd.DataFrame([
     ['MESSAGE-GLOBIOM', 'a_scenario', 'AFR', 'Primary Energy', 'EJ/y', 2, 7],
     ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 3, 13],
 ],
-    columns=['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010],
+    columns=IAMC_IDX + [ 2005, 2010],
 )
 
 
