@@ -29,9 +29,17 @@ CO2_MAX_DF = pd.DataFrame([
     ['model_a', 'scen_a', 'reg_a', 'Emissions|CO2', 'EJ/y', 2010, 5.0],
     ['model_a', 'scen_a', 'reg_b', 'Emissions|CO2', 'EJ/y', 2005, 2.0],
     ['model_a', 'scen_a', 'reg_b', 'Emissions|CO2', 'EJ/y', 2010, 3.0],
-
 ],
     columns=LONG_IDX + ['value']
+)
+
+REG_IDX = ['model', 'scenario', 'variable', 'unit', 'year']
+
+PRICE_MAX_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 'Price|Carbon', 'USD/tCO2', 2005, 10.0],
+    ['model_a', 'scen_a', 'Price|Carbon', 'USD/tCO2', 2010, 30.0],
+],
+    columns=REG_IDX + ['value']
 )
 
 
@@ -114,13 +122,7 @@ def test_aggregate_region(aggregate_df):
                   weight='bar')
 
     # use other method (max) both as string and passing the function
-    idx = ['model', 'scenario', 'unit', 'year']
-    exp = pd.DataFrame([
-        ['model_a', 'scen_a', 'USD/tCO2', 2005, 10.0],
-        ['model_a', 'scen_a', 'USD/tCO2', 2010, 30.0]
-    ],
-        columns=idx + ['value']
-    ).set_index(idx).value
+    exp = PRICE_MAX_DF.set_index(REG_IDX).value
     obs = df.aggregate_region('Price|Carbon', method='max')
     pd.testing.assert_series_equal(obs, exp)
 
@@ -133,6 +135,34 @@ def test_aggregate_region(aggregate_df):
     # using weight and method other than 'sum' raises an error
     pytest.raises(ValueError, df.aggregate_region, v, method='max',
                   weight='bar')
+
+
+def test_aggregate_region_by_list(aggregate_df):
+    df = aggregate_df
+    var_list = ['Primary Energy', 'Primary Energy|Coal', 'Primary Energy|Wind']
+
+    # primary energy and sub-categories are a direct sum (across regions)
+    assert df.check_aggregate_region(var_list) is None
+
+    # emissions and carbon price are _not_ a direct sum (across regions)
+    var_list = ['Price|Carbon', 'Emissions|CO2']
+    assert df.check_aggregate_region(var_list) is not None
+
+    # using list of variables and components raises an error
+    pytest.raises(ValueError, df.aggregate_region, var_list, components=True)
+
+    # using list of variables and weight raises an error (inconsistent weight)
+    pytest.raises(ValueError, df.aggregate_region, var_list, weight=True)
+
+    # use other method (max) both as string and passing the function
+    _co2_df = CO2_MAX_DF[CO2_MAX_DF.region=='World'].drop(columns='region')
+    exp = pd.concat([_co2_df, PRICE_MAX_DF]).set_index(REG_IDX).value
+
+    obs = df.aggregate_region(var_list, method='max')
+    pd.testing.assert_series_equal(obs, exp)
+
+    obs = df.aggregate_region(var_list, method=np.max)
+    pd.testing.assert_series_equal(obs, exp)
 
 
 def test_missing_region(check_aggregate_df):
@@ -433,8 +463,8 @@ def test_aggregate_region_components_handling(check_aggregate_regional_df,
     res = tdf.aggregate_region("Emissions|N2O", components=components,
                                subregions=["REUROPE", "RASIA"])
     exp_idx = pd.MultiIndex.from_product(
-        [["AIM"], ["cscen"], ["Mt N/yr"], [2005, 2010]],
-        names=["model", "scenario", "unit", "year"]
+        [["AIM"], ["cscen"], ['Emissions|N2O'], ["Mt N/yr"], [2005, 2010]],
+        names=["model", "scenario", "variable", "unit", "year"]
     )
     exp = pd.Series(exp_vals, index=exp_idx)
     exp.name = "value"
