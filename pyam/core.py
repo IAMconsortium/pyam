@@ -772,8 +772,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str
-            variable for which the aggregate should be computed
+        variable: str or list of str
+            variable(s) for which the aggregate will be computed
         components: list of str, default None
             list of variables, defaults to all sub-categories of `variable`
         method: func or str, default 'sum'
@@ -782,20 +782,43 @@ class IamDataFrame(object):
             append the aggregate timeseries to `data` and return None,
             else return aggregate timeseries
         """
-        # default components to all variables one level below `variable`
-        components = components or self._variable_components(variable)
+        # list of variables require default components (no manual list)
+        if islistable(variable) and components is not None:
+            raise ValueError('aggregating by list of variables cannot use '
+                             'custom components')
 
-        if not len(components):
-            msg = 'cannot aggregate variable `{}` because it has no components'
-            logger.info(msg.format(variable))
+        mapping = {}
+        msg = 'cannot aggregate variable `{}` because it has no components'
+        # if single variable
+        if isstr(variable):
+            # default components to all variables one level below `variable`
+            components = components or self._variable_components(variable)
 
-            return
+            if not len(components):
+                logger.info(msg.format(variable))
+                return
 
-        rows = self._apply_filters(variable=components)
-        _data = _aggregate(self.data[rows], 'variable', method)
+            for c in components:
+                mapping[c] = variable
 
+        # else, use all variables one level below `variable` as components
+        else:
+            for v in variable if islistable(variable) else [variable]:
+                _components = self._variable_components(v)
+                if not len(_components):
+                    logger.info(msg.format(v))
+
+                for c in _components:
+                    mapping[c] = v
+
+        # rename all components to `variable` and aggregate
+        _df = self.data[self._apply_filters(variable=mapping.keys())].copy()
+        _df['variable'].replace(mapping, inplace=True)
+        _data = _aggregate(_df, [], method)
+
+        # append to `self` or return as pd.Series
         if append is True:
-            self.append(_data, variable=variable, inplace=True)
+            self.append(_data, inplace=True)
         else:
             return _data
 
@@ -805,8 +828,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str
-            variable to be checked for matching aggregation of sub-categories
+        variable: str or list of str
+            variable(s) checked for matching aggregation of sub-categories
         components: list of str, default None
             list of variables, defaults to all sub-categories of `variable`
         method: func or str, default 'sum'
@@ -825,7 +848,7 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable)
         df_variable, df_components = (
-            _aggregate(self.data[rows], 'variable', method)
+            _aggregate(self.data[rows], [], method)
             .align(df_components)
         )
 
@@ -840,7 +863,7 @@ class IamDataFrame(object):
             if exclude_on_fail:
                 self._exclude_on_fail(diff.index.droplevel([2, 3, 4]))
 
-            return IamDataFrame(diff, variable=variable).timeseries()
+            return IamDataFrame(diff).timeseries()
 
     def aggregate_region(self, variable, region='World', subregions=None,
                          components=False, method='sum', weight=None,

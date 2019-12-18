@@ -22,6 +22,19 @@ PE_MAX_DF = pd.DataFrame([
     columns=LONG_IDX + ['value']
 )
 
+CO2_MAX_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 'World', 'Emissions|CO2', 'EJ/y', 2005, 6.0],
+    ['model_a', 'scen_a', 'World', 'Emissions|CO2', 'EJ/y', 2010, 8.0],
+    ['model_a', 'scen_a', 'reg_a', 'Emissions|CO2', 'EJ/y', 2005, 4.0],
+    ['model_a', 'scen_a', 'reg_a', 'Emissions|CO2', 'EJ/y', 2010, 5.0],
+    ['model_a', 'scen_a', 'reg_b', 'Emissions|CO2', 'EJ/y', 2005, 2.0],
+    ['model_a', 'scen_a', 'reg_b', 'Emissions|CO2', 'EJ/y', 2010, 3.0],
+
+],
+    columns=LONG_IDX + ['value']
+)
+
+
 def test_aggregate(aggregate_df):
     df = aggregate_df
 
@@ -45,6 +58,31 @@ def test_aggregate(aggregate_df):
 
     # using illegal method raises an error
     pytest.raises(ValueError, df.aggregate, 'Primary Energy', method='foo')
+
+
+def test_aggregate_by_list(aggregate_df):
+    df = aggregate_df
+    var_list = ['Primary Energy', 'Emissions|CO2']
+
+    # primary energy and emissions are a direct sum (within each region)
+    assert df.check_aggregate(var_list) is None
+
+    # use other method (max) both as string and passing the function
+    exp = (
+        pd.concat([PE_MAX_DF, CO2_MAX_DF])
+        .set_index(LONG_IDX).value
+        .sort_index()
+    )
+
+    obs = df.aggregate(var_list, method='max')
+    pd.testing.assert_series_equal(obs, exp)
+
+    obs = df.aggregate(var_list, method=np.max)
+    pd.testing.assert_series_equal(obs, exp)
+
+    # using list of variables and components raises an error
+    components = ['Primary Energy|Coal', 'Primary Energy|Wind']
+    pytest.raises(ValueError, df.aggregate, var_list, components=components)
 
 
 def test_aggregate_region(aggregate_df):
