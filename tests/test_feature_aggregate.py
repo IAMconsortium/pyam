@@ -8,6 +8,20 @@ from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 from conftest import TEST_DTS
 
 
+LONG_IDX = IAMC_IDX + ['year']
+
+PE_MAX_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 2005, 7.0],
+    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 2010, 10.0],
+    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/y', 2005, 5.0],
+    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/y', 2010, 7.0],
+    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/y', 2005, 2.0],
+    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/y', 2010, 3.0],
+
+],
+    columns=LONG_IDX + ['value']
+)
+
 def test_aggregate(aggregate_df):
     df = aggregate_df
 
@@ -21,18 +35,8 @@ def test_aggregate(aggregate_df):
     assert _df.check_aggregate('Primary Energy', components=components) is None
 
     # use other method (max) both as string and passing the function
-    idx = ['model', 'scenario', 'region', 'unit', 'year']
-    exp = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 7.0],
-        ['model_a', 'scen_a', 'World', 'EJ/y', 2010, 10.0],
-        ['model_a', 'scen_a', 'reg_a', 'EJ/y', 2005, 5.0],
-        ['model_a', 'scen_a', 'reg_a', 'EJ/y', 2010, 7.0],
-        ['model_a', 'scen_a', 'reg_b', 'EJ/y', 2005, 2.0],
-        ['model_a', 'scen_a', 'reg_b', 'EJ/y', 2010, 3.0],
+    exp = PE_MAX_DF.set_index(LONG_IDX).value
 
-    ],
-        columns=idx + ['value']
-    ).set_index(idx).value
     obs = df.aggregate('Primary Energy', method='max')
     pd.testing.assert_series_equal(obs, exp)
 
