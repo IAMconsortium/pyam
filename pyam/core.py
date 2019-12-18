@@ -198,6 +198,7 @@ class IamDataFrame(object):
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
         """Append any castable object to this IamDataFrame.
+
         Columns in `other.meta` that are not in `self.meta` are always merged,
         duplicate region-variable-unit-year rows raise a ValueError.
 
@@ -651,7 +652,7 @@ class IamDataFrame(object):
         inplace: bool, default False
             if True, do operation inplace and return None
         append: bool, default False
-            if True, append renamed timeseries to IamDataFrame
+            append renamed timeseries to self; else, return new `IamDataFrame`
         check_duplicates: bool, default True
             check whether conflict between existing and renamed data exists.
             If True, raise ValueError; if False, rename and merge
@@ -779,7 +780,7 @@ class IamDataFrame(object):
         method: func or str, default 'sum'
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         append: bool, default False
-            append the aggregate timeseries to `data` and return None,
+            append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
         # list of variables require default components (no manual list)
@@ -892,7 +893,7 @@ class IamDataFrame(object):
             variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
         append: bool, default False
-            append the aggregate timeseries to `data` and return None,
+            append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
         if not isstr(variable) and components is not False:
@@ -1013,6 +1014,7 @@ class IamDataFrame(object):
         """Return list of regions other than `region` containing `variable`"""
         rows = self._apply_filters(variable=variable)
         return set(self.data[rows].region) - set([region])
+
 
     def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
