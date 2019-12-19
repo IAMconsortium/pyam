@@ -896,7 +896,8 @@ class IamDataFrame(object):
             else return aggregate timeseries
         """
         if not isstr(variable) and components is not False:
-            msg = 'aggregating by list of variables with components is not supported'
+            msg = 'aggregating by list of variables with components ' \
+                  'is not supported'
             raise ValueError(msg)
 
         if weight is not None and components is not False:
