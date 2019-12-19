@@ -1046,7 +1046,9 @@ class IamDataFrame(object):
         if append is True:
             self.append(_data, inplace=True)
         else:
-            return IamDataFrame(_data)
+            df = IamDataFrame(_data)
+            df.meta = self.meta.loc[_make_index(df.data)]
+            return df
 
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
