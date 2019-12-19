@@ -61,7 +61,7 @@ REG_DF = pd.DataFrame([
     ['MESSAGE-GLOBIOM', 'a_scenario', 'AFR', 'Primary Energy', 'EJ/y', 2, 7],
     ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 3, 13],
 ],
-    columns=IAMC_IDX + [ 2005, 2010],
+    columns=IAMC_IDX + [2005, 2010],
 )
 
 

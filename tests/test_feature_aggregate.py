@@ -155,7 +155,7 @@ def test_aggregate_region_by_list(aggregate_df):
     pytest.raises(ValueError, df.aggregate_region, var_list, weight=True)
 
     # use other method (max) both as string and passing the function
-    _co2_df = CO2_MAX_DF[CO2_MAX_DF.region=='World'].drop(columns='region')
+    _co2_df = CO2_MAX_DF[CO2_MAX_DF.region == 'World'].drop(columns='region')
     exp = pd.concat([_co2_df, PRICE_MAX_DF]).set_index(REG_IDX).value
 
     obs = df.aggregate_region(var_list, method='max')
