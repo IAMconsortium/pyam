@@ -9,7 +9,7 @@ import pyam
     ('Primary Energy'),
     (['Primary Energy', 'Primary Energy|Coal']),
 ))
-def test_downscale(aggregate_df, variable):
+def test_downscale_region(aggregate_df, variable):
     df = aggregate_df
     df.set_meta([1], name='test')
 
