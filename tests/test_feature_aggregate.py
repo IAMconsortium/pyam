@@ -11,12 +11,12 @@ from conftest import TEST_DTS
 LONG_IDX = IAMC_IDX + ['year']
 
 PE_MAX_DF = pd.DataFrame([
-    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 2005, 7.0],
+    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 2005, 9.0],
     ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 2010, 10.0],
-    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/y', 2005, 5.0],
-    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/y', 2010, 7.0],
-    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/y', 2005, 2.0],
-    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/y', 2010, 3.0],
+    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/y', 2005, 6.0],
+    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/y', 2010, 6.0],
+    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/y', 2005, 3.0],
+    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/y', 2010, 4.0],
 
 ],
     columns=LONG_IDX + ['value']
