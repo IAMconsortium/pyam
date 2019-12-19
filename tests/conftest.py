@@ -48,6 +48,9 @@ FULL_FEATURE_DF = pd.DataFrame([
     ['World', 'Price|Carbon', 'USD/tCO2', 4, 27],
     ['reg_a', 'Price|Carbon', 'USD/tCO2', 1, 30],
     ['reg_b', 'Price|Carbon', 'USD/tCO2', 10, 21],
+    ['World', 'Population', 'm', 3, 5],
+    ['reg_a', 'Population', 'm', 2, 3],
+    ['reg_b', 'Population', 'm', 1, 2],
 ],
     columns=['region', 'variable', 'unit', 2005, 2010],
 )
