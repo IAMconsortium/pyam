@@ -5,14 +5,10 @@ import os
 import requests
 import warnings
 import yaml
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
 
 from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, islistable, isstr, pattern_match
@@ -235,13 +231,37 @@ class Connection(object):
         return pd.Series(df['variable'].unique(), name='variable')
 
     @lru_cache()
-    def regions(self):
-        """All regions in the connected data source"""
+    def regions(self, include_synonyms=False):
+        """All regions in the connected data source
+
+        :param include_synonyms: whether to include synonyms
+               (possibly leading to duplicate region names for
+               regions with more than one synonym)
+        """
         url = '/'.join([self._base_url, 'nodes?hierarchy=%2A'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        r = requests.get(url, headers=headers)
+        params = {'includeSynonyms': include_synonyms}
+        r = requests.get(url, headers=headers, params=params)
         _check_response(r)
-        df = pd.read_json(r.content, orient='records')
+        return self.convert_regions_payload(r.content, include_synonyms)
+
+    @staticmethod
+    def convert_regions_payload(response, include_synonyms):
+        df = pd.read_json(response, orient='records')
+        if df.empty:
+            return df
+        if 'synonyms' not in df.columns:
+            df['synonyms'] = [list()] * len(df)
+        df = df.astype({
+            'id': str,
+            'name': str,
+            'hierarchy': str,
+            'parent': str,
+            'synonyms': object
+        })
+        if include_synonyms:
+            df = df[['name', 'synonyms']].explode('synonyms')
+            return df.rename(columns={'name': 'region', 'synonyms': 'synonym'})
         return pd.Series(df['name'].unique(), name='region')
 
     def _query_post_data(self, **kwargs):
@@ -330,7 +350,9 @@ class Connection(object):
         r = requests.post(url, headers=headers, data=data)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
-        df = pd.read_json(r.content, orient='records')
+        dtype = dict(model=str, scenario=str, variable=str, unit=str,
+                     region=str, year=int, value=float, version=int)
+        df = pd.read_json(r.content, orient='records', dtype=dtype)
         logger.debug('Response size is {0} bytes, '
                        '{1} records'.format(len(r.content), len(df)))
         columns = ['model', 'scenario', 'variable', 'unit',

@@ -1,12 +1,13 @@
 
 # Next Release
 
+- [#302](https://github.com/IAMconsortium/pyam/pull/302) Rework the tutorials
 - [#301](https://github.com/IAMconsortium/pyam/pull/301) Bugfix when using `to_excel()` with a `pd.ExcelWriter`
 - [#297](https://github.com/IAMconsortium/pyam/pull/297) Add `empty` attribute, better error for `timeseries()` on empty dataframe 
 - [#295](https://github.com/IAMconsortium/pyam/pull/295) Include `meta` table when writing to or reading from `xlsx` files
 - [#292](https://github.com/IAMconsortium/pyam/pull/292) Add warning message if `data` is empty at initialization (after formatting)
 - [#288](https://github.com/IAMconsortium/pyam/pull/288) Put `pyam` logger in its own namespace (see [here](https://docs.python-guide.org/writing/logging/#logging-in-a-library>))
-
+- [#285](https://github.com/IAMconsortium/pyam/pull/285) Add ability to fetch regions with synonyms from IXMP API
 # Release v0.3.0
 
 ## Highlights
