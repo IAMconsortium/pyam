@@ -25,6 +25,34 @@ TEST_DF = pd.DataFrame([
 )
 
 
+FULL_FEATURE_DF = pd.DataFrame([
+    ['World', 'Primary Energy', 'EJ/y', 10, 15],
+    ['reg_a', 'Primary Energy', 'EJ/y', 6, 9],
+    ['reg_b', 'Primary Energy', 'EJ/y', 4, 6],
+    ['World', 'Primary Energy|Coal', 'EJ/y', 7, 10],
+    ['reg_a', 'Primary Energy|Coal', 'EJ/y', 5, 7],
+    ['reg_b', 'Primary Energy|Coal', 'EJ/y', 2, 3],
+    ['World', 'Primary Energy|Wind', 'EJ/y', 3, 5],
+    ['reg_a', 'Primary Energy|Wind', 'EJ/y', 1, 2],
+    ['reg_b', 'Primary Energy|Wind', 'EJ/y', 2, 3],
+    ['World', 'Emissions|CO2', 'EJ/y', 10, 14],
+    ['World', 'Emissions|CO2|Energy', 'EJ/y', 6, 8],
+    ['World', 'Emissions|CO2|AFOLU', 'EJ/y', 3, 4],
+    ['World', 'Emissions|CO2|Bunkers', 'EJ/y', 1, 2],
+    ['reg_a', 'Emissions|CO2', 'EJ/y', 6, 8],
+    ['reg_a', 'Emissions|CO2|Energy', 'EJ/y', 4, 5],
+    ['reg_a', 'Emissions|CO2|AFOLU', 'EJ/y', 2, 3],
+    ['reg_b', 'Emissions|CO2', 'EJ/y', 3, 4],
+    ['reg_b', 'Emissions|CO2|Energy', 'EJ/y', 2, 3],
+    ['reg_b', 'Emissions|CO2|AFOLU', 'EJ/y', 1, 1],
+    ['World', 'Price|Carbon', 'USD/tCO2', 4, 27],
+    ['reg_a', 'Price|Carbon', 'USD/tCO2', 1, 30],
+    ['reg_b', 'Price|Carbon', 'USD/tCO2', 10, 21],
+],
+    columns=['region', 'variable', 'unit', 2005, 2010],
+)
+
+
 REG_DF = pd.DataFrame([
     ['IMAGE', 'a_scenario', 'NAF', 'Primary Energy', 'EJ/y', 1, 6],
     ['IMAGE', 'a_scenario', 'ME', 'Primary Energy', 'EJ/y', 2, 7],
@@ -181,7 +209,7 @@ TEST_TIME_STR = ['2005-06-17', '2010-07-21']
 TEST_TIME_STR_HR = ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
 
 
-# IamDataFrame with four different time formats
+# minimal IamDataFrame with four different time formats
 @pytest.fixture(
     scope="function",
     params=[
@@ -198,17 +226,24 @@ def test_df(request):
     yield df
 
 
-# IamDataFrame for testing specifically for 'year'-column feature
+# minimal IamDataFrame for specifically testing 'year'-column features
 @pytest.fixture(scope="function")
 def test_df_year():
     df = IamDataFrame(data=TEST_DF)
     yield df
 
 
-# standard test data as pandas.DataFrame (only 'year' time format)
+# minimal test data provided as pandas.DataFrame (only 'year' time format)
 @pytest.fixture(scope="function")
 def test_pd_df():
     yield TEST_DF.copy()
+
+
+# IamDataFrame with variable-and-region-structure for testing aggregation tools
+@pytest.fixture(scope="function")
+def aggregate_df():
+    df = IamDataFrame(model='model_a', scenario='scen_a', data=FULL_FEATURE_DF)
+    yield df
 
 
 @pytest.fixture(scope="function")
