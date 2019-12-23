@@ -26,15 +26,15 @@ TEST_DF = pd.DataFrame([
 
 
 FULL_FEATURE_DF = pd.DataFrame([
-    ['World', 'Primary Energy', 'EJ/y', 10, 15],
-    ['reg_a', 'Primary Energy', 'EJ/y', 6, 9],
+    ['World', 'Primary Energy', 'EJ/y', 12, 15],
+    ['reg_a', 'Primary Energy', 'EJ/y', 8, 9],
     ['reg_b', 'Primary Energy', 'EJ/y', 4, 6],
-    ['World', 'Primary Energy|Coal', 'EJ/y', 7, 10],
-    ['reg_a', 'Primary Energy|Coal', 'EJ/y', 5, 7],
-    ['reg_b', 'Primary Energy|Coal', 'EJ/y', 2, 3],
+    ['World', 'Primary Energy|Coal', 'EJ/y', 9, 10],
+    ['reg_a', 'Primary Energy|Coal', 'EJ/y', 6, 6],
+    ['reg_b', 'Primary Energy|Coal', 'EJ/y', 3, 4],
     ['World', 'Primary Energy|Wind', 'EJ/y', 3, 5],
-    ['reg_a', 'Primary Energy|Wind', 'EJ/y', 1, 2],
-    ['reg_b', 'Primary Energy|Wind', 'EJ/y', 2, 3],
+    ['reg_a', 'Primary Energy|Wind', 'EJ/y', 2, 3],
+    ['reg_b', 'Primary Energy|Wind', 'EJ/y', 1, 2],
     ['World', 'Emissions|CO2', 'EJ/y', 10, 14],
     ['World', 'Emissions|CO2|Energy', 'EJ/y', 6, 8],
     ['World', 'Emissions|CO2|AFOLU', 'EJ/y', 3, 4],
@@ -48,6 +48,9 @@ FULL_FEATURE_DF = pd.DataFrame([
     ['World', 'Price|Carbon', 'USD/tCO2', 4, 27],
     ['reg_a', 'Price|Carbon', 'USD/tCO2', 1, 30],
     ['reg_b', 'Price|Carbon', 'USD/tCO2', 10, 21],
+    ['World', 'Population', 'm', 3, 5],
+    ['reg_a', 'Population', 'm', 2, 3],
+    ['reg_b', 'Population', 'm', 1, 2],
 ],
     columns=['region', 'variable', 'unit', 2005, 2010],
 )

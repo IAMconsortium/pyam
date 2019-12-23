@@ -198,6 +198,7 @@ class IamDataFrame(object):
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
         """Append any castable object to this IamDataFrame.
+
         Columns in `other.meta` that are not in `self.meta` are always merged,
         duplicate region-variable-unit-year rows raise a ValueError.
 
@@ -651,7 +652,7 @@ class IamDataFrame(object):
         inplace: bool, default False
             if True, do operation inplace and return None
         append: bool, default False
-            if True, append renamed timeseries to IamDataFrame
+            append renamed timeseries to self; else, return new `IamDataFrame`
         check_duplicates: bool, default True
             check whether conflict between existing and renamed data exists.
             If True, raise ValueError; if False, rename and merge
@@ -779,7 +780,7 @@ class IamDataFrame(object):
         method: func or str, default 'sum'
             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
         append: bool, default False
-            append the aggregate timeseries to `data` and return None,
+            append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
         # list of variables require default components (no manual list)
@@ -892,7 +893,7 @@ class IamDataFrame(object):
             variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
         append: bool, default False
-            append the aggregate timeseries to `data` and return None,
+            append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
         if not isstr(variable) and components is not False:
@@ -1009,10 +1010,52 @@ class IamDataFrame(object):
 
             return IamDataFrame(diff, region=region).timeseries()
 
-    def _all_other_regions(self, region, variable):
+    def downscale_region(self, variable, proxy, region='World',
+                         subregions=None, append=False):
+        """Downscale a timeseries to a number of subregions
+
+        Parameters
+        ----------
+        variable: str or list of str
+            variable(s) to be downscaled
+        proxy: str
+            variable to be used as proxy (i.e, weight) for the downscaling
+        region: str, default 'World'
+            dimension
+        subregions: list of str
+            list of subregions, defaults to all regions other than `region`
+        append: bool, default False
+            append the downscaled timeseries to `self` and return None,
+            else return downscaled data as new `IamDataFrame`
+        """
+        # get default subregions if not specified
+        subregions = subregions or self._all_other_regions(region)
+
+        # filter relevant data, transform to `pd.Series` with appropriate index
+        _df = self.data[self._apply_filters(variable=proxy, region=subregions)]
+        _proxy = _df.set_index(self._get_cols(['region', 'year'])).value
+        _total = _df.groupby(self._get_cols(['year'])).value.sum()
+
+        _value = (
+            self.data[self._apply_filters(variable=variable, region=region)]
+            .set_index(self._get_cols(['variable', 'unit', 'year'])).value
+        )
+
+        # compute downscaled data
+        _data = _value * _proxy / _total
+
+        if append is True:
+            self.append(_data, inplace=True)
+        else:
+            df = IamDataFrame(_data)
+            df.meta = self.meta.loc[_make_index(df.data)]
+            return df
+
+    def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
         rows = self._apply_filters(variable=variable)
         return set(self.data[rows].region) - set([region])
+
 
     def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
@@ -1023,6 +1066,10 @@ class IamDataFrame(object):
         var_list = pd.Series(self.data.variable.unique())
         return var_list[pattern_match(var_list, '{}|*'.format(variable),
                                       level=level)]
+
+    def _get_cols(self, cols):
+        """Return a list of columns of `self.data`"""
+        return META_IDX + cols + self.extra_cols
 
     def check_internal_consistency(self, **kwargs):
         """Check whether a scenario ensemble is internally consistent
