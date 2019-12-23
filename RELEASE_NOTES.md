@@ -8,6 +8,7 @@ region-level. To keep the previous behaviour, add `components=True`.
 
 ## Individual Updates
 
+- [#312](https://github.com/IAMconsortium/pyam/pull/312) allow passing list of variables to `aggregate` functions
 - [#305](https://github.com/IAMconsortium/pyam/pull/305) Add `method` and `weight` options to the (region) aggregation functions
 - [#302](https://github.com/IAMconsortium/pyam/pull/302) Rework the tutorials
 - [#301](https://github.com/IAMconsortium/pyam/pull/301) Bugfix when using `to_excel()` with a `pd.ExcelWriter`
