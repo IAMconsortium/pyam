@@ -5,14 +5,10 @@ import os
 import requests
 import warnings
 import yaml
+from functools import lru_cache
 
 import numpy as np
 import pandas as pd
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
 
 from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, islistable, isstr, pattern_match
