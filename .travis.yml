@@ -37,6 +37,7 @@ script:
   - make test
   # only test docs once to make sure everything works on most recent python
   - cd doc
+  - if [[ "${PYENV}" == "py37" && "${TRAVIS_OS_NAME}" != 'windows' ]]; then make html; fi
   - cd ..
 
 after_success:
