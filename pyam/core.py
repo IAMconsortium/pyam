@@ -16,7 +16,7 @@ except ImportError:
 
 from pyam import plotting
 
-from pyam.logging import adjust_log_level, deprecation_warning
+from pyam.logging_utils import adjust_log_level, deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
