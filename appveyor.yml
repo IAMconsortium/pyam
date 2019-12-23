@@ -26,7 +26,7 @@ install:
   - conda --version
   - activate testing
   - conda install -y numpy pandas pyyaml xlrd xlsxwriter seaborn==0.9.0 six requests jupyter nbconvert proj4==5.2.0 pywin32
-  - conda install -y -c conda-forge matplotlib==3.0.3 pyproj==1.9.6
+  - conda install -y -c conda-forge matplotlib==3.0.3 cython pyproj==1.9.6
 
 build: false
 
