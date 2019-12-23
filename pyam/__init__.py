@@ -25,8 +25,8 @@ try:
     logger.addHandler(stderr_info_handler)
 
     log_msg = (
-        "Running in a notebook, adding stderr handler and setting "
-        "`{}` logging level to `logging.INFO`".format(__name__)
+        "Running in a notebook, setting `{}` logging level to `logging.INFO` "
+        "and adding stderr handler".format(__name__)
     )
     logger.info(log_msg)
 

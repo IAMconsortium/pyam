@@ -1,5 +1,5 @@
-pyam: a Python toolkit for Integrated Assessment Modeling
-=========================================================
+pyam: analysis and visualization of integrated-assessment scenarios
+===================================================================
 
 **Documentation on [Read the Docs](https://pyam-iamc.readthedocs.io)**
 
@@ -8,43 +8,55 @@ pyam: a Python toolkit for Integrated Assessment Modeling
 Overview and scope
 ------------------
 
-The ``pyam`` package provides a range of diagnostic tools and functions
-for analyzing and working with IAMC-format timeseries data.
+The open-source Python package ``pyam`` provides a suite of tools and functions
+for analyzing and visualizing input data (i.e., assumptions/parametrization) 
+and results (model output) of integrated-assessment scenarios.
 
-Features:
-- Summary of models, scenarios, variables, and regions included in a snapshot.
-- Display of timeseries data as pandas.DataFrame with IAMC-specific filtering
-  options.
-- Simple visualization and plotting functions.
-- Diagnostic checks for non-reported variables or timeseries data to identify
-  outliers and potential reporting issues.
-- Categorization of scenarios according to timeseries data or meta-identifiers
-  for further analysis.
+Key features:
 
-The package can be used with timeseries data that follows the data template
-convention of the [Integrated Assessment Modeling Consortium](http://www.globalchange.umd.edu/iamc/) (IAMC).
-An illustrative example is shown below;
-see [data.ene.iiasa.ac.at/database](http://data.ene.iiasa.ac.at/database/)
-for more information.
+ - Simple analysis of timeseries data in the IAMC format
+   (more about it [here](https://pyam-iamc.readthedocs.io/en/stable/data.html))
+   with an interface similar in feel and style to the widely
+   used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
+ - Advanced visualization and plotting functions
+   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/examples/index.html))
+ - Diagnostic checks for scripted validation of scenario data and results
 
-| **model**    | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
-|--------------|--------------|------------|----------------|----------|----------|----------|----------|
-| MESSAGE V.4  | AMPERE3-Base | World      | Primary Energy | EJ/y     |    454.5 |    479.6 |      ... |
-| ...          | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
+Data model
+----------
+
+An illustrative example of the timeseries format developed by the
+[Integrated Assessment Modeling Consortium](http://www.globalchange.umd.edu/iamc/) (IAMC)
+is shown below.
+The row is taken from the [IAMC 1.5°C scenario explorer](https://data.ene.iiasa.ac.at/iamc-1.5c-explorer),
+showing a scenario from the [CD-LINKS](https://www.cd-links.org) project.
+[Read the docs](https://pyam-iamc.readthedocs.io/en/stable/data.html)
+for more information on the IAMC format and the ``pyam`` data model.
+
+| **model** | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
+|-----------|--------------|------------|----------------|----------|----------|----------|----------|
+| MESSAGE   | CD-LINKS 400 | World      | Primary Energy | EJ/y     |    462.5 |    500.7 |      ... |
+| ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
 
 
-Tutorial
---------
+Tutorials
+---------
 
-A comprehensive tutorial for the basic functions is included
-in [the first tutorial](doc/source/tutorials/pyam_first_steps.ipynb)
-using a partial snapshot of the IPCC AR5 scenario database.
+An introduction to the basic functions is shown
+in [the "first-steps" notebook](doc/source/tutorials/pyam_first_steps.ipynb).
+
+All tutorials are available in rendered format (i.e., with output) as part of
+the [online documentation](https://pyam-iamc.readthedocs.io/en/stable/tutorials.html).
+The source code of the tutorials notebooks is available
+in the folder [doc/source/tutorials](doc/source/tutorials) of this repository.
 
 Documentation
 -------------
 
-The documentation pages can be built locally.
-See the instruction in [doc/README](doc/README.md).
+The complete documentation is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io).
+
+The documentation pages can be built locally,
+refer to the instruction in [doc/README](doc/README.md).
 
 Authors
 -------
@@ -56,7 +68,7 @@ and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
 License
 -------
 
-Copyright 2017-2018 IIASA Energy Program
+Copyright 2017-2019 IIASA Energy Program
 
 The ``pyam`` package is licensed
 under the Apache License, Version 2.0 (the "License");
@@ -91,7 +103,7 @@ conda activate pyam  # may be  simply `source activate pyam` or just `activate p
 make -B virtual-environment
 ```
 
-To check everything has installed correctly,
+To check everything has installed correctly, run
 
 ```
 pytest tests

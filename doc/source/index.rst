@@ -54,7 +54,7 @@ Key features:
  - Simple analysis of timeseries data in the IAMC format (more about it `here`_)
    with an interface similar in feel and style to the widely
    used `pandas.DataFrame`_
- - Advanced visualization and plotting function (see the `gallery`_)
+ - Advanced visualization and plotting functions (see the `gallery`_)
  - Diagnostic checks for scripted validation of scenario data and results
 
 The source code for |pyam| is available on `Github`_.

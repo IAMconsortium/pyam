@@ -10,12 +10,7 @@ import numpy as np
 import pandas as pd
 
 from collections import defaultdict, Iterable
-from contextlib import contextmanager
 
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
 
 from pyam.run_control import run_control
 from pyam.utils import requires_package, IAMC_IDX, SORT_IDX, isstr
