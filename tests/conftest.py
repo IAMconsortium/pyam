@@ -177,48 +177,38 @@ TEST_STACKPLOT_DF['scenario'] = 'a_scen'
 
 TEST_YEARS = [2005, 2010]
 TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
+TEST_TIME_STR = ['2005-06-17', '2010-07-21']
+TEST_TIME_STR_HR = ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
 
 
+# IamDataFrame with four different time formats
 @pytest.fixture(
     scope="function",
     params=[
         TEST_YEARS,
         TEST_DTS,
-        ['2005-06-17', '2010-07-21'],
-        ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
+        TEST_TIME_STR,
+        TEST_TIME_STR_HR
     ]
 )
 def test_df(request):
-    tdf = TEST_DF.iloc[:2]
-    tdf = tdf.rename({2005: request.param[0], 2010: request.param[1]},
-                     axis="columns")
+    tdf = TEST_DF.rename({2005: request.param[0], 2010: request.param[1]},
+                         axis="columns")
     df = IamDataFrame(data=tdf)
     yield df
 
 
+# IamDataFrame for testing specifically for 'year'-column feature
 @pytest.fixture(scope="function")
 def test_df_year():
-    df = IamDataFrame(data=TEST_DF.iloc[:2])
+    df = IamDataFrame(data=TEST_DF)
     yield df
 
 
+# standard test data as pandas.DataFrame (only 'year' time format)
 @pytest.fixture(scope="function")
 def test_pd_df():
     yield TEST_DF.copy()
-
-
-@pytest.fixture(
-    scope="function",
-    params=[
-        TEST_YEARS,
-        TEST_DTS,
-    ]
-)
-def meta_df(request):
-    mdf = TEST_DF.rename({2005: request.param[0], 2010: request.param[1]},
-                         axis="columns")
-    df = IamDataFrame(data=mdf)
-    yield df
 
 
 @pytest.fixture(scope="function")
