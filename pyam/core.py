@@ -822,7 +822,7 @@ class IamDataFrame(object):
         # rename all components to `variable` and aggregate
         _df = self.data[self._apply_filters(variable=mapping.keys())].copy()
         _df['variable'].replace(mapping, inplace=True)
-        _data = _aggregate(_df, [], method)
+        _data = _agg(_df, [], method)
 
         # append to `self` or return as pd.Series
         if append is True:
@@ -856,7 +856,7 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable)
         df_variable, df_components = (
-            _aggregate(self.data[rows], [], method)
+            _agg(self.data[rows], [], method)
             .align(df_components)
         )
 
@@ -927,11 +927,11 @@ class IamDataFrame(object):
         rows = subregion_df._apply_filters(variable=variable)
         if weight is None:
             col = 'region'
-            _data = _aggregate(subregion_df.data[rows], col, method=method)
+            _data = _agg(subregion_df.data[rows], col, method=method)
         else:
             weight_rows = subregion_df._apply_filters(variable=weight)
-            _data = _aggregate_weight(subregion_df.data[rows],
-                                      subregion_df.data[weight_rows], method)
+            _data = _agg_weight(subregion_df.data[rows],
+                                subregion_df.data[weight_rows], method)
 
         # if not `components=False`, add components at the `region` level
         if components is not False:
@@ -951,7 +951,7 @@ class IamDataFrame(object):
                 rows = region_df._apply_filters(variable=components)
                 _df = region_df.data[rows].copy()
                 _df['variable'] = variable
-                _data = _data.add(_aggregate(_df, 'region'), fill_value=0)
+                _data = _data.add(_agg(_df, 'region'), fill_value=0)
 
         if append is True:
             self.append(_data, region=region, inplace=True)
@@ -999,7 +999,7 @@ class IamDataFrame(object):
             return
 
         df_region, df_subregions = (
-            _aggregate(self.data[rows], 'region')
+            _agg(self.data[rows], 'region')
             .align(df_subregions)
         )
 
@@ -1568,7 +1568,7 @@ def _meta_idx(data):
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
-def _aggregate(df, by, method=np.sum):
+def _agg(df, by, method=np.sum):
     """Aggregate `df` by specified column(s), return indexed `pd.Series`"""
     by = [by] if isstr(by) else by
     cols = [c for c in list(df.columns) if c not in ['value'] + by]
@@ -1576,7 +1576,7 @@ def _aggregate(df, by, method=np.sum):
     return df.groupby(cols)['value'].agg(_get_method_func(method))
 
 
-def _aggregate_weight(df, weight, method):
+def _agg_weight(df, weight, method):
     """Aggregate `df` by regions with weights, return indexed `pd.Series`"""
     # only summation allowed with weights
     if method not in ['sum', np.sum]:
