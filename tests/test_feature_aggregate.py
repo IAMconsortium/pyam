@@ -33,13 +33,11 @@ CO2_MAX_DF = pd.DataFrame([
     columns=LONG_IDX + ['value']
 )
 
-REG_IDX = ['model', 'scenario', 'variable', 'unit', 'year']
-
 PRICE_MAX_DF = pd.DataFrame([
-    ['model_a', 'scen_a', 'Price|Carbon', 'USD/tCO2', 2005, 10.0],
-    ['model_a', 'scen_a', 'Price|Carbon', 'USD/tCO2', 2010, 30.0],
+    ['model_a', 'scen_a', 'World', 'Price|Carbon', 'USD/tCO2', 2005, 10.0],
+    ['model_a', 'scen_a', 'World', 'Price|Carbon', 'USD/tCO2', 2010, 30.0],
 ],
-    columns=REG_IDX + ['value']
+    columns=LONG_IDX + ['value']
 )
 
 
@@ -110,7 +108,7 @@ def test_aggregate_region(aggregate_df):
                   weight='bar')
 
     # use other method (max) both as string and passing the function
-    exp = IamDataFrame(PRICE_MAX_DF, region='World')
+    exp = IamDataFrame(PRICE_MAX_DF)
     assert df.aggregate_region('Price|Carbon', method='max').equals(exp)
     assert df.aggregate_region('Price|Carbon', method=np.max).equals(exp)
 
