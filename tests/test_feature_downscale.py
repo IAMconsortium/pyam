@@ -14,13 +14,11 @@ def test_downscale_region(aggregate_df, variable):
     regions = ['reg_a', 'reg_b']
 
     # return as new IamDataFrame
-    obs_df = df.downscale_region(variable, proxy='Population')
-    exp_df = df.filter(variable=variable, region=regions)
-    assert pyam.compare(obs_df, exp_df).empty
-    pd.testing.assert_frame_equal(obs_df.meta, exp_df.meta)
+    obs = df.downscale_region(variable, proxy='Population')
+    exp = df.filter(variable=variable, region=regions)
+    assert exp.equals(obs)
 
     # append to `self` (after removing to-be-downscaled timeseries)
-    inplace_df = df.filter(variable=variable, region=regions, keep=False)
-    inplace_df.downscale_region(variable, proxy='Population', append=True)
-    assert pyam.compare(inplace_df, df).empty
-    pd.testing.assert_frame_equal(inplace_df.meta, df.meta)
+    inplace = df.filter(variable=variable, region=regions, keep=False)
+    inplace.downscale_region(variable, proxy='Population', append=True)
+    assert inplace.equals(df)
