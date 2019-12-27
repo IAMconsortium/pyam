@@ -41,42 +41,45 @@ PRICE_MAX_DF = pd.DataFrame([
 )
 
 
-def test_aggregate(aggregate_df):
-    df = aggregate_df
+@pytest.mark.parametrize("variable,data", (
+    ('Primary Energy', PE_MAX_DF),
+    (['Primary Energy', 'Emissions|CO2'], pd.concat([PE_MAX_DF, CO2_MAX_DF])),
+))
+def test_aggregate(aggregate_df, variable, data):
 
-    # primary energy is a direct sum (within each region)
-    assert df.check_aggregate('Primary Energy') is None
+    # check that `variable` is a a direct sum and matches given total
+    exp = aggregate_df.filter(variable=variable)
+    assert aggregate_df.aggregate(variable).equals(exp)
 
-    # rename sub-category to test setting components as list
-    _df = df.rename(variable={'Primary Energy|Wind': 'foo'})
-    assert _df.check_aggregate('Primary Energy') is not None
+    # assert that `check_aggregate` returns None
+    assert aggregate_df.check_aggregate(variable) is None
+
+    # use other method (max) both as string and passing the function
+    exp = IamDataFrame(data)
+    assert aggregate_df.aggregate(variable, method='max').equals(exp)
+    assert aggregate_df.aggregate(variable, method=np.max).equals(exp)
+
+
+def test_aggregate_with_components(aggregate_df):
+    # rename sub-category to test setting components explicitly as list
+    df = aggregate_df.rename(variable={'Primary Energy|Wind': 'foo'})
+    assert df.check_aggregate('Primary Energy') is not None
     components = ['Primary Energy|Coal', 'foo']
-    assert _df.check_aggregate('Primary Energy', components=components) is None
+    assert df.check_aggregate('Primary Energy', components=components) is None
 
-    # use other method (max) both as string and passing the function
-    exp = IamDataFrame(PE_MAX_DF)
-    assert df.aggregate('Primary Energy', method='max').equals(exp)
-    assert df.aggregate('Primary Energy', method=np.max).equals(exp)
 
+def test_aggregate_unknown_method(aggregate_df):
     # using illegal method raises an error
-    pytest.raises(ValueError, df.aggregate, 'Primary Energy', method='foo')
+    pytest.raises(ValueError, aggregate_df.aggregate_region, 'Primary Energy',
+                  method='foo')
 
 
-def test_aggregate_by_list(aggregate_df):
-    df = aggregate_df
-    var_list = ['Primary Energy', 'Emissions|CO2']
-
-    # primary energy and emissions are a direct sum (within each region)
-    assert df.check_aggregate(var_list) is None
-
-    # use other method (max) both as string and passing the function
-    exp = IamDataFrame(pd.concat([PE_MAX_DF, CO2_MAX_DF]))
-    assert df.aggregate(var_list, method='max').equals(exp)
-    assert df.aggregate(var_list, method=np.max).equals(exp)
-
+def test_aggregate_by_list_with_components_raises(aggregate_df):
     # using list of variables and components raises an error
+    var_list = ['Primary Energy', 'Emissions|CO2']
     components = ['Primary Energy|Coal', 'Primary Energy|Wind']
-    pytest.raises(ValueError, df.aggregate, var_list, components=components)
+    pytest.raises(ValueError, aggregate_df.aggregate, var_list,
+                  components=components)
 
 
 def test_aggregate_region(aggregate_df):
