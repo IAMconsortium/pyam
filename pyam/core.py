@@ -171,6 +171,9 @@ class IamDataFrame(object):
 
     def equals(self, other):
         """Test if two objects contain the same data and meta indicators"""
+        if not isinstance(other, IamDataFrame):
+            raise ValueError('`other` is not an `IamDataFrame` instance')
+
         if compare(self, other).empty and self.meta.equals(other.meta):
             return True
         else:

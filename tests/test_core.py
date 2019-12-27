@@ -175,6 +175,10 @@ def test_equals(test_df_year):
     assert not test_df_year.equals(df)
 
 
+def test_equals_raises(test_pd_df):
+    df = IamDataFrame(test_pd_df)
+    pytest.raises(ValueError, df.equals, test_pd_df)
+
 
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['model_a']
