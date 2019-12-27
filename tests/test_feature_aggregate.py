@@ -219,11 +219,6 @@ def test_do_aggregate_append(test_df):
     pd.testing.assert_frame_equal(df.timeseries(), exp)
 
 
-def test_aggregate_unknown_method(reg_df):
-    pytest.raises(ValueError, reg_df.aggregate_region, 'Primary Energy',
-                  method='foo')
-
-
 def test_check_aggregate_pass(check_aggregate_df):
     obs = check_aggregate_df.filter(
         scenario='a_scen'
