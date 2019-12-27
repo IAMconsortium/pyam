@@ -68,18 +68,18 @@ def test_aggregate_with_components(aggregate_df):
     assert df.check_aggregate('Primary Energy', components=components) is None
 
 
-def test_aggregate_unknown_method(aggregate_df):
-    # using illegal method raises an error
-    pytest.raises(ValueError, aggregate_df.aggregate_region, 'Primary Energy',
-                  method='foo')
-
-
 def test_aggregate_by_list_with_components_raises(aggregate_df):
     # using list of variables and components raises an error
     var_list = ['Primary Energy', 'Emissions|CO2']
     components = ['Primary Energy|Coal', 'Primary Energy|Wind']
     pytest.raises(ValueError, aggregate_df.aggregate, var_list,
                   components=components)
+
+
+def test_aggregate_unknown_method(aggregate_df):
+    # using illegal method raises an error
+    pytest.raises(ValueError, aggregate_df.aggregate_region, 'Primary Energy',
+                  method='foo')
 
 
 def test_aggregate_region(aggregate_df):
