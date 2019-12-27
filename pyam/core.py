@@ -169,6 +169,13 @@ class IamDataFrame(object):
         """Indicator whether ``IamDataFrame`` is empty"""
         return self.data.empty
 
+    def equals(self, other):
+        """Test if two objects contain the same data and meta indicators"""
+        if compare(self, other).empty and self.meta.equals(other.meta):
+            return True
+        else:
+            return False
+
     def models(self):
         """Get a list of models"""
         return pd.Series(self.meta.index.levels[0])

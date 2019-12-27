@@ -157,13 +157,32 @@ def test_empty_attribute(test_df_year):
     assert test_df_year.filter(model='foo').empty
 
 
+def test_equals(test_df_year):
+    test_df_year.set_meta([1, 2], name='test')
+
+    # assert that a copy (with changed index-sort) is equal
+    df = test_df_year.copy()
+    df.data = df.data.sort_values(by='value')
+    assert test_df_year.equals(df)
+
+    # assert that adding a new timeseries is not equal
+    df = test_df_year.rename(variable={'Primary Energy': 'foo'}, append=True)
+    assert not test_df_year.equals(df)
+
+    # assert that adding a new meta indicator is not equal
+    df = test_df_year.copy()
+    df.set_meta(['foo', ' bar'], name='string')
+    assert not test_df_year.equals(df)
+
+
+
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['model_a']
 
 
 def test_model(test_df):
-    pd.testing.assert_series_equal(test_df.models(),
-                                   pd.Series(data=['model_a'], name='model'))
+    exp = pd.Series(data=['model_a'], name='model')
+    pd.testing.assert_series_equal(test_df.models(), exp)
 
 
 def test_scenario(test_df):
