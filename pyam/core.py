@@ -793,6 +793,16 @@ class IamDataFrame(object):
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
+        _data = self._aggregate(variable, components=components, method=method)
+
+        # append to `self` or return as `IamDataFrame`
+        if append is True:
+            self.append(_data, inplace=True)
+        else:
+            return IamDataFrame(_data)
+
+    def _aggregate(self, variable, components=None, method=np.sum):
+        """Internal implementation of the `aggregate` function"""
         # list of variables require default components (no manual list)
         if islistable(variable) and components is not None:
             raise ValueError('aggregating by list of variables cannot use '
@@ -825,13 +835,7 @@ class IamDataFrame(object):
         # rename all components to `variable` and aggregate
         _df = self.data[self._apply_filters(variable=mapping.keys())].copy()
         _df['variable'].replace(mapping, inplace=True)
-        _data = _agg(_df, [], method)
-
-        # append to `self` or return as pd.Series
-        if append is True:
-            self.append(_data, inplace=True)
-        else:
-            return _data
+        return _agg(_df, [], method)
 
     def check_aggregate(self, variable, components=None, method='sum',
                         exclude_on_fail=False, multiplier=1, **kwargs):
@@ -852,7 +856,7 @@ class IamDataFrame(object):
         kwargs: passed to `np.isclose()`
         """
         # compute aggregate from components, return None if no components
-        df_components = self.aggregate(variable, components)
+        df_components = self._aggregate(variable, components, method)
         if df_components is None:
             return
 
@@ -906,6 +910,20 @@ class IamDataFrame(object):
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
+        _data = self._aggregate_region(
+            variable, region=region, subregions=subregions,
+            components=components, method=method, weight=weight
+        )
+
+        # append to `self` or return as `IamDataFrame`
+        if append is True:
+            self.append(_data, region=region, inplace=True)
+        else:
+            return IamDataFrame(_data, region=region)
+
+    def _aggregate_region(self, variable, region, subregions=None,
+                          components=False, method='sum', weight=None):
+        """Internal implementation for aggregating data over subregions"""
         if not isstr(variable) and components is not False:
             msg = 'aggregating by list of variables with components ' \
                   'is not supported'
@@ -956,10 +974,7 @@ class IamDataFrame(object):
                 _df['variable'] = variable
                 _data = _data.add(_agg(_df, 'region'), fill_value=0)
 
-        if append is True:
-            self.append(_data, region=region, inplace=True)
-        else:
-            return _data
+        return _data
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=False, method='sum', weight=None,
@@ -989,8 +1004,8 @@ class IamDataFrame(object):
         kwargs: passed to `np.isclose()`
         """
         # compute aggregate from subregions, return None if no subregions
-        df_subregions = self.aggregate_region(variable, region, subregions,
-                                              components, method, weight)
+        df_subregions = self._aggregate_region(variable, region, subregions,
+                                               components, method, weight)
         if df_subregions is None:
             return
 
