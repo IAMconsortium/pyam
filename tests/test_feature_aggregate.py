@@ -56,13 +56,9 @@ def test_aggregate(aggregate_df):
     assert _df.check_aggregate('Primary Energy', components=components) is None
 
     # use other method (max) both as string and passing the function
-    exp = PE_MAX_DF.set_index(LONG_IDX).value
-
-    obs = df.aggregate('Primary Energy', method='max')
-    pd.testing.assert_series_equal(obs, exp)
-
-    obs = df.aggregate('Primary Energy', method=np.max)
-    pd.testing.assert_series_equal(obs, exp)
+    exp = IamDataFrame(PE_MAX_DF)
+    assert df.aggregate('Primary Energy', method='max').equals(exp)
+    assert df.aggregate('Primary Energy', method=np.max).equals(exp)
 
     # using illegal method raises an error
     pytest.raises(ValueError, df.aggregate, 'Primary Energy', method='foo')
@@ -76,17 +72,9 @@ def test_aggregate_by_list(aggregate_df):
     assert df.check_aggregate(var_list) is None
 
     # use other method (max) both as string and passing the function
-    exp = (
-        pd.concat([PE_MAX_DF, CO2_MAX_DF])
-        .set_index(LONG_IDX).value
-        .sort_index()
-    )
-
-    obs = df.aggregate(var_list, method='max')
-    pd.testing.assert_series_equal(obs, exp)
-
-    obs = df.aggregate(var_list, method=np.max)
-    pd.testing.assert_series_equal(obs, exp)
+    exp = IamDataFrame(pd.concat([PE_MAX_DF, CO2_MAX_DF]))
+    assert df.aggregate(var_list, method='max').equals(exp)
+    assert df.aggregate(var_list, method=np.max).equals(exp)
 
     # using list of variables and components raises an error
     components = ['Primary Energy|Coal', 'Primary Energy|Wind']
@@ -122,12 +110,9 @@ def test_aggregate_region(aggregate_df):
                   weight='bar')
 
     # use other method (max) both as string and passing the function
-    exp = PRICE_MAX_DF.set_index(REG_IDX).value
-    obs = df.aggregate_region('Price|Carbon', method='max')
-    pd.testing.assert_series_equal(obs, exp)
-
-    obs = df.aggregate_region('Price|Carbon', method=np.max)
-    pd.testing.assert_series_equal(obs, exp)
+    exp = IamDataFrame(PRICE_MAX_DF, region='World')
+    assert df.aggregate_region('Price|Carbon', method='max').equals(exp)
+    assert df.aggregate_region('Price|Carbon', method=np.max).equals(exp)
 
     # using illegal method raises an error
     pytest.raises(ValueError, df.aggregate_region, v, method='foo')
@@ -156,13 +141,13 @@ def test_aggregate_region_by_list(aggregate_df):
 
     # use other method (max) both as string and passing the function
     _co2_df = CO2_MAX_DF[CO2_MAX_DF.region == 'World'].drop(columns='region')
-    exp = pd.concat([_co2_df, PRICE_MAX_DF]).set_index(REG_IDX).value
+    exp = IamDataFrame(pd.concat([_co2_df, PRICE_MAX_DF]), region='World')
 
     obs = df.aggregate_region(var_list, method='max')
-    pd.testing.assert_series_equal(obs, exp)
+    assert obs.equals(exp)
 
     obs = df.aggregate_region(var_list, method=np.max)
-    pd.testing.assert_series_equal(obs, exp)
+    assert obs.equals(exp)
 
 
 def test_missing_region(check_aggregate_df):
@@ -469,7 +454,7 @@ def test_aggregate_region_components_handling(check_aggregate_regional_df,
     exp = pd.Series(exp_vals, index=exp_idx)
     exp.name = "value"
 
-    pd.testing.assert_series_equal(res, exp)
+    res.equals(IamDataFrame(exp, region='World'))
 
 
 def test_check_aggregate_region_no_world(check_aggregate_regional_df, caplog):
