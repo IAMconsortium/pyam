@@ -75,6 +75,10 @@ def test_aggregate_by_list_with_components_raises(simple_df):
     pytest.raises(ValueError, simple_df.aggregate, v, components=components)
 
 
+def test_aggregate_empty(simple_df):
+    assert simple_df.aggregate('foo') is None
+
+
 def test_aggregate_unknown_method(simple_df):
     # using illegal method raises an error
     v = 'Primary Energy'
@@ -137,6 +141,10 @@ def test_aggregate_region_with_components_and_weights_raises(simple_df):
     # setting both weight and components raises an error
     pytest.raises(ValueError, simple_df.aggregate_region, 'Emissions|CO2',
                   components=True, weight='bar')
+
+
+def test_aggregate_region_empty(simple_df):
+    assert simple_df.aggregate_region('foo') is None
 
 
 def test_aggregate_region_unknown_method(simple_df):

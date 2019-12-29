@@ -795,7 +795,11 @@ class IamDataFrame(object):
         """
         _df = _aggregate(self, variable, components=components, method=method)
 
-        # append to `self` or return as `IamDataFrame`
+        # return None if there is nothing to aggregate
+        if _df is None:
+            return None
+
+        # else, append to `self` or return as `IamDataFrame`
         if append is True:
             self.append(_df, inplace=True)
         else:
@@ -879,7 +883,11 @@ class IamDataFrame(object):
             components=components, method=method, weight=weight
         )
 
-        # append to `self` or return as `IamDataFrame`
+        # return None if there is nothing to aggregate
+        if _df is None:
+            return None
+
+        # else, append to `self` or return as `IamDataFrame`
         if append is True:
             self.append(_df, region=region, inplace=True)
         else:
