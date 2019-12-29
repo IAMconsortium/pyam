@@ -244,7 +244,7 @@ def test_pd_df():
 
 # IamDataFrame with variable-and-region-structure for testing aggregation tools
 @pytest.fixture(scope="function")
-def aggregate_df():
+def simple_df():
     df = IamDataFrame(model='model_a', scenario='scen_a', data=FULL_FEATURE_DF)
     yield df
 

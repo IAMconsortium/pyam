@@ -45,54 +45,53 @@ PRICE_MAX_DF = pd.DataFrame([
     ('Primary Energy', PE_MAX_DF),
     (['Primary Energy', 'Emissions|CO2'], pd.concat([PE_MAX_DF, CO2_MAX_DF])),
 ))
-def test_aggregate(aggregate_df, variable, data):
+def test_aggregate(simple_df, variable, data):
 
     # check that `variable` is a a direct sum and matches given total
-    exp = aggregate_df.filter(variable=variable)
-    assert aggregate_df.aggregate(variable).equals(exp)
+    exp = simple_df.filter(variable=variable)
+    assert simple_df.aggregate(variable).equals(exp)
 
     # assert that `check_aggregate` returns None
-    assert aggregate_df.check_aggregate(variable) is None
+    assert simple_df.check_aggregate(variable) is None
 
     # use other method (max) both as string and passing the function
     exp = IamDataFrame(data)
-    assert aggregate_df.aggregate(variable, method='max').equals(exp)
-    assert aggregate_df.aggregate(variable, method=np.max).equals(exp)
+    assert simple_df.aggregate(variable, method='max').equals(exp)
+    assert simple_df.aggregate(variable, method=np.max).equals(exp)
 
 
-def test_aggregate_with_components(aggregate_df):
+def test_aggregate_with_components(simple_df):
     # rename sub-category to test setting components explicitly as list
-    df = aggregate_df.rename(variable={'Primary Energy|Wind': 'foo'})
+    df = simple_df.rename(variable={'Primary Energy|Wind': 'foo'})
     assert df.check_aggregate('Primary Energy') is not None
     components = ['Primary Energy|Coal', 'foo']
     assert df.check_aggregate('Primary Energy', components=components) is None
 
 
-def test_aggregate_by_list_with_components_raises(aggregate_df):
+def test_aggregate_by_list_with_components_raises(simple_df):
     # using list of variables and components raises an error
-    var_list = ['Primary Energy', 'Emissions|CO2']
+    v = ['Primary Energy', 'Emissions|CO2']
     components = ['Primary Energy|Coal', 'Primary Energy|Wind']
-    pytest.raises(ValueError, aggregate_df.aggregate, var_list,
-                  components=components)
+    pytest.raises(ValueError, simple_df.aggregate, v, components=components)
 
 
-def test_aggregate_unknown_method(aggregate_df):
+def test_aggregate_unknown_method(simple_df):
     # using illegal method raises an error
-    pytest.raises(ValueError, aggregate_df.aggregate_region, 'Primary Energy',
-                  method='foo')
+    v = 'Primary Energy'
+    pytest.raises(ValueError, simple_df.aggregate_region, v, method='foo')
 
 
 @pytest.mark.parametrize("variable", (
     ('Primary Energy'),
     (['Primary Energy', 'Primary Energy|Coal', 'Primary Energy|Wind']),
 ))
-def test_aggregate_region(aggregate_df, variable):
+def test_aggregate_region(simple_df, variable):
     # check that `variable` is a a direct sum across regions
-    exp = aggregate_df.filter(variable=variable, region='World')
-    assert aggregate_df.aggregate_region(variable).equals(exp)
+    exp = simple_df.filter(variable=variable, region='World')
+    assert simple_df.aggregate_region(variable).equals(exp)
 
     # assert that `check_aggregate` returns None
-    assert aggregate_df.check_aggregate_region(variable) is None
+    assert simple_df.check_aggregate_region(variable) is None
 
 
 @pytest.mark.parametrize("variable,data", (
@@ -100,48 +99,50 @@ def test_aggregate_region(aggregate_df, variable):
         (['Price|Carbon', 'Emissions|CO2'],
          pd.concat([PRICE_MAX_DF, CO2_MAX_DF]))
 ))
-def test_aggregate_region_with_other_method(aggregate_df, variable, data):
+def test_aggregate_region_with_other_method(simple_df, variable, data):
     # use other method (max) both as string and passing the function
     exp = IamDataFrame(data).filter(region='World')
-    assert aggregate_df.aggregate_region(variable, method='max').equals(exp)
-    assert aggregate_df.aggregate_region(variable, method=np.max).equals(exp)
+    assert simple_df.aggregate_region(variable, method='max').equals(exp)
+    assert simple_df.aggregate_region(variable, method=np.max).equals(exp)
 
 
-def test_aggregate_region_with_components(aggregate_df):
+def test_aggregate_region_with_components(simple_df):
     # CO2 emissions have "bunkers" only defined at the region level
     v = 'Emissions|CO2'
-    assert aggregate_df.check_aggregate_region(v) is not None
-    assert aggregate_df.check_aggregate_region(v, components=True) is None
+    assert simple_df.check_aggregate_region(v) is not None
+    assert simple_df.check_aggregate_region(v, components=True) is None
 
     # rename emissions of bunker to test setting components as list
-    _df = aggregate_df.rename(variable={'Emissions|CO2|Bunkers': 'foo'})
+    _df = simple_df.rename(variable={'Emissions|CO2|Bunkers': 'foo'})
     assert _df.check_aggregate_region(v, components=['foo']) is None
 
-def test_aggregate_region_with_weights(aggregate_df):
+
+def test_aggregate_region_with_weights(simple_df):
     # carbon price shouldn't be summed but be weighted by emissions
     v = 'Price|Carbon'
     w = 'Emissions|CO2'
-    assert aggregate_df.check_aggregate_region(v) is not None
-    assert aggregate_df.check_aggregate_region(v, weight=w) is None
+    assert simple_df.check_aggregate_region(v) is not None
+    assert simple_df.check_aggregate_region(v, weight=w) is None
 
     # inconsistent index of variable and weight raises an error
-    _df = aggregate_df.filter(variable=w, region='reg_b', keep=False)
+    _df = simple_df.filter(variable=w, region='reg_b', keep=False)
     pytest.raises(ValueError, _df.aggregate_region, v, weight=w)
 
     # using weight and method other than 'sum' raises an error
-    pytest.raises(ValueError, aggregate_df.aggregate_region, v, method='max',
+    pytest.raises(ValueError, simple_df.aggregate_region, v, method='max',
                   weight='bar')
 
-def test_aggregate_region_with_components_and_weights_raises(aggregate_df):
+
+def test_aggregate_region_with_components_and_weights_raises(simple_df):
     # setting both weight and components raises an error
-    pytest.raises(ValueError, aggregate_df.aggregate_region, 'Emissions|CO2',
+    pytest.raises(ValueError, simple_df.aggregate_region, 'Emissions|CO2',
                   components=True, weight='bar')
 
 
-def test_aggregate_region_unknown_method(aggregate_df):
+def test_aggregate_region_unknown_method(simple_df):
     # using illegal method raises an error
     v = 'Emissions|CO2'
-    pytest.raises(ValueError, aggregate_df.aggregate_region, v,  method='foo')
+    pytest.raises(ValueError, simple_df.aggregate_region, v,  method='foo')
 
 
 def test_missing_region(check_aggregate_df):
