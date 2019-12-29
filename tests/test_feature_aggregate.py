@@ -82,73 +82,66 @@ def test_aggregate_unknown_method(aggregate_df):
                   method='foo')
 
 
-def test_aggregate_region(aggregate_df):
-    df = aggregate_df
+@pytest.mark.parametrize("variable", (
+    ('Primary Energy'),
+    (['Primary Energy', 'Primary Energy|Coal', 'Primary Energy|Wind']),
+))
+def test_aggregate_region(aggregate_df, variable):
+    # check that `variable` is a a direct sum across regions
+    exp = aggregate_df.filter(variable=variable, region='World')
+    assert aggregate_df.aggregate_region(variable).equals(exp)
 
-    # primary energy is a direct sum (across regions)
-    assert df.check_aggregate_region('Primary Energy') is None
+    # assert that `check_aggregate` returns None
+    assert aggregate_df.check_aggregate_region(variable) is None
 
+
+@pytest.mark.parametrize("variable,data", (
+        ('Price|Carbon', PRICE_MAX_DF),
+        (['Price|Carbon', 'Emissions|CO2'],
+         pd.concat([PRICE_MAX_DF, CO2_MAX_DF]))
+))
+def test_aggregate_region_with_other_method(aggregate_df, variable, data):
+    # use other method (max) both as string and passing the function
+    exp = IamDataFrame(data).filter(region='World')
+    assert aggregate_df.aggregate_region(variable, method='max').equals(exp)
+    assert aggregate_df.aggregate_region(variable, method=np.max).equals(exp)
+
+
+def test_aggregate_region_with_components(aggregate_df):
     # CO2 emissions have "bunkers" only defined at the region level
     v = 'Emissions|CO2'
-    assert df.check_aggregate_region(v) is not None
-    assert df.check_aggregate_region(v, components=True) is None
+    assert aggregate_df.check_aggregate_region(v) is not None
+    assert aggregate_df.check_aggregate_region(v, components=True) is None
 
     # rename emissions of bunker to test setting components as list
-    _df = df.rename(variable={'Emissions|CO2|Bunkers': 'foo'})
+    _df = aggregate_df.rename(variable={'Emissions|CO2|Bunkers': 'foo'})
     assert _df.check_aggregate_region(v, components=['foo']) is None
 
+def test_aggregate_region_with_weights(aggregate_df):
     # carbon price shouldn't be summed but be weighted by emissions
-    assert df.check_aggregate_region('Price|Carbon') is not None
-    assert df.check_aggregate_region('Price|Carbon', weight=v) is None
+    v = 'Price|Carbon'
+    w = 'Emissions|CO2'
+    assert aggregate_df.check_aggregate_region(v) is not None
+    assert aggregate_df.check_aggregate_region(v, weight=w) is None
 
     # inconsistent index of variable and weight raises an error
-    _df = df.filter(variable='Emissions|CO2', region='reg_b', keep=False)
-    pytest.raises(ValueError, _df.aggregate_region, 'Price|Carbon',
-                  weight='Emissions|CO2')
-
-    # setting both weight and components raises an error
-    pytest.raises(ValueError, df.aggregate_region, v, components=True,
-                  weight='bar')
-
-    # use other method (max) both as string and passing the function
-    exp = IamDataFrame(PRICE_MAX_DF)
-    assert df.aggregate_region('Price|Carbon', method='max').equals(exp)
-    assert df.aggregate_region('Price|Carbon', method=np.max).equals(exp)
-
-    # using illegal method raises an error
-    pytest.raises(ValueError, df.aggregate_region, v, method='foo')
+    _df = aggregate_df.filter(variable=w, region='reg_b', keep=False)
+    pytest.raises(ValueError, _df.aggregate_region, v, weight=w)
 
     # using weight and method other than 'sum' raises an error
-    pytest.raises(ValueError, df.aggregate_region, v, method='max',
+    pytest.raises(ValueError, aggregate_df.aggregate_region, v, method='max',
                   weight='bar')
 
+def test_aggregate_region_with_components_and_weights_raises(aggregate_df):
+    # setting both weight and components raises an error
+    pytest.raises(ValueError, aggregate_df.aggregate_region, 'Emissions|CO2',
+                  components=True, weight='bar')
 
-def test_aggregate_region_by_list(aggregate_df):
-    df = aggregate_df
-    var_list = ['Primary Energy', 'Primary Energy|Coal', 'Primary Energy|Wind']
 
-    # primary energy and sub-categories are a direct sum (across regions)
-    assert df.check_aggregate_region(var_list) is None
-
-    # emissions and carbon price are _not_ a direct sum (across regions)
-    var_list = ['Price|Carbon', 'Emissions|CO2']
-    assert df.check_aggregate_region(var_list) is not None
-
-    # using list of variables and components raises an error
-    pytest.raises(ValueError, df.aggregate_region, var_list, components=True)
-
-    # using list of variables and weight raises an error (inconsistent weight)
-    pytest.raises(ValueError, df.aggregate_region, var_list, weight=True)
-
-    # use other method (max) both as string and passing the function
-    _co2_df = CO2_MAX_DF[CO2_MAX_DF.region == 'World'].drop(columns='region')
-    exp = IamDataFrame(pd.concat([_co2_df, PRICE_MAX_DF]), region='World')
-
-    obs = df.aggregate_region(var_list, method='max')
-    assert obs.equals(exp)
-
-    obs = df.aggregate_region(var_list, method=np.max)
-    assert obs.equals(exp)
+def test_aggregate_region_unknown_method(aggregate_df):
+    # using illegal method raises an error
+    v = 'Emissions|CO2'
+    pytest.raises(ValueError, aggregate_df.aggregate_region, v,  method='foo')
 
 
 def test_missing_region(check_aggregate_df):
