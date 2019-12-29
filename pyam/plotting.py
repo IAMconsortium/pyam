@@ -35,6 +35,12 @@ OUTSIDE_LEGEND = {
 }
 
 PYAM_COLORS = {
+    # AR6 colours from https://github.com/IPCC-WG1/colormaps
+    # where each file is processed to generate hex values, e.g.:
+    # with open('rcp_cat.txt') as f: 
+    #   for l in f.readlines():
+    #     rgb = np.array([int(x) for x in l.strip().split()]) / 256
+    #     print(matplotlib.colors.rgb2hex(rgb))
     'AR6-SSP1': "#1e9583",
     'AR6-SSP2': "#4576be",
     'AR6-SSP3': "#f11111",
