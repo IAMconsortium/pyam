@@ -830,23 +830,24 @@ class IamDataFrame(object):
 
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable)
-        df_variable, df_components = (
+        df_var, df_components = (
             _agg(self.data[rows], [], method)
             .align(df_components)
         )
 
         # use `np.isclose` for checking match
-        diff = df_variable[~np.isclose(df_variable, multiplier * df_components,
-                                       **kwargs)]
+        rows = ~np.isclose(df_var, multiplier * df_components, **kwargs)
 
-        if len(diff):
+        # if aggregate and components don't match, return inconsistent data
+        if sum(rows):
             msg = '`{}` - {} of {} rows are not aggregates of components'
-            logger.info(msg.format(variable, len(diff), len(df_variable)))
+            logger.info(msg.format(variable, sum(rows), len(df_var)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(diff.index.droplevel([2, 3, 4]))
+                self._exclude_on_fail(_meta_idx(df_var[rows].reset_index()))
 
-            return IamDataFrame(diff).timeseries()
+            return pd.concat([df_var[rows], df_components[rows]], axis=1,
+                             keys=(['variable', 'components']))
 
     def aggregate_region(self, variable, region='World', subregions=None,
                          components=False, method='sum', weight=None,
@@ -940,18 +941,18 @@ class IamDataFrame(object):
         )
 
         # use `np.isclose` for checking match
-        diff = df_region[~np.isclose(df_region, df_subregions, **kwargs)]
+        rows = ~np.isclose(df_region, df_subregions, **kwargs)
 
-        if len(diff):
-            msg = (
-                '`{}` - {} of {} rows are not aggregates of subregions'
-            )
-            logger.info(msg.format(variable, len(diff), len(df_region)))
+        # if region and subregions don't match, return inconsistent data
+        if sum(rows):
+            msg = '`{}` - {} of {} rows are not aggregates of subregions'
+            logger.info(msg.format(variable, sum(rows), len(df_region)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(diff.index.droplevel([2, 3]))
+                self._exclude_on_fail(_meta_idx(df_region[rows].reset_index()))
 
-            return IamDataFrame(diff, region=region).timeseries()
+            return pd.concat([df_region[rows], df_subregions[rows]], axis=1,
+                             keys=(['region', 'subregions']))
 
     def downscale_region(self, variable, proxy, region='World',
                          subregions=None, append=False):
@@ -1501,6 +1502,7 @@ class IamDataFrame(object):
 
 
 def _meta_idx(data):
+    """Return the `META_IDX` from `data` by index or columns"""
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
