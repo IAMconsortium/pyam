@@ -1,6 +1,4 @@
 import pytest
-import pandas as pd
-import pyam
 
 
 @pytest.mark.parametrize("variable", (
