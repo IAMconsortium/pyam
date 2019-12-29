@@ -1,5 +1,7 @@
 # Next Release
 
+- [#314](https://github.com/IAMconsortium/pyam/pull/314) Update IPCC color scheme colors and add SSP-only colors
+
 ## API changes
 
 PR [#305](https://github.com/IAMconsortium/pyam/pull/305) changed the default
