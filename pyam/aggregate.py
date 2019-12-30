@@ -120,18 +120,20 @@ def _agg_weight(df, weight, method):
     if method not in ['sum', np.sum]:
         raise ValueError('only method `np.sum` allowed for weighted average')
 
-    _data = _get_value_col(df, YEAR_IDX)
     _weight = _get_value_col(weight, YEAR_IDX)
 
-    if not _data.index.equals(_weight.index):
+    if not _get_value_col(df, YEAR_IDX).index.equals(_weight.index):
         raise ValueError('inconsistent index between variable and weight')
 
-    cols = META_IDX + ['year']
-    return (_data * _weight).groupby(cols).sum() / _weight.groupby(cols).sum()
+    _data = _get_value_col(df)
+    col1 = [i for i in _data.index.names if i != 'region']
+    col2 = META_IDX + ['year']
+    return (_data * _weight).groupby(col1).sum() / _weight.groupby(col2).sum()
 
 
-def _get_value_col(df, cols):
+def _get_value_col(df, cols=None):
     """Return the value column as `pd.Series sorted by index"""
+    cols = cols or [i for i in df.columns if i != 'value']
     return df.set_index(cols)['value'].sort_index()
 
 

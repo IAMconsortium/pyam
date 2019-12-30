@@ -128,6 +128,9 @@ def test_aggregate_region_with_weights(simple_df):
     assert simple_df.check_aggregate_region(v) is not None
     assert simple_df.check_aggregate_region(v, weight=w) is None
 
+    exp = simple_df.filter(variable=v, region='World')
+    assert simple_df.aggregate_region(v, weight=w).equals(exp)
+
     # inconsistent index of variable and weight raises an error
     _df = simple_df.filter(variable=w, region='reg_b', keep=False)
     pytest.raises(ValueError, _df.aggregate_region, v, weight=w)
