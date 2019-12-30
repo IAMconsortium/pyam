@@ -8,6 +8,7 @@ region-level. To keep the previous behaviour, add `components=True`.
 
 ## Individual Updates
 
+- [#314](https://github.com/IAMconsortium/pyam/pull/314) Update IPCC color scheme colors and add SSP-only colors
 - [#313](https://github.com/IAMconsortium/pyam/pull/313) Add feature to `downscale` timeseries data to subregions using another variable as proxy
 - [#312](https://github.com/IAMconsortium/pyam/pull/312) Allow passing list of variables to `aggregate` functions
 - [#305](https://github.com/IAMconsortium/pyam/pull/305) Add `method` and `weight` options to the (region) aggregation functions
