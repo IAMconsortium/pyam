@@ -60,6 +60,17 @@ def test_aggregate(simple_df, variable, data):
     assert simple_df.aggregate(variable, method=np.max).equals(exp)
 
 
+@pytest.mark.parametrize("variable", (
+    ('Primary Energy'),
+    (['Primary Energy', 'Emissions|CO2']),
+))
+def test_aggregate_append(simple_df, variable):
+    # remove `variable`, do aggregate and append, check equality to original
+    _df = simple_df.filter(variable=variable, keep=False)
+    _df.aggregate(variable, append=True)
+    assert _df.equals(simple_df)
+
+
 def test_aggregate_with_components(simple_df):
     # rename sub-category to test setting components explicitly as list
     df = simple_df.rename(variable={'Primary Energy|Wind': 'foo'})
@@ -101,6 +112,17 @@ def test_aggregate_region(simple_df, variable):
 
     # assert that `check_aggregate` returns None
     assert simple_df.check_aggregate_region(variable) is None
+
+
+@pytest.mark.parametrize("variable", (
+    ('Primary Energy'),
+    (['Primary Energy', 'Primary Energy|Coal', 'Primary Energy|Wind']),
+))
+def test_aggregate_region_append(simple_df, variable):
+    # remove `variable`, do aggregate and append, check equality to original
+    _df = simple_df.filter(variable=variable, region='World', keep=False)
+    _df.aggregate_region(variable, append=True)
+    assert _df.equals(simple_df)
 
 
 @pytest.mark.parametrize("variable", (
@@ -180,28 +202,6 @@ def test_aggregate_region_unknown_method(simple_df):
     # using unknown string as method raises an error
     v = 'Emissions|CO2'
     pytest.raises(ValueError, simple_df.aggregate_region, v,  method='foo')
-
-
-def test_do_aggregate_append(test_df):
-    test_df.rename({'variable': {'Primary Energy': 'Primary Energy|Gas'}},
-                   inplace=True)
-    test_df.aggregate('Primary Energy', append=True)
-    df = test_df.filter(variable='Primary Energy')
-
-    times = [2005, 2010] if "year" in test_df.data else TEST_DTS
-    exp = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1.5, 9.],
-        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
-    ],
-        columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
-    ).set_index(IAMC_IDX)
-    if "year" in test_df.data:
-        exp.columns = list(map(int, exp.columns))
-    else:
-        df.data.time = df.data.time.dt.normalize()
-        exp.columns = pd.to_datetime(exp.columns)
-
-    pd.testing.assert_frame_equal(df.timeseries(), exp)
 
 
 def test_check_aggregate_pass(check_aggregate_df):
