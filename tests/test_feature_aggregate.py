@@ -51,13 +51,26 @@ def test_aggregate(simple_df, variable, data):
     exp = simple_df.filter(variable=variable)
     assert simple_df.aggregate(variable).equals(exp)
 
-    # assert that `check_aggregate` returns None
-    assert simple_df.check_aggregate(variable) is None
-
     # use other method (max) both as string and passing the function
     exp = IamDataFrame(data)
     assert simple_df.aggregate(variable, method='max').equals(exp)
     assert simple_df.aggregate(variable, method=np.max).equals(exp)
+
+
+def test_check_aggregate(simple_df):
+    variable = 'Primary Energy'
+
+    # assert that `check_aggregate` returns None for full data
+    assert simple_df.check_aggregate(variable) is None
+
+    # assert that `check_aggregate` returns non-matching data
+    obs = (
+        simple_df
+        .filter(variable='Primary Energy|Coal', region='World', keep=False)
+        .check_aggregate(variable)
+    )
+    exp = pd.DataFrame([[12., 3.], [15., 5.]])
+    np.testing.assert_array_equal(obs.values, exp.values)
 
 
 @pytest.mark.parametrize("variable", (
@@ -110,8 +123,21 @@ def test_aggregate_region(simple_df, variable):
     exp_foo.data.value = exp_foo.data.value * 2
     assert simple_df.aggregate_region(variable, region='foo').equals(exp_foo)
 
-    # assert that `check_aggregate` returns None
+
+def test_check_aggregate_region(simple_df):
+    variable = 'Primary Energy'
+
+    # assert that `check_aggregate_region` returns None for full data
     assert simple_df.check_aggregate_region(variable) is None
+
+    # assert that `check_aggregate_region` returns non-matching data
+    obs = (
+        simple_df
+        .filter(variable='Primary Energy', region='reg_a', keep=False)
+        .check_aggregate_region(variable)
+    )
+    exp = pd.DataFrame([[12., 4.], [15., 6.]])
+    np.testing.assert_array_equal(obs.values, exp.values)
 
 
 @pytest.mark.parametrize("variable", (
@@ -216,14 +242,6 @@ def test_check_internal_consistency_no_world_for_variable(
     warn_idx = caplog.messages.index("variable `Emissions|CH4` does not exist "
                                      "in region `World`")
     assert caplog.records[warn_idx].levelname == "INFO"
-
-
-def test_check_aggregate_fail(test_df):
-    obs = test_df.check_aggregate('Primary Energy', exclude_on_fail=True)
-    assert len(obs.columns) == 2
-    assert obs.index.get_values()[0] == (
-        'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
-    )
 
 
 def test_check_aggregate_top_level(test_df):
