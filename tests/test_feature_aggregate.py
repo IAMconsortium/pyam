@@ -94,8 +94,34 @@ def test_aggregate_region(simple_df, variable):
     exp = simple_df.filter(variable=variable, region='World')
     assert simple_df.aggregate_region(variable).equals(exp)
 
+    # check custom `region` (will include `World`, so double-count values)
+    exp_foo = exp.rename(region={'World': 'foo'})
+    exp_foo.data.value = exp_foo.data.value * 2
+    assert simple_df.aggregate_region(variable, region='foo').equals(exp_foo)
+
     # assert that `check_aggregate` returns None
     assert simple_df.check_aggregate_region(variable) is None
+
+
+@pytest.mark.parametrize("variable", (
+    ('Primary Energy'),
+    (['Primary Energy', 'Primary Energy|Coal', 'Primary Energy|Wind']),
+))
+def test_aggregate_region_with_subregions(simple_df, variable):
+    # check that custom `subregions` works (assumes only `reg_a` is in `World`)
+    exp = (
+        simple_df.filter(variable=variable, region='reg_a')
+        .rename(region={'reg_a': 'World'})
+    )
+    assert simple_df.aggregate_region(variable, subregions='reg_a').equals(exp)
+
+    # check that both custom `region` and `subregions` work
+    exp_foo = exp.rename(region={'World': 'foo'})
+    assert simple_df.aggregate_region(variable, region='foo',
+                                      subregions='reg_a').equals(exp_foo)
+
+    # check that invalid list of subregions returns empty
+    assert simple_df.aggregate_region(variable, subregions=['reg_c']).empty
 
 
 @pytest.mark.parametrize("variable,data", (
@@ -154,52 +180,6 @@ def test_aggregate_region_unknown_method(simple_df):
     # using unknown string as method raises an error
     v = 'Emissions|CO2'
     pytest.raises(ValueError, simple_df.aggregate_region, v,  method='foo')
-
-
-def test_missing_region(check_aggregate_df):
-    # for now, this test makes sure that this operation works as expected
-    exp = check_aggregate_df.aggregate_region('Primary Energy', region='foo')
-    assert len(exp) == 8
-    # # this test should be updated to the below after the return type of
-    # # aggregate_region() is updated
-    # exp = check_aggregate_df.aggregate_region(
-    #     'Primary Energy', region='foo', append=False
-    # ).data
-    # check_aggregate_df.aggregate_region(
-    #     'Primary Energy', region='foo', append=True
-    # )
-    # obs = check_aggregate_df.filter(region='foo').data
-    # assert len(exp) > 0
-    # pd.testing.assert_frame_equal(obs.reset_index(drop=True),
-    #                               exp.reset_index(drop=True))
-
-
-def test_aggregate_region_extra_subregion():
-    cols = ['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
-    data = pd.DataFrame([
-        ['model_a', 'scen_a', 'foo', 'Primary Energy', 'EJ/y', 1, 6],
-        ['model_a', 'scen_a', 'bar', 'Primary Energy', 'EJ/y', 0.75, 5]],
-        columns=cols)
-    df = IamDataFrame(data=data)
-    obs = df.aggregate_region(variable='Primary Energy',
-                              region='R5ASIA',
-                              subregions=['foo', 'bar', 'baz'],
-                              components=[], append=False)
-    assert len(obs) == 2
-
-
-def test_aggregate_region_missing_all_subregions():
-    cols = ['model', 'scenario', 'region', 'variable', 'unit', 2005, 2010]
-    data = pd.DataFrame([
-        ['model_a', 'scen_a', 'foo', 'Primary Energy', 'EJ/y', 1, 6],
-        ['model_a', 'scen_a', 'bar', 'Primary Energy', 'EJ/y', 0.75, 5]],
-        columns=cols)
-    df = IamDataFrame(data=data)
-    obs = df.aggregate_region(variable='Primary Energy',
-                              region='R5ASIA',
-                              subregions=['China', 'Vietnam', 'Japan']
-                              )
-    assert len(obs) == 0
 
 
 def test_do_aggregate_append(test_df):
