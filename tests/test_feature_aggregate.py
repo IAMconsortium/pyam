@@ -210,9 +210,8 @@ def test_aggregate_region_with_subregions(simple_df, variable):
 
 
 @pytest.mark.parametrize("variable,data", (
-        ('Price|Carbon', PRICE_MAX_DF),
-        (['Price|Carbon', 'Emissions|CO2'],
-         pd.concat([PRICE_MAX_DF, CO2_MAX_DF]))
+    ('Price|Carbon', PRICE_MAX_DF),
+    (['Price|Carbon', 'Emissions|CO2'], pd.concat([PRICE_MAX_DF, CO2_MAX_DF]))
 ))
 def test_aggregate_region_with_other_method(simple_df, variable, data):
     # use other method (max) both as string and passing the function
@@ -264,7 +263,7 @@ def test_aggregate_region_empty(simple_df):
 def test_aggregate_region_unknown_method(simple_df):
     # using unknown string as method raises an error
     v = 'Emissions|CO2'
-    pytest.raises(ValueError, simple_df.aggregate_region, v,  method='foo')
+    pytest.raises(ValueError, simple_df.aggregate_region, v, method='foo')
 
 
 def test_check_internal_consistency(simple_df):
