@@ -140,6 +140,16 @@ def test_aggregate_region(simple_df, variable):
     assert simple_df.aggregate_region(variable, region='foo').equals(exp_foo)
 
 
+def test_aggregate_region_log(simple_df, caplog):
+    # verify that `check_aggregate_region()` writes log on empty assertion
+    caplog.set_level(logging.INFO, logger="pyam.aggregate")
+    simple_df.aggregate_region('foo')
+    msg = ("cannot aggregate variable `foo` to `World` "
+           "because it does not exist in any subregion")
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "INFO"
+
+
 def test_check_aggregate_region(simple_df):
     # assert that `check_aggregate_region` returns None for full data
     assert simple_df.check_aggregate_region('Primary Energy') is None
@@ -152,6 +162,19 @@ def test_check_aggregate_region(simple_df):
     )
     exp = pd.DataFrame([[12., 4.], [15., 6.]])
     np.testing.assert_array_equal(obs.values, exp.values)
+
+
+def test_check_aggregate_region_log(simple_df, caplog):
+    # verify that `check_aggregate_region()` writes log on empty assertion
+    caplog.set_level(logging.INFO, logger="pyam.core")
+    (
+        simple_df.filter(variable='Primary Energy', region='World', keep=False)
+        .check_aggregate_region('Primary Energy')
+    )
+    print(caplog.messages)
+    msg = "variable `Primary Energy` does not exist in region `World`"
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "INFO"
 
 
 @pytest.mark.parametrize("variable", (
@@ -434,12 +457,3 @@ def test_aggregate_region_components_handling(check_aggregate_regional_df,
     exp.name = "value"
 
     res.equals(IamDataFrame(exp, region='World'))
-
-
-def test_check_aggregate_region_no_world(check_aggregate_regional_df, caplog):
-    test_df = check_aggregate_regional_df.filter(region='World', keep=False)
-    caplog.set_level(logging.INFO, logger="pyam.core")
-    test_df.check_aggregate_region('Emissions|N2O', region='World')
-    warn_idx = caplog.messages.index("variable `Emissions|N2O` does not exist "
-                                     "in region `World`")
-    assert caplog.records[warn_idx].levelname == "INFO"
