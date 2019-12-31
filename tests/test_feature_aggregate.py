@@ -267,15 +267,24 @@ def test_aggregate_region_unknown_method(simple_df):
     pytest.raises(ValueError, simple_df.aggregate_region, v,  method='foo')
 
 
-def test_check_internal_consistency_no_world_for_variable(
-    check_aggregate_df, caplog
-):
-    assert check_aggregate_df.check_internal_consistency() is None
-    test_df = check_aggregate_df.filter(
-        variable='Emissions|CH4', region='World', keep=False
+def test_check_internal_consistency(simple_df):
+    _df = simple_df.filter(variable='Price|Carbon', keep=False)
+
+    # assert that test data is consistent (except for `Price|Carbon`)
+    assert _df.check_internal_consistency() is None
+
+    # assert removing a specific subsector causes inconsistencies
+    obs = (
+        _df.filter(variable='Primary Energy|Coal', region='reg_a', keep=False)
+        .check_internal_consistency()
     )
-    caplog.set_level(logging.INFO, logger="pyam.core")
-    test_df.check_internal_consistency()
-    warn_idx = caplog.messages.index("variable `Emissions|CH4` does not exist "
-                                     "in region `World`")
-    assert caplog.records[warn_idx].levelname == "INFO"
+
+    # test reported inconsistency of sectoral aggregation
+    exp = pd.DataFrame([[8., 2.], [9., 3.]])
+    np.testing.assert_array_equal(obs['Primary Energy-aggregate'].values,
+                                  exp.values)
+
+    # test reported inconsistency of regional aggregation
+    exp = pd.DataFrame([[9., 3.], [10., 4.]])
+    np.testing.assert_array_equal(obs['Primary Energy|Coal-regional'].values,
+                                  exp.values)
