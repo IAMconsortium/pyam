@@ -204,13 +204,6 @@ def test_aggregate_region_unknown_method(simple_df):
     pytest.raises(ValueError, simple_df.aggregate_region, v,  method='foo')
 
 
-def test_check_aggregate_pass(check_aggregate_df):
-    obs = check_aggregate_df.filter(
-        scenario='a_scen'
-    ).check_aggregate('Primary Energy')
-    assert obs is None
-
-
 def test_check_internal_consistency_no_world_for_variable(
     check_aggregate_df, caplog
 ):
@@ -239,25 +232,6 @@ def test_check_aggregate_top_level(test_df):
     assert obs.index.get_values()[0] == (
         'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
     )
-
-
-def test_df_check_aggregate_pass(check_aggregate_df):
-    obs = check_aggregate_df.check_aggregate('Primary Energy')
-    assert obs is None
-
-    for variable in check_aggregate_df.variables():
-        obs = check_aggregate_df.check_aggregate(variable)
-        assert obs is None
-
-
-def test_df_check_aggregate_region_pass(check_aggregate_df):
-    comp = dict(components=True)
-    obs = check_aggregate_df.check_aggregate_region('Primary Energy', **comp)
-    assert obs is None
-
-    for variable in check_aggregate_df.variables():
-        obs = check_aggregate_df.check_aggregate_region(variable, **comp)
-        assert obs is None
 
 
 def run_check_agg_fail(pyam_df, tweak_dict, test_type):
