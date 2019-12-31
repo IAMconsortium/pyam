@@ -80,7 +80,7 @@ def test_aggregate_empty(simple_df):
 
 
 def test_aggregate_unknown_method(simple_df):
-    # using illegal method raises an error
+    # using unknown string as method raises an error
     v = 'Primary Energy'
     pytest.raises(ValueError, simple_df.aggregate_region, v, method='foo')
 
@@ -151,7 +151,7 @@ def test_aggregate_region_empty(simple_df):
 
 
 def test_aggregate_region_unknown_method(simple_df):
-    # using illegal method raises an error
+    # using unknown string as method raises an error
     v = 'Emissions|CO2'
     pytest.raises(ValueError, simple_df.aggregate_region, v,  method='foo')
 
