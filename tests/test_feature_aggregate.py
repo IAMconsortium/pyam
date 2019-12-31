@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 
-from conftest import TEST_DTS
-
 
 LONG_IDX = IAMC_IDX + ['year']
 
@@ -46,7 +44,6 @@ PRICE_MAX_DF = pd.DataFrame([
     (['Primary Energy', 'Emissions|CO2'], pd.concat([PE_MAX_DF, CO2_MAX_DF])),
 ))
 def test_aggregate(simple_df, variable, data):
-
     # check that `variable` is a a direct sum and matches given total
     exp = simple_df.filter(variable=variable)
     assert simple_df.aggregate(variable).equals(exp)
@@ -58,26 +55,23 @@ def test_aggregate(simple_df, variable, data):
 
 
 def test_check_aggregate(simple_df):
-    variable = 'Primary Energy'
-
     # assert that `check_aggregate` returns None for full data
-    assert simple_df.check_aggregate(variable) is None
+    assert simple_df.check_aggregate('Primary Energy') is None
 
     # assert that `check_aggregate` returns non-matching data
     obs = (
         simple_df
         .filter(variable='Primary Energy|Coal', region='World', keep=False)
-        .check_aggregate(variable)
+        .check_aggregate('Primary Energy')
     )
     exp = pd.DataFrame([[12., 3.], [15., 5.]])
     np.testing.assert_array_equal(obs.values, exp.values)
 
 
 def test_check_aggregate_top_level(simple_df):
-    variable = 'Primary Energy'
-
     # assert that `check_aggregate` returns None for full data
-    assert check_aggregate(simple_df, variable=variable, year=2005) is None
+    assert check_aggregate(simple_df, variable='Primary Energy',
+                           year=2005) is None
 
     # duplicate scenario, assert `check_aggregate` returns non-matching data
     _df = (
@@ -147,16 +141,14 @@ def test_aggregate_region(simple_df, variable):
 
 
 def test_check_aggregate_region(simple_df):
-    variable = 'Primary Energy'
-
     # assert that `check_aggregate_region` returns None for full data
-    assert simple_df.check_aggregate_region(variable) is None
+    assert simple_df.check_aggregate_region('Primary Energy') is None
 
     # assert that `check_aggregate_region` returns non-matching data
     obs = (
         simple_df
         .filter(variable='Primary Energy', region='reg_a', keep=False)
-        .check_aggregate_region(variable)
+        .check_aggregate_region('Primary Energy')
     )
     exp = pd.DataFrame([[12., 4.], [15., 6.]])
     np.testing.assert_array_equal(obs.values, exp.values)
