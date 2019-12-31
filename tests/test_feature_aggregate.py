@@ -73,6 +73,28 @@ def test_check_aggregate(simple_df):
     np.testing.assert_array_equal(obs.values, exp.values)
 
 
+def test_check_aggregate_top_level(simple_df):
+    variable = 'Primary Energy'
+
+    # assert that `check_aggregate` returns None for full data
+    assert check_aggregate(simple_df, variable=variable, year=2005) is None
+
+    # duplicate scenario, assert `check_aggregate` returns non-matching data
+    _df = (
+        simple_df
+        .rename(scenario={'scen_a': 'foo'}, append=True)
+        .filter(scenario='foo', variable='Primary Energy|Coal', keep=False)
+    )
+
+    obs = check_aggregate(_df, variable='Primary Energy', year=2005,
+                          exclude_on_fail=True)
+    exp = pd.DataFrame([[12., 3.], [8., 2.], [4., 1.]])
+    np.testing.assert_array_equal(obs.values, exp.values)
+
+    # assert that scenario `foo` has correctly been assigned as `exclude=True`
+    np.testing.assert_array_equal(_df.meta.exclude.values, [True, False])
+
+
 @pytest.mark.parametrize("variable", (
     ('Primary Energy'),
     (['Primary Energy', 'Emissions|CO2']),
@@ -242,14 +264,6 @@ def test_check_internal_consistency_no_world_for_variable(
     warn_idx = caplog.messages.index("variable `Emissions|CH4` does not exist "
                                      "in region `World`")
     assert caplog.records[warn_idx].levelname == "INFO"
-
-
-def test_check_aggregate_top_level(test_df):
-    obs = check_aggregate(test_df, variable='Primary Energy', year=2005)
-    assert len(obs.columns) == 1
-    assert obs.index.get_values()[0] == (
-        'model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y'
-    )
 
 
 def run_check_agg_fail(pyam_df, tweak_dict, test_type):
