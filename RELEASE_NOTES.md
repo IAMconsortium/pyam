@@ -6,8 +6,15 @@ PR [#305](https://github.com/IAMconsortium/pyam/pull/305) changed the default
 behaviour of `aggregate_region()` regarding the treatment of components at the
 region-level. To keep the previous behaviour, add `components=True`.
 
+PR [#315](https://github.com/IAMconsortium/pyam/pull/314) changed the return
+type of `aggregate[_region]()` to an `IamDataFrame` instance. 
+To keep the previous behaviour, add `timeseries()`.
+The object returned by `[check_]aggregate[_region]()` now includes both the
+actual and the expected value as a `pd.DataFrame` instance.
+
 ## Individual Updates
 
+- [#315](https://github.com/IAMconsortium/pyam/pull/315) Add `equals()` feature, change return types of `[check_]aggregate[_region]()`, rework aggregation tutorial
 - [#314](https://github.com/IAMconsortium/pyam/pull/314) Update IPCC color scheme colors and add SSP-only colors
 - [#313](https://github.com/IAMconsortium/pyam/pull/313) Add feature to `downscale` timeseries data to subregions using another variable as proxy
 - [#312](https://github.com/IAMconsortium/pyam/pull/312) Allow passing list of variables to `aggregate` functions
