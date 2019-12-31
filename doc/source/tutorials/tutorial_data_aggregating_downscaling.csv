@@ -1,0 +1,26 @@
+Model,Scenario,Region,Variable,Unit,2005,2010
+model_a,scen_a,World,Emissions|CO2,EJ/y,10.0,14.0
+model_a,scen_a,World,Emissions|CO2|AFOLU,EJ/y,3.0,4.0
+model_a,scen_a,World,Emissions|CO2|Bunkers,EJ/y,1.0,2.0
+model_a,scen_a,World,Emissions|CO2|Energy,EJ/y,6.0,8.0
+model_a,scen_a,World,Population,m,3.0,5.0
+model_a,scen_a,World,Price|Carbon,USD/tCO2,4.0,27.0
+model_a,scen_a,World,Primary Energy,EJ/y,12.0,15.0
+model_a,scen_a,World,Primary Energy|Coal,EJ/y,9.0,10.0
+model_a,scen_a,World,Primary Energy|Wind,EJ/y,3.0,5.0
+model_a,scen_a,reg_a,Emissions|CO2,EJ/y,6.0,8.0
+model_a,scen_a,reg_a,Emissions|CO2|AFOLU,EJ/y,2.0,3.0
+model_a,scen_a,reg_a,Emissions|CO2|Energy,EJ/y,4.0,5.0
+model_a,scen_a,reg_a,Population,m,2.0,3.0
+model_a,scen_a,reg_a,Price|Carbon,USD/tCO2,1.0,30.0
+model_a,scen_a,reg_a,Primary Energy,EJ/y,8.0,9.0
+model_a,scen_a,reg_a,Primary Energy|Coal,EJ/y,6.0,6.0
+model_a,scen_a,reg_a,Primary Energy|Wind,EJ/y,2.0,3.0
+model_a,scen_a,reg_b,Emissions|CO2,EJ/y,3.0,4.0
+model_a,scen_a,reg_b,Emissions|CO2|AFOLU,EJ/y,1.0,1.0
+model_a,scen_a,reg_b,Emissions|CO2|Energy,EJ/y,2.0,3.0
+model_a,scen_a,reg_b,Population,m,1.0,2.0
+model_a,scen_a,reg_b,Price|Carbon,USD/tCO2,10.0,21.0
+model_a,scen_a,reg_b,Primary Energy,EJ/y,4.0,6.0
+model_a,scen_a,reg_b,Primary Energy|Coal,EJ/y,3.0,4.0
+model_a,scen_a,reg_b,Primary Energy|Wind,EJ/y,1.0,2.0
