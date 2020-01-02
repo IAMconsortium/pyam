@@ -977,12 +977,13 @@ class IamDataFrame(object):
 
         # filter relevant data, transform to `pd.Series` with appropriate index
         _df = self.data[self._apply_filters(variable=proxy, region=subregions)]
-        _proxy = _df.set_index(self._get_cols(['region', 'year'])).value
-        _total = _df.groupby(self._get_cols(['year'])).value.sum()
+        _proxy = _df.set_index(self._get_cols(['region', self.time_col])).value
+        _total = _df.groupby(self._get_cols([self.time_col])).value.sum()
 
         _value = (
             self.data[self._apply_filters(variable=variable, region=region)]
-            .set_index(self._get_cols(['variable', 'unit', 'year'])).value
+            .set_index(self._get_cols(['variable', 'unit', self.time_col]))
+            .value
         )
 
         # compute downscaled data
