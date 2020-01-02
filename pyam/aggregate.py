@@ -7,7 +7,6 @@ from pyam.utils import (
     isstr,
     KNOWN_FUNCS,
     META_IDX,
-    YEAR_IDX
 )
 
 logger = logging.getLogger(__name__)
@@ -120,15 +119,21 @@ def _agg_weight(df, weight, method):
     if method not in ['sum', np.sum]:
         raise ValueError('only method `np.sum` allowed for weighted average')
 
-    _weight = _get_value_col(weight, YEAR_IDX)
+    cols = _list_diff(df.columns, ['variable', 'unit', 'value'])
+    _weight = _get_value_col(weight, cols)
 
-    if not _get_value_col(df, YEAR_IDX).index.equals(_weight.index):
+    if not _get_value_col(df, cols).index.equals(_weight.index):
         raise ValueError('inconsistent index between variable and weight')
 
     _data = _get_value_col(df)
-    col1 = [i for i in _data.index.names if i != 'region']
-    col2 = META_IDX + ['year']
+    col1 = _list_diff(_data.index.names, ['region'])
+    col2 = META_IDX + [i for i in ['year', 'time'] if i in _weight.index.names]
     return (_data * _weight).groupby(col1).sum() / _weight.groupby(col2).sum()
+
+
+def _list_diff(lst, exclude):
+    """Return the list minus those elements in `exclude`"""
+    return [i for i in lst if i not in exclude]
 
 
 def _get_value_col(df, cols=None):
