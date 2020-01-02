@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 
+from conftest import DTS_MAPPING
 
 LONG_IDX = IAMC_IDX + ['year']
 
@@ -49,7 +50,11 @@ def test_aggregate(simple_df, variable, data):
     assert simple_df.aggregate(variable).equals(exp)
 
     # use other method (max) both as string and passing the function
-    exp = IamDataFrame(data)
+    _df = data.copy()
+    if simple_df.time_col == 'time':
+        _df.year = _df.year.replace(DTS_MAPPING)
+        _df.rename({'year': 'time'}, axis='columns', inplace=True)
+    exp = IamDataFrame(_df)
     assert simple_df.aggregate(variable, method='max').equals(exp)
     assert simple_df.aggregate(variable, method=np.max).equals(exp)
 
@@ -215,7 +220,11 @@ def test_aggregate_region_with_subregions(simple_df, variable):
 ))
 def test_aggregate_region_with_other_method(simple_df, variable, data):
     # use other method (max) both as string and passing the function
-    exp = IamDataFrame(data).filter(region='World')
+    _df = data.copy()
+    if simple_df.time_col == 'time':
+        _df.year = _df.year.replace(DTS_MAPPING)
+        _df.rename({'year': 'time'}, axis='columns', inplace=True)
+    exp = IamDataFrame(_df).filter(region='World')
     assert simple_df.aggregate_region(variable, method='max').equals(exp)
     assert simple_df.aggregate_region(variable, method=np.max).equals(exp)
 

@@ -89,6 +89,8 @@ TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
 TEST_TIME_STR = ['2005-06-17', '2010-07-21']
 TEST_TIME_STR_HR = ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
 
+DTS_MAPPING = {2005: TEST_DTS[0], 2010: TEST_DTS[1]}
+
 
 # minimal IamDataFrame with four different time formats
 @pytest.fixture(
@@ -121,10 +123,18 @@ def test_pd_df():
 
 
 # IamDataFrame with variable-and-region-structure for testing aggregation tools
-@pytest.fixture(scope="function")
-def simple_df():
-    df = IamDataFrame(model='model_a', scenario='scen_a', data=FULL_FEATURE_DF)
-    yield df
+@pytest.fixture(
+    scope="function",
+    params=[
+        None,
+        'datetime'
+    ]
+)
+def simple_df(request):
+    _df = FULL_FEATURE_DF.copy()
+    if request.param is 'datetime':
+        _df.rename(DTS_MAPPING, axis="columns", inplace=True)
+    yield IamDataFrame(model='model_a', scenario='scen_a', data=_df)
 
 
 @pytest.fixture(scope="function")
