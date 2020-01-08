@@ -170,7 +170,12 @@ class IamDataFrame(object):
         return self.data.empty
 
     def equals(self, other):
-        """Test if two objects contain the same data and meta indicators"""
+        """Test if two objects contain the same data and meta indicators
+
+        This function allows two IamdDataFrame instances to be compared against
+        each other to see if they have the same timeseries data and meta
+        indicators. NaNs in the same location of the meta table are considered
+        equal."""
         if not isinstance(other, IamDataFrame):
             raise ValueError('`other` is not an `IamDataFrame` instance')
 
