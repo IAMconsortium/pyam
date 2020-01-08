@@ -4,6 +4,7 @@ import logging
 import numpy as np
 import pandas as pd
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
+from pyam.testing import assert_frame_equal
 
 from conftest import DTS_MAPPING
 
@@ -47,7 +48,7 @@ PRICE_MAX_DF = pd.DataFrame([
 def test_aggregate(simple_df, variable, data):
     # check that `variable` is a a direct sum and matches given total
     exp = simple_df.filter(variable=variable)
-    assert simple_df.aggregate(variable).equals(exp)
+    assert_frame_equal(simple_df.aggregate(variable), exp)
 
     # use other method (max) both as string and passing the function
     _df = data.copy()
@@ -55,8 +56,8 @@ def test_aggregate(simple_df, variable, data):
         _df.year = _df.year.replace(DTS_MAPPING)
         _df.rename({'year': 'time'}, axis='columns', inplace=True)
     exp = IamDataFrame(_df)
-    assert simple_df.aggregate(variable, method='max').equals(exp)
-    assert simple_df.aggregate(variable, method=np.max).equals(exp)
+    for m in ['max', np.max]:
+        assert_frame_equal(simple_df.aggregate(variable, method=m), exp)
 
 
 def test_check_aggregate(simple_df):
@@ -102,7 +103,7 @@ def test_aggregate_append(simple_df, variable):
     # remove `variable`, do aggregate and append, check equality to original
     _df = simple_df.filter(variable=variable, keep=False)
     _df.aggregate(variable, append=True)
-    assert _df.equals(simple_df)
+    assert_frame_equal(_df, simple_df)
 
 
 def test_aggregate_with_components(simple_df):
@@ -137,12 +138,12 @@ def test_aggregate_unknown_method(simple_df):
 def test_aggregate_region(simple_df, variable):
     # check that `variable` is a a direct sum across regions
     exp = simple_df.filter(variable=variable, region='World')
-    assert simple_df.aggregate_region(variable).equals(exp)
+    assert_frame_equal(simple_df.aggregate_region(variable), exp)
 
     # check custom `region` (will include `World`, so double-count values)
-    exp_foo = exp.rename(region={'World': 'foo'})
-    exp_foo.data.value = exp_foo.data.value * 2
-    assert simple_df.aggregate_region(variable, region='foo').equals(exp_foo)
+    foo = exp.rename(region={'World': 'foo'})
+    foo.data.value = foo.data.value * 2
+    assert_frame_equal(simple_df.aggregate_region(variable, region='foo'), foo)
 
 
 def test_aggregate_region_log(simple_df, caplog):
@@ -190,7 +191,7 @@ def test_aggregate_region_append(simple_df, variable):
     # remove `variable`, do aggregate and append, check equality to original
     _df = simple_df.filter(variable=variable, region='World', keep=False)
     _df.aggregate_region(variable, append=True)
-    assert _df.equals(simple_df)
+    assert_frame_equal(_df, simple_df)
 
 
 @pytest.mark.parametrize("variable", (
@@ -203,12 +204,14 @@ def test_aggregate_region_with_subregions(simple_df, variable):
         simple_df.filter(variable=variable, region='reg_a')
         .rename(region={'reg_a': 'World'})
     )
-    assert simple_df.aggregate_region(variable, subregions='reg_a').equals(exp)
+    obs = simple_df.aggregate_region(variable, subregions='reg_a')
+    assert_frame_equal(obs, exp)
 
     # check that both custom `region` and `subregions` work
-    exp_foo = exp.rename(region={'World': 'foo'})
-    assert simple_df.aggregate_region(variable, region='foo',
-                                      subregions='reg_a').equals(exp_foo)
+    foo = exp.rename(region={'World': 'foo'})
+    obs = simple_df.aggregate_region(variable, region='foo',
+                                     subregions='reg_a')
+    assert_frame_equal(obs, foo)
 
     # check that invalid list of subregions returns empty
     assert simple_df.aggregate_region(variable, subregions=['reg_c']).empty
@@ -225,8 +228,8 @@ def test_aggregate_region_with_other_method(simple_df, variable, data):
         _df.year = _df.year.replace(DTS_MAPPING)
         _df.rename({'year': 'time'}, axis='columns', inplace=True)
     exp = IamDataFrame(_df).filter(region='World')
-    assert simple_df.aggregate_region(variable, method='max').equals(exp)
-    assert simple_df.aggregate_region(variable, method=np.max).equals(exp)
+    for m in ['max', np.max]:
+        assert_frame_equal(simple_df.aggregate_region(variable, method=m), exp)
 
 
 def test_aggregate_region_with_components(simple_df):
@@ -248,7 +251,7 @@ def test_aggregate_region_with_weights(simple_df):
     assert simple_df.check_aggregate_region(v, weight=w) is None
 
     exp = simple_df.filter(variable=v, region='World')
-    assert simple_df.aggregate_region(v, weight=w).equals(exp)
+    assert_frame_equal(simple_df.aggregate_region(v, weight=w), exp)
 
     # inconsistent index of variable and weight raises an error
     _df = simple_df.filter(variable=w, region='reg_b', keep=False)
