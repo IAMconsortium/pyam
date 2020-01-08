@@ -12,7 +12,7 @@ from pyam.utils import (
 logger = logging.getLogger(__name__)
 
 
-def _aggregate(df, variable, components=None, method=np.sum):
+def aggregate(df, variable, components=None, method=np.sum):
     """Internal implementation of the `aggregate` function"""
     # list of variables require default components (no manual list)
     if islistable(variable) and components is not None:
@@ -46,11 +46,11 @@ def _aggregate(df, variable, components=None, method=np.sum):
     # rename all components to `variable` and aggregate
     _df = df.data[df._apply_filters(variable=mapping.keys())].copy()
     _df['variable'].replace(mapping, inplace=True)
-    return _agg(_df, [], method)
+    return groupby(_df, [], method)
 
 
-def _aggregate_region(self, variable, region, subregions=None,
-                      components=False, method='sum', weight=None):
+def aggregate_region(self, variable, region, subregions=None,
+                     components=False, method='sum', weight=None):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
         msg = 'aggregating by list of variables with components ' \
@@ -76,7 +76,7 @@ def _aggregate_region(self, variable, region, subregions=None,
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
         col = 'region'
-        _data = _agg(subregion_df.data[rows], col, method=method)
+        _data = groupby(subregion_df.data[rows], col, method=method)
     else:
         weight_rows = subregion_df._apply_filters(variable=weight)
         _data = _agg_weight(subregion_df.data[rows],
@@ -100,13 +100,13 @@ def _aggregate_region(self, variable, region, subregions=None,
             rows = region_df._apply_filters(variable=components)
             _df = region_df.data[rows].copy()
             _df['variable'] = variable
-            _data = _data.add(_agg(_df, 'region'), fill_value=0)
+            _data = _data.add(groupby(_df, 'region'), fill_value=0)
 
     return _data
 
 
-def _agg(df, by, method=np.sum):
-    """Aggregate `df` by specified column(s), return indexed `pd.Series`"""
+def groupby(df, by, method=np.sum):
+    """Groupby & aggregate `df` by column(s), return indexed `pd.Series`"""
     by = [by] if isstr(by) else by
     cols = [c for c in list(df.columns) if c not in ['value'] + by]
     # pick aggregator func (default: sum)
