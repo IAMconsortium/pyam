@@ -956,8 +956,12 @@ class IamDataFrame(object):
             if exclude_on_fail:
                 self._exclude_on_fail(_meta_idx(df_region[rows].reset_index()))
 
-            return pd.concat([df_region[rows], df_subregions[rows]], axis=1,
-                             keys=(['region', 'subregions']))
+            _df = pd.concat(
+                [pd.concat([df_region[rows], df_subregions[rows]], axis=1,
+                            keys=(['region', 'subregions']))],
+                keys = ['World'], names = ['region'])
+            _df.index = _df.index.reorder_levels(self._LONG_IDX)
+            return _df
 
     def downscale_region(self, variable, proxy, region='World',
                          subregions=None, append=False):
