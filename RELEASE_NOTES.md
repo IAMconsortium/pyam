@@ -11,6 +11,8 @@ type of `aggregate[_region]()` to an `IamDataFrame` instance.
 To keep the previous behaviour, add `timeseries()`.
 The object returned by `[check_]aggregate[_region]()` now includes both the
 actual and the expected value as a `pd.DataFrame` instance.
+The function `check_internal_consistency()` now returns a concatenated dataframe
+rather than a dictionary.
 
 ## Individual Updates
 
