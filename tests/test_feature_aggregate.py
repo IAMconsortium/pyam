@@ -290,12 +290,7 @@ def test_check_internal_consistency(simple_df):
         .check_internal_consistency()
     )
 
-    # test reported inconsistency of sectoral aggregation
-    exp = pd.DataFrame([[8., 2.], [9., 3.]])
-    np.testing.assert_array_equal(obs['Primary Energy-aggregate'].values,
-                                  exp.values)
-
-    # test reported inconsistency of regional aggregation
-    exp = pd.DataFrame([[9., 3.], [10., 4.]])
-    np.testing.assert_array_equal(obs['Primary Energy|Coal-regional'].values,
-                                  exp.values)
+    # test reported inconsistency
+    exp = pd.DataFrame([[np.nan, np.nan, 9., 3.], [np.nan, np.nan, 10., 4.],
+                        [8., 2., np.nan, np.nan], [9., 3., np.nan, np.nan]])
+    np.testing.assert_array_equal(obs.values, exp.values)

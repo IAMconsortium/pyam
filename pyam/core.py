@@ -1043,20 +1043,23 @@ class IamDataFrame(object):
         ----------
         kwargs: passed to `np.isclose()`
         """
-        inconsistent_vars = {}
+        lst = []
         for variable in self.variables():
             diff_agg = self.check_aggregate(variable, **kwargs)
             if diff_agg is not None:
-                inconsistent_vars[variable + "-aggregate"] = diff_agg
+                lst.append(diff_agg)
 
             diff_regional = (
                 self.check_aggregate_region(variable, components=True,
                                             **kwargs)
             )
             if diff_regional is not None:
-                inconsistent_vars[variable + "-regional"] = diff_regional
+                lst.append(diff_regional)
 
-        return inconsistent_vars if inconsistent_vars else None
+        if len(lst):
+            _df = pd.concat(lst, sort=True).sort_index()
+            return _df[[c for c in ['variable', 'components', 'region',
+                                    'subregions'] if c in _df.columns]]
 
     def _exclude_on_fail(self, df):
         """Assign a selection of scenarios as `exclude: True` in meta"""
