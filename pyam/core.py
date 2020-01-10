@@ -959,7 +959,7 @@ class IamDataFrame(object):
             _df = pd.concat(
                 [pd.concat([df_region[rows], df_subregions[rows]], axis=1,
                            keys=(['region', 'subregions']))],
-                keys=['World'], names=['region'])
+                keys=[region], names=['region'])
             _df.index = _df.index.reorder_levels(self._LONG_IDX)
             return _df
 
