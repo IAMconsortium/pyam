@@ -1,4 +1,4 @@
-from pyam import compare
+from . import compare
 import pandas.testing as pdt
 
 
