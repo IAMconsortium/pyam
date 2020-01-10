@@ -39,6 +39,7 @@ def aggregate(df, variable, components=None, method=np.sum):
             _components = df._variable_components(v)
             if not len(_components):
                 logger.info(msg.format(v))
+                continue
 
             for c in _components:
                 mapping[c] = v
