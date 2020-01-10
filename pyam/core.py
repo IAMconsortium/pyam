@@ -1025,23 +1025,27 @@ class IamDataFrame(object):
         """Return a list of columns of `self.data`"""
         return META_IDX + cols + self.extra_cols
 
-    def check_internal_consistency(self, **kwargs):
+    def check_internal_consistency(self, components=False, **kwargs):
         """Check whether a scenario ensemble is internally consistent
 
         We check that all variables are equal to the sum of their sectoral
         components and that all the regions add up to the World total. If
-        the check is passed, None is returned, otherwise a dictionary of
+        the check is passed, None is returned, otherwise a DataFrame of
         inconsistent variables is returned.
 
         Note: at the moment, this method's regional checking is limited to
         checking that all the regions sum to the World region. We cannot
-        make this more automatic unless we start to store how the regions
-        relate, see
-        [this issue](https://github.com/IAMconsortium/pyam/issues/106).
+        make this more automatic unless we store how the regions relate,
+        see [this issue](https://github.com/IAMconsortium/pyam/issues/106).
 
         Parameters
         ----------
         kwargs: passed to `np.isclose()`
+        components: bool, default False
+            passed to `check_aggregate_region)`: if `True`, use all
+            sub-categories of each `variable` included in `World` but not in
+            any of the subregions; if `False`, only aggregate variables over
+            subregions
         """
         lst = []
         for variable in self.variables():
@@ -1050,7 +1054,7 @@ class IamDataFrame(object):
                 lst.append(diff_agg)
 
             diff_regional = (
-                self.check_aggregate_region(variable, components=True,
+                self.check_aggregate_region(variable, components=components,
                                             **kwargs)
             )
             if diff_regional is not None:

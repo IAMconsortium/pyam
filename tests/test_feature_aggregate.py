@@ -282,12 +282,12 @@ def test_check_internal_consistency(simple_df):
     _df = simple_df.filter(variable='Price|Carbon', keep=False)
 
     # assert that test data is consistent (except for `Price|Carbon`)
-    assert _df.check_internal_consistency() is None
+    assert _df.check_internal_consistency(components=True) is None
 
     # assert removing a specific subsector causes inconsistencies
     obs = (
         _df.filter(variable='Primary Energy|Coal', region='reg_a', keep=False)
-        .check_internal_consistency()
+        .check_internal_consistency(components=True)
     )
 
     # test reported inconsistency
