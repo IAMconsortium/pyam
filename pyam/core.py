@@ -41,7 +41,7 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
-from pyam.aggregate import aggregate, aggregate_region, groupby
+from pyam.aggregate import aggregate, aggregate_region, group_and_agg
 
 logger = logging.getLogger(__name__)
 
@@ -836,7 +836,7 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable)
         df_var, df_components = (
-            groupby(self.data[rows], [], method)
+            group_and_agg(self.data[rows], [], method)
             .align(df_components)
         )
 
@@ -941,7 +941,7 @@ class IamDataFrame(object):
             return
 
         df_region, df_subregions = (
-            groupby(self.data[rows], 'region')
+            group_and_agg(self.data[rows], 'region')
             .align(df_subregions)
         )
 
