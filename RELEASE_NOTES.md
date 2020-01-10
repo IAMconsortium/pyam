@@ -12,7 +12,8 @@ To keep the previous behaviour, add `timeseries()`.
 The object returned by `[check_]aggregate[_region]()` now includes both the
 actual and the expected value as a `pd.DataFrame` instance.
 The function `check_internal_consistency()` now returns a concatenated dataframe
-rather than a dictionary.
+rather than a dictionary and also includes optional treatment of components
+(see paragraph above). To keep the previous behaviour, add `components=True`.
 
 ## Individual Updates
 
