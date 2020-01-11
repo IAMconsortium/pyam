@@ -12,7 +12,7 @@ from pyam.utils import (
 logger = logging.getLogger(__name__)
 
 
-def aggregate(df, variable, components=None, method=np.sum):
+def _aggregate(df, variable, components=None, method=np.sum):
     """Internal implementation of the `aggregate` function"""
     # list of variables require default components (no manual list)
     if islistable(variable) and components is not None:
@@ -47,10 +47,10 @@ def aggregate(df, variable, components=None, method=np.sum):
     # rename all components to `variable` and aggregate
     _df = df.data[df._apply_filters(variable=mapping.keys())].copy()
     _df['variable'].replace(mapping, inplace=True)
-    return group_and_agg(_df, [], method)
+    return _group_and_agg(_df, [], method)
 
 
-def aggregate_region(self, variable, region, subregions=None,
+def _aggregate_region(self, variable, region, subregions=None,
                      components=False, method='sum', weight=None):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
@@ -77,7 +77,7 @@ def aggregate_region(self, variable, region, subregions=None,
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
         col = 'region'
-        _data = group_and_agg(subregion_df.data[rows], col, method=method)
+        _data = _group_and_agg(subregion_df.data[rows], col, method=method)
     else:
         weight_rows = subregion_df._apply_filters(variable=weight)
         _data = _agg_weight(subregion_df.data[rows],
@@ -101,12 +101,12 @@ def aggregate_region(self, variable, region, subregions=None,
             rows = region_df._apply_filters(variable=components)
             _df = region_df.data[rows].copy()
             _df['variable'] = variable
-            _data = _data.add(group_and_agg(_df, 'region'), fill_value=0)
+            _data = _data.add(_group_and_agg(_df, 'region'), fill_value=0)
 
     return _data
 
 
-def group_and_agg(df, by, method=np.sum):
+def _group_and_agg(df, by, method=np.sum):
     """Groupby & aggregate `df` by column(s), return indexed `pd.Series`"""
     by = [by] if isstr(by) else by
     cols = [c for c in list(df.columns) if c not in ['value'] + by]
