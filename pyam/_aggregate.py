@@ -51,7 +51,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
 
 
 def _aggregate_region(self, variable, region, subregions=None,
-                     components=False, method='sum', weight=None):
+                      components=False, method='sum', weight=None):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
         msg = 'aggregating by list of variables with components ' \

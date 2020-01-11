@@ -15,8 +15,6 @@ except ImportError:
     has_ix = False
 
 from pyam import plotting
-
-import pyam._aggregate
 from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
@@ -42,6 +40,7 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
+from pyam._aggregate import _aggregate, _aggregate_region, _group_and_agg
 
 logger = logging.getLogger(__name__)
 
@@ -804,8 +803,7 @@ class IamDataFrame(object):
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
-        _df = pyam._aggregate._aggregate(self, variable, components=components,
-                                         method=method)
+        _df = _aggregate(self, variable, components=components, method=method)
 
         # return None if there is nothing to aggregate
         if _df is None:
@@ -836,15 +834,14 @@ class IamDataFrame(object):
         kwargs: passed to `np.isclose()`
         """
         # compute aggregate from components, return None if no components
-        df_components = pyam._aggregate._aggregate(self, variable, components,
-                                                   method)
+        df_components = _aggregate(self, variable, components, method)
         if df_components is None:
             return
 
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable)
         df_var, df_components = (
-            pyam._aggregate._group_and_agg(self.data[rows], [], method)
+            _group_and_agg(self.data[rows], [], method)
             .align(df_components)
         )
 
@@ -892,7 +889,7 @@ class IamDataFrame(object):
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
-        _df = pyam._aggregate._aggregate_region(
+        _df = _aggregate_region(
             self, variable, region=region, subregions=subregions,
             components=components, method=method, weight=weight
         )
@@ -935,9 +932,8 @@ class IamDataFrame(object):
         kwargs: passed to `np.isclose()`
         """
         # compute aggregate from subregions, return None if no subregions
-        df_subregions = pyam._aggregate._aggregate_region(self, variable, region,
-                                                          subregions, components,
-                                                          method, weight)
+        df_subregions = _aggregate_region(self, variable, region, subregions,
+                                          components, method, weight)
 
         if df_subregions is None:
             return
@@ -950,7 +946,7 @@ class IamDataFrame(object):
             return
 
         df_region, df_subregions = (
-            pyam._aggregate._group_and_agg(self.data[rows], 'region')
+            _group_and_agg(self.data[rows], 'region')
             .align(df_subregions)
         )
 
