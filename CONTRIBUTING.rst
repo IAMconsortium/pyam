@@ -12,8 +12,8 @@ Have a question? Get in touch!
 .. _Slack: https://slack.com
 
 
-Interested in contributing? Join to the team!
----------------------------------------------
+Interested in contributing? Join the team!
+------------------------------------------
 
 The pyam package has been developed with the explicit aim to facilitate
 open and collaborative analysis of integrated assessment and climate models.
