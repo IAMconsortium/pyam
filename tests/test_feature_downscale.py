@@ -1,26 +1,21 @@
 import pytest
-import pandas as pd
-import pyam
+from pyam.testing import assert_frame_equal
 
 
 @pytest.mark.parametrize("variable", (
     ('Primary Energy'),
     (['Primary Energy', 'Primary Energy|Coal']),
 ))
-def test_downscale_region(aggregate_df, variable):
-    df = aggregate_df
-    df.set_meta([1], name='test')
-
+def test_downscale_region(simple_df, variable):
+    simple_df.set_meta([1], name='test')
     regions = ['reg_a', 'reg_b']
 
     # return as new IamDataFrame
-    obs_df = df.downscale_region(variable, proxy='Population')
-    exp_df = df.filter(variable=variable, region=regions)
-    assert pyam.compare(obs_df, exp_df).empty
-    pd.testing.assert_frame_equal(obs_df.meta, exp_df.meta)
+    obs = simple_df.downscale_region(variable, proxy='Population')
+    exp = simple_df.filter(variable=variable, region=regions)
+    assert_frame_equal(exp, obs)
 
     # append to `self` (after removing to-be-downscaled timeseries)
-    inplace_df = df.filter(variable=variable, region=regions, keep=False)
-    inplace_df.downscale_region(variable, proxy='Population', append=True)
-    assert pyam.compare(inplace_df, df).empty
-    pd.testing.assert_frame_equal(inplace_df.meta, df.meta)
+    inplace = simple_df.filter(variable=variable, region=regions, keep=False)
+    inplace.downscale_region(variable, proxy='Population', append=True)
+    assert_frame_equal(inplace, simple_df)

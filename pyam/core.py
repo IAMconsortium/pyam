@@ -15,8 +15,7 @@ except ImportError:
     has_ix = False
 
 from pyam import plotting
-
-from pyam.logging import adjust_log_level, deprecation_warning
+from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -37,11 +36,11 @@ from pyam.utils import (
     META_IDX,
     YEAR_IDX,
     IAMC_IDX,
-    SORT_IDX,
-    KNOWN_FUNCS
+    SORT_IDX
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
+from pyam._aggregate import _aggregate, _aggregate_region, _group_and_agg
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +167,27 @@ class IamDataFrame(object):
     def empty(self):
         """Indicator whether ``IamDataFrame`` is empty"""
         return self.data.empty
+
+    def equals(self, other):
+        """Test if two objects contain the same data and meta indicators
+
+        This function allows two IamdDataFrame instances to be compared against
+        each other to see if they have the same timeseries data and meta
+        indicators. NaNs in the same location of the meta table are considered
+        equal.
+
+        Parameters
+        ----------
+        other: IamDataFrame
+            The other IamDataFrame to be compared with the first.
+        """
+        if not isinstance(other, IamDataFrame):
+            raise ValueError('`other` is not an `IamDataFrame` instance')
+
+        if compare(self, other).empty and self.meta.equals(other.meta):
+            return True
+        else:
+            return False
 
     def models(self):
         """Get a list of models"""
@@ -783,45 +803,17 @@ class IamDataFrame(object):
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
-        # list of variables require default components (no manual list)
-        if islistable(variable) and components is not None:
-            raise ValueError('aggregating by list of variables cannot use '
-                             'custom components')
+        _df = _aggregate(self, variable, components=components, method=method)
 
-        mapping = {}
-        msg = 'cannot aggregate variable `{}` because it has no components'
-        # if single variable
-        if isstr(variable):
-            # default components to all variables one level below `variable`
-            components = components or self._variable_components(variable)
+        # return None if there is nothing to aggregate
+        if _df is None:
+            return None
 
-            if not len(components):
-                logger.info(msg.format(variable))
-                return
-
-            for c in components:
-                mapping[c] = variable
-
-        # else, use all variables one level below `variable` as components
-        else:
-            for v in variable if islistable(variable) else [variable]:
-                _components = self._variable_components(v)
-                if not len(_components):
-                    logger.info(msg.format(v))
-
-                for c in _components:
-                    mapping[c] = v
-
-        # rename all components to `variable` and aggregate
-        _df = self.data[self._apply_filters(variable=mapping.keys())].copy()
-        _df['variable'].replace(mapping, inplace=True)
-        _data = _aggregate(_df, [], method)
-
-        # append to `self` or return as pd.Series
+        # else, append to `self` or return as `IamDataFrame`
         if append is True:
-            self.append(_data, inplace=True)
+            self.append(_df, inplace=True)
         else:
-            return _data
+            return IamDataFrame(_df)
 
     def check_aggregate(self, variable, components=None, method='sum',
                         exclude_on_fail=False, multiplier=1, **kwargs):
@@ -842,29 +834,30 @@ class IamDataFrame(object):
         kwargs: passed to `np.isclose()`
         """
         # compute aggregate from components, return None if no components
-        df_components = self.aggregate(variable, components)
+        df_components = _aggregate(self, variable, components, method)
         if df_components is None:
             return
 
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable)
-        df_variable, df_components = (
-            _aggregate(self.data[rows], [], method)
+        df_var, df_components = (
+            _group_and_agg(self.data[rows], [], method)
             .align(df_components)
         )
 
         # use `np.isclose` for checking match
-        diff = df_variable[~np.isclose(df_variable, multiplier * df_components,
-                                       **kwargs)]
+        rows = ~np.isclose(df_var, multiplier * df_components, **kwargs)
 
-        if len(diff):
+        # if aggregate and components don't match, return inconsistent data
+        if sum(rows):
             msg = '`{}` - {} of {} rows are not aggregates of components'
-            logger.info(msg.format(variable, len(diff), len(df_variable)))
+            logger.info(msg.format(variable, sum(rows), len(df_var)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(diff.index.droplevel([2, 3, 4]))
+                self._exclude_on_fail(_meta_idx(df_var[rows].reset_index()))
 
-            return IamDataFrame(diff).timeseries()
+            return pd.concat([df_var[rows], df_components[rows]], axis=1,
+                             keys=(['variable', 'components']))
 
     def aggregate_region(self, variable, region='World', subregions=None,
                          components=False, method='sum', weight=None,
@@ -896,60 +889,20 @@ class IamDataFrame(object):
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
-        if not isstr(variable) and components is not False:
-            msg = 'aggregating by list of variables with components ' \
-                  'is not supported'
-            raise ValueError(msg)
+        _df = _aggregate_region(
+            self, variable, region=region, subregions=subregions,
+            components=components, method=method, weight=weight
+        )
 
-        if weight is not None and components is not False:
-            msg = 'using weights and components in one operation not supported'
-            raise ValueError(msg)
+        # return None if there is nothing to aggregate
+        if _df is None:
+            return None
 
-        # default subregions to all regions other than `region`
-        subregions = subregions or self._all_other_regions(region, variable)
-
-        if not len(subregions):
-            msg = 'cannot aggregate variable `{}` to `{}` because it does not'\
-                  ' exist in any subregion'
-            logger.info(msg.format(variable, region))
-
-            return
-
-        # compute aggregate over all subregions
-        subregion_df = self.filter(region=subregions)
-        rows = subregion_df._apply_filters(variable=variable)
-        if weight is None:
-            col = 'region'
-            _data = _aggregate(subregion_df.data[rows], col, method=method)
-        else:
-            weight_rows = subregion_df._apply_filters(variable=weight)
-            _data = _aggregate_weight(subregion_df.data[rows],
-                                      subregion_df.data[weight_rows], method)
-
-        # if not `components=False`, add components at the `region` level
-        if components is not False:
-            with adjust_log_level(logger):
-                region_df = self.filter(region=region)
-
-            # if `True`, auto-detect `components` at the `region` level,
-            # defaults to variables below `variable` only present in `region`
-            if components is True:
-                level = dict(level=None)
-                r_comps = region_df._variable_components(variable, **level)
-                sr_comps = subregion_df._variable_components(variable, **level)
-                components = set(r_comps).difference(sr_comps)
-
-            if len(components):
-                # rename all components to `variable` and aggregate
-                rows = region_df._apply_filters(variable=components)
-                _df = region_df.data[rows].copy()
-                _df['variable'] = variable
-                _data = _data.add(_aggregate(_df, 'region'), fill_value=0)
-
+        # else, append to `self` or return as `IamDataFrame`
         if append is True:
-            self.append(_data, region=region, inplace=True)
+            self.append(_df, region=region, inplace=True)
         else:
-            return _data
+            return IamDataFrame(_df, region=region)
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=False, method='sum', weight=None,
@@ -979,8 +932,9 @@ class IamDataFrame(object):
         kwargs: passed to `np.isclose()`
         """
         # compute aggregate from subregions, return None if no subregions
-        df_subregions = self.aggregate_region(variable, region, subregions,
-                                              components, method, weight)
+        df_subregions = _aggregate_region(self, variable, region, subregions,
+                                          components, method, weight)
+
         if df_subregions is None:
             return
 
@@ -992,23 +946,27 @@ class IamDataFrame(object):
             return
 
         df_region, df_subregions = (
-            _aggregate(self.data[rows], 'region')
+            _group_and_agg(self.data[rows], 'region')
             .align(df_subregions)
         )
 
         # use `np.isclose` for checking match
-        diff = df_region[~np.isclose(df_region, df_subregions, **kwargs)]
+        rows = ~np.isclose(df_region, df_subregions, **kwargs)
 
-        if len(diff):
-            msg = (
-                '`{}` - {} of {} rows are not aggregates of subregions'
-            )
-            logger.info(msg.format(variable, len(diff), len(df_region)))
+        # if region and subregions don't match, return inconsistent data
+        if sum(rows):
+            msg = '`{}` - {} of {} rows are not aggregates of subregions'
+            logger.info(msg.format(variable, sum(rows), len(df_region)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(diff.index.droplevel([2, 3]))
+                self._exclude_on_fail(_meta_idx(df_region[rows].reset_index()))
 
-            return IamDataFrame(diff, region=region).timeseries()
+            _df = pd.concat(
+                [pd.concat([df_region[rows], df_subregions[rows]], axis=1,
+                           keys=(['region', 'subregions']))],
+                keys=[region], names=['region'])
+            _df.index = _df.index.reorder_levels(self._LONG_IDX)
+            return _df
 
     def downscale_region(self, variable, proxy, region='World',
                          subregions=None, append=False):
@@ -1033,12 +991,13 @@ class IamDataFrame(object):
 
         # filter relevant data, transform to `pd.Series` with appropriate index
         _df = self.data[self._apply_filters(variable=proxy, region=subregions)]
-        _proxy = _df.set_index(self._get_cols(['region', 'year'])).value
-        _total = _df.groupby(self._get_cols(['year'])).value.sum()
+        _proxy = _df.set_index(self._get_cols(['region', self.time_col])).value
+        _total = _df.groupby(self._get_cols([self.time_col])).value.sum()
 
         _value = (
             self.data[self._apply_filters(variable=variable, region=region)]
-            .set_index(self._get_cols(['variable', 'unit', 'year'])).value
+            .set_index(self._get_cols(['variable', 'unit', self.time_col]))
+            .value
         )
 
         # compute downscaled data
@@ -1071,38 +1030,45 @@ class IamDataFrame(object):
         """Return a list of columns of `self.data`"""
         return META_IDX + cols + self.extra_cols
 
-    def check_internal_consistency(self, **kwargs):
+    def check_internal_consistency(self, components=False, **kwargs):
         """Check whether a scenario ensemble is internally consistent
 
         We check that all variables are equal to the sum of their sectoral
         components and that all the regions add up to the World total. If
-        the check is passed, None is returned, otherwise a dictionary of
+        the check is passed, None is returned, otherwise a DataFrame of
         inconsistent variables is returned.
 
         Note: at the moment, this method's regional checking is limited to
         checking that all the regions sum to the World region. We cannot
-        make this more automatic unless we start to store how the regions
-        relate, see
-        [this issue](https://github.com/IAMconsortium/pyam/issues/106).
+        make this more automatic unless we store how the regions relate,
+        see [this issue](https://github.com/IAMconsortium/pyam/issues/106).
 
         Parameters
         ----------
         kwargs: passed to `np.isclose()`
+        components: bool, default False
+            passed to `check_aggregate_region)`: if `True`, use all
+            sub-categories of each `variable` included in `World` but not in
+            any of the subregions; if `False`, only aggregate variables over
+            subregions
         """
-        inconsistent_vars = {}
+        lst = []
         for variable in self.variables():
             diff_agg = self.check_aggregate(variable, **kwargs)
             if diff_agg is not None:
-                inconsistent_vars[variable + "-aggregate"] = diff_agg
+                lst.append(diff_agg)
 
             diff_regional = (
-                self.check_aggregate_region(variable, components=True,
+                self.check_aggregate_region(variable, components=components,
                                             **kwargs)
             )
             if diff_regional is not None:
-                inconsistent_vars[variable + "-regional"] = diff_regional
+                lst.append(diff_regional)
 
-        return inconsistent_vars if inconsistent_vars else None
+        if len(lst):
+            _df = pd.concat(lst, sort=True).sort_index()
+            return _df[[c for c in ['variable', 'components', 'region',
+                                    'subregions'] if c in _df.columns]]
 
     def _exclude_on_fail(self, df):
         """Assign a selection of scenarios as `exclude: True` in meta"""
@@ -1558,48 +1524,8 @@ class IamDataFrame(object):
 
 
 def _meta_idx(data):
+    """Return the `META_IDX` from `data` by index or columns"""
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
-
-
-def _aggregate(df, by, method=np.sum):
-    """Aggregate `df` by specified column(s), return indexed `pd.Series`"""
-    by = [by] if isstr(by) else by
-    cols = [c for c in list(df.columns) if c not in ['value'] + by]
-    # pick aggregator func (default: sum)
-    return df.groupby(cols)['value'].agg(_get_method_func(method))
-
-
-def _aggregate_weight(df, weight, method):
-    """Aggregate `df` by regions with weights, return indexed `pd.Series`"""
-    # only summation allowed with weights
-    if method not in ['sum', np.sum]:
-        raise ValueError('only method `np.sum` allowed for weighted average')
-
-    _data = _get_value_col(df, YEAR_IDX)
-    _weight = _get_value_col(weight, YEAR_IDX)
-
-    if not _data.index.equals(_weight.index):
-        raise ValueError('inconsistent index between variable and weight')
-
-    cols = META_IDX + ['year']
-    return (_data * _weight).groupby(cols).sum() / _weight.groupby(cols).sum()
-
-
-def _get_method_func(method):
-    """Translate a string to a known method"""
-    if not isstr(method):
-        return method
-
-    if method in KNOWN_FUNCS:
-        return KNOWN_FUNCS[method]
-
-    # raise error if `method` is a string but not in dict of known methods
-    raise ValueError('method `{}` is not a known aggregator'.format(method))
-
-
-def _get_value_col(df, cols):
-    """Return the value column as `pd.Series sorted by index"""
-    return df.set_index(cols)['value'].sort_index()
 
 
 def _raise_filter_error(col):

@@ -24,7 +24,7 @@ pandoc_reason = 'requires Pandoc to be installed'
 
 tut_path = os.path.join(here, '..', 'doc', 'source', 'tutorials')
 
-# taken from the execellent example here:
+# taken from the excellent example here:
 # https://blog.thedataincubator.com/2016/06/testing-jupyter-notebooks/
 
 
@@ -68,8 +68,8 @@ def test_pyam_first_steps(capsys):
 
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
 @pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
-def test_checking_consistency():
-    fname = os.path.join(tut_path, 'checking_consistency.ipynb')
+def test_aggregating_downscaling_consistency():
+    fname = os.path.join(tut_path, 'aggregating_downscaling_consistency.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
 
