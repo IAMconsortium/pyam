@@ -46,9 +46,9 @@ logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """This class is a wrapper for dataframes following the IAMC format.
+    """This class is a wrapper for timeseries data following the IAMC format.
     It provides a number of diagnostic features (including validation of data,
-    completeness of variables provided) as well as a number of visualization
+    completeness of variables provided) as well as visualization
     and plotting tools.
 
     Parameters
@@ -148,7 +148,7 @@ class IamDataFrame(object):
                 f(self)
 
     def copy(self):
-        """Return a deepcopy of self
+        """Make a deepcopy of this object
 
         Documentation about deepcopy is available
         `here <https://docs.python.org/2/library/copy.html#copy.deepcopy>`_
@@ -165,7 +165,7 @@ class IamDataFrame(object):
 
     @property
     def empty(self):
-        """Indicator whether ``IamDataFrame`` is empty"""
+        """Indicator whether this object is empty"""
         return self.data.empty
 
     def equals(self, other):
@@ -766,8 +766,9 @@ class IamDataFrame(object):
             return ret
 
     def normalize(self, inplace=False, **kwargs):
-        """Normalize data to a given value. Currently only supports normalizing
-        to a specific time.
+        """Normalize data to a specific data point
+
+        Currently only supports normalizing to a specific time.
 
         Parameters
         ----------
@@ -1290,7 +1291,7 @@ class IamDataFrame(object):
         self.load_meta(path, *args, **kwargs)
 
     def load_meta(self, path, *args, **kwargs):
-        """Load ``meta`` table  exported from a ``pyam.IamDataFrame`` instance
+        """Load ``meta`` table  exported from a :class:`IamDataFrame` instance
 
         Parameters
         ----------
@@ -1324,7 +1325,7 @@ class IamDataFrame(object):
 
         df = df.loc[idx]
 
-        # Merge in imported metadata
+        # merge in imported metadata
         msg = 'Importing metadata for {} scenario{} (for total of {})'
         logger.info(msg.format(len(df), 's' if len(df) > 1 else '',
                                  len(self.meta)))
