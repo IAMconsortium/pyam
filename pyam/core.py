@@ -1263,7 +1263,7 @@ class IamDataFrame(object):
 
     def export_metadata(self, excel_writer, sheet_name='meta'):
         """Deprecated, see :method:`export_meta()`"""
-        # TODO: deprecate in next release
+        # TODO: deprecate in next release (>=0.5.0)
         deprecation_warning('Use `export_meta() instead`!')
         self.export_meta(excel_writer, sheet_name='meta')
 
@@ -1286,7 +1286,7 @@ class IamDataFrame(object):
 
     def load_metadata(self, path, *args, **kwargs):
         """Deprecated, see :method:`load_meta()`"""
-        # TODO: deprecate in next release
+        # TODO: deprecate in next release (>=0.5.0)
         deprecation_warning('Use `load_meta() instead`!')
         self.load_meta(path, *args, **kwargs)
 
