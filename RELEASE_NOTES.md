@@ -1,4 +1,12 @@
-# Next Release
+# Release v0.4.0
+
+## Highlights
+
+- New feature: downscale regional timeseries data to subregions using a proxy variable
+- Improved features to support aggregation by sectors and regions: support weighted-average, min/max, etc.
+  (including a reworked tutorial)
+- Streamlined I/O: include `meta` table when reading from/writing to xlsx files
+- Standardized logger behaviour
 
 ## API changes
 
