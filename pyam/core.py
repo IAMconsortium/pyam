@@ -871,9 +871,9 @@ class IamDataFrame(object):
         Parameters
         ----------
         variable: str or list of str
-            variable(s) for which the aggregate will be computed
+            variable(s) to be aggregated
         region: str, default 'World'
-            dimension
+            region to which data will be aggregated
         subregions: list of str
             list of subregions, defaults to all regions other than `region`
         components: bool or list of str, default False
@@ -980,7 +980,7 @@ class IamDataFrame(object):
         proxy: str
             variable to be used as proxy (i.e, weight) for the downscaling
         region: str, default 'World'
-            dimension
+            region from which data will be downscaled
         subregions: list of str
             list of subregions, defaults to all regions other than `region`
         append: bool, default False
