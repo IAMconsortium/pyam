@@ -6,6 +6,8 @@
 *png
 *jpg
 *pdf
+*zip
+*json
 
 # Apple file system
 *.DS_STORE
