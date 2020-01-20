@@ -1828,7 +1828,7 @@ def read_datapackage(path, data='data', meta='meta'):
     df = IamDataFrame(_data)
 
     # read `meta` table
-    if meta in package.get_resource_names():
+    if meta in package.resource_names:
         resource_meta = package.get_resource(meta)
         _meta = pd.DataFrame(resource_meta.read())
         _meta.columns = _get_column_names(resource_meta)

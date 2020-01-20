@@ -29,6 +29,8 @@ REQUIREMENTS = [
     'matplotlib<=3.0.2',
     'seaborn',
     'six',
+    'pathlib',
+    'datapackage'
 ]
 
 EXTRA_REQUIREMENTS = {
