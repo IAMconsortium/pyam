@@ -1288,8 +1288,17 @@ class IamDataFrame(object):
             excel_writer.close()
 
     def to_datapackage(self, path='datapackage.zip', tmp='tmp'):
-        """Export object to a
+        """Write object to a frictionless datapackage
 
+        More information: https://frictionlessdata.io
+
+        Parameters
+        ----------
+        path: file, default 'datapackage.zip'
+            file path
+        tmp: string, default 'tmp'
+            name for temporary folder to export csv files
+            (deleted after saving datapackage)
         """
 
         path, tmp = Path(path), Path(tmp)
@@ -1813,7 +1822,8 @@ def read_datapackage(path, data='data', meta='meta'):
     data: str, default `data`
         resource containing timeseries data in IAMC-compatible format
     meta: str, default `meta`
-        resource containing table of categorization and quantitative indicators
+        (optional) resource containing a table of categorization and
+        quantitative indicators
     """
 
     package = Package(path)
