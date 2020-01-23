@@ -1292,6 +1292,10 @@ class IamDataFrame(object):
 
         More information: https://frictionlessdata.io
 
+        Returns the saved :class:`datapackage.Package`. When adding metadata
+        (descriptors), please follow the `template` defined by
+        https://github.com/OpenEnergyPlatform/metadata
+
         Parameters
         ----------
         path: string
@@ -1322,6 +1326,9 @@ class IamDataFrame(object):
         for f in tmp.iterdir():
             f.unlink()
         tmp.rmdir()
+
+        # return the package (needs to reloaded because `tmp` was deleted)
+        return Package(path)
 
     def load_metadata(self, path, *args, **kwargs):
         """Deprecated, see :method:`load_meta()`"""
