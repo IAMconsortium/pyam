@@ -1323,8 +1323,7 @@ class IamDataFrame(object):
         package.save(path)
 
         # remove the temporary folder
-        for f in tmp.iterdir():
-            f.unlink()
+        [f.unlink() for f in tmp.iterdir()]
         tmp.rmdir()
 
         # return the package (needs to reloaded because `tmp` was deleted)
