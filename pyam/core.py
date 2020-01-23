@@ -1287,14 +1287,14 @@ class IamDataFrame(object):
         if close:
             excel_writer.close()
 
-    def to_datapackage(self, path='datapackage.zip', tmp='tmp'):
+    def to_datapackage(self, path, tmp='tmp'):
         """Write object to a frictionless datapackage
 
         More information: https://frictionlessdata.io
 
         Parameters
         ----------
-        path: file, default 'datapackage.zip'
+        path: string
             file path
         tmp: string, default 'tmp'
             name for temporary folder to export csv files
