@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from datapackage import Package
 
 try:
@@ -1287,7 +1288,7 @@ class IamDataFrame(object):
         if close:
             excel_writer.close()
 
-    def to_datapackage(self, path, tmp='tmp'):
+    def to_datapackage(self, path):
         """Write object to a frictionless Data Package
 
         More information: https://frictionlessdata.io
@@ -1300,31 +1301,19 @@ class IamDataFrame(object):
         ----------
         path: string or pathlib.Path
             file path
-        tmp: string, default 'tmp'
-            name for temporary folder to export csv files
-            (deleted after saving datapackage)
         """
 
-        path, tmp = Path(path), Path(tmp)
-        if tmp in list(tmp.parent.iterdir()):
-            msg = 'folder `{}` already exists in this directory!'
-            raise ValueError(msg.format(tmp))
+        with TemporaryDirectory(dir='.') as tmp:
+            # save data and meta tables to a temporary folder
+            self.data.to_csv(Path(tmp) / 'data.csv', index=False)
+            self.meta.to_csv(Path(tmp) / 'meta.csv')
 
-        # save data and meta tables to a temporary folder
-        tmp.mkdir()
-        self.data.to_csv(tmp / 'data.csv', index=False)
-        self.meta.to_csv(tmp / 'meta.csv')
-
-        # cast tables to datapackage
-        package = Package()
-        package.infer('{}/*.csv'.format(tmp))
-        if not package.valid:
-            logger.warning('the exported package is not valid')
-        package.save(path)
-
-        # remove the temporary folder
-        [f.unlink() for f in tmp.iterdir()]
-        tmp.rmdir()
+            # cast tables to datapackage
+            package = Package()
+            package.infer('{}/*.csv'.format(tmp))
+            if not package.valid:
+                logger.warning('the exported package is not valid')
+            package.save(path)
 
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
