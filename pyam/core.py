@@ -1288,7 +1288,7 @@ class IamDataFrame(object):
             excel_writer.close()
 
     def to_datapackage(self, path, tmp='tmp'):
-        """Write object to a frictionless datapackage
+        """Write object to a frictionless Data Package
 
         More information: https://frictionlessdata.io
 
@@ -1298,7 +1298,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path: string
+        path: string or pathlib.Path
             file path
         tmp: string, default 'tmp'
             name for temporary folder to export csv files
@@ -1819,11 +1819,11 @@ def concat(dfs):
 
 
 def read_datapackage(path, data='data', meta='meta'):
-    """Read timeseries data (and meta-indicators) from frictionless datapackage
+    """Read timeseries data (and meta-indicators) from frictionless Data Package
 
     Parameters
     ----------
-    path: path to datapackage
+    path: path to Data Package
         passed to ``datapackage.Package()``
     data: str, default `data`
         resource containing timeseries data in IAMC-compatible format
