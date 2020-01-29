@@ -1,5 +1,5 @@
 import pytest
-from pyam.testing import assert_frame_equal
+from pyam.testing import assert_iamframe_equal
 
 
 @pytest.mark.parametrize("variable", (
@@ -13,9 +13,9 @@ def test_downscale_region(simple_df, variable):
     # return as new IamDataFrame
     obs = simple_df.downscale_region(variable, proxy='Population')
     exp = simple_df.filter(variable=variable, region=regions)
-    assert_frame_equal(exp, obs)
+    assert_iamframe_equal(exp, obs)
 
     # append to `self` (after removing to-be-downscaled timeseries)
     inplace = simple_df.filter(variable=variable, region=regions, keep=False)
     inplace.downscale_region(variable, proxy='Population', append=True)
-    assert_frame_equal(inplace, simple_df)
+    assert_iamframe_equal(inplace, simple_df)

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from pyam import IamDataFrame, read_datapackage
-from pyam.testing import assert_frame_equal
+from pyam.testing import assert_iamframe_equal
 
 from conftest import TEST_DATA_DIR
 
@@ -42,9 +42,8 @@ def test_io_xlsx(test_df, meta_args):
         # read from xlsx
         import_df = IamDataFrame(file, **meta_args[1])
 
-        # assert that `data` and `meta` tables are equal and delete file
-        pd.testing.assert_frame_equal(test_df.data, import_df.data)
-        pd.testing.assert_frame_equal(test_df.meta, import_df.meta)
+        # assert that IamDataFrame instances are equal and delete file
+        assert_iamframe_equal(test_df, import_df)
         os.remove(file)
 
 
@@ -90,5 +89,5 @@ def test_io_datapackage(test_df):
     import_df = read_datapackage(file)
 
     # assert that IamDataFrame instances are equal and delete file
-    assert_frame_equal(test_df, import_df)
+    assert_iamframe_equal(test_df, import_df)
     os.remove(file)
