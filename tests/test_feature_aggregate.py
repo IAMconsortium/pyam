@@ -143,7 +143,8 @@ def test_aggregate_region(simple_df, variable):
     # check custom `region` (will include `World`, so double-count values)
     foo = exp.rename(region={'World': 'foo'})
     foo.data.value = foo.data.value * 2
-    assert_iamframe_equal(simple_df.aggregate_region(variable, region='foo'), foo)
+    assert_iamframe_equal(simple_df.aggregate_region(variable, region='foo'),
+                          foo)
 
 
 def test_aggregate_region_log(simple_df, caplog):
@@ -229,7 +230,8 @@ def test_aggregate_region_with_other_method(simple_df, variable, data):
         _df.rename({'year': 'time'}, axis='columns', inplace=True)
     exp = IamDataFrame(_df).filter(region='World')
     for m in ['max', np.max]:
-        assert_iamframe_equal(simple_df.aggregate_region(variable, method=m), exp)
+        assert_iamframe_equal(simple_df.aggregate_region(variable, method=m),
+                              exp)
 
 
 def test_aggregate_region_with_components(simple_df):

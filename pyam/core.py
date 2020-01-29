@@ -14,7 +14,7 @@ from tempfile import TemporaryDirectory
 try:
     from datapackage import Package
     HAS_DATAPACKAGE = True
-except IoError:
+except ImportError:
     HAS_DATAPACKAGE = False
 
 try:
