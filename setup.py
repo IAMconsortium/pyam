@@ -29,11 +29,11 @@ REQUIREMENTS = [
     'matplotlib<=3.0.2',
     'seaborn',
     'six',
-    'datapackage'
 ]
 
 EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest', 'pytest-cov', 'pytest-mpl'],
+    'optional-io-formats': ['datapackage'],
     'deploy': ['twine', 'setuptools', 'wheel'],
 }
 

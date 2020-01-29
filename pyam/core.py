@@ -10,7 +10,12 @@ import pandas as pd
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from datapackage import Package
+
+try:
+    from datapackage import Package
+    HAS_DATAPACKAGE = True
+except IoError:
+    HAS_DATAPACKAGE = False
 
 try:
     import ixmp
@@ -1303,6 +1308,9 @@ class IamDataFrame(object):
             file path
         """
 
+        if not HAS_DATAPACKAGE:
+            raise ImportError('required package `datapackage` not found!')
+
         with TemporaryDirectory(dir='.') as tmp:
             # save data and meta tables to a temporary folder
             self.data.to_csv(Path(tmp) / 'data.csv', index=False)
@@ -1808,7 +1816,7 @@ def concat(dfs):
 
 
 def read_datapackage(path, data='data', meta='meta'):
-    """Read timeseries data (and meta-indicators) from frictionless Data Package
+    """Read timeseries data and meta-indicators from frictionless Data Package
 
     Parameters
     ----------
@@ -1820,6 +1828,9 @@ def read_datapackage(path, data='data', meta='meta'):
         (optional) resource containing a table of categorization and
         quantitative indicators
     """
+
+    if not HAS_DATAPACKAGE:
+        raise ImportError('required package `datapackage` not found!')
 
     package = Package(path)
 

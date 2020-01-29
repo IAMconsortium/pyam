@@ -29,7 +29,7 @@ build: false
 
 test_script:
   - conda list
-  - pip install -e .[tests,deploy]
+  - pip install -e .[tests,deploy,optional-io-formats]
   - pytest -v --mpl tests --mpl-results-path=test-artifacts
 
 artifacts:
