@@ -1,5 +1,7 @@
 # Next release
 
+- [#323](https://github.com/IAMconsortium/pyam/pull/323) Support import/export of frictionless `datapackage` format
+
 # Release v0.4.0
 
 ## Highlights

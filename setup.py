@@ -22,7 +22,7 @@ REQUIREMENTS = [
     'argparse',
     'numpy',
     'requests',
-    'pandas>=0.25.0',
+    'pandas>=0.25.0,<1.0.0',
     'PyYAML',
     'xlrd',
     'xlsxwriter',
@@ -33,6 +33,7 @@ REQUIREMENTS = [
 
 EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest', 'pytest-cov', 'pytest-mpl'],
+    'optional-io-formats': ['datapackage'],
     'deploy': ['twine', 'setuptools', 'wheel'],
 }
 

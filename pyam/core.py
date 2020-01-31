@@ -8,6 +8,15 @@ import sys
 import numpy as np
 import pandas as pd
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+try:
+    from datapackage import Package
+    HAS_DATAPACKAGE = True
+except ImportError:
+    HAS_DATAPACKAGE = False
+
 try:
     import ixmp
     has_ix = True
@@ -1284,6 +1293,39 @@ class IamDataFrame(object):
         if close:
             excel_writer.close()
 
+    def to_datapackage(self, path):
+        """Write object to a frictionless Data Package
+
+        More information: https://frictionlessdata.io
+
+        Returns the saved :class:`datapackage.Package`. When adding metadata
+        (descriptors), please follow the `template` defined by
+        https://github.com/OpenEnergyPlatform/metadata
+
+        Parameters
+        ----------
+        path: string or pathlib.Path
+            file path
+        """
+
+        if not HAS_DATAPACKAGE:
+            raise ImportError('required package `datapackage` not found!')
+
+        with TemporaryDirectory(dir='.') as tmp:
+            # save data and meta tables to a temporary folder
+            self.data.to_csv(Path(tmp) / 'data.csv', index=False)
+            self.meta.to_csv(Path(tmp) / 'meta.csv')
+
+            # cast tables to datapackage
+            package = Package()
+            package.infer('{}/*.csv'.format(tmp))
+            if not package.valid:
+                logger.warning('the exported package is not valid')
+            package.save(path)
+
+        # return the package (needs to reloaded because `tmp` was deleted)
+        return Package(path)
+
     def load_metadata(self, path, *args, **kwargs):
         """Deprecated, see :method:`load_meta()`"""
         # TODO: deprecate in next release (>=0.5.0)
@@ -1771,3 +1813,41 @@ def concat(dfs):
         else:
             _df.append(df, inplace=True)
     return _df
+
+
+def read_datapackage(path, data='data', meta='meta'):
+    """Read timeseries data and meta-indicators from frictionless Data Package
+
+    Parameters
+    ----------
+    path: path to Data Package
+        passed to ``datapackage.Package()``
+    data: str, default `data`
+        resource containing timeseries data in IAMC-compatible format
+    meta: str, default `meta`
+        (optional) resource containing a table of categorization and
+        quantitative indicators
+    """
+
+    if not HAS_DATAPACKAGE:
+        raise ImportError('required package `datapackage` not found!')
+
+    package = Package(path)
+
+    def _get_column_names(x):
+        return [i['name'] for i in x.descriptor['schema']['fields']]
+
+    # read `data` table
+    resource_data = package.get_resource(data)
+    _data = pd.DataFrame(resource_data.read())
+    _data.columns = _get_column_names(resource_data)
+    df = IamDataFrame(_data)
+
+    # read `meta` table
+    if meta in package.resource_names:
+        resource_meta = package.get_resource(meta)
+        _meta = pd.DataFrame(resource_meta.read())
+        _meta.columns = _get_column_names(resource_meta)
+        df.meta = _meta.set_index(META_IDX)
+
+    return df
