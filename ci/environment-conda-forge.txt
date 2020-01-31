@@ -6,4 +6,3 @@ gdal
 fiona
 "poppler<0.66"
 cython
-datapackage

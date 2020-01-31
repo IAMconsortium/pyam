@@ -94,7 +94,7 @@ $(VENV_DIR):  $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_
 	$(CONDA_EXE) config --add channels conda-forge # sets conda-forge as highest priority
 	$(CONDA_EXE) install --yes $(shell cat $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE) | tr '\n' ' ')
 	# Install development setup
-	$(VENV_DIR)/bin/pip install -e .[tests,deploy]
+	$(VENV_DIR)/bin/pip install -e .[tests,deploy,optional-io-formats]
 	# install docs requirements
 	# --name $(CONDA_DEFAULT_ENV) ensures we install in active environment (check at
 	# top of Makefile ensures that environment is not the base one)
