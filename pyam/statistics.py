@@ -181,7 +181,7 @@ class Statistics(object):
                 levels = [[idx[0]], [idx[1]]]
             lvls, lbls = (levels, [[0]] * self.idx_depth) if not self.rows \
                 else (levels + [[row]], [[0]] * (self.idx_depth + 1))
-            _stats_f.index = pd.MultiIndex(levels=lvls, labels=lbls)
+            _stats_f.index = pd.MultiIndex(levels=lvls, codes=lbls)
             _stats = _stats_f if _stats is None else _stats.append(_stats_f)
 
         # add header
