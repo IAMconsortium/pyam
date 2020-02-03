@@ -2,7 +2,7 @@ import matplotlib
 import pytest
 import os
 import copy
-import warnings
+import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,13 +14,15 @@ import pyam
 from pyam import plotting, run_control, reset_rc_defaults
 from conftest import IMAGE_BASELINE_DIR
 
+logger = logging.getLogger(__name__)
+
 # on CI, freetype version 2.6.1 works, but 2.8.0 does not
 # if we want to move to 2.8.0, then we will need to regenerate images
 FREETYPE_VERSION = matplotlib.ft2font.__freetype_version__
 if int(FREETYPE_VERSION.replace('.', '')) < 291:
     msg = 'Freetype version < 2.9.1: {}'.format(FREETYPE_VERSION)
-    warnings.warn('test_plotting.py is being skipped due to a '
-                  'Freetype Version mismatch: {}'.format(msg))
+    logger.warning('test_plotting.py is being skipped due to a '
+                   'Freetype Version mismatch: {}'.format(msg))
     pytest.skip(msg, allow_module_level=True)
 
 
