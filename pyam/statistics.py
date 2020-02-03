@@ -254,7 +254,8 @@ def format_rows(row, center, fullrange=None, interquartile=None,
         msg = 'displaying multiple range formats simultaneously not supported'
         raise NotImplementedError(msg)
 
-    ret = pd.Series(index=pd.MultiIndex.from_tuples(**count_arg).append(index))
+    ret = pd.Series(index=pd.MultiIndex.from_tuples(**count_arg).append(index),
+                    dtype=float)
 
     row = row.sort_index()
     center = '50%' if center == 'median' else center
