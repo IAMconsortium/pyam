@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 logging.getLogger('requests').setLevel(logging.WARNING)
 
 _BASE_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
+# _BASE_URL = 'https://ienecat.iiasa.ac.at:8743/nk2/config/v1'
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
@@ -75,7 +76,7 @@ class Connection(object):
         ----------
         name : str, optional
             A valid database name. For available options, see
-            valid_connection_names().
+            valid_connections().
         creds : str, list-like, or dict, optional
             Either:
               - a yaml filename/path with entries of  'username' and 'password'
@@ -94,22 +95,36 @@ class Connection(object):
 
     @property
     @lru_cache()
-    def valid_connections(self):
+    def _connection_map(self):
         url = '/'.join([self._base_url, 'applications'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get valid connection list')
-        valid = [x['name'] for x in r.json()]
-        return valid
+        conn_map = {}
+        for x in r.json():
+            if 'config' in x:
+                env = next((r['value'] for r in x['config']
+                            if r['path'] == 'env'), None)
+                name = x['name']
+                if env is not None:
+                    if env in conn_map:
+                        logger.warning('Duplicate instance alias {}'
+                                       .format(env))
+                        conn_map[name] = name
+                    else:
+                        conn_map[env] = name
+                else:
+                    conn_map[name] = name
+        return conn_map
+
+    @property
+    @lru_cache()
+    def valid_connections(self):
+        return list(self._connection_map.values())
 
     def connect(self, name):
-        # TODO: deprecate in next release
-        if name == 'iamc15':
-            warnings.warn(
-                'The name `iamc15` is deprecated and will be removed in the ' +
-                'next release. Please use `IXSE_SR15`.'
-            )
-            name = 'IXSE_SR15'
+        if name in self._connection_map:
+            name = self._connection_map[name]
 
         valid = self.valid_connections
         if len(valid) == 0:
@@ -132,8 +147,8 @@ class Connection(object):
         idxs = {x['path']: i for i, x in enumerate(response)}
 
         self._base_url = response[idxs['baseUrl']]['value']
-        # TODO: request the full citation to be added to this metadata intead
-        # of linking to the about page
+        # TODO: request the full citation to be added to this metadata instead
+        #       of linking to the about page
         about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
         logger.info(_CITE_MSG.format(name, about))
 
@@ -389,7 +404,7 @@ def read_iiasa(name, meta=False, creds=None, base_url=_BASE_URL, **kwargs):
     Parameters
     ----------
     name : str
-        A valid IIASA database name, see pyam.iiasa.valid_connection_names()
+        A valid IIASA database name, see pyam.iiasa.valid_connections()
     meta : bool or list of strings
         If not False, also include metadata indicators (or subset if provided).
     creds : dict

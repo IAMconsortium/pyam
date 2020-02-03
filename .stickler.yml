@@ -1,5 +1,6 @@
 linters:
   flake8:
+    python: 3
     max-line-length: 79
     fixer: false
     ignore: I002, F403, E402, E731
