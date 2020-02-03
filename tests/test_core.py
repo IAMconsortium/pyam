@@ -514,7 +514,7 @@ def test_timeseries_raises(test_df_year):
 def test_filter_meta_index(test_df):
     obs = test_df.filter(scenario='scen_b').meta.index
     exp = pd.MultiIndex(levels=[['model_a'], ['scen_b']],
-                        labels=[[0], [0]],
+                        codes=[[0], [0]],
                         names=['model', 'scenario'])
     pd.testing.assert_index_equal(obs, exp)
 
