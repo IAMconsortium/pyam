@@ -21,7 +21,7 @@ _BASE_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
- data as provided in the explorer guidelines: {}.
+ data as provided in the explorer guidelines: {}
 """.replace('\n', '')
 
 
