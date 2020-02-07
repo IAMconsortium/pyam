@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 logging.getLogger('requests').setLevel(logging.WARNING)
 
 _BASE_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
-# _BASE_URL = 'https://ienecat.iiasa.ac.at:8743/nk2/config/v1'
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
@@ -100,6 +99,7 @@ class Connection(object):
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get valid connection list')
+        aliases = set()
         conn_map = {}
         for x in r.json():
             if 'config' in x:
@@ -107,12 +107,15 @@ class Connection(object):
                             if r['path'] == 'env'), None)
                 name = x['name']
                 if env is not None:
-                    if env in conn_map:
+                    if env in aliases:
                         logger.warning('Duplicate instance alias {}'
                                        .format(env))
                         conn_map[name] = name
+                        first_duplicate = conn_map.pop(env)
+                        conn_map[first_duplicate] = first_duplicate
                     else:
                         conn_map[env] = name
+                    aliases.add(env)
                 else:
                     conn_map[name] = name
         return conn_map
@@ -120,13 +123,18 @@ class Connection(object):
     @property
     @lru_cache()
     def valid_connections(self):
-        return list(self._connection_map.values())
+        """ Show a list of valid connection names (application aliases or
+            names when alias is not available or duplicated)
+
+        :return: list of str
+        """
+        return list(self._connection_map.keys())
 
     def connect(self, name):
         if name in self._connection_map:
             name = self._connection_map[name]
 
-        valid = self.valid_connections
+        valid = self._connection_map.values()
         if len(valid) == 0:
             raise RuntimeError(
                 'No valid connections found for the provided credentials.'
