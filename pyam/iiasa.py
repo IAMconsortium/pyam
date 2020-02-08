@@ -53,7 +53,7 @@ def _get_token(creds, base_url):
             creds, str(e))
         raise type(e)(msg)
     if not filecreds:
-        logger.warning('You provided credentials in plain text. DO NOT save ' +
+        logger.warning('You provided credentials in plain text. DO NOT save '
                        'these in a repository or otherwise post them online')
 
     headers = {'Accept': 'application/json',
