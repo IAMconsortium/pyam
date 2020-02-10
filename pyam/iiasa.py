@@ -3,7 +3,6 @@ import json
 import logging
 import os
 import requests
-import warnings
 import yaml
 from functools import lru_cache
 
@@ -54,8 +53,8 @@ def _get_token(creds, base_url):
             creds, str(e))
         raise type(e)(msg)
     if not filecreds:
-        warnings.warn('You provided credentials in plain text. DO NOT save ' +
-                      'these in a repository or otherwise post them online')
+        logger.warning('You provided credentials in plain text. DO NOT save ' +
+                       'these in a repository or otherwise post them online')
 
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
