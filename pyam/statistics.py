@@ -181,7 +181,7 @@ class Statistics(object):
                 levels = [[idx[0]], [idx[1]]]
             lvls, lbls = (levels, [[0]] * self.idx_depth) if not self.rows \
                 else (levels + [[row]], [[0]] * (self.idx_depth + 1))
-            _stats_f.index = pd.MultiIndex(levels=lvls, labels=lbls)
+            _stats_f.index = pd.MultiIndex(levels=lvls, codes=lbls)
             _stats = _stats_f if _stats is None else _stats.append(_stats_f)
 
         # add header
@@ -254,7 +254,8 @@ def format_rows(row, center, fullrange=None, interquartile=None,
         msg = 'displaying multiple range formats simultaneously not supported'
         raise NotImplementedError(msg)
 
-    ret = pd.Series(index=pd.MultiIndex.from_tuples(**count_arg).append(index))
+    ret = pd.Series(index=pd.MultiIndex.from_tuples(**count_arg).append(index),
+                    dtype=float)
 
     row = row.sort_index()
     center = '50%' if center == 'median' else center

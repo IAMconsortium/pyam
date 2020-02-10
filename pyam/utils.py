@@ -194,8 +194,8 @@ def format_data(df, **kwargs):
         if 'scenario' in df.columns and 'model' not in df.columns:
             # model and scenario are jammed together in RCP data
             scen = df['scenario']
-            df['model'] = scen.apply(lambda s: s.split('-')[0].strip())
-            df['scenario'] = scen.apply(
+            df.loc[:, 'model'] = scen.apply(lambda s: s.split('-')[0].strip())
+            df.loc[:, 'scenario'] = scen.apply(
                 lambda s: '-'.join(s.split('-')[1:]).strip())
 
     # reset the index if meaningful entries are included there

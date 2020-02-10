@@ -4,12 +4,12 @@ import pandas as pd
 
 
 EXP_IDX = pd.MultiIndex(levels=[['model_a'], ['scen_a', 'scen_b']],
-                        labels=[[0, 0], [0, 1]], names=['model', 'scenario'])
+                        codes=[[0, 0], [0, 1]], names=['model', 'scenario'])
 
 
 def test_set_meta_no_name(test_df):
     idx = pd.MultiIndex(levels=[['a_scenario'], ['a_model'], ['some_region']],
-                        labels=[[0], [0], [0]],
+                        codes=[[0], [0], [0]],
                         names=['scenario', 'model', 'region'])
     s = pd.Series(data=[0.3], index=idx)
     pytest.raises(ValueError, test_df.set_meta, s)
@@ -17,7 +17,7 @@ def test_set_meta_no_name(test_df):
 
 def test_set_meta_as_named_series(test_df):
     idx = pd.MultiIndex(levels=[['scen_a'], ['model_a'], ['some_region']],
-                        labels=[[0], [0], [0]],
+                        codes=[[0], [0], [0]],
                         names=['scenario', 'model', 'region'])
 
     s = pd.Series(data=[0.3], index=idx, name='meta_values')
@@ -29,7 +29,7 @@ def test_set_meta_as_named_series(test_df):
 
 def test_set_meta_as_unnamed_series(test_df):
     idx = pd.MultiIndex(levels=[['scen_a'], ['model_a'], ['some_region']],
-                        labels=[[0], [0], [0]],
+                        codes=[[0], [0], [0]],
                         names=['scenario', 'model', 'region'])
 
     s = pd.Series(data=[0.3], index=idx)
@@ -41,7 +41,7 @@ def test_set_meta_as_unnamed_series(test_df):
 
 def test_set_meta_non_unique_index_fail(test_df):
     idx = pd.MultiIndex(levels=[['model_a'], ['scen_a'], ['reg_a', 'reg_b']],
-                        labels=[[0, 0], [0, 0], [0, 1]],
+                        codes=[[0, 0], [0, 0], [0, 1]],
                         names=['model', 'scenario', 'region'])
     s = pd.Series([0.4, 0.5], idx)
     pytest.raises(ValueError, test_df.set_meta, s)
@@ -50,7 +50,7 @@ def test_set_meta_non_unique_index_fail(test_df):
 def test_set_meta_non_existing_index_fail(test_df):
     idx = pd.MultiIndex(levels=[['model_a', 'fail_model'],
                                 ['scen_a', 'fail_scenario']],
-                        labels=[[0, 1], [0, 1]], names=['model', 'scenario'])
+                        codes=[[0, 1], [0, 1]], names=['model', 'scenario'])
     s = pd.Series([0.4, 0.5], idx)
     pytest.raises(ValueError, test_df.set_meta, s)
 
@@ -98,7 +98,7 @@ def test_set_meta_as_str_list(test_df):
 
 def test_set_meta_as_str_by_index(test_df):
     idx = pd.MultiIndex(levels=[['model_a'], ['scen_a']],
-                        labels=[[0], [0]], names=['model', 'scenario'])
+                        codes=[[0], [0]], names=['model', 'scenario'])
 
     test_df.set_meta('foo', 'meta_str', idx)
 

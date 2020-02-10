@@ -514,7 +514,7 @@ def test_timeseries_raises(test_df_year):
 def test_filter_meta_index(test_df):
     obs = test_df.filter(scenario='scen_b').meta.index
     exp = pd.MultiIndex(levels=[['model_a'], ['scen_b']],
-                        labels=[[0], [0]],
+                        codes=[[0], [0]],
                         names=['model', 'scenario'])
     pd.testing.assert_index_equal(obs, exp)
 
@@ -874,8 +874,8 @@ def test_concat(test_df):
 
 def test_normalize(test_df):
     exp = test_df.data.copy().reset_index(drop=True)
-    exp['value'][1::2] /= exp['value'][::2].values
-    exp['value'][::2] /= exp['value'][::2].values
+    exp.loc[1::2, 'value'] /= exp['value'][::2].values
+    exp.loc[::2, 'value'] /= exp['value'][::2].values
     if "year" in test_df.data:
         obs = test_df.normalize(year=2005).data.reset_index(drop=True)
     else:

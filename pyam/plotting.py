@@ -1,6 +1,5 @@
 import itertools
 import logging
-import warnings
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -159,7 +158,7 @@ def reshape_line_plot(df, x, y):
     """
     idx = list(df.columns.drop(y))
     if df.duplicated(idx).any():
-        warnings.warn('Duplicated index found.')
+        logger.warning('Duplicated index found.')
         df = df.drop_duplicates(idx, keep='last')
     df = df.set_index(idx)[y].unstack(x).T
     return df
@@ -173,7 +172,7 @@ def reshape_bar_plot(df, x, y, bars):
     """
     idx = [bars, x]
     if df.duplicated(idx).any():
-        warnings.warn('Duplicated index found.')
+        logger.warning('Duplicated index found.')
         df = df.drop_duplicates(idx, keep='last')
     df = df.set_index(idx)[y].unstack(x).T
     return df

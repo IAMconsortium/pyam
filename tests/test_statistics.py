@@ -45,9 +45,9 @@ def test_statistics(plot_df):
     obs = stats_add(stats, plot_df).summarize(custom_format='{:.0f}')
 
     idx = pd.MultiIndex(levels=[['category', 'scen'], ['b', 'a', 'test']],
-                        labels=[[0, 0, 1], [0, 1, 2]], names=['', ''])
+                        codes=[[0, 0, 1], [0, 1, 2]], names=['', ''])
     cols = pd.MultiIndex(levels=[['count', 'primary', 'coal'], ['', 2005]],
-                         labels=[[0, 1, 2], [0, 1, 1]],
+                         codes=[[0, 1, 2], [0, 1, 1]],
                          names=[None, 'mean (max, min)'])
     exp = pd.DataFrame(data=[['2', '1 (2, 1)', '0 (0, 0)'],
                              ['2', '1 (1, 1)', '0 (0, 0)'],
@@ -74,10 +74,10 @@ def test_statistics_by_filter(plot_df):
                        filters=[('test', {'scenario': 'test_scenario'})])
     obs = stats_add(stats, plot_df).summarize(interquartile=True)
 
-    idx = pd.MultiIndex(levels=[['test']], labels=[[0]])
+    idx = pd.MultiIndex(levels=[['test']], codes=[[0]])
     cols = pd.MultiIndex(levels=[['count', 'primary', 'coal'],
                                  ['', 2005]],
-                         labels=[[0, 1, 2], [0, 1, 1]],
+                         codes=[[0, 1, 2], [0, 1, 1]],
                          names=[None, 'mean (interquartile range)'])
     exp = pd.DataFrame(data=['2', '0.85 (0.93, 0.77)', '0.42 (0.46, 0.39)'],
                        index=cols, columns=idx).T
@@ -98,9 +98,9 @@ def test_statistics_with_rows(plot_df):
     obs = stats_add_with_rows(stats, plot_df).summarize(center='50%')
 
     idx = pd.MultiIndex(levels=[['test'], ['first', 'another']],
-                        labels=[[0, 0], [0, 1]])
+                        codes=[[0, 0], [0, 1]])
     cols = pd.MultiIndex(levels=[['count', 'primary', 'coal'], ['', 2005]],
-                         labels=[[0, 1, 2], [0, 1, 1]],
+                         codes=[[0, 1, 2], [0, 1, 1]],
                          names=[None, 'median (max, min)'])
     exp = pd.DataFrame(data=[['2', '0.85 (1.00, 0.70)', ''],
                              ['2', '', '0.42 (0.50, 0.35)']],

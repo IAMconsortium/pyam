@@ -1,5 +1,6 @@
 # Next release
 
+- [#324](https://github.com/IAMconsortium/pyam/pull/324) Enable compatibility with pandas v1.0
 - [#323](https://github.com/IAMconsortium/pyam/pull/323) Support import/export of frictionless `datapackage` format
 
 # Release v0.4.0
