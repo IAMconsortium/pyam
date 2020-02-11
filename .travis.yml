@@ -3,8 +3,6 @@ language: sh
 matrix:
     include:
         - os: linux
-          env: PYENV=py36
-        - os: linux
           env: PYENV=py37
         - os: osx
           env: PYENV=py36

@@ -1,4 +1,9 @@
-# Next release
+# Release v0.4.1
+
+This is a patch release to enable compatibility with `pandas v1.0`.
+It also adds experimental support of the frictionless `datapackage` format.
+
+## Individual Updates
 
 - [#324](https://github.com/IAMconsortium/pyam/pull/324) Enable compatibility with pandas v1.0
 - [#323](https://github.com/IAMconsortium/pyam/pull/323) Support import/export of frictionless `datapackage` format
