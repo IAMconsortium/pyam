@@ -1,3 +1,5 @@
+# Next release
+
 # Release v0.4.1
 
 This is a patch release to enable compatibility with `pandas v1.0`.
