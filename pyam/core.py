@@ -1537,7 +1537,8 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def subtract(self, other, axis, new_name, ignore_meta_conflict=False):
+    def subtract(self, other, axis='variable', new_name=None,
+                 ignore_meta_conflict=False):
         """
         Subtract data in ``other`` from ``self``
 
@@ -1546,13 +1547,13 @@ class IamDataFrame(object):
         other : pyam.IamDataFrame
             Object containing timeseries data to subtract
 
-        axis : str
+        axis : str, default ``variable``
             Column to use when subtracting the two sets of data
             (e.g. ``variable``)
 
-        new_name : str
-            Name of the value to use in the `axis` column (e.g., if
-            `axis='variable'`, the new variable name)
+        new_name : str, default None
+            Name of the value to use in the ``axis`` column (e.g., if
+            ``axis='variable'``, the new variable name)
 
         ignore_meta_conflict : bool, default False
             If False and ``other`` is an IamDataFrame, raise an error if
