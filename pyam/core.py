@@ -1551,8 +1551,8 @@ class IamDataFrame(object):
             (e.g. ``variable``)
 
         new_name : str
-            String to write in ``join_col`` in the output timeseries e.g.
-            (``variable 1 - variable 2``)
+            Name of the value to use in the `axis` column (e.g., if
+            `axis='variable'`, the new variable name)
 
         ignore_meta_conflict : bool, default False
             If False and ``other`` is an IamDataFrame, raise an error if
