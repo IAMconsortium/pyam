@@ -257,7 +257,7 @@ def simple_df(request):
         _df.rename(DTS_MAPPING, axis="columns", inplace=True)
     yield IamDataFrame(model='model_a', scenario='scen_a', data=_df)
 
-    
+
 @pytest.fixture(scope="function")
 def check_aggregate_df():
     df = IamDataFrame(data=CHECK_AGG_DF)
