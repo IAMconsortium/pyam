@@ -361,10 +361,7 @@ class IamDataFrame(object):
         # drop time-rows where values are already defined
         if time in df.columns:
             df = df[np.isnan(df[time])]
-        if self.time_col == 'year':
-            fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
-        else:
-            fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
+        fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
         fill_values = fill_values.dropna().reset_index()
         fill_values = fill_values.rename(columns={0: "value"})
         fill_values[self.time_col] = time

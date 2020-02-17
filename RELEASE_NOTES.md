@@ -2,7 +2,7 @@
 
 ## API changes
 
-PR [#334](https://github.com/IAMconsortium/pyam/pull/334) changes the second input name of `fill_series()` to `time`. It can still be an integer. 
+PR [#334](https://github.com/IAMconsortium/pyam/pull/334) Changes the arguments of `IamDataFrame.interpolate()` and `pyam.fill_series()` to `time`. It can still be an integer (i.e., year). 
 
 ## Individual Updates
 
