@@ -27,6 +27,7 @@ from pyam import plotting
 from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
+    _meta_idx,
     write_sheet,
     read_file,
     read_pandas,
@@ -51,6 +52,7 @@ from pyam.utils import (
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
 from pyam._aggregate import _aggregate, _aggregate_region, _group_and_agg
+from pyam.ops import BinaryOp, subtract as subtract_op
 
 logger = logging.getLogger(__name__)
 
@@ -1571,47 +1573,12 @@ class IamDataFrame(object):
         NotImplementedError
             The type of ``other`` is not yet supported
         """
-        if not isinstance(other, IamDataFrame):
-            raise NotImplementedError
-
-        too_many_vals_error = "`{}` contains more than one `{}`"
-        if len(self[axis].unique()) > 1:
-            raise ValueError(too_many_vals_error.format("self", axis))
-
-        if len(other[axis].unique()) > 1:
-            raise ValueError(too_many_vals_error.format("other", axis))
-
-        # do this operation here so meta conflicts are raised early
-        out_meta = merge_meta(self.meta, other.meta, ignore_meta_conflict)
-
-        s_data = self.data.copy()
-        o_data = other.data.copy()
-
-        idx = s_data.columns.tolist()
-        idx_tmp = list(set(idx) - set([axis]) - {"value"})
-
-        s_data = s_data.set_index(idx_tmp).drop(axis, axis="columns")
-        o_data = o_data.set_index(idx_tmp).drop(axis, axis="columns")
-
-        res = (s_data - o_data).reset_index()
-        res[axis] = new_name
-
-        res = IamDataFrame(res)
-
-        # final meta wrangling
-        keep_meta_idx = out_meta.index.intersection(_meta_idx(res.data))
-        if keep_meta_idx.empty:
-            # nothing common after doing subtraction, stick with empty meta
-            pass
-        else:
-            # just keep the scenarios that survived the nan removal
-            res.meta = out_meta.loc[keep_meta_idx]
-
-        return res
-
-def _meta_idx(data):
-    """Return the `META_IDX` from `data` by index or columns"""
-    return data[META_IDX].drop_duplicates().set_index(META_IDX).index
+        op = BinaryOp(self, other, ignore_meta_conflict)
+        data, meta = op.calc(subtract_op, axis, new_name)
+        ret = IamDataFrame(data)
+        for col in meta:
+            ret.set_meta(meta[col])
+        return ret
 
 
 def _raise_filter_error(col):
