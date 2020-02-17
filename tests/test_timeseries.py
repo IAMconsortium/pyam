@@ -15,7 +15,7 @@ def test_fill_series():
     assert fill_series(y, 2006) == 3.
 
 
-def test_fill_series_years():
+def test_fill_series_datetime():
     # note that the series is not order and the index is defined as float
     y = pd.Series(
         data=[3, 1],
