@@ -1,5 +1,13 @@
 # Next release
 
+## API changes
+
+PR [#333](https://github.com/IAMconsortium/pyam/pull/333) changes the second input name of `fill_series()` to `time`. It can still be an integer. 
+
+## Individual Updates
+
+- [#333](https://github.com/IAMconsortium/pyam/pull/333) Enable interpolate to work on datetimes.
+
 # Release v0.4.1
 
 This is a patch release to enable compatibility with `pandas v1.0`.
