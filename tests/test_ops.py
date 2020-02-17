@@ -145,6 +145,25 @@ def test_calc_subtract_axis_default(test_df_year):
 
     # test meta
     assert_frame_equal(obs_meta, exp.meta)
+
+def test_calc_subtract_self(test_df_year):
+    a = test_df_year.filter(scenario='scen_a', variable='Primary Energy')
+    
+    op = BinaryOp(a, a)
+    axis = 'variable'
+    axis_value = 'Non-Coal PE'
+    obs_data, obs_meta = op.calc(subtract_op, axis=axis, axis_value=axis_value)
+
+    # test data
+    exp = a.copy()
+    exp['value'] = [0.0, 0.0]
+    exp['variable'] = [axis_value, axis_value]
+    idx = LONG_IDX + ['value']
+    assert_frame_equal(obs_data[idx], exp.data[idx])
+
+    # test meta
+    assert obs_meta.empty
+    assert_frame_equal(a.meta, exp.meta)
     
     
 def test_calc_subtract_axis_scenario(test_df_year):

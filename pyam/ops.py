@@ -1,3 +1,5 @@
+import pandas as pd
+
 from pyam.utils import _meta_idx, merge_meta
 
 
@@ -10,9 +12,12 @@ class BinaryOp(object):
     def __init__(self, a, b, ignore_meta_conflict=False):
         self.a_df = a
         self.b_df = b
-        # do this operation here so meta conflicts are raised early
+        
+        # Generate meta data merge if two dataframes are not the same,
+        # and do so early to fail early
         # TODO: merge_meta needs tests
-        self.meta = merge_meta(a.meta, b.meta, ignore_meta_conflict)
+        self.meta = None if a is b else \
+            merge_meta(a.meta, b.meta, ignore_meta_conflict)
 
     def op_data(self, axis):
         too_many_vals_error = "{} operand contains more than one `{}`"
@@ -38,5 +43,5 @@ class BinaryOp(object):
         a, b = self.op_data(axis)
         data = func(a, b).reset_index()
         data[axis] = axis_value
-        meta = self.calc_meta(data)
+        meta = pd.DataFrame() if self.meta is None else self.calc_meta(data)
         return data, meta
