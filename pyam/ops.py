@@ -20,6 +20,17 @@ class BinaryOp(object):
             merge_meta(a.meta, b.meta, ignore_meta_conflict)
 
     def op_data(self, axis):
+        # TODO:
+        # - this currently requires only single entries in both dataframes
+        #   in the computation axis.
+        # - adding support for more will require a (ndarray) shape check *and*
+        #   intelligent name support (e.g., share of {var_numerator} in
+        #   {var_denominator}).
+        # - intelligent shape checking for N vs. 1 operations is easy:
+        #   - if len(a_df[axis]) % len(b_df[axis]) != 0 then raise (% is modulo
+        #     operator)
+        # - multi-dimensional would require looking up how, e.g., pandas or
+        #   numpy does it
         too_many_vals_error = "{} operand contains more than one `{}`"
         if len(self.a_df[axis].unique()) > 1:
             raise ValueError(too_many_vals_error.format("First", axis))
