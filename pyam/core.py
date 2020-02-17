@@ -353,9 +353,9 @@ class IamDataFrame(object):
              date-time/year style of self.
         """
         if self.time_col == 'year' and not isinstance(time, int):
-                raise ValueError(
-                    'The `time` argument `{}` is not an integer'.format(time)
-                )
+            raise ValueError(
+                'The `time` argument `{}` is not an integer'.format(time)
+            )
         df = self.pivot_table(index=IAMC_IDX, columns=[self.time_col],
                               values='value', aggfunc=np.sum)
         # drop time-rows where values are already defined
