@@ -352,16 +352,16 @@ class IamDataFrame(object):
              Time or year to be interpolated. This must match the
              date-time/year style of self.
         """
+        if self.time_col == 'year' and not isinstance(time, int):
+                raise ValueError(
+                    'The `time` argument `{}` is not an integer'.format(time)
+                )
         df = self.pivot_table(index=IAMC_IDX, columns=[self.time_col],
                               values='value', aggfunc=np.sum)
         # drop time-rows where values are already defined
         if time in df.columns:
             df = df[np.isnan(df[time])]
-        if self.time_col == "year":
-            if not isinstance(time, int):
-                raise ValueError(
-                    "the `time` argument `{}` is not an integer".format(time)
-                )
+        if self.time_col == 'year':
             fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
         else:
             fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
