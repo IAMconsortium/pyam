@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 def fill_series(x, time):
-    """Returns the value of a timeseries (indexed over years) for a year or datetime
-    by linear interpolation.
+    """Returns the value of a timeseries (indexed over years) for a year or
+    datetime by linear interpolation.
 
     Parameters
     ----------

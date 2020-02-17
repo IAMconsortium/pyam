@@ -359,7 +359,9 @@ class IamDataFrame(object):
             df = df[np.isnan(df[time])]
         if self.time_col == "year":
             if not isinstance(time, int):
-                raise ValueError("the year value, {} is not an integer".format(time))
+                raise ValueError(
+                    "the year value, {} is not an integer".format(time)
+                )
             fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
         else:
             fill_values = df.apply(fill_series, raw=False, axis=1, time=time)

@@ -676,7 +676,8 @@ def test_interpolate_datetimes(test_df):
             test_df.interpolate(some_date)
     else:
         test_df.interpolate(some_date)
-        obs = test_df.filter(time=some_date).data['value'].reset_index(drop=True)
+        obs = test_df.filter(time=some_date).data['value']\
+            .reset_index(drop=True)
         exp = pd.Series([3, 1.5, 4], name='value')
         pd.testing.assert_series_equal(obs, exp, check_less_precise=True)
         test_df.interpolate(some_date)
