@@ -1609,7 +1609,7 @@ class IamDataFrame(object):
         b = self.filter(**{axis: b})
         ret = a.subtract(b, axis=axis, new_name=new_name)
         if append:
-            self.append(ret, ignore_meta_conflict=False, inplace=True)
+            self.append(ret, inplace=True)
         else:
             return ret
 
