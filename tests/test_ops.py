@@ -162,7 +162,6 @@ def test_calc_subtract_self(test_df_year):
     assert_frame_equal(obs_data[idx], exp.data[idx])
 
     # test meta
-    assert obs_meta.empty
     assert_frame_equal(a.meta, exp.meta)
     
     

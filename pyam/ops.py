@@ -16,8 +16,7 @@ class BinaryOp(object):
         # Generate meta data merge if two dataframes are not the same,
         # and do so early to fail early
         # TODO: merge_meta needs tests
-        self.meta = pd.DataFrame() if a is b else \
-            merge_meta(a.meta, b.meta, ignore_meta_conflict)
+        self.meta = merge_meta(a.meta, b.meta, ignore_meta_conflict)
 
     def op_data(self, axis):
         # TODO:
