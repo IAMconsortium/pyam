@@ -1539,7 +1539,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def _binary_op(self, other, calc_op, axis='variable', new_name=None,
+    def _binary_op(self, other, calc_op, new_name=None, axis='variable',
                    ignore_meta_conflict=False):
         op = ops.BinaryOp(self, other, ignore_meta_conflict)
         data, meta = op.calc(getattr(ops, calc_op), axis, new_name)
@@ -1548,7 +1548,7 @@ class IamDataFrame(object):
             ret.set_meta(meta[col])
         return ret
 
-    def _binary_op_inplace(self, a, b, a_calc_op, axis='variable', new_name=None,
+    def _binary_op_inplace(self, a, b, a_calc_op, new_name=None, axis='variable',
                          append=False):
         a = self.filter(**{axis: a})
         b = self.filter(**{axis: b})
@@ -1567,13 +1567,13 @@ class IamDataFrame(object):
         other : pyam.IamDataFrame
             Object containing timeseries data to subtract
 
-        axis : str, default ``variable``
-            Column to use when subtracting the two sets of data
-            (e.g. ``variable``)
-
         new_name : str, default None
             Name of the value to use in the ``axis`` column (e.g., if
             ``axis='variable'``, the new variable name)
+
+        axis : str, default ``variable``
+            Column to use when subtracting the two sets of data
+            (e.g. ``variable``)
 
         ignore_meta_conflict : bool, default False
             If False and ``other`` is an IamDataFrame, raise an error if
@@ -1605,13 +1605,13 @@ class IamDataFrame(object):
         b : str
             axis value that is right side of operand
 
-        axis : str, default ``variable``
-            Column to use when subtracting the two sets of data
-            (e.g. ``variable``)
-
         new_name : str, default None
             Name of the value to use in the ``axis`` column (e.g., if
             ``axis='variable'``, the new variable name)
+
+        axis : str, default ``variable``
+            Column to use when subtracting the two sets of data
+            (e.g. ``variable``)
 
         append : bool, default False
             if False, return the resulting IamDataFrame
