@@ -1580,6 +1580,45 @@ class IamDataFrame(object):
             ret.set_meta(meta[col])
         return ret
 
+    def subtract_inplace(self, a, b, axis='variable', new_name=None,
+                         append=False):
+        """
+        Subtract data ``a - b`` along axis
+
+        Parameters
+        ----------
+        a : str
+            axis value that is left side of operand
+
+        b : str
+            axis value that is right side of operand
+
+        axis : str, default ``variable``
+            Column to use when subtracting the two sets of data
+            (e.g. ``variable``)
+
+        new_name : str, default None
+            Name of the value to use in the ``axis`` column (e.g., if
+            ``axis='variable'``, the new variable name)
+
+        append : bool, default False
+            if False, return the resulting IamDataFrame
+            if True, append to this IamDataFrame and return None
+        """
+        a = self.filter(**{axis: a})
+        b = self.filter(**{axis: b})
+
+        op = BinaryOp(a, b, ignore_meta_conflict=False)
+        data, meta = op.calc(subtract_op, axis, new_name)
+        ret = IamDataFrame(data)
+        for col in meta:
+            ret.set_meta(meta[col])
+
+        if append:
+            self.append(ret, ignore_meta_conflict=False, inplace=True)
+        else:
+            return ret
+
 
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))
