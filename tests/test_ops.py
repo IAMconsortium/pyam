@@ -16,12 +16,8 @@ class MockOpDf(IamDataFrame):
         self.meta = meta
 
 
-def test_constructor():
-    a = MockOpDf(1)
-    b = MockOpDf(2)
-    op = BinaryOp(a, b)
-
 def test_constructor_meta():
+    # meta values are the same, so all is good. data doesn't matter
     meta = pd.DataFrame({'scenario': ['foo',]})
     a = MockOpDf(1, meta=meta)
     b = MockOpDf(2, meta=meta)
@@ -32,22 +28,27 @@ def test_constructor_meta():
     assert_frame_equal(obs, exp)
 
 def test_constructor_meta_raises():
+    # meta values are different, which is a no go - data doesn't matter
     a = MockOpDf(1, meta=pd.DataFrame({'scenario': ['foo',]}))
     b = MockOpDf(2, meta=pd.DataFrame({'scenario': ['bar',]}))
     pytest.raises(ValueError, BinaryOp, a, b)
 
 def test_constructor_meta_doesnt_raise():
+    # meta values are different, but should be ignored - data doesn't matter
     meta = pd.DataFrame({'scenario': ['foo',]})
-    a = MockOpDf(1, meta=meta)
-    b = MockOpDf(2, meta=meta)
+    a = MockOpDf(1, meta=pd.DataFrame({'scenario': ['foo',]}))
+    b = MockOpDf(2, meta=pd.DataFrame({'scenario': ['bar',]}))
     op = BinaryOp(a, b, ignore_meta_conflict=True)
-    
+
+    # when ignored, meta takes a-value
     obs = op.meta
     exp = meta
     assert_frame_equal(obs, exp)
 
     
 def test_op_data():
+    # checking to make sure data is in the right format (index is correct,
+    # columns are correct)
     axis = 'variable'
     a = MockOpDf(pd.DataFrame({
         'value': [1,],
@@ -66,9 +67,10 @@ def test_op_data():
     assert_frame_equal(obs_a, exp_a)
 
     exp_b = pd.DataFrame({'value': [2,]}, index=pd.Index(['foo',], name='region'))
-    assert_frame_equal(obs_a, exp_a)
+    assert_frame_equal(obs_b, exp_b)
 
 def test_op_data_raises_too_many_a():
+    # test that you can only have one ``a`` value along axis of interest
     axis = 'variable'
     a = MockOpDf(pd.DataFrame({
         'value': [1, 1,],
@@ -85,6 +87,7 @@ def test_op_data_raises_too_many_a():
 
 
 def test_op_data_raises_too_many_b():
+    # test that you can only have one ``b`` value along axis of interest
     axis = 'variable'
     a = MockOpDf(pd.DataFrame({
         'value': [1,],
