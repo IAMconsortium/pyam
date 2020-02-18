@@ -7,6 +7,8 @@ from pyam.core import IamDataFrame
 from pyam.ops import BinaryOp, subtract as subtract_op
 from pyam.utils import META_IDX, LONG_IDX
 
+from pyam.testing import assert_iamframe_equal
+
 class MockOpDf(IamDataFrame):
 
     def __init__(self, df, meta=pd.DataFrame()):
@@ -174,12 +176,15 @@ def test_calc_subtract_axis_scenario(test_df_year):
     axis_value = 'scen_a - scen_b'
     obs_data, obs_meta = op.calc(subtract_op, axis=axis, axis_value=axis_value)
 
-    # no meta test needed as meta is being messed with here (scenarios)
     exp = a.copy()
     exp['value'] = [-1.0, -1.0]
     exp['scenario'] = [axis_value, axis_value]
     idx = LONG_IDX + ['value']
     assert_frame_equal(obs_data[idx], exp.data[idx])
+    # expected to be empty, but with correct structure
+    assert obs_meta.empty
+    assert obs_meta.columns == ['exclude']
+    assert obs_meta.index.names == ['model', 'scenario']
 
 def test_calc_subtract_iamdataframe(test_df_year):
     a = test_df_year.filter(scenario='scen_a', variable='Primary Energy')
@@ -194,10 +199,7 @@ def test_calc_subtract_iamdataframe(test_df_year):
     exp['value'] = [0.5, 3.0]
     exp['variable'] = [axis_value, axis_value]
     idx = LONG_IDX + ['value']
-    assert_frame_equal(obs.data[idx], exp.data[idx])
-
-    # test meta
-    assert_frame_equal(obs.meta, exp.meta)
+    assert_iamframe_equal(obs, exp)
 
 def test_calc_subtract_axis(test_df_year):
     df = test_df_year.filter(scenario='scen_a')
@@ -215,13 +217,11 @@ def test_calc_subtract_axis(test_df_year):
     idx = LONG_IDX + ['value']
     obs = df.subtract_axis(a, b, axis=axis, new_name=axis_value,
                               append=False)
-    assert_frame_equal(obs.data[idx], exp.data[idx])
-    assert_frame_equal(obs.meta, exp.meta)
+    assert_iamframe_equal(obs, exp)
 
     # test append=True
     obs = df.subtract_axis(a, b, axis=axis, new_name=axis_value,
                               append=True)
     assert obs == None
     obs = df.filter(variable=axis_value)
-    assert_frame_equal(obs.data[idx], exp.data[idx])
-    assert_frame_equal(obs.meta, exp.meta)
+    assert_iamframe_equal(obs, exp)
