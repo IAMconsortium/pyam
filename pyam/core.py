@@ -1607,13 +1607,7 @@ class IamDataFrame(object):
         """
         a = self.filter(**{axis: a})
         b = self.filter(**{axis: b})
-
-        op = BinaryOp(a, b, ignore_meta_conflict=False)
-        data, meta = op.calc(subtract_op, axis, new_name)
-        ret = IamDataFrame(data)
-        for col in meta:
-            ret.set_meta(meta[col])
-
+        ret = a.subtract(b, axis=axis, new_name=new_name)
         if append:
             self.append(ret, ignore_meta_conflict=False, inplace=True)
         else:
