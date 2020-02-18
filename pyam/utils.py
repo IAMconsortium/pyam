@@ -297,7 +297,7 @@ def merge_meta(left, right, ignore_meta_conflict=False):
     Returns
     -------
     pd.DataFrame
-        Joined metadata tables
+        Joined ``meta`` tables
     """
     left = left.copy()  # make a copy to not change the original object
     diff = right.index.difference(left.index)
