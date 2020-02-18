@@ -24,6 +24,7 @@ except ImportError:
     has_ix = False
 
 from pyam import plotting
+from pyam import ops
 from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
@@ -52,7 +53,6 @@ from pyam.utils import (
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
 from pyam._aggregate import _aggregate, _aggregate_region, _group_and_agg
-from pyam.ops import BinaryOp, subtract as subtract_op
 
 logger = logging.getLogger(__name__)
 
@@ -1539,8 +1539,26 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def subtract(self, other, axis='variable', new_name=None,
-                 ignore_meta_conflict=False):
+    def _binary_op(self, other, calc_op, axis='variable', new_name=None,
+                   ignore_meta_conflict=False):
+        op = ops.BinaryOp(self, other, ignore_meta_conflict)
+        data, meta = op.calc(calc_op, axis, new_name)
+        ret = IamDataFrame(data)
+        for col in meta:
+            ret.set_meta(meta[col])
+        return ret
+
+    def _binary_op_inplace(self, a, b, a_calc_op, axis='variable', new_name=None,
+                         append=False):
+        a = self.filter(**{axis: a})
+        b = self.filter(**{axis: b})
+        ret = getattr(a, a_calc_op)(b, axis=axis, new_name=new_name)
+        if append:
+            self.append(ret, inplace=True)
+        else:
+            return ret
+
+    def subtract(self, other, **kwargs):
         """
         Subtract data in ``other`` from ``self``
 
@@ -1573,15 +1591,9 @@ class IamDataFrame(object):
         NotImplementedError
             The type of ``other`` is not yet supported
         """
-        op = BinaryOp(self, other, ignore_meta_conflict)
-        data, meta = op.calc(subtract_op, axis, new_name)
-        ret = IamDataFrame(data)
-        for col in meta:
-            ret.set_meta(meta[col])
-        return ret
-
-    def subtract_inplace(self, a, b, axis='variable', new_name=None,
-                         append=False):
+        return self._binary_op(other, ops.subtract, **kwargs)
+    
+    def subtract_inplace(self, a, b, **kwargs):
         """
         Subtract data ``a - b`` along axis
 
@@ -1605,14 +1617,7 @@ class IamDataFrame(object):
             if False, return the resulting IamDataFrame
             if True, append to this IamDataFrame and return None
         """
-        a = self.filter(**{axis: a})
-        b = self.filter(**{axis: b})
-        ret = a.subtract(b, axis=axis, new_name=new_name)
-        if append:
-            self.append(ret, inplace=True)
-        else:
-            return ret
-
+        return self._binary_op_inplace(a, b, 'subtract', **kwargs)
 
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))
