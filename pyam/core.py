@@ -1544,8 +1544,7 @@ class IamDataFrame(object):
         op = ops.BinaryOp(self, other, ignore_meta_conflict)
         data, meta = op.calc(getattr(ops, calc_op), axis, new_name)
         ret = IamDataFrame(data)
-        for col in meta:
-            ret.set_meta(meta[col])
+        ret.meta = self.meta.loc[_make_index(ret.data)] 
         return ret
 
     def _binary_op_inplace(self, a, b, a_calc_op, new_name=None, axis='variable',
