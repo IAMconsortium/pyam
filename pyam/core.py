@@ -1542,7 +1542,7 @@ class IamDataFrame(object):
     def _binary_op(self, other, calc_op, axis='variable', new_name=None,
                    ignore_meta_conflict=False):
         op = ops.BinaryOp(self, other, ignore_meta_conflict)
-        data, meta = op.calc(calc_op, axis, new_name)
+        data, meta = op.calc(getattr(ops, calc_op), axis, new_name)
         ret = IamDataFrame(data)
         for col in meta:
             ret.set_meta(meta[col])
@@ -1591,7 +1591,7 @@ class IamDataFrame(object):
         NotImplementedError
             The type of ``other`` is not yet supported
         """
-        return self._binary_op(other, ops.subtract, **kwargs)
+        return self._binary_op(other, 'subtract', **kwargs)
     
     def subtract_inplace(self, a, b, **kwargs):
         """
