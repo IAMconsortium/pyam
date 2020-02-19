@@ -17,6 +17,7 @@ It also adds experimental support of the frictionless `datapackage` format.
 
 - [#324](https://github.com/IAMconsortium/pyam/pull/324) Enable compatibility with pandas v1.0
 - [#323](https://github.com/IAMconsortium/pyam/pull/323) Support import/export of frictionless `datapackage` format
+- [#337](https://github.com/IAMconsortium/pyam/pull/337) IamDataFrame to throw an error when initialized with n/a entries in columns other than `value`
 
 # Release v0.4.0
 
