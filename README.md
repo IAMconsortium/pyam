@@ -103,6 +103,14 @@ conda activate pyam  # may be  simply `source activate pyam` or just `activate p
 make -B virtual-environment
 ```
 
+Instead of conda you could also use a pip virtualenv:
+```sh
+mkdir venv
+virtualenv venv -p python3
+. venv/bin/activate
+pip install -e .[test,optional-io-formats]
+```
+
 To check everything has installed correctly, run
 
 ```
