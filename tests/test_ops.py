@@ -132,7 +132,7 @@ def test_calc_meta_reduced_result(test_df_year):
     exp = res_meta.set_index(META_IDX)
     assert_frame_equal(obs, exp)
 
-def test_calc_subtract_axis_default(test_df_year):
+def test_calc_subtract_inplace_default(test_df_year):
     a = test_df_year.filter(scenario='scen_a', variable='Primary Energy')
     b = test_df_year.filter(scenario='scen_a', variable='Primary Energy|Coal')
     
@@ -170,7 +170,7 @@ def test_calc_subtract_self(test_df_year):
     assert_frame_equal(a.meta, exp.meta)
     
     
-def test_calc_subtract_axis_scenario(test_df_year):
+def test_calc_subtract_inplace_scenario(test_df_year):
     a = test_df_year.filter(scenario='scen_a', variable='Primary Energy')
     b = test_df_year.filter(scenario='scen_b', variable='Primary Energy')
     
@@ -204,7 +204,7 @@ def test_calc_subtract_iamdataframe(test_df_year):
     idx = LONG_IDX + ['value']
     assert_iamframe_equal(obs, exp)
 
-def test_calc_subtract_axis(test_df_year):
+def test_calc_subtract_inplace(test_df_year):
     df = test_df_year.filter(scenario='scen_a')
     a = 'Primary Energy'
     b = 'Primary Energy|Coal'
@@ -218,12 +218,12 @@ def test_calc_subtract_axis(test_df_year):
 
     # test append=False
     idx = LONG_IDX + ['value']
-    obs = df.subtract_axis(a, b, axis=axis, new_name=axis_value,
+    obs = df.subtract_inplace(a, b, axis=axis, new_name=axis_value,
                               append=False)
     assert_iamframe_equal(obs, exp)
 
     # test append=True
-    obs = df.subtract_axis(a, b, axis=axis, new_name=axis_value,
+    obs = df.subtract_inplace(a, b, axis=axis, new_name=axis_value,
                               append=True)
     assert obs == None
     obs = df.filter(variable=axis_value)

@@ -1547,8 +1547,8 @@ class IamDataFrame(object):
         ret.meta = self.meta.loc[_make_index(ret.data)] 
         return ret
 
-    def _binary_op_axis(self, a, b, a_calc_op, new_name=None, axis='variable',
-                         append=False):
+    def _binary_op_inplace(self, a, b, a_calc_op, new_name=None, axis='variable',
+                           append=False):
         a = self.filter(**{axis: a})
         b = self.filter(**{axis: b})
         ret = getattr(a, a_calc_op)(b, axis=axis, new_name=new_name)
@@ -1592,9 +1592,9 @@ class IamDataFrame(object):
         """
         return self._binary_op(other, 'subtract', **kwargs)
     
-    def subtract_axis(self, a, b, **kwargs):
+    def subtract_inplace(self, a, b, **kwargs):
         """
-        Subtract data ``a - b`` along axis
+        Subtract data ``a - b`` inplace along axis
 
         Parameters
         ----------
@@ -1616,7 +1616,7 @@ class IamDataFrame(object):
             if False, return the resulting IamDataFrame
             if True, append to this IamDataFrame and return None
         """
-        return self._binary_op_axis(a, b, 'subtract', **kwargs)
+        return self._binary_op_inplace(a, b, 'subtract', **kwargs)
 
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))
