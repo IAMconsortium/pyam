@@ -243,7 +243,7 @@ def format_data(df, **kwargs):
         df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name=time_col,
                      value_vars=sorted(melt_cols), value_name='value')
 
-    # cast value columns to numeric, drop NaN values, sort data
+    # cast value column to numeric and drop NaNs
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True, subset=['value'])
     # verify that there are no NaNs left (in columns)
@@ -256,10 +256,7 @@ def format_data(df, **kwargs):
         raise ValueError('duplicate rows in `data`!')
 
     if df.empty:
-        logger.warning(
-            'Formatted data is empty! (perhaps there is a column full of '
-            'nans?)'
-        )
+        logger.warning('Formatted data is empty!')
 
     return sort_data(df, idx_cols), time_col, extra_cols
 

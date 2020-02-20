@@ -153,7 +153,7 @@ def test_init_datetime_subclass_long_timespan(test_pd_df):
 def test_init_empty_message(test_pd_df, caplog):
     IamDataFrame(data=df_empty)
     drop_message = (
-        "Formatted data is empty! (perhaps there is a column full of nans?)"
+        "Formatted data is empty!"
     )
     message_idx = caplog.messages.index(drop_message)
     assert caplog.records[message_idx].levelno == logging.WARNING
