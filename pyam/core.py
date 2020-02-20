@@ -343,24 +343,28 @@ class IamDataFrame(object):
                             aggfunc=aggfunc, fill_value=fill_value)
         return df
 
-    def interpolate(self, year):
+    def interpolate(self, time):
         """Interpolate missing values in timeseries (linear interpolation)
 
         Parameters
         ----------
-        year: int
-             year to be interpolated
+        time: int, datetime
+             Time or year to be interpolated. This must match the
+             date-time/year style of self.
         """
-        df = self.pivot_table(index=IAMC_IDX, columns=['year'],
+        if self.time_col == 'year' and not isinstance(time, int):
+            raise ValueError(
+                'The `time` argument `{}` is not an integer'.format(time)
+            )
+        df = self.pivot_table(index=IAMC_IDX, columns=[self.time_col],
                               values='value', aggfunc=np.sum)
-        # drop year-rows where values are already defined
-        if year in df.columns:
-            df = df[np.isnan(df[year])]
-        fill_values = df.apply(fill_series,
-                               raw=False, axis=1, year=year)
+        # drop time-rows where values are already defined
+        if time in df.columns:
+            df = df[np.isnan(df[time])]
+        fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
         fill_values = fill_values.dropna().reset_index()
         fill_values = fill_values.rename(columns={0: "value"})
-        fill_values['year'] = year
+        fill_values[self.time_col] = time
         self.data = self.data.append(fill_values, ignore_index=True)
 
     def swap_time_for_year(self, inplace=False):

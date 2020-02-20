@@ -1,5 +1,13 @@
 # Next release
 
+## API changes
+
+PR [#334](https://github.com/IAMconsortium/pyam/pull/334) Changes the arguments of `IamDataFrame.interpolate()` and `pyam.fill_series()` to `time`. It can still be an integer (i.e., year). 
+
+## Individual Updates
+
+- [#334](https://github.com/IAMconsortium/pyam/pull/334) Enable interpolate to work on datetimes.
+
 # Release v0.4.1
 
 This is a patch release to enable compatibility with `pandas v1.0`.

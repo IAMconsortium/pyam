@@ -668,6 +668,22 @@ def test_interpolate(test_df_year):
     assert not test_df_year.filter().data.duplicated().any()
 
 
+def test_interpolate_datetimes(test_df):
+    # test that interpolation also works with date-times.
+    some_date = datetime.datetime(2007, 7, 1)
+    if test_df.time_col == "year":
+        pytest.raises(ValueError, test_df.interpolate, time=some_date)
+    else:
+        test_df.interpolate(some_date)
+        obs = test_df.filter(time=some_date).data['value']\
+            .reset_index(drop=True)
+        exp = pd.Series([3, 1.5, 4], name='value')
+        pd.testing.assert_series_equal(obs, exp, check_less_precise=True)
+        # redo the interpolation and check that no duplicates are added
+        test_df.interpolate(some_date)
+        assert not test_df.filter().data.duplicated().any()
+
+
 def test_filter_by_bool(test_df):
     test_df.set_meta([True, False], name='exclude')
     obs = test_df.filter(exclude=True)

@@ -8,27 +8,27 @@ logger = logging.getLogger(__name__)
 # %%
 
 
-def fill_series(x, year):
-    """Returns the value of a timeseries (indexed over years) for a year
-    by linear interpolation.
+def fill_series(x, time):
+    """Returns the value of a timeseries (indexed over years) for a year or
+    datetime by linear interpolation.
 
     Parameters
     ----------
     x: pandas.Series
         a timeseries to be interpolated
-    year: int
-        year of interpolation
+    time: int
+        year or datetime to interpolate
     """
     x = x.dropna()
-    if year in x.index and not np.isnan(x[year]):
-        return x[year]
+    if time in x.index and not np.isnan(x[time]):
+        return x[time]
     else:
-        prev = [i for i in x.index if i < year]
-        nxt = [i for i in x.index if i > year]
+        prev = [i for i in x.index if i < time]
+        nxt = [i for i in x.index if i > time]
         if prev and nxt:
             p = max(prev)
             n = min(nxt)
-            return ((n - year) * x[p] + (year - p) * x[n]) / (n - p)
+            return ((n - time) * x[p] + (time - p) * x[n]) / (n - p)
         else:
             return np.nan
 

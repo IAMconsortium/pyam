@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 
 import numpy as np
@@ -12,6 +13,15 @@ def test_fill_series():
     # note that the series is not order and the index is defined as float
     y = pd.Series(data=[np.nan, 1, 4, 1], index=[2002., 2008., 2005., 2013.])
     assert fill_series(y, 2006) == 3.
+
+
+def test_fill_series_datetime():
+    # note that the series is not order and the index is defined as float
+    y = pd.Series(
+        data=[3, 1],
+        index=[datetime.datetime(2001, 1, 1), datetime.datetime(2003, 1, 1)]
+    )
+    assert fill_series(y, datetime.datetime(2002, 1, 1)) == 2.
 
 
 def test_fill_series_out_of_range():
