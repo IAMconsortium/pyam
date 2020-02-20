@@ -3,6 +3,7 @@
 ## API changes
 
 PR [#334](https://github.com/IAMconsortium/pyam/pull/334) Changes the arguments of `IamDataFrame.interpolate()` and `pyam.fill_series()` to `time`. It can still be an integer (i.e., year). 
+PR [#337](https://github.com/IAMconsortium/pyam/pull/337) IamDataFrame to throw an error when initialized with n/a entries in columns other than `value`
 
 ## Individual Updates
 

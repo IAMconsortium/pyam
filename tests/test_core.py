@@ -1,4 +1,3 @@
-import os
 import logging
 import pytest
 import re
@@ -12,7 +11,7 @@ from pyam import IamDataFrame, validate, categorize, \
     require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
 from pyam.core import _meta_idx, concat
 
-from conftest import TEST_DATA_DIR, TEST_DTS
+from conftest import TEST_DTS
 
 
 df_filter_by_meta_matching_idx = pd.DataFrame([
@@ -29,6 +28,16 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 ], columns=['model', 'scenario', 'region', 2010, 2020]
 ).set_index(['model', 'region'])
 
+df_with_na_columns = pd.DataFrame([
+    ['model_a', 'scen_a', 'World', 'Primary Energy', np.nan, 1, 6.],
+    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
+    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+],
+    columns=IAMC_IDX + [2005, 2010],
+)
+
+df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
+
 
 def test_init_df_with_index(test_pd_df):
     df = IamDataFrame(test_pd_df.set_index(META_IDX))
@@ -44,6 +53,10 @@ def test_init_df_with_duplicates_raises(test_df):
     _df = test_df.timeseries()
     _df = _df.append(_df.iloc[0]).reset_index()
     pytest.raises(ValueError, IamDataFrame, data=_df)
+
+
+def test_init_df_with_na_unit(test_df):
+    pytest.raises(ValueError, IamDataFrame, data=df_with_na_columns)
 
 
 def test_init_df_with_float_cols(test_pd_df):
@@ -138,15 +151,9 @@ def test_init_datetime_subclass_long_timespan(test_pd_df):
 
 
 def test_init_empty_message(test_pd_df, caplog):
-    tdf = test_pd_df.copy()
-    tdf["extra_col"] = "test_val"
-    tdf["extra_col"] = np.nan
-
-    res = IamDataFrame(tdf)
-    assert "Primary Energy|Coal" not in res.variables().tolist()
-
+    IamDataFrame(data=df_empty)
     drop_message = (
-        "Formatted data is empty! (perhaps there is a column full of nans?)"
+        "Formatted data is empty!"
     )
     message_idx = caplog.messages.index(drop_message)
     assert caplog.records[message_idx].levelno == logging.WARNING
@@ -214,9 +221,7 @@ def test_variable_unit(test_df):
 
 def test_filter_empty_df():
     # test for issue seen in #254
-    cols = IAMC_IDX + [2005, 2010]
-    data = pd.DataFrame([], columns=cols)
-    df = IamDataFrame(data=data)
+    df = IamDataFrame(data=df_empty)
     obs = df.filter(variable='foo')
     assert len(obs) == 0
 
