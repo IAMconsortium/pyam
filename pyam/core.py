@@ -1591,7 +1591,7 @@ class IamDataFrame(object):
             The type of ``other`` is not yet supported
         """
         return self._binary_op(other, 'subtract', **kwargs)
-    
+
     def subtract_inplace(self, a, b, **kwargs):
         """
         Subtract data ``a - b`` inplace along axis
@@ -1617,6 +1617,14 @@ class IamDataFrame(object):
             if True, append to this IamDataFrame and return None
         """
         return self._binary_op_inplace(a, b, 'subtract', **kwargs)
+
+    def divide(self, other, **kwargs):
+        """TODO: needs docs and tests"""
+        return self._binary_op(other, 'divide', **kwargs)
+
+    def divide_inplace(self, a, b, **kwargs):
+        """TODO: needs docs and tests"""
+        return self._binary_op_inplace(a, b, 'divide', **kwargs)
 
 def _raise_filter_error(col):
     raise ValueError('filter by `{}` not supported'.format(col))

@@ -6,6 +6,9 @@ from pyam.utils import _meta_idx, merge_meta
 def subtract(a, b):
     return a - b
 
+def divide(a, b):
+    return a / b
+
 
 class BinaryOp(object):
 
