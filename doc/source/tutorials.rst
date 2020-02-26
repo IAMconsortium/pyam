@@ -8,6 +8,7 @@ Tutorials
    :maxdepth: 1
 
    tutorials/pyam_first_steps.ipynb
+   tutorials/data_table_formats.ipynb
    tutorials/aggregating_downscaling_consistency.ipynb
    tutorials/ipcc_colors.ipynb
    tutorials/iiasa_dbs.ipynb
