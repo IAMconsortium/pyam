@@ -5,8 +5,10 @@ Tutorials
 *********
 
 The source code of the tutorials is available in the folder
-[doc/source/tutorials](https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials)
-of the GitHub repository.
+`doc/source/tutorials`_ of the GitHub repository.
+
+.. _`doc/source/tutorials`:
+   https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials
 
 .. toctree::
    :maxdepth: 1
