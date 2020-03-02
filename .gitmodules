@@ -1,0 +1,3 @@
+[submodule "energy-units"]
+	path = energy-units
+	url = https://github.com/iiasa/energy-units
