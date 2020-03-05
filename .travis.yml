@@ -28,6 +28,7 @@ install:
   - make install
 
 script:
+  - git submodule status
   - conda list
   - python -c "import os; print(os.environ['PYVERSION'])"
   - python -c "import sys; print(sys.version)"
