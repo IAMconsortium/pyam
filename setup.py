@@ -23,6 +23,7 @@ REQUIREMENTS = [
     'numpy',
     'requests',
     'pandas>=0.25.0',
+    'pint',
     'PyYAML',
     'xlrd',
     'xlsxwriter',
