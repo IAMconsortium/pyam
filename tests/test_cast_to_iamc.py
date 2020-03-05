@@ -7,10 +7,10 @@ from conftest import TEST_DTS
 
 def test_cast_from_value_col(test_df_year):
     df_with_value_cols = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
-        ['model_a', 'scen_a', 'World', 'EJ/y', 2010, 6., 3],
-        ['model_a', 'scen_b', 'World', 'EJ/y', 2005, 2, None],
-        ['model_a', 'scen_b', 'World', 'EJ/y', 2010, 7, None]
+        ['model_a', 'scen_a', 'World', 'EJ', 2005, 1, 0.5],
+        ['model_a', 'scen_a', 'World', 'EJ', 2010, 6., 3],
+        ['model_a', 'scen_b', 'World', 'EJ', 2005, 2, None],
+        ['model_a', 'scen_b', 'World', 'EJ', 2010, 7, None]
     ],
         columns=['model', 'scenario', 'region', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
@@ -25,10 +25,10 @@ def test_cast_from_value_col(test_df_year):
 def test_cast_from_value_col_and_args(test_df_year):
     # checks for issue [#210](https://github.com/IAMconsortium/pyam/issues/210)
     df_with_value_cols = pd.DataFrame([
-        ['scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
-        ['scen_a', 'World', 'EJ/y', 2010, 6., 3],
-        ['scen_b', 'World', 'EJ/y', 2005, 2, None],
-        ['scen_b', 'World', 'EJ/y', 2010, 7, None]
+        ['scen_a', 'World', 'EJ', 2005, 1, 0.5],
+        ['scen_a', 'World', 'EJ', 2010, 6., 3],
+        ['scen_b', 'World', 'EJ', 2005, 2, None],
+        ['scen_b', 'World', 'EJ', 2010, 7, None]
     ],
         columns=['scenario', 'iso', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
@@ -42,7 +42,7 @@ def test_cast_from_value_col_and_args(test_df_year):
 
 def test_cast_with_model_arg_raises():
     df = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
+        ['model_a', 'scen_a', 'World', 'EJ', 2005, 1, 0.5],
     ],
         columns=['model', 'scenario', 'region', 'unit', 'year',
                  'Primary Energy', 'Primary Energy|Coal'],
@@ -61,9 +61,9 @@ def test_cast_with_model_arg(test_df):
 
 def test_cast_by_column_concat(test_df_year):
     df = pd.DataFrame([
-        ['scen_a', 'World', 'Primary Energy', None, 'EJ/y', 1, 6.],
-        ['scen_a', 'World', 'Primary Energy', 'Coal', 'EJ/y', 0.5, 3],
-        ['scen_b', 'World', 'Primary Energy', None, 'EJ/y', 2, 7],
+        ['scen_a', 'World', 'Primary Energy', None, 'EJ', 1, 6.],
+        ['scen_a', 'World', 'Primary Energy', 'Coal', 'EJ', 0.5, 3],
+        ['scen_b', 'World', 'Primary Energy', None, 'EJ', 2, 7],
     ],
         columns=['scenario', 'region', 'var_1', 'var_2', 'unit', 2005, 2010],
     )

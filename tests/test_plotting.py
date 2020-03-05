@@ -135,13 +135,13 @@ def test_line_color_fill_between_interpolate(plot_df):
     df = pyam.IamDataFrame(plot_df.data.copy())
     fig, ax = plt.subplots(figsize=(8, 8))
     newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|Coal',
-               'EJ/y', 2010, 3.50]
+               'EJ', 2010, 3.50]
     df.data.loc[len(df.data) - 1] = newdata
     newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|Coal',
-               'EJ/y', 2012, 3.50]
+               'EJ', 2012, 3.50]
     df.data.loc[len(df.data)] = newdata
     newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|Coal',
-               'EJ/y', 2015, 3.50]
+               'EJ', 2015, 3.50]
     df.data.loc[len(df.data) + 1] = newdata
     df.line_plot(ax=ax, color='model', fill_between=True, legend=True)
     return fig
@@ -263,7 +263,7 @@ def test_bar_plot_stacked_net_line(plot_df):
     vals = [(2005, 0.35), (2010, -1.0), (2015, -4.0)]
     for i, (y, v) in enumerate(vals):
         newdata = ['test_model1', 'test_scenario1', 'World',
-                   'Primary Energy|foo', 'EJ/y', y, v]
+                   'Primary Energy|foo', 'EJ', y, v]
         df.data.loc[len(df) + i] = newdata
     (df
      .filter(variable='Primary Energy|*', model='test_model1',
