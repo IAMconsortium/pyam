@@ -548,8 +548,7 @@ def test_require_variable_top_level(test_df):
 
 
 def test_require_variable_year_list(test_df):
-    test_df.data = test_df.data[1:]
-    df = test_df
+    df = IamDataFrame(test_df.data[1:])
     df.require_variable(variable='Primary Energy',
                         year=[2005, 2010],
                         exclude_on_fail=True)
