@@ -548,17 +548,21 @@ def test_require_variable_top_level(test_df):
 
 
 def test_require_variable_year_list(test_df):
+    years = [2005, 2010]
+
+    # checking for variables that have ANY of the years in the list
     df = IamDataFrame(test_df.data[1:])
     df.require_variable(variable='Primary Energy',
-                        year=[2005, 2010],
+                        year=years,
                         exclude_on_fail=True)
     df.filter(exclude=False, inplace=True)
 
     assert len(df.variables()) == 2
     assert len(df.scenarios()) == 2
 
+    # checking for variables that have ALL of the years in the list
     df = IamDataFrame(test_df.data[1:])
-    for y in [2005, 2010]:
+    for y in years:
         df.require_variable(variable='Primary Energy',
                             year=y,
                             exclude_on_fail=True)
