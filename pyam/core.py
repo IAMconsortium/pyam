@@ -609,6 +609,7 @@ class IamDataFrame(object):
             name of unit (optional)
         year: int or list, default None
             years (optional)
+            check whether any of the provided years is in the scenario data 
         exclude_on_fail: bool, default False
             flag scenarios missing the required variables as `exclude: True`
         """
