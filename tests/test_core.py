@@ -558,8 +558,7 @@ def test_require_variable_year_list(test_df):
     assert len(df.variables()) == 2
     assert len(df.scenarios()) == 2
 
-    test_df.data = test_df.data[1:]
-    df = test_df
+    df = IamDataFrame(test_df.data[1:])
     for y in [2005, 2010]:
         df.require_variable(variable='Primary Energy',
                             year=y,
