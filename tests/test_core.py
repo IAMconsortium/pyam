@@ -547,6 +547,31 @@ def test_require_variable_top_level(test_df):
     assert list(test_df['exclude']) == [False, True]
 
 
+def test_require_variable_year_list(test_df):
+    years = [2005, 2010]
+
+    # checking for variables that have ANY of the years in the list
+    df = IamDataFrame(test_df.data[1:])
+    df.require_variable(variable='Primary Energy',
+                        year=years,
+                        exclude_on_fail=True)
+    df.filter(exclude=False, inplace=True)
+
+    assert len(df.variables()) == 2
+    assert len(df.scenarios()) == 2
+
+    # checking for variables that have ALL of the years in the list
+    df = IamDataFrame(test_df.data[1:])
+    for y in years:
+        df.require_variable(variable='Primary Energy',
+                            year=y,
+                            exclude_on_fail=True)
+    df.filter(exclude=False, inplace=True)
+
+    assert len(df.variables()) == 1
+    assert len(df.scenarios()) == 1
+
+
 def test_validate_all_pass(test_df):
     obs = test_df.validate(
         {'Primary Energy': {'up': 10}}, exclude_on_fail=True)
