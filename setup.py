@@ -23,6 +23,7 @@ REQUIREMENTS = [
     'numpy',
     'requests',
     'pandas>=0.25.0',
+    'pint',
     'PyYAML',
     'xlrd',
     'xlsxwriter',
@@ -77,7 +78,7 @@ def main():
         ],
     }
     package_data = {
-        'pyam': ['region_mappings/*'],
+        'pyam': ['region_mappings/*', '../energy-units/definitions.txt'],
     }
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS
