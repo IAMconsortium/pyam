@@ -1,4 +1,3 @@
-import copy
 import logging
 
 import pandas as pd
@@ -16,7 +15,7 @@ _REGISTRY.load_definitions(str(file))
 
 def convert_unit(df, current, to, factor=None, inplace=False):
     """Internal implementation of unit conversion with explicit kwargs"""
-    ret = copy.deepcopy(df) if not inplace else df
+    ret = df.copy() if not inplace else df
 
     if factor is None:
         factor = _REGISTRY[current].to(_REGISTRY[to]).magnitude
@@ -31,7 +30,7 @@ def convert_unit(df, current, to, factor=None, inplace=False):
 def convert_unit_with_mapping(df, conversion_mapping, inplace=False):
     """Internal implementation of unit conversion by mapping (deprecated)"""
     # TODO: deprecate in next release (>=0.6.0)
-    ret = copy.deepcopy(df) if not inplace else df
+    ret = df.copy() if not inplace else df
     for current_unit, (target_unit, factor) in conversion_mapping.items():
         factor = pd.to_numeric(factor)
         where = ret.data['unit'] == current_unit

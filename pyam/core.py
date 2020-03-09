@@ -252,7 +252,7 @@ class IamDataFrame(object):
         if self.time_col is not other.time_col:
             raise ValueError('incompatible time format (years vs. datetime)!')
 
-        ret = copy.deepcopy(self) if not inplace else self
+        ret = self.copy() if not inplace else self
 
         diff = other.meta.index.difference(ret.meta.index)
         intersect = other.meta.index.intersection(ret.meta.index)
@@ -719,7 +719,7 @@ class IamDataFrame(object):
             return self.append(df.rename(mapping), inplace=inplace)
 
         # if append is False, iterate over rename mapping and do groupby
-        ret = copy.deepcopy(self) if not inplace else self
+        ret = self.copy() if not inplace else self
 
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(**filters)
@@ -808,7 +808,7 @@ class IamDataFrame(object):
         """
         if len(kwargs) > 1 or self.time_col not in kwargs:
             raise ValueError('Only time(year)-based normalization supported')
-        ret = copy.deepcopy(self) if not inplace else self
+        ret = self.copy() if not inplace else self
         df = ret.data
         # change all below if supporting more in the future
         cols = self.time_col
@@ -1137,7 +1137,7 @@ class IamDataFrame(object):
 
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
-        ret = copy.deepcopy(self) if not inplace else self
+        ret = self.copy() if not inplace else self
         ret.data = ret.data[_keep]
 
         idx = _make_index(ret.data)
@@ -1530,7 +1530,7 @@ class IamDataFrame(object):
         mapping = read_pandas(fname).rename(str.lower, axis='columns')
         map_col = map_col.lower()
 
-        ret = copy.deepcopy(self) if not inplace else self
+        ret = self.copy() if not inplace else self
         _df = ret.data
         columns_orderd = _df.columns
 
@@ -1830,7 +1830,7 @@ def concat(dfs):
     for df in dfs:
         df = df if isinstance(df, IamDataFrame) else IamDataFrame(df)
         if _df is None:
-            _df = copy.deepcopy(df)
+            _df = df.copy()
         else:
             _df.append(df, inplace=True)
     return _df
