@@ -56,13 +56,16 @@ FULL_FEATURE_DF = pd.DataFrame([
 )
 
 
+img = ['IMAGE', 'a_scenario']
+msg = ['MESSAGE-GLOBIOM', 'a_scenario']
+
 REG_DF = pd.DataFrame([
-    ['IMAGE', 'a_scenario', 'NAF', 'Primary Energy', 'EJ/yr', 1, 6],
-    ['IMAGE', 'a_scenario', 'ME', 'Primary Energy', 'EJ/yr', 2, 7],
-    ['IMAGE', 'a_scenario', 'World', 'Primary Energy', 'EJ/yr', 3, 13],
-    ['MESSAGE-GLOBIOM', 'a_scenario', 'MEA', 'Primary Energy', 'EJ/yr', 1, 6],
-    ['MESSAGE-GLOBIOM', 'a_scenario', 'AFR', 'Primary Energy', 'EJ/yr', 2, 7],
-    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Primary Energy', 'EJ/yr', 3, 13],
+    img + ['NAF', 'Primary Energy', 'EJ/yr', 1, 6],
+    img + ['ME', 'Primary Energy', 'EJ/yr', 2, 7],
+    img + ['World', 'Primary Energy', 'EJ/yr', 3, 13],
+    msg + ['MEA', 'Primary Energy', 'EJ/yr', 1, 6],
+    msg + ['AFR', 'Primary Energy', 'EJ/yr', 2, 7],
+    msg + ['World', 'Primary Energy', 'EJ/yr', 3, 13],
 ],
     columns=IAMC_IDX + [2005, 2010],
 )
