@@ -790,7 +790,7 @@ class IamDataFrame(object):
         # TODO: make `to` required
         if isinstance(current, dict) and to is None and factor is None:
             deprecation_warning('Use explicit keyword arguments instead!',
-                                'Using a dictionary to convert units')
+                                type='Using a dictionary to convert units')
             return convert_unit_with_mapping(self, current, inplace)
         # new standard method, remove this comment when deprecating above
         return convert_unit(self, current, to, factor, inplace)
