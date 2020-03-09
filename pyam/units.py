@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # get application pint.UnitRegistry and load energy-units
 _REGISTRY = pint.get_application_registry()
-file = Path(__file__).parents[1] / 'energy-units' / 'definitions.txt'
+file = Path(__file__).parents[1] / 'units' / 'definitions.txt'
 _REGISTRY.load_definitions(str(file))
 
 

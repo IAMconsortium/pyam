@@ -768,8 +768,8 @@ class IamDataFrame(object):
 
         The :py:class:`pint.UnitRegistry` used by default loads additional
         unit definitions relevant for integrated assessment models and energy
-        systems analysis from the `IIASA energy-units
-        <https://github.com/iiasa/energy-units>`_ repository.
+        systems analysis from the `IAMconsortium/units
+        <https://github.com/IAMconsortium/units>`_ repository.
 
         You can access the :py:class:`pint.UnitRegistry` used by :class:`pyam`
         via :func:`pint.get_application_registry`.
