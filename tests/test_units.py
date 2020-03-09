@@ -8,8 +8,8 @@ PRECISE_ARG = dict(check_less_precise=True)
 
 
 @pytest.mark.parametrize("current,to", [
-    ('EJ', 'TWh'),
-    ('EJ/yr', 'TWh/yr')
+    ('EJ/yr', 'TWh/yr'),
+    ('EJ', 'TWh')
 ])
 def test_convert_unit_with_pint(test_df, current, to):
     print(current, to)
@@ -17,9 +17,9 @@ def test_convert_unit_with_pint(test_df, current, to):
     df = test_df.copy()
     df.data.loc[0:1, 'unit'] = 'custom_unit'
 
-    # replace EJ by EJ/yr to test pint with combined units
-    if current == 'EJ/yr':
-        df.rename(unit={'EJ': 'EJ/yr'}, inplace=True)
+    # replace EJ/yr by EJ to test pint with single unit
+    if current == 'EJ':
+        df.rename(unit={'EJ/yr': 'EJ'}, inplace=True)
 
     exp = pd.Series([1., 6., 138.88, 833.33, 555.55, 1944.44], name='value')
 
@@ -40,11 +40,11 @@ def test_convert_unit_from_repo(test_df):
     exp = pd.Series([1., 6., 17.06, 102.361, 68.241, 238.843], name='value')
 
     # testing for `inplace=False`
-    _df = df.convert_unit('EJ', 'Mtce', inplace=False)
+    _df = df.convert_unit('EJ/yr', 'Mtce/yr', inplace=False)
     pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
 
     # testing for `inplace=False`
-    df.convert_unit('EJ', 'Mtce', inplace=True)
+    df.convert_unit('EJ/yr', 'Mtce/yr', inplace=True)
     pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
 
 
@@ -56,11 +56,11 @@ def test_convert_unit_with_custom_factor(test_df):
     exp = pd.Series([1., 6., 1., 6., 4., 14.], name='value')
 
     # testing for `inplace=False`
-    _df = df.convert_unit('EJ', 'foo', factor=2, inplace=False)
+    _df = df.convert_unit('EJ/yr', 'foo', factor=2, inplace=False)
     pd.testing.assert_series_equal(_df.data.value, exp)
 
     # testing for `inplace=False`
-    df.convert_unit('EJ', 'foo', factor=2, inplace=True)
+    df.convert_unit('EJ/yr', 'foo', factor=2, inplace=True)
     pd.testing.assert_series_equal(df.data.value, exp)
 
 

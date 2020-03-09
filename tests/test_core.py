@@ -30,8 +30,8 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 
 df_with_na_columns = pd.DataFrame([
     ['model_a', 'scen_a', 'World', 'Primary Energy', np.nan, 1, 6.],
-    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ', 0.5, 3],
-    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ', 2, 7],
+    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
+    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
 ],
     columns=IAMC_IDX + [2005, 2010],
 )
@@ -214,7 +214,7 @@ def test_variable(test_df):
 
 def test_variable_unit(test_df):
     dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
-           'unit': ['EJ', 'EJ']}
+           'unit': ['EJ/yr', 'EJ/yr']}
     exp = pd.DataFrame.from_dict(dct)[['variable', 'unit']]
     npt.assert_array_equal(test_df.variables(include_units=True), exp)
 

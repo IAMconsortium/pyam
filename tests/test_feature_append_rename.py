@@ -171,9 +171,9 @@ def test_rename_index(test_df):
     # test data changes
     times = [2005, 2010] if 'year' in test_df.data else TEST_DTS
     exp = pd.DataFrame([
-        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ', 1, 6.],
-        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ', 0.5, 3],
-        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ', 2, 7],
+        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
+        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
+        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
@@ -200,11 +200,11 @@ def test_rename_append(test_df):
     # test data changes
     times = [2005, 2010] if "year" in test_df.data else TEST_DTS
     exp = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ', 1, 6.],
-        ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ', 0.5, 3],
-        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ', 2, 7],
-        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ', 1, 6.],
-        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ', 0.5, 3],
+        ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
+        ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
+        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
+        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
+        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
