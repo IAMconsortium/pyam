@@ -99,3 +99,14 @@ def test_aggregating_variables_and_plotting_with_negative_values():
     )
     nb, errors = _notebook_run(fname)
     assert errors == []
+
+
+@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
+@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
+def test_data_table_formats():
+    fname = os.path.join(
+        tut_path,
+        'data_table_formats.ipynb'
+    )
+    nb, errors = _notebook_run(fname)
+    assert errors == []

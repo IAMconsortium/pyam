@@ -5,6 +5,10 @@ from pyam import IamDataFrame, compare
 from conftest import TEST_DTS
 
 
+# when making any updates to this file,
+# please also update the `data_table_formats` tutorial notebook!
+
+
 def test_cast_from_value_col(test_df_year):
     df_with_value_cols = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'EJ/y', 2005, 1, 0.5],
