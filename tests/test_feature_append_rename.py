@@ -171,9 +171,9 @@ def test_rename_index(test_df):
     # test data changes
     times = [2005, 2010] if 'year' in test_df.data else TEST_DTS
     exp = pd.DataFrame([
-        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
-        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
-        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
+        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
+        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
@@ -200,11 +200,11 @@ def test_rename_append(test_df):
     # test data changes
     times = [2005, 2010] if "year" in test_df.data else TEST_DTS
     exp = pd.DataFrame([
-        ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
-        ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
-        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
-        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
-        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
+        ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
+        ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
+        ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
+        ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
+        ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
     ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
@@ -240,27 +240,3 @@ def test_rename_duplicates():
 
     assert compare(obs, exp).empty
     pd.testing.assert_frame_equal(obs.data, exp.data)
-
-
-def test_convert_unit():
-    df = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'SST', 'test_1', 'A', 1, 5],
-        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'SST', 'test_3', 'C', 3, 7],
-    ], columns=['model', 'scenario', 'region',
-                'variable', 'unit', 2005, 2010],
-    ))
-
-    unit_conv = {'A': ['B', 5], 'C': ['D', 3]}
-
-    obs = df.convert_unit(unit_conv).data.reset_index(drop=True)
-
-    exp = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'SST', 'test_1', 'B', 5, 25],
-        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'SST', 'test_3', 'D', 9, 21],
-    ], columns=['model', 'scenario', 'region',
-                'variable', 'unit', 2005, 2010],
-    )).data.reset_index(drop=True)
-
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)

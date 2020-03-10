@@ -17,34 +17,34 @@ TEST_DATA_DIR = os.path.join(here, 'data')
 
 
 TEST_DF = pd.DataFrame([
-    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 1, 6.],
-    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/y', 0.5, 3],
-    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/y', 2, 7],
+    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
+    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
+    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
 ],
     columns=IAMC_IDX + [2005, 2010],
 )
 
 
 FULL_FEATURE_DF = pd.DataFrame([
-    ['World', 'Primary Energy', 'EJ/y', 12, 15],
-    ['reg_a', 'Primary Energy', 'EJ/y', 8, 9],
-    ['reg_b', 'Primary Energy', 'EJ/y', 4, 6],
-    ['World', 'Primary Energy|Coal', 'EJ/y', 9, 10],
-    ['reg_a', 'Primary Energy|Coal', 'EJ/y', 6, 6],
-    ['reg_b', 'Primary Energy|Coal', 'EJ/y', 3, 4],
-    ['World', 'Primary Energy|Wind', 'EJ/y', 3, 5],
-    ['reg_a', 'Primary Energy|Wind', 'EJ/y', 2, 3],
-    ['reg_b', 'Primary Energy|Wind', 'EJ/y', 1, 2],
-    ['World', 'Emissions|CO2', 'EJ/y', 10, 14],
-    ['World', 'Emissions|CO2|Energy', 'EJ/y', 6, 8],
-    ['World', 'Emissions|CO2|AFOLU', 'EJ/y', 3, 4],
-    ['World', 'Emissions|CO2|Bunkers', 'EJ/y', 1, 2],
-    ['reg_a', 'Emissions|CO2', 'EJ/y', 6, 8],
-    ['reg_a', 'Emissions|CO2|Energy', 'EJ/y', 4, 5],
-    ['reg_a', 'Emissions|CO2|AFOLU', 'EJ/y', 2, 3],
-    ['reg_b', 'Emissions|CO2', 'EJ/y', 3, 4],
-    ['reg_b', 'Emissions|CO2|Energy', 'EJ/y', 2, 3],
-    ['reg_b', 'Emissions|CO2|AFOLU', 'EJ/y', 1, 1],
+    ['World', 'Primary Energy', 'EJ/yr', 12, 15],
+    ['reg_a', 'Primary Energy', 'EJ/yr', 8, 9],
+    ['reg_b', 'Primary Energy', 'EJ/yr', 4, 6],
+    ['World', 'Primary Energy|Coal', 'EJ/yr', 9, 10],
+    ['reg_a', 'Primary Energy|Coal', 'EJ/yr', 6, 6],
+    ['reg_b', 'Primary Energy|Coal', 'EJ/yr', 3, 4],
+    ['World', 'Primary Energy|Wind', 'EJ/yr', 3, 5],
+    ['reg_a', 'Primary Energy|Wind', 'EJ/yr', 2, 3],
+    ['reg_b', 'Primary Energy|Wind', 'EJ/yr', 1, 2],
+    ['World', 'Emissions|CO2', 'EJ/yr', 10, 14],
+    ['World', 'Emissions|CO2|Energy', 'EJ/yr', 6, 8],
+    ['World', 'Emissions|CO2|AFOLU', 'EJ/yr', 3, 4],
+    ['World', 'Emissions|CO2|Bunkers', 'EJ/yr', 1, 2],
+    ['reg_a', 'Emissions|CO2', 'EJ/yr', 6, 8],
+    ['reg_a', 'Emissions|CO2|Energy', 'EJ/yr', 4, 5],
+    ['reg_a', 'Emissions|CO2|AFOLU', 'EJ/yr', 2, 3],
+    ['reg_b', 'Emissions|CO2', 'EJ/yr', 3, 4],
+    ['reg_b', 'Emissions|CO2|Energy', 'EJ/yr', 2, 3],
+    ['reg_b', 'Emissions|CO2|AFOLU', 'EJ/yr', 1, 1],
     ['World', 'Price|Carbon', 'USD/tCO2', 4, 27],
     ['reg_a', 'Price|Carbon', 'USD/tCO2', 1, 30],
     ['reg_b', 'Price|Carbon', 'USD/tCO2', 10, 21],
@@ -56,13 +56,16 @@ FULL_FEATURE_DF = pd.DataFrame([
 )
 
 
+img = ['IMAGE', 'a_scenario']
+msg = ['MESSAGE-GLOBIOM', 'a_scenario']
+
 REG_DF = pd.DataFrame([
-    ['IMAGE', 'a_scenario', 'NAF', 'Primary Energy', 'EJ/y', 1, 6],
-    ['IMAGE', 'a_scenario', 'ME', 'Primary Energy', 'EJ/y', 2, 7],
-    ['IMAGE', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 3, 13],
-    ['MESSAGE-GLOBIOM', 'a_scenario', 'MEA', 'Primary Energy', 'EJ/y', 1, 6],
-    ['MESSAGE-GLOBIOM', 'a_scenario', 'AFR', 'Primary Energy', 'EJ/y', 2, 7],
-    ['MESSAGE-GLOBIOM', 'a_scenario', 'World', 'Primary Energy', 'EJ/y', 3, 13],
+    img + ['NAF', 'Primary Energy', 'EJ/yr', 1, 6],
+    img + ['ME', 'Primary Energy', 'EJ/yr', 2, 7],
+    img + ['World', 'Primary Energy', 'EJ/yr', 3, 13],
+    msg + ['MEA', 'Primary Energy', 'EJ/yr', 1, 6],
+    msg + ['AFR', 'Primary Energy', 'EJ/yr', 2, 7],
+    msg + ['World', 'Primary Energy', 'EJ/yr', 3, 13],
 ],
     columns=IAMC_IDX + [2005, 2010],
 )

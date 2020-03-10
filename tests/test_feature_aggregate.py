@@ -11,24 +11,24 @@ from conftest import DTS_MAPPING
 LONG_IDX = IAMC_IDX + ['year']
 
 PE_MAX_DF = pd.DataFrame([
-    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 2005, 9.0],
-    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/y', 2010, 10.0],
-    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/y', 2005, 6.0],
-    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/y', 2010, 6.0],
-    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/y', 2005, 3.0],
-    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/y', 2010, 4.0],
+    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/yr', 2005, 9.0],
+    ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/yr', 2010, 10.0],
+    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/yr', 2005, 6.0],
+    ['model_a', 'scen_a', 'reg_a', 'Primary Energy', 'EJ/yr', 2010, 6.0],
+    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/yr', 2005, 3.0],
+    ['model_a', 'scen_a', 'reg_b', 'Primary Energy', 'EJ/yr', 2010, 4.0],
 
 ],
     columns=LONG_IDX + ['value']
 )
 
 CO2_MAX_DF = pd.DataFrame([
-    ['model_a', 'scen_a', 'World', 'Emissions|CO2', 'EJ/y', 2005, 6.0],
-    ['model_a', 'scen_a', 'World', 'Emissions|CO2', 'EJ/y', 2010, 8.0],
-    ['model_a', 'scen_a', 'reg_a', 'Emissions|CO2', 'EJ/y', 2005, 4.0],
-    ['model_a', 'scen_a', 'reg_a', 'Emissions|CO2', 'EJ/y', 2010, 5.0],
-    ['model_a', 'scen_a', 'reg_b', 'Emissions|CO2', 'EJ/y', 2005, 2.0],
-    ['model_a', 'scen_a', 'reg_b', 'Emissions|CO2', 'EJ/y', 2010, 3.0],
+    ['model_a', 'scen_a', 'World', 'Emissions|CO2', 'EJ/yr', 2005, 6.0],
+    ['model_a', 'scen_a', 'World', 'Emissions|CO2', 'EJ/yr', 2010, 8.0],
+    ['model_a', 'scen_a', 'reg_a', 'Emissions|CO2', 'EJ/yr', 2005, 4.0],
+    ['model_a', 'scen_a', 'reg_a', 'Emissions|CO2', 'EJ/yr', 2010, 5.0],
+    ['model_a', 'scen_a', 'reg_b', 'Emissions|CO2', 'EJ/yr', 2005, 2.0],
+    ['model_a', 'scen_a', 'reg_b', 'Emissions|CO2', 'EJ/yr', 2010, 3.0],
 ],
     columns=LONG_IDX + ['value']
 )

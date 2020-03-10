@@ -2,12 +2,20 @@
 
 ## API changes
 
-PR [#334](https://github.com/IAMconsortium/pyam/pull/334) changes the arguments
-of `IamDataFrame.interpolate()` and `pyam.fill_series()` to `time`.
-It can still be an integer (i.e., year). 
+PR [#341](https://github.com/IAMconsortium/pyam/pull/341) changed
+the API of `IamDataFrame.convert_unit()` from a dictionary to explicit kwargs
+`current`, `to` and `factor` (now optional, using `pint` if not specified).
+
+PR [#334](https://github.com/IAMconsortium/pyam/pull/334) changed the arguments
+of `IamDataFrame.interpolate()` and `pyam.fill_series()` to `time`. It can still
+be an integer (i.e., a year). 
+
+With PR [#337](https://github.com/IAMconsortium/pyam/pull/337), initializing
+an IamDataFrame with `n/a` entries in columns other than `value` raises an error.
 
 ## Individual Updates
 
+- [#341](https://github.com/IAMconsortium/pyam/pull/341) Use `pint` and IIASA-ene-units repo for unit conversion.
 - [#339](https://github.com/IAMconsortium/pyam/pull/339) Add tutorial for dataframe format io
 - [#337](https://github.com/IAMconsortium/pyam/pull/337) IamDataFrame to throw an error when initialized with n/a entries in columns other than `value`
 - [#334](https://github.com/IAMconsortium/pyam/pull/334) Enable interpolate to work on datetimes.
