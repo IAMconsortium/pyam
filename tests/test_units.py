@@ -19,7 +19,7 @@ def get_units_test_df(test_df):
     ('EJ', 'TWh')
 ])
 def test_convert_unit_with_pint(test_df, current, to):
-    # unit conversion with standard pint
+    # unit conversion with default UnitRegistry (i.e, application_registry)
     df = get_units_test_df(test_df)
 
     # replace EJ/yr by EJ to test pint with single unit
@@ -32,13 +32,13 @@ def test_convert_unit_with_pint(test_df, current, to):
     _df = df.convert_unit(current, to, inplace=False)
     pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
 
-    # testing for `inplace=False`
+    # testing for `inplace=True`
     df.convert_unit(current, to, inplace=True)
     pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
 
 
 def test_convert_unit_from_repo(test_df):
-    # unit conversion with definition loaded from common units repo
+    # unit conversion with definition loaded from `IAMconsortium/units` repo
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 17.06, 102.361, 68.241, 238.843], name='value')
 
@@ -46,7 +46,7 @@ def test_convert_unit_from_repo(test_df):
     _df = df.convert_unit('EJ/yr', 'Mtce/yr', inplace=False)
     pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
 
-    # testing for `inplace=False`
+    # testing for `inplace=True`
     df.convert_unit('EJ/yr', 'Mtce/yr', inplace=True)
     pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
 
@@ -60,7 +60,7 @@ def test_convert_unit_with_custom_factor(test_df):
     _df = df.convert_unit('EJ/yr', 'foo', factor=2, inplace=False)
     pd.testing.assert_series_equal(_df.data.value, exp)
 
-    # testing for `inplace=False`
+    # testing for `inplace=True`
     df.convert_unit('EJ/yr', 'foo', factor=2, inplace=True)
     pd.testing.assert_series_equal(df.data.value, exp)
 
