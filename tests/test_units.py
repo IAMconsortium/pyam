@@ -7,15 +7,20 @@ from pyam import IamDataFrame
 PRECISE_ARG = dict(check_less_precise=True)
 
 
+def get_units_test_df(test_df):
+    # modify units in standard test dataframe
+    df = test_df.copy()
+    df.data.loc[0:1, 'unit'] = 'custom_unit'
+    return df
+
+
 @pytest.mark.parametrize("current,to", [
     ('EJ/yr', 'TWh/yr'),
     ('EJ', 'TWh')
 ])
 def test_convert_unit_with_pint(test_df, current, to):
-    print(current, to)
     # unit conversion with standard pint
-    df = test_df.copy()
-    df.data.loc[0:1, 'unit'] = 'custom_unit'
+    df = get_units_test_df(test_df)
 
     # replace EJ/yr by EJ to test pint with single unit
     if current == 'EJ':
@@ -34,9 +39,7 @@ def test_convert_unit_with_pint(test_df, current, to):
 
 def test_convert_unit_from_repo(test_df):
     # unit conversion with definition loaded from common units repo
-    df = test_df.copy()
-    df.data.loc[0:1, 'unit'] = 'custom_unit'
-
+    df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 17.06, 102.361, 68.241, 238.843], name='value')
 
     # testing for `inplace=False`
@@ -50,9 +53,7 @@ def test_convert_unit_from_repo(test_df):
 
 def test_convert_unit_with_custom_factor(test_df):
     # unit conversion with custom factor
-    df = test_df.copy()
-    df.data.loc[0:1, 'unit'] = 'custom_unit'
-
+    df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 1., 6., 4., 14.], name='value')
 
     # testing for `inplace=False`
