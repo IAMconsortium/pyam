@@ -1,6 +1,7 @@
 import pytest
 
 import pandas as pd
+import pint
 from pyam import IamDataFrame
 
 
@@ -45,6 +46,23 @@ def test_convert_unit_from_repo(test_df):
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 17.06, 102.361, 68.241, 238.843], name='value')
     assert_converted_units(df, 'EJ/yr', 'Mtce/yr', exp)
+
+
+def test_convert_unit_with_custom_registry(test_df):
+    # unit conversion with custom UnitRegistry
+    df = get_units_test_df(test_df).rename(unit={'EJ/yr': 'foo'})
+
+    # check that conversion fails with application registry
+    pytest.raises(pint.UndefinedUnitError,
+                  df.convert_unit, 'foo', 'baz')
+
+    # define a custom unit registry
+    ureg = pint.UnitRegistry()
+    ureg.define('baz = [custom]')
+    ureg.define('foo =  3 * baz')
+
+    exp = pd.Series([1., 6., 1.5, 9, 6, 21], name='value')
+    assert_converted_units(df, 'foo', 'baz', exp, registry=ureg)
 
 
 def test_convert_unit_with_custom_factor(test_df):
