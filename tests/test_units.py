@@ -16,13 +16,15 @@ def get_units_test_df(test_df):
 
 
 def assert_converted_units(df, current, to, exp, **kwargs):
-    # testing for `inplace=False`
+    # testing for `inplace=False` - converted values and expected unit
     _df = df.convert_unit(current, to, **kwargs, inplace=False)
     pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
+    assert _df.data.unit[5] == to
 
-    # testing for `inplace=True`
+    # testing for `inplace=True` - converted values and expected unit
     df.convert_unit(current, to, **kwargs, inplace=True)
     pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
+    assert df.data.unit[5] == to
 
 
 @pytest.mark.parametrize("current,to", [
