@@ -14,6 +14,16 @@ def get_units_test_df(test_df):
     return df
 
 
+def assert_converted_units(df, current, to, exp, **kwargs):
+    # testing for `inplace=False`
+    _df = df.convert_unit(current, to, **kwargs, inplace=False)
+    pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
+
+    # testing for `inplace=True`
+    df.convert_unit(current, to, **kwargs, inplace=True)
+    pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
+
+
 @pytest.mark.parametrize("current,to", [
     ('EJ/yr', 'TWh/yr'),
     ('EJ', 'TWh')
@@ -27,42 +37,21 @@ def test_convert_unit_with_pint(test_df, current, to):
         df.rename(unit={'EJ/yr': 'EJ'}, inplace=True)
 
     exp = pd.Series([1., 6., 138.88, 833.33, 555.55, 1944.44], name='value')
-
-    # testing for `inplace=False`
-    _df = df.convert_unit(current, to, inplace=False)
-    pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
-
-    # testing for `inplace=True`
-    df.convert_unit(current, to, inplace=True)
-    pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
+    assert_converted_units(df, current, to, exp)
 
 
 def test_convert_unit_from_repo(test_df):
     # unit conversion with definition loaded from `IAMconsortium/units` repo
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 17.06, 102.361, 68.241, 238.843], name='value')
-
-    # testing for `inplace=False`
-    _df = df.convert_unit('EJ/yr', 'Mtce/yr', inplace=False)
-    pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
-
-    # testing for `inplace=True`
-    df.convert_unit('EJ/yr', 'Mtce/yr', inplace=True)
-    pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
+    assert_converted_units(df, 'EJ/yr', 'Mtce/yr', exp)
 
 
 def test_convert_unit_with_custom_factor(test_df):
     # unit conversion with custom factor
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 1., 6., 4., 14.], name='value')
-
-    # testing for `inplace=False`
-    _df = df.convert_unit('EJ/yr', 'foo', factor=2, inplace=False)
-    pd.testing.assert_series_equal(_df.data.value, exp)
-
-    # testing for `inplace=True`
-    df.convert_unit('EJ/yr', 'foo', factor=2, inplace=True)
-    pd.testing.assert_series_equal(df.data.value, exp)
+    assert_converted_units(df, 'EJ/yr', 'foo', exp, factor=2)
 
 
 def test_convert_unit_with_mapping():
