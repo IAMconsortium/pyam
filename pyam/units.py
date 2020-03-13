@@ -30,7 +30,8 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     # if factor is not given, get it from custom or application registry
     if factor is None:
         _reg = registry or _REGISTRY
-        factor = _reg[current].to(_reg[to], context=context).magnitude
+        args = [_reg[to]] if context is None else [_reg[to], context]
+        factor = _reg[current].to(*args).magnitude
 
     # do the conversion
     where = ret.data['unit'] == current

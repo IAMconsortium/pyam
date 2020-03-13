@@ -53,8 +53,8 @@ def test_convert_unit_with_custom_registry(test_df):
     df = get_units_test_df(test_df).rename(unit={'EJ/yr': 'foo'})
 
     # check that conversion fails with application registry
-    pytest.raises(pint.UndefinedUnitError,
-                  df.convert_unit, 'foo', 'baz')
+    with pytest.raises(pint.UndefinedUnitError):
+        df.convert_unit('foo', 'baz')
 
     # define a custom unit registry
     ureg = pint.UnitRegistry()
@@ -63,6 +63,26 @@ def test_convert_unit_with_custom_registry(test_df):
 
     exp = pd.Series([1., 6., 1.5, 9, 6, 21], name='value')
     assert_converted_units(df, 'foo', 'baz', exp, registry=ureg)
+
+
+@pytest.mark.parametrize('unit', ['{}', 'Mt {}', 'Mt {} / yr', '{} / yr'])
+def test_convert_unit_with_context(test_df, unit):
+    # unit conversion with contexts in application registry
+    df = test_df.copy()
+    df['variable'] = [i.replace('Primary Energy', 'Emissions|CH4')
+                      for i in df['variable']]
+    current = unit.format('CH4')
+    to = unit.format('CO2e')
+    df['unit'] = current
+
+    # assert that conversion fails without context
+    with pytest.raises(pint.DimensionalityError):
+        df.convert_unit(current, to)
+
+    # test conversion for multiple contexts
+    for (c, v) in [('AR5GWP100', 28), ('AR4GWP100', 25), ('SARGWP100', 21)]:
+        exp = test_df.data.value * v
+        assert_converted_units(df.copy(), current, to, exp, context=f'gwp_{c}')
 
 
 def test_convert_unit_with_custom_factor(test_df):
