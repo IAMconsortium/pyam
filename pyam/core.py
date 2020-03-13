@@ -758,7 +758,8 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def convert_unit(self, current, to=None, factor=None, inplace=False):
+    def convert_unit(self, current, to=None, factor=None, registry=None,
+                     context=None, inplace=False):
         """Converts a unit using a given factor or the pint package
 
         The `pint package <https://pint.readthedocs.io>`_ natively handles
@@ -771,8 +772,8 @@ class IamDataFrame(object):
         systems analysis from the `IAMconsortium/units
         <https://github.com/IAMconsortium/units>`_ repository.
 
-        You can access the :py:class:`pint.UnitRegistry` used by :class:`pyam`
-        via :func:`pint.get_application_registry`.
+        You can access the :py:class:`pint.UnitRegistry` used as default
+        by :class:`pyam` via :func:`pint.get_application_registry`.
 
         Parameters
         ----------
@@ -783,6 +784,12 @@ class IamDataFrame(object):
         factor: value, optional
             conversion factor if given, otherwise defaults to the application
             :py:class:`pint.UnitRegistry`
+        registry: pint.UnitRegistry, optional
+            use a specific UnitRegistry; if `None`, use default application
+            registry with definitions imported from the `IAMconsortium/units
+            <https://github.com/IAMconsortium/units>`_ repository
+        context: str, optional
+            passed to the pint.UnitRegistry
         inplace: bool, default False
             if True, do operation inplace and return None
         """
@@ -793,7 +800,8 @@ class IamDataFrame(object):
                                 type='Using a dictionary to convert units')
             return convert_unit_with_mapping(self, current, inplace)
         # new standard method, remove this comment when deprecating above
-        return convert_unit(self, current, to, factor, inplace)
+        return convert_unit(self, current, to, factor, registry, context,
+                            inplace)
 
     def normalize(self, inplace=False, **kwargs):
         """Normalize data to a specific data point

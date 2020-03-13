@@ -13,12 +13,26 @@ file = Path(__file__).parents[1] / 'units' / 'definitions.txt'
 _REGISTRY.load_definitions(str(file))
 
 
-def convert_unit(df, current, to, factor=None, inplace=False):
+def convert_unit(df, current, to, factor=None, registry=None, context=None,
+                 inplace=False):
     """Internal implementation of unit conversion with explicit kwargs"""
     ret = df.copy() if not inplace else df
 
+    # check that (only) either factor or registry/context is provided
+    if factor is not None and \
+            any([i is not None for i in [registry, context]]):
+        raise ValueError('use either `factor` or `pint.UnitRegistry`')
+
+    # check that custom registry is valid
+    if registry is not None and not isinstance(registry, pint.UnitRegistry):
+        raise ValueError(f'registry` is not a valid UnitRegistry: {registry}')
+
+    # if factor is not given, get it from custom or application registry
     if factor is None:
-        factor = _REGISTRY[current].to(_REGISTRY[to]).magnitude
+        _reg = registry or _REGISTRY
+        factor = _reg[current].to(_reg[to], context=context).magnitude
+
+    # do the conversion
     where = ret.data['unit'] == current
     ret.data.loc[where, 'value'] *= factor
     ret.data.loc[where, 'unit'] = to
