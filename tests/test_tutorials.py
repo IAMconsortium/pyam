@@ -68,6 +68,14 @@ def test_pyam_first_steps(capsys):
 
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
 @pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
+def test_unit_conversion():
+    fname = os.path.join(tut_path, 'unit_conversion.ipynb')
+    nb, errors = _notebook_run(fname)
+    assert errors == []
+
+
+@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
+@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_aggregating_downscaling_consistency():
     fname = os.path.join(tut_path, 'aggregating_downscaling_consistency.ipynb')
     nb, errors = _notebook_run(fname)
