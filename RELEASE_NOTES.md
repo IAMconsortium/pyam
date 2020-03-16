@@ -15,6 +15,7 @@ an IamDataFrame with `n/a` entries in columns other than `value` raises an error
 
 ## Individual Updates
 
+- [#347](https://github.com/IAMconsortium/pyam/pull/347) Enable contexts and custom UnitRegistry with unit conversion.
 - [#341](https://github.com/IAMconsortium/pyam/pull/341) Use `pint` and IIASA-ene-units repo for unit conversion.
 - [#339](https://github.com/IAMconsortium/pyam/pull/339) Add tutorial for dataframe format io
 - [#337](https://github.com/IAMconsortium/pyam/pull/337) IamDataFrame to throw an error when initialized with n/a entries in columns other than `value`
