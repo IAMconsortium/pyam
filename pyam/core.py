@@ -72,10 +72,12 @@ class IamDataFrame(object):
         Support is provided additionally for R-style data columns for years,
         like "X2015", etc.
     kwargs:
-        if `value=col`, melt `col` to `value` and use `col` name as `variable`;
-        else, mapping of columns required for an `IamDataFrame` to:
+        if `value=col`, melt column `col` to 'value' and use `col` name as
+        'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
+        any of the following:
+
         - one column in `df`
-        - multiple columns, which will be concatenated by pipe
+        - multiple columns, which will be concatenated by ``|``
         - a string to be used as value for this column
 
     Notes
