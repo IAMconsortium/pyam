@@ -64,9 +64,9 @@ def test_append_other_scenario(test_df):
 
 
 def test_append_reconstructed_time(test_df):
-    # This tests that dfs with identical time cols created by different methods can be
-    # appended
-    other =  test_df.filter(scenario='scen_b')\
+    # This tests that dfs with identical time cols created by different methods
+    # can be appended
+    other = test_df.filter(scenario='scen_b')\
         .rename({'scenario': {'scen_b': 'scen_c'}})
     other.time_col = other.time_col[0:1] + other.time_col[1:]
     test_df.append(other, inplace=True)
