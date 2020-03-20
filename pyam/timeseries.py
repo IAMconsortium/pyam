@@ -5,18 +5,15 @@ from pyam.utils import isstr, to_int
 
 logger = logging.getLogger(__name__)
 
-# %%
-
 
 def fill_series(x, time):
-    """Returns the value of a timeseries (indexed over years) for a year or
-    datetime by linear interpolation.
+    """Returns the timeseries value at a point in time by linear interpolation
 
     Parameters
     ----------
     x: pandas.Series
         a timeseries to be interpolated
-    time: int
+    time: int or pandas.datetime
         year or datetime to interpolate
     """
     x = x.dropna()
@@ -34,8 +31,10 @@ def fill_series(x, time):
 
 
 def cumulative(x, first_year, last_year):
-    """Returns the cumulative sum of a timeseries (indexed over years),
-    implements linear interpolation between years, ignores nan's in the range.
+    """Returns the cumulative sum of a timeseries
+
+    This function implements linear interpolation between years
+    and ignores nan's in the range.
     The function includes the last-year value of the series, and
     raises a warning if start_year or last_year is outside of
     the timeseries range and returns nan
@@ -88,8 +87,7 @@ def cumulative(x, first_year, last_year):
 
 
 def cross_threshold(x, threshold=0, direction=['from above', 'from below']):
-    """Returns a list of the years in which a timeseries (indexed over years)
-    crosses a given threshold
+    """Returns a list of the years in which a timeseries crosses a threshold
 
     Parameters
     ----------

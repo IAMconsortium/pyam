@@ -70,19 +70,21 @@ def islistable(x):
 
 
 def write_sheet(writer, name, df, index=False):
-    """Write a pandas DataFrame to an ExcelWriter,
-    auto-formatting column width depending on maxwidth of data and colum header
+    """Write a pandas.DataFrame to an ExcelWriter
+
+    The function applies formatting of the column width depending on maxwidth
+    of values and column header
 
     Parameters
     ----------
     writer: pandas.ExcelWriter
-        an instance of a pandas ExcelWriter
+        an instance of a :class:`pandas.ExcelWriter`
     name: string
         name of the sheet to be written
     df: pandas.DataFrame
-        a pandas DataFrame to be written to the sheet
+        a :class:`pandas.DataFrame` to be written to the sheet
     index: boolean, default False
-        flag whether index should be written to the sheet
+        should the index be written to the sheet
     """
     if index:
         df = df.reset_index()
@@ -99,7 +101,7 @@ def write_sheet(writer, name, df, index=False):
 
 
 def read_pandas(fname, *args, **kwargs):
-    """Read a file and return a pd.DataFrame"""
+    """Read a file and return a pandas.DataFrame"""
     if fname.endswith('csv'):
         df = pd.read_csv(fname, *args, **kwargs)
     else:
@@ -111,12 +113,10 @@ def read_pandas(fname, *args, **kwargs):
 
 
 def read_file(fname, *args, **kwargs):
-    """Read data from a file saved in the standard IAMC format
-    or a table with year/value columns
-    """
+    """Read data from a file"""
     if not isstr(fname):
         raise ValueError('reading multiple files not supported, '
-                         'please use `pyam.IamDataFrame.append()`')
+                         'please use `IamDataFrame.append()`')
     logger.info('Reading `{}`'.format(fname))
     format_kwargs = {}
     # extract kwargs that are intended for `format_data`
@@ -126,7 +126,7 @@ def read_file(fname, *args, **kwargs):
 
 
 def format_data(df, **kwargs):
-    """Convert a `pd.Dataframe` or `pd.Series` to the required format"""
+    """Convert a pandas.Dataframe or pandas.Series to the required format"""
     if isinstance(df, pd.Series):
         df = df.to_frame()
 
@@ -262,24 +262,23 @@ def format_data(df, **kwargs):
 
 
 def sort_data(data, cols):
-    """Sort `data` rows and order columns"""
+    """Sort data rows and order columns by cols"""
     return data.sort_values(cols)[cols + ['value']].reset_index(drop=True)
 
 
 def find_depth(data, s='', level=None):
-    """
-    return or assert the depth (number of `|`) of variables
+    """Return or assert the depth (number of ``|``) of variables
 
     Parameters
     ----------
-    data : pd.Series of strings
+    data : pandas.Series of strings
         IAMC-style variables
     s : str, default ''
         remove leading `s` from any variable in `data`
     level : int or str, default None
-        if None, return depth (number of `|`); else, return list of booleans
-        whether depth satisfies the condition (equality if `level` is int,
-        >= if `.+`,  <= if `.-`)
+        if None, return depth (number of ``|``); else, return list of booleans
+        whether depth satisfies the condition (equality if level is int,
+        >= if ``.+``,  <= if ``.-``)
     """
     # remove wildcard as last character from string, escape regex characters
     _s = re.compile('^' + _escape_regexp(s.rstrip('*')))
@@ -311,9 +310,11 @@ def find_depth(data, s='', level=None):
 
 
 def pattern_match(data, values, level=None, regexp=False, has_nan=True):
-    """
-    matching of model/scenario names, variables, regions, and meta columns to
-    pseudo-regex (if `regexp == False`) for filtering (str, int, bool)
+    """Return list where data matches values
+
+    The function matches model/scenario names, variables, regions
+    and meta columns to pseudo-regex (if `regexp == False`)
+    for filtering (str, int, bool)
     """
     matches = np.array([False] * len(data))
     if not isinstance(values, collections.Iterable) or isstr(values):
@@ -336,7 +337,7 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=True):
 
 
 def _escape_regexp(s):
-    """escape characters with specific regexp use"""
+    """Escape characters with specific regexp use"""
     return (
         str(s)
         .replace('|', '\\|')
@@ -350,9 +351,7 @@ def _escape_regexp(s):
 
 
 def years_match(data, years):
-    """
-    matching of year columns for data filtering
-    """
+    """Return rows where data matches year"""
     years = [years] if isinstance(years, int) else years
     dt = datetime.datetime
     if isinstance(years, dt) or isinstance(years[0], dt):
@@ -362,28 +361,23 @@ def years_match(data, years):
 
 
 def month_match(data, months):
-    """
-    matching of months in time columns for data filtering
-    """
+    """Return rows where data matches months"""
     return time_match(data, months, ['%b', '%B'], "tm_mon", "months")
 
 
 def day_match(data, days):
-    """
-    matching of days in time columns for data filtering
-    """
+    """Return rows where data matches days"""
     return time_match(data, days, ['%a', '%A'], "tm_wday", "days")
 
 
 def hour_match(data, hours):
-    """
-    matching of days in time columns for data filtering
-    """
+    """Return rows where data matches hours"""
     hours = [hours] if isinstance(hours, int) else hours
     return data.isin(hours)
 
 
 def time_match(data, times, conv_codes, strptime_attr, name):
+    """Return rows where data matches a timestamp"""
     def conv_strs(strs_to_convert, conv_codes, name):
         for conv_code in conv_codes:
             try:
@@ -426,9 +420,7 @@ def time_match(data, times, conv_codes, strptime_attr, name):
 
 
 def datetime_match(data, dts):
-    """
-    matching of datetimes in time columns for data filtering
-    """
+    """Matching of datetimes in time columns for data filtering"""
     dts = dts if islistable(dts) else [dts]
     if any([not isinstance(i, datetime.datetime) for i in dts]):
         error_msg = (
@@ -439,9 +431,10 @@ def datetime_match(data, dts):
 
 
 def to_int(x, index=False):
-    """Formatting series or timeseries columns to int and checking validity.
-    If `index=False`, the function works on the `pd.Series x`; else,
-    the function casts the index of `x` to int and returns x with a new index.
+    """Formatting series or timeseries columns to int and checking validity
+
+    If `index=False`, the function works on the :class:`pandas.Series` x;
+    else, the function casts the index of x to int and returns x with new index.
     """
     _x = x.index if index else x
     cols = list(map(int, _x))
@@ -456,13 +449,13 @@ def to_int(x, index=False):
 
 
 def concat_with_pipe(x, cols=None):
-    """Concatenate a `pd.Series` separated by `|`, drop `None` or `np.nan`"""
+    """Concatenate a pandas.Series x using ``|``, drop None or numpy.nan"""
     cols = cols or x.index
     return '|'.join([x[i] for i in cols if x[i] not in [None, np.nan]])
 
 
 def reduce_hierarchy(x, depth):
-    """Reduce the hierarchy (depth by `|`) string to the specified level"""
+    """Reduce the hierarchy (indicated by ``|``) of x to the specified depth"""
     _x = x.split('|')
     depth = len(_x) + depth - 1 if depth < 0 else depth
     return '|'.join(_x[0:(depth + 1)])

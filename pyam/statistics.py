@@ -9,22 +9,22 @@ from pyam.utils import isstr, islistable
 
 
 class Statistics(object):
-    """This class provides a wrapper for descriptive statistics
-    of IAMC-style timeseries data.
+    """This class generates descriptive statistics of timeseries data
 
     Parameters
     ----------
-    df: pyam.IamDataFrame
-        an IamDataFrame from which to retrieve metadata for grouping, filtering
+    df: IamDataFrame
+        an IamDataFrame from which to retrieve meta indicators for grouping
+        or filtering
     groupby: str or dict
-        a column of `df.meta` to be used for the groupby feature,
+        a column of `df.meta` to be used for `groupby`
         or a dictionary of `{column: list}`, where `list` is used for ordering
     filters: list of tuples
         arguments for filtering and describing, either `((index, dict)` or
         `((index[0], index[1]), dict)`, when also using `groupby`, index must
         haev length 2.
     percentiles: list-like of numbers, optional
-        The percentiles to include in the output of `pandas.describe()`.
+        The percentiles to get from :meth:`pandas.DataFrame.describe()`.
         All should fall between 0 and 1. The default is `[.25, .5, .75]`,
         which returns the 25th, 50th, and 75th percentiles.
     """
