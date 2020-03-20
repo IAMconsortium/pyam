@@ -435,7 +435,7 @@ def to_int(x, index=False):
     """Formatting series or timeseries columns to int and checking validity
 
     If `index=False`, the function works on the :class:`pandas.Series` x;
-    else, the function casts the index of x to int and returns x with new index.
+    else, the function casts the index of x to int and returns x with new index
     """
     _x = x.index if index else x
     cols = list(map(int, _x))
