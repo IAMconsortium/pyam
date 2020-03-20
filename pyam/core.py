@@ -280,10 +280,7 @@ class IamDataFrame(object):
 
         # join other.meta for new scenarios
         if not diff.empty:
-            # sorting not supported by ` pd.append()`  prior to version 23
-            sort_kwarg = {} if int(pd.__version__.split('.')[1]) < 23 \
-                else dict(sort=False)
-            ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
+            ret.meta = ret.meta.append(other.meta.loc[diff, :], sort=False)
 
         # append other.data (verify integrity for no duplicates)
         _data = ret.data.set_index(sorted(ret._LONG_IDX)).append(
