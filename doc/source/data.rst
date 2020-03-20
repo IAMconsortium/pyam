@@ -140,16 +140,16 @@ climate models providing different values for the variable
 .. warning::
 
     A word of warning when using custom columns for annotations:
-    **pyam** drops any data rows where the 'value' column has 'NaN' values,
-    and it raises an error for 'NaN' in any other column.
+    **pyam** drops any data rows where the 'value' column is 'nan',
+    and it raises an error for 'nan' in any other column.
     Hence, if you are adding variable/region-specific meta information to
     'data', you need to make sure that you **add a value to every single row**.
 
     The reason for that implementation is that pandas does not work as expected
-    with 'NaN' in some situations
+    with 'nan' in some situations
     (see `here <https://stackoverflow.com/a/18431417>`_ and
     `here <https://stackoverflow.com/a/13606221>`_).
-    Therefore, enforcing that there are no 'NaN's in an **IamDataFrame**
+    Therefore, enforcing that there are no 'nan's in an **IamDataFrame**
     ensures that **pyam** has a clean dataset on which to operate.
 
 The :code:`meta` table
@@ -160,11 +160,10 @@ model-scenario level. Examples in the `SR15`_ context are the warming category
 ('Below 1.5°C', '1.5°C with low overshoot', etc.) and the cumulative
 CO2 emissions until the end of the century.
 
+When performing operations such as :meth:`rename() <pyam.IamDataFrame.rename>`
+or :meth:`append() <pyam.IamDataFrame.append>`,
 |pyam| attempts to keep the information in 'meta' consistent with
-the 'data' dataframe when performing operations (e.g.,
-:meth:`rename() <pyam.IamDataFrame.rename>`,
-:meth:`append() <pyam.IamDataFrame.append>`).
-See :meth:`utils.merge_meta() <pyam.utils.merge_meta>` for details.
+the 'data' dataframe.
 
 .. note::
 

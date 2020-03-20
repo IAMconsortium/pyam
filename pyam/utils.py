@@ -243,12 +243,13 @@ def format_data(df, **kwargs):
         df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name=time_col,
                      value_vars=sorted(melt_cols), value_name='value')
 
-    # cast value column to numeric and drop NaNs
+    # cast value column to numeric and drop nan
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True, subset=['value'])
-    # verify that there are no NaNs left (in columns)
+
+    # verify that there are no nan's left (in columns)
     if df.isnull().values.any():
-        raise ValueError('a column of `data` contains NaN!')
+        raise ValueError('a column of `data` contains nan!')
 
     # check for duplicates and return sorted data
     idx_cols = IAMC_IDX + [time_col] + extra_cols
