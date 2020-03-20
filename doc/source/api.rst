@@ -18,7 +18,7 @@ and methods.
    api/variables
 
 
-**Intersphinx mapping:**
+**Intersphinx mapping**
 
 To use sphinx.ext.intersphinx_ for generating automatic links from your project
 to the documenation of |pyam| classes and functions, please add the following
