@@ -64,8 +64,7 @@ def test_append_other_scenario(test_df):
 
 
 def test_append_reconstructed_time(test_df):
-    # This tests that dfs with identical time cols created by different methods
-    # can be appended
+    # check appending dfs with equal time cols created by different methods
     other = test_df.filter(scenario='scen_b')\
         .rename({'scenario': {'scen_b': 'scen_c'}})
     other.time_col = other.time_col[0:1] + other.time_col[1:]
@@ -85,7 +84,7 @@ def test_append_same_scenario(test_df):
     # check that non-matching meta raise an error
     pytest.raises(ValueError, test_df.append, other=other)
 
-    # check that ignoring meta conflict works as expetced
+    # check that ignoring meta conflict works as expected
     df = test_df.append(other, ignore_meta_conflict=True)
 
     # check that the new meta.index is updated, but not the original one

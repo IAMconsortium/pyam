@@ -1,8 +1,6 @@
 # Next release
 
 ## API changes
-PR [#349](https://github.com/IAMconsortium/pyam/pull/349) changed how appending
-checks that time columns are equal.  
 
 PR [#341](https://github.com/IAMconsortium/pyam/pull/341) changed
 the API of `IamDataFrame.convert_unit()` from a dictionary to explicit kwargs
@@ -17,6 +15,7 @@ an IamDataFrame with `n/a` entries in columns other than `value` raises an error
 
 ## Individual Updates
 
+- [#349](https://github.com/IAMconsortium/pyam/pull/349) Fixes an issue with checking that time columns are equal when appending IamDataFrames
 - [#348](https://github.com/IAMconsortium/pyam/pull/348) Extend pages for API docs, clean up docstrings, and harmonize formatting
 - [#347](https://github.com/IAMconsortium/pyam/pull/347) Enable contexts and custom UnitRegistry with unit conversion
 - [#341](https://github.com/IAMconsortium/pyam/pull/341) Use `pint` and IIASA-ene-units repo for unit conversion
