@@ -250,7 +250,7 @@ class IamDataFrame(object):
             other = IamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
 
-        if self.time_col is not other.time_col:
+        if self.time_col != other.time_col:
             raise ValueError('incompatible time format (years vs. datetime)!')
 
         ret = self.copy() if not inplace else self

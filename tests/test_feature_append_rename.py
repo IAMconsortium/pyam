@@ -63,6 +63,16 @@ def test_append_other_scenario(test_df):
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
+def test_append_reconstructed_time(test_df):
+    # This tests that dfs with identical time cols created by different methods
+    # can be appended
+    other = test_df.filter(scenario='scen_b')\
+        .rename({'scenario': {'scen_b': 'scen_c'}})
+    other.time_col = other.time_col[0:1] + other.time_col[1:]
+    test_df.append(other, inplace=True)
+    assert "scen_c" in test_df.scenarios().values
+
+
 def test_append_same_scenario(test_df):
     other = test_df.filter(scenario='scen_b')\
         .rename({'variable': {'Primary Energy': 'Primary Energy clone'}})

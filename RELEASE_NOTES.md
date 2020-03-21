@@ -1,6 +1,8 @@
 # Next release
 
 ## API changes
+PR [#349](https://github.com/IAMconsortium/pyam/pull/349) changed how appending
+checks that time columns are equal.  
 
 PR [#341](https://github.com/IAMconsortium/pyam/pull/341) changed
 the API of `IamDataFrame.convert_unit()` from a dictionary to explicit kwargs
