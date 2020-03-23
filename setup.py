@@ -78,8 +78,9 @@ def main():
         ],
     }
     package_data = {
-        'pyam': ['region_mappings/*', '../units/definitions.txt',
-                 '../units/modules/**/*.txt'],
+        'pyam': ['region_mappings/*',
+                 '../units/definitions.txt', '../units/modules/**/*.txt',
+                 'tests/**'],
     }
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS
