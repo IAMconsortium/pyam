@@ -1,0 +1,14 @@
+<!-- this is a hard override because alabaster does not have an option
+     to set the tocdepth in the navigation sidebar,
+     see https://github.com/bitprophet/alabaster/issues/89 -->
+
+<h3>{{ _('Navigation') }}</h3>
+{{ toctree(maxdepth=0, includehidden=theme_sidebar_includehidden, collapse=theme_sidebar_collapse) }}
+{% if theme_extra_nav_links %}
+<hr />
+<ul>
+    {% for text, uri in theme_extra_nav_links.items() %}
+    <li class="toctree-l1"><a href="{{ uri }}">{{ text }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}

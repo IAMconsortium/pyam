@@ -1,32 +1,33 @@
 .. currentmodule:: pyam
 
-Python API
-**********
+API reference
+=============
 
-Class IamDataFrame
-~~~~~~~~~~~~~~~~~~
+This page gives an overview of the public |pyam| features, objects, functions
+and methods.
 
-.. autoclass:: IamDataFrame
-   :members:
+.. toctree::
+   :maxdepth: 1
 
-Useful `pyam` functions
-~~~~~~~~~~~~~~~~~~~~~~~
+   api/io
+   api/general
+   api/iamdataframe
+   api/filtering
+   api/statistics
+   api/timeseries
+   api/variables
 
-.. autofunction:: filter_by_meta
 
-.. autofunction:: cumulative
+**Intersphinx mapping**
 
-.. autofunction:: fill_series
+To use sphinx.ext.intersphinx_ for generating automatic links from your project
+to the documenation of |pyam| classes and functions, please add the following
+to your project's :code:`conf.py`:
 
-Class Statistics
-~~~~~~~~~~~~~~~~
+.. _sphinx.ext.intersphinx: https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 
-This class provides a wrapper for generating descriptive summary statistics
-for timeseries data using various groupbys or filters.
-It uses the `pandas.describe()`_ function internally
-and hides the tedious work of filters, groupbys and merging of dataframes.
+.. code-block:: python
 
-.. _`pandas.describe()` : https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.describe.html
-
-.. autoclass:: Statistics
-   :members:
+   intersphinx_mapping = {
+       'pyam': ('https://pyam-iamc.readthedocs.io/en/stable/', None),
+   }

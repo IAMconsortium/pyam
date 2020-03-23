@@ -15,5 +15,4 @@ dependencies:
     - pillow==5.4.1
     - sphinxcontrib-bibtex
     - sphinxcontrib-programoutput
-    - sphinxcontrib-fulltoc
     - nbsphinx

@@ -44,7 +44,7 @@ IAMC format and a full list of previous use cases.
 The :code:`variable` column
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The :code:`variable` column implements a "semi-hierarchical" structure
+The 'variable' column implements a "semi-hierarchical" structure
 using the :code:`|` character (*pipe*, not l or i) to indicate the *depth*.
 
 Semi-hierarchical means that a hierarchy can be imposed, e.g., one can enforce
@@ -71,11 +71,11 @@ represented as integer values.
 Two additional use cases are currently supported by :class:`pyam` in development
 mode (beta):
 
- - using representative sub-annual timesteps via the :code:`extra_cols` feature
-   (see the section on `custom columns`_ in the :code:`data` table)
+ - using representative sub-annual timesteps via the "extra_cols" feature
+   (see the section on `custom columns`_ in the 'data' table)
 
- - using continuous time via :class:`pandas.datetime`, replacing the name of
-   the :code:`year` column by :code:`time`
+ - using continuous time via :class:`datetime.datetime`,
+   replacing the 'year' column by a 'time' column
 
 Please reach out to the developers to get more information on this
 ongoing work.
@@ -98,7 +98,7 @@ the standard IAMC-style format is in *wide format* (see the example above),
 where each timeseries is one row and the timesteps are represented as columns.
 
 While long-format tables have advantages for the internal implementation of many
-:class:`pyam` functions, wide-format tables are more intuitive to users.
+|pyam| functions, wide-format tables are more intuitive to users.
 The method :meth:`timeseries() <pyam.IamDataFrame.timeseries>` converts between
 the formats and returns a :class:`pandas.DataFrame` in wide format.
 Exporting an :class:`IamDataFrame` to file using
@@ -109,10 +109,10 @@ in wide format.
 The standard columns
 ^^^^^^^^^^^^^^^^^^^^
 
-The columns of the :code:`data` table are :code:`['model', 'scenario', 'region',
-'unit', <time_format>, 'value']`, where :code:`time_format` is :code:`year`
-when timesteps are given in years (as :class:`int`) or :code:`time` when time
-is represented on a continuous scale (as :class:`pandas.datetime`).
+The columns of the 'data' table are :code:`['model', 'scenario', 'region',
+'unit', <time_format>, 'value']`, where :code:`time_format` is 'year'
+when timesteps are given in years (as :class:`int`) or 'time' when time
+is represented on a continuous scale (as :class:`datetime.datetime`).
 
 .. _`custom columns`:
 
@@ -120,33 +120,37 @@ Custom columns of the :code:`data` table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If an :class:`IamDataFrame` is initialised with columns that are not in the
-list above nor interpreted as belonging to the time dimension (in wide format), these
-columns are included in the :code:`data` table as :code:`extra_cols`.
+list above nor interpreted as belonging to the time dimension (in wide format),
+these columns are included in the 'data' table as additional columns
+(:code:`extra_cols`).
 This feature can be used, for example, to distinguish between multiple
 climate models providing different values for the variable
-:code:`Temperature|Global Mean`
-.
+:code:`Temperature|Global Mean`.
 
 .. warning::
 
-    Not all :class:`pyam` functions currently support the continuous
-    time or custom columns in a :code:`data` table. Please reach out via the 
-    mailing list or GitHub issues if you are not sure whether your use case
+    Not all **pyam** functions currently support the continuous-time format or    
+    custom columns in a 'data' table. Please reach out via the 
+    `mailing list or GitHub issues`_ if you are not sure whether your use case
     is supported.
 
+.. _`mailing list or GitHub issues`: contributing.html
+
+
 .. warning::
 
-    A word of warning for adding annotations relating to custom columns:
-    :class:`pyam` drops any data rows which have :code:`NaN` values.
-    Hence, if you are adding meta information to :code:`data`, you need to make
-    sure that you **add a value to every single row**.
+    A word of warning when using custom columns for annotations:
+    **pyam** drops any data rows where the 'value' column is 'nan',
+    and it raises an error for 'nan' in any other column.
+    Hence, if you are adding variable/region-specific meta information to
+    'data', you need to make sure that you **add a value to every single row**.
 
     The reason for that implementation is that pandas does not work as expected
-    with :code:`NaN` in many cases
+    with 'nan' in some situations
     (see `here <https://stackoverflow.com/a/18431417>`_ and
     `here <https://stackoverflow.com/a/13606221>`_).
-    Therefore, it is simpler to remove :code:`NaN`'s to ensure that
-    :class:`pyam` has a clean dataset on which to operate.
+    Therefore, enforcing that there are no 'nan's in an **IamDataFrame**
+    ensures that **pyam** has a clean dataset on which to operate.
 
 The :code:`meta` table
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -156,20 +160,19 @@ model-scenario level. Examples in the `SR15`_ context are the warming category
 ('Below 1.5°C', '1.5°C with low overshoot', etc.) and the cumulative
 CO2 emissions until the end of the century.
 
-:class:`pyam` attempts to keep the information in :code:`meta` consistent with
-:code:`data` when performing operations (e.g.,
-:meth:`rename() <pyam.IamDataFrame.rename>`,
-:meth:`append() <pyam.IamDataFrame.append>`).
-See :meth:`utils.merge_meta() <pyam.utils.merge_meta>` for details.
+When performing operations such as :meth:`rename() <pyam.IamDataFrame.rename>`
+or :meth:`append() <pyam.IamDataFrame.append>`,
+|pyam| attempts to keep the information in 'meta' consistent with
+the 'data' dataframe.
 
 .. note::
 
-    The :code:`meta` table is not intended for annotations of individual
-    data points. If you want to add meta information at this level (e.g., 
-    which stylized climate model provided the variable
+    The 'meta' table is not intended for annotations of individual
+    data points. If you want to add meta information at this level
+    (e.g., which stylized climate model provided the variable
     :code:`Temperature|Global Mean`, or whether a data point is from the 
     original data source or the result of an operation), this should operate on
-    the :code:`data` table of the :class:`IamDataFrame` using the
+    the 'data' table of the **IamDataFrame** using the
     custom-columns feature (see `custom columns`_ above).
 
 Filtering
@@ -179,19 +182,19 @@ The |pyam| package provides two methods for filtering scenario data:
 
 An existing :class:`IamDataFrame` can be filtered using
 :meth:`filter(col=...) <pyam.IamDataFrame.filter>`,
-where :code:`col` can be any column of the :code:`data` table (i.e.,
+where :code:`col` can be any column of the 'data' table (i.e.,
 :code:`['model', 'scenario', 'region', 'unit', 'year'/'time']` or any `custom
-columns`_), or a column of the :code:`meta` table. The returned object is
+columns`_), or a column of the 'meta' table. The returned object is
 a new :class:`IamDataFrame` instance.
 
-A :class:`pandas.DataFrame` (:code:`data`) with columns or index
-:code:`['model', 'scenario']` can be filtered by any :code:`meta` columns from
+A :class:`pandas.DataFrame` ('data') with columns or index
+:code:`['model', 'scenario']` can be filtered by any 'meta' columns from
 an :class:`IamDataFrame` (:code:`df`) using 
 :meth:`pyam.filter_by_meta(data, df, col=..., join_meta=False) <pyam.filter_by_meta>`.
 The returned object is a :class:`pandas.DataFrame` down-selected to those
-models-and-scenarios where the :code:`meta` column satisfies the criteria given
+models-and-scenarios where the 'meta' column satisfies the criteria given
 by :code:`col=...` .
-Optionally, the :code:`meta` columns are joined to the returned dataframe.
+Optionally, the 'meta' columns are joined to the returned dataframe.
 
 References
 ----------

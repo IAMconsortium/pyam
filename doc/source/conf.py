@@ -34,7 +34,6 @@ import pyam
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    'sphinxcontrib.fulltoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
@@ -144,7 +143,7 @@ html_theme_options = {
     'logo': 'logo.svg',
     'logo_name': True,
     'description': 'analysis & visualization of integrated-assessment scenarios',
-    'sidebar_width': '225px',
+    'sidebar_width': '230px',
     'github_button': True,
     'github_user': 'iamconsortium',
     'github_repo': 'pyam',
@@ -324,9 +323,13 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'pint': ('https://pint.readthedocs.io/en/stable', None)
 }
 
+# extend the timeout limit for running notebooks
+nbsphinx_timeout = 120
 
 # prolog for all rst files
 rst_prolog = """

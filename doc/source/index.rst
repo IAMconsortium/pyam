@@ -46,16 +46,18 @@ Overview
 The open-source Python package |pyam| :cite:`Gidden:2019:pyam`
 provides a suite of tools and functions for analyzing and visualizing
 input data (i.e., assumptions/parametrization) 
-and results (model output) of integrated-assessment scenarios.
+and results (model output) of integrated-assessment scenarios,
+energy systems analysis, and sectoral studies.
 
 Key features:
 ~~~~~~~~~~~~~
 
  - Simple analysis of timeseries data in the IAMC format (more about it `here`_)
-   with an interface similar in feel and style to the widely
-   used `pandas.DataFrame`_
+   with an interface similar in feel & style to the widely
+   used :py:class:`pandas.DataFrame`
  - Advanced visualization and plotting functions (see the `gallery`_)
- - Diagnostic checks for scripted validation of scenario data and results
+ - Features for scripted validation & processing of scenario data
+   and results
 
 The source code for |pyam| is available on `Github`_.
 
@@ -64,9 +66,6 @@ The source code for |pyam| is available on `Github`_.
 
 .. _`gallery`:
    examples/index.html
-
-.. _`pandas.DataFrame`:
-   https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 
 .. _`Github`:
    https://github.com/IAMconsortium/pyam

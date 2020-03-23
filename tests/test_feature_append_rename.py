@@ -1,6 +1,5 @@
 import copy
 import pytest
-import datetime as dt
 
 import numpy as np
 import pandas as pd
@@ -16,8 +15,7 @@ RENAME_DF = IamDataFrame(pd.DataFrame([
     ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
     ['model', 'scen', 'region_a', 'test_3', 'unit', 3, 7],
     ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
-], columns=['model', 'scenario', 'region',
-            'variable', 'unit', 2005, 2010],
+], columns=IAMC_IDX + [2005, 2010],
 ))
 
 # expected output
@@ -25,8 +23,7 @@ EXP_RENAME_DF = IamDataFrame(pd.DataFrame([
     ['model', 'scen', 'region_c', 'test', 'unit', 4, 12],
     ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
     ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
-], columns=['model', 'scenario', 'region',
-            'variable', 'unit', 2005, 2010],
+], columns=IAMC_IDX + [2005, 2010],
 )).data.sort_values(by='region').reset_index(drop=True)
 
 
@@ -64,8 +61,7 @@ def test_append_other_scenario(test_df):
 
 
 def test_append_reconstructed_time(test_df):
-    # This tests that dfs with identical time cols created by different methods
-    # can be appended
+    # check appending dfs with equal time cols created by different methods
     other = test_df.filter(scenario='scen_b')\
         .rename({'scenario': {'scen_b': 'scen_c'}})
     other.time_col = other.time_col[0:1] + other.time_col[1:]
@@ -85,7 +81,7 @@ def test_append_same_scenario(test_df):
     # check that non-matching meta raise an error
     pytest.raises(ValueError, test_df.append, other=other)
 
-    # check that ignoring meta conflict works as expetced
+    # check that ignoring meta conflict works as expected
     df = test_df.append(other, ignore_meta_conflict=True)
 
     # check that the new meta.index is updated, but not the original one
@@ -138,9 +134,9 @@ def test_append_duplicates(test_df_year):
 
 
 def test_rename_data_cols_by_dict():
-    args = {'mapping': {'variable': {'test_1': 'test', 'test_3': 'test'},
-                        'region': {'region_a': 'region_c'}}}
-    obs = RENAME_DF.rename(**args).data.reset_index(drop=True)
+    mapping = dict(variable={'test_1': 'test', 'test_3': 'test'},
+                   region={'region_a': 'region_c'})
+    obs = RENAME_DF.rename(mapping).data.reset_index(drop=True)
     pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
@@ -184,7 +180,7 @@ def test_rename_index(test_df):
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
-    ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
+    ], columns=IAMC_IDX + times
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
@@ -215,7 +211,7 @@ def test_rename_append(test_df):
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
-    ], columns=['model', 'scenario', 'region', 'variable', 'unit'] + times
+    ], columns=IAMC_IDX + times
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
@@ -244,8 +240,7 @@ def test_rename_duplicates():
         ['model', 'scen', 'region_a', 'test_2', 'unit', 2, 6],
         ['model', 'scen', 'region_a', 'test_3', 'unit', 4, 12],
         ['model', 'scen', 'region_b', 'test_3', 'unit', 4, 8],
-    ], columns=['model', 'scenario', 'region',
-                'variable', 'unit', 2005, 2010],
+    ], columns=IAMC_IDX + [2005, 2010],
     ))
 
     assert compare(obs, exp).empty

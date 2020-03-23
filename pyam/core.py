@@ -15,6 +15,7 @@ try:
     from datapackage import Package
     HAS_DATAPACKAGE = True
 except ImportError:
+    Package = None
     HAS_DATAPACKAGE = False
 
 try:
@@ -56,36 +57,38 @@ logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """This class is a wrapper for timeseries data following the IAMC format.
-    It provides a number of diagnostic features (including validation of data,
-    completeness of variables provided) as well as visualization
-    and plotting tools.
+    """Scenario timeseries data
+
+    The class provides a number of diagnostic features (including validation of
+    data, completeness of variables provided), processing tools (e.g.,
+    unit conversion), as well as visualization and plotting tools.
 
     Parameters
     ----------
     data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
-        an instance of an TimeSeries or Scenario (requires `ixmp`),
-        or pd.DataFrame or data file with IAMC-format data columns.
-        A pd.DataFrame can have the required data as columns or index.
+        an instance of an :class:`ixmp.Scenario`, :class:`pandas.DataFrame`,
+        or data file with the required data columns.
+        A pandas.DataFrame can have the required data as columns or index.
         Support is provided additionally for R-style data columns for years,
         like "X2015", etc.
     kwargs:
-        if `value=col`, melt `col` to `value` and use `col` name as `variable`;
-        else, mapping of columns required for an `IamDataFrame` to:
+        if `value=col`, melt column `col` to 'value' and use `col` name as
+        'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
+        any of the following:
+
         - one column in `df`
-        - multiple columns, which will be concatenated by pipe
+        - multiple columns, which will be concatenated by ``|``
         - a string to be used as value for this column
 
     Notes
     -----
-    When initializing an :class:`IamDataFrame` from an :code:`xlsx` file,
-    :class:`pyam` will per default look for the sheets 'data' and 'meta' to
+    When initializing an :class:`IamDataFrame` from an xlsx file,
+    |pyam| will per default look for the sheets 'data' and 'meta' to
     populate the respective tables. Custom sheet names can be specified with
-    the kwargs :code:`sheet_name` (:code:`data`) and :code:`meta_sheet_name`
-    (:code:`meta`). Calling the class with :code:`meta_sheet_name=False` will
-    skip the import of the :code:`meta` table.
+    kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta')
+    Calling the class with :code:`meta_sheet_name=False` will
+    skip the import of the 'meta' table.
     """
-
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         # import data from pd.DataFrame or read from source
@@ -181,15 +184,15 @@ class IamDataFrame(object):
     def equals(self, other):
         """Test if two objects contain the same data and meta indicators
 
-        This function allows two IamdDataFrame instances to be compared against
+        This function allows two IamDataFrame instances to be compared against
         each other to see if they have the same timeseries data and meta
-        indicators. NaNs in the same location of the meta table are considered
+        indicators. nan's in the same location of the meta table are considered
         equal.
 
         Parameters
         ----------
         other: IamDataFrame
-            The other IamDataFrame to be compared with the first.
+            the other IamDataFrame to be compared with the first
         """
         if not isinstance(other, IamDataFrame):
             raise ValueError('`other` is not an `IamDataFrame` instance')
@@ -227,23 +230,21 @@ class IamDataFrame(object):
 
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
-        """Append any castable object to this IamDataFrame.
+        """Append any castable object to this IamDataFrame
 
         Columns in `other.meta` that are not in `self.meta` are always merged,
         duplicate region-variable-unit-year rows raise a ValueError.
 
         Parameters
         ----------
-        other: pyam.IamDataFrame, ixmp.TimeSeries, ixmp.Scenario,
-        pd.DataFrame or data file
-            An IamDataFrame, TimeSeries or Scenario (requires `ixmp`),
-            pandas.DataFrame or data file with IAMC-format data columns
+        other: pyam.IamDataFrame, ixmp.Scenario, pandas.DataFrame or data file
+            any object castable as IamDataFrame to be appended
         ignore_meta_conflict : bool, default False
-            If False and `other` is an IamDataFrame, raise an error if
+            if False and `other` is an IamDataFrame, raise an error if
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
-            If True, do operation inplace and return None
-        kwargs are passed through to `IamDataFrame(other, **kwargs)`
+            if True, do operation inplace and return None
+        kwargs are passed through to :func:`IamDataFrame(other, **kwargs)`
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
@@ -281,10 +282,7 @@ class IamDataFrame(object):
 
         # join other.meta for new scenarios
         if not diff.empty:
-            # sorting not supported by ` pd.append()`  prior to version 23
-            sort_kwarg = {} if int(pd.__version__.split('.')[1]) < 23 \
-                else dict(sort=False)
-            ret.meta = ret.meta.append(other.meta.loc[diff, :], **sort_kwarg)
+            ret.meta = ret.meta.append(other.meta.loc[diff, :], sort=False)
 
         # append other.data (verify integrity for no duplicates)
         _data = ret.data.set_index(sorted(ret._LONG_IDX)).append(
@@ -350,8 +348,8 @@ class IamDataFrame(object):
         Parameters
         ----------
         time: int, datetime
-             Time or year to be interpolated. This must match the
-             date-time/year style of self.
+             time or year to be interpolated. This must match the
+             datetime/year style of self.
         """
         if self.time_col == 'year' and not isinstance(time, int):
             raise ValueError(
@@ -399,7 +397,7 @@ class IamDataFrame(object):
             return ret
 
     def as_pandas(self, with_metadata=False):
-        """Return this as a pd.DataFrame
+        """Return object as a pandas.DataFrame
 
         Parameters
         ----------
@@ -429,18 +427,18 @@ class IamDataFrame(object):
         return list(cols)
 
     def timeseries(self, iamc_index=False):
-        """Returns a pd.DataFrame in wide format (years or datetime as columns)
+        """Returns 'data' as pandas.DataFrame in wide format (time as columns)
 
         Parameters
         ----------
         iamc_index: bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all `data` columns
+            else, use all 'data' columns
 
         Raises
         ------
         ValueError
-            ``IamDataFrame`` is empty
+            `IamDataFrame` is empty
         ValueError
             reducing to IAMC-index yields an index with duplicates
         """
@@ -468,13 +466,13 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        meta: pd.Series, list, int, float or str
+        meta: pandas.Series, list, int, float or str
             column to be added to metadata
             (by `['model', 'scenario']` index if possible)
         name: str, optional
             meta column name (defaults to meta pd.Series.name);
             either a meta.name or the name kwarg must be defined
-        index: pyam.IamDataFrame, pd.DataFrame or pd.MultiIndex, optional
+        index: IamDataFrame, pandas.DataFrame or pandas.MultiIndex, optional
             index to be used for setting meta column (`['model', 'scenario']`)
         """
         # check that name is valid and doesn't conflict with data columns
@@ -528,7 +526,7 @@ class IamDataFrame(object):
         self.meta[name] = meta[name].combine_first(self.meta[name])
 
     def set_meta_from_data(self, name, method=None, column='value', **kwargs):
-        """Add metadata indicators from downselected timeseries `data` of self
+        """Add metadata indicators from downselected timeseries data of self
 
         Parameters
         ----------
@@ -536,7 +534,7 @@ class IamDataFrame(object):
             meta column name
         method: function, optional
             method for aggregation, required if downselected data do not yield
-            unique values (e.g., `numpy.max()`)
+            unique values (e.g., :func:`numpy.max`)
         column: str, optional
             the column from `data` to be used to derive the indicator
         kwargs: passed to :meth:`IamDataFrame.filter()` for downselected `data`
@@ -592,7 +590,7 @@ class IamDataFrame(object):
                                  name, value))
 
     def _new_meta_column(self, name):
-        """Add a column to meta if it doesn't exist, set to value `np.nan`"""
+        """Add a column to meta if it doesn't exist, set value to nan"""
         if name is None:
             raise ValueError('cannot add a meta column `{}`'.format(name))
         if name not in self.meta:
@@ -642,7 +640,7 @@ class IamDataFrame(object):
         """Validate scenarios using criteria on timeseries values
 
         Returns all scenarios which do not match the criteria and prints a log
-        message or returns None if all scenarios match the criteria.
+        message, or returns None if all scenarios match the criteria.
 
         When called with `exclude_on_fail=True`, scenarios in the object not
         satisfying the criteria will be marked as `exclude=True`.
@@ -668,13 +666,14 @@ class IamDataFrame(object):
 
     def rename(self, mapping=None, inplace=False, append=False,
                check_duplicates=True, **kwargs):
-        """Rename and aggregate column entries using `groupby.sum()` on values.
+        """Rename and aggregate columns using `groupby().sum()` on values
+
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
 
         Renaming is only applied to any data where a filter matches for all
         columns given in `mapping`. Renaming can only be applied to the `model`
-        and `scenario` columns or to other data columns simultaneously.
+        and `scenario` columns, or to other data columns simultaneously.
 
         Parameters
         ----------
@@ -690,7 +689,7 @@ class IamDataFrame(object):
         check_duplicates: bool, default True
             check whether conflict between existing and renamed data exists.
             If True, raise ValueError; if False, rename and merge
-            with `groupby().sum()`.
+            with :meth:`pandas.GroupBy.sum`.
         """
         # combine `mapping` arg and mapping kwargs, ensure no rename conflicts
         mapping = mapping or {}
@@ -870,7 +869,7 @@ class IamDataFrame(object):
             flag scenarios failing validation as `exclude: True`
         multiplier: number, default 1
             factor when comparing variable and sum of components
-        kwargs: passed to `np.isclose()`
+        kwargs: passed to :func:`numpy.isclose()`
         """
         # compute aggregate from components, return None if no components
         df_components = _aggregate(self, variable, components, method)
@@ -904,7 +903,7 @@ class IamDataFrame(object):
         """Aggregate a timeseries over a number of subregions
 
         This function allows to add variable sub-categories that are only
-        defined at the  `region` level by setting `components=True`
+        defined at the `region` level by setting `components=True`
 
         Parameters
         ----------
@@ -968,7 +967,7 @@ class IamDataFrame(object):
             (currently only supported with `method='sum'`)
         exclude_on_fail: boolean, default False
             flag scenarios failing validation as `exclude: True`
-        kwargs: passed to `np.isclose()`
+        kwargs: passed to :func:`numpy.isclose`
         """
         # compute aggregate from subregions, return None if no subregions
         df_subregions = _aggregate_region(self, variable, region, subregions,
@@ -1023,7 +1022,7 @@ class IamDataFrame(object):
             list of subregions, defaults to all regions other than `region`
         append: bool, default False
             append the downscaled timeseries to `self` and return None,
-            else return downscaled data as new `IamDataFrame`
+            else return downscaled data as new IamDataFrame
         """
         # get default subregions if not specified
         subregions = subregions or self._all_other_regions(region)
@@ -1084,9 +1083,9 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        kwargs: passed to `np.isclose()`
+        kwargs: passed to :func:`numpy.isclose`
         components: bool, default False
-            passed to `check_aggregate_region)`: if `True`, use all
+            passed to :meth:`check_aggregate_region` if `True`, use all
             sub-categories of each `variable` included in `World` but not in
             any of the subregions; if `False`, only aggregate variables over
             subregions
@@ -1117,7 +1116,7 @@ class IamDataFrame(object):
                       .format(len(idx), '' if len(idx) == 1 else 's'))
 
     def filter(self, keep=True, inplace=False, **kwargs):
-        """Return a filtered IamDataFrame (i.e., a subset of current data)
+        """Return a (copy of a) filtered (downselected) IamDataFrame
 
         Parameters
         ----------
@@ -1161,8 +1160,9 @@ class IamDataFrame(object):
         Parameters
         ----------
         filters: dict
-            dictionary of filters ({col: values}}); uses a pseudo-regexp syntax
-            by default, but accepts `regexp: True` to use regexp directly
+            dictionary of filters of the format (`{col: values}`);
+            uses a pseudo-regexp syntax by default,
+            but accepts `regexp: True` in the dictionary to use regexp directly
         """
         regexp = filters.pop('regexp', False)
         keep = np.array([True] * len(self.data))
@@ -1238,7 +1238,7 @@ class IamDataFrame(object):
         Parameters
         ----------
         col: string
-            column in either data or metadata
+            column in either data or meta dataframes
         func: functional
             function to apply
         """
@@ -1262,13 +1262,13 @@ class IamDataFrame(object):
             file path
         iamc_index: bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all `data` columns
+            else, use all 'data' columns
         """
         self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
     def to_excel(self, excel_writer, sheet_name='data', iamc_index=False,
                  include_meta=True, **kwargs):
-        """Write object to an Excel sheet
+        """Write object to an Excel spreadsheet
 
         Parameters
         ----------
@@ -1277,10 +1277,10 @@ class IamDataFrame(object):
         sheet_name: string
             name of sheet which will contain ``IamDataFrame.timeseries()`` data
         iamc_index: bool, default False
-            if True, use :code:`['model', 'scenario', 'region', 'variable',
-            'unit']`; else, use all :code:`data` columns
+            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all 'data' columns
         include_meta: boolean or string
-            if True, write :code:`meta` to an Excel sheet 'meta' (default);
+            if True, write 'meta' to an Excel sheet name 'meta' (default);
             if this is a string, use it as sheet name
         """
         close = False
@@ -1300,20 +1300,20 @@ class IamDataFrame(object):
             excel_writer.close()
 
     def export_metadata(self, excel_writer, sheet_name='meta'):
-        """Deprecated, see :method:`export_meta()`"""
+        """Deprecated, see :meth:`export_meta()`"""
         # TODO: deprecate in next release (>=0.5.0)
         deprecation_warning('Use `export_meta()` instead!')
         self.export_meta(excel_writer, sheet_name='meta')
 
     def export_meta(self, excel_writer, sheet_name='meta'):
-        """Write the ``meta`` table of this object to an Excel sheet
+        """Write the 'meta' table of this object to an Excel sheet
 
         Parameters
         ----------
         excel_writer: string or ExcelWriter object
             file path or existing ExcelWriter
         sheet_name: string
-            name of sheet which will contain ``IamDataFrame.meta`` table
+            name of sheet which will contain 'meta' table
         """
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
@@ -1333,10 +1333,9 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path: string or pathlib.Path
+        path: string or :class:`pathlib.Path`
             file path
         """
-
         if not HAS_DATAPACKAGE:
             raise ImportError('required package `datapackage` not found!')
 
@@ -1356,18 +1355,18 @@ class IamDataFrame(object):
         return Package(path)
 
     def load_metadata(self, path, *args, **kwargs):
-        """Deprecated, see :method:`load_meta()`"""
+        """Deprecated, see :meth:`load_meta`"""
         # TODO: deprecate in next release (>=0.5.0)
         deprecation_warning('Use `load_meta()` instead!')
         self.load_meta(path, *args, **kwargs)
 
     def load_meta(self, path, *args, **kwargs):
-        """Load ``meta`` table  exported from a :class:`IamDataFrame` instance
+        """Load 'meta' table from file
 
         Parameters
         ----------
         path: string
-            xlsx or csv file path to ``meta`` table
+            path to xlsx or csv file of a 'meta' table
         """
         if path.endswith('csv'):
             df = pd.read_csv(path, *args, **kwargs)
@@ -1379,7 +1378,7 @@ class IamDataFrame(object):
 
         req_cols = ['model', 'scenario', 'exclude']
         if not set(req_cols).issubset(set(df.columns)):
-            e = 'File `{}` does not have required columns ({})!'
+            e = 'File `{}` does not have required columns {}!'
             raise ValueError(e.format(path, req_cols))
 
         # set index, filter to relevant scenarios from imported metadata file
@@ -1430,7 +1429,7 @@ class IamDataFrame(object):
                   .set_index(META_IDX)
                   )
             if x != 'year' and y != 'year':
-                df = df.drop('year', axis=1)  # years causes NaNs
+                df = df.drop('year', axis=1)  # years causes nan's
 
         ax, handles, labels = plotting.line_plot(
             df.dropna(), x=x, y=y, **kwargs)
@@ -1596,7 +1595,7 @@ class IamDataFrame(object):
 
 
 def _meta_idx(data):
-    """Return the `META_IDX` from `data` by index or columns"""
+    """Return the `META_IDX` from data by index"""
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
@@ -1681,7 +1680,7 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     Parameters
     ----------
     df: IamDataFrame instance
-    args: see `IamDataFrame.validate()` for details
+    args: see :meth:`IamDataFrame.validate()` for details
     kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
@@ -1698,7 +1697,7 @@ def require_variable(df, variable, unit=None, year=None, exclude_on_fail=False,
     Parameters
     ----------
     df: IamDataFrame instance
-    args: see `IamDataFrame.require_variable()` for details
+    args: see :meth:`IamDataFrame.require_variable()` for details
     kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
@@ -1717,7 +1716,7 @@ def categorize(df, name, value, criteria,
     Parameters
     ----------
     df: IamDataFrame instance
-    args: see `IamDataFrame.categorize()` for details
+    args: see :meth:`IamDataFrame.categorize()` for details
     kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
@@ -1739,7 +1738,7 @@ def check_aggregate(df, variable, components=None, exclude_on_fail=False,
     Parameters
     ----------
     df: IamDataFrame instance
-    args: see IamDataFrame.check_aggregate() for details
+    args: see :meth:IamDataFrame.check_aggregate()` for details
     kwargs: passed to `df.filter()`
     """
     fdf = df.filter(**kwargs)
@@ -1756,18 +1755,18 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
 
     Parameters
     ----------
-    data: pd.DataFrame instance
+    data: pandas.DataFrame
         DataFrame to which meta columns are to be joined,
         index or columns must include `['model', 'scenario']`
     df: IamDataFrame instance
         IamDataFrame from which meta columns are filtered and joined (optional)
     join_meta: bool, default False
         join selected columns from `df.meta` on `data`
-    kwargs:
+    kwargs:`
         meta columns to be filtered/joined, where `col=...` applies filters
-        by the given arguments (using `utils.pattern_match()`) and `col=None`
-        joins the column without filtering (setting col to `np.nan`
-        if `(model, scenario) not in df.meta.index`)
+        with the given arguments (using :meth:`utils.pattern_match()`).
+        Using `col=None` joins the column without filtering (setting col
+        to nan if `(model, scenario)` not in `df.meta.index`)
     """
     if not set(META_IDX).issubset(data.index.names + list(data.columns)):
         raise ValueError('missing required index dimensions or columns!')
@@ -1808,17 +1807,17 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
 
 def compare(left, right, left_label='left', right_label='right',
             drop_close=True, **kwargs):
-    """Compare the data in two IamDataFrames and return a pd.DataFrame
+    """Compare the data in two IamDataFrames and return a pandas.DataFrame
 
     Parameters
     ----------
     left, right: IamDataFrames
-        the IamDataFrames to be compared
+        two IamDataFrames to be compared
     left_label, right_label: str, default `left`, `right`
         column names of the returned dataframe
     drop_close: bool, default True
         remove all data where `left` and `right` are close
-    kwargs: passed to `np.isclose()`
+    kwargs: passed to :func:`numpy.isclose`
     """
     ret = pd.concat({right_label: right.data.set_index(right._LONG_IDX),
                      left_label: left.data.set_index(left._LONG_IDX)}, axis=1)
@@ -1829,7 +1828,7 @@ def compare(left, right, left_label='left', right_label='right',
 
 
 def concat(dfs):
-    """Concatenate a series of `pyam.IamDataFrame`-like objects together"""
+    """Concatenate a series of.IamDataFrame-like objects"""
     if isstr(dfs) or not hasattr(dfs, '__iter__'):
         msg = 'Argument must be a non-string iterable (e.g., list or tuple)'
         raise TypeError(msg)
@@ -1849,15 +1848,14 @@ def read_datapackage(path, data='data', meta='meta'):
 
     Parameters
     ----------
-    path: path to Data Package
-        passed to ``datapackage.Package()``
-    data: str, default `data`
+    path: string or :class:`pathlib.Path`
+        file path, passed to :class:`datapackage.Package()`
+    data: str, default 'data'
         resource containing timeseries data in IAMC-compatible format
-    meta: str, default `meta`
+    meta: str, default 'meta'
         (optional) resource containing a table of categorization and
         quantitative indicators
     """
-
     if not HAS_DATAPACKAGE:
         raise ImportError('required package `datapackage` not found!')
 
