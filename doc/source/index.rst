@@ -52,9 +52,9 @@ energy systems analysis, and sectoral studies.
 Key features:
 ~~~~~~~~~~~~~
 
- - Simple analysis of timeseries data in the IAMC format (more about it `here`_)
+ - Simple analysis of timeseries data in the IAMC format (more about it `here`_) |br|
    with an interface similar in feel & style to the widely
-   used :py:class:`pandas.DataFrame`
+   used :class:`pandas.DataFrame`
  - Advanced visualization and plotting functions (see the `gallery`_)
  - Features for scripted validation & processing of scenario data
    and results

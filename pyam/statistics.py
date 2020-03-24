@@ -13,17 +13,17 @@ class Statistics(object):
 
     Parameters
     ----------
-    df: IamDataFrame
+    df : IamDataFrame
         an IamDataFrame from which to retrieve meta indicators for grouping
         or filtering
-    groupby: str or dict
+    groupby : str or dict
         a column of `df.meta` to be used for `groupby`
         or a dictionary of `{column: list}`, where `list` is used for ordering
-    filters: list of tuples
+    filters : list of tuples
         arguments for filtering and describing, either `((index, dict)` or
-        `((index[0], index[1]), dict)`, when also using `groupby`, index must
-        haev length 2.
-    percentiles: list-like of numbers, optional
+        `((index[0], index[1]), dict)`; when also using `groupby`, index must
+        have length 2.
+    percentiles : list-like of numbers, optional
         The percentiles to get from :meth:`pandas.DataFrame.describe()`.
         All should fall between 0 and 1. The default is `[.25, .5, .75]`,
         which returns the 25th, 50th, and 75th percentiles.
@@ -119,20 +119,21 @@ class Statistics(object):
             self._subheaders.append(subheader)
 
     def add(self, data, header, row=None, subheader=None):
-        """Filter `data` by arguments of this SummaryStats instance,
-        then apply `pd.describe()` and format the statistics
+        """Filter 'data' by arguments of this Statistics instance,
+
+        Apply :meth:`pandas.DataFrame.describe()` and format the statistics
 
         Parameters
         ----------
-        data : pd.DataFrame or pd.Series
+        data : pandas.DataFrame or pandas.Series
             data for which summary statistics should be computed
         header : str
             column name for descriptive statistics
         row : str
             row name for descriptive statistics
-            (required if `pyam.Statistics(rows=True)`)
+            (required if :class:`Statistics(rows=True) <Statistics>`)
         subheader : str, optional
-            column name (level=1) if data is a unnamed `pd.Series`
+            column name (level=1) if data is a unnamed :class:`pandas.Series`
         """
         # verify validity of specifications
         if self.rows is not None and row is None:
@@ -216,8 +217,8 @@ class Statistics(object):
                   custom_format='{:.2f}'):
         """Format the compiled statistics to a concise string output
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         center : str, default `mean`
             what to return as 'center' of the summary: `mean`, `50%`, `median`
         fullrange : bool, default None
