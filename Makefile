@@ -77,7 +77,7 @@ regenerate-test-figures: $(VENV_DIR)  ## re-generate all test figures
 .PHONY: test
 test: $(VENV_DIR)  ## run all the tests
 	@pyampath=$$(dirname $$(python -c "import pyam; print(pyam.__file__)")); \
-	cd tests; $(VENV_DIR)/bin/pytest "$${pyampath}"/tests --mpl --cov=pyam --cov-config ./ci/.coveragerc -rfsxEX --cov-report term-missing
+	cd tests; $(VENV_DIR)/bin/pytest "$${pyampath}"/tests --mpl --cov=pyam --cov-config ../ci/.coveragerc -rfsxEX --cov-report term-missing
 
 .PHONY: install
 install: $(VENV_DIR)  ## install pyam in virtual env
