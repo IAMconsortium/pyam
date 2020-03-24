@@ -11,6 +11,7 @@ from pyam import IamDataFrame, validate, categorize, \
     require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
 from pyam.core import _meta_idx, concat
 from pyam.utils import isstr
+from pyam.testing import assert_iamframe_equal
 
 from conftest import TEST_DTS
 
@@ -703,6 +704,25 @@ def test_interpolate(test_pd_df):
 
     # assert that extra_col does not have nan's (check for #351)
     assert all([True if isstr(i) else ~np.isnan(i) for i in df.data.foo])
+
+
+def test_interpolate_extra_cols():
+    # check hat interpolation with non-matching extra_cols has no effect (#351)
+    EXTRA_COL_DF = pd.DataFrame([
+        ['foo', 2005, 1],
+        ['bar', 2010, 3],
+    ],
+        columns=['extra_col', 'year', 'value'],
+    )
+    df = IamDataFrame(EXTRA_COL_DF, model='model_a', scenario='scen_a',
+                      region='World', variable='Primary Energy', unit='EJ/yr')
+
+    # create a copy, interpolate
+    df2 = df.copy()
+    df2.interpolate(2007)
+
+    # assert that interpolation didn't change any data
+    assert_iamframe_equal(df, df2)
 
 
 def test_interpolate_datetimes(test_df):
