@@ -10,6 +10,7 @@ from numpy import testing as npt
 from pyam import IamDataFrame, validate, categorize, \
     require_variable, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
 from pyam.core import _meta_idx, concat
+from pyam.utils import isstr
 
 from conftest import TEST_DTS
 
@@ -687,15 +688,21 @@ def test_category_top_level(test_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_interpolate(test_df_year):
-    test_df_year.interpolate(2007)
-    obs = test_df_year.filter(year=2007).data['value'].reset_index(drop=True)
+def test_interpolate(test_pd_df):
+    _df = test_pd_df.copy()
+    _df['foo'] = ['bar', 'baz', 2]  # add extra_col (check for #351)
+    df = IamDataFrame(_df)
+    df.interpolate(2007)
+    obs = df.filter(year=2007).data['value'].reset_index(drop=True)
     exp = pd.Series([3, 1.5, 4], name='value')
     pd.testing.assert_series_equal(obs, exp)
 
     # redo the interpolation and check that no duplicates are added
-    test_df_year.interpolate(2007)
-    assert not test_df_year.filter().data.duplicated().any()
+    df.interpolate(2007)
+    assert not df.filter().data.duplicated().any()
+
+    # assert that extra_col does not have nan's (check for #351)
+    assert all([True if isstr(i) else ~np.isnan(i) for i in df.data.foo])
 
 
 def test_interpolate_datetimes(test_df):
