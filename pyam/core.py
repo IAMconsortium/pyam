@@ -355,7 +355,8 @@ class IamDataFrame(object):
             raise ValueError(
                 'The `time` argument `{}` is not an integer'.format(time)
             )
-        df = self.pivot_table(index=IAMC_IDX, columns=[self.time_col],
+        index = [i for i in self._LONG_IDX if i not in [self.time_col]]
+        df = self.pivot_table(index=index, columns=[self.time_col],
                               values='value', aggfunc=np.sum)
         # drop time-rows where values are already defined
         if time in df.columns:
