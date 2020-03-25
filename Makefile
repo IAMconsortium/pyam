@@ -77,10 +77,13 @@ regenerate-test-figures: $(VENV_DIR)  ## re-generate all test figures
 .PHONY: test
 test: $(VENV_DIR)  ## run all the tests
 	@here="$${PWD}" && \
-	@pyampath=$$(cd && dirname $$(python -c "import pyam; print(pyam.__file__)"))/../tests && \
+	@pyampath=$$(cd && dirname $$(python -c "import pyam; print(pyam.__file__)")) && \
+	@testpath="$${pyampath}"/../tests && \
+	echo "here: $${here}" && \
 	echo "pyam path: $${pyampath}" && \
-	ls "$${pyampath}" && \
-	cd "$${pyampath}" && \
+	echo "test path: $${testpath}" && \
+	ls "$${testpath}" && \
+	cd "$${testpath}" && \
 	$(VENV_DIR)/bin/pytest  --mpl --cov=pyam --cov-config "$${here}"/ci/.coveragerc -rfsxEX --cov-report term-missing
 
 .PHONY: install

@@ -83,7 +83,7 @@ def main():
                  '../tests/*.*',
                  '../tests/**/*.*',
                  '../doc/source/tutorials/*.*',
-                 '../doc/source/tutorials/_static/*.*'
+                 '../doc/source/tutorials/_static/*.*',
         ],
     }
     install_requirements = REQUIREMENTS
