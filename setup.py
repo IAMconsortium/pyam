@@ -84,7 +84,7 @@ def main():
                  '../tests/**/*.*',
                  '../doc/source/tutorials/*.*',
                  '../doc/source/tutorials/_static/*.*'
-         ],
+        ],
     }
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS
