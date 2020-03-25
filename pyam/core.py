@@ -1346,7 +1346,7 @@ class IamDataFrame(object):
         More information: https://frictionlessdata.io
 
         Returns the saved :class:`datapackage.Package`
-        (`read the docs <https://github.com/frictionlessdata/datapackage-py#package>`_).
+        (|datapackage.Package.docs|).
         When adding metadata (descriptors), please follow the `template`
         defined by https://github.com/OpenEnergyPlatform/metadata
 
@@ -1879,9 +1879,8 @@ def read_datapackage(path, data='data', meta='meta'):
     Parameters
     ----------
     path : string or path object
-        any valid string path or :class:`pathlib.Path`,
-        passed to :class:`datapackage.Package()`
-        (`read the docs <https://github.com/frictionlessdata/datapackage-py#package>`_)
+        any valid string path or :class:`pathlib.Path`, |br|
+        passed to :class:`datapackage.Package()` (|datapackage.Package.docs|)
     data : str, default 'data'
         resource containing timeseries data in IAMC-compatible format
     meta : str, default 'meta'

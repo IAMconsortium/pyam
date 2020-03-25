@@ -342,4 +342,9 @@ rst_prolog = """
 
     <br>
 
+.. |datapackage.Package.docs| raw:: html
+
+   <a href="https://github.com/frictionlessdata/datapackage-py#package">read
+   the docs</a>
+
 """
