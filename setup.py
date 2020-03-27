@@ -63,6 +63,7 @@ CMDCLASS.update({'test': RunTests})
 
 def main():
     print(logo)
+    description = 'Analysis & visualization of integrated-assessment scenarios'
     classifiers = [
         'License :: OSI Approved :: Apache Software License',
     ]
@@ -87,7 +88,7 @@ def main():
         'name': 'pyam-iamc',
         'version': versioneer.get_version(),
         'cmdclass': CMDCLASS,
-        'description': 'Analyze & Visualize Assessment Model Results',
+        'description': description,
         'classifiers': classifiers,
         'license': 'Apache License 2.0',
         'author': 'Matthew Gidden & Daniel Huppmann',

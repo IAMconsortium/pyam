@@ -143,6 +143,7 @@ html_theme_options = {
     'logo': 'logo.svg',
     'logo_name': True,
     'description': 'analysis & visualization of integrated-assessment scenarios',
+    'page_width': '1120px',
     'sidebar_width': '230px',
     'github_button': True,
     'github_user': 'iamconsortium',
@@ -325,7 +326,8 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    'pint': ('https://pint.readthedocs.io/en/stable', None)
+    'pint': ('https://pint.readthedocs.io/en/stable', None),
+    'ixmp': ('https://message.iiasa.ac.at/projects/ixmp/en/stable/', None)
 }
 
 # extend the timeout limit for running notebooks
@@ -339,5 +341,10 @@ rst_prolog = """
 .. |br| raw:: html
 
     <br>
+
+.. |datapackage.Package.docs| raw:: html
+
+   <a href="https://github.com/frictionlessdata/datapackage-py#package">read
+   the docs</a>
 
 """

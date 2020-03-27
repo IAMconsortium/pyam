@@ -65,19 +65,19 @@ class IamDataFrame(object):
 
     Parameters
     ----------
-    data: ixmp.TimeSeries, ixmp.Scenario, pd.DataFrame or data file
+    data : ixmp.Scenario, pd.DataFrame or data file
         an instance of an :class:`ixmp.Scenario`, :class:`pandas.DataFrame`,
         or data file with the required data columns.
         A pandas.DataFrame can have the required data as columns or index.
         Support is provided additionally for R-style data columns for years,
         like "X2015", etc.
-    kwargs:
+    kwargs
         if `value=col`, melt column `col` to 'value' and use `col` name as
         'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
         any of the following:
 
-        - one column in `df`
-        - multiple columns, which will be concatenated by ``|``
+        - one column in `data`
+        - multiple columns, to be concatenated by :code:`|`
         - a string to be used as value for this column
 
     Notes
@@ -163,17 +163,16 @@ class IamDataFrame(object):
     def copy(self):
         """Make a deepcopy of this object
 
-        Documentation about deepcopy is available
-        `here <https://docs.python.org/2/library/copy.html#copy.deepcopy>`_
+        See :func:`copy.deepcopy` for details.
         """
         return copy.deepcopy(self)
 
     def head(self, *args, **kwargs):
-        """Identical to pd.DataFrame.head() operating on data"""
+        """Identical to :meth:`pandas.DataFrame.head()` operating on data"""
         return self.data.head(*args, **kwargs)
 
     def tail(self, *args, **kwargs):
-        """Identical to pd.DataFrame.tail() operating on data"""
+        """Identical to :meth:`pandas.DataFrame.tail()` operating on data"""
         return self.data.tail(*args, **kwargs)
 
     @property
@@ -192,7 +191,7 @@ class IamDataFrame(object):
         Parameters
         ----------
         other: IamDataFrame
-            the other IamDataFrame to be compared with the first
+            the other :class:`IamDataFrame` to be compared with `self`
         """
         if not isinstance(other, IamDataFrame):
             raise ValueError('`other` is not an `IamDataFrame` instance')
@@ -219,7 +218,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        include_units: boolean, default False
+        include_units : boolean, default False
             include the units
         """
         if include_units:
@@ -230,21 +229,22 @@ class IamDataFrame(object):
 
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
-        """Append any castable object to this IamDataFrame
+        """Append any IamDataFrame-like object to this object
 
         Columns in `other.meta` that are not in `self.meta` are always merged,
         duplicate region-variable-unit-year rows raise a ValueError.
 
         Parameters
         ----------
-        other: pyam.IamDataFrame, ixmp.Scenario, pandas.DataFrame or data file
+        other : IamDataFrame, ixmp.Scenario, pandas.DataFrame or data file
             any object castable as IamDataFrame to be appended
         ignore_meta_conflict : bool, default False
             if False and `other` is an IamDataFrame, raise an error if
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             if True, do operation inplace and return None
-        kwargs are passed through to :func:`IamDataFrame(other, **kwargs)`
+        kwargs : initializing other as IamDataFrame
+            passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
@@ -304,18 +304,18 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        index: str or list of strings
+        index : str or list of str
             rows for Pivot table
-        columns: str or list of strings
+        columns : str or list of str
             columns for Pivot table
-        values: str, default 'value'
+        values : str, default 'value'
             dataframe column to aggregate or count
-        aggfunc: str or function, default 'count'
+        aggfunc : str or function, default 'count'
             function used for aggregation,
             accepts 'count', 'mean', and 'sum'
-        fill_value: scalar, default None
+        fill_value : scalar, default None
             value to replace missing values with
-        style: str, default None
+        style : str, default None
             output style for pivot table formatting
             accepts 'highlight_not_max', 'heatmap'
         """
@@ -347,9 +347,9 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        time: int, datetime
-             time or year to be interpolated. This must match the
-             datetime/year style of self.
+        time : int or datetime
+             Year or :class:`datetime.datetime` to be interpolated.
+             This must match the datetime/year format of `self`.
         """
         if self.time_col == 'year' and not isinstance(time, int):
             raise ValueError(
@@ -372,7 +372,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        inplace: bool, default False
+        inplace : bool, default False
             if True, do operation inplace and return None
 
         Raises
@@ -402,7 +402,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        with_metadata : bool, default False or dict
+        with_metadata : bool or dict, default False
            if True, join data with all meta columns; if a dict, discover
            meaningful meta columns from values (in key-value)
         """
@@ -432,7 +432,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        iamc_index: bool, default False
+        iamc_index : bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
 
@@ -463,17 +463,17 @@ class IamDataFrame(object):
         self.meta['exclude'] = False
 
     def set_meta(self, meta, name=None, index=None):
-        """Add metadata indicators as pd.Series, list or value (int/float/str)
+        """Add meta indicators as pandas.Series, list or value (int/float/str)
 
         Parameters
         ----------
-        meta: pandas.Series, list, int, float or str
-            column to be added to metadata
+        meta : pandas.Series, list, int, float or str
+            column to be added to 'meta'
             (by `['model', 'scenario']` index if possible)
-        name: str, optional
-            meta column name (defaults to meta pd.Series.name);
-            either a meta.name or the name kwarg must be defined
-        index: IamDataFrame, pandas.DataFrame or pandas.MultiIndex, optional
+        name : str, optional
+            meta column name (defaults to meta `pandas.Series.name`);
+            either `meta.name` or the name kwarg must be defined
+        index : IamDataFrame, pandas.DataFrame or pandas.MultiIndex, optional
             index to be used for setting meta column (`['model', 'scenario']`)
         """
         # check that name is valid and doesn't conflict with data columns
@@ -531,14 +531,16 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        name: str
-            meta column name
-        method: function, optional
-            method for aggregation, required if downselected data do not yield
-            unique values (e.g., :func:`numpy.max`)
-        column: str, optional
-            the column from `data` to be used to derive the indicator
-        kwargs: passed to :meth:`IamDataFrame.filter()` for downselected `data`
+        name : str
+            column name of the 'meta' table
+        method : function, optional
+            method for aggregation
+            (e.g., :func:`numpy.max <numpy.ndarray.max>`);
+            required if downselected data do not yield unique values
+        column : str, default 'value'
+            the column from 'data' to be used to derive the indicator
+        kwargs
+            passed to :meth:`filter` for downselected data
         """
         _data = self.filter(**kwargs).data
         if method is None:
@@ -550,22 +552,21 @@ class IamDataFrame(object):
     def categorize(self, name, value, criteria,
                    color=None, marker=None, linestyle=None):
         """Assign scenarios to a category according to specific criteria
-        or display the category assignment
 
         Parameters
         ----------
-        name: str
-            category column name
-        value: str
+        name : str
+            column name of the 'meta' table
+        value : str
             category identifier
-        criteria: dict
+        criteria : dict
             dictionary with variables mapped to applicable checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        color: str
+        color : str
             assign a color to this category for plotting
-        marker: str
+        marker : str
             assign a marker to this category for plotting
-        linestyle: str
+        linestyle : str
             assign a linestyle to this category for plotting
         """
         # add plotting run control
@@ -603,13 +604,13 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str
+        variable : str
             required variable
-        unit: str, default None
+        unit : str, default None
             name of unit (optional)
-        year: int or list, default None
+        year : int or list, default None
             check whether the variable exists for ANY of the years (if a list)
-        exclude_on_fail: bool, default False
+        exclude_on_fail : bool, default False
             flag scenarios missing the required variables as `exclude: True`
         """
         criteria = {'variable': variable}
@@ -643,15 +644,15 @@ class IamDataFrame(object):
         Returns all scenarios which do not match the criteria and prints a log
         message, or returns None if all scenarios match the criteria.
 
-        When called with `exclude_on_fail=True`, scenarios in the object not
+        When called with `exclude_on_fail=True`, scenarios not
         satisfying the criteria will be marked as `exclude=True`.
 
         Parameters
         ----------
-        criteria: dict
-           dictionary with variable keys and check values
+        criteria : dict
+           dictionary with variable keys and validation mappings
             ('up' and 'lo' for respective bounds, 'year' for years)
-        exclude_on_fail: bool, default False
+        exclude_on_fail : bool, default False
             flag scenarios failing validation as `exclude: True`
         """
         df = _apply_criteria(self.data, criteria, in_range=False)
@@ -678,19 +679,24 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        mapping: dict or kwargs
+        mapping : dict or kwargs
             mapping of column name to rename-dictionary of that column
-            >> {<column_name>: {<current_name_1>: <target_name_1>,
-            >>                  <current_name_2>: <target_name_2>}}
+
+            .. code-block:: python
+
+               dict(<column_name>: {<current_name_1>: <target_name_1>,
+                                    <current_name_2>: <target_name_2>})
+
             or kwargs as `column_name={<current_name_1>: <target_name_1>, ...}`
-        inplace: bool, default False
+        inplace : bool, default False
             if True, do operation inplace and return None
-        append: bool, default False
-            append renamed timeseries to self; else, return new `IamDataFrame`
+        append : bool, default False
+            append renamed timeseries to `self` and return None;
+            else return new `IamDataFrame`
         check_duplicates: bool, default True
             check whether conflict between existing and renamed data exists.
             If True, raise ValueError; if False, rename and merge
-            with :meth:`pandas.GroupBy.sum`.
+            with :meth:`groupby().sum() <pandas.core.groupby.GroupBy.sum>`.
         """
         # combine `mapping` arg and mapping kwargs, ensure no rename conflicts
         mapping = mapping or {}
@@ -767,30 +773,30 @@ class IamDataFrame(object):
         :code:`EJ -> TWh`). It can also parse combined units (e.g.,
         exajoule per year, :code:`EJ/yr`).
 
-        The :py:class:`pint.UnitRegistry` used by default loads additional
+        The :class:`pint.UnitRegistry` used by default loads additional
         unit definitions relevant for integrated assessment models and energy
         systems analysis from the `IAMconsortium/units
         <https://github.com/IAMconsortium/units>`_ repository.
-
-        You can access the :py:class:`pint.UnitRegistry` used as default
-        by :class:`pyam` via :func:`pint.get_application_registry`.
+        You can access that unit registry
+        via :func:`pint.get_application_registry`.
 
         Parameters
         ----------
-        current: str (or mapping, deprecated)
+        current : str (or mapping, deprecated)
             name of current unit (to be converted from)
-        to: str
+        to : str
             name of new unit (to be converted to)
-        factor: value, optional
+        factor : value, optional
             conversion factor if given, otherwise defaults to the application
-            :py:class:`pint.UnitRegistry`
-        registry: pint.UnitRegistry, optional
-            use a specific UnitRegistry; if `None`, use default application
-            registry with definitions imported from the `IAMconsortium/units
-            <https://github.com/IAMconsortium/units>`_ repository
-        context: str, optional
-            passed to the pint.UnitRegistry
-        inplace: bool, default False
+            UnitRegistry
+        registry : pint.UnitRegistry, optional
+            use a specific :class:´pint.UnitRegistry`; if `None`, use default
+            application registry with definitions imported from the
+            `IAMconsortium/units <https://github.com/IAMconsortium/units>`_
+            repository
+        context : str, optional
+            passed to the UnitRegistry
+        inplace : bool, default False
             if True, do operation inplace and return None
         """
         # TODO: deprecate using `dict` in next release (>=0.6.0)
@@ -806,13 +812,14 @@ class IamDataFrame(object):
     def normalize(self, inplace=False, **kwargs):
         """Normalize data to a specific data point
 
-        Currently only supports normalizing to a specific time.
+        Note: Currently only supports normalizing to a specific time.
 
         Parameters
         ----------
-        inplace: bool, default False
+        inplace : bool, default False
             if True, do operation inplace and return None
-        kwargs: the values on which to normalize (e.g., `year=2005`)
+        kwargs
+            the column and value on which to normalize (e.g., `year=2005`)
         """
         if len(kwargs) > 1 or self.time_col not in kwargs:
             raise ValueError('Only time(year)-based normalization supported')
@@ -832,13 +839,15 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str or list of str
+        variable : str or list of str
             variable(s) for which the aggregate will be computed
-        components: list of str, default None
-            list of variables, defaults to all sub-categories of `variable`
-        method: func or str, default 'sum'
-            method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
-        append: bool, default False
+        components : list of str, default None
+            list of variables to aggregate, defaults to all sub-categories
+            of `variable`
+        method : func or str, default 'sum'
+            method to use for aggregation,
+            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+        append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
@@ -860,17 +869,19 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str or list of str
+        variable : str or list of str
             variable(s) checked for matching aggregation of sub-categories
-        components: list of str, default None
+        components : list of str, default None
             list of variables, defaults to all sub-categories of `variable`
-        method: func or str, default 'sum'
-            method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
-        exclude_on_fail: boolean, default False
+        method : func or str, default 'sum'
+            method to use for aggregation,
+            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+        exclude_on_fail : boolean, default False
             flag scenarios failing validation as `exclude: True`
-        multiplier: number, default 1
+        multiplier : number, default 1
             factor when comparing variable and sum of components
-        kwargs: passed to :func:`numpy.isclose()`
+        kwargs : arguments for comparison of values
+            passed to :func:`numpy.isclose`
         """
         # compute aggregate from components, return None if no components
         df_components = _aggregate(self, variable, components, method)
@@ -908,23 +919,24 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str or list of str
+        variable : str or list of str
             variable(s) to be aggregated
-        region: str, default 'World'
+        region : str, default 'World'
             region to which data will be aggregated
-        subregions: list of str
+        subregions : list of str
             list of subregions, defaults to all regions other than `region`
         components: bool or list of str, default False
             variables at the `region` level to be included in the aggregation
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
             or explicit list of variables
-        method: func or str, default 'sum'
-            method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
-        weight: str, default None
+        method : func or str, default 'sum'
+            method to use for aggregation,
+            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+        weight : str, default None
             variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
-        append: bool, default False
+        append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries
         """
@@ -950,25 +962,27 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str or list of str
+        variable : str or list of str
             variable(s) to be checked for matching aggregation of subregions
-        region: str, default 'World'
+        region : str, default 'World'
             region to be checked for matching aggregation of subregions
-        subregions: list of str
+        subregions : list of str
             list of subregions, defaults to all regions other than `region`
-        components: bool or list of str, default False
+        components : bool or list of str, default False
             variables at the `region` level to be included in the aggregation
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
             or explicit list of variables
-        method: func or str, default 'sum'
-            method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
-        weight: str, default None
+        method : func or str, default 'sum'
+            method to use for aggregation,
+            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+        weight : str, default None
             variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
-        exclude_on_fail: boolean, default False
+        exclude_on_fail : boolean, default False
             flag scenarios failing validation as `exclude: True`
-        kwargs: passed to :func:`numpy.isclose`
+        kwargs : arguments for comparison of values
+            passed to :func:`numpy.isclose`
         """
         # compute aggregate from subregions, return None if no subregions
         df_subregions = _aggregate_region(self, variable, region, subregions,
@@ -1013,15 +1027,15 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        variable: str or list of str
+        variable : str or list of str
             variable(s) to be downscaled
-        proxy: str
+        proxy : str
             variable to be used as proxy (i.e, weight) for the downscaling
-        region: str, default 'World'
+        region : str, default 'World'
             region from which data will be downscaled
-        subregions: list of str
+        subregions : list of str
             list of subregions, defaults to all regions other than `region`
-        append: bool, default False
+        append : bool, default False
             append the downscaled timeseries to `self` and return None,
             else return downscaled data as new IamDataFrame
         """
@@ -1080,12 +1094,13 @@ class IamDataFrame(object):
         Note: at the moment, this method's regional checking is limited to
         checking that all the regions sum to the World region. We cannot
         make this more automatic unless we store how the regions relate,
-        see [this issue](https://github.com/IAMconsortium/pyam/issues/106).
+        see `this issue <https://github.com/IAMconsortium/pyam/issues/106>`_.
 
         Parameters
         ----------
-        kwargs: passed to :func:`numpy.isclose`
-        components: bool, default False
+        kwargs : arguments for comparison of values
+            passed to :func:`numpy.isclose`
+        components : bool, default False
             passed to :meth:`check_aggregate_region` if `True`, use all
             sub-categories of each `variable` included in `World` but not in
             any of the subregions; if `False`, only aggregate variables over
@@ -1127,7 +1142,7 @@ class IamDataFrame(object):
             if True, do operation inplace and return None
         filters by kwargs:
             The following columns are available for filtering:
-             - metadata columns: filter by category assignment
+             - 'meta' columns: filter by string value of that column
              - 'model', 'scenario', 'region', 'variable', 'unit':
                string or list of strings, where `*` can be used as a wildcard
              - 'level': the maximum "depth" of IAM variables (number of '|')
@@ -1234,13 +1249,13 @@ class IamDataFrame(object):
         return keep
 
     def col_apply(self, col, func, *args, **kwargs):
-        """Apply a function to a column
+        """Apply a function to a column of data or meta
 
         Parameters
         ----------
-        col: string
+        col: str
             column in either data or meta dataframes
-        func: functional
+        func: function
             function to apply
         """
         if col in self.data:
@@ -1259,8 +1274,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path: string
-            file path
+        path: str r path object
+            file path or :class:`pathlib.Path`
         iamc_index: bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
@@ -1273,10 +1288,11 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        excel_writer: string or ExcelWriter object
-            file path or existing ExcelWriter
+        excel_writer: str, path object or ExcelWriter object
+            any valid string path, :class:`pathlib.Path`
+            or :class:`pandas.ExcelWriter`
         sheet_name: string
-            name of sheet which will contain ``IamDataFrame.timeseries()`` data
+            name of sheet which will contain :meth:`timeseries()` data
         iamc_index: bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
@@ -1311,9 +1327,10 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        excel_writer: string or ExcelWriter object
-            file path or existing ExcelWriter
-        sheet_name: string
+        excel_writer: str, path object or ExcelWriter object
+            any valid string path, :class:`pathlib.Path`
+            or :class:`pandas.ExcelWriter`
+        sheet_name: str
             name of sheet which will contain 'meta' table
         """
         if not isinstance(excel_writer, pd.ExcelWriter):
@@ -1328,14 +1345,15 @@ class IamDataFrame(object):
 
         More information: https://frictionlessdata.io
 
-        Returns the saved :class:`datapackage.Package`. When adding metadata
-        (descriptors), please follow the `template` defined by
-        https://github.com/OpenEnergyPlatform/metadata
+        Returns the saved :class:`datapackage.Package`
+        (|datapackage.Package.docs|).
+        When adding metadata (descriptors), please follow the `template`
+        defined by https://github.com/OpenEnergyPlatform/metadata
 
         Parameters
         ----------
-        path: string or :class:`pathlib.Path`
-            file path
+        path: string or path object
+            any valid string path or :class:`pathlib.Path`
         """
         if not HAS_DATAPACKAGE:
             raise ImportError('required package `datapackage` not found!')
@@ -1366,8 +1384,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path: string
-            path to xlsx or csv file of a 'meta' table
+        path: str or path object
+            any valid string path or :class:`pathlib.Path`
         """
         if path.endswith('csv'):
             df = pd.read_csv(path, *args, **kwargs)
@@ -1513,18 +1531,18 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        map_col: string
+        map_col : str
             The column used to map new regions to. Common examples include
             iso and 5_region.
-        agg: string, optional
+        agg : str, optional
             Perform a data aggregation. Options include: sum.
-        copy_col: string, optional
+        copy_col : str, optional
             Copy the existing region data into a new column for later use.
-        fname: string, optional
+        fname : str, optional
             Use a non-default region mapping file
-        region_col: string, optional
+        region_col : string, optional
             Use a non-default column name for regions to map from.
-        remove_duplicates: bool, optional, default: False
+        remove_duplicates : bool, optional, default: False
             If there are duplicates in the mapping from one regional level to
             another, then remove these duplicates by counting the most common
             mapped value.
@@ -1596,7 +1614,7 @@ class IamDataFrame(object):
 
 
 def _meta_idx(data):
-    """Return the `META_IDX` from data by index"""
+    """Return the 'META_IDX' from data by index"""
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
 
@@ -1610,13 +1628,13 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
 
     Parameters
     ----------
-    rows: pd.DataFrame
+    rows : pd.DataFrame
         data rows
-    check: dict
+    check : dict
         dictionary with possible values of 'up', 'lo', and 'year'
-    in_range: bool, optional
+    in_range : bool, optional
         check if values are inside or outside of provided range
-    return_test: str, optional
+    return_test : str, optional
         possible values:
             - 'any': default, return scenarios where check passes for any entry
             - 'all': test if all values match checks, if not, return empty set
@@ -1680,9 +1698,10 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
 
     Parameters
     ----------
-    df: IamDataFrame instance
-    args: see :meth:`IamDataFrame.validate()` for details
-    kwargs: passed to `df.filter()`
+    df : IamDataFrame
+    args : passed to :meth:`IamDataFrame.validate`
+    kwargs : used for downselecting IamDataFrame
+        passed to :meth:`filter() <IamDataFrame.filter>`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -1697,9 +1716,10 @@ def require_variable(df, variable, unit=None, year=None, exclude_on_fail=False,
 
     Parameters
     ----------
-    df: IamDataFrame instance
-    args: see :meth:`IamDataFrame.require_variable()` for details
-    kwargs: passed to `df.filter()`
+    df : IamDataFrame
+    args : passed to :meth:`require_variable`
+    kwargs : used for downselecting IamDataFrame
+        passed to :meth:`filter() <IamDataFrame.filter>`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -1716,9 +1736,10 @@ def categorize(df, name, value, criteria,
 
     Parameters
     ----------
-    df: IamDataFrame instance
-    args: see :meth:`IamDataFrame.categorize()` for details
-    kwargs: passed to `df.filter()`
+    df : IamDataFrame
+    args : passed to :meth:`IamDataFrame.categorize`
+    kwargs : used for downselecting IamDataFrame
+        passed to :meth:`filter() <IamDataFrame.filter>`
     """
     fdf = df.filter(**kwargs)
     fdf.categorize(name=name, value=value, criteria=criteria, color=color,
@@ -1738,9 +1759,10 @@ def check_aggregate(df, variable, components=None, exclude_on_fail=False,
 
     Parameters
     ----------
-    df: IamDataFrame instance
-    args: see :meth:IamDataFrame.check_aggregate()` for details
-    kwargs: passed to `df.filter()`
+    df : IamDataFrame
+    args : passed to :meth:`IamDataFrame.check_aggregate`
+    kwargs : used for downselecting IamDataFrame
+        passed to :meth:`filter() <IamDataFrame.filter>`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -1756,16 +1778,16 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
 
     Parameters
     ----------
-    data: pandas.DataFrame
-        DataFrame to which meta columns are to be joined,
+    data : pandas.DataFrame
+        :class:`pandas.DataFrame` to which meta columns are to be joined,
         index or columns must include `['model', 'scenario']`
-    df: IamDataFrame instance
+    df : IamDataFrame
         IamDataFrame from which meta columns are filtered and joined (optional)
-    join_meta: bool, default False
+    join_meta : bool, default False
         join selected columns from `df.meta` on `data`
-    kwargs:`
+    kwargs
         meta columns to be filtered/joined, where `col=...` applies filters
-        with the given arguments (using :meth:`utils.pattern_match()`).
+        with the given arguments (using :meth:`utils.pattern_match`).
         Using `col=None` joins the column without filtering (setting col
         to nan if `(model, scenario)` not in `df.meta.index`)
     """
@@ -1812,13 +1834,14 @@ def compare(left, right, left_label='left', right_label='right',
 
     Parameters
     ----------
-    left, right: IamDataFrames
-        two IamDataFrames to be compared
-    left_label, right_label: str, default `left`, `right`
-        column names of the returned dataframe
-    drop_close: bool, default True
+    left, right : IamDataFrames
+        two :class:`IamDataFrame` instances to be compared
+    left_label, right_label : str, default `left`, `right`
+        column names of the returned :class:`pandas.DataFrame`
+    drop_close : bool, default True
         remove all data where `left` and `right` are close
-    kwargs: passed to :func:`numpy.isclose`
+    kwargs : arguments for comparison of values
+        passed to :func:`numpy.isclose`
     """
     ret = pd.concat({right_label: right.data.set_index(right._LONG_IDX),
                      left_label: left.data.set_index(left._LONG_IDX)}, axis=1)
@@ -1829,7 +1852,13 @@ def compare(left, right, left_label='left', right_label='right',
 
 
 def concat(dfs):
-    """Concatenate a series of.IamDataFrame-like objects"""
+    """Concatenate a series of IamDataFrame-like objects
+
+    Parameters
+    ----------
+    dfs : list of IamDataFrames
+        a list of :class:`IamDataFrame` instances
+    """
     if isstr(dfs) or not hasattr(dfs, '__iter__'):
         msg = 'Argument must be a non-string iterable (e.g., list or tuple)'
         raise TypeError(msg)
@@ -1849,11 +1878,12 @@ def read_datapackage(path, data='data', meta='meta'):
 
     Parameters
     ----------
-    path: string or :class:`pathlib.Path`
-        file path, passed to :class:`datapackage.Package()`
-    data: str, default 'data'
+    path : string or path object
+        any valid string path or :class:`pathlib.Path`, |br|
+        passed to :class:`datapackage.Package()` (|datapackage.Package.docs|)
+    data : str, default 'data'
         resource containing timeseries data in IAMC-compatible format
-    meta: str, default 'meta'
+    meta : str, default 'meta'
         (optional) resource containing a table of categorization and
         quantitative indicators
     """

@@ -11,9 +11,9 @@ def fill_series(x, time):
 
     Parameters
     ----------
-    x: pandas.Series
+    x : pandas.Series
         a timeseries to be interpolated
-    time: int or pandas.datetime
+    time : int or pandas.datetime
         year or datetime to interpolate
     """
     x = x.dropna()
@@ -41,11 +41,11 @@ def cumulative(x, first_year, last_year):
 
     Parameters
     ----------
-    x: pandas.Series
+    x : pandas.Series
         a timeseries to be summed over time
-    first_year: int
+    first_year : int
         first year of the sum
-    last_year: int
+    last_year : int
         last year of the sum (inclusive)
     """
     # if the timeseries does not cover the range `[first_year, last_year]`,
@@ -91,11 +91,11 @@ def cross_threshold(x, threshold=0, direction=['from above', 'from below']):
 
     Parameters
     ----------
-    x: pandas.Series
+    x : pandas.Series
         a timeseries indexed over years
-    threshold: float, default 0
+    threshold : float, default 0
         the threshold that the timeseries is checked against
-    direction: str, optional, default `['from above', 'from below']`
+    direction : str, optional, default `['from above', 'from below']`
         whether to return all years where the threshold is crossed
         or only where threshold is crossed in a specific direction
     """
