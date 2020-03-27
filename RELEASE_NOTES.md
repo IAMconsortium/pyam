@@ -17,6 +17,7 @@ an IamDataFrame with `n/a` entries in columns other than `value` raises an error
 
 - [#354](https://github.com/IAMconsortium/pyam/pull/354) Fixes formatting of API parameter docstrings
 - [#352](https://github.com/IAMconsortium/pyam/pull/352) Bugfix when using `interpolate()` on data with extra columns
+- [#350](https://github.com/IAMconsortium/pyam/pull/350) Add tests and tutorials to `package_data`
 - [#349](https://github.com/IAMconsortium/pyam/pull/349) Fixes an issue with checking that time columns are equal when appending IamDataFrames
 - [#348](https://github.com/IAMconsortium/pyam/pull/348) Extend pages for API docs, clean up docstrings, and harmonize formatting
 - [#347](https://github.com/IAMconsortium/pyam/pull/347) Enable contexts and custom UnitRegistry with unit conversion
