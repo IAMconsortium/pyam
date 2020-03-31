@@ -1,3 +1,5 @@
+# Next Release
+
 # Release v0.5.0
 
 ## Highlights
