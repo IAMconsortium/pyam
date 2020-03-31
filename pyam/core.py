@@ -1352,7 +1352,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path: string or path object
+        path : string or path object
             any valid string path or :class:`pathlib.Path`
         """
         if not HAS_DATAPACKAGE:
@@ -1880,7 +1880,7 @@ def read_datapackage(path, data='data', meta='meta'):
     ----------
     path : string or path object
         any valid string path or :class:`pathlib.Path`, |br|
-        passed to :class:`datapackage.Package()` (|datapackage.Package.docs|)
+        passed to :class:`datapackage.Package` (|datapackage.Package.docs|)
     data : str, default 'data'
         resource containing timeseries data in IAMC-compatible format
     meta : str, default 'meta'
