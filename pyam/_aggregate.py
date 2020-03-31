@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 import logging
 
@@ -50,8 +51,8 @@ def _aggregate(df, variable, components=None, method=np.sum):
     return _group_and_agg(_df, [], method)
 
 
-def _aggregate_region(self, variable, region, subregions=None,
-                      components=False, method='sum', weight=None):
+def _aggregate_region(df, variable, region, subregions=None, components=False,
+                      method='sum', weight=None):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
         msg = 'aggregating by list of variables with components ' \
@@ -63,7 +64,7 @@ def _aggregate_region(self, variable, region, subregions=None,
         raise ValueError(msg)
 
     # default subregions to all regions other than `region`
-    subregions = subregions or self._all_other_regions(region, variable)
+    subregions = subregions or df._all_other_regions(region, variable)
 
     if not len(subregions):
         msg = 'cannot aggregate variable `{}` to `{}` because it does not'\
@@ -73,7 +74,7 @@ def _aggregate_region(self, variable, region, subregions=None,
         return
 
     # compute aggregate over all subregions
-    subregion_df = self.filter(region=subregions)
+    subregion_df = df.filter(region=subregions)
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
         col = 'region'
@@ -86,7 +87,7 @@ def _aggregate_region(self, variable, region, subregions=None,
     # if not `components=False`, add components at the `region` level
     if components is not False:
         with adjust_log_level(logger):
-            region_df = self.filter(region=region)
+            region_df = df.filter(region=region)
 
         # if `True`, auto-detect `components` at the `region` level,
         # defaults to variables below `variable` only present in `region`
@@ -105,6 +106,31 @@ def _aggregate_region(self, variable, region, subregions=None,
 
     return _data
 
+
+def _aggregate_time(df, variable, column, value, components, method=np.sum):
+    """Internal implementation for aggregating data over subannual time"""
+    # default `components` to all entries in `column` other than `value`
+    if components is None:
+        components = list(set(df.data.subannual.unique()) - set([value]))
+
+    # compute aggregate over time
+    filter_args = dict(variable=variable)
+    filter_args[column] = components
+    index = _list_diff(df.data.columns, [column, 'value'])
+
+    _data = pd.concat(
+        [
+            df.filter(**filter_args).data
+            .pivot_table(index=index, columns=column)
+            .value
+            .rename_axis(None, axis=1)
+            .apply(_get_method_func(method), axis=1)
+        ], names=[column] + index, keys=[value])
+
+    # reset index-level order to original IamDataFrame
+    _data.index = _data.index.reorder_levels(df._LONG_IDX)
+
+    return _data
 
 def _group_and_agg(df, by, method=np.sum):
     """Groupby & aggregate `df` by column(s), return indexed `pd.Series`"""
