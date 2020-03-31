@@ -1,4 +1,20 @@
-# Next release
+# Release v0.5.0
+
+## Highlights
+
+- Improved feature for unit conversion 
+  using the [pint package](https://pint.readthedocs.io) and
+  the [IAMconsortium/units](https://github.com/IAMconsortium/units) repository,
+  providing out-of-the-box conversion of unit definitions commonly used
+  in integrated assessment research and energy systems modelling;
+  see [this tutorial](https://pyam-iamc.readthedocs.io/en/stable/tutorials/unit_conversion.html)
+  for more information
+- Increased support for operations on timeseries data with continuous-time
+  resolution
+- New tutorial for working with various input data formats; 
+  [take a look](https://pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.html)
+- Rewrite and extension of the documentation pages for the API;
+  [read the new docs](https://pyam-iamc.readthedocs.io/en/stable/api.html)!
 
 ## API changes
 
