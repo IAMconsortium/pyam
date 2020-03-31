@@ -1316,12 +1316,6 @@ class IamDataFrame(object):
         if close:
             excel_writer.close()
 
-    def export_metadata(self, excel_writer, sheet_name='meta'):
-        """Deprecated, see :meth:`export_meta()`"""
-        # TODO: deprecate in next release (>=0.5.0)
-        deprecation_warning('Use `export_meta()` instead!')
-        self.export_meta(excel_writer, sheet_name='meta')
-
     def export_meta(self, excel_writer, sheet_name='meta'):
         """Write the 'meta' table of this object to an Excel sheet
 
@@ -1372,12 +1366,6 @@ class IamDataFrame(object):
 
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
-
-    def load_metadata(self, path, *args, **kwargs):
-        """Deprecated, see :meth:`load_meta`"""
-        # TODO: deprecate in next release (>=0.5.0)
-        deprecation_warning('Use `load_meta()` instead!')
-        self.load_meta(path, *args, **kwargs)
 
     def load_meta(self, path, *args, **kwargs):
         """Load 'meta' table from file
