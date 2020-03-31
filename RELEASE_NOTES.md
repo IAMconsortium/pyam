@@ -1,5 +1,7 @@
 # Next Release
 
+- [#322](https://github.com/IAMconsortium/pyam/pull/322) Add feature to aggregate timeseries at sub-annual time resolution #322
+
 # Release v0.5.0
 
 ## Highlights
