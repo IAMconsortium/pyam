@@ -8,7 +8,7 @@ pyam: analysis and visualization of integrated-assessment scenarios
 Overview and scope
 ------------------
 
-The open-source Python package ``pyam`` provides a suite of tools and functions
+The open-source Python package **pyam** provides a suite of tools and functions
 for analyzing and visualizing input data (i.e., assumptions/parametrization) 
 and results (model output) of integrated-assessment scenarios.
 
