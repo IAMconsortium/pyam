@@ -68,9 +68,9 @@ and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
 License
 -------
 
-Copyright 2017-2019 IIASA Energy Program
+Copyright 2017-2020 IIASA Energy Program
 
-The ``pyam`` package is licensed
+The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
