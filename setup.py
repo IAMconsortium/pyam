@@ -38,6 +38,8 @@ EXTRA_REQUIREMENTS = {
     'deploy': ['twine', 'setuptools', 'wheel'],
 }
 
+with open('README.md', 'r') as f:
+    LONG_DESCRIPTION = f.read()
 
 # thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
 class RunTests(Command):
@@ -84,23 +86,25 @@ def main():
     }
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS
-    setup_kwargs = {
-        'name': 'pyam-iamc',
-        'version': versioneer.get_version(),
-        'cmdclass': CMDCLASS,
-        'description': description,
-        'classifiers': classifiers,
-        'license': 'Apache License 2.0',
-        'author': 'Matthew Gidden & Daniel Huppmann',
-        'author_email': 'matthew.gidden@gmail.com',
-        'url': 'https://github.com/IAMconsortium/pyam',
-        'packages': packages,
-        'package_dir': pack_dir,
-        'entry_points': entry_points,
-        'package_data': package_data,
-        'install_requires': install_requirements,
-        'extras_require': extra_requirements,
-    }
+    setup_kwargs = dict(
+        name='pyam-iamc',
+        version=versioneer.get_version(),
+        cmdclass=CMDCLASS,
+        description=description,
+        classifiers=classifiers,
+        license='Apache License 2.0',
+        author='Matthew Gidden & Daniel Huppmann',
+        author_email='pyam+owner@groups.io',
+        url='https://github.com/IAMconsortium/pyam',
+        long_description=LONG_DESCRIPTION,
+        long_description_content_type='text/markdown',
+        packages=packages,
+        package_dir=pack_dir,
+        entry_points=entry_points,
+        package_data=package_data,
+        install_requires=install_requirements,
+        extras_require=extra_requirements,
+    )
     rtn = setup(**setup_kwargs)
 
 
