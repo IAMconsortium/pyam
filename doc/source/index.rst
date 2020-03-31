@@ -25,8 +25,8 @@ Release v\ |version|.
    :target: https://pyam-iamc.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. |travis| image:: https://travis-ci.org/IAMconsortium/pyam.svg?branch=master
-   :target: https://travis-ci.org/IAMconsortium/pyam
+.. |travis| image:: https://travis-ci.com/IAMconsortium/pyam.svg?branch=master
+   :target: https://travis-ci.com/IAMconsortium/pyam
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/qd4taojd2vkqoab4/branch/master?svg=true&passingText=passing&failingText=failing&pendingText=pending
    :target: https://ci.appveyor.com/project/gidden/pyam/branch/master
