@@ -50,7 +50,8 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
-from pyam._aggregate import _aggregate, _aggregate_region, _group_and_agg
+from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
+    _group_and_agg
 from pyam.units import convert_unit, convert_unit_with_mapping
 
 logger = logging.getLogger(__name__)
