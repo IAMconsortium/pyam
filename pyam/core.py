@@ -1027,18 +1027,19 @@ class IamDataFrame(object):
 
          Parameters
          ----------
-         variable: str or list of str
+         variable : str or list of str
              variable(s) to be aggregated
-         column: str, default 'subannual'
+         column : str, default 'subannual'
              the data column to be used as subannual time representation
-         value: str, default 'year
+         value : str, default 'year
              the name of the aggregated (subannual) time
-         components: list of str
+         components : list of str
              subannual timeslices to be aggregated; defaults to all subannual
              timeslices other than ``value``
-         method: func or str, default 'sum'
-             method to use for aggregation, e.g. np.mean, np.sum, 'min', 'max'
-         append: bool, default False
+         method : func or str, default 'sum'
+             method to use for aggregation,
+             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+         append : bool, default False
              append the aggregate timeseries to `self` and return None,
              else return aggregate timeseries as new :class:`IamDataFrame`
          """
