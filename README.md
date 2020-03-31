@@ -8,7 +8,7 @@ pyam: analysis and visualization of integrated-assessment scenarios
 Overview and scope
 ------------------
 
-The open-source Python package ``pyam`` provides a suite of tools and functions
+The open-source Python package **pyam** provides a suite of tools and functions
 for analyzing and visualizing input data (i.e., assumptions/parametrization) 
 and results (model output) of integrated-assessment scenarios.
 
@@ -68,9 +68,9 @@ and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
 License
 -------
 
-Copyright 2017-2019 IIASA Energy Program
+Copyright 2017-2020 IIASA Energy Program
 
-The ``pyam`` package is licensed
+The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 

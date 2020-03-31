@@ -80,8 +80,8 @@ mode (beta):
 Please reach out to the developers to get more information on this
 ongoing work.
 
-The :class:`IamDataFrame` class
--------------------------------
+The **IamDataFrame** class
+--------------------------
 
 A :class:`pyam.IamDataFrame` instance is a wrapper for
 two :class:`pandas.DataFrame` instances (i.e., tables, see the `pandas docs`_
