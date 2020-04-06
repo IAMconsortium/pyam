@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 # get application pint.UnitRegistry and load energy-units
 _REGISTRY = pint.get_application_registry()
-file = Path(__file__).parents[1] / 'units' / 'definitions.txt'
-_REGISTRY.load_definitions(str(file))
+path = Path(__file__).parents[1] / 'units' / 'iam_units' / 'data'
+_REGISTRY.load_definitions(str(path / 'definitions.txt'))
 
 
 def convert_unit(df, current, to, factor=None, registry=None, context=None,
