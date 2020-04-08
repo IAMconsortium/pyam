@@ -20,6 +20,7 @@ logo = r"""
 
 REQUIREMENTS = [
     'argparse',
+    'iam-units >= 2020.4.6',
     'numpy',
     'requests',
     'pandas>=0.25.0',
@@ -81,9 +82,7 @@ def main():
         ],
     }
     package_data = {
-        'pyam': ['region_mappings/*',
-                 '../units/iam_units/data/definitions.txt',
-                 '../units/iam_units/data/**/*.txt'],
+        'pyam': ['region_mappings/*'],
     }
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS

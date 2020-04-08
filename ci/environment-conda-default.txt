@@ -1,3 +1,6 @@
+# Temporary: for development
+git+git://github.com/IAMconsortium/units.git@issue/12#egg=iam-units
+
 numpy
 pandas
 pyyaml

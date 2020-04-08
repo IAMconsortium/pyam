@@ -1,16 +1,11 @@
 import logging
 
+import iam_units
 import pandas as pd
 import pint
 
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
-
-# get application pint.UnitRegistry and load energy-units
-_REGISTRY = pint.get_application_registry()
-path = Path(__file__).parents[1] / 'units' / 'iam_units' / 'data'
-_REGISTRY.load_definitions(str(path / 'definitions.txt'))
 
 
 def convert_unit(df, current, to, factor=None, registry=None, context=None,
@@ -29,7 +24,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
 
     # if factor is not given, get it from custom or application registry
     if factor is None:
-        _reg = registry or _REGISTRY
+        _reg = registry or iam_units.registry
         args = [_reg[to]] if context is None else [_reg[to], context]
         factor = _reg[current].to(*args).magnitude
 
