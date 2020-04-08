@@ -19,12 +19,14 @@ def assert_converted_units(df, current, to, exp, **kwargs):
     # testing for `inplace=False` - converted values and expected unit
     _df = df.convert_unit(current, to, **kwargs, inplace=False)
     pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
-    assert _df.data.unit[5] == to
+    # For GWP conversion with a species name (e.g. 'CO2e'), units are added
+    # (e.g. 'Mt CO2e'). Compare using 'in'.
+    assert to in _df.data.unit[5]
 
     # testing for `inplace=True` - converted values and expected unit
     df.convert_unit(current, to, **kwargs, inplace=True)
     pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
-    assert df.data.unit[5] == to
+    assert to in df.data.unit[5]
 
 
 @pytest.mark.parametrize("current,to", [
@@ -67,18 +69,30 @@ def test_convert_unit_with_custom_registry(test_df):
     assert_converted_units(df, 'foo', 'baz', exp, registry=ureg)
 
 
-@pytest.mark.parametrize('unit', ['{}', 'Mt {}', 'Mt {} / yr', '{} / yr'])
-def test_convert_unit_with_context(test_df, unit):
+@pytest.mark.parametrize('current, to', [
+    # Conversions where the *to* argument contains a mass unit
+    ('g {}', 'g {}'),
+    ('Mt {}', 'Mt {}'),
+    ('Mt {} / yr', 'Mt {} / yr'),
+    ('g {} / sec', 'g {} / sec'),
+    # Only a species name as the *to* argument
+    ('Mt {}', '{}'),
+    # *to* contains units, but no mass units → DimensionalityError
+    pytest.param('Mt {} / yr', '{} / yr',
+                 marks=pytest.mark.xfail(raises=pint.DimensionalityError)),
+])
+def test_convert_unit_with_context(test_df, current, to):
     # unit conversion with contexts in application registry
     df = test_df.copy()
     df['variable'] = [i.replace('Primary Energy', 'Emissions|CH4')
                       for i in df['variable']]
-    current = unit.format('CH4')
-    to = unit.format('CO2e')
+    current = current.format('CH4')
     df['unit'] = current
+    to = to.format('CO2e')
 
-    # assert that conversion fails without context
-    with pytest.raises(pint.DimensionalityError):
+    # Conversion fails without context; exception provides a usage hint
+    match = 'Must provide IamDataFrame.convert_unit'
+    with pytest.raises(pint.UndefinedUnitError, match=match):
         df.convert_unit(current, to)
 
     # test conversion for multiple contexts
