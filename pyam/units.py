@@ -8,33 +8,71 @@ import pint
 logger = logging.getLogger(__name__)
 
 
+# Thin wrapper around pint.UndefinedUnitError to provide a usage hint
+class UndefinedUnitError(pint.UndefinedUnitError):
+    def __str__(self):
+        return super().__str__() + (
+            "\nMust provide IamDataFrame.convert_unit(..., context=...) to "
+            "convert GHG species")
+
+
 def convert_unit(df, current, to, factor=None, registry=None, context=None,
                  inplace=False):
     """Internal implementation of unit conversion with explicit kwargs"""
     ret = df.copy() if not inplace else df
 
-    # check that (only) either factor or registry/context is provided
-    if factor is not None and \
-            any([i is not None for i in [registry, context]]):
-        raise ValueError('use either `factor` or `pint.UnitRegistry`')
-
-    # check that custom registry is valid
-    if registry is not None and not isinstance(registry, pint.UnitRegistry):
-        raise ValueError(f'registry` is not a valid UnitRegistry: {registry}')
-
-    # if factor is not given, get it from custom or application registry
-    if factor is None:
-        _reg = registry or iam_units.registry
-        args = [_reg[to]] if context is None else [_reg[to], context]
-        factor = _reg[current].to(*args).magnitude
-
-    # do the conversion
+    # Mask for rows having *current* units, to be converted
     where = ret.data['unit'] == current
-    ret.data.loc[where, 'value'] *= factor
+
+    if factor:
+        # Short code path: use an explicit conversion factor, don't use pint
+        ret.data.loc[where, 'value'] *= factor
+        ret.data.loc[where, 'unit'] = to
+        return None if inplace else ret
+
+    # Convert using a pint.UnitRegistry; default the one from iam_units
+    registry = registry or iam_units.registry
+
+    # Tuple of (magnitude, unit)
+    qty = (ret.data.loc[where, 'value'].values, current)
+
+    try:
+        # Create a pint.Quantity
+        qty = registry.Quantity(*qty)
+    except pint.UndefinedUnitError as exc:
+        # *current* may include a GHG species
+        if not context:
+            # Can't do anything without a context
+            raise UndefinedUnitError(*exc.args) from None
+
+        # Split *to* into a 1- or 3-tuple of str.
+        #
+        # This allows for *to* to be only a species name ('CO2e') without any
+        # unit ('kg CO2e') → len(_to) is 1. Otherwise, _to[1] is the species,
+        # and the other elements are any pre-/suffix.
+        _to = iam_units.emissions.pattern.split(to, maxsplit=1)
+        species_to = _to[1] if len(_to) == 3 else _to[0]
+
+        # Convert using the (magnitude, unit and species) tuple
+        result = iam_units.convert_gwp(context, qty, species_to)
+
+        if len(_to) == 1:
+            # *to* was only a species name; provide units based on input
+            to = iam_units.format_mass(result, species_to, spec=':~')
+    except AttributeError:
+        # .Quantity() did not exist
+        raise TypeError(f'{registry} must be `pint.UnitRegistry`') from None
+    else:
+        # Ordinary conversion, using an empty Context if none was provided
+        result = qty.to(to, context or pint.Context())
+
+    # Copy values from the result Quantity
+    ret.data.loc[where, 'value'] = result.magnitude
+
+    # Assign output units
     ret.data.loc[where, 'unit'] = to
 
-    if not inplace:
-        return ret
+    return None if inplace else ret
 
 
 def convert_unit_with_mapping(df, conversion_mapping, inplace=False):
