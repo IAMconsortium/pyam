@@ -84,7 +84,7 @@ def test_convert_unit_with_context(test_df, unit):
     # test conversion for multiple contexts
     for (c, v) in [('AR5GWP100', 28), ('AR4GWP100', 25), ('SARGWP100', 21)]:
         exp = test_df.data.value * v
-        assert_converted_units(df.copy(), current, to, exp, context=f'gwp_{c}')
+        assert_converted_units(df.copy(), current, to, exp, context=c)
 
 
 def test_convert_unit_with_custom_factor(test_df):
