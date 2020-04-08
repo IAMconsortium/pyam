@@ -9,10 +9,6 @@ init:
   - "ECHO %PYTHON_VERSION% %MINICONDA%"
 
 install:
-  # initialize/update submodule(s) - this seems to be not necessary on travis
-  - git submodule update --init
-  - git submodule status
-
   # these correspond to folder naming of miniconda installs on appveyor.  See
   # https://www.appveyor.com/docs/installed-software#python
   - if "%PYTHON_VERSION%" == "3.6" set "BASE_PYTHON_VERSION=36"
@@ -28,6 +24,9 @@ install:
   - activate testing
   - conda install -y numpy pandas pyyaml xlrd xlsxwriter seaborn==0.9.0 six requests jupyter nbconvert proj4==5.2.0 pywin32
   - conda install -y -c conda-forge matplotlib==3.0.2 pyproj==1.9.6
+
+  # Temporary: for IAMconsortium/pyam#361
+  - pip install git+git://github.com/IAMconsortium/units.git@issue/12#egg=iam-units
 
 build: false
 
