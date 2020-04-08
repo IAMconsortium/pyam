@@ -90,15 +90,26 @@ def test_convert_unit_with_context(test_df, current, to):
     df['unit'] = current
     to = to.format('CO2e')
 
-    # Conversion fails without context; exception provides a usage hint
-    match = 'Must provide IamDataFrame.convert_unit'
-    with pytest.raises(pint.UndefinedUnitError, match=match):
-        df.convert_unit(current, to)
-
     # test conversion for multiple contexts
     for (c, v) in [('AR5GWP100', 28), ('AR4GWP100', 25), ('SARGWP100', 21)]:
         exp = test_df.data.value * v
         assert_converted_units(df.copy(), current, to, exp, context=c)
+
+
+def test_convert_unit_bad_args(test_pd_df):
+    idf = IamDataFrame(test_pd_df)
+    # Conversion fails with both *factor* and *registry*
+    with pytest.raises(ValueError, match='use either `factor` or `pint...'):
+        idf.convert_unit('Mt CH4', 'CO2e', factor=1.0, registry=object())
+
+    # Conversion fails with an invalid registry
+    with pytest.raises(TypeError, match='must be `pint.UnitRegistry`'):
+        idf.convert_unit('Mt CH4', 'CO2e', registry=object())
+
+    # Conversion fails without context; exception provides a usage hint
+    match = 'Must provide IamDataFrame.convert_unit'
+    with pytest.raises(pint.UndefinedUnitError, match=match):
+        idf.convert_unit('Mt CH4', 'CO2e')
 
 
 def test_convert_unit_with_custom_factor(test_df):
