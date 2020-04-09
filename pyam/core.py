@@ -786,9 +786,9 @@ class IamDataFrame(object):
 
         Using the :mod:`iam_units` *registry*, *current* and *to* may contain
         the names of greenhouse gas (GHG) species, such as 'CO2e', 'C', 'CH4',
-        'N2O', 'HFC236fa', etc. In this case, *context* must contain the name
-        of a specific global warming potential (GWP) metric supported by
-        :mod:`iam_units`, such as 'AR5GWP100'.
+        'N2O', 'HFC236fa', etc. In this case, *context* must contain 'gwp_'
+        followed by the name of a specific global warming potential (GWP)
+        metric supported by :mod:`iam_units`, e.g. 'gwp_AR5GWP100'.
 
         Rows with units other than *current* are not altered.
 

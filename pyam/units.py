@@ -45,6 +45,9 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
             # Can't do anything without a context
             raise UndefinedUnitError(*exc.args) from None
 
+        # Remove a leading 'gwp_' to produce the metric name
+        metric = context.split('gwp_')[1]
+
         # Split *to* into a 1- or 3-tuple of str.
         #
         # This allows for *to* to be only a species name ('CO2e') without any
@@ -54,7 +57,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
         species_to = _to[1] if len(_to) == 3 else _to[0]
 
         # Convert using the (magnitude, unit and species) tuple
-        result = iam_units.convert_gwp(context, qty, species_to)
+        result = iam_units.convert_gwp(metric, qty, species_to)
 
         if len(_to) == 1:
             # *to* was only a species name; provide units based on input
