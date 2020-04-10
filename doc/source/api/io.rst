@@ -28,3 +28,14 @@ The |pyam| package supports reading and writing to the
 .. autofunction:: read_datapackage
 
 .. automethod:: IamDataFrame.to_datapackage
+
+Connecting to an IIASA scenario explorer instance
+-------------------------------------------------
+
+IIASA's ixmp scenario explorer infrastructure includes a RestAPI
+to query data directly from the database server.
+The |pyam| package uses this interface to read resources
+and initialize an :class:`IamDataFrame`.
+See `this tutorial ../tutorials/iiasa_dbs.html>`_ for more information.
+
+.. autofunction:: read_iiasa
