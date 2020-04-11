@@ -38,8 +38,13 @@ EXTRA_REQUIREMENTS = {
     'deploy': ['twine', 'setuptools', 'wheel'],
 }
 
-with open('README.md', 'r') as f:
-    LONG_DESCRIPTION = f.read()
+# building the docs on readthedocs fails with a FileNotFoundError
+# https://github.com/IAMconsortium/pyam/issues/363
+try:
+    with open('README.md', 'r') as f:
+        LONG_DESCRIPTION = f.read()
+except FileNotFoundError:
+    LONG_DESCRIPTION = ''
 
 # thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
 class RunTests(Command):
