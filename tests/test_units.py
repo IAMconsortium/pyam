@@ -15,17 +15,23 @@ def get_units_test_df(test_df):
     return df
 
 
-def assert_converted_units(df, current, to, exp, **kwargs):
+def assert_converted_units(df, current, to, exp, exp_factor=1.0, **kwargs):
     # testing for `inplace=False` - converted values and expected unit
     _df = df.convert_unit(current, to, **kwargs, inplace=False)
-    pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
+    pd.testing.assert_series_equal(
+        _df.data.value,
+        exp * exp_factor,
+        **PRECISE_ARG)
     # For GWP conversion with a species name (e.g. 'CO2e'), units are added
     # (e.g. 'Mt CO2e'). Compare using 'in'.
     assert to in _df.data.unit[5]
 
     # testing for `inplace=True` - converted values and expected unit
     df.convert_unit(current, to, **kwargs, inplace=True)
-    pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
+    pd.testing.assert_series_equal(
+        df.data.value,
+        exp * exp_factor,
+        **PRECISE_ARG)
     assert to in df.data.unit[5]
 
 
@@ -69,19 +75,28 @@ def test_convert_unit_with_custom_registry(test_df):
     assert_converted_units(df, 'foo', 'baz', exp, registry=ureg)
 
 
-@pytest.mark.parametrize('current, to', [
+@pytest.mark.parametrize('current, to, exp_factor', [
+    # exp_factor is used when the conversion includes both a species *and* unit
+    # change.
+
     # Conversions where the *to* argument contains a mass unit
-    ('g {}', 'g {}'),
-    ('Mt {}', 'Mt {}'),
-    ('Mt {} / yr', 'Mt {} / yr'),
-    ('g {} / sec', 'g {} / sec'),
+    ('g {}', 'g {}', 1),
+    ('Mt {}', 'Mt {}', 1),
+    ('Mt {} / yr', 'Mt {} / yr', 1),
+    ('g {} / sec', 'g {} / sec', 1),
+
     # Only a species name as the *to* argument
-    ('Mt {}', '{}'),
+    ('Mt {}', '{}', 1),
+
     # *to* contains units, but no mass units → DimensionalityError
-    pytest.param('Mt {} / yr', '{} / yr',
+    pytest.param('Mt {} / yr', '{} / yr', 1,
                  marks=pytest.mark.xfail(raises=pint.DimensionalityError)),
+
+    # *to* contains both species *and* mass units that are different than
+    # *current*
+    ('t {} / year', 'kt {} / year', 1e-3),
 ])
-def test_convert_unit_with_context(test_df, current, to):
+def test_convert_unit_with_context(test_df, current, to, exp_factor):
     # unit conversion with contexts in application registry
     df = test_df.copy()
     df['variable'] = [i.replace('Primary Energy', 'Emissions|CH4')
@@ -93,7 +108,9 @@ def test_convert_unit_with_context(test_df, current, to):
     # test conversion for multiple contexts
     for (c, v) in [('AR5GWP100', 28), ('AR4GWP100', 25), ('SARGWP100', 21)]:
         exp = test_df.data.value * v
-        assert_converted_units(df.copy(), current, to, exp, context=f'gwp_{c}')
+        assert_converted_units(df.copy(), current, to, exp,
+                               exp_factor=exp_factor,
+                               context=f'gwp_{c}')
 
 
 def test_convert_unit_bad_args(test_pd_df):
