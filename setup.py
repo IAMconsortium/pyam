@@ -20,7 +20,7 @@ logo = r"""
 
 REQUIREMENTS = [
     'argparse',
-    'iam-units >= 2020.4.6',
+    'iam-units >= 2020.4.12',
     'numpy',
     'requests',
     'pandas>=0.25.0',
