@@ -25,9 +25,6 @@ install:
   - conda install -y numpy pandas pyyaml xlrd xlsxwriter seaborn==0.9.0 six requests jupyter nbconvert proj4==5.2.0 pywin32
   - conda install -y -c conda-forge matplotlib==3.0.2 pyproj==1.9.6
 
-  # Temporary: for IAMconsortium/pyam#361
-  - pip install git+git://github.com/IAMconsortium/units.git@issue/12#egg=iam-units
-
 build: false
 
 test_script:

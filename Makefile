@@ -93,8 +93,6 @@ $(VENV_DIR):  $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_
 	# TODO: unify with ci install instructions somehow
 	$(CONDA_EXE) config --add channels conda-forge # sets conda-forge as highest priority
 	$(CONDA_EXE) install --yes $(shell cat $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE) | tr '\n' ' ')
-	# Temporary: for IAMconsortium/pyam#361
-	$(VENV_DIR)/bin/pip install git+git://github.com/IAMconsortium/units.git@issue/12#egg=iam-units
 	# Install development setup
 	$(VENV_DIR)/bin/pip install -e .[tests,deploy,optional-io-formats]
 	# install docs requirements
