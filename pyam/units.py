@@ -37,31 +37,15 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     qty = (ret.data.loc[where, 'value'].values, current)
 
     try:
-        # Create a pint.Quantity
+        # Create a vector pint.Quantity
         qty = registry.Quantity(*qty)
     except pint.UndefinedUnitError as exc:
-        # *current* may include a GHG species
+        # *current* might include a GHG species
         if not context:
             # Can't do anything without a context
             raise UndefinedUnitError(*exc.args) from None
 
-        # Remove a leading 'gwp_' to produce the metric name
-        metric = context.split('gwp_')[1]
-
-        # Split *to* into a 1- or 3-tuple of str.
-        #
-        # This allows for *to* to be only a species name ('CO2e') without any
-        # unit ('kg CO2e') → len(_to) is 1. Otherwise, _to[1] is the species,
-        # and the other elements are any pre-/suffix.
-        _to = iam_units.emissions.pattern.split(to, maxsplit=1)
-        species_to = _to[1] if len(_to) == 3 else _to[0]
-
-        # Convert using the (magnitude, unit and species) tuple
-        result = iam_units.convert_gwp(metric, qty, species_to)
-
-        if len(_to) == 1:
-            # *to* was only a species name; provide units based on input
-            to = iam_units.format_mass(result, species_to, spec=':~')
+        result, to = convert_gwp(context, qty, to)
     except AttributeError:
         # .Quantity() did not exist
         raise TypeError(f'{registry} must be `pint.UnitRegistry`') from None
@@ -76,6 +60,38 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     ret.data.loc[where, 'unit'] = to
 
     return None if inplace else ret
+
+
+def convert_gwp(context, qty, to):
+    """Helper for :meth:`convert_unit` to perform GWP conversions."""
+    # Remove a leading 'gwp_' to produce the metric name
+    metric = context.split('gwp_')[1]
+
+    # Split *to* into a 1- or 3-tuple of str. This allows for *to* to be:
+    _to = iam_units.emissions.pattern.split(to, maxsplit=1)
+    if len(_to) == 1:
+        # Only a species name ('CO2e') without any unit
+        species_to = _to[0]
+        units_to = None
+    else:
+        # An expression with both units and species name ('kg CO2e / year');
+        # to[1] is the species
+        species_to = _to[1]
+        # Other elements are pre- and suffix, e.g. 'kg ' and ' / year'
+        units_to = _to[0] + _to[2]
+
+    # Convert GWP using the (magnitude, unit-and-species) tuple in *qty*
+    result = iam_units.convert_gwp(metric, qty, species_to)
+
+    if units_to:
+        # Also convert the units
+        result = result.to(units_to)
+    else:
+        # *to* was only a species name; provide units based on input and the
+        # output species name
+        to = iam_units.format_mass(result, species_to, spec=':~')
+
+    return result, to
 
 
 def convert_unit_with_mapping(df, conversion_mapping, inplace=False):
