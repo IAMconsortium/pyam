@@ -1,5 +1,9 @@
 # Next Release
 
+## Individual Updates
+
+- [#361](https://github.com/IAMconsortium/pyam/pull/361) iam-units refactored from a Git submodule to a Python dependency of pyam.
+
 # Release v0.5.0
 
 ## Highlights
