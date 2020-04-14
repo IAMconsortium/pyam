@@ -766,41 +766,72 @@ class IamDataFrame(object):
 
     def convert_unit(self, current, to=None, factor=None, registry=None,
                      context=None, inplace=False):
-        """Converts a unit using a given factor or the pint package
+        """Convert all data having *current* units to new units.
 
-        The `pint package <https://pint.readthedocs.io>`_ natively handles
-        conversion of standard (SI) units (e.g., exajoule to terawatt-hours,
-        :code:`EJ -> TWh`). It can also parse combined units (e.g.,
-        exajoule per year, :code:`EJ/yr`).
+        If *factor* is given, existing values are multiplied by it, and the
+        *to* units are assigned to the 'unit' column.
 
-        The :class:`pint.UnitRegistry` used by default loads additional
-        unit definitions relevant for integrated assessment models and energy
-        systems analysis from the `IAMconsortium/units
-        <https://github.com/IAMconsortium/units>`_ repository.
-        You can access that unit registry
-        via :func:`pint.get_application_registry`.
+        Otherwise, the :mod:`pint` package is used to convert from *current* ->
+        *to* units without an explicit conversion factor. Pint natively handles
+        conversion between any standard (SI) units that have compatible
+        dimensionality, such as exajoule to terawatt-hours, :code:`EJ -> TWh`,
+        or tonne per year to gram per second, :code:`t / yr -> g / sec`.
+
+        The default *registry* includes additional unit definitions relevant
+        for integrated assessment models and energy systems analysis, via the
+        `iam-units <https://github.com/IAMconsortium/units>`_ package.
+        This registry can also be accessed directly, using::
+
+            from iam_units import registry
+
+        Using the :mod:`iam_units` *registry*, *current* and *to* may contain
+        the names of greenhouse gas (GHG) species, such as 'CO2e', 'C', 'CH4',
+        'N2O', 'HFC236fa', etc. In this case, *context* must contain 'gwp_'
+        followed by the name of a specific global warming potential (GWP)
+        metric supported by :mod:`iam_units`, e.g. 'gwp_AR5GWP100'.
+
+        Rows with units other than *current* are not altered.
 
         Parameters
         ----------
         current : str (or mapping, deprecated)
-            name of current unit (to be converted from)
+            Name of current unit (to be converted from).
         to : str
-            name of new unit (to be converted to)
+            Name of new unit (to be converted to) or target GHG species.
         factor : value, optional
-            conversion factor if given, otherwise defaults to the application
-            UnitRegistry
+            Explicit conversion factor.
         registry : pint.UnitRegistry, optional
-            use a specific :class:´pint.UnitRegistry`; if `None`, use default
-            application registry with definitions imported from the
-            `IAMconsortium/units <https://github.com/IAMconsortium/units>`_
-            repository
-        context : str, optional
-            passed to the UnitRegistry
-        inplace : bool, default False
-            if True, do operation inplace and return None
+            Specific unit registry to use for conversion. Default: the
+            `iam-units <https://github.com/IAMconsortium/units>`_ registry.
+        context : str or pint.Context, optional
+            (Name of) a :ref:`pint context <pint:context>` to use in
+            conversion. Required when converting between GHG species using GWP
+            metrics.
+        inplace : bool, optional
+            Whether to return a new IamDataFrame.
+
+        Returns
+        -------
+        IamDataFrame
+            If *inplace* is :obj:`False`.
+        None
+            If *inplace* is :obj:`True`.
+
+        Raises
+        ------
+        pint.UndefinedUnitError
+            if attempting a GWP conversion but *context* is not given.
+        pint.DimensionalityError
+            without *factor*, when *current* and *to* are not compatible units.
         """
         # TODO: deprecate using `dict` in next release (>=0.6.0)
         # TODO: make `to` required
+
+        # Handle user input
+        # Check that (only) either factor or registry/context is provided
+        if factor and any([registry, context]):
+            raise ValueError('use either `factor` or `pint.UnitRegistry`')
+
         if isinstance(current, dict) and to is None and factor is None:
             deprecation_warning('Use explicit keyword arguments instead!',
                                 type='Using a dictionary to convert units')
