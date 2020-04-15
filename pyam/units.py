@@ -39,13 +39,12 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     try:
         # Create a vector pint.Quantity
         qty = registry.Quantity(*qty)
-    except pint.UndefinedUnitError as exc:
-        # *current* might include a GHG species
-        if not context:
-            # Can't do anything without a context
-            raise UndefinedUnitError(*exc.args) from None
-
-        result, to = convert_gwp(context, qty, to)
+    except pint.UndefinedUnitError:
+        try:
+            # *current* might include a GHG species
+            result, to = convert_gwp(context, qty, to)
+        except (AttributeError, ValueError) as exc:
+            raise UndefinedUnitError(to) from None
     except AttributeError:
         # .Quantity() did not exist
         raise TypeError(f'{registry} must be `pint.UnitRegistry`') from None
@@ -65,7 +64,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
 def convert_gwp(context, qty, to):
     """Helper for :meth:`convert_unit` to perform GWP conversions."""
     # Remove a leading 'gwp_' to produce the metric name
-    metric = context.split('gwp_')[1]
+    metric = context.split('gwp_')[1] if context else context
 
     # Split *to* into a 1- or 3-tuple of str. This allows for *to* to be:
     _to = iam_units.emissions.pattern.split(to, maxsplit=1)
