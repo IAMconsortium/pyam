@@ -40,11 +40,8 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
         # Create a vector pint.Quantity
         qty = registry.Quantity(*qty)
     except pint.UndefinedUnitError:
-        try:
-            # *current* might include a GHG species
-            result, to = convert_gwp(context, qty, to)
-        except (AttributeError, ValueError) as exc:
-            raise UndefinedUnitError(to) from None
+        # *qty* might include a GHG species
+        result, to = convert_gwp(context, qty, to)
     except AttributeError:
         # .Quantity() did not exist
         raise TypeError(f'{registry} must be `pint.UnitRegistry`') from None
@@ -79,8 +76,14 @@ def convert_gwp(context, qty, to):
         # Other elements are pre- and suffix, e.g. 'kg ' and ' / year'
         units_to = _to[0] + _to[2]
 
-    # Convert GWP using the (magnitude, unit-and-species) tuple in *qty*
-    result = iam_units.convert_gwp(metric, qty, species_to)
+    try:
+        # Convert GWP using the (magnitude, unit-and-species) tuple in *qty*
+        result = iam_units.convert_gwp(metric, qty, species_to)
+    except (AttributeError, ValueError):
+        # Failed: missing *metric* or *species_to* does not contain units.
+        # Other exceptions, e.g. another UndefinedUnitError, are not caught
+        # and will pass up through convert_unit().
+        raise UndefinedUnitError(species_to) from None
 
     if units_to:
         # Also convert the units
