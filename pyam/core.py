@@ -806,7 +806,8 @@ class IamDataFrame(object):
         context : str or pint.Context, optional
             (Name of) a :ref:`pint context <pint:context>` to use in
             conversion. Required when converting between GHG species using GWP
-            metrics.
+            metrics, unless the species indicated by *current* and *to* are
+            identical.
         inplace : bool, optional
             Whether to return a new IamDataFrame.
 
