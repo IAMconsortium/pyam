@@ -354,9 +354,9 @@ def _escape_regexp(s):
 def years_match(data, years):
     """Return rows where data matches year"""
     years = [years] if (
-        isinstance(years, int) or isinstance(years, np.int64)
+        isinstance(years, (int, np.int64))
     ) else years
-    dt = datetime.datetime
+    dt = (datetime.datetime, np.datetime64)
     if isinstance(years, dt) or isinstance(years[0], dt):
         error_msg = "`year` can only be filtered with ints or lists of ints"
         raise TypeError(error_msg)
@@ -426,7 +426,7 @@ def datetime_match(data, dts):
     """Matching of datetimes in time columns for data filtering"""
     dts = dts if islistable(dts) else [dts]
     if any([not (
-            isinstance(i, datetime.datetime) or isinstance(i, np.datetime64)
+            isinstance(i, (datetime.datetime, np.datetime64))
     ) for i in dts]):
         error_msg = (
             "`time` can only be filtered by datetimes and datetime64s"

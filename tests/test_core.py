@@ -317,14 +317,11 @@ def test_filter_day(test_df, test_day):
         assert unique_time[0] == expected
 
 
-def test_filter_numpy_vals(test_df):
+def test_filter_with_numpy_64_date_vals(test_df):
     dates = test_df[test_df.time_col].unique()
-    if test_df.time_col == "year":
-        res_0 = test_df.filter(year=dates[0])
-        res = test_df.filter(year=dates)
-    else:
-        res_0 = test_df.filter(time=dates[0])
-        res = test_df.filter(time=dates)
+    key = 'year' if test_df.time_col == "year" else 'time'
+    res_0 = test_df.filter(**{key: dates[0]})
+    res = test_df.filter(**{key: dates})
     assert np.equal(res_0.data[res_0.time_col].values, dates[0]).all()
     assert res.equals(test_df)
 
