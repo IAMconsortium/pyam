@@ -354,7 +354,7 @@ def _escape_regexp(s):
 def years_match(data, years):
     """Return rows where data matches year"""
     years = [years] if (
-            isinstance(years, int) or isinstance(years, np.int64)
+        isinstance(years, int) or isinstance(years, np.int64)
     ) else years
     dt = datetime.datetime
     if isinstance(years, dt) or isinstance(years[0], dt):
