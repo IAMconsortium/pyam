@@ -1,7 +1,7 @@
 # Next Release
 
 ## Individual Updates
-
+- [#370](https://github.com/IAMconsortium/pyam/pull/370) Allowed filter to work with np.int64 years and np.datetime64 dates.  
 - [#361](https://github.com/IAMconsortium/pyam/pull/361) iam-units refactored from a Git submodule to a Python dependency of pyam.
 
 # Release v0.5.0
