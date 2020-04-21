@@ -2,8 +2,8 @@
 
 ## Individual Updates
 
-- [#361](https://github.com/IAMconsortium/pyam/pull/361),
-  [#369](https://github.com/IAMconsortium/pyam/pull/369) iam-units refactored from a Git submodule to a Python dependency of pyam.
+- [#369](https://github.com/IAMconsortium/pyam/pull/369) `convert_units()`: support GWP conversion of same GHG species without context, lower-case aliases for species symbols.
+- [#361](https://github.com/IAMconsortium/pyam/pull/361) iam-units refactored from a Git submodule to a Python dependency of pyam.
 
 # Release v0.5.0
 
