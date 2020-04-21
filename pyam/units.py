@@ -72,8 +72,8 @@ SPECIES_ALIAS = {
 class UndefinedUnitError(pint.UndefinedUnitError):
     def __str__(self):
         return super().__str__() + (
-            '\nMust provide IamDataFrame.convert_unit(..., context=...) to '
-            'convert GHG species')
+            "\nGWP conversion with IamDataFrame.convert_unit() requires a "
+            "'gwp_...' *context* and mass-based *to* units.")
 
 
 def extract_species(expr):
@@ -104,17 +104,21 @@ def convert_gwp(context, qty, to):
     species_from, units_from = extract_species(qty[1])
     species_to, units_to = extract_species(to)
 
-    # Reform *qty* with only units
-    qty = (qty[0], units_from)
-
     try:
-        # Convert GWP using the (magnitude, unit) tuple in *qty*
-        result = iam_units.convert_gwp(metric, qty, species_from, species_to)
+        # Convert using a (magnitude, unit) tuple with only units, and explicit
+        # input and output units
+        result = iam_units.convert_gwp(metric, (qty[0], units_from),
+                                       species_from, species_to)
     except (AttributeError, ValueError):
-        # Failed: missing *metric*, or *species_to* does not contain units.
-        # Other exceptions, e.g. another UndefinedUnitError, are not caught
-        # and will pass up through convert_unit().
+        # Missing *metric*, or *species_to* contains invalid units. pyam
+        # promises UndefinedUnitError in these cases. Use a subclass (above) to
+        # add a usage hint.
         raise UndefinedUnitError(species_to) from None
+    except pint.DimensionalityError:
+        # Provide an exception with the user's inputs
+        raise pint.DimensionalityError(qty[1], to) from None
+
+    # Other exceptions are not caught and will pass up through convert_unit()
 
     if units_to:
         # Also convert the units
