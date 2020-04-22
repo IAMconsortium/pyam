@@ -317,6 +317,15 @@ def test_filter_day(test_df, test_day):
         assert unique_time[0] == expected
 
 
+def test_filter_with_numpy_64_date_vals(test_df):
+    dates = test_df[test_df.time_col].unique()
+    key = 'year' if test_df.time_col == "year" else 'time'
+    res_0 = test_df.filter(**{key: dates[0]})
+    res = test_df.filter(**{key: dates})
+    assert np.equal(res_0.data[res_0.time_col].values, dates[0]).all()
+    assert res.equals(test_df)
+
+
 @pytest.mark.parametrize("test_hour", [0, 12, [12, 13]])
 def test_filter_hour(test_df, test_hour):
     if "year" in test_df.data.columns:
