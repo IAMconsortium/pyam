@@ -766,7 +766,7 @@ class IamDataFrame(object):
 
     def convert_unit(self, current, to=None, factor=None, registry=None,
                      context=None, inplace=False):
-        """Convert all data having *current* units to new units.
+        r"""Convert all data having *current* units to new units.
 
         If *factor* is given, existing values are multiplied by it, and the
         *to* units are assigned to the 'unit' column.
@@ -784,29 +784,35 @@ class IamDataFrame(object):
 
             from iam_units import registry
 
-        Using the :mod:`iam_units` *registry*, *current* and *to* may contain
-        the names of greenhouse gas (GHG) species, such as 'CO2e', 'C', 'CH4',
-        'N2O', 'HFC236fa', etc. In this case, *context* must contain 'gwp_'
-        followed by the name of a specific global warming potential (GWP)
-        metric supported by :mod:`iam_units`, e.g. 'gwp_AR5GWP100'.
+        When using this registry, *current* and *to* may contain the symbols of
+        greenhouse gas (GHG) species, such as 'CO2e', 'C', 'CH4', 'N2O',
+        'HFC236fa', etc., as well as lower-case aliases like 'co2' supported by
+        :mod:`pyam`. In this case, *context* must contain 'gwp\_' followed by
+        the name of a specific global warming potential (GWP) metric supported
+        by :mod:`iam_units`, e.g. 'gwp_AR5GWP100'.
 
         Rows with units other than *current* are not altered.
 
         Parameters
         ----------
         current : str (or mapping, deprecated)
-            Name of current unit (to be converted from).
+            Current units to be converted.
         to : str
-            Name of new unit (to be converted to) or target GHG species.
+            New unit (to be converted to) or symbol for target GHG species. If
+            only the GHG species is provided, the units (e.g. :code:`Mt /
+            year`) will be the same as `current`, and an expression combining
+            units and species (e.g. 'Mt CO2e / yr') will be placed in the
+            'unit' column.
         factor : value, optional
-            Explicit conversion factor.
+            Explicit factor for conversion without `pint`.
         registry : pint.UnitRegistry, optional
             Specific unit registry to use for conversion. Default: the
             `iam-units <https://github.com/IAMconsortium/units>`_ registry.
         context : str or pint.Context, optional
             (Name of) a :ref:`pint context <pint:context>` to use in
             conversion. Required when converting between GHG species using GWP
-            metrics.
+            metrics, unless the species indicated by *current* and *to* are the
+            same.
         inplace : bool, optional
             Whether to return a new IamDataFrame.
 

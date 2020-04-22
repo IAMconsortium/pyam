@@ -15,24 +15,19 @@ def get_units_test_df(test_df):
     return df
 
 
-def assert_converted_units(df, current, to, exp, exp_factor=1.0, **kwargs):
+def assert_converted_units(df, current, to, exp, **kwargs):
     # testing for `inplace=False` - converted values and expected unit
     _df = df.convert_unit(current, to, **kwargs, inplace=False)
-    pd.testing.assert_series_equal(
-        _df.data.value,
-        exp * exp_factor,
-        **PRECISE_ARG)
-    # For GWP conversion with a species name (e.g. 'CO2e'), units are added
-    # (e.g. 'Mt CO2e'). Compare using 'in'.
-    assert to in _df.data.unit[5]
+    pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
+    # When *to* is only a species symbol (e.g. 'co2e'), units are added and a
+    # non-aliased symbol is returned (e.g. 'Mt CO2e'). Compare using 'in' and
+    # lower().
+    assert to.lower() in _df.data.unit[5].lower()
 
     # testing for `inplace=True` - converted values and expected unit
     df.convert_unit(current, to, **kwargs, inplace=True)
-    pd.testing.assert_series_equal(
-        df.data.value,
-        exp * exp_factor,
-        **PRECISE_ARG)
-    assert to in df.data.unit[5]
+    pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
+    assert to.lower() in df.data.unit[5].lower()
 
 
 @pytest.mark.parametrize("current,to", [
@@ -75,7 +70,27 @@ def test_convert_unit_with_custom_registry(test_df):
     assert_converted_units(df, 'foo', 'baz', exp, registry=ureg)
 
 
-@pytest.mark.parametrize('current, to, exp_factor', [
+# This test is parametrized as the product of three sets:
+# 1. The test_df fixture.
+# 2. Current species, context, and expected output magnitude.
+# 3. Input and output expressions, and any factor on the output magnitude due
+#    to differences in units between these.
+@pytest.mark.parametrize('context, current_species, exp', [
+    ('AR5GWP100', 'CH4', 28),
+    ('AR4GWP100', 'CH4', 25),
+    ('SARGWP100', 'CH4', 21),
+
+    # Without context, CO2e → CO2e works
+    (None, 'CO2e', 1.),
+
+    # Lower-case symbol, handled as alias for CH4
+    ('AR5GWP100', 'ch4', 28),
+
+    # Lower-case alias for CO2_eq handled *and* convertible to 'CO2e' without a
+    # context/metric
+    (None, 'co2_eq', 1.)
+])
+@pytest.mark.parametrize('current_expr, to_expr, exp_factor', [
     # exp_factor is used when the conversion includes both a species *and* unit
     # change.
 
@@ -85,32 +100,40 @@ def test_convert_unit_with_custom_registry(test_df):
     ('Mt {} / yr', 'Mt {} / yr', 1),
     ('g {} / sec', 'g {} / sec', 1),
 
-    # Only a species name as the *to* argument
+    # Only a species symbol as the *to* argument
     ('Mt {}', '{}', 1),
 
-    # *to* contains units, but no mass units → DimensionalityError
-    pytest.param('Mt {} / yr', '{} / yr', 1,
-                 marks=pytest.mark.xfail(raises=pint.DimensionalityError)),
+    # *to* contains units, but no mass units. UndefinedUnitError when no
+    # context is given, otherwise DimensionalityError.
+    pytest.param(
+        'Mt {} / yr', '{} / yr', 1,
+        marks=pytest.mark.xfail(raises=(pint.UndefinedUnitError,
+                                        pint.DimensionalityError))),
 
     # *to* contains both species *and* mass units that are different than
     # *current*
     ('t {} / year', 'kt {} / year', 1e-3),
 ])
-def test_convert_unit_with_context(test_df, current, to, exp_factor):
-    # unit conversion with contexts in application registry
+def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
+                     exp, exp_factor):
+    """Units and GHG species can be converted."""
+    # Handle parameters
+    current = current_expr.format(current_species)
+    to = to_expr.format('CO2e')
+    if context is not None:
+        # pyam-style context
+        context = f'gwp_{context}'
+
+    # Prepare input data
     df = test_df.copy()
     df['variable'] = [i.replace('Primary Energy', 'Emissions|CH4')
                       for i in df['variable']]
-    current = current.format('CH4')
     df['unit'] = current
-    to = to.format('CO2e')
 
-    # test conversion for multiple contexts
-    for (c, v) in [('AR5GWP100', 28), ('AR4GWP100', 25), ('SARGWP100', 21)]:
-        exp = test_df.data.value * v
-        assert_converted_units(df.copy(), current, to, exp,
-                               exp_factor=exp_factor,
-                               context=f'gwp_{c}')
+    # Expected values
+    exp_values = test_df.data.value * exp * exp_factor
+
+    assert_converted_units(df.copy(), current, to, exp_values, context=context)
 
 
 def test_convert_unit_bad_args(test_pd_df):
@@ -124,7 +147,7 @@ def test_convert_unit_bad_args(test_pd_df):
         idf.convert_unit('Mt CH4', 'CO2e', registry=object())
 
     # Conversion fails without context; exception provides a usage hint
-    match = 'Must provide IamDataFrame.convert_unit'
+    match = r'GWP conversion with IamDataFrame.convert_unit\(\) requires...'
     with pytest.raises(pint.UndefinedUnitError, match=match):
         idf.convert_unit('Mt CH4', 'CO2e')
 

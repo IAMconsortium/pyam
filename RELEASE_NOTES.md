@@ -2,13 +2,14 @@
 
 ## Individual Updates
 - [#370](https://github.com/IAMconsortium/pyam/pull/370) Allowed filter to work with np.int64 years and np.datetime64 dates.  
+- [#369](https://github.com/IAMconsortium/pyam/pull/369) `convert_unit()` supports GWP conversion of same GHG species without context, lower-case aliases for species symbols.
 - [#361](https://github.com/IAMconsortium/pyam/pull/361) iam-units refactored from a Git submodule to a Python dependency of pyam.
 
 # Release v0.5.0
 
 ## Highlights
 
-- Improved feature for unit conversion 
+- Improved feature for unit conversion
   using the [pint package](https://pint.readthedocs.io) and
   the [IAMconsortium/units](https://github.com/IAMconsortium/units) repository,
   providing out-of-the-box conversion of unit definitions commonly used
@@ -17,7 +18,7 @@
   for more information
 - Increased support for operations on timeseries data with continuous-time
   resolution
-- New tutorial for working with various input data formats; 
+- New tutorial for working with various input data formats;
   [take a look](https://pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.html)
 - Rewrite and extension of the documentation pages for the API;
   [read the new docs](https://pyam-iamc.readthedocs.io/en/stable/api.html)!
@@ -30,7 +31,7 @@ the API of `IamDataFrame.convert_unit()` from a dictionary to explicit kwargs
 
 PR [#334](https://github.com/IAMconsortium/pyam/pull/334) changed the arguments
 of `IamDataFrame.interpolate()` and `pyam.fill_series()` to `time`. It can still
-be an integer (i.e., a year). 
+be an integer (i.e., a year).
 
 With PR [#337](https://github.com/IAMconsortium/pyam/pull/337), initializing
 an IamDataFrame with `n/a` entries in columns other than `value` raises an error.
@@ -74,7 +75,7 @@ behaviour of `aggregate_region()` regarding the treatment of components at the
 region-level. To keep the previous behaviour, add `components=True`.
 
 PR [#315](https://github.com/IAMconsortium/pyam/pull/314) changed the return
-type of `aggregate[_region]()` to an `IamDataFrame` instance. 
+type of `aggregate[_region]()` to an `IamDataFrame` instance.
 To keep the previous behaviour, add `timeseries()`.
 The object returned by `[check_]aggregate[_region]()` now includes both the
 actual and the expected value as a `pd.DataFrame` instance.
@@ -91,7 +92,7 @@ rather than a dictionary and also includes optional treatment of components
 - [#305](https://github.com/IAMconsortium/pyam/pull/305) Add `method` and `weight` options to the (region) aggregation functions
 - [#302](https://github.com/IAMconsortium/pyam/pull/302) Rework the tutorials
 - [#301](https://github.com/IAMconsortium/pyam/pull/301) Bugfix when using `to_excel()` with a `pd.ExcelWriter`
-- [#297](https://github.com/IAMconsortium/pyam/pull/297) Add `empty` attribute, better error for `timeseries()` on empty dataframe 
+- [#297](https://github.com/IAMconsortium/pyam/pull/297) Add `empty` attribute, better error for `timeseries()` on empty dataframe
 - [#295](https://github.com/IAMconsortium/pyam/pull/295) Include `meta` table when writing to or reading from `xlsx` files
 - [#292](https://github.com/IAMconsortium/pyam/pull/292) Add warning message if `data` is empty at initialization (after formatting)
 - [#288](https://github.com/IAMconsortium/pyam/pull/288) Put `pyam` logger in its own namespace (see [here](https://docs.python-guide.org/writing/logging/#logging-in-a-library>))
