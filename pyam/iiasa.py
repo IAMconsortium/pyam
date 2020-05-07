@@ -330,7 +330,8 @@ class Connection(object):
         # pass empty list to API if all regions selected
         if len(regions) == len(self.regions()):
             regions = []
-
+        logger.debug(f"Prepared filter for {len(regions)} region(s), "
+                     f"{len(variables)} variables and {len(runs)} runs")
         data = {
             "filters": {
                 "regions": list(regions),
@@ -338,7 +339,7 @@ class Connection(object):
                 "runs": list(runs),
                 "years": [],
                 "units": [],
-                "times": []
+                "timeslices": []
             }
         }
         return data
