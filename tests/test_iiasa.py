@@ -140,10 +140,8 @@ QUERY_DATA_EXP = {
         "runs": [],
         "years": [],
         "units": [],
-        "times": []
+        "timeslices": []
     }
-
-
 }
 
 
