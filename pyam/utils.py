@@ -259,6 +259,7 @@ def format_data(df, **kwargs):
         msg = f'duplicate rows in `data`:\n{duplicates.head()}'
         if len(duplicates) > 5:
             msg += '\n...'
+        logger.error(msg)
         raise ValueError(msg)
 
     if df.empty:
