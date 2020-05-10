@@ -251,10 +251,15 @@ def format_data(df, **kwargs):
     if df.isnull().values.any():
         raise ValueError('a column of `data` contains nan!')
 
-    # check for duplicates and return sorted data
+    # check for duplicates and empty data
     idx_cols = IAMC_IDX + [time_col] + extra_cols
-    if any(df[idx_cols].duplicated()):
-        raise ValueError('duplicate rows in `data`!')
+    duplicated_rows = df[idx_cols].duplicated()
+    if any(duplicated_rows):
+        duplicates = df.loc[duplicated_rows, idx_cols].drop_duplicates()
+        msg = f'duplicate rows in `data`:\n{duplicates.head()}'
+        if len(duplicates) > 5:
+            msg += '\n...'
+        raise ValueError(msg)
 
     if df.empty:
         logger.warning('Formatted data is empty!')
