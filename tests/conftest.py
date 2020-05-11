@@ -16,12 +16,20 @@ IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
 TEST_DATA_DIR = os.path.join(here, 'data')
 
 
+TEST_YEARS = [2005, 2010]
+TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
+TEST_TIME_STR = ['2005-06-17', '2010-07-21']
+TEST_TIME_STR_HR = ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
+
+DTS_MAPPING = {2005: TEST_DTS[0], 2010: TEST_DTS[1]}
+
+
 TEST_DF = pd.DataFrame([
     ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
     ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
     ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
 ],
-    columns=IAMC_IDX + [2005, 2010],
+    columns=IAMC_IDX + TEST_YEARS,
 )
 
 
@@ -52,7 +60,7 @@ FULL_FEATURE_DF = pd.DataFrame([
     ['reg_a', 'Population', 'm', 2, 3],
     ['reg_b', 'Population', 'm', 1, 2],
 ],
-    columns=['region', 'variable', 'unit', 2005, 2010],
+    columns=['region', 'variable', 'unit'] + TEST_YEARS,
 )
 
 
@@ -67,7 +75,7 @@ REG_DF = pd.DataFrame([
     msg + ['AFR', 'Primary Energy', 'EJ/yr', 2, 7],
     msg + ['World', 'Primary Energy', 'EJ/yr', 3, 13],
 ],
-    columns=IAMC_IDX + [2005, 2010],
+    columns=IAMC_IDX + TEST_YEARS,
 )
 
 
@@ -85,14 +93,6 @@ TEST_STACKPLOT_DF = pd.DataFrame([
 # appease stickler
 TEST_STACKPLOT_DF['model'] = 'IMG'
 TEST_STACKPLOT_DF['scenario'] = 'a_scen'
-
-
-TEST_YEARS = [2005, 2010]
-TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
-TEST_TIME_STR = ['2005-06-17', '2010-07-21']
-TEST_TIME_STR_HR = ['2005-06-17 00:00:00', '2010-07-21 12:00:00']
-
-DTS_MAPPING = {2005: TEST_DTS[0], 2010: TEST_DTS[1]}
 
 
 # minimal IamDataFrame with four different time formats
@@ -138,6 +138,23 @@ def simple_df(request):
     if request.param is 'datetime':
         _df.rename(DTS_MAPPING, axis="columns", inplace=True)
     yield IamDataFrame(model='model_a', scenario='scen_a', data=_df)
+
+
+# IamDataFrame with subannual time resolution
+@pytest.fixture(scope="function")
+def subannual_df():
+    _df = FULL_FEATURE_DF.iloc[0:6].copy()
+
+    def add_subannual(_data, name, value):
+        _data['subannual'] = name
+        _data[TEST_YEARS] = _data[TEST_YEARS] * value
+        return _data
+
+    # primary energy is a direct sum across sub-annual timeslices
+    mapping = [('year', 1), ('winter', 0.7), ('summer', 0.3)]
+    lst = [add_subannual(_df.copy(), name, value) for name, value in mapping]
+
+    yield IamDataFrame(model='model_a', scenario='scen_a', data=pd.concat(lst))
 
 
 @pytest.fixture(scope="function")

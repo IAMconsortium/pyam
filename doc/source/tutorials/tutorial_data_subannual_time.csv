@@ -1,0 +1,5 @@
+model,scenario,region,variable,unit,subannual,2005,2010
+model_a,scen_a,World,Primary Energy,EJ/y,summer,3.5999999999999996,4.5
+model_a,scen_a,World,Primary Energy,EJ/y,winter,8.399999999999999,10.5
+model_a,scen_a,World,Primary Energy|Coal,EJ/y,summer,2.6999999999999997,3.0
+model_a,scen_a,World,Primary Energy|Coal,EJ/y,winter,6.3,7.0

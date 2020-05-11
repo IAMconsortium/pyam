@@ -280,6 +280,16 @@ def test_aggregate_region_unknown_method(simple_df):
     pytest.raises(ValueError, simple_df.aggregate_region, v, method='foo')
 
 
+@pytest.mark.parametrize("variable", (
+    'Primary Energy',
+    ['Primary Energy', 'Primary Energy|Coal'],
+))
+def test_aggregate_time(subannual_df, variable):
+    # check that `variable` is a a direct sum and matches given total
+    exp = subannual_df.filter(variable=variable, subannual=['year'])
+    assert_iamframe_equal(subannual_df.aggregate_time(variable), exp)
+
+
 def test_check_internal_consistency(simple_df):
     _df = simple_df.filter(variable='Price|Carbon', keep=False)
 

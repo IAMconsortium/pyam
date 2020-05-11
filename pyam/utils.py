@@ -128,6 +128,7 @@ def read_file(fname, *args, **kwargs):
 def format_data(df, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
     if isinstance(df, pd.Series):
+        df.name = df.name or 'value'
         df = df.to_frame()
 
     # Check for R-style year columns, converting where necessary

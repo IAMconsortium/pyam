@@ -17,6 +17,7 @@ The source code of the tutorials is available in the folder
    tutorials/data_table_formats.ipynb
    tutorials/unit_conversion.ipynb
    tutorials/aggregating_downscaling_consistency.ipynb
+   tutorials/subannual_time_resolution.ipynb
    tutorials/ipcc_colors.ipynb
    tutorials/iiasa_dbs.ipynb
    tutorials/legends.ipynb

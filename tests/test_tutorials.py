@@ -95,6 +95,14 @@ def test_aggregating_downscaling_consistency():
 
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
 @pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
+def test_subannual_time_resolution():
+    fname = os.path.join(tut_path, 'subannual_time_resolution.ipynb')
+    nb, errors = _notebook_run(fname)
+    assert errors == []
+
+
+@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
+@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_pyam_logo():
     fname = os.path.join(tut_path, 'pyam_logo.ipynb')
     nb, errors = _notebook_run(fname)

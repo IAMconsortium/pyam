@@ -50,7 +50,8 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
-from pyam._aggregate import _aggregate, _aggregate_region, _group_and_agg
+from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
+    _group_and_agg
 from pyam.units import convert_unit, convert_unit_with_mapping
 
 logger = logging.getLogger(__name__)
@@ -886,7 +887,7 @@ class IamDataFrame(object):
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
-            else return aggregate timeseries
+            else return aggregate timeseries as new :class:`IamDataFrame`
         """
         _df = _aggregate(self, variable, components=components, method=method)
 
@@ -975,12 +976,11 @@ class IamDataFrame(object):
             (currently only supported with `method='sum'`)
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
-            else return aggregate timeseries
+            else return aggregate timeseries as new :class:`IamDataFrame`
         """
-        _df = _aggregate_region(
-            self, variable, region=region, subregions=subregions,
-            components=components, method=method, weight=weight
-        )
+        _df = _aggregate_region(self, variable, region=region,
+                                subregions=subregions, components=components,
+                                method=method, weight=weight)
 
         # return None if there is nothing to aggregate
         if _df is None:
@@ -1057,6 +1057,43 @@ class IamDataFrame(object):
                 keys=[region], names=['region'])
             _df.index = _df.index.reorder_levels(self._LONG_IDX)
             return _df
+
+    def aggregate_time(self, variable, column='subannual', value='year',
+                       components=None, method='sum', append=False):
+        """Aggregate a timeseries over a subannual time resolution
+
+         Parameters
+         ----------
+         variable : str or list of str
+             variable(s) to be aggregated
+         column : str, default 'subannual'
+             the data column to be used as subannual time representation
+         value : str, default 'year
+             the name of the aggregated (subannual) time
+         components : list of str
+             subannual timeslices to be aggregated; defaults to all subannual
+             timeslices other than ``value``
+         method : func or str, default 'sum'
+             method to use for aggregation,
+             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+         append : bool, default False
+             append the aggregate timeseries to `self` and return None,
+             else return aggregate timeseries as new :class:`IamDataFrame`
+         """
+        _df = _aggregate_time(self, variable, column=column, value=value,
+                              components=components, method=method)
+
+        # return None if there is nothing to aggregate
+        if _df is None:
+            return None
+
+        # else, append to `self` or return as `IamDataFrame`
+        if append is True:
+            self.append(_df, inplace=True)
+        else:
+            df = IamDataFrame(_df)
+            df.meta = self.meta.loc[_make_index(df.data)]
+            return df
 
     def downscale_region(self, variable, proxy, region='World',
                          subregions=None, append=False):
