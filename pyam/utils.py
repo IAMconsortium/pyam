@@ -263,6 +263,7 @@ def format_data(df, **kwargs):
 
     return sort_data(df, idx_cols), time_col, extra_cols
 
+
 def _raise_data_error(msg, data):
     """Utils function to format error message from data formatting"""
     data = data.drop_duplicates()
