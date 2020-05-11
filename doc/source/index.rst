@@ -34,8 +34,8 @@ Release v\ |version|.
 .. |coveralls| image:: https://coveralls.io/repos/github/IAMconsortium/pyam/badge.svg?branch=master
    :target: https://coveralls.io/github/IAMconsortium/pyam?branch=master
 
-.. |joss| image:: http://joss.theoj.org/papers/356bc013105642ec4e94a3b951836cfe/status.svg
-   :target: http://joss.theoj.org/papers/356bc013105642ec4e94a3b951836cfe
+.. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
+   :target: https://joss.theoj.org/papers/10.21105/joss.01095
 
 .. |doi| image:: https://zenodo.org/badge/113359260.svg
    :target: https://zenodo.org/badge/latestdoi/113359260

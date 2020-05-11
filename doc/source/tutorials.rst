@@ -19,5 +19,6 @@ The source code of the tutorials is available in the folder
    tutorials/aggregating_downscaling_consistency.ipynb
    tutorials/ipcc_colors.ipynb
    tutorials/iiasa_dbs.ipynb
+   tutorials/legends.ipynb
    tutorials/aggregating_variables_and_plotting_with_negative_values.ipynb
    tutorials/pyam_logo.ipynb
