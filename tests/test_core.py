@@ -54,7 +54,9 @@ def test_init_df_with_float_cols_raises(test_pd_df):
 def test_init_df_with_duplicates_raises(test_df):
     _df = test_df.timeseries()
     _df = _df.append(_df.iloc[0]).reset_index()
-    pytest.raises(ValueError, IamDataFrame, data=_df)
+    match = '3  model_a   scen_a  World  Primary Energy  EJ/yr'
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(_df)
 
 
 def test_init_df_with_na_unit(test_df):
@@ -315,6 +317,15 @@ def test_filter_day(test_df, test_day):
         unique_time = obs['time'].unique()
         assert len(unique_time) == 1
         assert unique_time[0] == expected
+
+
+def test_filter_with_numpy_64_date_vals(test_df):
+    dates = test_df[test_df.time_col].unique()
+    key = 'year' if test_df.time_col == "year" else 'time'
+    res_0 = test_df.filter(**{key: dates[0]})
+    res = test_df.filter(**{key: dates})
+    assert np.equal(res_0.data[res_0.time_col].values, dates[0]).all()
+    assert res.equals(test_df)
 
 
 @pytest.mark.parametrize("test_hour", [0, 12, [12, 13]])

@@ -20,6 +20,7 @@ logo = r"""
 
 REQUIREMENTS = [
     'argparse',
+    'iam-units >= 2020.4.12',
     'numpy',
     'requests',
     'pandas>=0.25.0',
@@ -38,8 +39,13 @@ EXTRA_REQUIREMENTS = {
     'deploy': ['twine', 'setuptools', 'wheel'],
 }
 
-with open('README.md', 'r') as f:
-    LONG_DESCRIPTION = f.read()
+# building the docs on readthedocs fails with a FileNotFoundError
+# https://github.com/IAMconsortium/pyam/issues/363
+try:
+    with open('README.md', 'r') as f:
+        LONG_DESCRIPTION = f.read()
+except FileNotFoundError:
+    LONG_DESCRIPTION = ''
 
 # thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
 class RunTests(Command):
@@ -81,8 +87,7 @@ def main():
         ],
     }
     package_data = {
-        'pyam': ['region_mappings/*', '../units/definitions.txt',
-                 '../units/modules/**/*.txt'],
+        'pyam': ['region_mappings/*'],
     }
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS
