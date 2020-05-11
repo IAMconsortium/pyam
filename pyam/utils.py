@@ -248,18 +248,28 @@ def format_data(df, **kwargs):
     df.dropna(inplace=True, subset=['value'])
 
     # verify that there are no nan's left (in columns)
-    if df.isnull().values.any():
-        raise ValueError('a column of `data` contains nan!')
+    null_rows = df.isnull().values
+    if null_rows.any():
+        _raise_data_error('empty cells in `data`', df.loc[null_rows])
 
-    # check for duplicates and return sorted data
+    # check for duplicates and empty data
     idx_cols = IAMC_IDX + [time_col] + extra_cols
-    if any(df[idx_cols].duplicated()):
-        raise ValueError('duplicate rows in `data`!')
+    rows = df[idx_cols].duplicated()
+    if any(rows):
+        _raise_data_error('duplicate rows in `data`', df.loc[rows, idx_cols])
 
     if df.empty:
         logger.warning('Formatted data is empty!')
 
     return sort_data(df, idx_cols), time_col, extra_cols
+
+
+def _raise_data_error(msg, data):
+    """Utils function to format error message from data formatting"""
+    data = data.drop_duplicates()
+    msg = f'{msg}:\n{data.head()}' + ('\n...' if len(data) > 5 else '')
+    logger.error(msg)
+    raise ValueError(msg)
 
 
 def sort_data(data, cols):
