@@ -18,7 +18,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# common indicies
+# common indices
 META_IDX = ['model', 'scenario']
 YEAR_IDX = ['model', 'scenario', 'region', 'year']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
@@ -115,9 +115,8 @@ def read_pandas(fname, *args, **kwargs):
 def read_file(fname, *args, **kwargs):
     """Read data from a file"""
     if not isstr(fname):
-        raise ValueError('reading multiple files not supported, '
-                         'please use `IamDataFrame.append()`')
-    logger.info('Reading `{}`'.format(fname))
+        raise ValueError('Reading multiple files not supported, '
+                         'use `IamDataFrame.append()` or `pyam.concat()`')
     format_kwargs = {}
     # extract kwargs that are intended for `format_data`
     for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:
