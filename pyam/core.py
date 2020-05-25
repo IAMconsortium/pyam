@@ -20,8 +20,9 @@ except ImportError:
 
 try:
     import ixmp
+    ixmp.TimeSeries
     has_ix = True
-except ImportError:
+except (ImportError, AttributeError):
     has_ix = False
 
 from pyam import plotting
