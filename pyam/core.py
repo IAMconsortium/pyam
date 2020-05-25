@@ -1455,14 +1455,13 @@ class IamDataFrame(object):
         path : str or path object
             any valid string path or :class:`pathlib.Path`
         """
-        if path.endswith('csv'):
-            df = pd.read_csv(path, *args, **kwargs)
-        else:
-            xl = pd.ExcelFile(path)
-            if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
-                kwargs['sheet_name'] = 'meta'
-            df = pd.read_excel(path, *args, **kwargs)
+        # load from file
+        df = read_pandas(path, default_sheet='meta', *args, **kwargs)
 
+        # cast model-scenario column headers to lower-case (if necessary)
+        df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
+
+        # check that required columns exist
         req_cols = ['model', 'scenario', 'exclude']
         if not set(req_cols).issubset(set(df.columns)):
             e = 'File `{}` does not have required columns {}!'
