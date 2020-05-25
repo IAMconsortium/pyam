@@ -96,8 +96,11 @@ def write_sheet(writer, name, df, index=False):
         else:
             width = max([df[col].map(lambda x: len(str(x or 'None'))).max(),
                          len(col)]) + 2
-        xls_col = '{c}:{c}'.format(c=NUMERIC_TO_STR[i])
-        worksheet.set_column(xls_col, width)
+        # this line fails if using an xlsx-engine other than openpyxl
+        try:
+            worksheet.column_dimensions[NUMERIC_TO_STR[i]].width = width
+        except AttributeError:
+            pass
 
 
 def read_pandas(fname, *args, **kwargs):
