@@ -13,9 +13,6 @@ matrix:
 # It is not clear how/when this can be fixed, so turn this back off for now
 #        - os: windows
 #          env: PYENV=py37
-# there is no maintained miniconda2 package for chocolatey
-#        - os: windows
-#          env: PYENV=py27
 
 before_install:
   - source ./ci/env.sh
