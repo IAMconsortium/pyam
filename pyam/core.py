@@ -1376,17 +1376,21 @@ class IamDataFrame(object):
             if True, write 'meta' to an Excel sheet name 'meta' (default);
             if this is a string, use it as sheet name
         """
+        # open a new ExcelWriter instance (if necessary)
         close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
-            excel_writer = pd.ExcelWriter(excel_writer)
-        self._to_file_format(iamc_index)\
-            .to_excel(excel_writer, sheet_name=sheet_name, index=False,
-                      **kwargs)
-        # replace `True` by `'meta'` as default sheet name
-        include_meta = 'meta' if include_meta is True else include_meta
-        if isstr(include_meta):
-            write_sheet(excel_writer, include_meta, self.meta, index=True)
+            excel_writer = pd.ExcelWriter(excel_writer, engine='openpyxl')
+
+        # write data table
+        write_sheet(excel_writer, sheet_name, self._to_file_format(iamc_index))
+
+        # write meta table unless `include_meta=False`
+        if include_meta:
+            meta_rename = dict([(i, i.capitalize()) for i in META_IDX])
+            write_sheet(excel_writer,
+                        'meta' if include_meta is True else include_meta,
+                        self.meta.reset_index().rename(columns=meta_rename))
 
         # close the file if `excel_writer` arg was a file name
         if close:
