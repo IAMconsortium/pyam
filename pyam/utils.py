@@ -103,28 +103,28 @@ def write_sheet(writer, name, df, index=False):
             pass
 
 
-def read_pandas(fname, *args, **kwargs):
+def read_pandas(path, default_sheet='data', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
-    if fname.endswith('csv'):
-        df = pd.read_csv(fname, *args, **kwargs)
+    if path.endswith('csv'):
+        df = pd.read_csv(path, *args, **kwargs)
     else:
-        xl = pd.ExcelFile(fname)
+        xl = pd.ExcelFile(path)
         if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
-            kwargs['sheet_name'] = 'data'
-        df = pd.read_excel(fname, *args, **kwargs)
+            kwargs['sheet_name'] = default_sheet
+        df = pd.read_excel(path, *args, **kwargs)
     return df
 
 
-def read_file(fname, *args, **kwargs):
+def read_file(path, *args, **kwargs):
     """Read data from a file"""
-    if not isstr(fname):
+    if not isstr(path):
         raise ValueError('Reading multiple files not supported, '
                          'use `IamDataFrame.append()` or `pyam.concat()`')
     format_kwargs = {}
     # extract kwargs that are intended for `format_data`
     for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:
         format_kwargs[c] = kwargs.pop(c)
-    return format_data(read_pandas(fname, *args, **kwargs), **format_kwargs)
+    return format_data(read_pandas(path, *args, **kwargs), **format_kwargs)
 
 
 def format_data(df, **kwargs):
