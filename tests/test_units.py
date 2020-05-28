@@ -1,3 +1,4 @@
+import numpy as np
 import pytest
 
 import pandas as pd
@@ -45,6 +46,20 @@ def test_convert_unit_with_pint(test_df, current, to):
     exp = pd.Series([1., 6., 138.88, 833.33, 555.55, 1944.44], name='value')
     assert_converted_units(df, current, to, exp)
 
+
+def test_convert_eqiv_units(test_df):
+    current = "Mt CO2-equiv/yr"
+    new = "Mt CH4/yr"
+    test_df["unit"] = current
+    converted = test_df.convert_unit(current=current, to=new, context="gwp_AR5GWP100")
+    assert all(converted["unit"] == new)
+    assert np.allclose(converted["value"].values, test_df["value"].values / 28)
+    current = "Mt CO2/yr"
+    test_df["unit"] = current
+    converted_plain = test_df.convert_unit(
+        current=current, to=new, context="gwp_AR5GWP100"
+    )
+    assert all(converted["value"].values == converted_plain["value"].values)
 
 def test_convert_unit_from_repo(test_df):
     # unit conversion with definition loaded from `IAMconsortium/units` repo

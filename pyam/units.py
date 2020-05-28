@@ -26,21 +26,24 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     # Convert using a pint.UnitRegistry; default the one from iam_units
     registry = registry or iam_units.registry
 
+    # Make versions without -equiv
+    clean_current = _remove_equivs(current)
+    clean_to = _remove_equivs(to)
     # Pair of (magnitude, unit)
-    qty = [ret.data.loc[where, 'value'].values, current]
+    qty = [ret.data.loc[where, 'value'].values, clean_current]
 
     try:
         # Create a vector pint.Quantity
         qty = registry.Quantity(*qty)
     except pint.UndefinedUnitError:
         # *qty* might include a GHG species; try GWP conversion
-        result, to = convert_gwp(context, qty, to)
+        result, to = convert_gwp(context, qty, clean_to)
     except AttributeError:
         # .Quantity() did not exist
         raise TypeError(f'{registry} must be `pint.UnitRegistry`') from None
     else:
         # Ordinary conversion, using an empty Context if none was provided
-        result = qty.to(to, context or pint.Context())
+        result = qty.to(clean_to, context or pint.Context())
 
     # Copy values from the result Quantity
     ret.data.loc[where, 'value'] = result.magnitude
@@ -59,6 +62,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
 SPECIES_ALIAS = {
     'ch4': 'CH4',
     'co2': 'CO2',
+    'CO2-equiv': 'CO2e',
     'co2_eq': 'CO2_eq',
     'co2e': 'CO2e',
     'co2eq': 'CO2eq',
@@ -75,6 +79,14 @@ class UndefinedUnitError(pint.UndefinedUnitError):
             "\nGWP conversion with IamDataFrame.convert_unit() requires a "
             "'gwp_...' *context* and mass-based *to* units.")
 
+def _remove_equivs(string_to_fix):
+    """
+    Removes the substring "-equiv" from strings.
+    :param string_to_fix: str
+        The string to strip of "-equiv".
+    :return: str
+    """
+    return string_to_fix.replace("-equiv", "")
 
 def extract_species(expr):
     """Handle supported expressions for GHG species and units."""
