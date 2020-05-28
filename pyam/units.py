@@ -79,6 +79,7 @@ class UndefinedUnitError(pint.UndefinedUnitError):
             "\nGWP conversion with IamDataFrame.convert_unit() requires a "
             "'gwp_...' *context* and mass-based *to* units.")
 
+
 def _remove_equivs(string_to_fix):
     """
     Removes the substring "-equiv" from strings.

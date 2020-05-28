@@ -51,7 +51,9 @@ def test_convert_eqiv_units(test_df):
     current = "Mt CO2-equiv/yr"
     new = "Mt CH4/yr"
     test_df["unit"] = current
-    converted = test_df.convert_unit(current=current, to=new, context="gwp_AR5GWP100")
+    converted = test_df.convert_unit(
+        current=current, to=new, context="gwp_AR5GWP100"
+    )
     assert all(converted["unit"] == new)
     assert np.allclose(converted["value"].values, test_df["value"].values / 28)
     current = "Mt CO2/yr"
