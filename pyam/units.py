@@ -27,8 +27,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     registry = registry or iam_units.registry
 
     # Make versions without -equiv
-    clean_current = _remove_equivs(current)
-    clean_to = _remove_equivs(to)
+    clean_current, clean_to = [i.replace('-equiv', 'e') for i in [current, to]]
     # Pair of (magnitude, unit)
     qty = [ret.data.loc[where, 'value'].values, clean_current]
 
