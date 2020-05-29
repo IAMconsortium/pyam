@@ -79,15 +79,6 @@ class UndefinedUnitError(pint.UndefinedUnitError):
             "'gwp_...' *context* and mass-based *to* units.")
 
 
-def _remove_equivs(string_to_fix):
-    """
-    Removes the substring "-equiv" from strings.
-    :param string_to_fix: str
-        The string to strip of "-equiv".
-    :return: str
-    """
-    return string_to_fix.replace("-equiv", "")
-
 def extract_species(expr):
     """Handle supported expressions for GHG species and units."""
     # Split *expr* into 1 or 3 strings. Unlike iam_units, re.IGNORECASE is used
