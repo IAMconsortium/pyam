@@ -27,22 +27,22 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     registry = registry or iam_units.registry
 
     # Make versions without -equiv
-    clean_current, clean_to = [i.replace('-equiv', '') for i in [current, to]]
+    current, _to = [i.replace('-equiv', '') for i in [current, to]]
     # Pair of (magnitude, unit)
-    qty = [ret.data.loc[where, 'value'].values, clean_current]
+    qty = [ret.data.loc[where, 'value'].values, current]
 
     try:
         # Create a vector pint.Quantity
         qty = registry.Quantity(*qty)
     except pint.UndefinedUnitError:
         # *qty* might include a GHG species; try GWP conversion
-        result, to = convert_gwp(context, qty, clean_to)
+        result, _to = convert_gwp(context, qty, _to)
     except AttributeError:
         # .Quantity() did not exist
         raise TypeError(f'{registry} must be `pint.UnitRegistry`') from None
     else:
         # Ordinary conversion, using an empty Context if none was provided
-        result = qty.to(clean_to, context or pint.Context())
+        result = qty.to(_to, context or pint.Context())
 
     # Copy values from the result Quantity
     ret.data.loc[where, 'value'] = result.magnitude
