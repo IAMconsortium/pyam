@@ -103,9 +103,10 @@ def test_convert_unit_with_custom_registry(test_df):
     # Lower-case symbol, handled as alias for CH4
     ('AR5GWP100', 'ch4', 28),
 
-    # Lower-case alias for CO2_eq handled *and* convertible to 'CO2e' without a
-    # context/metric
+    # Lower-case alias for CO2_eq and 'co2-equiv' handled *and* convertible to
+    # 'CO2e' without a context/metric
     (None, 'co2_eq', 1.),
+    (None, 'co2-equiv', 1.),
 
     # Using "-equiv" after a unit should make no difference
     ('AR4GWP100', 'co2-equiv', 1.),
