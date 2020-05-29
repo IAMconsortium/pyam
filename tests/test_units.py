@@ -1,10 +1,8 @@
-import numpy as np
-import pytest
-
 import pandas as pd
 import pint
-from pyam import IamDataFrame
+import pytest
 
+from pyam import IamDataFrame
 
 PRECISE_ARG = dict(check_less_precise=True)
 
