@@ -81,7 +81,7 @@ class Connection(object):
                 (preferred)
               - an ordered container (tuple, list, etc.) with the same values
               - a dictionary with the same keys
-        base_url: str, custom authentication server URL
+        base_url : str, custom authentication server URL
         """
         self._base_url = base_url
         self._token = _get_token(creds, base_url=self._base_url)
@@ -171,9 +171,9 @@ class Connection(object):
         Metadata regarding the list of scenarios (e.g., models, scenarios,
         run identifier, etc.) in the connected data source.
 
-        Parameter
-        ---------
-        default : bool, optional, default True
+        Parameters
+        ----------
+        default : bool, optional
             Return *only* the default version of each Scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
@@ -188,10 +188,7 @@ class Connection(object):
 
     @lru_cache()
     def available_metadata(self):
-        """
-        List all scenario metadata indicators available in the connected
-        data source
-        """
+        """List all available meta indicators in the instance"""
         url = '/'.join([self._base_url, 'metadata/types'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
@@ -200,12 +197,11 @@ class Connection(object):
 
     @lru_cache()
     def metadata(self, default=True):
-        """
-        Metadata of scenarios in the connected data source
+        """All meta categories and indicators of scenarios
 
-        Parameter
-        ---------
-        default : bool, optional, default True
+        Parameters
+        ----------
+        default : bool, optional
             Return *only* the default version of each Scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
@@ -256,9 +252,12 @@ class Connection(object):
     def regions(self, include_synonyms=False):
         """All regions in the connected data source
 
-        :param include_synonyms: whether to include synonyms
-               (possibly leading to duplicate region names for
-               regions with more than one synonym)
+        Parameters
+        ----------
+        include_synonyms : bool
+            whether to include synonyms
+            (possibly leading to duplicate region names for
+            regions with more than one synonym)
         """
         url = '/'.join([self._base_url, 'nodes?hierarchy=%2A'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
@@ -345,9 +344,9 @@ class Connection(object):
         return data
 
     def query(self, **kwargs):
-        """
-        Query the data source, subselecting data. Available keyword arguments
-        include
+        """Query the data source with filters
+
+        Available keyword arguments include
 
         - model
         - scenario
@@ -406,28 +405,28 @@ class Connection(object):
 
 
 def read_iiasa(name, meta=False, creds=None, base_url=_BASE_URL, **kwargs):
-    """
-    Query an IIASA database. See Connection.query() for more documentation
+    """Read data from an IIASA scenario explorer and return as IamDataFrame
 
     Parameters
     ----------
     name : str
-        A valid IIASA database name, see pyam.iiasa.valid_connections()
+        A valid name of an IIASA scenario explorer instance,
+        see :attr:`pyam.iiasa.Connection.valid_connections`
     meta : bool or list of strings
-        If not False, also include metadata indicators (or subset if provided).
+        If :obj:`True`, include all meta categories & quantitative indicators
+        (or subset if list is given).
     creds : dict
-        Credentials to access IXMP and authentication service APIs
-        (username/password)
-    base_url: str
+        Credentials to access scenario explorer instance and
+        authentication service APIs (username/password)
+    base_url : str
         Authentication server URL
-    kwargs :
-        Arguments for pyam.iiasa.Connection.query()
+    kwargs
+        Arguments for :meth:`pyam.iiasa.Connection.query`
     """
     conn = Connection(name, creds, base_url)
     # data
-    df = conn.query(**kwargs)
-    df = IamDataFrame(df)
-    # metadata
+    df = IamDataFrame(conn.query(**kwargs))
+    # meta: categorization and quantitative indications
     if meta:
         mdf = conn.metadata()
         # only data for models/scenarios in df
