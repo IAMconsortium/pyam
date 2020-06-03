@@ -353,8 +353,8 @@ class Connection(object):
         - region
         - variable
 
-        Example
-        -------
+        Examples
+        --------
 
         ```
         Connection.query(model='MESSAGE', scenario='SSP2*',
