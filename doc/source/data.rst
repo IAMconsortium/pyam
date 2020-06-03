@@ -5,7 +5,7 @@ The IAMC timeseries format for scenario data
 --------------------------------------------
 
 .. figure:: _static/iamc-logo.png
-   :width: 120px
+   :width: 150px
    :align: right
 
    `IAMC website`_
