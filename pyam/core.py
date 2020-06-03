@@ -20,8 +20,9 @@ except ImportError:
 
 try:
     import ixmp
+    ixmp.TimeSeries
     has_ix = True
-except ImportError:
+except (ImportError, AttributeError):
     has_ix = False
 
 from pyam import plotting
@@ -98,6 +99,7 @@ class IamDataFrame(object):
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             _data = read_ix(data, **kwargs)
         else:
+            logger.info('Reading file `{}`'.format(data))
             _data = read_file(data, **kwargs)
 
         self.data, self.time_col, self.extra_cols = _data
@@ -482,7 +484,7 @@ class IamDataFrame(object):
             raise ValueError('Must pass a name or use a named pd.Series')
         name = name or meta.name
         if name in self.data.columns:
-            raise ValueError('`{}` already exists in `data`!'.format(name))
+            raise ValueError(f'A column `{name}` already exists in `data`!')
 
         # check if meta has a valid index and use it for further workflow
         if hasattr(meta, 'index') and hasattr(meta.index, 'names') \
@@ -1348,9 +1350,9 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path: str r path object
+        path : str or path object
             file path or :class:`pathlib.Path`
-        iamc_index: bool, default False
+        iamc_index : bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
         """
@@ -1362,29 +1364,33 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        excel_writer: str, path object or ExcelWriter object
+        excel_writer : str, path object or ExcelWriter object
             any valid string path, :class:`pathlib.Path`
             or :class:`pandas.ExcelWriter`
-        sheet_name: string
+        sheet_name : string
             name of sheet which will contain :meth:`timeseries()` data
-        iamc_index: bool, default False
+        iamc_index : bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
-        include_meta: boolean or string
+        include_meta : boolean or string
             if True, write 'meta' to an Excel sheet name 'meta' (default);
             if this is a string, use it as sheet name
         """
+        # open a new ExcelWriter instance (if necessary)
         close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
-            excel_writer = pd.ExcelWriter(excel_writer)
-        self._to_file_format(iamc_index)\
-            .to_excel(excel_writer, sheet_name=sheet_name, index=False,
-                      **kwargs)
-        # replace `True` by `'meta'` as default sheet name
-        include_meta = 'meta' if include_meta is True else include_meta
-        if isstr(include_meta):
-            write_sheet(excel_writer, include_meta, self.meta, index=True)
+            excel_writer = pd.ExcelWriter(excel_writer, engine='openpyxl')
+
+        # write data table
+        write_sheet(excel_writer, sheet_name, self._to_file_format(iamc_index))
+
+        # write meta table unless `include_meta=False`
+        if include_meta:
+            meta_rename = dict([(i, i.capitalize()) for i in META_IDX])
+            write_sheet(excel_writer,
+                        'meta' if include_meta is True else include_meta,
+                        self.meta.reset_index().rename(columns=meta_rename))
 
         # close the file if `excel_writer` arg was a file name
         if close:
@@ -1446,17 +1452,16 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path: str or path object
+        path : str or path object
             any valid string path or :class:`pathlib.Path`
         """
-        if path.endswith('csv'):
-            df = pd.read_csv(path, *args, **kwargs)
-        else:
-            xl = pd.ExcelFile(path)
-            if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
-                kwargs['sheet_name'] = 'meta'
-            df = pd.read_excel(path, *args, **kwargs)
+        # load from file
+        df = read_pandas(path, default_sheet='meta', *args, **kwargs)
 
+        # cast model-scenario column headers to lower-case (if necessary)
+        df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
+
+        # check that required columns exist
         req_cols = ['model', 'scenario', 'exclude']
         if not set(req_cols).issubset(set(df.columns)):
             e = 'File `{}` does not have required columns {}!'

@@ -26,8 +26,6 @@ REQUIREMENTS = [
     'pandas>=0.25.0',
     'pint',
     'PyYAML',
-    'xlrd',
-    'xlsxwriter',
     'matplotlib<=3.0.2',
     'seaborn',
     'six',
