@@ -16,3 +16,4 @@ dependencies:
     - sphinxcontrib-bibtex
     - sphinxcontrib-programoutput
     - nbsphinx
+    - openpyxl
