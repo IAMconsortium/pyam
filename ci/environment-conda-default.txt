@@ -1,8 +1,6 @@
 numpy
 pandas
 pyyaml
-xlrd
-xlsxwriter
 six
 requests
 jupyter

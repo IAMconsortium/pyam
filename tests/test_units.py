@@ -1,9 +1,8 @@
-import pytest
-
 import pandas as pd
 import pint
-from pyam import IamDataFrame
+import pytest
 
+from pyam import IamDataFrame
 
 PRECISE_ARG = dict(check_less_precise=True)
 
@@ -86,9 +85,14 @@ def test_convert_unit_with_custom_registry(test_df):
     # Lower-case symbol, handled as alias for CH4
     ('AR5GWP100', 'ch4', 28),
 
-    # Lower-case alias for CO2_eq handled *and* convertible to 'CO2e' without a
-    # context/metric
-    (None, 'co2_eq', 1.)
+    # Lower-case alias for CO2_eq and 'co2-equiv' handled *and* convertible to
+    # 'CO2e' without a context/metric
+    (None, 'co2_eq', 1.),
+    (None, 'co2-equiv', 1.),
+
+    # Using "-equiv" after a unit should make no difference
+    ('AR4GWP100', 'co2-equiv', 1.),
+    ('AR5GWP100', 'ch4-equiv', 28)
 ])
 @pytest.mark.parametrize('current_expr, to_expr, exp_factor', [
     # exp_factor is used when the conversion includes both a species *and* unit

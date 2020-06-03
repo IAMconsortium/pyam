@@ -1,7 +1,10 @@
 # Next Release
 
 ## Individual Updates
+
+- [#386](https://github.com/IAMconsortium/pyam/pull/386) Enables unit conversion to apply to strings with "-equiv" in them. 
 - [#384](https://github.com/IAMconsortium/pyam/pull/384) Add documentation for the pyam.iiasa.Connection class.
+- [#382](https://github.com/IAMconsortium/pyam/pull/382) Streamline dependencies and implementation of xlsx-io
 - [#373](https://github.com/IAMconsortium/pyam/pull/373) Extends the error message when initializing with duplicate rows.
 - [#370](https://github.com/IAMconsortium/pyam/pull/370) Allowed filter to work with np.int64 years and np.datetime64 dates.  
 - [#369](https://github.com/IAMconsortium/pyam/pull/369) `convert_unit()` supports GWP conversion of same GHG species without context, lower-case aliases for species symbols.
