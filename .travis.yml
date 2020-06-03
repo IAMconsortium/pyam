@@ -5,8 +5,6 @@ matrix:
         - os: linux
           env: PYENV=py37
         - os: osx
-          env: PYENV=py36
-        - os: osx
           env: PYENV=py37
 # Observed on 10-Feb-19, choclatey builds for miniconda3 break
 # see: https://github.com/conda/conda/issues/6064
