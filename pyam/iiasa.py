@@ -356,10 +356,14 @@ class Connection(object):
         Examples
         --------
 
-        ```
-        Connection.query(model='MESSAGE', scenario='SSP2*',
-                         variable=['Emissions|CO2', 'Primary Energy'])
-        ```
+        You can read from a :class:`pyam.iiasa.Connection` instance using
+        keyword arguments similar to filtering an :class:`IamDataFrame`:
+
+        .. code-block:: python
+
+            Connection.query(model='MESSAGE', scenario='SSP2*',
+                             variable=['Emissions|CO2', 'Primary Energy'])
+
         """
         headers = {
             'Authorization': 'Bearer {}'.format(self._token),
