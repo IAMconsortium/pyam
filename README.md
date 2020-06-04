@@ -26,7 +26,7 @@ Data model
 ----------
 
 An illustrative example of the timeseries format developed by the
-[Integrated Assessment Modeling Consortium](http://www.globalchange.umd.edu/iamc/) (IAMC)
+[Integrated Assessment Modeling Consortium](https://www.iamconsortium.org) (IAMC)
 is shown below.
 The row is taken from the [IAMC 1.5°C scenario explorer](https://data.ene.iiasa.ac.at/iamc-1.5c-explorer),
 showing a scenario from the [CD-LINKS](https://www.cd-links.org) project.

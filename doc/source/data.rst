@@ -4,8 +4,8 @@ Data Model
 The IAMC timeseries format for scenario data
 --------------------------------------------
 
-.. figure:: _static/iamc_logo.jpg
-   :width: 120px
+.. figure:: _static/iamc-logo.png
+   :width: 150px
    :align: right
 
    `IAMC website`_
