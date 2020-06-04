@@ -53,7 +53,7 @@ from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _group_and_agg
-from pyam.units import convert_unit, convert_unit_with_mapping
+from pyam.units import convert_unit
 
 logger = logging.getLogger(__name__)
 
@@ -767,7 +767,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def convert_unit(self, current, to=None, factor=None, registry=None,
+    def convert_unit(self, current, to, factor=None, registry=None,
                      context=None, inplace=False):
         r"""Convert all data having *current* units to new units.
 
@@ -798,7 +798,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        current : str (or mapping, deprecated)
+        current : str
             Current units to be converted.
         to : str
             New unit (to be converted to) or symbol for target GHG species. If
@@ -833,18 +833,11 @@ class IamDataFrame(object):
         pint.DimensionalityError
             without *factor*, when *current* and *to* are not compatible units.
         """
-        # TODO: deprecate using `dict` in next release (>=0.6.0)
-        # TODO: make `to` required
-
         # Handle user input
         # Check that (only) either factor or registry/context is provided
         if factor and any([registry, context]):
             raise ValueError('use either `factor` or `pint.UnitRegistry`')
 
-        if isinstance(current, dict) and to is None and factor is None:
-            deprecation_warning('Use explicit keyword arguments instead!',
-                                type='Using a dictionary to convert units')
-            return convert_unit_with_mapping(self, current, inplace)
         # new standard method, remove this comment when deprecating above
         return convert_unit(self, current, to, factor, registry, context,
                             inplace)

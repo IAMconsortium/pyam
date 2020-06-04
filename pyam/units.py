@@ -132,18 +132,3 @@ def convert_gwp(context, qty, to):
         to = iam_units.format_mass(result, species_to, spec=':~')
 
     return result, to
-
-
-# Deprecated methods
-
-def convert_unit_with_mapping(df, conversion_mapping, inplace=False):
-    """Internal implementation of unit conversion by mapping (deprecated)"""
-    # TODO: deprecate in next release (>=0.6.0)
-    ret = df.copy() if not inplace else df
-    for current_unit, (target_unit, factor) in conversion_mapping.items():
-        factor = pd.to_numeric(factor)
-        where = ret.data['unit'] == current_unit
-        ret.data.loc[where, 'value'] *= factor
-        ret.data.loc[where, 'unit'] = target_unit
-    if not inplace:
-        return ret
