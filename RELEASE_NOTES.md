@@ -1,4 +1,10 @@
-# Next Release
+# Release v0.6.0
+
+## Highlights
+
+- Add feature to aggregate timeseries at sub-annual time resolution
+- Refactored the iam-units utility from a submodule to a dependency
+- Clean up documentation and dependencies 
 
 ## Individual Updates
 
@@ -9,7 +15,7 @@
 - [#370](https://github.com/IAMconsortium/pyam/pull/370) Allowed filter to work with np.int64 years and np.datetime64 dates.  
 - [#369](https://github.com/IAMconsortium/pyam/pull/369) `convert_unit()` supports GWP conversion of same GHG species without context, lower-case aliases for species symbols.
 - [#361](https://github.com/IAMconsortium/pyam/pull/361) iam-units refactored from a Git submodule to a Python dependency of pyam.
-- [#322](https://github.com/IAMconsortium/pyam/pull/322) Add feature to aggregate timeseries at sub-annual time resolution #322
+- [#322](https://github.com/IAMconsortium/pyam/pull/322) Add feature to aggregate timeseries at sub-annual time resolution
 
 # Release v0.5.0
 
