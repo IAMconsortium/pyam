@@ -161,28 +161,3 @@ def test_convert_unit_with_custom_factor(test_df):
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 1., 6., 4., 14.], name='value')
     assert_converted_units(df, 'EJ/yr', 'foo', exp, factor=2)
-
-
-def test_convert_unit_with_mapping():
-    # TODO: deprecate in next release (>=0.6.0)
-    df = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'SST', 'test_1', 'A', 1, 5],
-        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'SST', 'test_3', 'C', 3, 7],
-    ], columns=['model', 'scenario', 'region',
-                'variable', 'unit', 2005, 2010],
-    ))
-
-    unit_conv = {'A': ['B', 5], 'C': ['D', 3]}
-
-    obs = df.convert_unit(unit_conv).data.reset_index(drop=True)
-
-    exp = IamDataFrame(pd.DataFrame([
-        ['model', 'scen', 'SST', 'test_1', 'B', 5, 25],
-        ['model', 'scen', 'SDN', 'test_2', 'unit', 2, 6],
-        ['model', 'scen', 'SST', 'test_3', 'D', 9, 21],
-    ], columns=['model', 'scenario', 'region',
-                'variable', 'unit', 2005, 2010],
-    )).data.reset_index(drop=True)
-
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
