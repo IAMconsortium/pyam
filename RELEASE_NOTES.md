@@ -1,10 +1,12 @@
+# Next Release
+
 # Release v0.6.0
 
 ## Highlights
 
 - Add feature to aggregate timeseries at sub-annual time resolution
 - Refactored the iam-units utility from a submodule to a dependency
-- Clean up documentation and dependencies 
+- Clean up documentation and dependencies
 
 ## Individual Updates
 
