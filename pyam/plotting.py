@@ -602,7 +602,8 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
             ax.plot(group[x], group[y], **kwargs)
         else:
             kwargs.pop('linestyle')  # scatter() can't take a linestyle
-            ax.scatter(group[x], group[y], **kwargs)
+            label = ' '.join(group[g].iloc[0] for g in groupby)
+            ax.scatter(group[x], group[y], label=label, **kwargs)
 
     # build legend handles and labels
     handles, labels = ax.get_legend_handles_labels()
