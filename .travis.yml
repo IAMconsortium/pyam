@@ -1,3 +1,11 @@
+# Continuous integration configuration for Travis
+ # NB use https://config.travis-ci.com/explore to validate changes
+
+branches:
+   # Do not build PR branches in the main repo; only the merge results of PRs
+   only:
+   - master
+
 language: sh
 
 matrix:
