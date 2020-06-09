@@ -5,3 +5,5 @@ six
 requests
 jupyter
 nbconvert
+matplotlib
+matplotlib-base
