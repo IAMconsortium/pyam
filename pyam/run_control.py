@@ -1,8 +1,8 @@
 import copy
-import collections
 import os
 import yaml
 
+from collections.abc import Mapping
 from pyam.utils import isstr
 
 # user-defined defaults for various plot settings
@@ -40,7 +40,7 @@ def run_control():
 def _recursive_update(d, u):
     """recursively update a dictionary d with a dictionary u"""
     for k, v in u.items():
-        if isinstance(v, collections.Mapping):
+        if isinstance(v, Mapping):
             r = _recursive_update(d.get(k, {}), v)
             d[k] = r
         else:
@@ -48,7 +48,7 @@ def _recursive_update(d, u):
     return d
 
 
-class RunControl(collections.Mapping):
+class RunControl(Mapping):
     """A thin wrapper around a Python Dictionary to support configuration of
     harmonization execution. Input can be provided as dictionaries or YAML
     files.

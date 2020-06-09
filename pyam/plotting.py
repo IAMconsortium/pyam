@@ -8,8 +8,8 @@ import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 
-from collections import defaultdict, Iterable
-
+from collections import defaultdict
+from collections.abc import Iterable
 
 from pyam.run_control import run_control
 from pyam.utils import requires_package, IAMC_IDX, SORT_IDX, isstr

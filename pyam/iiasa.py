@@ -1,4 +1,3 @@
-import collections
 import json
 import logging
 import os
@@ -9,6 +8,7 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
+from collections.abc import Mapping
 from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, islistable, isstr, pattern_match
 
@@ -39,7 +39,7 @@ def _get_token(creds, base_url):
     # otherwise read creds and try to login
     filecreds = False
     try:
-        if isinstance(creds, collections.Mapping):
+        if isinstance(creds, Mapping):
             user, pw = creds['username'], creds['password']
         elif os.path.exists(str(creds)):
             with open(str(creds), 'r') as stream:
