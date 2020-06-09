@@ -598,11 +598,11 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
         else:
             legend_data.append(' '.join(name))
         kwargs.update(pargs)
+        label = ' '.join(group[g].iloc[0] for g in groupby)
         if with_lines:
-            ax.plot(group[x], group[y], **kwargs)
+            ax.plot(group[x], group[y], label=label, **kwargs)
         else:
             kwargs.pop('linestyle')  # scatter() can't take a linestyle
-            label = ' '.join(group[g].iloc[0] for g in groupby)
             ax.scatter(group[x], group[y], label=label, **kwargs)
 
     # build legend handles and labels
