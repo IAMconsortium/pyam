@@ -79,7 +79,7 @@ test: $(VENV_DIR)  ## run all the tests
 	cd tests; $(VENV_DIR)/bin/pytest --cov=pyam --cov-config ../ci/.coveragerc -rfsxEX --cov-report term-missing
 
 .PHONY: test-with-mpl
-test: $(VENV_DIR)  ## run all the tests including matplotlib
+test-with-mpl: $(VENV_DIR)  ## run all the tests including matplotlib
 	cd tests; $(VENV_DIR)/bin/pytest --mpl --cov=pyam --cov-config ../ci/.coveragerc -rfsxEX --cov-report term-missing
 
 .PHONY: install
