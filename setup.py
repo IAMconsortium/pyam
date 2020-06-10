@@ -26,7 +26,7 @@ REQUIREMENTS = [
     'pandas>=0.25.0',
     'pint',
     'PyYAML',
-    'matplotlib<=3.0.2',
+    'matplotlib',
     'seaborn',
     'six',
 ]

@@ -4,8 +4,14 @@ matrix:
     include:
         - os: linux
           env: PYENV=py37
+# Observed on 9-Jun-20, timeout due to environment conflict
+#        - os: linux
+#          env: PYENV=py38
         - os: osx
           env: PYENV=py37
+# Observed on 9-Jun-20, timeout due to environment conflict
+#        - os: osx
+#          env: PYENV=py38
 # Observed on 10-Feb-19, choclatey builds for miniconda3 break
 # see: https://github.com/conda/conda/issues/6064
 # It is not clear how/when this can be fixed, so turn this back off for now

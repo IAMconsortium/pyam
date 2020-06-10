@@ -4,6 +4,9 @@ environment:
       - PYTHON_VERSION: "3.7"
         MINICONDA: "C:\\Miniconda37-x64"
         PYTHON_ARCH: "64"
+      - PYTHON_VERSION: "3.8"
+        MINICONDA: "C:\\Miniconda38-x64"
+        PYTHON_ARCH: "64"
 
 init:
   - "ECHO %PYTHON_VERSION% %MINICONDA%"
@@ -22,7 +25,7 @@ install:
   - conda --version
   - activate testing
   - conda install -y numpy pandas pyyaml seaborn==0.9.0 six requests jupyter nbconvert proj4==5.2.0 pywin32
-  - conda install -y -c conda-forge matplotlib==3.0.2 pyproj==1.9.6
+  - conda install -y -c conda-forge matplotlib pyproj==1.9.6
 
 build: false
 

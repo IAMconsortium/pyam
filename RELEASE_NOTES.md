@@ -1,5 +1,7 @@
 # Next Release
 
+- [#380](https://github.com/IAMconsortium/pyam/pull/380) Add compatibility with latest matplotlib and py3.8
+
 # Release v0.6.0
 
 ## Highlights

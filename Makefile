@@ -76,6 +76,10 @@ regenerate-test-figures: $(VENV_DIR)  ## re-generate all test figures
 
 .PHONY: test
 test: $(VENV_DIR)  ## run all the tests
+	cd tests; $(VENV_DIR)/bin/pytest --cov=pyam --cov-config ../ci/.coveragerc -rfsxEX --cov-report term-missing
+
+.PHONY: test-with-mpl
+test-with-mpl: $(VENV_DIR)  ## run all the tests including matplotlib
 	cd tests; $(VENV_DIR)/bin/pytest --mpl --cov=pyam --cov-config ../ci/.coveragerc -rfsxEX --cov-report term-missing
 
 .PHONY: install
