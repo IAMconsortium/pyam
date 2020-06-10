@@ -3,13 +3,13 @@ import logging
 import string
 import six
 import re
-import collections
 import datetime
 import dateutil
 import time
 
 import numpy as np
 import pandas as pd
+from collections.abc import Iterable
 
 try:
     import seaborn as sns
@@ -61,12 +61,12 @@ def isstr(x):
 
 def isscalar(x):
     """Returns True if x is a scalar"""
-    return not isinstance(x, collections.Iterable) or isstr(x)
+    return not isinstance(x, Iterable) or isstr(x)
 
 
 def islistable(x):
     """Returns True if x is a list but not a string"""
-    return isinstance(x, collections.Iterable) and not isstr(x)
+    return isinstance(x, Iterable) and not isstr(x)
 
 
 def write_sheet(writer, name, df, index=False):
@@ -331,7 +331,7 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=True):
     for filtering (str, int, bool)
     """
     matches = np.array([False] * len(data))
-    if not isinstance(values, collections.Iterable) or isstr(values):
+    if not isinstance(values, Iterable) or isstr(values):
         values = [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
