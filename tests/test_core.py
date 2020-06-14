@@ -47,8 +47,17 @@ def test_init_df_with_index(test_pd_df):
 
 
 def test_init_from_iamdf(test_df_year):
-    assert not IamDataFrame(test_df_year).empty
+    # casting an IamDataFrame instance again works
+    df = IamDataFrame(test_df_year)
 
+    # inplace-operations on the new object have effects on the original object
+    df.rename(scenario={'scen_a': 'scen_foo'}, inplace=True)
+    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+
+    # overwrites on the new object do not have effects on the original object
+    df = df.rename(scenario={'scen_foo': 'scen_bar'})
+    assert all(df.scenarios().values == ['scen_b', 'scen_bar'])
+    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
 
 def test_init_df_with_float_cols_raises(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.5, 2010: 2010.})
