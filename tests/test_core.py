@@ -46,6 +46,10 @@ def test_init_df_with_index(test_pd_df):
     pd.testing.assert_frame_equal(df.timeseries().reset_index(), test_pd_df)
 
 
+def test_init_from_iamdf(test_df_year):
+    assert not IamDataFrame(test_df_year).empty
+
+
 def test_init_df_with_float_cols_raises(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.5, 2010: 2010.})
     pytest.raises(ValueError, IamDataFrame, data=_test_df)
