@@ -93,6 +93,14 @@ class IamDataFrame(object):
     """
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame"""
+        if isinstance(data, IamDataFrame) and not kwargs:
+            for attr, value in data.__dict__.items():
+                setattr(self, attr, value)
+        else:
+            self._init(data, **kwargs)
+
+    def _init(self, data, **kwargs):
+        """Process data and set attributes for new instance"""
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             _data = format_data(data.copy(), **kwargs)
