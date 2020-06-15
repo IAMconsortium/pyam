@@ -90,6 +90,11 @@ class IamDataFrame(object):
     kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta')
     Calling the class with :code:`meta_sheet_name=False` will
     skip the import of the 'meta' table.
+
+    When initializing an :class:`IamDataFrame` from an object that is already
+    an :class:`IamDataFrame` instance, the new object will be hard-linked to
+    all attributes of the original object - so any changes on one object
+    (e.g., with :code:`inplace=True`) may also modify the other object!
     """
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame"""
