@@ -59,6 +59,12 @@ def test_init_from_iamdf(test_df_year):
     assert all(df.scenarios().values == ['scen_b', 'scen_bar'])
     assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
 
+
+def test_init_from_iamdf_raises(test_df_year):
+    # casting an IamDataFrame instance again with extra args fails
+    pytest.raises(ValueError, IamDataFrame, test_df_year, model='foo')
+
+
 def test_init_df_with_float_cols_raises(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.5, 2010: 2010.})
     pytest.raises(ValueError, IamDataFrame, data=_test_df)
