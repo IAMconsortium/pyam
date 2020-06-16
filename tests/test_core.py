@@ -62,7 +62,10 @@ def test_init_from_iamdf(test_df_year):
 
 def test_init_from_iamdf_raises(test_df_year):
     # casting an IamDataFrame instance again with extra args fails
-    pytest.raises(ValueError, IamDataFrame, test_df_year, model='foo')
+    args = dict(model='foo')
+    match = f'Invalid arguments `{args}` for initializing an IamDataFrame'
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(test_df_year, **args)
 
 
 def test_init_df_with_float_cols_raises(test_pd_df):

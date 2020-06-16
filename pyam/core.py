@@ -100,7 +100,10 @@ class IamDataFrame(object):
     """
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame"""
-        if isinstance(data, IamDataFrame) and not kwargs:
+        if isinstance(data, IamDataFrame):
+            if kwargs:
+                msg = 'Invalid arguments `{}` for initializing an IamDataFrame'
+                raise ValueError(msg.format(kwargs))
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
