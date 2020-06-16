@@ -44,7 +44,7 @@ jobs:
         pytest tests --cov=./ --cov-report=xml
 
     - name: Upload coverage report to Codecov
-      if: ${{ matrix.os == 'windows-latest' }}
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: codecov/codecov-action@v1.0.7
       with:
         file: ./coverage.xml
