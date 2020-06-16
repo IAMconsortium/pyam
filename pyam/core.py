@@ -95,6 +95,8 @@ class IamDataFrame(object):
     an :class:`IamDataFrame` instance, the new object will be hard-linked to
     all attributes of the original object - so any changes on one object
     (e.g., with :code:`inplace=True`) may also modify the other object!
+    This is intended behaviour and consistent with pandas but may be confusing
+    for those who are not used to the pandas/Python universe.
     """
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame"""
