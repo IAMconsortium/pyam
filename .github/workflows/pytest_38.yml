@@ -40,6 +40,13 @@ jobs:
         pip install -e .[tests,deploy,optional-io-formats]
         pip install pandoc nbformat
 
-    - name: Test with pytest
+    - name: Test with pytest (including codecov)
       run: |
-        pytest tests
+        pytest tests --cov=./ --cov-report=xml
+
+    - name: Codecov
+      if: ${{ matrix.os == 'windows-latest' }}
+      uses: codecov/codecov-action@v1.0.7
+      with:
+        file: ./coverage.xml
+        env_vars: ${{ matrix.os }} py${{ matrix.python-version }}
