@@ -73,8 +73,7 @@ def _get_token(creds, base_url):
         url = '/'.join([base_url, 'anonym'])
         r = requests.get(url)
         _check_response(r, 'Could not get anonymous token')
-        logger.info('You are connected as an anonymous user')
-        return r.json()
+        return r.json(), None
 
     # parse creds, write warning
     if isinstance(creds, Mapping):
@@ -95,8 +94,7 @@ def _get_token(creds, base_url):
     url = '/'.join([base_url, 'login'])
     r = requests.post(url, headers=headers, data=json.dumps(data))
     _check_response(r, 'Login failed for user: {}'.format(user))
-    logger.info(f'You are connected as user `{user}`')
-    return r.json()
+    return r.json(), user
 
 
 class Connection(object):
@@ -124,12 +122,17 @@ class Connection(object):
         and will be deprecated in future releases of pyam.
         """
         self._base_url = base_url
-        self._token = _get_token(creds, base_url=self._base_url)
+        self._token, self._user = _get_token(creds, base_url=self._base_url)
 
         # connect if provided a name
         self._connected = None
         if name:
             self.connect(name)
+
+        if self._user:
+            logger.info(f'You are connected as user `{self._user}`')
+        else:
+            logger.info(f'You are connected as an anonymous user')
 
     @property
     @lru_cache()
