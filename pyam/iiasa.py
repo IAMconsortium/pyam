@@ -1,3 +1,4 @@
+from pathlib import Path
 import json
 import logging
 import os
@@ -22,6 +23,28 @@ You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
  data as provided in the explorer guidelines: {}
 """.replace('\n', '')
+
+# path to local configuration settings
+DEFAULT_IIASA_CONFIG = Path('~') / '.local' / 'pyam' / 'iiasa-config.json'
+
+
+def set_config(user, password, file=None):
+    """Save username and password for IIASA API connection to file"""
+    file = Path(file) if file is not None else DEFAULT_IIASA_CONFIG
+    if not file.parent.exists():
+        file.parent.mkdir(parents=True)
+
+    with open(file, mode='w') as f:
+        logger.info(f'Setting IIASA-connection configuration file: {file}')
+        json.dump(dict(user=user, password=password), f)
+
+
+def get_config(file=None):
+    """Get username and password for IIASA API connection from file"""
+    file = Path(file) if file is not None else DEFAULT_IIASA_CONFIG
+    if file.exists():
+        with open(file, mode='r') as f:
+            return json.load(f)
 
 
 def _check_response(r, msg='Trouble with request', error=RuntimeError):
