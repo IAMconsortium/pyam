@@ -98,29 +98,28 @@ def _get_token(creds, base_url):
 
 
 class Connection(object):
-    """A class to facilitate querying an IIASA scenario explorer database"""
+    """A class to facilitate querying an IIASA scenario explorer database
 
+    Parameters
+    ----------
+    name : str, optional
+        A valid database name. For available options, see
+        valid_connections().
+    creds : str, :class:`pathlib.Path`, list-like, or dict, optional
+        By default, this function will (try to) read user credentials which
+        were set using :meth:`pyam.iiasa.set_config(<user>, <password>)`.
+        Alternatively, you can provide a path to a yaml file
+        with entries of  'username' and 'password'.
+    base_url : str, custom authentication server URL
+
+    Notes
+    -----
+    Providing credentials as an ordered container (tuple, list, etc.)
+    or as a dictionary with keys `user` and `password` is (still) supported
+    for backwards compatibility. However, this option is NOT RECOMMENDED
+    and will be deprecated in future releases of pyam.
+    """
     def __init__(self, name=None, creds=None, base_url=_BASE_URL):
-        """
-        Parameters
-        ----------
-        name : str, optional
-            A valid database name. For available options, see
-            valid_connections().
-        creds : str, :class:`pathlib.Path`, list-like, or dict, optional
-            By default, this function will (try to) read user credentials which
-            were set using :meth:`pyam.iiasa.set_config(<user>, <password>)`.
-            Alternatively, you can provide a path to a yaml file
-            with entries of  'username' and 'password'.
-        base_url : str, custom authentication server URL
-
-        Notes
-        -----
-        Providing credentials as an ordered container (tuple, list, etc.)
-        or as a dictionary with keys `user` and `password` is (still) supported
-        for backwards compatibility. However, this option is NOT RECOMMENDED
-        and will be deprecated in future releases of pyam.
-        """
         self._base_url = base_url
         self._token, self._user = _get_token(creds, base_url=self._base_url)
 
