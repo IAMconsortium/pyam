@@ -1531,6 +1531,17 @@ class IamDataFrame(object):
         df = self.as_pandas(with_metadata=True)
         ax = plotting.bar_plot(df, *args, **kwargs)
         return ax
+        
+        
+    def boxplot(self, *args, **kwargs):
+        """Plot boxplot of existing data
+
+        see pyam.plotting.boxplot() for all available options
+        """
+        df = self.as_pandas(with_metadata=True)
+        ax = plotting.boxplot(df, *args, **kwargs)
+        return ax
+        
 
     def pie_plot(self, *args, **kwargs):
         """Plot a pie chart
