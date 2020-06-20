@@ -285,8 +285,8 @@ def test_bar_plot_rc(plot_df):
          .bar_plot(ax=ax, bars='scenario')
          )
     return fig
-    
-    
+
+
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_boxplot(plot_df):
     with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
@@ -295,8 +295,8 @@ def test_boxplot(plot_df):
          .filter(variable='Primary Energy', model='test_model')
          .boxplot(ax=ax,)
          )
-    return fig    
-    
+    return fig
+
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_boxplot_hue(plot_df):
     with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
@@ -305,7 +305,7 @@ def test_boxplot_hue(plot_df):
          .filter(variable='Primary Energy', model='test_model')
          .boxplot(ax=ax, hue='region')
          )
-    return fig        
+    return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
