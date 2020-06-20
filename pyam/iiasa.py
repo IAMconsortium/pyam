@@ -26,12 +26,12 @@ You are connected to the {} scenario explorer hosted by IIASA.
 """.replace('\n', '')
 
 # path to local configuration settings
-DEFAULT_IIASA_CONFIG = Path('~').expanduser() / '.local' / 'pyam' / 'iiasa.yaml'
+DEFAULT_IIASA_CREDS = Path('~').expanduser() / '.local' / 'pyam' / 'iiasa.yaml'
 
 
 def set_config(user, password, file=None):
     """Save username and password for IIASA API connection to file"""
-    file = Path(file) if file is not None else DEFAULT_IIASA_CONFIG
+    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
     if not file.parent.exists():
         file.parent.mkdir(parents=True)
 
@@ -42,7 +42,7 @@ def set_config(user, password, file=None):
 
 def _get_config(file=None):
     """Read username and password for IIASA API connection from file"""
-    file = Path(file) if file is not None else DEFAULT_IIASA_CONFIG
+    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
     if file.exists():
         with open(file, 'r') as stream:
             return yaml.safe_load(stream)
@@ -84,8 +84,8 @@ def _get_token(creds, base_url):
         logger.warning('You provided credentials in plain text. DO NOT save '
                        'these in a repository or otherwise post them online')
         deprecation_warning('Providing credentials in plain text',
-                            'Please use `pyam.iiasa.set_config(<user>, <pwd>)` '
-                            'to store your credentials in a file!')
+                            'Please use `pyam.iiasa.set_config(<user>, <pwd>)`'
+                            ' to store your credentials in a file!')
 
     # get user token
     headers = {'Accept': 'application/json',
