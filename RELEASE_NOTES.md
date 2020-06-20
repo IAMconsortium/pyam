@@ -1,5 +1,6 @@
 # Next Release
 
+- [#401](https://github.com/IAMconsortium/pyam/pull/401) Read credentials for IIASA-API-Connection by default from known location.
 - [#394](https://github.com/IAMconsortium/pyam/pull/394) Switch CI to Github Actions.
 - [#393](https://github.com/IAMconsortium/pyam/pull/393) Import ABC from collections.abc for Python 3.10 compatibility.
 - [#380](https://github.com/IAMconsortium/pyam/pull/380) Add compatibility with latest matplotlib and py3.8
