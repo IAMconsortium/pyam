@@ -497,9 +497,10 @@ def bar_plot(df, x='year', y='value', bars='variable',
     return ax
 
 
-def boxplot(df, y='value', x='year', hue=None, palette='Spectral_r', ax=None, 
-            legend=False, **kwargs):
+def boxplot(df, y='value', x='year', hue=None, palette='Spectral_r', 
+            ax=None, legend=False, **kwargs):
     """ Plot boxplot of data using seaborn.boxplot
+    
     Parameters
     ----------
     df : pandas.DataFrame or pyam.IamDataFrame
@@ -522,34 +523,32 @@ def boxplot(df, y='value', x='year', hue=None, palette='Spectral_r', ax=None,
         Include a legend
         default: False
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() 
-    
-    
     """
-    
+
     # Check data_type
     if type(df) == pyam.core.IamDataFrame:
         if hue==None:
             df = df.as_pandas().reset_index(drop=True)
         elif hue in df.meta.columns:
-            # If hue is in the meta-data, bring it into the pandas.DataFrame as a column
+            #  If hue is in the meta-data, bring it into the pandas.DataFrame as a column
             df = df.as_pandas(with_metadata={hue:hue}).reset_index(drop=True)
         elif hue in df.columns:
             df = df.as_pandas().reset_index(drop=True)
-            
+
     if hue:
         df.sort_values(hue, inplace=True)
-    
-    
+
     if ax is None:
-        fig, ax = plt.subplots() #figsize=(12,7)
-    
-    sns.boxplot(x=x, y=y, hue=hue, palette=palette, saturation=0.8, data=data, ax=ax, *args, **kwargs)
+        fig, ax = plt.subplots()
+
+    sns.boxplot(x=x, y=y, hue=hue, palette=palette, saturation=0.8, 
+                data=df, ax=ax, **kwargs)
     ax.set_ylabel(df.unit[0])
     ax.set_title(df.variable[0])
     if legend:
         ax.legend(loc=2)
-        ax.legend_.set_title('n='+str(len(df[['model','scenario']].drop_duplicates())), )
-        
+        ax.legend_.set_title('n=' + str(len(df[['model', 'scenario']].drop_duplicates())),)
+
     return ax
 
 

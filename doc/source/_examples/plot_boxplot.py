@@ -1,6 +1,6 @@
 """
 =========================
-Plot Data as a Stack Plot
+Plot Data as a boxplot
 =========================
 
 """
@@ -16,26 +16,23 @@ df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
 print(df.head())
 
 ###############################
-# We generated a simple stacked stack chart as below
+# We generate a simple boxplot as below
 
 data = df.filter(variable='Emissions|CO2|*',
                  level=0,
                  region='World')
-data.interpolate(2015)  # some values are missing
 
 fig, ax = plt.subplots(figsize=(10, 10))
-data.stack_plot(ax=ax, total=True)
+data.boxplot(x='year', ax=ax,)
 fig.subplots_adjust(right=0.55)
 plt.show()
 
 ###############################
 # We don't just have to plot variables, any data or metadata associated with the
-# IamDataFrame can be used.
+# IamDataFrame can be used. Use the hue parameter to add the 3rd dimension, for example for grouping boxplots by  category.
 
 data = (df
-        .filter(variable='Emissions|CO2')
-        .filter(region='World', keep=False)
-        )
+        .filter(variable='Emissions|CO2'))
 fig, ax = plt.subplots(figsize=(10, 10))
-data.stack_plot(ax=ax, stack='region', cmap='tab20', total=True)
+data.boxplot(x='region', hue='year', legend=True, ax=ax)
 plt.show()

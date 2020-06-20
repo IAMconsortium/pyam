@@ -1532,7 +1532,6 @@ class IamDataFrame(object):
         ax = plotting.bar_plot(df, *args, **kwargs)
         return ax
         
-        
     def boxplot(self, *args, **kwargs):
         """Plot boxplot of existing data
 
@@ -1542,7 +1541,6 @@ class IamDataFrame(object):
         ax = plotting.boxplot(df, *args, **kwargs)
         return ax
         
-
     def pie_plot(self, *args, **kwargs):
         """Plot a pie chart
 
