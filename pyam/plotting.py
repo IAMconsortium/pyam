@@ -497,13 +497,13 @@ def bar_plot(df, x='year', y='value', bars='variable',
     return ax
 
 
-def boxplot(df, y='value', x='year', hue=None, palette='Spectral_r',
-            ax=None, legend=False, **kwargs):
+def boxplot(df, y='value', x='year', by=None,
+            ax=None, legend=True, title=None, **kwargs):
     """ Plot boxplot of data using seaborn.boxplot
 
     Parameters
     ----------
-    df : pandas.DataFrame or pyam.IamDataFrame
+    df : pandas.DataFrame
         Data to plot as a long-form data frame
     y : string, optional
         The column to use for y-axis values representing the distribution
@@ -513,47 +513,44 @@ def boxplot(df, y='value', x='year', hue=None, palette='Spectral_r',
         The column to use for x-axis points, i.e. the number of boxes the plot
         will have
         default: 'year'
-    hue: string, optional
+    by: string, optional
         The column for grouping y-axis values at each x-axis point, i.e. a 3rd
         dimension.
         Data should be categorical, not a contiuous variable
         default: None
-    palette:
-        Colour palette to use to differentiate between different caetgories in
-        hue
-        default: 'Spectral_r'
     ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend
         default: False
+    title : bool or string, optional
+        Display a default or custom title.
     kwargs : Additional arguments to pass to the pd.DataFrame.plot()
     """
 
-    # Check data_type
-    if type(df) == pyam.core.IamDataFrame:
-        if hue==None:
-            df = df.as_pandas().reset_index(drop=True)
-        elif hue in df.meta.columns:
-            #  If hue is in the meta-data, bring it into the pandas.DataFrame
-            # as a column
-            df = df.as_pandas(with_metadata={hue:hue}).reset_index(drop=True)
-        elif hue in df.columns:
-            df = df.as_pandas().reset_index(drop=True)
-
-    if hue:
-        df.sort_values(hue, inplace=True)
+    if by:
+        df.sort_values(by, inplace=True)
 
     if ax is None:
         fig, ax = plt.subplots()
 
-    sns.boxplot(x=x, y=y, hue=hue, palette=palette, saturation=0.8,
+    # plot
+    sns.boxplot(x=x, y=y, hue=by,
                 data=df, ax=ax, **kwargs)
-    ax.set_ylabel(df.unit[0])
-    ax.set_title(df.variable[0])
+
+    # Add legend
     if legend:
         ax.legend(loc=2)
         ax.legend_.set_title('n=' + str(len(df[['model',
-                        'scenario']].drop_duplicates())),)
+                                                'scenario']].drop_duplicates())),)
+
+    # Axes labels
+    if y == 'value':
+        ax.set_ylabel(df.unit.unique()[0])
+    else:
+        ax.set_ylabel(y)
+
+    if title:
+        ax.set_title(title)
 
     return ax
 
