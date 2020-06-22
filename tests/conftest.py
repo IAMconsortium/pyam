@@ -135,7 +135,7 @@ def test_pd_df():
 )
 def simple_df(request):
     _df = FULL_FEATURE_DF.copy()
-    if request.param is 'datetime':
+    if request.param == 'datetime':
         _df.rename(DTS_MAPPING, axis="columns", inplace=True)
     yield IamDataFrame(model='model_a', scenario='scen_a', data=_df)
 

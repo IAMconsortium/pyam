@@ -1,11 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
-
-import glob
-import os
-import shutil
 import versioneer
-
 from setuptools import setup, Command
 from subprocess import call
 
@@ -44,6 +37,7 @@ try:
         LONG_DESCRIPTION = f.read()
 except FileNotFoundError:
     LONG_DESCRIPTION = ''
+
 
 # thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
 class RunTests(Command):
@@ -108,7 +102,7 @@ def main():
         install_requires=install_requirements,
         extras_require=extra_requirements,
     )
-    rtn = setup(**setup_kwargs)
+    setup(**setup_kwargs)
 
 
 if __name__ == "__main__":
