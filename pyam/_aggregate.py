@@ -6,6 +6,8 @@ from pyam.logging import adjust_log_level
 from pyam.utils import (
     islistable,
     isstr,
+    find_depth,
+    reduce_hierarchy,
     KNOWN_FUNCS,
     META_IDX,
 )
@@ -49,7 +51,35 @@ def _aggregate(df, variable, components=None, method=np.sum):
     _df = df.data[df._apply_filters(variable=mapping.keys())].copy()
     _df['variable'].replace(mapping, inplace=True)
     return _group_and_agg(_df, [], method)
-
+    
+def _aggregate_recursive(df, variable, components=None, method=np.sum):
+    _dfout = None
+    _df = df.copy()
+        
+    mapping = []
+    
+    for d in reversed(range(1, max(find_depth(df.data.variable)) + 1)):
+        depth = find_depth(df.data.variable)
+        var_list = df.data.variable[[i==d for i in depth]].unique()
+        vars_up = pd.Series([reduce_hierarchy(i, -1) for i in var_list]).unique()
+        
+        if [i for i, entry in enumerate(vars_up) if entry.startswith(variable)]:
+            for v in vars_up:
+                mapping.append(v)
+                
+    mapping = sorted(set(mapping))
+    mapping.reverse()
+    
+    for entry in mapping:
+        _df.aggregate(variable=entry, append=True)
+        _dftemp = _df.aggregate(variable=entry, append=False)
+        
+        if _dfout is None:
+            _dfout = _dftemp.copy()
+        else:
+            _dfout.append(_dftemp, inplace = True)
+    
+    return _dfout.data
 
 def _aggregate_region(df, variable, region, subregions=None, components=False,
                       method='sum', weight=None):

@@ -35,6 +35,7 @@ from pyam.utils import (
     sort_data,
     to_int,
     find_depth,
+    reduce_hierarchy,
     pattern_match,
     years_match,
     month_match,
@@ -51,7 +52,7 @@ from pyam.utils import (
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
-    _group_and_agg
+    _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
 
 logger = logging.getLogger(__name__)
@@ -865,8 +866,8 @@ class IamDataFrame(object):
         ret.data = x.reset_index()
         if not inplace:
             return ret
-
-    def aggregate(self, variable, components=None, method='sum', append=False):
+            
+    def aggregate(self, variable, components=None, method='sum', recursive=False, append=False):
         """Aggregate timeseries components or sub-categories within each region
 
         Parameters
@@ -879,11 +880,16 @@ class IamDataFrame(object):
         method : func or str, default 'sum'
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+        recursive : bool, default False
+            iterate recursively over all sublevels of `variable`
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
         """
-        _df = _aggregate(self, variable, components=components, method=method)
+        if recursive is True:
+            _df = _aggregate_recursive(self, variable, components=components, method=method)
+        else:
+            _df = _aggregate(self, variable, components=components, method=method)
 
         # return None if there is nothing to aggregate
         if _df is None:
