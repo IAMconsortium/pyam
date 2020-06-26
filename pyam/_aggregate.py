@@ -67,8 +67,7 @@ def _aggregate_recursive(df, variable, components=None, method=np.sum):
         )
         vars_up = pd.Series([reduce_hierarchy(i, -1) for i in var_list]).unique()
 
-        if [i for i, entry in enumerate(vars_up) 
-            if entry.startswith(variable)]:
+        if [i for i, entr in enumerate(vars_up) if entr.startswith(variable)]:
             for v in vars_up:
                 mapping.append(v)
 
