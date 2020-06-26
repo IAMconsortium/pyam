@@ -23,4 +23,7 @@ def test_config(capsys):
             print('{}: {}'.format(key, modules[key]))
 
         if IIASA_UNAVAILABLE:
-            print('\nIIASA-API unavailable, skipping related tests\n')
+            print('\nWARNING: IIASA-API unavailable, skipping related tests\n')
+
+        # add empty spaces equivalent to length of file name
+        print('                    ')
