@@ -1,11 +1,13 @@
-import copy
-import pytest
 import os
+import copy
 import yaml
-
+import pytest
 import numpy.testing as npt
-
 from pyam import iiasa
+from conftest import IIASA_UNAVAILABLE
+
+if IIASA_UNAVAILABLE:
+    pytest.skip('IIASA database API unavailable', allow_module_level=True)
 
 # check to see if we can do online testing of db authentication
 TEST_ENV_USER = 'IIASA_CONN_TEST_USER'
