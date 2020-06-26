@@ -54,6 +54,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
 
 
 def _aggregate_recursive(df, variable, components=None, method=np.sum):
+    """Recursive aggregation along the variable tree"""
     _dfout = None
     _df = df.copy()
 
