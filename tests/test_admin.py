@@ -26,4 +26,4 @@ def test_config(capsys):
             print('\nWARNING: IIASA-API unavailable, skipping related tests\n')
 
         # add empty spaces equivalent to length of file name
-        print('                    ')
+        print('tests/test_admin.py ', end='')
