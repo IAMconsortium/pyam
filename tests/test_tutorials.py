@@ -5,7 +5,7 @@ import sys
 import tempfile
 import pytest
 
-from conftest import here
+from conftest import here, IIASA_UNAVAILABLE
 
 try:
     import nbformat
@@ -111,6 +111,7 @@ def test_pyam_logo():
 
 @pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
 @pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
+@pytest.mark.skipif(IIASA_UNAVAILABLE, reason='IIASA database API unavailable')
 def test_iiasa_dbs():
     fname = os.path.join(tut_path, 'iiasa_dbs.ipynb')
     nb, errors = _notebook_run(fname, timeout=600)

@@ -3,7 +3,7 @@ to print configuration information of the loaded package(s) to users!"""
 import sys
 
 from test_plotting import MPL_KWARGS
-
+from conftest import IIASA_UNAVAILABLE
 
 def test_config(capsys):
     modules = {}
@@ -14,12 +14,13 @@ def test_config(capsys):
                 modules[m.__name__] = version
 
     with capsys.disabled():
-        print()
-        print('Plotting function decorator kwargs:')
+        print('\nPlotting function decorator kwargs:')
         for k, v in MPL_KWARGS.items():
             print('{}: {}'.format(k, v))
 
-        print()
-        print('Module versions:')
+        print('\nModule versions:')
         for key in sorted(list(modules.keys())):
             print('{}: {}'.format(key, modules[key]))
+
+        if IIASA_UNAVAILABLE:
+            print('\nIIASA-API unavailable, skipping related tests\n')

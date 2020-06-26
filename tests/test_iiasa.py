@@ -1,15 +1,12 @@
 import os
-from requests.exceptions import SSLError
 import copy
 import yaml
 import pytest
 import numpy.testing as npt
 from pyam import iiasa
+from conftest import IIASA_UNAVAILABLE
 
-# verify whether IIASA database API can be reached, skip tests otherwise
-try:
-    iiasa.Connection('ixmp-integration')
-except SSLError:
+if IIASA_UNAVAILABLE:
     pytest.skip('IIASA database API unavailable', allow_module_level=True)
 
 # check to see if we can do online testing of db authentication
