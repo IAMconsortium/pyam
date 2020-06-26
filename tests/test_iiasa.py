@@ -6,10 +6,9 @@ import pytest
 import numpy.testing as npt
 from pyam import iiasa
 
-# verify whether IIASA database API can be reached
+# verify whether IIASA database API can be reached, skip tests otherwise
 try:
     iiasa.Connection('ixmp-integration')
-    IIASA_AVAILABLE = True
 except SSLError:
     pytest.skip('IIASA database API unavailable', allow_module_level=True)
 
