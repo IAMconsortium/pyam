@@ -6,7 +6,7 @@ import pandas as pd
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 from pyam.testing import assert_iamframe_equal
 
-from conftest import DTS_MAPPING
+from conftest import TEST_YEARS, DTS_MAPPING
 
 LONG_IDX = IAMC_IDX + ['year']
 
@@ -38,6 +38,16 @@ PRICE_MAX_DF = pd.DataFrame([
     ['model_a', 'scen_a', 'World', 'Price|Carbon', 'USD/tCO2', 2010, 30.0],
 ],
     columns=LONG_IDX + ['value']
+)
+
+RECURSIVE_DF = pd.DataFrame([
+    ['Secondary Energy|Electricity', 'EJ/yr', 5, 19.],
+    ['Secondary Energy|Electricity|Wind', 'EJ/yr', 5, 17],
+    ['Secondary Energy|Electricity|Wind|Offshore', 'EJ/yr', 1, 5],
+    ['Secondary Energy|Electricity|Wind|Onshore', 'EJ/yr', 4, 12],
+    ['Secondary Energy|Electricity|Solar', 'EJ/yr', np.nan, 2],
+],
+    columns=['variable', 'unit'] + TEST_YEARS
 )
 
 
@@ -119,6 +129,27 @@ def test_aggregate_by_list_with_components_raises(simple_df):
     v = ['Primary Energy', 'Emissions|CO2']
     components = ['Primary Energy|Coal', 'Primary Energy|Wind']
     pytest.raises(ValueError, simple_df.aggregate, v, components=components)
+
+
+@pytest.mark.parametrize("time_col", (('year'), ('time')))
+def test_aggregate_recursive(time_col):
+    # use the feature `recursive=True`
+    data = RECURSIVE_DF if time_col == 'year' \
+        else RECURSIVE_DF.rename(DTS_MAPPING, axis='columns')
+    df = IamDataFrame(data, model='model_a', scenario='scen_a', region='World')
+
+    # create object without variables to be aggregated
+    v = 'Secondary Energy|Electricity'
+    agg_vars = [f'{v}{i}' for i in ['', '|Wind']]
+    df_minimal = df.filter(variable=agg_vars, keep=False)
+
+    # return recursively aggregated data as new object
+    obs = df_minimal.aggregate(variable=v, recursive=True)
+    assert_iamframe_equal(obs, df.filter(variable=agg_vars))
+
+    # append to `self`
+    df_minimal.aggregate(variable=v, recursive=True, append=True)
+    assert_iamframe_equal(df_minimal, df)
 
 
 def test_aggregate_empty(simple_df):
