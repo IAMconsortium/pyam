@@ -137,6 +137,9 @@ def test_aggregate_recursive(time_col):
     data = RECURSIVE_DF if time_col == 'year' \
         else RECURSIVE_DF.rename(DTS_MAPPING, axis='columns')
     df = IamDataFrame(data, model='model_a', scenario='scen_a', region='World')
+    df2 = df.rename(scenario={'scen_a': 'scen_b'})
+    df2.data.value *= 2
+    df.append(df2, inplace=True)
 
     # create object without variables to be aggregated
     v = 'Secondary Energy|Electricity'
