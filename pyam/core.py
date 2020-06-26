@@ -867,7 +867,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
             
-    def aggregate(self, variable, components=None, method='sum', 
+    def aggregate(self, variable, components=None, method='sum',
                   recursive=False, append=False):
         """Aggregate timeseries components or sub-categories within each region
 
@@ -889,15 +889,15 @@ class IamDataFrame(object):
 
         Notes
         -----
-        The aggregation function interprets any missing values 
+        The aggregation function interprets any missing values
         (:any:`numpy.nan`) for individual components as 0.
         """
 
         if recursive is True:
-            _df = _aggregate_recursive(self, variable, components=components, 
+            _df = _aggregate_recursive(self, variable, components=components,
                                        method=method)
         else:
-            _df = _aggregate(self, variable, components=components, 
+            _df = _aggregate(self, variable, components=components,
                              method=method)
 
         # return None if there is nothing to aggregate
