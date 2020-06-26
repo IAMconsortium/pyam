@@ -1,0 +1,2 @@
+ignore:
+  - pyam/_version.py
