@@ -867,7 +867,8 @@ class IamDataFrame(object):
         if not inplace:
             return ret
             
-    def aggregate(self, variable, components=None, method='sum', recursive=False, append=False):
+    def aggregate(self, variable, components=None, method='sum', 
+                  recursive=False, append=False):
         """Aggregate timeseries components or sub-categories within each region
 
         Parameters
@@ -886,10 +887,13 @@ class IamDataFrame(object):
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
         """
+
         if recursive is True:
-            _df = _aggregate_recursive(self, variable, components=components, method=method)
+            _df = _aggregate_recursive(self, variable, components=components, 
+                                       method=method)
         else:
-            _df = _aggregate(self, variable, components=components, method=method)
+            _df = _aggregate(self, variable, components=components, 
+                             method=method)
 
         # return None if there is nothing to aggregate
         if _df is None:
