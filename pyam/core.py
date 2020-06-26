@@ -886,6 +886,11 @@ class IamDataFrame(object):
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
+
+        Notes
+        -----
+        The aggregation function interprets any missing values 
+        (:any:`numpy.nan`) for individual components as 0.
         """
 
         if recursive is True:
