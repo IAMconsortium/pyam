@@ -3,19 +3,19 @@
 
 Release v\ |version|.
 
-|pypi| |conda| |license| |latest|
+|license| |pypi| |conda| |latest|
 
 |pytest-38| |pytest-37| |codecov| |rtd|
 
 |joss| |doi|
 
+.. |license| image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
+   :target: https://anaconda.org/conda-forge/pyam
+
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
 
 .. |conda| image:: https://anaconda.org/conda-forge/pyam/badges/version.svg
-   :target: https://anaconda.org/conda-forge/pyam
-
-.. |license| image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
    :target: https://anaconda.org/conda-forge/pyam
 
 .. |latest| image:: https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg
