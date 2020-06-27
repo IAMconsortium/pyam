@@ -8,7 +8,6 @@ from conftest import here, IIASA_UNAVAILABLE
 
 try:
     import nbformat
-    import nbconvert
 except:
     pytest.skip('Missing Jupyter Notebook and related dependencies',
                 allow_module_level=True)
