@@ -15,10 +15,7 @@ except:
 
 jupyter_reason = 'requires Jupyter Notebook to be installed'
 
-try:
-    pandoc_installed = subprocess.call(['which', 'pandoc']) == 0
-except:
-    pandoc_installed = False
+pandoc_installed = True
 
 pandoc_reason = 'requires Pandoc to be installed'
 
