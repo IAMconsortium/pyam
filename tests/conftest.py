@@ -13,7 +13,7 @@ from pyam import IamDataFrame, IAMC_IDX, iiasa
 
 # verify whether IIASA database API can be reached, skip tests otherwise
 try:
-    iiasa.Connection('ixmp-integration')
+    iiasa.Connection()
     IIASA_UNAVAILABLE = False
 except SSLError:
     IIASA_UNAVAILABLE = True
