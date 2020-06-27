@@ -1,5 +1,5 @@
-pyam: analysis & visualization of integrated-assessment scenarios
-===================================================================
+pyam: analysis & visualization <br /> of integrated-assessment scenarios
+========================================================================
 
 [![license](https://anaconda.org/conda-forge/pyam/badges/license.svg)](https://anaconda.org/conda-forge/pyam)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
