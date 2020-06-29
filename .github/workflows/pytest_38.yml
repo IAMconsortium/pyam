@@ -37,8 +37,7 @@ jobs:
     - name: Install dependencies and package
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[tests,deploy,optional-io-formats]
-        pip install pandoc nbformat
+        pip install -e .[tests,deploy,optional-io-formats,tests-tutorials]
 
     - name: Test with pytest (including codecov)
       run: |

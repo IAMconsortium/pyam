@@ -10,6 +10,7 @@ a utility function `pyam.plotting.mpl_args_to_meta_cols()`.
 
 ## Individual Updates
 
+- [#410](https://github.com/IAMconsortium/pyam/pull/410) Activate tutorial tests on GitHub Actions CI (py3.8).
 - [#408](https://github.com/IAMconsortium/pyam/pull/408) Update badges on the docs page and readme.
 - [#407](https://github.com/IAMconsortium/pyam/pull/407) Add Codecov to Github Actions CI.
 - [#402](https://github.com/IAMconsortium/pyam/pull/402) Refactor `as_pandas()` and docs for more consistent description of `meta`.

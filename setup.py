@@ -28,6 +28,8 @@ EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest', 'pytest-cov', 'pytest-mpl'],
     'optional-io-formats': ['datapackage'],
     'deploy': ['twine', 'setuptools', 'wheel'],
+    'tests-tutorials': ['pandoc', 'nbformat', 'nbconvert', 'jupyter_client',
+                        'ipykernel'],
 }
 
 # building the docs on readthedocs fails with a FileNotFoundError
