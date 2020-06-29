@@ -1114,7 +1114,7 @@ class IamDataFrame(object):
         """
         if proxy is not None and weight is not None:
             raise ValueError(
-                'Using both `proxy` and `weight` arguments is not valid') 
+                'Using both `proxy` and `weight` arguments is not valid')
         elif proxy is not None:
             # get default subregions if not specified and select data from self
             subregions = subregions or self._all_other_regions(region)
@@ -1131,7 +1131,7 @@ class IamDataFrame(object):
         else:
             raise ValueError(
                 'Either a `proxy` or `weight` argument is required')
-                                                           
+
         _value = (
             self.data[self._apply_filters(variable=variable, region=region)]
             .set_index(self._get_cols(['variable', 'unit', self.time_col]))
