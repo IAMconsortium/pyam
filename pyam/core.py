@@ -54,6 +54,7 @@ from pyam.plotting import mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _group_and_agg
 from pyam.units import convert_unit
+from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -411,7 +412,7 @@ class IamDataFrame(object):
         """
         # TODO: deprecate/remove `with_metadata` in release >=0.8
         if with_metadata is not None:
-            deprecation_warning('Please use `with_meta` instead.',
+            deprecation_warning('Please use `meta_cols` instead.',
                                 'The argument `with_metadata')
             meta_cols = mpl_args_to_meta_cols(self, **with_metadata) \
                 if isinstance(with_metadata, dict) else with_metadata
