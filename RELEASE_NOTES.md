@@ -1,5 +1,6 @@
 # Next Release
 
+- [#411](https://github.com/IAMconsortium/pyam/pull/411) Add feature to pass an explicit weight dataframe to `downscale_region()`.
 - [#410](https://github.com/IAMconsortium/pyam/pull/410) Activate tutorial tests on GitHub Actions CI (py3.8).
 - [#408](https://github.com/IAMconsortium/pyam/pull/408) Update badges on the docs page and readme.
 - [#407](https://github.com/IAMconsortium/pyam/pull/407) Add Codecov to Github Actions CI.
