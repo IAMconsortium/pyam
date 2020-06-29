@@ -46,3 +46,32 @@ def test_downscale_region_with_weight(simple_df, variable, index):
     inplace = simple_df.filter(variable=variable, region=regions, keep=False)
     inplace.downscale_region(variable, weight=weight_df, append=True)
     assert_iamframe_equal(inplace, simple_df)
+
+
+@pytest.mark.parametrize("variable, index", (
+    ('Primary Energy', ['region']),
+    (['Primary Energy', 'Primary Energy|Coal'], ['model', 'region']),
+))
+def test_downscale_region_with_weight_subregions(simple_df, variable, index):
+    simple_df.set_meta([1], name='test')
+    regions = ['reg_a', 'reg_b']
+
+    # create weighting dataframe with an extra "duplicate" region
+    weight_df = (
+        simple_df.filter(variable='Population')
+        .rename(region={'reg_a': 'duplicate'}, append=True)  # add extra region
+        .data
+        .pivot_table(index=index, columns=simple_df.time_col,
+                     values='value')
+    )
+
+    # return as new IamDataFrame
+    ds_args = dict(variable=variable, weight=weight_df, subregions=regions)
+    obs = simple_df.downscale_region(**ds_args)
+    exp = simple_df.filter(variable=variable, region=regions)
+    assert_iamframe_equal(exp, obs)
+
+    # append to `self` (after removing to-be-downscaled timeseries)
+    inplace = simple_df.filter(variable=variable, region=regions, keep=False)
+    inplace.downscale_region(**ds_args, append=True)
+    assert_iamframe_equal(inplace, simple_df)
