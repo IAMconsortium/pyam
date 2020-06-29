@@ -3,6 +3,7 @@
 - [#410](https://github.com/IAMconsortium/pyam/pull/410) Activate tutorial tests on GitHub Actions CI (py3.8).
 - [#408](https://github.com/IAMconsortium/pyam/pull/408) Update badges on the docs page and readme.
 - [#407](https://github.com/IAMconsortium/pyam/pull/407) Add Codecov to Github Actions CI.
+- [#396](https://github.com/IAMconsortium/pyam/pull/396) Enable casting to `IamDataFrame` multiple times
 - [#394](https://github.com/IAMconsortium/pyam/pull/394) Switch CI to Github Actions.
 - [#393](https://github.com/IAMconsortium/pyam/pull/393) Import ABC from collections.abc for Python 3.10 compatibility.
 - [#380](https://github.com/IAMconsortium/pyam/pull/380) Add compatibility with latest matplotlib and py3.8
