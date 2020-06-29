@@ -26,7 +26,6 @@ except (ImportError, AttributeError):
     has_ix = False
 
 from pyam import plotting
-from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -1155,7 +1154,6 @@ class IamDataFrame(object):
         rows = self._apply_filters(variable=variable)
         return set(self.data[rows].region) - set([region])
 
-
     def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
 
@@ -1287,16 +1285,16 @@ class IamDataFrame(object):
                 keep_col = pattern_match(self.data[col], values, level, regexp)
 
             elif col == 'year':
-                _data = self.data[col] if self.time_col is not 'time' \
+                _data = self.data[col] if self.time_col != 'time' \
                     else self.data['time'].apply(lambda x: x.year)
                 keep_col = years_match(_data, values)
 
-            elif col == 'month' and self.time_col is 'time':
+            elif col == 'month' and self.time_col == 'time':
                 keep_col = month_match(self.data['time']
                                            .apply(lambda x: x.month),
                                        values)
 
-            elif col == 'day' and self.time_col is 'time':
+            elif col == 'day' and self.time_col == 'time':
                 if isinstance(values, str):
                     wday = True
                 elif isinstance(values, list) and isinstance(values[0], str):
@@ -1311,12 +1309,12 @@ class IamDataFrame(object):
 
                 keep_col = day_match(days, values)
 
-            elif col == 'hour' and self.time_col is 'time':
+            elif col == 'hour' and self.time_col == 'time':
                 keep_col = hour_match(self.data['time']
                                           .apply(lambda x: x.hour),
                                       values)
 
-            elif col == 'time' and self.time_col is 'time':
+            elif col == 'time' and self.time_col == 'time':
                 keep_col = datetime_match(self.data[col], values)
 
             elif col == 'level':
@@ -1738,7 +1736,7 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
         if bd in check:
             check_idx.append(set(rows.index[op(check[bd])]))
 
-    if return_test is 'any':
+    if return_test == 'any':
         ret = where_idx & set.union(*check_idx)
     elif return_test == 'all':
         ret = where_idx if where_idx == set.intersection(*check_idx) else set()
@@ -1879,7 +1877,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     apply_filter = False
     for col, values in kwargs.items():
         if col in META_IDX and values is not None:
-            _col = meta.index.get_level_values(0 if col is 'model' else 1)
+            _col = meta.index.get_level_values(0 if col == 'model' else 1)
             keep &= pattern_match(_col, values, has_nan=False)
             apply_filter = True
         elif values is not None:

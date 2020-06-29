@@ -1,11 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
-
-import glob
-import os
-import shutil
 import versioneer
-
 from setuptools import setup, Command
 from subprocess import call
 
@@ -35,6 +28,8 @@ EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest', 'pytest-cov', 'pytest-mpl'],
     'optional-io-formats': ['datapackage'],
     'deploy': ['twine', 'setuptools', 'wheel'],
+    'tests-tutorials': ['pandoc', 'nbformat', 'nbconvert', 'jupyter_client',
+                        'ipykernel'],
 }
 
 # building the docs on readthedocs fails with a FileNotFoundError
@@ -44,6 +39,7 @@ try:
         LONG_DESCRIPTION = f.read()
 except FileNotFoundError:
     LONG_DESCRIPTION = ''
+
 
 # thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
 class RunTests(Command):
@@ -108,7 +104,7 @@ def main():
         install_requires=install_requirements,
         extras_require=extra_requirements,
     )
-    rtn = setup(**setup_kwargs)
+    setup(**setup_kwargs)
 
 
 if __name__ == "__main__":

@@ -3,12 +3,20 @@ import matplotlib
 matplotlib.use('agg')
 
 import os
+from requests.exceptions import SSLError
 import pytest
 import pandas as pd
 
-
 from datetime import datetime
-from pyam import IamDataFrame, IAMC_IDX
+from pyam import IamDataFrame, IAMC_IDX, iiasa
+
+
+# verify whether IIASA database API can be reached, skip tests otherwise
+try:
+    iiasa.Connection()
+    IIASA_UNAVAILABLE = False
+except SSLError:
+    IIASA_UNAVAILABLE = True
 
 
 here = os.path.dirname(os.path.realpath(__file__))
@@ -135,7 +143,7 @@ def test_pd_df():
 )
 def simple_df(request):
     _df = FULL_FEATURE_DF.copy()
-    if request.param is 'datetime':
+    if request.param == 'datetime':
         _df.rename(DTS_MAPPING, axis="columns", inplace=True)
     yield IamDataFrame(model='model_a', scenario='scen_a', data=_df)
 

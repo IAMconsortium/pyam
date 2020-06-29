@@ -1,5 +1,4 @@
 import logging
-import sys
 
 
 def test_logger_namespacing(test_df, caplog):
