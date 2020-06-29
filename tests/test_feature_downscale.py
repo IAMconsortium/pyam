@@ -2,6 +2,28 @@ import pytest
 from pyam.testing import assert_iamframe_equal
 
 
+def test_downscale_region_without_method_raises(simple_df):
+    # downscale_region without specifying a method
+    variable = 'Primary Energy'
+    pytest.raises(ValueError, simple_df.downscale_region, variable=variable)
+
+
+def test_downscale_region_with_multiple_methods_raises(simple_df):
+    # downscale_region with specifying both weight and proxy raises
+
+    # create weighting dataframe
+    weight_df = (
+        simple_df.filter(variable='Population').data
+        .pivot_table(index='region', columns=simple_df.time_col,
+                     values='value')
+    )
+
+    # call downscale_region with both proxy and weight
+    variable = 'Primary Energy'
+    pytest.raises(ValueError, simple_df.downscale_region, variable=variable,
+                  proxy='Population', weight=weight_df)
+
+
 @pytest.mark.parametrize("variable", (
     ('Primary Energy'),
     (['Primary Energy', 'Primary Energy|Coal']),
