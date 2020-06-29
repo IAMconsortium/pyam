@@ -1,7 +1,18 @@
 # Next Release
 
+## API changes
+
+PR [#402](https://github.com/IAMconsortium/pyam/pull/402) changed the default
+behaviour of `as_pandas()` to include all columns of `meta` in the returned
+dataframe, or only merge columns given by the renamed argument `meta_cols`. 
+The feature to discover meta-columns from a dictionary was split out into
+a utility function `pyam.plotting.mpl_args_to_meta_cols()`.
+
+## Individual Updates
+
 - [#408](https://github.com/IAMconsortium/pyam/pull/408) Update badges on the docs page and readme.
 - [#407](https://github.com/IAMconsortium/pyam/pull/407) Add Codecov to Github Actions CI.
+- [#402](https://github.com/IAMconsortium/pyam/pull/402) Refactor `as_pandas()` and docs for more consistent description of `meta`.
 - [#394](https://github.com/IAMconsortium/pyam/pull/394) Switch CI to Github Actions.
 - [#393](https://github.com/IAMconsortium/pyam/pull/393) Import ABC from collections.abc for Python 3.10 compatibility.
 - [#380](https://github.com/IAMconsortium/pyam/pull/380) Add compatibility with latest matplotlib and py3.8
