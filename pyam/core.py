@@ -1089,34 +1089,34 @@ class IamDataFrame(object):
             df.meta = self.meta.loc[_make_index(df.data)]
             return df
 
-    def downscale_region(self, variable, proxy=None, region='World',
-                         weight=None, subregions=None, append=False):
+    def downscale_region(self, variable, region='World', subregions=None,
+                         proxy=None, weight=None, append=False):
         """Downscale a timeseries to a number of subregions
 
         Parameters
         ----------
         variable : str or list of str
             variable(s) to be downscaled
+        region : str, optional
+            region from which data will be downscaled
+        subregions : list of str, optional
+            list of subregions, defaults to all regions other than `region`
+            (if using `proxy`) or `region` index (if using `weight`)
         proxy : str, optional
             variable (within the :class:`IamDataFrame`) to be used as proxy
             for regional downscaling
         weight : class:`pandas.DataFrame`, optional
             dataframe with time dimension as columns (year or
             :class:`datetime.datetime`) and regions[, model, scenario] as index
-        region : str, default 'World'
-            region from which data will be downscaled
-        subregions : list of str
-            list of subregions, defaults to all regions other than `region`
-            (if using `proxy`) or `region` index (if using `weight`)
         append : bool, default False
-            append the downscaled timeseries to `self` and return None,
+            if True, append the downscaled data to `self` and return None,
             else return downscaled data as new IamDataFrame
         """
         if proxy is not None and weight is not None:
             raise ValueError(
                 'Using both `proxy` and `weight` arguments is not valid') 
         elif proxy is not None:
-            # get default subregions if not specified
+            # get default subregions if not specified and select data from self
             subregions = subregions or self._all_other_regions(region)
             rows = self._apply_filters(variable=proxy, region=subregions)
             cols = self._get_cols(['region', self.time_col])
@@ -1130,7 +1130,7 @@ class IamDataFrame(object):
             _proxy = weight[rows].stack()
         else:
             raise ValueError(
-                'Either `proxy` or `weight` arguments is required')
+                'Either a `proxy` or `weight` argument is required')
                                                            
         _value = (
             self.data[self._apply_filters(variable=variable, region=region)]
