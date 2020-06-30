@@ -72,8 +72,7 @@ def _aggregate_recursive(df, variable, components=None, method=np.sum):
             for v in vars_up:
                 mapping.append(v)
 
-    mapping = sorted(set(mapping))
-    mapping.reverse()
+    mapping = reversed(sorted(set(mapping)))
 
     for entry in mapping:
         _df.aggregate(variable=entry, append=True)
