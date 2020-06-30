@@ -401,14 +401,14 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def as_pandas(self, meta_cols=None, with_metadata=None):
+    def as_pandas(self, meta_cols=True, with_metadata=None):
         """Return object as a pandas.DataFrame
 
         Parameters
         ----------
         meta_cols : list, default None
-            join `data` with all `meta` columns if None (default)
-            or only with columns in list
+            join `data` with all `meta` columns if True (default)
+            or only with columns in list, or return copy of `data` if False
         """
         # TODO: deprecate/remove `with_metadata` in release >=0.8
         if with_metadata is not None:
@@ -417,13 +417,17 @@ class IamDataFrame(object):
             meta_cols = mpl_args_to_meta_cols(self, **with_metadata) \
                 if isinstance(with_metadata, dict) else with_metadata
 
-        # merge data and (downselected) meta
-        return (
-            self.data
-            .set_index(META_IDX)
-            .join(self.meta[meta_cols or self.meta.columns])
-            .reset_index()
-        )
+        # merge data and (downselected) meta, or return copy of data
+        if meta_cols:
+            meta_cols = self.meta.columns if meta_cols is True else meta_cols
+            return (
+                self.data
+                .set_index(META_IDX)
+                .join(self.meta[meta_cols])
+                .reset_index()
+            )
+        else:
+            return self.data.copy()
 
     def timeseries(self, iamc_index=False):
         """Returns `data` as pandas.DataFrame in wide format (time as columns)
