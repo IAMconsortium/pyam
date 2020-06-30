@@ -185,6 +185,35 @@ def test_init_empty_message(test_pd_df, caplog):
     assert caplog.records[message_idx].levelno == logging.WARNING
 
 
+def test_as_pandas(test_df):
+    # test that `as_pandas()` returns the right columns
+    df = test_df.copy()
+    df.set_meta(['foo', 'bar'], name='string')
+    df.set_meta([1, 2], name='number')
+
+    # merge all columns (default)
+    obs = df.as_pandas()
+    cols = ['string', 'number']
+    assert all(i in obs.columns for i in cols)  # assert relevant columns exist
+
+    exp = pd.concat([pd.DataFrame([['foo', 1]] * 4),
+                     pd.DataFrame([['bar', 2]] * 2)])
+    npt.assert_array_equal(obs[cols], exp)  # assert meta columns are merged
+
+    # test deprecated `with_metadata` arg
+    obs = df.as_pandas(with_metadata=True)
+    npt.assert_array_equal(obs[cols], exp)  # assert meta columns are merged
+
+    # merge only one column
+    obs = df.as_pandas(['string'])
+    assert 'string' in obs.columns
+    assert 'number' not in obs.columns
+    npt.assert_array_equal(obs['string'], ['foo'] * 4 + ['bar'] * 2)
+
+    # do not merge any columns
+    npt.assert_array_equal(df.as_pandas(False), df.data)
+
+
 def test_empty_attribute(test_df_year):
     assert not test_df_year.empty
     assert test_df_year.filter(model='foo').empty
