@@ -1,10 +1,15 @@
 import os
-from requests.exceptions import SSLError
 import copy
 import yaml
 import pytest
 import numpy.testing as npt
+from requests.exceptions import SSLError
+
 from pyam import iiasa
+from conftest import IIASA_UNAVAILABLE
+
+if IIASA_UNAVAILABLE:
+    pytest.skip('IIASA database API unavailable', allow_module_level=True)
 
 # verify whether IIASA database API can be reached, skip tests otherwise
 try:

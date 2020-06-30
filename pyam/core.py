@@ -26,7 +26,6 @@ except (ImportError, AttributeError):
     has_ix = False
 
 from pyam import plotting
-from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -51,9 +50,11 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
+from pyam.plotting import mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _group_and_agg
 from pyam.units import convert_unit
+from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -90,9 +91,27 @@ class IamDataFrame(object):
     kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta')
     Calling the class with :code:`meta_sheet_name=False` will
     skip the import of the 'meta' table.
+
+    When initializing an :class:`IamDataFrame` from an object that is already
+    an :class:`IamDataFrame` instance, the new object will be hard-linked to
+    all attributes of the original object - so any changes on one object
+    (e.g., with :code:`inplace=True`) may also modify the other object!
+    This is intended behaviour and consistent with pandas but may be confusing
+    for those who are not used to the pandas/Python universe.
     """
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame"""
+        if isinstance(data, IamDataFrame):
+            if kwargs:
+                msg = 'Invalid arguments `{}` for initializing an IamDataFrame'
+                raise ValueError(msg.format(kwargs))
+            for attr, value in data.__dict__.items():
+                setattr(self, attr, value)
+        else:
+            self._init(data, **kwargs)
+
+    def _init(self, data, **kwargs):
+        """Process data and set attributes for new instance"""
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             _data = format_data(data.copy(), **kwargs)
@@ -400,39 +419,37 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def as_pandas(self, with_metadata=False):
+    def as_pandas(self, meta_cols=True, with_metadata=None):
         """Return object as a pandas.DataFrame
 
         Parameters
         ----------
-        with_metadata : bool or dict, default False
-           if True, join data with all meta columns; if a dict, discover
-           meaningful meta columns from values (in key-value)
+        meta_cols : list, default None
+            join `data` with all `meta` columns if True (default)
+            or only with columns in list, or return copy of `data` if False
         """
-        if with_metadata:
-            cols = self._discover_meta_cols(**with_metadata) \
-                if isinstance(with_metadata, dict) else self.meta.columns
+        # TODO: deprecate/remove `with_metadata` in release >=0.8
+        if with_metadata is not None:
+            deprecation_warning('Please use `meta_cols` instead.',
+                                'The argument `with_metadata')
+            meta_cols = mpl_args_to_meta_cols(self, **with_metadata) \
+                if isinstance(with_metadata, dict) else with_metadata
+
+        # merge data and (downselected) meta, or return copy of data
+        if meta_cols:
+            meta_cols = self.meta.columns if meta_cols is True else meta_cols
             return (
                 self.data
                 .set_index(META_IDX)
-                .join(self.meta[cols])
+                .join(self.meta[meta_cols])
                 .reset_index()
             )
         else:
             return self.data.copy()
 
-    def _discover_meta_cols(self, **kwargs):
-        """Return the subset of `kwargs` values (not keys!) matching
-        a `meta` column name"""
-        cols = set(['exclude'])
-        for arg, value in kwargs.items():
-            if isstr(value) and value in self.meta.columns:
-                cols.add(value)
-        return list(cols)
-
     def timeseries(self, iamc_index=False):
-        """Returns 'data' as pandas.DataFrame in wide format (time as columns)
-
+        """Returns `data` as pandas.DataFrame in wide format (time as columns)
+`
         Parameters
         ----------
         iamc_index : bool, default False
@@ -523,14 +540,14 @@ class IamDataFrame(object):
         # check if trying to add model-scenario index not existing in self
         diff = meta.index.difference(self.meta.index)
         if not diff.empty:
-            error = "adding metadata for non-existing scenarios '{}'!"
-            raise ValueError(error.format(diff))
+            msg = 'Adding meta for non-existing scenarios:\n{}'
+            raise ValueError(msg.format(diff))
 
         self._new_meta_column(name)
         self.meta[name] = meta[name].combine_first(self.meta[name])
 
     def set_meta_from_data(self, name, method=None, column='value', **kwargs):
-        """Add metadata indicators from downselected timeseries data of self
+        """Add meta indicators from downselected timeseries data of self
 
         Parameters
         ----------
@@ -587,7 +604,7 @@ class IamDataFrame(object):
             logger.info("No scenarios satisfy the criteria")
             return  # EXIT FUNCTION
 
-        # update metadata dataframe
+        # update meta dataframe
         self._new_meta_column(name)
         self.meta.loc[idx, name] = value
         msg = '{} scenario{} categorized as `{}: {}`'
@@ -636,7 +653,7 @@ class IamDataFrame(object):
 
         if exclude_on_fail:
             self.meta.loc[idx, 'exclude'] = True
-            msg += ', marked as `exclude: True` in metadata'
+            msg += ', marked as `exclude: True` in `meta`'
 
         logger.info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
@@ -1137,7 +1154,6 @@ class IamDataFrame(object):
         rows = self._apply_filters(variable=variable)
         return set(self.data[rows].region) - set([region])
 
-
     def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
 
@@ -1269,16 +1285,16 @@ class IamDataFrame(object):
                 keep_col = pattern_match(self.data[col], values, level, regexp)
 
             elif col == 'year':
-                _data = self.data[col] if self.time_col is not 'time' \
+                _data = self.data[col] if self.time_col != 'time' \
                     else self.data['time'].apply(lambda x: x.year)
                 keep_col = years_match(_data, values)
 
-            elif col == 'month' and self.time_col is 'time':
+            elif col == 'month' and self.time_col == 'time':
                 keep_col = month_match(self.data['time']
                                            .apply(lambda x: x.month),
                                        values)
 
-            elif col == 'day' and self.time_col is 'time':
+            elif col == 'day' and self.time_col == 'time':
                 if isinstance(values, str):
                     wday = True
                 elif isinstance(values, list) and isinstance(values[0], str):
@@ -1293,12 +1309,12 @@ class IamDataFrame(object):
 
                 keep_col = day_match(days, values)
 
-            elif col == 'hour' and self.time_col is 'time':
+            elif col == 'hour' and self.time_col == 'time':
                 keep_col = hour_match(self.data['time']
                                           .apply(lambda x: x.hour),
                                       values)
 
-            elif col == 'time' and self.time_col is 'time':
+            elif col == 'time' and self.time_col == 'time':
                 keep_col = datetime_match(self.data[col], values)
 
             elif col == 'level':
@@ -1390,15 +1406,15 @@ class IamDataFrame(object):
             excel_writer.close()
 
     def export_meta(self, excel_writer, sheet_name='meta'):
-        """Write the 'meta' table of this object to an Excel sheet
+        """Write the 'meta' indicators of this object to an Excel sheet
 
         Parameters
         ----------
-        excel_writer: str, path object or ExcelWriter object
+        excel_writer : str, path object or ExcelWriter object
             any valid string path, :class:`pathlib.Path`
             or :class:`pandas.ExcelWriter`
-        sheet_name: str
-            name of sheet which will contain 'meta' table
+        sheet_name : str
+            name of sheet which will contain dataframe of 'meta' indicators
         """
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
@@ -1423,7 +1439,7 @@ class IamDataFrame(object):
             any valid string path or :class:`pathlib.Path`
         """
         if not HAS_DATAPACKAGE:
-            raise ImportError('required package `datapackage` not found!')
+            raise ImportError('Required package `datapackage` not found!')
 
         with TemporaryDirectory(dir='.') as tmp:
             # save data and meta tables to a temporary folder
@@ -1434,14 +1450,14 @@ class IamDataFrame(object):
             package = Package()
             package.infer('{}/*.csv'.format(tmp))
             if not package.valid:
-                logger.warning('the exported package is not valid')
+                logger.warning('The exported datapackage is not valid')
             package.save(path)
 
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
 
     def load_meta(self, path, *args, **kwargs):
-        """Load 'meta' table from file
+        """Load 'meta' indicators from file
 
         Parameters
         ----------
@@ -1460,22 +1476,22 @@ class IamDataFrame(object):
             e = 'File `{}` does not have required columns {}!'
             raise ValueError(e.format(path, req_cols))
 
-        # set index, filter to relevant scenarios from imported metadata file
+        # set index, filter to relevant scenarios from imported file
         df.set_index(META_IDX, inplace=True)
         idx = self.meta.index.intersection(df.index)
 
         n_invalid = len(df) - len(idx)
         if n_invalid > 0:
-            msg = 'Ignoring {} scenario{} from imported metadata'
-            logger.info(msg.format(n_invalid, 's' if n_invalid > 1 else ''))
+            msg = 'Ignoring {} scenario{} from imported meta file'
+            logger.warning(msg.format(n_invalid, 's' if n_invalid > 1 else ''))
 
         if idx.empty:
-            raise ValueError('No valid scenarios in imported metadata file!')
+            raise ValueError('No valid scenarios in imported meta file!')
 
         df = df.loc[idx]
 
-        # merge in imported metadata
-        msg = 'Importing metadata for {} scenario{} (for total of {})'
+        # merge in imported meta indicators
+        msg = 'Importing meta indicators for {} scenario{} (for total of {})'
         logger.info(msg.format(len(df), 's' if len(df) > 1 else '',
                                  len(self.meta)))
 
@@ -1490,7 +1506,7 @@ class IamDataFrame(object):
 
         see pyam.plotting.line_plot() for all available options
         """
-        df = self.as_pandas(with_metadata=kwargs)
+        df = self.as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
 
         # pivot data if asked for explicit variable name
         variables = df['variable'].unique()
@@ -1519,7 +1535,8 @@ class IamDataFrame(object):
 
         see pyam.plotting.stack_plot() for all available options
         """
-        df = self.as_pandas(with_metadata=True)
+        # TODO: select only relevant meta columns
+        df = self.as_pandas()
         ax = plotting.stack_plot(df, *args, **kwargs)
         return ax
 
@@ -1528,7 +1545,8 @@ class IamDataFrame(object):
 
         see pyam.plotting.bar_plot() for all available options
         """
-        df = self.as_pandas(with_metadata=True)
+        # TODO: select only relevant meta columns
+        df = self.as_pandas()
         ax = plotting.bar_plot(df, *args, **kwargs)
         return ax
 
@@ -1537,12 +1555,13 @@ class IamDataFrame(object):
 
         see pyam.plotting.pie_plot() for all available options
         """
-        df = self.as_pandas(with_metadata=True)
+        # TODO: select only relevant meta columns
+        df = self.as_pandas()
         ax = plotting.pie_plot(df, *args, **kwargs)
         return ax
 
     def scatter(self, x, y, **kwargs):
-        """Plot a scatter chart using metadata columns
+        """Plot a scatter chart using meta indicators as columns
 
         see pyam.plotting.scatter() for all available options
         """
@@ -1550,14 +1569,14 @@ class IamDataFrame(object):
         xisvar = x in variables
         yisvar = y in variables
         if not xisvar and not yisvar:
-            cols = [x, y] + self._discover_meta_cols(**kwargs)
+            cols = [x, y] + mpl_args_to_meta_cols(self, **kwargs)
             df = self.meta[cols].reset_index()
         elif xisvar and yisvar:
             # filter pivot both and rename
             dfx = (
                 self
                 .filter(variable=x)
-                .as_pandas(with_metadata=kwargs)
+                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
                 .rename(columns={'value': x, 'unit': 'xunit'})
                 .set_index(YEAR_IDX)
                 .drop('variable', axis=1)
@@ -1565,7 +1584,7 @@ class IamDataFrame(object):
             dfy = (
                 self
                 .filter(variable=y)
-                .as_pandas(with_metadata=kwargs)
+                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
                 .rename(columns={'value': y, 'unit': 'yunit'})
                 .set_index(YEAR_IDX)
                 .drop('variable', axis=1)
@@ -1577,7 +1596,7 @@ class IamDataFrame(object):
             df = (
                 self
                 .filter(variable=var)
-                .as_pandas(with_metadata=kwargs)
+                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
                 .rename(columns={'value': var})
             )
         ax = plotting.scatter(df.dropna(), x, y, **kwargs)
@@ -1720,7 +1739,7 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
         if bd in check:
             check_idx.append(set(rows.index[op(check[bd])]))
 
-    if return_test is 'any':
+    if return_test == 'any':
         ret = where_idx & set.union(*check_idx)
     elif return_test == 'all':
         ret = where_idx if where_idx == set.intersection(*check_idx) else set()
@@ -1805,7 +1824,7 @@ def categorize(df, name, value, criteria,
     fdf.categorize(name=name, value=value, criteria=criteria, color=color,
                    marker=marker, linestyle=linestyle)
 
-    # update metadata
+    # update meta indicators
     if name in df.meta:
         df.meta[name].update(fdf.meta[name])
     else:
@@ -1861,7 +1880,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     apply_filter = False
     for col, values in kwargs.items():
         if col in META_IDX and values is not None:
-            _col = meta.index.get_level_values(0 if col is 'model' else 1)
+            _col = meta.index.get_level_values(0 if col == 'model' else 1)
             keep &= pattern_match(_col, values, has_nan=False)
             apply_filter = True
         elif values is not None:
