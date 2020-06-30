@@ -13,7 +13,7 @@ if IIASA_UNAVAILABLE:
 
 # verify whether IIASA database API can be reached, skip tests otherwise
 try:
-    iiasa.Connection('ixmp-integration')
+    iiasa.Connection()
 except SSLError:
     pytest.skip('IIASA database API unavailable', allow_module_level=True)
 
