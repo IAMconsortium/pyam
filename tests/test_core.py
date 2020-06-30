@@ -200,6 +200,10 @@ def test_as_pandas(test_df):
                      pd.DataFrame([['bar', 2]] * 2)])
     npt.assert_array_equal(obs[cols], exp)  # assert meta columns are merged
 
+    # test deprecated `with_metadata` arg
+    obs = df.as_pandas(with_metadata=True)
+    npt.assert_array_equal(obs[cols], exp)  # assert meta columns are merged
+
     # merge only one column
     obs = df.as_pandas(['string'])
     assert 'string' in obs.columns
