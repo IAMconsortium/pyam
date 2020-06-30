@@ -866,7 +866,7 @@ class IamDataFrame(object):
         ret.data = x.reset_index()
         if not inplace:
             return ret
-            
+
     def aggregate(self, variable, components=None, method='sum',
                   recursive=False, append=False):
         """Aggregate timeseries components or sub-categories within each region
@@ -895,8 +895,8 @@ class IamDataFrame(object):
 
         if recursive is True:
             if components is not None:
-                 msg = 'Recursive aggregation cannot take explicit components'
-                 raise ValueError(msg)
+                msg = 'Recursive aggregation cannot take explicit components'
+                raise ValueError(msg)
             _df = _aggregate_recursive(self, variable, method=method)
         else:
             _df = _aggregate(self, variable, components=components,

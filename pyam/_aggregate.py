@@ -55,10 +55,10 @@ def _aggregate(df, variable, components=None, method=np.sum):
 
 def _aggregate_recursive(df, variable, components=None, method=np.sum):
     """Recursive aggregation along the variable tree"""
-    _dfout = None
+    _df_aggregated = None
     _df = df.copy()
 
-    mapping = []
+    sub_variables = []
 
     for d in reversed(range(1, max(find_depth(df.data.variable)) + 1)):
         depth = find_depth(df.data.variable)
@@ -66,24 +66,27 @@ def _aggregate_recursive(df, variable, components=None, method=np.sum):
             df.data.variable[[i == d for i in depth]]
             .unique()
         )
-        vars_up = pd.Series([reduce_hierarchy(i, -1) for i in var_list]).unique()
+        vars_up = pd.Series(
+                    [reduce_hierarchy(i, -1)
+                    for i in var_list]
+                    ).unique()
 
         if [i for i, entr in enumerate(vars_up) if entr.startswith(variable)]:
             for v in vars_up:
-                mapping.append(v)
+                sub_variables.append(v)
 
-    mapping = reversed(sorted(set(mapping)))
+    sub_variables = reversed(sorted(set(sub_variables)))
 
-    for entry in mapping:
+    for entry in sub_variables:
         _df.aggregate(variable=entry, append=True)
-        _dftemp = _df.aggregate(variable=entry, append=False)
+        _df_temp = _df.aggregate(variable=entry, append=False)
 
-        if _dfout is None:
-            _dfout = _dftemp.copy()
+        if _df_aggregated is None:
+            _df_aggregated = _df_temp.copy()
         else:
-            _dfout.append(_dftemp, inplace=True)
+            _df_aggregated.append(_df_temp, inplace=True)
 
-    return _dfout.data
+    return _df_aggregated.data
 
 
 def _aggregate_region(df, variable, region, subregions=None, components=False,
