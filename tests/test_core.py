@@ -46,6 +46,28 @@ def test_init_df_with_index(test_pd_df):
     pd.testing.assert_frame_equal(df.timeseries().reset_index(), test_pd_df)
 
 
+def test_init_from_iamdf(test_df_year):
+    # casting an IamDataFrame instance again works
+    df = IamDataFrame(test_df_year)
+
+    # inplace-operations on the new object have effects on the original object
+    df.rename(scenario={'scen_a': 'scen_foo'}, inplace=True)
+    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+
+    # overwrites on the new object do not have effects on the original object
+    df = df.rename(scenario={'scen_foo': 'scen_bar'})
+    assert all(df.scenarios().values == ['scen_b', 'scen_bar'])
+    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+
+
+def test_init_from_iamdf_raises(test_df_year):
+    # casting an IamDataFrame instance again with extra args fails
+    args = dict(model='foo')
+    match = f'Invalid arguments `{args}` for initializing an IamDataFrame'
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(test_df_year, **args)
+
+
 def test_init_df_with_float_cols_raises(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.5, 2010: 2010.})
     pytest.raises(ValueError, IamDataFrame, data=_test_df)

@@ -91,9 +91,27 @@ class IamDataFrame(object):
     kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta')
     Calling the class with :code:`meta_sheet_name=False` will
     skip the import of the 'meta' table.
+
+    When initializing an :class:`IamDataFrame` from an object that is already
+    an :class:`IamDataFrame` instance, the new object will be hard-linked to
+    all attributes of the original object - so any changes on one object
+    (e.g., with :code:`inplace=True`) may also modify the other object!
+    This is intended behaviour and consistent with pandas but may be confusing
+    for those who are not used to the pandas/Python universe.
     """
     def __init__(self, data, **kwargs):
         """Initialize an instance of an IamDataFrame"""
+        if isinstance(data, IamDataFrame):
+            if kwargs:
+                msg = 'Invalid arguments `{}` for initializing an IamDataFrame'
+                raise ValueError(msg.format(kwargs))
+            for attr, value in data.__dict__.items():
+                setattr(self, attr, value)
+        else:
+            self._init(data, **kwargs)
+
+    def _init(self, data, **kwargs):
+        """Process data and set attributes for new instance"""
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             _data = format_data(data.copy(), **kwargs)
