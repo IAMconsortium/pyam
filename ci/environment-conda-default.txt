@@ -1,0 +1,9 @@
+numpy
+pandas
+pyyaml
+six
+requests
+jupyter
+nbconvert
+matplotlib
+matplotlib-base
