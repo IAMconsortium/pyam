@@ -226,17 +226,24 @@ class Connection(object):
         _check_response(r, 'Could not get scenario list')
         return pd.read_json(r.content, orient='records')
 
+    @property
     @lru_cache()
-    def available_metadata(self):
-        """List all available meta indicators in the instance"""
+    def meta_columns(self):
+        """Return a list of meta indicators in the database instance"""
         url = '/'.join([self._base_url, 'metadata/types'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
         return pd.read_json(r.content, orient='records')['name']
 
+    def available_metadata(self):
+        """Deprecated"""
+        # TODO: deprecate/remove this function in release >=0.8
+        deprecation_warning('Use `Connection.meta_columns` instead.')
+        return self.meta_columns
+
     @lru_cache()
-    def metadata(self, default=True):
+    def meta(self, default=True):
         """All meta categories and indicators of scenarios
 
         Parameters
@@ -267,6 +274,12 @@ class Connection(object):
 
         return pd.concat([extract(row) for idx, row in df.iterrows()],
                          sort=False).reset_index()
+
+    def metadata(self, default=True):
+        """Deprecated"""
+        # TODO: deprecate/remove this function in release >=0.8
+        deprecation_warning('Use `Connection.meta()` instead.')
+        return self.meta
 
     def models(self):
         """All models in the connected data source"""
