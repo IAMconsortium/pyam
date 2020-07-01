@@ -195,8 +195,9 @@ class Connection(object):
         self._base_url = response[idxs['baseUrl']]['value']
         # TODO: request the full citation to be added to this metadata instead
         #       of linking to the about page
-        about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
-        logger.info(_CITE_MSG.format(name, about))
+        if 'uiUrl' in idxs:
+            about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
+            logger.info(_CITE_MSG.format(name, about))
 
         self._connected = name
 
