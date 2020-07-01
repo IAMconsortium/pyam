@@ -882,7 +882,7 @@ class IamDataFrame(object):
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
         recursive : bool, default False
-            iterate recursively over all sublevels of `variable`
+            iterate recursively over all subcategories of `variable`
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`

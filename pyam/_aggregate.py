@@ -53,13 +53,14 @@ def _aggregate(df, variable, components=None, method=np.sum):
     return _group_and_agg(_df, [], method)
 
 
-def _aggregate_recursive(df, variable, components=None, method=np.sum):
+def _aggregate_recursive(df, variable, method=np.sum):
     """Recursive aggregation along the variable tree"""
     _df_aggregated = None
     _df = df.copy()
 
-    sub_variables = []
 
+    # iterate over variables to find all subcategories that need to be aggregated
+    sub_variables = []
     for d in reversed(range(1, max(find_depth(df.data.variable)) + 1)):
         depth = find_depth(df.data.variable)
         var_list = (
@@ -75,6 +76,7 @@ def _aggregate_recursive(df, variable, components=None, method=np.sum):
 
     sub_variables = reversed(sorted(set(sub_variables)))
 
+    # iterate over subcategories (bottom-up) and perform aggregation
     for entry in sub_variables:
         _df.aggregate(variable=entry, append=True)
         _df_temp = _df.aggregate(variable=entry, append=False)
