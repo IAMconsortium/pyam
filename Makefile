@@ -1,9 +1,5 @@
 .DEFAULT_GOAL := help
 
-CI_DIR=./ci
-CI_ENVIRONMENT_CONDA_DEFAULT_FILE=$(CI_DIR)/environment-conda-default.txt
-CI_ENVIRONMENT_CONDA_FORGE_FILE=$(CI_DIR)/environment-conda-forge.txt
-
 DOC_DIR=./doc
 DOC_ENVIRONMENT_CONDA_FILE=$(DOC_DIR)/environment.yml
 
@@ -37,12 +33,6 @@ help:  ## print short description of each target
 clean:
 	rm -rf build dist *egg-info __pycache__
 
-.PHONY: new-release
-new-release:  ## make a new release of pyam
-	@echo 'For a new release on PyPI:'
-	@echo 'git tag vX.Y.Z'
-	@echo 'make publish-on-pypi'
-
 # first time setup, follow the 'Register for PyPI' section in this
 # https://blog.jetbrains.com/pycharm/2017/05/how-to-publish-your-package-on-pypi/
 # then this works
@@ -70,21 +60,13 @@ publish-on-pypi: $(VENV_DIR)  ## publish release on PyPI
 		echo run git status --porcelain to find dirty files >&2; \
 	fi;
 
-.PHONY: regenerate-test-figures
-regenerate-test-figures: $(VENV_DIR)  ## re-generate all test figures
-	$(VENV_DIR)/bin/pytest --mpl-generate-path=tests/expected_figs tests/test_plotting.py
-
 .PHONY: test
 test: $(VENV_DIR)  ## run all the tests
-	cd tests; $(VENV_DIR)/bin/pytest --cov=pyam --cov-config ../ci/.coveragerc -rfsxEX --cov-report term-missing
+	$(VENV_DIR)/bin/pytest tests --cov=./ -r a --cov-report term-missing
 
 .PHONY: test-with-mpl
 test-with-mpl: $(VENV_DIR)  ## run all the tests including matplotlib
-	cd tests; $(VENV_DIR)/bin/pytest --mpl --cov=pyam --cov-config ../ci/.coveragerc -rfsxEX --cov-report term-missing
-
-.PHONY: install
-install: $(VENV_DIR)  ## install pyam in virtual env
-	$(VENV_DIR)/bin/python setup.py install
+	$(VENV_DIR)/bin/pytest tests --cov=./ --mpl -r a --cov-report term-missing
 
 .PHONY: docs
 docs: $(VENV_DIR)  ## make the docs
@@ -93,23 +75,9 @@ docs: $(VENV_DIR)  ## make the docs
 .PHONY: virtual-environment
 virtual-environment: $(VENV_DIR)  ## make virtual environment for development
 
-$(VENV_DIR):  $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE)
-	# TODO: unify with ci install instructions somehow
-	$(CONDA_EXE) config --add channels conda-forge # sets conda-forge as highest priority
-	$(CONDA_EXE) install --yes $(shell cat $(CI_ENVIRONMENT_CONDA_DEFAULT_FILE) $(CI_ENVIRONMENT_CONDA_FORGE_FILE) | tr '\n' ' ')
-	# Install development setup
-	$(VENV_DIR)/bin/pip install -e .[tests,deploy,optional-io-formats]
-	# install docs requirements
-	# --name $(CONDA_DEFAULT_ENV) ensures we install in active environment (check at
-	# top of Makefile ensures that environment is not the base one)
+$(VENV_DIR):
+	$(VENV_DIR)/bin/pip install --upgrade pip
+	$(VENV_DIR)/bin/pip install -e .[tests,optional-io-formats]
 	$(CONDA_EXE) env update --name $(CONDA_DEFAULT_ENV) --file $(DOC_ENVIRONMENT_CONDA_FILE)
-# 	touch $(VENV_DIR)
 
-.PHONY: release-on-conda
-release-on-conda:  ## release pyam on conda
-	@echo 'For now, this is all very manual'
-	@echo 'Checklist:'
-	@echo '- version number'
-	@echo '- sha'
-	@echo '- README.md badge'
-	@echo '- release notes up to date'
+	touch $(VENV_DIR)
