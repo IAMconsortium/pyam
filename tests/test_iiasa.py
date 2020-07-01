@@ -11,12 +11,6 @@ from conftest import IIASA_UNAVAILABLE
 if IIASA_UNAVAILABLE:
     pytest.skip('IIASA database API unavailable', allow_module_level=True)
 
-# verify whether IIASA database API can be reached, skip tests otherwise
-try:
-    iiasa.Connection()
-except SSLError:
-    pytest.skip('IIASA database API unavailable', allow_module_level=True)
-
 # check to see if we can do online testing of db authentication
 TEST_ENV_USER = 'IIASA_CONN_TEST_USER'
 TEST_ENV_PW = 'IIASA_CONN_TEST_PW'
