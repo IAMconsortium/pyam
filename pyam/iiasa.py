@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
 logging.getLogger('requests').setLevel(logging.WARNING)
 
-_BASE_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
+_AUTH_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
@@ -120,9 +120,9 @@ class Connection(object):
     for backwards compatibility. However, this option is NOT RECOMMENDED
     and will be deprecated in future releases of pyam.
     """
-    def __init__(self, name=None, creds=None, base_url=_BASE_URL):
-        self._base_url = base_url
-        self._token, self._user = _get_token(creds, base_url=self._base_url)
+    def __init__(self, name=None, creds=None, auth_url=_AUTH_URL):
+        self._auth_url = auth_url
+        self._token, self._user = _get_token(creds, base_url=self._auth_url)
 
         # connect if provided a name
         self._connected = None
@@ -137,7 +137,7 @@ class Connection(object):
     @property
     @lru_cache()
     def _connection_map(self):
-        url = '/'.join([self._base_url, 'applications'])
+        url = '/'.join([self._auth_url, 'applications'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get valid connection list')
@@ -185,14 +185,14 @@ class Connection(object):
             """
             raise ValueError(msg.format(name, valid))
 
-        url = '/'.join([self._base_url, 'applications', name, 'config'])
+        url = '/'.join([self._auth_url, 'applications', name, 'config'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get application information')
         response = r.json()
         idxs = {x['path']: i for i, x in enumerate(response)}
 
-        self._base_url = response[idxs['baseUrl']]['value']
+        self._auth_url = response[idxs['baseUrl']]['value']
         # TODO: request the full citation to be added to this metadata instead
         #       of linking to the about page
         if 'uiUrl' in idxs:
@@ -220,7 +220,7 @@ class Connection(object):
         """
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}'
-        url = '/'.join([self._base_url, add_url.format(default)])
+        url = '/'.join([self._auth_url, add_url.format(default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get scenario list')
@@ -230,7 +230,7 @@ class Connection(object):
     @lru_cache()
     def meta_columns(self):
         """Return a list of meta indicators in the database instance"""
-        url = '/'.join([self._base_url, 'metadata/types'])
+        url = '/'.join([self._auth_url, 'metadata/types'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
@@ -257,7 +257,7 @@ class Connection(object):
         # up in the future to try to query a subset
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
-        url = '/'.join([self._base_url, add_url.format(default)])
+        url = '/'.join([self._auth_url, add_url.format(default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
@@ -279,7 +279,7 @@ class Connection(object):
         """Deprecated"""
         # TODO: deprecate/remove this function in release >=0.8
         deprecation_warning('Use `Connection.meta()` instead.')
-        return self.meta
+        return self.meta(default=default)
 
     def models(self):
         """All models in the connected data source"""
@@ -294,7 +294,7 @@ class Connection(object):
     @lru_cache()
     def variables(self):
         """All variables in the connected data source"""
-        url = '/'.join([self._base_url, 'ts'])
+        url = '/'.join([self._auth_url, 'ts'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
@@ -312,7 +312,7 @@ class Connection(object):
             (possibly leading to duplicate region names for
             regions with more than one synonym)
         """
-        url = '/'.join([self._base_url, 'nodes?hierarchy=%2A'])
+        url = '/'.join([self._auth_url, 'nodes?hierarchy=%2A'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         params = {'includeSynonyms': include_synonyms}
         r = requests.get(url, headers=headers, params=params)
@@ -423,7 +423,7 @@ class Connection(object):
             'Content-Type': 'application/json',
         }
         data = json.dumps(self._query_post_data(**kwargs))
-        url = '/'.join([self._base_url, 'runs/bulk/ts'])
+        url = '/'.join([self._auth_url, 'runs/bulk/ts'])
         logger.debug('Querying timeseries data '
                        'from {} with filter {}'.format(url, data))
         r = requests.post(url, headers=headers, data=data)
@@ -461,7 +461,7 @@ class Connection(object):
         return df
 
 
-def read_iiasa(name, meta=False, creds=None, base_url=_BASE_URL, **kwargs):
+def read_iiasa(name, meta=False, creds=None, base_url=_AUTH_URL, **kwargs):
     """Query an IIASA Scenario Explorer database and return as IamDataFrame
 
     Parameters
