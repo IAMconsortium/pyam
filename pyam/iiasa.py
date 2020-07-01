@@ -15,7 +15,7 @@ from pyam.utils import META_IDX, islistable, isstr, pattern_match
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
-# quiet this fool
+# set requests-logger to WARNING only
 logging.getLogger('requests').setLevel(logging.WARNING)
 
 _BASE_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
@@ -98,13 +98,14 @@ def _get_token(creds, base_url):
 
 
 class Connection(object):
-    """A class to facilitate querying an IIASA scenario explorer database
+    """A class to facilitate querying an IIASA Scenario Explorer database API
 
     Parameters
     ----------
     name : str, optional
-        A valid database name. For available options, see
-        valid_connections().
+        The name of a database API.
+        See :meth:`pyam.iiasa.Connection.valid_connections` for a list
+        of available APIs.
     creds : str, :class:`pathlib.Path`, list-like, or dict, optional
         By default, this function will (try to) read user credentials which
         were set using :meth:`pyam.iiasa.set_config(<user>, <password>)`.
@@ -164,11 +165,7 @@ class Connection(object):
     @property
     @lru_cache()
     def valid_connections(self):
-        """ Show a list of valid connection names (application aliases or
-            names when alias is not available or duplicated)
-
-        :return: list of str
-        """
+        """Return available database API connection names"""
         return list(self._connection_map.keys())
 
     def connect(self, name):
@@ -451,7 +448,7 @@ class Connection(object):
 
 
 def read_iiasa(name, meta=False, creds=None, base_url=_BASE_URL, **kwargs):
-    """Read data from an IIASA scenario explorer and return as IamDataFrame
+    """Query an IIASA Scenario Explorer database and return as IamDataFrame
 
     Parameters
     ----------
