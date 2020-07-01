@@ -1,9 +1,10 @@
+from pathlib import Path
 import json
 import logging
-import os
 import requests
 import yaml
 from functools import lru_cache
+
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ import pandas as pd
 from collections.abc import Mapping
 from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, islistable, isstr, pattern_match
+from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 # quiet this fool
@@ -23,6 +25,28 @@ You are connected to the {} scenario explorer hosted by IIASA.
  data as provided in the explorer guidelines: {}
 """.replace('\n', '')
 
+# path to local configuration settings
+DEFAULT_IIASA_CREDS = Path('~').expanduser() / '.local' / 'pyam' / 'iiasa.yaml'
+
+
+def set_config(user, password, file=None):
+    """Save username and password for IIASA API connection to file"""
+    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
+    if not file.parent.exists():
+        file.parent.mkdir(parents=True)
+
+    with open(file, mode='w') as f:
+        logger.info(f'Setting IIASA-connection configuration file: {file}')
+        yaml.dump(dict(username=user, password=password), f)
+
+
+def _get_config(file=None):
+    """Read username and password for IIASA API connection from file"""
+    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
+    if file.exists():
+        with open(file, 'r') as stream:
+            return yaml.safe_load(stream)
+
 
 def _check_response(r, msg='Trouble with request', error=RuntimeError):
     if not r.ok:
@@ -30,66 +54,84 @@ def _check_response(r, msg='Trouble with request', error=RuntimeError):
 
 
 def _get_token(creds, base_url):
-    if creds is None:  # get anonymous auth
+    """Parse credentials and get token from IIASA authentication service"""
+    plaintextcreds = True
+
+    # try reading default config or parse file
+    if creds is None:
+        creds = _get_config()
+        plaintextcreds = False
+    elif isinstance(creds, Path) or isstr(creds):
+        _creds = _get_config(creds)
+        if _creds is None:
+            logger.error(f'Could not read credentials from `{creds}`')
+        creds = _creds
+        plaintextcreds = False
+
+    # if (still) no creds, get anonymous auth and return
+    if creds is None:
         url = '/'.join([base_url, 'anonym'])
         r = requests.get(url)
         _check_response(r, 'Could not get anonymous token')
-        return r.json()
+        return r.json(), None
 
-    # otherwise read creds and try to login
-    filecreds = False
-    try:
-        if isinstance(creds, Mapping):
-            user, pw = creds['username'], creds['password']
-        elif os.path.exists(str(creds)):
-            with open(str(creds), 'r') as stream:
-                creds = yaml.safe_load(stream)
-            user, pw = creds['username'], creds['password']
-            filecreds = True
-        else:
-            user, pw = creds
-    except Exception as e:
-        msg = 'Could not read credentials: {}\n{}'.format(
-            creds, str(e))
-        raise type(e)(msg)
-    if not filecreds:
+    # parse creds, write warning
+    if isinstance(creds, Mapping):
+        user, pw = creds['username'], creds['password']
+    else:
+        user, pw = creds
+    if plaintextcreds:
         logger.warning('You provided credentials in plain text. DO NOT save '
                        'these in a repository or otherwise post them online')
+        deprecation_warning('Providing credentials in plain text',
+                            'Please use `pyam.iiasa.set_config(<user>, <pwd>)`'
+                            ' to store your credentials in a file!')
 
+    # get user token
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
     data = {'username': user, 'password': pw}
     url = '/'.join([base_url, 'login'])
     r = requests.post(url, headers=headers, data=json.dumps(data))
     _check_response(r, 'Login failed for user: {}'.format(user))
-    return r.json()
+    return r.json(), user
 
 
 class Connection(object):
-    """A class to facilitate querying an IIASA scenario explorer database"""
+    """A class to facilitate querying an IIASA scenario explorer database
 
+    Parameters
+    ----------
+    name : str, optional
+        A valid database name. For available options, see
+        valid_connections().
+    creds : str, :class:`pathlib.Path`, list-like, or dict, optional
+        By default, this function will (try to) read user credentials which
+        were set using :meth:`pyam.iiasa.set_config(<user>, <password>)`.
+        Alternatively, you can provide a path to a yaml file
+        with entries of  'username' and 'password'.
+    base_url : str, custom authentication server URL
+
+    Notes
+    -----
+    Providing credentials as an ordered container (tuple, list, etc.)
+    or as a dictionary with keys `user` and `password` is (still) supported
+    for backwards compatibility. However, this option is NOT RECOMMENDED
+    and will be deprecated in future releases of pyam.
+    """
     def __init__(self, name=None, creds=None, base_url=_BASE_URL):
-        """
-        Parameters
-        ----------
-        name : str, optional
-            A valid database name. For available options, see
-            valid_connections().
-        creds : str, list-like, or dict, optional
-            Either:
-              - a yaml filename/path with entries of  'username' and 'password'
-                (preferred)
-              - an ordered container (tuple, list, etc.) with the same values
-              - a dictionary with the same keys
-        base_url : str, custom authentication server URL
-        """
         self._base_url = base_url
-        self._token = _get_token(creds, base_url=self._base_url)
+        self._token, self._user = _get_token(creds, base_url=self._base_url)
 
         # connect if provided a name
         self._connected = None
         if name:
             self.connect(name)
+
+        if self._user:
+            logger.info(f'You are connected as user `{self._user}`')
+        else:
+            logger.info(f'You are connected as an anonymous user')
 
     @property
     @lru_cache()
