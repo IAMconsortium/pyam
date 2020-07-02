@@ -14,6 +14,7 @@ a utility function `pyam.plotting.mpl_args_to_meta_cols()`.
 - [#409](https://github.com/IAMconsortium/pyam/pull/409) Remove travis and appveyor CI config.
 - [#408](https://github.com/IAMconsortium/pyam/pull/408) Update badges on the docs page and readme.
 - [#407](https://github.com/IAMconsortium/pyam/pull/407) Add Codecov to Github Actions CI.
+- [#405](https://github.com/IAMconsortium/pyam/pull/405) Add ability for recursivley aggregating variables.
 - [#402](https://github.com/IAMconsortium/pyam/pull/402) Refactor `as_pandas()` and docs for more consistent description of `meta`.
 - [#401](https://github.com/IAMconsortium/pyam/pull/401) Read credentials for IIASA-API-Connection by default from known location.
 - [#396](https://github.com/IAMconsortium/pyam/pull/396) Enable casting to `IamDataFrame` multiple times.

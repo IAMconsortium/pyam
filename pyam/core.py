@@ -35,6 +35,7 @@ from pyam.utils import (
     sort_data,
     to_int,
     find_depth,
+    reduce_hierarchy,
     pattern_match,
     years_match,
     month_match,
@@ -52,7 +53,7 @@ from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
 from pyam.plotting import mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
-    _group_and_agg
+    _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
 from pyam.logging import deprecation_warning
 
@@ -884,7 +885,8 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def aggregate(self, variable, components=None, method='sum', append=False):
+    def aggregate(self, variable, components=None, method='sum',
+                  recursive=False, append=False):
         """Aggregate timeseries components or sub-categories within each region
 
         Parameters
@@ -897,11 +899,26 @@ class IamDataFrame(object):
         method : func or str, default 'sum'
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+        recursive : bool, default False
+            iterate recursively over all subcategories of `variable`
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
+
+        Notes
+        -----
+        The aggregation function interprets any missing values
+        (:any:`numpy.nan`) for individual components as 0.
         """
-        _df = _aggregate(self, variable, components=components, method=method)
+
+        if recursive is True:
+            if components is not None:
+                msg = 'Recursive aggregation cannot take explicit components'
+                raise ValueError(msg)
+            _df = _aggregate_recursive(self, variable, method=method)
+        else:
+            _df = _aggregate(self, variable, components=components,
+                             method=method)
 
         # return None if there is nothing to aggregate
         if _df is None:
