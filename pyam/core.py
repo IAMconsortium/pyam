@@ -449,8 +449,8 @@ class IamDataFrame(object):
             return self.data.copy()
 
     def timeseries(self, iamc_index=False):
-        """Returns `data` as pandas.DataFrame in wide format (time as columns)
-`
+        """Returns `data` as :class:`pandas.DataFrame` in wide format
+
         Parameters
         ----------
         iamc_index : bool, default False
@@ -558,8 +558,8 @@ class IamDataFrame(object):
             method for aggregation
             (e.g., :func:`numpy.max <numpy.ndarray.max>`);
             required if downselected data do not yield unique values
-        column : str, default 'value'
-            the column from 'data' to be used to derive the indicator
+        column : str, optional
+            the column from `data` to be used to derive the indicator
         kwargs
             passed to :meth:`filter` for downselected data
         """
@@ -673,7 +673,7 @@ class IamDataFrame(object):
         criteria : dict
            dictionary with variable keys and validation mappings
             ('up' and 'lo' for respective bounds, 'year' for years)
-        exclude_on_fail : bool, default False
+        exclude_on_fail : bool, optional
             flag scenarios failing validation as `exclude: True`
         """
         df = _apply_criteria(self.data, criteria, in_range=False)
@@ -867,8 +867,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        inplace : bool, default False
-            if True, do operation inplace and return None
+        inplace : bool, optional
+            if :obj:`True`, do operation inplace and return None
         kwargs
             the column and value on which to normalize (e.g., `year=2005`)
         """
@@ -893,15 +893,15 @@ class IamDataFrame(object):
         ----------
         variable : str or list of str
             variable(s) for which the aggregate will be computed
-        components : list of str, default None
+        components : list of str, optional
             list of variables to aggregate, defaults to all sub-categories
             of `variable`
-        method : func or str, default 'sum'
+        method : func or str, optional
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-        recursive : bool, default False
+        recursive : bool, optional
             iterate recursively over all subcategories of `variable`
-        append : bool, default False
+        append : bool, optional
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
 
@@ -940,12 +940,12 @@ class IamDataFrame(object):
             variable(s) checked for matching aggregation of sub-categories
         components : list of str, default None
             list of variables, defaults to all sub-categories of `variable`
-        method : func or str, default 'sum'
+        method : func or str, optional
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-        exclude_on_fail : boolean, default False
+        exclude_on_fail : bool, optional
             flag scenarios failing validation as `exclude: True`
-        multiplier : number, default 1
+        multiplier : number, optional
             factor when comparing variable and sum of components
         kwargs : arguments for comparison of values
             passed to :func:`numpy.isclose`
@@ -992,12 +992,12 @@ class IamDataFrame(object):
             region to which data will be aggregated
         subregions : list of str
             list of subregions, defaults to all regions other than `region`
-        components: bool or list of str, default False
+        components : bool or list of str, optional
             variables at the `region` level to be included in the aggregation
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
             or explicit list of variables
-        method : func or str, default 'sum'
+        method : func or str, optional
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
         weight : str, default None
@@ -1039,13 +1039,13 @@ class IamDataFrame(object):
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
             or explicit list of variables
-        method : func or str, default 'sum'
+        method : func or str, optional
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-        weight : str, default None
+        weight : str, optional
             variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
-        exclude_on_fail : boolean, default False
+        exclude_on_fail : boolean, optional
             flag scenarios failing validation as `exclude: True`
         kwargs : arguments for comparison of values
             passed to :func:`numpy.isclose`
@@ -1138,7 +1138,7 @@ class IamDataFrame(object):
             region from which data will be downscaled
         subregions : list of str
             list of subregions, defaults to all regions other than `region`
-        append : bool, default False
+        append : bool, optional
             append the downscaled timeseries to `self` and return None,
             else return downscaled data as new IamDataFrame
         """
@@ -1202,7 +1202,7 @@ class IamDataFrame(object):
         ----------
         kwargs : arguments for comparison of values
             passed to :func:`numpy.isclose`
-        components : bool, default False
+        components : bool, optional
             passed to :meth:`check_aggregate_region` if `True`, use all
             sub-categories of each `variable` included in `World` but not in
             any of the subregions; if `False`, only aggregate variables over
@@ -1238,9 +1238,9 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        keep: bool, default True
+        keep : bool, optional
             keep all scenarios satisfying the filters (if True) or the inverse
-        inplace: bool, default False
+        inplace : bool, optional
             if True, do operation inplace and return None
         filters by kwargs:
             The following columns are available for filtering:
@@ -1638,13 +1638,13 @@ class IamDataFrame(object):
             Use a non-default region mapping file
         region_col : string, optional
             Use a non-default column name for regions to map from.
-        remove_duplicates : bool, optional, default: False
+        remove_duplicates : bool, optional
             If there are duplicates in the mapping from one regional level to
             another, then remove these duplicates by counting the most common
             mapped value.
             This option is most useful when mapping from high resolution
             (e.g., model regions) to low resolution (e.g., 5_region).
-        inplace : bool, default False
+        inplace : bool, optional
             if True, do operation inplace and return None
         """
         models = self.meta.index.get_level_values('model').unique()
@@ -1797,7 +1797,7 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     df : IamDataFrame
     args : passed to :meth:`IamDataFrame.validate`
     kwargs : used for downselecting IamDataFrame
-        passed to :meth:`filter() <IamDataFrame.filter>`
+        passed to :meth:`IamDataFrame.filter`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -1813,9 +1813,9 @@ def require_variable(df, variable, unit=None, year=None, exclude_on_fail=False,
     Parameters
     ----------
     df : IamDataFrame
-    args : passed to :meth:`require_variable`
+    args : passed to :meth:`IamDataFrame.require_variable`
     kwargs : used for downselecting IamDataFrame
-        passed to :meth:`filter() <IamDataFrame.filter>`
+        passed to :meth:`IamDataFrame.filter`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -1835,7 +1835,7 @@ def categorize(df, name, value, criteria,
     df : IamDataFrame
     args : passed to :meth:`IamDataFrame.categorize`
     kwargs : used for downselecting IamDataFrame
-        passed to :meth:`filter() <IamDataFrame.filter>`
+        passed to :meth:`IamDataFrame.filter`
     """
     fdf = df.filter(**kwargs)
     fdf.categorize(name=name, value=value, criteria=criteria, color=color,
@@ -1858,7 +1858,7 @@ def check_aggregate(df, variable, components=None, exclude_on_fail=False,
     df : IamDataFrame
     args : passed to :meth:`IamDataFrame.check_aggregate`
     kwargs : used for downselecting IamDataFrame
-        passed to :meth:`filter() <IamDataFrame.filter>`
+        passed to :meth:`IamDataFrame.filter`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -1934,7 +1934,7 @@ def compare(left, right, left_label='left', right_label='right',
         two :class:`IamDataFrame` instances to be compared
     left_label, right_label : str, default `left`, `right`
         column names of the returned :class:`pandas.DataFrame`
-    drop_close : bool, default True
+    drop_close : bool, optional
         remove all data where `left` and `right` are close
     kwargs : arguments for comparison of values
         passed to :func:`numpy.isclose`
@@ -1977,9 +1977,9 @@ def read_datapackage(path, data='data', meta='meta'):
     path : string or path object
         any valid string path or :class:`pathlib.Path`, |br|
         passed to :class:`datapackage.Package` (|datapackage.Package.docs|)
-    data : str, default 'data'
+    data : str, optional
         resource containing timeseries data in IAMC-compatible format
-    meta : str, default 'meta'
+    meta : str, optional
         (optional) resource containing a table of categorization and
         quantitative indicators
     """

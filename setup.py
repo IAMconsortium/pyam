@@ -28,8 +28,11 @@ EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest', 'pytest-cov', 'pytest-mpl'],
     'optional-io-formats': ['datapackage'],
     'deploy': ['twine', 'setuptools', 'wheel'],
-    'tests-tutorials': ['pandoc', 'nbformat', 'nbconvert', 'jupyter_client',
-                        'ipykernel'],
+    'tutorials': ['pypandoc', 'nbformat', 'nbconvert', 'jupyter_client',
+                  'ipykernel'],
+    'docs': ['sphinx', 'nbsphinx', 'sphinx-gallery', 'cloud_sptheme',
+             'pillow', 'sphinxcontrib-bibtex', 'sphinxcontrib-programoutput',
+             'numpydoc', 'openpyxl']  # docs also requires 'tutorials'
 }
 
 # building the docs on readthedocs fails with a FileNotFoundError

@@ -1,8 +1,7 @@
-build:
-    image: latest
-conda:
-    file: doc/environment.yml
+version: 2
+
 python:
-    version: 3.6
-    setup_py_install: true
-formats: []
+  install:
+  - method: pip
+    path: .
+    extra_requirements: [docs,tutorials]
