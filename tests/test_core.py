@@ -46,6 +46,28 @@ def test_init_df_with_index(test_pd_df):
     pd.testing.assert_frame_equal(df.timeseries().reset_index(), test_pd_df)
 
 
+def test_init_from_iamdf(test_df_year):
+    # casting an IamDataFrame instance again works
+    df = IamDataFrame(test_df_year)
+
+    # inplace-operations on the new object have effects on the original object
+    df.rename(scenario={'scen_a': 'scen_foo'}, inplace=True)
+    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+
+    # overwrites on the new object do not have effects on the original object
+    df = df.rename(scenario={'scen_foo': 'scen_bar'})
+    assert all(df.scenarios().values == ['scen_b', 'scen_bar'])
+    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+
+
+def test_init_from_iamdf_raises(test_df_year):
+    # casting an IamDataFrame instance again with extra args fails
+    args = dict(model='foo')
+    match = f'Invalid arguments `{args}` for initializing an IamDataFrame'
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(test_df_year, **args)
+
+
 def test_init_df_with_float_cols_raises(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.5, 2010: 2010.})
     pytest.raises(ValueError, IamDataFrame, data=_test_df)
@@ -161,6 +183,35 @@ def test_init_empty_message(test_pd_df, caplog):
     )
     message_idx = caplog.messages.index(drop_message)
     assert caplog.records[message_idx].levelno == logging.WARNING
+
+
+def test_as_pandas(test_df):
+    # test that `as_pandas()` returns the right columns
+    df = test_df.copy()
+    df.set_meta(['foo', 'bar'], name='string')
+    df.set_meta([1, 2], name='number')
+
+    # merge all columns (default)
+    obs = df.as_pandas()
+    cols = ['string', 'number']
+    assert all(i in obs.columns for i in cols)  # assert relevant columns exist
+
+    exp = pd.concat([pd.DataFrame([['foo', 1]] * 4),
+                     pd.DataFrame([['bar', 2]] * 2)])
+    npt.assert_array_equal(obs[cols], exp)  # assert meta columns are merged
+
+    # test deprecated `with_metadata` arg
+    obs = df.as_pandas(with_metadata=True)
+    npt.assert_array_equal(obs[cols], exp)  # assert meta columns are merged
+
+    # merge only one column
+    obs = df.as_pandas(['string'])
+    assert 'string' in obs.columns
+    assert 'number' not in obs.columns
+    npt.assert_array_equal(obs['string'], ['foo'] * 4 + ['bar'] * 2)
+
+    # do not merge any columns
+    npt.assert_array_equal(df.as_pandas(False), df.data)
 
 
 def test_empty_attribute(test_df_year):

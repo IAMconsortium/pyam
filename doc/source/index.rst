@@ -3,11 +3,14 @@
 
 Release v\ |version|.
 
-|pypi| |conda| |license| |latest|
+|license| |pypi| |conda| |latest|
 
-|rtd| |travis| |appveyor| |coveralls|
+|pytest-38| |pytest-37| |codecov| |rtd|
 
 |joss| |doi|
+
+.. |license| image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
+   :target: https://anaconda.org/conda-forge/pyam
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
@@ -15,24 +18,21 @@ Release v\ |version|.
 .. |conda| image:: https://anaconda.org/conda-forge/pyam/badges/version.svg
    :target: https://anaconda.org/conda-forge/pyam
 
-.. |license| image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
-   :target: https://anaconda.org/conda-forge/pyam
-
 .. |latest| image:: https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg
    :target: https://anaconda.org/conda-forge/pyam
+
+.. |pytest-38| image:: https://github.com/IAMconsortium/pyam/workflows/pytest%20(3.8)/badge.svg?branch=master
+   :target: https://github.com/IAMconsortium/pyam/actions?query=workflow%3A%22pytest+%283.8%29%22+branch%3Amaster
+
+.. |pytest-37| image:: https://github.com/IAMconsortium/pyam/workflows/pytest%20(3.7)/badge.svg?branch=master
+   :target: https://github.com/IAMconsortium/pyam/actions?query=workflow%3A%22pytest+%283.7%29%22+branch%3Amaster
+
+.. |codecov| image:: https://codecov.io/gh/IAMconsortium/pyam/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/IAMconsortium/pyam
 
 .. |rtd| image:: https://readthedocs.org/projects/pyam-iamc/badge/?version=latest
    :target: https://pyam-iamc.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-
-.. |travis| image:: https://travis-ci.com/IAMconsortium/pyam.svg?branch=master
-   :target: https://travis-ci.com/IAMconsortium/pyam
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/qd4taojd2vkqoab4/branch/master?svg=true&passingText=passing&failingText=failing&pendingText=pending
-   :target: https://ci.appveyor.com/project/gidden/pyam/branch/master
-
-.. |coveralls| image:: https://coveralls.io/repos/github/IAMconsortium/pyam/badge.svg?branch=master
-   :target: https://coveralls.io/github/IAMconsortium/pyam?branch=master
 
 .. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
    :target: https://joss.theoj.org/papers/10.21105/joss.01095
