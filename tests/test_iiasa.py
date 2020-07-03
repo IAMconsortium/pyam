@@ -1,9 +1,8 @@
 import os
 import copy
-import yaml
+import logging
 import pytest
 import numpy.testing as npt
-from requests.exceptions import SSLError
 
 from pyam import iiasa
 from conftest import IIASA_UNAVAILABLE
@@ -19,54 +18,51 @@ CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
     TEST_ENV_USER, TEST_ENV_PW
 )
 
+TEST_API = 'integration-test'
+TEST_API_NAME = 'IXSE_INTEGRATION_TEST'
+
+
+def test_unknown_conn():
+    # connecting to an unknown API raises an error
+    pytest.raises(ValueError, iiasa.Connection, 'foo')
+
 
 def test_anon_conn():
-    conn = iiasa.Connection('IXSE_SR15')
-    assert conn.current_connection == 'IXSE_SR15'
-
-
-def test_anon_conn_warning():
-    conn = iiasa.Connection('iamc15')
-    assert conn.current_connection == 'IXSE_SR15'
+    conn = iiasa.Connection(TEST_API)
+    assert conn.current_connection == TEST_API_NAME
 
 
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
-def test_conn_creds_file(tmp_path):
-    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    path = tmp_path / 'config.yaml'
-    with open(path, 'w') as f:
-        yaml.dump({'username': user, 'password': pw}, f)
-    conn = iiasa.Connection('IXSE_SR15', creds=path)
-    assert conn.current_connection == 'IXSE_SR15'
+def test_conn_creds_config():
+    iiasa.set_config(os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW])
+    conn = iiasa.Connection(TEST_API)
+    assert conn.current_connection == TEST_API_NAME
 
 
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_tuple():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection('IXSE_SR15', creds=(user, pw))
-    assert conn.current_connection == 'IXSE_SR15'
-
-
-def test_conn_bad_creds():
-    pytest.raises(RuntimeError, iiasa.Connection,
-                  'IXSE_SR15', creds=('_foo', '_bar'))
-
-
-def test_anon_conn_tuple_raises():
-    pytest.raises(ValueError, iiasa.Connection, 'foo')
+    conn = iiasa.Connection(TEST_API, creds=(user, pw))
+    assert conn.current_connection == TEST_API_NAME
 
 
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_dict():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection(
-        'IXSE_SR15', creds={'username': user, 'password': pw})
-    assert conn.current_connection == 'IXSE_SR15'
+    conn = iiasa.Connection(TEST_API, creds={'username': user, 'password': pw})
+    assert conn.current_connection == TEST_API_NAME
+
+
+def test_conn_bad_creds():
+    # connecting with invalid credentials raises an error
+    creds = ('_foo', '_bar')
+    pytest.raises(RuntimeError, iiasa.Connection, TEST_API, creds=creds)
 
 
 def test_conn_creds_dict_raises():
-    pytest.raises(KeyError, iiasa.Connection,
-                  'IXSE_SR15', creds={'username': 'foo'})
+    # connecting with incomplete credentials as dictionary raises an error
+    creds = {'username': 'foo'}
+    pytest.raises(KeyError, iiasa.Connection, TEST_API, cres=creds)
 
 
 def test_variables():
