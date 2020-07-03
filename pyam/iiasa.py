@@ -83,9 +83,9 @@ def _get_token(creds, base_url):
     if plaintextcreds:
         logger.warning('You provided credentials in plain text. DO NOT save '
                        'these in a repository or otherwise post them online')
-        deprecation_warning('Providing credentials in plain text',
-                            'Please use `pyam.iiasa.set_config(<user>, <pwd>)`'
-                            ' to store your credentials in a file!')
+        deprecation_warning('Please use `pyam.iiasa.set_config(<user>, <pwd>)`'
+                            ' to store your credentials in a file!',
+                            'Providing credentials in plain text')
 
     # get user token
     headers = {'Accept': 'application/json',
@@ -132,7 +132,7 @@ class Connection(object):
         if self._user:
             logger.info(f'You are connected as user `{self._user}`')
         else:
-            logger.info(f'You are connected as an anonymous user')
+            logger.info('You are connected as an anonymous user')
 
     @property
     @lru_cache()
@@ -183,7 +183,7 @@ class Connection(object):
             {} not recognized as a valid connection name.
             Choose from one of the supported connections for your user: {}.
             """
-            raise ValueError(msg.format(name, valid))
+            raise ValueError(msg.format(name, self._connection_map.keys()))
 
         url = '/'.join([self._auth_url, 'applications', name, 'config'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
