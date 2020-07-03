@@ -165,10 +165,11 @@ class Connection(object):
     @property
     @lru_cache()
     def valid_connections(self):
-        """Return available database API connection names"""
+        """Return available resources (database API connections)"""
         return list(self._connection_map.keys())
 
     def connect(self, name):
+        """Connect to a database API"""
         if name in self._connection_map:
             name = self._connection_map[name]
 
@@ -199,25 +200,34 @@ class Connection(object):
             about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
             logger.info(_CITE_MSG.format(name, about))
 
+        # TODO: use API "nice-name"
         self._connected = name
 
     @property
     def current_connection(self):
+        """Currently connected resource (database API connection)"""
         return self._connected
 
-    @lru_cache()
-    def scenario_list(self, default=True):
-        """
-        Metadata regarding the list of scenarios (e.g., models, scenarios,
-        run identifier, etc.) in the connected data source.
+    def index(self, default=True):
+        """Return the index of models and scenarios in the connected resource
 
         Parameters
         ----------
         default : bool, optional
-            Return *only* the default version of each Scenario.
-            Any (`model`, `scenario`) without a default version is omitted.
-            If :obj:`False`, return all versions.
+            If `True`, return *only* the default version of a model/scenario.
+            Any model/scenario without a default version is omitted.
+            If `False`, returns all versions.
         """
+        cols = [] if default else ['version', 'is_default']
+        return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
+
+    def scenario_list(self, default=True):
+        """Deprecated, use :meth:`Connection.index`"""
+        deprecation_warning('Use `Connection.index()` instead.')
+        return self._query_index(default)
+
+    @lru_cache()
+    def _query_index(self, default=True):
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}'
         url = '/'.join([self._auth_url, add_url.format(default)])
@@ -229,7 +239,7 @@ class Connection(object):
     @property
     @lru_cache()
     def meta_columns(self):
-        """Return a list of meta indicators in the database instance"""
+        """Return the list of meta indicators in the connected resource"""
         url = '/'.join([self._auth_url, 'metadata/types'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
@@ -237,19 +247,19 @@ class Connection(object):
         return pd.read_json(r.content, orient='records')['name']
 
     def available_metadata(self):
-        """Deprecated"""
+        """Deprecated, use :attr:`Connection.meta_columns`"""
         # TODO: deprecate/remove this function in release >=0.8
         deprecation_warning('Use `Connection.meta_columns` instead.')
         return self.meta_columns
 
     @lru_cache()
     def meta(self, default=True):
-        """All meta categories and indicators of scenarios
+        """Return meta categories and indicators of scenarios
 
         Parameters
         ----------
         default : bool, optional
-            Return *only* the default version of each Scenario.
+            Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
@@ -276,24 +286,24 @@ class Connection(object):
                          sort=False).reset_index()
 
     def metadata(self, default=True):
-        """Deprecated"""
+        """Deprecated, use :meth:`Connection.meta`"""
         # TODO: deprecate/remove this function in release >=0.8
         deprecation_warning('Use `Connection.meta()` instead.')
         return self.meta(default=default)
 
     def models(self):
-        """All models in the connected data source"""
-        return pd.Series(self.scenario_list()['model'].unique(),
+        """List all models in the connected resource"""
+        return pd.Series(self._query_index()['model'].unique(),
                          name='model')
 
     def scenarios(self):
-        """All scenarios in the connected data source"""
-        return pd.Series(self.scenario_list()['scenario'].unique(),
+        """List all scenarios in the connected resource"""
+        return pd.Series(self._query_index()['scenario'].unique(),
                          name='scenario')
 
     @lru_cache()
     def variables(self):
-        """All variables in the connected data source"""
+        """List all variables in the connected resource"""
         url = '/'.join([self._auth_url, 'ts'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
@@ -303,7 +313,7 @@ class Connection(object):
 
     @lru_cache()
     def regions(self, include_synonyms=False):
-        """All regions in the connected data source
+        """List all regions in the connected resource
 
         Parameters
         ----------
@@ -359,7 +369,7 @@ class Connection(object):
             return data[matches].unique()
 
         # get unique run ids
-        meta = self.scenario_list()
+        meta = self._query_index()
         meta = meta[meta.is_default]
         models = _match(meta['model'], m_pattern)
         scenarios = _match(meta['scenario'], s_pattern)
@@ -397,7 +407,7 @@ class Connection(object):
         return data
 
     def query(self, **kwargs):
-        """Query the data source with filters
+        """Query the connected resource for timeseries data (with filters)
 
         Available keyword arguments include
 
@@ -462,7 +472,7 @@ class Connection(object):
 
 
 def read_iiasa(name, meta=False, creds=None, base_url=_AUTH_URL, **kwargs):
-    """Query an IIASA Scenario Explorer database and return as IamDataFrame
+    """Query an IIASA Scenario Explorer database API and return as IamDataFrame
 
     Parameters
     ----------
@@ -470,7 +480,7 @@ def read_iiasa(name, meta=False, creds=None, base_url=_AUTH_URL, **kwargs):
         A valid name of an IIASA scenario explorer instance,
         see :attr:`pyam.iiasa.Connection.valid_connections`
     meta : bool or list of strings
-        If :obj:`True`, include all meta categories & quantitative indicators
+        If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
     creds : dict
         Credentials to access scenario explorer instance and
