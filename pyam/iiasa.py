@@ -169,7 +169,7 @@ class Connection(object):
         return list(self._connection_map.keys())
 
     def connect(self, name):
-        """Connect to a database API"""
+        """Connect to a specific resource (database API)"""
         if name in self._connection_map:
             name = self._connection_map[name]
 
@@ -194,8 +194,7 @@ class Connection(object):
         idxs = {x['path']: i for i, x in enumerate(response)}
 
         self._auth_url = response[idxs['baseUrl']]['value']
-        # TODO: request the full citation to be added to this metadata instead
-        #       of linking to the about page
+        # TODO: proper citation (as metadata) instead of link to the about page
         if 'uiUrl' in idxs:
             about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
             logger.info(_CITE_MSG.format(name, about))
@@ -218,7 +217,7 @@ class Connection(object):
             Any model/scenario without a default version is omitted.
             If `False`, returns all versions.
         """
-        cols = [] if default else ['version', 'is_default']
+        cols = ['version'] if default else ['version', 'is_default']
         return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
 
     def scenario_list(self, default=True):
@@ -233,7 +232,7 @@ class Connection(object):
         url = '/'.join([self._auth_url, add_url.format(default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
-        _check_response(r, 'Could not get scenario list')
+        _check_response(r, 'Could not retrieve the resource index')
         return pd.read_json(r.content, orient='records')
 
     @property
@@ -254,7 +253,7 @@ class Connection(object):
 
     @lru_cache()
     def meta(self, default=True):
-        """Return meta categories and indicators of scenarios
+        """Return categories and indicators (meta) of scenarios
 
         Parameters
         ----------
@@ -263,27 +262,29 @@ class Connection(object):
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
-        # at present this reads in all data for all scenarios, it could be sped
-        # up in the future to try to query a subset
-        default = 'true' if default else 'false'
+        # TODO: at present this reads in all data for all scenarios,
+        #  it could be sped up in the future to try to query a subset
+        _default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
-        url = '/'.join([self._auth_url, add_url.format(default)])
+        url = '/'.join([self._auth_url, add_url.format(_default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
         df = pd.read_json(r.content, orient='records')
 
+        cols = ['version'] if default else ['version', 'is_default']
+
         def extract(row):
             return (
-                pd.concat([row[['model', 'scenario']],
+                pd.concat([row[META_IDX+cols],
                            pd.Series(row.metadata)])
                 .to_frame()
                 .T
                 .set_index(['model', 'scenario'])
             )
 
-        return pd.concat([extract(row) for idx, row in df.iterrows()],
-                         sort=False).reset_index()
+        return pd.concat([extract(row) for i, row in df.iterrows()],
+                         sort=False)
 
     def metadata(self, default=True):
         """Deprecated, use :meth:`Connection.meta`"""
@@ -416,6 +417,10 @@ class Connection(object):
         - region
         - variable
 
+        Returns
+        -------
+        IamDataFrame
+
         Examples
         --------
 
@@ -444,18 +449,20 @@ class Connection(object):
         df = pd.read_json(r.content, orient='records', dtype=dtype)
         logger.debug('Response size is {0} bytes, '
                        '{1} records'.format(len(r.content), len(df)))
-        columns = ['model', 'scenario', 'variable', 'unit',
-                   'region', 'year', 'value', 'time', 'meta',
-                   'version']
+        columns = ['model', 'scenario', 'variable', 'region', 'unit',
+                   'year', 'value', 'time', 'version']
         # keep only known columns or init empty df
-        df = pd.DataFrame(data=df, columns=columns)
-        # replace missing meta (for backward compatibility)
-        df.fillna({'meta': 0}, inplace=True)
-        df.fillna({'time': 0}, inplace=True)
-        df.rename(columns={'time': 'subannual'}, inplace=True)
-        # check if returned dataframe has subannual disaggregation, drop if not
-        if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
-            df.drop(columns='subannual', inplace=True)
+        df = (
+            pd.DataFrame(data=df, columns=columns)
+            # TODO: refactor API to directly return column as 'subannual'
+            .rename(columns={'time': 'subannual'})
+        )
+
+        # check if timeseries data has subannual disaggregation, drop if not
+        if 'subannual' in df:
+            if all([i in [-1, np.nan, 'Year'] for i in df.subannual.unique()]):
+                df.drop(columns='subannual', inplace=True)
+
         # check if there are multiple version for any model/scenario
         lst = (
             df[META_IDX + ['version']].drop_duplicates()

@@ -2,11 +2,12 @@ import os
 import copy
 import pytest
 import pandas as pd
+import numpy as np
 
 import numpy.testing as npt
 import pandas.testing as pdt
 
-from pyam import iiasa
+from pyam import iiasa, META_IDX
 from conftest import IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
 
 if IIASA_UNAVAILABLE:
@@ -19,6 +20,14 @@ CONN_ENV_AVAILABLE = TEST_ENV_USER in os.environ and TEST_ENV_PW in os.environ
 CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
     TEST_ENV_USER, TEST_ENV_PW
 )
+
+META_COLS = ['number', 'string']
+META_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 1, True, 1, 'foo'],
+    ['model_a', 'scen_b', 1, True, 2, np.nan],
+    ['model_a', 'scen_a', 2, False, 1, 'bar'],
+    ['model_b', 'scen_a', 1, True, 3, 'baz']
+], columns=META_IDX+['version', 'is_default']+META_COLS).set_index(META_IDX)
 
 
 def test_unknown_conn():
@@ -61,6 +70,7 @@ def test_conn_creds_dict_raises():
     # connecting with incomplete credentials as dictionary raises an error
     creds = {'username': 'foo'}
     pytest.raises(KeyError, iiasa.Connection, TEST_API, creds=creds)
+
 
 
 def test_variables(conn):
@@ -117,17 +127,43 @@ def test_regions_with_synonyms_response():
             .synonym.isin(['Deutschland', 'DE'])).all()
 
 
-def test_metadata():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn.scenario_list()['model'].values
-    assert 'MESSAGEix-GLOBIOM 1.0' in obs
+def test_meta_columns(conn):
+    # test that connection returns the correct list of meta indicators
+    npt.assert_array_equal(conn.meta_columns, META_COLS)
+
+    # test for deprecated version of the function
+    npt.assert_array_equal(conn.available_metadata(), META_COLS)
+
+@pytest.mark.parametrize("default", [True, False])
+def test_index(conn, default):
+    # test that connection returns the correct index
+    if default:
+        exp = META_DF.loc[META_DF.is_default, ['version']]
+    else:
+        exp = META_DF[['version', 'is_default']]
+
+    pdt.assert_frame_equal(conn.index(default=default), exp, check_dtype=False)
 
 
-def test_available_indicators():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn.available_metadata()
-    assert 'carbon price|2050' in list(obs)
+@pytest.mark.parametrize("default", [True, False])
+def test_meta(conn, default):
+    # test that connection returns the correct meta dataframe
+    if default:
+        exp = META_DF.loc[META_DF.is_default, ['version'] + META_COLS]
+    else:
+        exp = META_DF[['version', 'is_default'] + META_COLS]
 
+    pdt.assert_frame_equal(conn.meta(default=default), exp, check_dtype=False)
+
+    # test for deprecated version of the function
+    pdt.assert_frame_equal(conn.metadata(default=default), exp,
+                           check_dtype=False)
+
+
+def test_query(conn):
+    # test reading timeseries data
+    df = conn.query()
+    print(df)
 
 QUERY_DATA_EXP = {
     "filters": {
