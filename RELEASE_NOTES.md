@@ -10,6 +10,7 @@ a utility function `pyam.plotting.mpl_args_to_meta_cols()`.
 
 ## Individual Updates
 
+- [#412](https://github.com/IAMconsortium/pyam/pull/412) Add building the docs to GitHub Actions CI.
 - [#410](https://github.com/IAMconsortium/pyam/pull/410) Activate tutorial tests on GitHub Actions CI (py3.8).
 - [#409](https://github.com/IAMconsortium/pyam/pull/409) Remove travis and appveyor CI config.
 - [#408](https://github.com/IAMconsortium/pyam/pull/408) Update badges on the docs page and readme.
