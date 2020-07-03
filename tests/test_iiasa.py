@@ -1,11 +1,13 @@
 import os
 import copy
-import logging
 import pytest
+import pandas as pd
+
 import numpy.testing as npt
+import pandas.testing as pdt
 
 from pyam import iiasa
-from conftest import IIASA_UNAVAILABLE
+from conftest import IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
 
 if IIASA_UNAVAILABLE:
     pytest.skip('IIASA database API unavailable', allow_module_level=True)
@@ -18,17 +20,13 @@ CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
     TEST_ENV_USER, TEST_ENV_PW
 )
 
-TEST_API = 'integration-test'
-TEST_API_NAME = 'IXSE_INTEGRATION_TEST'
-
 
 def test_unknown_conn():
     # connecting to an unknown API raises an error
     pytest.raises(ValueError, iiasa.Connection, 'foo')
 
 
-def test_anon_conn():
-    conn = iiasa.Connection(TEST_API)
+def test_anon_conn(conn):
     assert conn.current_connection == TEST_API_NAME
 
 
@@ -62,27 +60,25 @@ def test_conn_bad_creds():
 def test_conn_creds_dict_raises():
     # connecting with incomplete credentials as dictionary raises an error
     creds = {'username': 'foo'}
-    pytest.raises(KeyError, iiasa.Connection, TEST_API, cres=creds)
+    pytest.raises(KeyError, iiasa.Connection, TEST_API, creds=creds)
 
 
-def test_variables():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn.variables().values
-    assert 'Emissions|CO2' in obs
+def test_variables(conn):
+    # check that connection returns the correct variables
+    npt.assert_array_equal(conn.variables(),
+                           ['Primary Energy', 'Primary Energy|Coal'])
 
 
-def test_regions():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn.regions().values
-    assert 'World' in obs
+def test_regions(conn):
+    # check that connection returns the correct regions
+    npt.assert_array_equal(conn.regions(), ['World', 'region_a'])
 
 
-def test_regions_with_synonyms():
-    conn = iiasa.Connection('IXSE_SR15')
+def test_regions_with_synonyms(conn):
     obs = conn.regions(include_synonyms=True)
-    assert 'synonym' in obs.columns
-    assert (obs[obs.region == 'R5ROWO']
-            .synonym == 'Rest of the World (R5)').all()
+    exp = pd.DataFrame([['World', None], ['region_a', 'ISO_a']],
+                       columns=['region', 'synonym'])
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_regions_empty_response():
