@@ -227,6 +227,7 @@ class Connection(object):
 
     @lru_cache()
     def _query_index(self, default=True):
+        # TODO merge this function with `meta()`
         default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}'
         url = '/'.join([self._auth_url, add_url.format(default)])
