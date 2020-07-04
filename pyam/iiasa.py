@@ -494,13 +494,13 @@ class Connection(object):
         # merge meta categorization and quantitative indications
         if meta:
             _meta = self.meta().loc[df.meta.index]
-            for i in _meta.columns if meta is True else meta:
+            for i in _meta.columns if meta is True else meta + ['version']:
                 df.set_meta(_meta[i])
 
         return IamDataFrame(df)
 
 
-def read_iiasa(name, default=True, meta=False, creds=None, base_url=_AUTH_URL,
+def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL,
                **kwargs):
     """Query an IIASA Scenario Explorer database API and return as IamDataFrame
 

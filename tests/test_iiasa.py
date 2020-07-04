@@ -7,7 +7,7 @@ import numpy as np
 import numpy.testing as npt
 import pandas.testing as pdt
 
-from pyam import IamDataFrame, iiasa, META_IDX
+from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
 from conftest import IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
 
@@ -178,7 +178,12 @@ def test_query_year(conn, test_df_year, kwargs):
     for i in ['version'] + META_COLS:
         exp.set_meta(META_DF.iloc[[0, 1]][i])
 
+    # test method via Connection
     df = conn.query(model='model_a', **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+    # test top-level method
+    df = read_iiasa(TEST_API, model='model_a', **kwargs)
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
@@ -194,7 +199,52 @@ def test_query_with_subannual(conn, test_pd_df, kwargs):
     for i in ['version'] + META_COLS:
         exp.set_meta(META_DF.iloc[[0, 1, 3]][i])
 
+    # test method via Connection
     df = conn.query(**kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+    # test top-level method
+    df = read_iiasa(TEST_API, **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+
+@pytest.mark.parametrize("kwargs", [
+    {},
+    dict(variable='Primary Energy'),
+    dict(scenario='scen_a', variable='Primary Energy')
+])
+def test_query_with_meta_arg(conn, test_pd_df, kwargs):
+    # test reading timeseries data (including subannual data)
+    exp = IamDataFrame(test_pd_df, subannual='Year')\
+        .append(MODEL_B_DF, model='model_b', scenario='scen_a', region='World')
+    for i in ['version', 'string']:
+        exp.set_meta(META_DF.iloc[[0, 1, 3]][i])
+
+    # test method via Connection
+    df = conn.query(meta=['string'], **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+    # test top-level method
+    df = read_iiasa(TEST_API, meta=['string'], **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+
+@pytest.mark.parametrize("kwargs", [
+    {},
+    dict(variable='Primary Energy'),
+    dict(scenario='scen_a', variable='Primary Energy')
+])
+def test_query_with_meta_false(conn, test_pd_df, kwargs):
+    # test reading timeseries data (including subannual data)
+    exp = IamDataFrame(test_pd_df, subannual='Year')\
+        .append(MODEL_B_DF, model='model_b', scenario='scen_a', region='World')
+
+    # test method via Connection
+    df = conn.query(meta=False, **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+    # test top-level method
+    df = read_iiasa(TEST_API, meta=False, **kwargs)
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
