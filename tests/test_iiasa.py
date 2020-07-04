@@ -43,6 +43,11 @@ def test_unknown_conn():
     pytest.raises(ValueError, iiasa.Connection, 'foo')
 
 
+def test_valid_connections():
+    # connecting to an unknown API raises an error
+    assert TEST_API in iiasa.Connection().valid_connections
+
+
 def test_anon_conn(conn):
     assert conn.current_connection == TEST_API_NAME
 
