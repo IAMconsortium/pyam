@@ -409,7 +409,7 @@ class Connection(object):
         }
         return data
 
-    def query(self, default=True, **kwargs):
+    def query(self, default=True, meta=True, **kwargs):
         """Query the connected resource for timeseries data (with filters)
 
         Parameters
@@ -418,6 +418,9 @@ class Connection(object):
             Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
+        meta : bool or list, optional
+            If :obj:`True`, merge all meta columns indicators
+            (or subset if list is given).
         kwargs
             Available keyword arguments include
 
@@ -441,52 +444,64 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
-        # TODO: API returns non-default versions
+        # TODO: API returns timeseries data for non-default versions
         if default is not True:
             msg = 'Querying for non-default scenarios is not (yet) supported'
             raise ValueError(msg)
 
+        # retrieve data
         headers = {
             'Authorization': 'Bearer {}'.format(self._token),
             'Content-Type': 'application/json',
         }
-        data = json.dumps(self._query_post_data(**kwargs))
+        _args = json.dumps(self._query_post_data(**kwargs))
         url = '/'.join([self._auth_url, 'runs/bulk/ts'])
-        logger.debug(f'Querying timeseries data from {url} with filter {data}')
-        r = requests.post(url, headers=headers, data=data)
+        logger.debug(f'Query timeseries data from {url} with data {_args}')
+        r = requests.post(url, headers=headers, data=_args)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         dtype = dict(model=str, scenario=str, variable=str, unit=str,
                      region=str, year=int, value=float, version=int)
-        df = pd.read_json(r.content, orient='records', dtype=dtype)
-        logger.debug(f'Response is {len(r.content)} bytes, {len(df)} records')
+        data = pd.read_json(r.content, orient='records', dtype=dtype)
+        logger.debug(f'Response: {len(r.content)} bytes, {len(data)} records')
         cols = IAMC_IDX + ['year', 'value', 'subannual', 'version']
         # keep only known columns or init empty df
-        df = pd.DataFrame(data=df, columns=cols)
+        data = pd.DataFrame(data=data, columns=cols)
 
         # check if timeseries data has subannual disaggregation, drop if not
-        if 'subannual' in df:
-            timeslices = df.subannual.dropna().unique()
+        if 'subannual' in data:
+            timeslices = data.subannual.dropna().unique()
             if all([i in [-1, 'Year'] for i in timeslices]):
-                df.drop(columns='subannual', inplace=True)
+                data.drop(columns='subannual', inplace=True)
 
         # check if there are multiple version for any model/scenario
         lst = (
-            df[META_IDX + ['version']].drop_duplicates()
+            data[META_IDX + ['version']].drop_duplicates()
             .groupby(META_IDX).count().version
         )
 
         # checking if there are multiple versions
         # for every model/scenario combination
+        # TODO this is probably not necessary
         if len(lst) > 1 and max(lst) > 1:
             raise ValueError('multiple versions for {}'.format(
                 lst[lst > 1].index.to_list()))
-        df.drop(columns='version', inplace=True)
+        data.drop(columns='version', inplace=True)
+
+        # cast to IamDataFrame
+        df = IamDataFrame(data)
+
+        # merge meta categorization and quantitative indications
+        if meta:
+            _meta = self.meta().loc[df.meta.index]
+            for i in _meta.columns if meta is True else meta:
+                df.set_meta(_meta[i])
 
         return IamDataFrame(df)
 
 
-def read_iiasa(name, meta=False, creds=None, base_url=_AUTH_URL, **kwargs):
+def read_iiasa(name, default=True, meta=False, creds=None, base_url=_AUTH_URL,
+               **kwargs):
     """Query an IIASA Scenario Explorer database API and return as IamDataFrame
 
     Parameters
@@ -494,7 +509,11 @@ def read_iiasa(name, meta=False, creds=None, base_url=_AUTH_URL, **kwargs):
     name : str
         A valid name of an IIASA scenario explorer instance,
         see :attr:`pyam.iiasa.Connection.valid_connections`
-    meta : bool or list of strings
+    default : bool, optional
+        Return *only* the default version of each scenario.
+        Any (`model`, `scenario`) without a default version is omitted.
+        If :obj:`False`, return all versions.
+    meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
     creds : dict
@@ -505,20 +524,5 @@ def read_iiasa(name, meta=False, creds=None, base_url=_AUTH_URL, **kwargs):
     kwargs
         Arguments for :meth:`pyam.iiasa.Connection.query`
     """
-    conn = Connection(name, creds, base_url)
-    # data
-    df = IamDataFrame(conn.query(**kwargs))
-    # meta: categorization and quantitative indications
-    if meta:
-        mdf = conn.metadata()
-        # only data for models/scenarios in df
-        mdf = mdf[mdf.model.isin(df['model'].unique()) &
-                  mdf.scenario.isin(df['scenario'].unique())]
-        # get subset of data if meta is a list
-        if islistable(meta):
-            mdf = mdf[['model', 'scenario'] + meta]
-        mdf = mdf.set_index(['model', 'scenario'])
-        # we have to loop here because `set_meta()` can only take series
-        for col in mdf:
-            df.set_meta(mdf[col])
-    return df
+    return Connection(name, creds, base_url)\
+        .query(default=default, meta=meta, **kwargs)

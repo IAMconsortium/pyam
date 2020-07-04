@@ -174,8 +174,12 @@ def test_meta(conn, default):
 ])
 def test_query_year(conn, test_df_year, kwargs):
     # test reading timeseries data (`model_a` has only yearly data)
+    exp = test_df_year.copy()
+    for i in ['version'] + META_COLS:
+        exp.set_meta(META_DF.iloc[[0, 1]][i])
+
     df = conn.query(model='model_a', **kwargs)
-    assert_iamframe_equal(df, test_df_year.filter(**kwargs))
+    assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
 @pytest.mark.parametrize("kwargs", [
@@ -187,6 +191,9 @@ def test_query_with_subannual(conn, test_pd_df, kwargs):
     # test reading timeseries data (including subannual data)
     exp = IamDataFrame(test_pd_df, subannual='Year')\
         .append(MODEL_B_DF, model='model_b', scenario='scen_a', region='World')
+    for i in ['version'] + META_COLS:
+        exp.set_meta(META_DF.iloc[[0, 1, 3]][i])
+
     df = conn.query(**kwargs)
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
