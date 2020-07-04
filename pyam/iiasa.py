@@ -409,15 +409,22 @@ class Connection(object):
         }
         return data
 
-    def query(self, **kwargs):
+    def query(self, default=True, **kwargs):
         """Query the connected resource for timeseries data (with filters)
 
-        Available keyword arguments include
+        Parameters
+        ----------
+        default : bool, optional
+            Return *only* the default version of each scenario.
+            Any (`model`, `scenario`) without a default version is omitted.
+            If :obj:`False`, return all versions.
+        kwargs
+            Available keyword arguments include
 
-        - model
-        - scenario
-        - region
-        - variable
+            - model
+            - scenario
+            - region
+            - variable
 
         Returns
         -------
@@ -425,16 +432,19 @@ class Connection(object):
 
         Examples
         --------
-
         You can read from a :class:`pyam.iiasa.Connection` instance using
         keyword arguments similar to filtering an :class:`IamDataFrame`:
 
         .. code-block:: python
 
-            Connection.query(model='MESSAGE', scenario='SSP2*',
+            Connection.query(model='MESSAGE*', scenario='SSP2*',
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
+        if default is not True:
+            msg = 'Querying for non-default scenarios is not (yet) supported'
+            raise ValueError(msg)
+
         headers = {
             'Authorization': 'Bearer {}'.format(self._token),
             'Content-Type': 'application/json',
