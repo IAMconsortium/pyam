@@ -11,7 +11,7 @@ import pandas as pd
 
 from collections.abc import Mapping
 from pyam.core import IamDataFrame
-from pyam.utils import META_IDX, islistable, isstr, pattern_match
+from pyam.utils import META_IDX, IAMC_IDX, islistable, isstr, pattern_match
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -352,7 +352,8 @@ class Connection(object):
 
     def _query_post_data(self, **kwargs):
         def _get_kwarg(k):
-            x = kwargs.pop(k, [])
+            # TODO refactor API to return all models if model-list is empty
+            x = kwargs.pop(k, '*' if k == 'model' else [])
             return [x] if isstr(x) else x
 
         m_pattern = _get_kwarg('model')
@@ -440,28 +441,22 @@ class Connection(object):
         }
         data = json.dumps(self._query_post_data(**kwargs))
         url = '/'.join([self._auth_url, 'runs/bulk/ts'])
-        logger.debug('Querying timeseries data '
-                       'from {} with filter {}'.format(url, data))
+        logger.debug(f'Querying timeseries data from {url} with filter {data}')
         r = requests.post(url, headers=headers, data=data)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         dtype = dict(model=str, scenario=str, variable=str, unit=str,
                      region=str, year=int, value=float, version=int)
         df = pd.read_json(r.content, orient='records', dtype=dtype)
-        logger.debug('Response size is {0} bytes, '
-                       '{1} records'.format(len(r.content), len(df)))
-        columns = ['model', 'scenario', 'variable', 'region', 'unit',
-                   'year', 'value', 'time', 'version']
+        logger.debug(f'Response is {len(r.content)} bytes, {len(df)} records')
+        cols = IAMC_IDX + ['year', 'value', 'subannual', 'version']
         # keep only known columns or init empty df
-        df = (
-            pd.DataFrame(data=df, columns=columns)
-            # TODO: refactor API to directly return column as 'subannual'
-            .rename(columns={'time': 'subannual'})
-        )
+        df = pd.DataFrame(data=df, columns=cols)
 
         # check if timeseries data has subannual disaggregation, drop if not
         if 'subannual' in df:
-            if all([i in [-1, np.nan, 'Year'] for i in df.subannual.unique()]):
+            timeslices = df.subannual.dropna().unique()
+            if all([i in [-1, 'Year'] for i in timeslices]):
                 df.drop(columns='subannual', inplace=True)
 
         # check if there are multiple version for any model/scenario
@@ -469,6 +464,7 @@ class Connection(object):
             df[META_IDX + ['version']].drop_duplicates()
             .groupby(META_IDX).count().version
         )
+
         # checking if there are multiple versions
         # for every model/scenario combination
         if len(lst) > 1 and max(lst) > 1:
@@ -476,7 +472,7 @@ class Connection(object):
                 lst[lst > 1].index.to_list()))
         df.drop(columns='version', inplace=True)
 
-        return df
+        return IamDataFrame(df)
 
 
 def read_iiasa(name, meta=False, creds=None, base_url=_AUTH_URL, **kwargs):

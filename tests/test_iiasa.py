@@ -8,6 +8,7 @@ import numpy.testing as npt
 import pandas.testing as pdt
 
 from pyam import iiasa, META_IDX
+from pyam.testing import assert_iamframe_equal
 from conftest import IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
 
 if IIASA_UNAVAILABLE:
@@ -160,98 +161,12 @@ def test_meta(conn, default):
                            check_dtype=False)
 
 
-def test_query(conn):
+def test_query(conn, test_df_year):
     # test reading timeseries data
-    df = conn.query()
-    print(df)
-
-QUERY_DATA_EXP = {
-    "filters": {
-        "regions": [],
-        "variables": [],
-        "runs": [],
-        "years": [],
-        "units": [],
-        "timeslices": []
-    }
-}
+    df = conn.query(model='model_a')
+    assert_iamframe_equal(df, test_df_year)
 
 
-def test_query_data_model_scen():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C')
-    exp = copy.deepcopy(QUERY_DATA_EXP)
-    exp['filters']['runs'] = [2]
-    assert obs == exp
 
 
-def test_query_data_region():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C',
-                                region='*World*')
-    exp = copy.deepcopy(QUERY_DATA_EXP)
-    exp['filters']['runs'] = [2]
-    exp['filters']['regions'] = ['World']
-    assert obs == exp
 
-
-def test_query_data_variables():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C',
-                                variable='Emissions|CO2*')
-    exp = copy.deepcopy(QUERY_DATA_EXP)
-    exp['filters']['runs'] = [2]
-    exp['filters']['variables'] = [
-        'Emissions|CO2', 'Emissions|CO2|AFOLU', 'Emissions|CO2|Energy',
-        'Emissions|CO2|Energy and Industrial Processes',
-        'Emissions|CO2|Energy|Demand', 'Emissions|CO2|Energy|Demand|AFOFI',
-        'Emissions|CO2|Energy|Demand|Industry',
-        'Emissions|CO2|Energy|Demand|Other Sector',
-        'Emissions|CO2|Energy|Demand|Residential and Commercial',
-        'Emissions|CO2|Energy|Demand|Transportation',
-        'Emissions|CO2|Energy|Supply',
-        'Emissions|CO2|Energy|Supply|Electricity',
-        'Emissions|CO2|Energy|Supply|Gases',
-        'Emissions|CO2|Energy|Supply|Heat',
-        'Emissions|CO2|Energy|Supply|Liquids',
-        'Emissions|CO2|Energy|Supply|Other Sector',
-        'Emissions|CO2|Energy|Supply|Solids',
-        'Emissions|CO2|Industrial Processes', 'Emissions|CO2|Other'
-    ]
-    for k in obs['filters']:
-        npt.assert_array_equal(obs['filters'][k], exp['filters'][k])
-
-
-def test_query_IXSE_SR15():
-    df = iiasa.read_iiasa('IXSE_SR15',
-                          model='AIM*',
-                          scenario='ADVANCE_2020_Med2C',
-                          variable='Emissions|CO2',
-                          region='World',
-                          )
-    assert len(df) == 20
-
-
-def test_query_IXSE_AR6():
-    with pytest.raises(RuntimeError) as excinfo:
-        variable = 'Emissions|CO2|Energy|Demand|Transportation'
-        creds = dict(username='mahamba', password='verysecret')
-        iiasa.read_iiasa('IXSE_AR6',
-                         scenario='ADVANCE_2020_WB2C',
-                         model='AIM/CGE 2.0',
-                         region='World',
-                         variable=variable,
-                         creds=creds)
-    assert str(excinfo.value).startswith('Login failed for user: mahamba')
-
-
-def test_query_IXSE_SR15_with_metadata():
-    df = iiasa.read_iiasa('IXSE_SR15',
-                          model='MESSAGEix*',
-                          variable=['Emissions|CO2', 'Primary Energy|Coal'],
-                          region='World',
-                          meta=['carbon price|2100 (NPV)', 'category'],
-                          )
-    assert len(df) == 168
-    assert len(df.data) == 168
-    assert len(df.meta) == 7
