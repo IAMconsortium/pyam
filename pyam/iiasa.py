@@ -441,6 +441,7 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
+        # TODO: API returns non-default versions
         if default is not True:
             msg = 'Querying for non-default scenarios is not (yet) supported'
             raise ValueError(msg)

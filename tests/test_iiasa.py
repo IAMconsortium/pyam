@@ -7,7 +7,7 @@ import numpy as np
 import numpy.testing as npt
 import pandas.testing as pdt
 
-from pyam import iiasa, META_IDX
+from pyam import IamDataFrame, iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
 from conftest import IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
 
@@ -29,6 +29,13 @@ META_DF = pd.DataFrame([
     ['model_a', 'scen_a', 2, False, 1, 'bar'],
     ['model_b', 'scen_a', 1, True, 3, 'baz']
 ], columns=META_IDX+['version', 'is_default']+META_COLS).set_index(META_IDX)
+
+MODEL_B_DF = pd.DataFrame([
+    ['Primary Energy', 'EJ/yr', 'Summer', 1, 3],
+    ['Primary Energy', 'EJ/yr', 'Year', 3, 8],
+    ['Primary Energy|Coal', 'EJ/yr', 'Summer', 0.4,	2],
+    ['Primary Energy|Coal', 'EJ/yr', 'Year', 0.9, 5]
+], columns=['variable', 'unit', 'subannual', 2005, 2010])
 
 
 def test_unknown_conn():
@@ -160,13 +167,30 @@ def test_meta(conn, default):
     pdt.assert_frame_equal(conn.metadata(default=default), exp,
                            check_dtype=False)
 
+@pytest.mark.parametrize("kwargs", [
+    {},
+    dict(variable='Primary Energy'),
+    dict(scenario='scen_a', variable='Primary Energy')
+])
+def test_query_year(conn, test_df_year, kwargs):
+    # test reading timeseries data (`model_a` has only yearly data)
+    df = conn.query(model='model_a', **kwargs)
+    assert_iamframe_equal(df, test_df_year.filter(**kwargs))
 
-def test_query(conn, test_df_year):
-    # test reading timeseries data
-    df = conn.query(model='model_a')
-    assert_iamframe_equal(df, test_df_year)
+
+@pytest.mark.parametrize("kwargs", [
+    {},
+    dict(variable='Primary Energy'),
+    dict(scenario='scen_a', variable='Primary Energy')
+])
+def test_query_with_subannual(conn, test_pd_df, kwargs):
+    # test reading timeseries data (including subannual data)
+    exp = IamDataFrame(test_pd_df, subannual='Year')\
+        .append(MODEL_B_DF, model='model_b', scenario='scen_a', region='World')
+    df = conn.query(**kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
-
-
-
+def test_query_non_default(conn):
+    # querying for non-default scenario data raises an error
+    pytest.raises(ValueError, conn.query, default=False)
