@@ -2,6 +2,16 @@
 
 ## API changes
 
+PR [#413](https://github.com/IAMconsortium/pyam/pull/413) changed the
+return type of `pyam.read_iiasa()` and `pyam.iiasa.Connection.query()`
+to an `IamDataFrame` (instead of a `pandas.DataFrame`)
+and loads meta-indicators by default.
+
+Also, the following functions were deprecated for package consistency: 
+- `index()` replaces `scenario_list()` for an overview of all scenarios 
+- `meta_columns` (attribute) replaces `available_metadata()`
+- `meta()` replaces `metadata()`
+
 PR [#402](https://github.com/IAMconsortium/pyam/pull/402) changed the default
 behaviour of `as_pandas()` to include all columns of `meta` in the returned
 dataframe, or only merge columns given by the renamed argument `meta_cols`. 
@@ -10,6 +20,7 @@ a utility function `pyam.plotting.mpl_args_to_meta_cols()`.
 
 ## Individual Updates
 
+- [#413](https://github.com/IAMconsortium/pyam/pull/413) Refactor IIASA-connection-API and rework all related tests.
 - [#412](https://github.com/IAMconsortium/pyam/pull/412) Add building the docs to GitHub Actions CI.
 - [#410](https://github.com/IAMconsortium/pyam/pull/410) Activate tutorial tests on GitHub Actions CI (py3.8).
 - [#409](https://github.com/IAMconsortium/pyam/pull/409) Remove travis and appveyor CI config.
