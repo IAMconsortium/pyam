@@ -86,6 +86,7 @@ def test_conn_creds_dict_raises():
     pytest.raises(KeyError, iiasa.Connection, TEST_API, creds=creds)
 
 
+
 def test_variables(conn):
     # check that connection returns the correct variables
     npt.assert_array_equal(conn.variables(),
