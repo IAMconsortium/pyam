@@ -22,18 +22,19 @@ CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
     TEST_ENV_USER, TEST_ENV_PW
 )
 
+VERSION_COLS = ['version', 'is_default']
 META_COLS = ['number', 'string']
 META_DF = pd.DataFrame([
     ['model_a', 'scen_a', 1, True, 1, 'foo'],
     ['model_a', 'scen_b', 1, True, 2, np.nan],
     ['model_a', 'scen_a', 2, False, 1, 'bar'],
     ['model_b', 'scen_a', 1, True, 3, 'baz']
-], columns=META_IDX+['version', 'is_default']+META_COLS).set_index(META_IDX)
+], columns=META_IDX + VERSION_COLS + META_COLS).set_index(META_IDX)
 
 MODEL_B_DF = pd.DataFrame([
     ['Primary Energy', 'EJ/yr', 'Summer', 1, 3],
     ['Primary Energy', 'EJ/yr', 'Year', 3, 8],
-    ['Primary Energy|Coal', 'EJ/yr', 'Summer', 0.4,	2],
+    ['Primary Energy|Coal', 'EJ/yr', 'Summer', 0.4, 2],
     ['Primary Energy|Coal', 'EJ/yr', 'Year', 0.9, 5]
 ], columns=['variable', 'unit', 'subannual', 2005, 2010])
 
@@ -83,7 +84,6 @@ def test_conn_creds_dict_raises():
     # connecting with incomplete credentials as dictionary raises an error
     creds = {'username': 'foo'}
     pytest.raises(KeyError, iiasa.Connection, TEST_API, creds=creds)
-
 
 
 def test_variables(conn):
@@ -147,13 +147,14 @@ def test_meta_columns(conn):
     # test for deprecated version of the function
     npt.assert_array_equal(conn.available_metadata(), META_COLS)
 
+
 @pytest.mark.parametrize("default", [True, False])
 def test_index(conn, default):
     # test that connection returns the correct index
     if default:
         exp = META_DF.loc[META_DF.is_default, ['version']]
     else:
-        exp = META_DF[['version', 'is_default']]
+        exp = META_DF[VERSION_COLS]
 
     pdt.assert_frame_equal(conn.index(default=default), exp, check_dtype=False)
 
@@ -164,13 +165,14 @@ def test_meta(conn, default):
     if default:
         exp = META_DF.loc[META_DF.is_default, ['version'] + META_COLS]
     else:
-        exp = META_DF[['version', 'is_default'] + META_COLS]
+        exp = META_DF[VERSION_COLS + META_COLS]
 
     pdt.assert_frame_equal(conn.meta(default=default), exp, check_dtype=False)
 
     # test for deprecated version of the function
     pdt.assert_frame_equal(conn.metadata(default=default), exp,
                            check_dtype=False)
+
 
 @pytest.mark.parametrize("kwargs", [
     {},

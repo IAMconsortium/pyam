@@ -11,7 +11,7 @@ import pandas as pd
 
 from collections.abc import Mapping
 from pyam.core import IamDataFrame
-from pyam.utils import META_IDX, IAMC_IDX, islistable, isstr, pattern_match
+from pyam.utils import META_IDX, IAMC_IDX, isstr, pattern_match
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -277,7 +277,7 @@ class Connection(object):
 
         def extract(row):
             return (
-                pd.concat([row[META_IDX+cols],
+                pd.concat([row[META_IDX + cols],
                            pd.Series(row.metadata)])
                 .to_frame()
                 .T
