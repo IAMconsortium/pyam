@@ -6,6 +6,8 @@ from pyam.logging import adjust_log_level
 from pyam.utils import (
     islistable,
     isstr,
+    find_depth,
+    reduce_hierarchy,
     KNOWN_FUNCS,
     META_IDX,
 )
@@ -49,6 +51,41 @@ def _aggregate(df, variable, components=None, method=np.sum):
     _df = df.data[df._apply_filters(variable=mapping.keys())].copy()
     _df['variable'].replace(mapping, inplace=True)
     return _group_and_agg(_df, [], method)
+
+
+def _aggregate_recursive(df, variable, method=np.sum):
+    """Recursive aggregation along the variable tree"""
+    _df_aggregated = None
+    _df = df.copy()
+
+    # iterate over variables to find all subcategories to be aggregated
+    sub_variables = []
+    for d in reversed(range(1, max(find_depth(df.data.variable)) + 1)):
+        depth = find_depth(df.data.variable)
+        var_list = (
+            df.data.variable[[i == d for i in depth]]
+            .unique()
+        )
+        vars_up = pd.Series(
+            [reduce_hierarchy(i, -1) for i in var_list]).unique()
+
+        if [i for i, entr in enumerate(vars_up) if entr.startswith(variable)]:
+            for v in vars_up:
+                sub_variables.append(v)
+
+    sub_variables = reversed(sorted(set(sub_variables)))
+
+    # iterate over subcategories (bottom-up) and perform aggregation
+    for entry in sub_variables:
+        _df.aggregate(variable=entry, append=True)
+        _df_temp = _df.aggregate(variable=entry, append=False)
+
+        if _df_aggregated is None:
+            _df_aggregated = _df_temp.copy()
+        else:
+            _df_aggregated.append(_df_temp, inplace=True)
+
+    return _df_aggregated.data
 
 
 def _aggregate_region(df, variable, region, subregions=None, components=False,

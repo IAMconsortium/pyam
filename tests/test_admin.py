@@ -7,7 +7,7 @@ from conftest import IIASA_UNAVAILABLE
 
 def test_config(capsys):
     modules = {}
-    for m in sys.modules.values():
+    for m in list(sys.modules.values()):
         if m:
             version = getattr(m, '__version__', None)
             if version:
