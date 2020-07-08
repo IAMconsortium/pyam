@@ -18,6 +18,9 @@ try:
 except SSLError:
     IIASA_UNAVAILABLE = True
 
+TEST_API = 'integration-test'
+TEST_API_NAME = 'IXSE_INTEGRATION_TEST'
+
 
 here = os.path.dirname(os.path.realpath(__file__))
 IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
@@ -181,3 +184,9 @@ def plot_df():
 def plot_stack_plot_df():
     df = IamDataFrame(TEST_STACKPLOT_DF)
     yield df
+
+
+@pytest.fixture(scope="session")
+def conn():
+    if not IIASA_UNAVAILABLE:
+        return iiasa.Connection(TEST_API)

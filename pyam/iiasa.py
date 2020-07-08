@@ -11,14 +11,14 @@ import pandas as pd
 
 from collections.abc import Mapping
 from pyam.core import IamDataFrame
-from pyam.utils import META_IDX, islistable, isstr, pattern_match
+from pyam.utils import META_IDX, IAMC_IDX, isstr, pattern_match
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
-# quiet this fool
+# set requests-logger to WARNING only
 logging.getLogger('requests').setLevel(logging.WARNING)
 
-_BASE_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
+_AUTH_URL = 'https://db1.ene.iiasa.ac.at/EneAuth/config/v1'
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
@@ -83,9 +83,9 @@ def _get_token(creds, base_url):
     if plaintextcreds:
         logger.warning('You provided credentials in plain text. DO NOT save '
                        'these in a repository or otherwise post them online')
-        deprecation_warning('Providing credentials in plain text',
-                            'Please use `pyam.iiasa.set_config(<user>, <pwd>)`'
-                            ' to store your credentials in a file!')
+        deprecation_warning('Please use `pyam.iiasa.set_config(<user>, <pwd>)`'
+                            ' to store your credentials in a file!',
+                            'Providing credentials in plain text')
 
     # get user token
     headers = {'Accept': 'application/json',
@@ -98,13 +98,14 @@ def _get_token(creds, base_url):
 
 
 class Connection(object):
-    """A class to facilitate querying an IIASA scenario explorer database
+    """A class to facilitate querying an IIASA Scenario Explorer database API
 
     Parameters
     ----------
     name : str, optional
-        A valid database name. For available options, see
-        valid_connections().
+        The name of a database API.
+        See :attr:`pyam.iiasa.Connection.valid_connections` for a list
+        of available APIs.
     creds : str, :class:`pathlib.Path`, list-like, or dict, optional
         By default, this function will (try to) read user credentials which
         were set using :meth:`pyam.iiasa.set_config(<user>, <password>)`.
@@ -119,9 +120,9 @@ class Connection(object):
     for backwards compatibility. However, this option is NOT RECOMMENDED
     and will be deprecated in future releases of pyam.
     """
-    def __init__(self, name=None, creds=None, base_url=_BASE_URL):
-        self._base_url = base_url
-        self._token, self._user = _get_token(creds, base_url=self._base_url)
+    def __init__(self, name=None, creds=None, auth_url=_AUTH_URL):
+        self._auth_url = auth_url
+        self._token, self._user = _get_token(creds, base_url=self._auth_url)
 
         # connect if provided a name
         self._connected = None
@@ -131,12 +132,12 @@ class Connection(object):
         if self._user:
             logger.info(f'You are connected as user `{self._user}`')
         else:
-            logger.info(f'You are connected as an anonymous user')
+            logger.info('You are connected as an anonymous user')
 
     @property
     @lru_cache()
     def _connection_map(self):
-        url = '/'.join([self._base_url, 'applications'])
+        url = '/'.join([self._auth_url, 'applications'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get valid connection list')
@@ -164,14 +165,11 @@ class Connection(object):
     @property
     @lru_cache()
     def valid_connections(self):
-        """ Show a list of valid connection names (application aliases or
-            names when alias is not available or duplicated)
-
-        :return: list of str
-        """
+        """Return available resources (database API connections)"""
         return list(self._connection_map.keys())
 
     def connect(self, name):
+        """Connect to a specific resource (database API)"""
         if name in self._connection_map:
             name = self._connection_map[name]
 
@@ -186,104 +184,129 @@ class Connection(object):
             {} not recognized as a valid connection name.
             Choose from one of the supported connections for your user: {}.
             """
-            raise ValueError(msg.format(name, valid))
+            raise ValueError(msg.format(name, self._connection_map.keys()))
 
-        url = '/'.join([self._base_url, 'applications', name, 'config'])
+        url = '/'.join([self._auth_url, 'applications', name, 'config'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r, 'Could not get application information')
         response = r.json()
         idxs = {x['path']: i for i, x in enumerate(response)}
 
-        self._base_url = response[idxs['baseUrl']]['value']
-        # TODO: request the full citation to be added to this metadata instead
-        #       of linking to the about page
-        about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
-        logger.info(_CITE_MSG.format(name, about))
+        self._auth_url = response[idxs['baseUrl']]['value']
+        # TODO: proper citation (as metadata) instead of link to the about page
+        if 'uiUrl' in idxs:
+            about = '/'.join([response[idxs['uiUrl']]['value'], '#', 'about'])
+            logger.info(_CITE_MSG.format(name, about))
 
+        # TODO: use API "nice-name"
         self._connected = name
 
     @property
     def current_connection(self):
+        """Currently connected resource (database API connection)"""
         return self._connected
 
-    @lru_cache()
-    def scenario_list(self, default=True):
-        """
-        Metadata regarding the list of scenarios (e.g., models, scenarios,
-        run identifier, etc.) in the connected data source.
+    def index(self, default=True):
+        """Return the index of models and scenarios in the connected resource
 
         Parameters
         ----------
         default : bool, optional
-            Return *only* the default version of each Scenario.
-            Any (`model`, `scenario`) without a default version is omitted.
-            If :obj:`False`, return all versions.
+            If `True`, return *only* the default version of a model/scenario.
+            Any model/scenario without a default version is omitted.
+            If `False`, returns all versions.
         """
-        default = 'true' if default else 'false'
-        add_url = 'runs?getOnlyDefaultRuns={}'
-        url = '/'.join([self._base_url, add_url.format(default)])
-        headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        r = requests.get(url, headers=headers)
-        _check_response(r, 'Could not get scenario list')
-        return pd.read_json(r.content, orient='records')
+        cols = ['version'] if default else ['version', 'is_default']
+        return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
+
+    def scenario_list(self, default=True):
+        """Deprecated, use :meth:`Connection.index`"""
+        deprecation_warning('Use `Connection.index()` instead.')
+        return self._query_index(default)
 
     @lru_cache()
-    def available_metadata(self):
-        """List all available meta indicators in the instance"""
-        url = '/'.join([self._base_url, 'metadata/types'])
+    def _query_index(self, default=True):
+        # TODO merge this function with `meta()`
+        default = 'true' if default else 'false'
+        add_url = 'runs?getOnlyDefaultRuns={}'
+        url = '/'.join([self._auth_url, add_url.format(default)])
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
+        r = requests.get(url, headers=headers)
+        _check_response(r, 'Could not retrieve the resource index')
+        return pd.read_json(r.content, orient='records')
+
+    @property
+    @lru_cache()
+    def meta_columns(self):
+        """Return the list of meta indicators in the connected resource"""
+        url = '/'.join([self._auth_url, 'metadata/types'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
         return pd.read_json(r.content, orient='records')['name']
 
+    def available_metadata(self):
+        """Deprecated, use :attr:`Connection.meta_columns`"""
+        # TODO: deprecate/remove this function in release >=0.8
+        deprecation_warning('Use `Connection.meta_columns` instead.')
+        return self.meta_columns
+
     @lru_cache()
-    def metadata(self, default=True):
-        """All meta categories and indicators of scenarios
+    def meta(self, default=True):
+        """Return categories and indicators (meta) of scenarios
 
         Parameters
         ----------
         default : bool, optional
-            Return *only* the default version of each Scenario.
+            Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
-        # at present this reads in all data for all scenarios, it could be sped
-        # up in the future to try to query a subset
-        default = 'true' if default else 'false'
+        # TODO: at present this reads in all data for all scenarios,
+        #  it could be sped up in the future to try to query a subset
+        _default = 'true' if default else 'false'
         add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
-        url = '/'.join([self._base_url, add_url.format(default)])
+        url = '/'.join([self._auth_url, add_url.format(_default)])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
         df = pd.read_json(r.content, orient='records')
 
+        cols = ['version'] if default else ['version', 'is_default']
+
         def extract(row):
             return (
-                pd.concat([row[['model', 'scenario']],
+                pd.concat([row[META_IDX + cols],
                            pd.Series(row.metadata)])
                 .to_frame()
                 .T
                 .set_index(['model', 'scenario'])
             )
 
-        return pd.concat([extract(row) for idx, row in df.iterrows()],
-                         sort=False).reset_index()
+        return pd.concat([extract(row) for i, row in df.iterrows()],
+                         sort=False)
+
+    def metadata(self, default=True):
+        """Deprecated, use :meth:`Connection.meta`"""
+        # TODO: deprecate/remove this function in release >=0.8
+        deprecation_warning('Use `Connection.meta()` instead.')
+        return self.meta(default=default)
 
     def models(self):
-        """All models in the connected data source"""
-        return pd.Series(self.scenario_list()['model'].unique(),
+        """List all models in the connected resource"""
+        return pd.Series(self._query_index()['model'].unique(),
                          name='model')
 
     def scenarios(self):
-        """All scenarios in the connected data source"""
-        return pd.Series(self.scenario_list()['scenario'].unique(),
+        """List all scenarios in the connected resource"""
+        return pd.Series(self._query_index()['scenario'].unique(),
                          name='scenario')
 
     @lru_cache()
     def variables(self):
-        """All variables in the connected data source"""
-        url = '/'.join([self._base_url, 'ts'])
+        """List all variables in the connected resource"""
+        url = '/'.join([self._auth_url, 'ts'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
@@ -292,7 +315,7 @@ class Connection(object):
 
     @lru_cache()
     def regions(self, include_synonyms=False):
-        """All regions in the connected data source
+        """List all regions in the connected resource
 
         Parameters
         ----------
@@ -301,7 +324,7 @@ class Connection(object):
             (possibly leading to duplicate region names for
             regions with more than one synonym)
         """
-        url = '/'.join([self._base_url, 'nodes?hierarchy=%2A'])
+        url = '/'.join([self._auth_url, 'nodes?hierarchy=%2A'])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         params = {'includeSynonyms': include_synonyms}
         r = requests.get(url, headers=headers, params=params)
@@ -329,7 +352,8 @@ class Connection(object):
 
     def _query_post_data(self, **kwargs):
         def _get_kwarg(k):
-            x = kwargs.pop(k, [])
+            # TODO refactor API to return all models if model-list is empty
+            x = kwargs.pop(k, '*' if k == 'model' else [])
             return [x] if isstr(x) else x
 
         m_pattern = _get_kwarg('model')
@@ -348,7 +372,7 @@ class Connection(object):
             return data[matches].unique()
 
         # get unique run ids
-        meta = self.scenario_list()
+        meta = self._query_index()
         meta = meta[meta.is_default]
         models = _match(meta['model'], m_pattern)
         scenarios = _match(meta['scenario'], s_pattern)
@@ -385,81 +409,112 @@ class Connection(object):
         }
         return data
 
-    def query(self, **kwargs):
-        """Query the data source with filters
+    def query(self, default=True, meta=True, **kwargs):
+        """Query the connected resource for timeseries data (with filters)
 
-        Available keyword arguments include
+        Parameters
+        ----------
+        default : bool, optional
+            Return *only* the default version of each scenario.
+            Any (`model`, `scenario`) without a default version is omitted.
+            If :obj:`False`, return all versions.
+        meta : bool or list, optional
+            If :obj:`True`, merge all meta columns indicators
+            (or subset if list is given).
+        kwargs
+            Available keyword arguments include
 
-        - model
-        - scenario
-        - region
-        - variable
+            - model
+            - scenario
+            - region
+            - variable
+
+        Returns
+        -------
+        IamDataFrame
 
         Examples
         --------
-
         You can read from a :class:`pyam.iiasa.Connection` instance using
         keyword arguments similar to filtering an :class:`IamDataFrame`:
 
         .. code-block:: python
 
-            Connection.query(model='MESSAGE', scenario='SSP2*',
+            Connection.query(model='MESSAGE*', scenario='SSP2*',
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
+        # TODO: API returns timeseries data for non-default versions
+        if default is not True:
+            msg = 'Querying for non-default scenarios is not (yet) supported'
+            raise ValueError(msg)
+
+        # retrieve data
         headers = {
             'Authorization': 'Bearer {}'.format(self._token),
             'Content-Type': 'application/json',
         }
-        data = json.dumps(self._query_post_data(**kwargs))
-        url = '/'.join([self._base_url, 'runs/bulk/ts'])
-        logger.debug('Querying timeseries data '
-                       'from {} with filter {}'.format(url, data))
-        r = requests.post(url, headers=headers, data=data)
+        _args = json.dumps(self._query_post_data(**kwargs))
+        url = '/'.join([self._auth_url, 'runs/bulk/ts'])
+        logger.debug(f'Query timeseries data from {url} with data {_args}')
+        r = requests.post(url, headers=headers, data=_args)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
         dtype = dict(model=str, scenario=str, variable=str, unit=str,
                      region=str, year=int, value=float, version=int)
-        df = pd.read_json(r.content, orient='records', dtype=dtype)
-        logger.debug('Response size is {0} bytes, '
-                       '{1} records'.format(len(r.content), len(df)))
-        columns = ['model', 'scenario', 'variable', 'unit',
-                   'region', 'year', 'value', 'time', 'meta',
-                   'version']
+        data = pd.read_json(r.content, orient='records', dtype=dtype)
+        logger.debug(f'Response: {len(r.content)} bytes, {len(data)} records')
+        cols = IAMC_IDX + ['year', 'value', 'subannual', 'version']
         # keep only known columns or init empty df
-        df = pd.DataFrame(data=df, columns=columns)
-        # replace missing meta (for backward compatibility)
-        df.fillna({'meta': 0}, inplace=True)
-        df.fillna({'time': 0}, inplace=True)
-        df.rename(columns={'time': 'subannual'}, inplace=True)
-        # check if returned dataframe has subannual disaggregation, drop if not
-        if pd.Series([i in [-1, 'year'] for i in df.subannual]).all():
-            df.drop(columns='subannual', inplace=True)
+        data = pd.DataFrame(data=data, columns=cols)
+
+        # check if timeseries data has subannual disaggregation, drop if not
+        if 'subannual' in data:
+            timeslices = data.subannual.dropna().unique()
+            if all([i in [-1, 'Year'] for i in timeslices]):
+                data.drop(columns='subannual', inplace=True)
+
         # check if there are multiple version for any model/scenario
         lst = (
-            df[META_IDX + ['version']].drop_duplicates()
+            data[META_IDX + ['version']].drop_duplicates()
             .groupby(META_IDX).count().version
         )
+
         # checking if there are multiple versions
         # for every model/scenario combination
+        # TODO this is probably not necessary
         if len(lst) > 1 and max(lst) > 1:
             raise ValueError('multiple versions for {}'.format(
                 lst[lst > 1].index.to_list()))
-        df.drop(columns='version', inplace=True)
+        data.drop(columns='version', inplace=True)
 
-        return df
+        # cast to IamDataFrame
+        df = IamDataFrame(data)
+
+        # merge meta categorization and quantitative indications
+        if meta:
+            _meta = self.meta().loc[df.meta.index]
+            for i in _meta.columns if meta is True else meta + ['version']:
+                df.set_meta(_meta[i])
+
+        return IamDataFrame(df)
 
 
-def read_iiasa(name, meta=False, creds=None, base_url=_BASE_URL, **kwargs):
-    """Read data from an IIASA scenario explorer and return as IamDataFrame
+def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL,
+               **kwargs):
+    """Query an IIASA Scenario Explorer database API and return as IamDataFrame
 
     Parameters
     ----------
     name : str
         A valid name of an IIASA scenario explorer instance,
         see :attr:`pyam.iiasa.Connection.valid_connections`
-    meta : bool or list of strings
-        If :obj:`True`, include all meta categories & quantitative indicators
+    default : bool, optional
+        Return *only* the default version of each scenario.
+        Any (`model`, `scenario`) without a default version is omitted.
+        If :obj:`False`, return all versions.
+    meta : bool or list of strings, optional
+        If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
     creds : dict
         Credentials to access scenario explorer instance and
@@ -469,20 +524,5 @@ def read_iiasa(name, meta=False, creds=None, base_url=_BASE_URL, **kwargs):
     kwargs
         Arguments for :meth:`pyam.iiasa.Connection.query`
     """
-    conn = Connection(name, creds, base_url)
-    # data
-    df = IamDataFrame(conn.query(**kwargs))
-    # meta: categorization and quantitative indications
-    if meta:
-        mdf = conn.metadata()
-        # only data for models/scenarios in df
-        mdf = mdf[mdf.model.isin(df['model'].unique()) &
-                  mdf.scenario.isin(df['scenario'].unique())]
-        # get subset of data if meta is a list
-        if islistable(meta):
-            mdf = mdf[['model', 'scenario'] + meta]
-        mdf = mdf.set_index(['model', 'scenario'])
-        # we have to loop here because `set_meta()` can only take series
-        for col in mdf:
-            df.set_meta(mdf[col])
-    return df
+    return Connection(name, creds, base_url)\
+        .query(default=default, meta=meta, **kwargs)
