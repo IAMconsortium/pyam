@@ -1,4 +1,13 @@
-# Next Release
+# Release v0.7.0
+
+## Highlights
+
+- Add new features for aggregating and downscaling timeseries data.
+- Update the plotting library for compatibility with the latest matplotlib release.
+- Refactor the feature to read data directly from an IIASA scenario database API.
+- Migrate the continuous-integration (CI) infrastructure
+  from Travis & Appveyor to GitHub Actions
+  and use CodeCov.io instead of coveralls.io for test coverage metrics.
 
 ## API changes
 
