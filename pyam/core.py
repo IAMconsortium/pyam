@@ -36,7 +36,6 @@ from pyam.utils import (
     merge_meta,
     to_int,
     find_depth,
-    reduce_hierarchy,
     pattern_match,
     years_match,
     month_match,
