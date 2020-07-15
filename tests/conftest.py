@@ -3,7 +3,7 @@ import matplotlib
 matplotlib.use('agg')
 
 import os
-from requests.exceptions import SSLError
+from requests.exceptions import ConnectionError
 import pytest
 import pandas as pd
 
@@ -15,7 +15,7 @@ from pyam import IamDataFrame, IAMC_IDX, iiasa
 try:
     iiasa.Connection()
     IIASA_UNAVAILABLE = False
-except SSLError:
+except ConnectionError:
     IIASA_UNAVAILABLE = True
 
 TEST_API = 'integration-test'
