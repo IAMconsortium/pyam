@@ -60,16 +60,16 @@ def test_load_meta(test_df, args):
     pd.testing.assert_series_equal(obs['category'], exp['category'])
 
 
-def test_load_ssp_database_downloaded_file(test_df_year):
-    exp = test_df_year.filter(**FILTER_ARGS).as_pandas()
+def test_load_ssp_database_downloaded_file(test_pd_df):
+    exp = IamDataFrame(test_pd_df).filter(**FILTER_ARGS).as_pandas()
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
     )
     pd.testing.assert_frame_equal(obs_df.as_pandas(), exp)
 
 
-def test_load_rcp_database_downloaded_file(test_df_year):
-    exp = test_df_year.filter(**FILTER_ARGS).as_pandas()
+def test_load_rcp_database_downloaded_file(test_pd_df):
+    exp = IamDataFrame(test_pd_df).filter(**FILTER_ARGS).as_pandas()
     obs_df = IamDataFrame(os.path.join(
         TEST_DATA_DIR, 'test_RCP_database_raw_download.xlsx')
     )
