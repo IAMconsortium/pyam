@@ -9,7 +9,7 @@ import pandas.testing as pdt
 
 from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
-from conftest import IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
+from conftest import IIASA_UNAVAILABLE, META_COLS, TEST_API, TEST_API_NAME
 
 if IIASA_UNAVAILABLE:
     pytest.skip('IIASA database API unavailable', allow_module_level=True)
@@ -23,7 +23,6 @@ CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
 )
 
 VERSION_COLS = ['version', 'is_default']
-META_COLS = ['number', 'string']
 META_DF = pd.DataFrame([
     ['model_a', 'scen_a', 1, True, 1, 'foo'],
     ['model_a', 'scen_b', 1, True, 2, np.nan],
