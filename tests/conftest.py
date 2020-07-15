@@ -5,10 +5,11 @@ matplotlib.use('agg')
 import os
 from requests.exceptions import ConnectionError
 import pytest
+import numpy as np
 import pandas as pd
 
 from datetime import datetime
-from pyam import IamDataFrame, IAMC_IDX, iiasa
+from pyam import IamDataFrame, META_IDX, IAMC_IDX, iiasa
 
 
 # verify whether IIASA database API can be reached, skip tests otherwise
@@ -42,6 +43,12 @@ TEST_DF = pd.DataFrame([
 ],
     columns=IAMC_IDX + TEST_YEARS,
 )
+
+META_COLS = ['number', 'string']
+META_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 1, 'foo'],
+    ['model_a', 'scen_b', 2, np.nan],
+], columns=META_IDX + META_COLS).set_index(META_IDX)
 
 
 FULL_FEATURE_DF = pd.DataFrame([
@@ -120,6 +127,8 @@ def test_df(request):
     tdf = TEST_DF.rename({2005: request.param[0], 2010: request.param[1]},
                          axis="columns")
     df = IamDataFrame(data=tdf)
+    for i in META_COLS:
+        df.set_meta(META_DF[i])
     yield df
 
 
@@ -127,6 +136,8 @@ def test_df(request):
 @pytest.fixture(scope="function")
 def test_df_year():
     df = IamDataFrame(data=TEST_DF)
+    for i in META_COLS:
+        df.set_meta(META_DF[i])
     yield df
 
 
