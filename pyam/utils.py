@@ -293,9 +293,8 @@ def merge_meta(left, right, ignore_meta_conflict=False):
             cols = [i for i in right.columns if i in left.columns]
             if not left.loc[sect, cols].equals(right.loc[sect, cols]):
                 conflict_idx = (
-                    pd.concat([right.loc[sect, cols], left.loc[sect, cols]]
-                              ).drop_duplicates()
-                        .index.drop_duplicates()
+                    pd.concat([right.loc[sect, cols], left.loc[sect, cols]])
+                    .drop_duplicates().index.drop_duplicates()
                 )
                 msg = 'conflict in `meta` for scenarios {}'.format(
                     [i for i in pd.DataFrame(index=conflict_idx).index])
