@@ -65,7 +65,7 @@ def test_aggregate(simple_df, variable, data):
     if simple_df.time_col == 'time':
         _df.year = _df.year.replace(DTS_MAPPING)
         _df.rename({'year': 'time'}, axis='columns', inplace=True)
-    exp = IamDataFrame(_df)
+    exp = IamDataFrame(_df, meta=simple_df.meta)
     for m in ['max', np.max]:
         assert_iamframe_equal(simple_df.aggregate(variable, method=m), exp)
 
@@ -262,10 +262,11 @@ def test_aggregate_region_with_other_method(simple_df, variable, data):
     if simple_df.time_col == 'time':
         _df.year = _df.year.replace(DTS_MAPPING)
         _df.rename({'year': 'time'}, axis='columns', inplace=True)
-    exp = IamDataFrame(_df).filter(region='World')
+
+    exp = IamDataFrame(_df, meta=simple_df.meta).filter(region='World')
     for m in ['max', np.max]:
-        assert_iamframe_equal(simple_df.aggregate_region(variable, method=m),
-                              exp)
+        obs = simple_df.aggregate_region(variable, method=m)
+        assert_iamframe_equal(obs, exp)
 
 
 def test_aggregate_region_with_components(simple_df):
