@@ -915,7 +915,7 @@ class IamDataFrame(object):
         if append is True:
             self.append(_df, inplace=True)
         else:
-            return IamDataFrame(_df)
+            return IamDataFrame(_df, meta=self.meta)
 
     def check_aggregate(self, variable, components=None, method='sum',
                         exclude_on_fail=False, multiplier=1, **kwargs):
@@ -1006,7 +1006,7 @@ class IamDataFrame(object):
         if append is True:
             self.append(_df, region=region, inplace=True)
         else:
-            return IamDataFrame(_df, region=region)
+            return IamDataFrame(_df, region=region, meta=self.meta)
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=False, method='sum', weight=None,
@@ -1107,9 +1107,7 @@ class IamDataFrame(object):
         if append is True:
             self.append(_df, inplace=True)
         else:
-            df = IamDataFrame(_df)
-            df.meta = self.meta.loc[_make_index(df.data)]
-            return df
+            return IamDataFrame(_df, meta=self.meta)
 
     def downscale_region(self, variable, region='World', subregions=None,
                          proxy=None, weight=None, append=False):
@@ -1167,9 +1165,7 @@ class IamDataFrame(object):
         if append is True:
             self.append(_data, inplace=True)
         else:
-            df = IamDataFrame(_data)
-            df.meta = self.meta.loc[_make_index(df.data)]
-            return df
+            return IamDataFrame(_data, meta=self.meta)
 
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
