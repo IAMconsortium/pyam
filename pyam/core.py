@@ -76,13 +76,17 @@ class IamDataFrame(object):
         Support is provided additionally for R-style data columns for years,
         like "X2015", etc.
     kwargs
-        if `value=col`, melt column `col` to 'value' and use `col` name as
-        'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
+        If `value=<col>`, melt column `<col>` to 'value' and use `<col>` name
+        as 'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
         any of the following:
 
         - one column in `data`
         - multiple columns, to be concatenated by :code:`|`
         - a string to be used as value for this column
+
+        A :class:`pandas.DataFrame` with suitable `meta` indicators can be
+        passed as `meta=<df>`. The index will be downselected to those
+        scenarios that have timeseries data.
 
     Notes
     -----
