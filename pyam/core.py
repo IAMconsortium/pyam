@@ -115,10 +115,14 @@ class IamDataFrame(object):
         """Process data and set attributes for new instance"""
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
+            meta = kwargs.pop('meta') if 'meta' in kwargs else None
             _data = format_data(data.copy(), **kwargs)
         elif has_ix and isinstance(data, ixmp.TimeSeries):
+            # TODO read meta indicators from ixmp
+            meta = None
             _data = read_ix(data, **kwargs)
         else:
+            meta = None
             logger.info('Reading file `{}`'.format(data))
             _data = read_file(data, **kwargs)
 
@@ -134,6 +138,11 @@ class IamDataFrame(object):
         # define `meta` dataframe for categorization & quantitative indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
+
+        # merge meta dataframe (if given in kwargs)
+        if meta is not None:
+            self.meta = merge_meta(meta.loc[_make_index(self.data)],
+                                   self.meta, ignore_meta_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
         meta_sheet = kwargs.get('meta_sheet_name', 'meta')
