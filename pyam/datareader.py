@@ -14,7 +14,7 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
     This function is a simple wrapper for the class
     :class:`pandas_datareader.wb.WorldBankReader` and the function
     :func:`pandas_datareader.wb.download`. You can access any function
-    of the package via :func:`pyam.wb.<function>` to retrieve/search
+    of that module via :func:`pyam.wb.<function>` to retrieve/search
     the list of indicators (and their id's), countries, etc.
 
     Parameters
@@ -33,6 +33,12 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
     passed to :func:`read_worldbank` is a dictionary mapping a World Bank id to
     a variable name, the variables in the returned IamDataFrame will be renamed.
 
+    The function :func:`pandas_datareader.wb.download` does not return a unit,
+    but it can be collected for some indicators using the function
+    :func:`pandas_datareader.wb.get_indicators`.
+    In the current implementation, unit is defined as `n/a` for all data;
+    this can be enhanced later (if there is interest from users).
+
     Returns
     -------
     IamDataFrame
@@ -43,6 +49,7 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
     data = wb.download(**kwargs)
     df = IamDataFrame(data.reset_index(), model=model, scenario=scenario,
                       value=data.columns, unit='n/a', region='country')
+    # TODO use wb.get_indicators to retrieve corrent units (where available)
 
     # if `indicator` is a mapping, use it for renaming
     if 'indicator' in kwargs and isinstance(kwargs['indicator'], dict):
