@@ -267,8 +267,8 @@ class IamDataFrame(object):
                **kwargs):
         """Append any IamDataFrame-like object to this object
 
-        Columns in ``other.meta`` that are not in ``self.meta`` are merged.
-        Conflicting region-variable-unit-year rows raise a ``ValueError``.
+        Columns in `other.meta` that are not in `self.meta` are merged.
+        Conflicting region-variable-unit-year rows raise a `ValueError`.
 
         Parameters
         ----------
@@ -279,8 +279,9 @@ class IamDataFrame(object):
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             if True, do operation inplace and return None
-        kwargs : initializing other as IamDataFrame
+        kwargs
             passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
+            if `other` is not already an IamDataFrame
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
@@ -1082,17 +1083,17 @@ class IamDataFrame(object):
          ----------
          variable : str or list of str
              variable(s) to be aggregated
-         column : str, default 'subannual'
+         column : str, optional
              the data column to be used as subannual time representation
-         value : str, default 'year
+         value : str, optional
              the name of the aggregated (subannual) time
          components : list of str
              subannual timeslices to be aggregated; defaults to all subannual
-             timeslices other than ``value``
-         method : func or str, default 'sum'
+             timeslices other than `value`
+         method : func or str, optional
              method to use for aggregation,
              e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-         append : bool, default False
+         append : bool, optional
              append the aggregate timeseries to `self` and return None,
              else return aggregate timeseries as new :class:`IamDataFrame`
          """
