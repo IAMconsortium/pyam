@@ -356,7 +356,7 @@ def find_depth(data, s='', level=None):
     return list(map(test, n_pipes))
 
 
-def pattern_match(data, values, level=None, regexp=False, has_nan=True):
+def pattern_match(data, values, level=None, regexp=False, has_nan=False):
     """Return list where data matches values
 
     The function matches model/scenario names, variables, regions

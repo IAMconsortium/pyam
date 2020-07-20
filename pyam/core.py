@@ -1295,7 +1295,8 @@ class IamDataFrame(object):
                 continue
 
             if col in self.meta.columns:
-                matches = pattern_match(self.meta[col], values, regexp=regexp)
+                matches = pattern_match(self.meta[col], values, regexp=regexp,
+                                        has_nan=True)
                 cat_idx = self.meta[matches].index
                 keep_col = (self.data[META_IDX].set_index(META_IDX)
                                 .index.isin(cat_idx))
