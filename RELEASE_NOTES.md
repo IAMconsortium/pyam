@@ -1,3 +1,7 @@
+# Next release
+
+- [#416](https://github.com/IAMconsortium/pyam/pull/416) Include `meta` in new IamDataFrames returned by aggregation functions
+
 # Release v0.7.0
 
 ## Highlights
