@@ -792,6 +792,8 @@ class IamDataFrame(object):
         `iam-units <https://github.com/IAMconsortium/units>`_ package.
         This registry can also be accessed directly, using::
 
+        .. code-block:: python
+
             from iam_units import registry
 
         When using this registry, *current* and *to* may contain the symbols of

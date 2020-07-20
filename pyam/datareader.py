@@ -13,9 +13,12 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
 
     This function is a simple wrapper for the class
     :class:`pandas_datareader.wb.WorldBankReader` and the function
-    :func:`pandas_datareader.wb.download`. You can access any function
-    of that module via :func:`pyam.wb.<function>` to retrieve/search
+    :func:`pandas_datareader.wb.download`. Import the module to retrieve/search
     the list of indicators (and their id's), countries, etc.
+
+    .. code-block:: python
+
+        from pandas_datareader import wb
 
     Parameters
     ----------
@@ -30,8 +33,8 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
     -----
     The function :func:`pandas_datareader.wb.download` takes an `indicator`
     argument, which can be a string or list of strings. If the `indicator`
-    passed to :func:`read_worldbank` is a dictionary mapping a World Bank id to
-    a variable name, the variables in the returned IamDataFrame will be renamed.
+    passed to :func:`read_worldbank` is a dictionary of a World Bank id mapped
+    to a string, the variables in the returned IamDataFrame will be renamed.
 
     The function :func:`pandas_datareader.wb.download` does not return a unit,
     but it can be collected for some indicators using the function

@@ -6,7 +6,7 @@ from pyam.read_ixmp import *
 from pyam.logging import *
 from pyam.run_control import *
 from pyam.iiasa import read_iiasa  # noqa: F401
-from pyam.datareader import wb, read_worldbank  # noqa: F401
+from pyam.datareader import read_worldbank  # noqa: F401
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
