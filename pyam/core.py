@@ -204,6 +204,11 @@ class IamDataFrame(object):
         """Return the timeseries data as long :class:`pandas.DataFrame`"""
         return self._data.reset_index()
 
+    @data.setter
+    def data(self, df):
+        """Set the timeseries data from a long :class:`pandas.DataFrame`"""
+        self._data = df.set_index(self._LONG_IDX)
+
     def copy(self):
         """Make a deepcopy of this object
 
