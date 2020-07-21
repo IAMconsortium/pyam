@@ -267,8 +267,9 @@ class IamDataFrame(object):
                **kwargs):
         """Append any IamDataFrame-like object to this object
 
-        Columns in `other.meta` that are not in `self.meta` are merged.
-        Conflicting region-variable-unit-year rows raise a `ValueError`.
+        Indicators in `other.meta` that are not in `self.meta` are merged.
+        Missing values are set to `NaN`.
+        Conflicting `data` rows always raise a `ValueError`.
 
         Parameters
         ----------

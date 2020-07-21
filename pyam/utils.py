@@ -281,7 +281,10 @@ def sort_data(data, cols):
 
 
 def merge_meta(left, right, ignore_meta_conflict=False):
-    """Merge two ``meta`` tables; raise if values are in conflict (optional)"""
+    """Merge two `meta` tables; raise if values are in conflict (optional)
+
+    If conflicts are ignored, values in `left` take precedence over `right`.
+    """
     left = left.copy()  # make a copy to not change the original object
     diff = right.index.difference(left.index)
     sect = right.index.intersection(left.index)
