@@ -130,17 +130,18 @@ class IamDataFrame(object):
             logger.info('Reading file `{}`'.format(data))
             _data = read_file(data, **kwargs)
 
-        self.data, self.time_col, self.extra_cols = _data
-        # cast time_col to desired format
-        if self.time_col == 'year':
-            self._format_year_col()
-        elif self.time_col == 'time':
-            self._format_datetime_col()
-
+        _df, self.time_col, self.extra_cols = _data
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
+        # cast time_col to desired format
+        self._data = self.format_time_col(_df).set_index(self._LONG_IDX)
 
         # define `meta` dataframe for categorization & quantitative indicators
-        self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
+        self.meta = (
+            pd.DataFrame(zip(self._data.index.get_level_values(0),
+                             self._data.index.get_level_values(1)),
+                         columns=META_IDX)
+            .drop_duplicates().set_index(META_IDX)
+        )
         self.reset_exclude()
 
         # merge meta dataframe (if given in kwargs)
@@ -158,11 +159,13 @@ class IamDataFrame(object):
         if 'exec' in run_control():
             self._execute_run_control()
 
-    def _format_year_col(self):
-        self.data['year'] = to_int(pd.to_numeric(self.data['year']))
-
-    def _format_datetime_col(self):
-        self.data['time'] = pd.to_datetime(self.data['time'])
+    def format_time_col(self, data):
+        """Format time_col to int (year) or datetime"""
+        if self.time_col == 'year':
+            data['year'] = to_int(pd.to_numeric(data['year']))
+        elif self.time_col == 'time':
+            data['time'] = pd.to_datetime(data['time'])
+        return data
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
@@ -195,6 +198,11 @@ class IamDataFrame(object):
             for func in functions:
                 f = getattr(mod, func)
                 f(self)
+
+    @property
+    def data(self):
+        """Return the timeseries data as long :class:`pandas.DataFrame`"""
+        return self._data.reset_index()
 
     def copy(self):
         """Make a deepcopy of this object
