@@ -1279,7 +1279,7 @@ class IamDataFrame(object):
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = self.copy() if not inplace else self
-        ret.data = ret.data[_keep]
+        ret._data = ret._data[list(_keep)]
 
         idx = _make_index(ret.data)
         if len(idx) == 0:
@@ -1316,7 +1316,8 @@ class IamDataFrame(object):
 
             elif col == 'variable':
                 level = filters['level'] if 'level' in filters else None
-                keep_col = pattern_match(self.data[col], values, level, regexp)
+                keep_col = pattern_match(self._data.index.get_level_values(3),
+                                         values, level, regexp)
 
             elif col == 'year':
                 _data = self.data[col] if self.time_col != 'time' \
@@ -1353,7 +1354,8 @@ class IamDataFrame(object):
 
             elif col == 'level':
                 if 'variable' not in filters.keys():
-                    keep_col = find_depth(self.data['variable'], level=values)
+                    keep_col = find_depth(self._data.index.get_level_values(3),
+                                          level=values)
                 else:
                     continue
 
