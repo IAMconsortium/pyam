@@ -1,5 +1,3 @@
-import logging
-
 from pyam.core import *
 from pyam.utils import *
 from pyam.statistics import *
