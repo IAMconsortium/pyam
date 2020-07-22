@@ -189,6 +189,7 @@ def test_reduce_hierarchy_neg1():
 def test_reduce_hierarchy_neg2():
     assert utils.reduce_hierarchy('foo|bar|baz', -2) == 'foo'
 
+
 def test_merge_meta():
     # test merging of two meta tables
     left = pd.DataFrame([
