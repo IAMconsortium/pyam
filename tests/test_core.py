@@ -318,7 +318,7 @@ def test_filter_hour(test_df, test_hour):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `hour` not supported")
         with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(hour=test_hour)
+            test_df.filter(hour=test_hour)
     else:
         obs = test_df.filter(hour=test_hour)
         test_hour = [test_hour] if isinstance(test_hour, int) else test_hour
@@ -326,7 +326,7 @@ def test_filter_hour(test_df, test_hour):
                          .apply(lambda x: x.hour).isin(test_hour))
         expected = test_df.data["time"].loc[expected_rows].unique()
 
-        unique_time = obs['time'].unique()
+        unique_time = np.array(obs['time'].unique(), dtype=np.datetime64)
         npt.assert_array_equal(unique_time, expected)
 
 
@@ -341,7 +341,7 @@ def test_filter_time_exact_match(test_df):
         obs = test_df.filter(time=datetime.datetime(2005, 6, 17))
         expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
                             dtype=np.datetime64)
-        unique_time = obs['time'].unique()
+        unique_time = np.array(obs['time'].unique(), dtype=np.datetime64)
         assert len(unique_time) == 1
         assert unique_time[0] == expected
 
@@ -429,7 +429,7 @@ def test_filter_time_range_hour(test_df, hour_range):
                          .apply(lambda x: x.hour).isin(hour_range))
         expected = test_df.data["time"].loc[expected_rows].unique()
 
-        unique_time = obs['time'].unique()
+        unique_time = np.array(obs['time'].unique(), dtype=np.datetime64)
         npt.assert_array_equal(unique_time, expected)
 
 
@@ -751,8 +751,9 @@ def test_filter_by_int(test_df):
 
 def _r5_regions_exp(df):
     df = df.filter(region='World', keep=False)
-    df['region'] = 'R5MAF'
-    return sort_data(df.data, df._LONG_IDX)
+    data = df.data
+    data['region'] = 'R5MAF'
+    return sort_data(data, df._LONG_IDX)
 
 
 def test_map_regions_r5(reg_df):
