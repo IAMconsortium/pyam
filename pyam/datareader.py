@@ -3,7 +3,7 @@ from pyam import IamDataFrame
 try:
     import pandas_datareader.wb as wb
     HAS_DATAREADER = True
-except ImportError:
+except ImportError:  # pragma: no cover
     wb = None
     HAS_DATAREADER = False
 
@@ -46,7 +46,7 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
     -------
     IamDataFrame
     """
-    if not HAS_DATAREADER:
+    if not HAS_DATAREADER:  # pragma: no cover
         raise ImportError('Required package `pandas-datareader` not found!')
 
     data = wb.download(**kwargs)

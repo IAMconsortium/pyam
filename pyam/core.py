@@ -1994,7 +1994,7 @@ def read_datapackage(path, data='data', meta='meta'):
         (optional) resource containing a table of categorization and
         quantitative indicators
     """
-    if not HAS_DATAPACKAGE:
+    if not HAS_DATAPACKAGE:  # pragma: no cover
         raise ImportError('required package `datapackage` not found!')
 
     package = Package(path)
