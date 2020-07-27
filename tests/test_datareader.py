@@ -3,8 +3,8 @@ import pytest
 import pandas as pd
 
 from pyam import IamDataFrame, IAMC_IDX, read_worldbank
-from pyam import wb
 from pyam.testing import assert_iamframe_equal
+from pandas_datareader import wb
 
 try:
     wb.get_indicators()
