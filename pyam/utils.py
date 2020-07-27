@@ -280,6 +280,39 @@ def sort_data(data, cols):
     return data.sort_values(cols)[cols + ['value']].reset_index(drop=True)
 
 
+def merge_meta(left, right, ignore_meta_conflict=False):
+    """Merge two `meta` tables; raise if values are in conflict (optional)
+
+    If conflicts are ignored, values in `left` take precedence over `right`.
+    """
+    left = left.copy()  # make a copy to not change the original object
+    diff = right.index.difference(left.index)
+    sect = right.index.intersection(left.index)
+
+    # merge `right` into `left` for overlapping scenarios ( `sect`)
+    if not sect.empty:
+        # if not ignored, check that overlapping `meta` columns are equal
+        if not ignore_meta_conflict:
+            cols = [i for i in right.columns if i in left.columns]
+            if not left.loc[sect, cols].equals(right.loc[sect, cols]):
+                conflict_idx = (
+                    pd.concat([right.loc[sect, cols], left.loc[sect, cols]])
+                    .drop_duplicates().index.drop_duplicates()
+                )
+                msg = 'conflict in `meta` for scenarios {}'.format(
+                    [i for i in pd.DataFrame(index=conflict_idx).index])
+                raise ValueError(msg)
+        # merge new columns
+        cols = [i for i in right.columns if i not in left.columns]
+        left = left.merge(right.loc[sect, cols], how='outer',
+                          left_index=True, right_index=True)
+
+    # join `other.meta` for new scenarios (`diff`)
+    if not diff.empty:
+        left = left.append(right.loc[diff, :], sort=False)
+
+    return left
+
 def find_depth(data, s='', level=None):
     """Return or assert the depth (number of ``|``) of variables
 

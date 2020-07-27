@@ -33,9 +33,9 @@ from pyam.utils import (
     read_pandas,
     format_data,
     sort_data,
+    merge_meta,
     to_int,
     find_depth,
-    reduce_hierarchy,
     pattern_match,
     years_match,
     month_match,
@@ -76,13 +76,17 @@ class IamDataFrame(object):
         Support is provided additionally for R-style data columns for years,
         like "X2015", etc.
     kwargs
-        if `value=col`, melt column `col` to 'value' and use `col` name as
-        'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
+        If `value=<col>`, melt column `<col>` to 'value' and use `<col>` name
+        as 'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
         any of the following:
 
         - one column in `data`
         - multiple columns, to be concatenated by :code:`|`
         - a string to be used as value for this column
+
+        A :class:`pandas.DataFrame` with suitable `meta` indicators can be
+        passed as `meta=<df>`. The index will be downselected to those
+        scenarios that have timeseries data.
 
     Notes
     -----
@@ -115,10 +119,14 @@ class IamDataFrame(object):
         """Process data and set attributes for new instance"""
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
+            meta = kwargs.pop('meta') if 'meta' in kwargs else None
             _data = format_data(data.copy(), **kwargs)
         elif has_ix and isinstance(data, ixmp.TimeSeries):
+            # TODO read meta indicators from ixmp
+            meta = None
             _data = read_ix(data, **kwargs)
         else:
+            meta = None
             logger.info('Reading file `{}`'.format(data))
             _data = read_file(data, **kwargs)
 
@@ -134,6 +142,11 @@ class IamDataFrame(object):
         # define `meta` dataframe for categorization & quantitative indicators
         self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
         self.reset_exclude()
+
+        # merge meta dataframe (if given in kwargs)
+        if meta is not None:
+            self.meta = merge_meta(meta.loc[_make_index(self.data)],
+                                   self.meta, ignore_meta_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
         meta_sheet = kwargs.get('meta_sheet_name', 'meta')
@@ -254,8 +267,9 @@ class IamDataFrame(object):
                **kwargs):
         """Append any IamDataFrame-like object to this object
 
-        Columns in `other.meta` that are not in `self.meta` are always merged,
-        duplicate region-variable-unit-year rows raise a ValueError.
+        Indicators in `other.meta` that are not in `self.meta` are merged.
+        Missing values are set to `NaN`.
+        Conflicting `data` rows always raise a `ValueError`.
 
         Parameters
         ----------
@@ -266,8 +280,9 @@ class IamDataFrame(object):
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             if True, do operation inplace and return None
-        kwargs : initializing other as IamDataFrame
+        kwargs
             passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
+            if `other` is not already an IamDataFrame
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
@@ -278,41 +293,15 @@ class IamDataFrame(object):
 
         ret = self.copy() if not inplace else self
 
-        diff = other.meta.index.difference(ret.meta.index)
-        intersect = other.meta.index.intersection(ret.meta.index)
-
-        # merge other.meta columns not in self.meta for existing scenarios
-        if not intersect.empty:
-            # if not ignored, check that overlapping meta dataframes are equal
-            if not ignore_meta_conflict:
-                cols = [i for i in other.meta.columns if i in ret.meta.columns]
-                if not ret.meta.loc[intersect, cols].equals(
-                        other.meta.loc[intersect, cols]):
-                    conflict_idx = (
-                        pd.concat([ret.meta.loc[intersect, cols],
-                                   other.meta.loc[intersect, cols]]
-                                  ).drop_duplicates()
-                        .index.drop_duplicates()
-                    )
-                    msg = 'conflict in `meta` for scenarios {}'.format(
-                        [i for i in pd.DataFrame(index=conflict_idx).index])
-                    raise ValueError(msg)
-
-            cols = [i for i in other.meta.columns if i not in ret.meta.columns]
-            _meta = other.meta.loc[intersect, cols]
-            ret.meta = ret.meta.merge(_meta, how='outer',
-                                      left_index=True, right_index=True)
-
-        # join other.meta for new scenarios
-        if not diff.empty:
-            ret.meta = ret.meta.append(other.meta.loc[diff, :], sort=False)
+        # merge `meta` tables
+        ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
         _data = ret.data.set_index(sorted(ret._LONG_IDX)).append(
             other.data.set_index(sorted(other._LONG_IDX)),
             verify_integrity=True)
 
-        # merge extra columns in `data` and set `LONG_IDX`
+        # merge extra columns in `data` and set `self._LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
@@ -928,7 +917,7 @@ class IamDataFrame(object):
         if append is True:
             self.append(_df, inplace=True)
         else:
-            return IamDataFrame(_df)
+            return IamDataFrame(_df, meta=self.meta)
 
     def check_aggregate(self, variable, components=None, method='sum',
                         exclude_on_fail=False, multiplier=1, **kwargs):
@@ -1019,7 +1008,7 @@ class IamDataFrame(object):
         if append is True:
             self.append(_df, region=region, inplace=True)
         else:
-            return IamDataFrame(_df, region=region)
+            return IamDataFrame(_df, region=region, meta=self.meta)
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
                                components=False, method='sum', weight=None,
@@ -1095,17 +1084,17 @@ class IamDataFrame(object):
          ----------
          variable : str or list of str
              variable(s) to be aggregated
-         column : str, default 'subannual'
+         column : str, optional
              the data column to be used as subannual time representation
-         value : str, default 'year
+         value : str, optional
              the name of the aggregated (subannual) time
          components : list of str
              subannual timeslices to be aggregated; defaults to all subannual
-             timeslices other than ``value``
-         method : func or str, default 'sum'
+             timeslices other than `value`
+         method : func or str, optional
              method to use for aggregation,
              e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-         append : bool, default False
+         append : bool, optional
              append the aggregate timeseries to `self` and return None,
              else return aggregate timeseries as new :class:`IamDataFrame`
          """
@@ -1120,9 +1109,7 @@ class IamDataFrame(object):
         if append is True:
             self.append(_df, inplace=True)
         else:
-            df = IamDataFrame(_df)
-            df.meta = self.meta.loc[_make_index(df.data)]
-            return df
+            return IamDataFrame(_df, meta=self.meta)
 
     def downscale_region(self, variable, region='World', subregions=None,
                          proxy=None, weight=None, append=False):
@@ -1180,9 +1167,7 @@ class IamDataFrame(object):
         if append is True:
             self.append(_data, inplace=True)
         else:
-            df = IamDataFrame(_data)
-            df.meta = self.meta.loc[_make_index(df.data)]
-            return df
+            return IamDataFrame(_data, meta=self.meta)
 
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
@@ -1796,9 +1781,15 @@ def _apply_criteria(df, criteria, **kwargs):
 
 
 def _make_index(df, cols=META_IDX):
-    """Create an index from the columns of a dataframe"""
-    return pd.MultiIndex.from_tuples(
-        pd.unique(list(zip(*[df[col] for col in cols]))), names=tuple(cols))
+    """Create an index from the columns of a dataframe or series"""
+    def _get_col(c):
+        try:
+            return df.index.get_level_values(c)
+        except KeyError:
+            return df[c]
+
+    index = pd.unique(list(zip(*[_get_col(col) for col in cols])))
+    return pd.MultiIndex.from_tuples(index, names=tuple(cols))
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
