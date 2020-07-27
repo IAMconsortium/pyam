@@ -59,4 +59,3 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
         df.rename(variable=kwargs['indicator'], inplace=True)
 
     return df
-
