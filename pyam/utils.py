@@ -520,3 +520,16 @@ def reduce_hierarchy(x, depth):
     _x = x.split('|')
     depth = len(_x) + depth - 1 if depth < 0 else depth
     return '|'.join(_x[0:(depth + 1)])
+
+
+def replace_index_value(index, level, current, to, verify_integrity=True):
+    """Replaces a value in a particular index level"""
+    levels = []
+    for n, l in zip(index.names, index.levels):
+        if n == level:
+            levels.append([to if i == current else i for i in l])
+        else:
+            levels.append(l)
+
+    return pd.MultiIndex(codes=index.codes, names=index.names, levels=levels,
+                         verify_integrity=verify_integrity)
