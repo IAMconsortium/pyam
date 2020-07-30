@@ -403,14 +403,16 @@ class IamDataFrame(object):
 
         ret = self.copy() if not inplace else self
 
-        ret.data["year"] = ret.data["time"].apply(lambda x: x.year)
-        ret.data = ret.data.drop("time", axis="columns")
+        _data = ret.data
+        _data["year"] = _data["time"].apply(lambda x: x.year)
+        _data = _data.drop("time", axis="columns")
         ret._LONG_IDX = [v if v != "time" else "year" for v in ret._LONG_IDX]
 
-        if any(ret.data[ret._LONG_IDX].duplicated()):
+        if any(_data[ret._LONG_IDX].duplicated()):
             error_msg = ('swapping time for year will result in duplicate '
                          'rows in `data`!')
             raise ValueError(error_msg)
+        ret._data = _data.set_index(IAMC_IDX)
 
         if not inplace:
             return ret
@@ -748,7 +750,9 @@ class IamDataFrame(object):
         idx = ret.meta.index.isin(_make_index(ret.data[rows]))
 
         # if `check_duplicates`, do the rename on a copy until after the check
-        _data = ret.data.copy() if check_duplicates else ret.data
+        # _data = ret.data.copy() if check_duplicates else ret.data
+        # TODO reactivate this avoidance of creating a copy
+        _data = ret.data
 
         # apply renaming changes
         for col, _mapping in mapping.items():
