@@ -34,7 +34,7 @@ def assert_converted_units(df, current, to, exp, **kwargs):
     ('EJ', 'TWh')
 ])
 def test_convert_unit_with_pint(test_df, current, to):
-    # unit conversion with default UnitRegistry (i.e, application_registry)
+    """Convert unit with default UnitRegistry (i.e, application_registry)"""
     df = get_units_test_df(test_df)
 
     # replace EJ/yr by EJ to test pint with single unit
@@ -46,14 +46,14 @@ def test_convert_unit_with_pint(test_df, current, to):
 
 
 def test_convert_unit_from_repo(test_df):
-    # unit conversion with definition loaded from `IAMconsortium/units` repo
+    """Convert unit with definition loaded from `IAMconsortium/units` repo"""
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 17.06, 102.361, 68.241, 238.843], name='value')
     assert_converted_units(df, 'EJ/yr', 'Mtce/yr', exp)
 
 
 def test_convert_unit_with_custom_registry(test_df):
-    # unit conversion with custom UnitRegistry
+    """Convert unit conversion with custom UnitRegistry"""
     df = get_units_test_df(test_df).rename(unit={'EJ/yr': 'foo'})
 
     # check that conversion fails with application registry
@@ -138,6 +138,7 @@ def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
 
 
 def test_convert_unit_bad_args(test_pd_df):
+    """Unit conversion with bad arguments raises errors."""
     idf = IamDataFrame(test_pd_df)
     # Conversion fails with both *factor* and *registry*
     with pytest.raises(ValueError, match='use either `factor` or `pint...'):
@@ -154,6 +155,7 @@ def test_convert_unit_bad_args(test_pd_df):
 
 
 def test_convert_unit_with_custom_factor(test_df):
+    """Convert units with custom factors."""
     # unit conversion with custom factor
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 1., 6., 4., 14.], name='value')

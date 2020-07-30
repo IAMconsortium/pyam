@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """Scenario timeseries data
+    """Scenario timeseries data following the IAMC-structure
 
     The class provides a number of diagnostic features (including validation of
     data, completeness of variables provided), processing tools (e.g.,
@@ -691,7 +691,7 @@ class IamDataFrame(object):
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
 
-        Renaming is only applied to any data where a filter matches for all
+        Renaming is only applied to any data row that matches for all
         columns given in `mapping`. Renaming can only be applied to the `model`
         and `scenario` columns, or to other data columns simultaneously.
 
