@@ -264,7 +264,17 @@ def format_data(df, **kwargs):
     if df.empty:
         logger.warning('Formatted data is empty!')
 
-    return sort_data(df, idx_cols), time_col, extra_cols
+    df = format_time_col(sort_data(df, idx_cols), time_col)
+    return df, time_col, extra_cols
+
+
+def format_time_col(data, time_col):
+    """Format time_col to int (year) or datetime"""
+    if time_col == 'year':
+        data['year'] = to_int(pd.to_numeric(data['year']))
+    elif time_col == 'time':
+        data['time'] = pd.to_datetime(data['time'])
+    return data
 
 
 def _raise_data_error(msg, data):

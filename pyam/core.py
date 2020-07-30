@@ -32,9 +32,9 @@ from pyam.utils import (
     read_file,
     read_pandas,
     format_data,
+    format_time_col,
     sort_data,
     merge_meta,
-    to_int,
     find_depth,
     pattern_match,
     years_match,
@@ -133,7 +133,7 @@ class IamDataFrame(object):
         _df, self.time_col, self.extra_cols = _data
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
         # cast time_col to desired format
-        self._data = self.format_time_col(_df).set_index(self._LONG_IDX)
+        self._data = _df.set_index(self._LONG_IDX)
 
         # define `meta` dataframe for categorization & quantitative indicators
         self.meta = (
@@ -158,14 +158,6 @@ class IamDataFrame(object):
         # execute user-defined code
         if 'exec' in run_control():
             self._execute_run_control()
-
-    def format_time_col(self, data):
-        """Format time_col to int (year) or datetime"""
-        if self.time_col == 'year':
-            data['year'] = to_int(pd.to_numeric(data['year']))
-        elif self.time_col == 'time':
-            data['time'] = pd.to_datetime(data['time'])
-        return data
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
@@ -207,7 +199,8 @@ class IamDataFrame(object):
     @data.setter
     def data(self, df):
         """Set the timeseries data from a long :class:`pandas.DataFrame`"""
-        self._data = df.set_index(self._LONG_IDX)
+        self._data = format_time_col(df, self.time_col)\
+            .set_index(self._LONG_IDX)
 
     def copy(self):
         """Make a deepcopy of this object
