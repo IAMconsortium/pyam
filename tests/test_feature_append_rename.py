@@ -176,18 +176,18 @@ def test_rename_index(test_df):
     obs = test_df.rename(mapping, scenario={'scen_a': 'scen_c'})
 
     # test data changes
-    times = [2005, 2010] if 'year' in test_df.data else TEST_DTS
+    times = [2005, 2010] if obs.time_col == 'year' else obs.data.time.unique()
     exp = pd.DataFrame([
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
-    ], columns=IAMC_IDX + times
+    ], columns=IAMC_IDX + list(times)
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
     else:
-        obs.data.time = obs.data.time.dt.normalize()
         exp.columns = pd.to_datetime(exp.columns)
+
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
@@ -205,20 +205,20 @@ def test_rename_append(test_df):
     obs = test_df.rename(mapping, append=True)
 
     # test data changes
-    times = [2005, 2010] if "year" in test_df.data else TEST_DTS
+    times = [2005, 2010] if obs.time_col == 'year' else obs.data.time.unique()
     exp = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
         ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
-    ], columns=IAMC_IDX + times
+    ], columns=IAMC_IDX + list(times)
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
     else:
-        obs.data.time = obs.data.time.dt.normalize()
         exp.columns = pd.to_datetime(exp.columns)
+
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes

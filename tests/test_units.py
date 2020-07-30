@@ -1,23 +1,23 @@
 import pandas as pd
+import numpy.testing as npt
 import pint
 import pytest
 
 from pyam import IamDataFrame
 
-PRECISE_ARG = dict(check_less_precise=True)
-
 
 def get_units_test_df(test_df):
     # modify units in standard test dataframe
-    df = test_df.copy()
-    df.data.loc[0:1, 'unit'] = 'custom_unit'
-    return df
+    df = test_df.data
+    df.loc[0:1, 'unit'] = 'custom_unit'
+    return IamDataFrame(df)
 
 
 def assert_converted_units(df, current, to, exp, **kwargs):
     # testing for `inplace=False` - converted values and expected unit
     _df = df.convert_unit(current, to, **kwargs, inplace=False)
-    pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
+
+    npt.assert_allclose(_df._data.value, exp.values, rtol=1e-4)
     # When *to* is only a species symbol (e.g. 'co2e'), units are added and a
     # non-aliased symbol is returned (e.g. 'Mt CO2e'). Compare using 'in' and
     # lower().
@@ -25,7 +25,7 @@ def assert_converted_units(df, current, to, exp, **kwargs):
 
     # testing for `inplace=True` - converted values and expected unit
     df.convert_unit(current, to, **kwargs, inplace=True)
-    pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
+    npt.assert_allclose(df._data.value, exp.values, rtol=1e-4)
     assert to.lower() in df.data.unit[5].lower()
 
 
@@ -128,15 +128,12 @@ def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
         # pyam-style context
         context = f'gwp_{context}'
 
-    # Prepare input data
-    df = test_df.copy()
-    df['variable'] = [i.replace('Primary Energy', 'Emissions|CH4')
-                      for i in df['variable']]
-    df['unit'] = current
-
     # Expected values
-    exp_values = test_df.data.value * exp * exp_factor
+    exp_values = test_df._data.value.copy()
+    exp_values[[False, False, True, True, True, True]] *= exp * exp_factor
 
+    # Prepare test data and assert cenverted units
+    df = get_units_test_df(test_df).rename(unit={'EJ/yr': current})
     assert_converted_units(df.copy(), current, to, exp_values, context=context)
 
 
