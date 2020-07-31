@@ -523,13 +523,14 @@ def reduce_hierarchy(x, depth):
 
 
 def replace_index_value(index, level, current, to, verify_integrity=True):
+def replace_index_value(df, level, current, to, verify_integrity=True):
     """Replaces a value in a particular index level"""
     levels = []
-    for n, l in zip(index.names, index.levels):
+    for n, l in zip(df.index.names, df.index.levels):
         if n == level:
             levels.append([to if i == current else i for i in l])
         else:
             levels.append(l)
 
-    return pd.MultiIndex(codes=index.codes, names=index.names, levels=levels,
-                         verify_integrity=verify_integrity)
+    df.index = pd.MultiIndex(codes=df.index.codes, names=df.index.names,
+                             levels=levels, verify_integrity=verify_integrity)
