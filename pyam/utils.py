@@ -522,7 +522,14 @@ def reduce_hierarchy(x, depth):
     return '|'.join(_x[0:(depth + 1)])
 
 
-def replace_index_value(index, level, current, to, verify_integrity=True):
+def get_index_levels(df, level):
+    """Return the levels for a specific level"""
+    for i, n in enumerate(df.index.names):
+        if n == level:
+            return list(df.index.levels[i])
+
+    raise ValueError(f'This object does not have a level `{level}`!')
+
 def replace_index_value(df, level, current, to, verify_integrity=True):
     """Replaces a value in a particular index level"""
     levels = []
