@@ -10,13 +10,13 @@ def get_index_levels(df, level):
     raise ValueError(f'This object does not have an index level `{level}`!')
 
 
-def replace_index_value(df, level, current, to, verify_integrity=True):
+def replace_index_values(df, level, mapping, verify_integrity=True):
     """Replace a value in a particular index level"""
     levels = []
     has_level = False
     for n, l in zip(df.index.names, df.index.levels):
         if n == level:
-            levels.append([to if i == current else i for i in l])
+            levels.append([mapping[i] if i in mapping else i for i in l])
             has_level = True
         else:
             levels.append(l)
