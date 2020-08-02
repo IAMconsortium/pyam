@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def get_index_levels(df, level):
     """Return the levels for a specific level"""
     for i, n in enumerate(df.index.names):
