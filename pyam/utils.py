@@ -528,7 +528,8 @@ def get_index_levels(df, level):
         if n == level:
             return list(df.index.levels[i])
 
-    raise ValueError(f'This object does not have a level `{level}`!')
+    raise ValueError(f'This object does not have an index level `{level}`!')
+
 
 def replace_index_value(df, level, current, to, verify_integrity=True):
     """Replaces a value in a particular index level"""
