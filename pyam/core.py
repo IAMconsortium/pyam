@@ -117,6 +117,9 @@ class IamDataFrame(object):
 
     def _init(self, data, **kwargs):
         """Process data and set attributes for new instance"""
+        # pop kwarg for meta_sheet_name (prior to reading data from file)
+        meta_sheet = kwargs.pop('meta_sheet_name', 'meta')
+
         # import data from pd.DataFrame or read from source
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             meta = kwargs.pop('meta') if 'meta' in kwargs else None
@@ -150,7 +153,6 @@ class IamDataFrame(object):
                                    self.meta, ignore_meta_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
-        meta_sheet = kwargs.get('meta_sheet_name', 'meta')
         if isstr(data) and data.endswith('.xlsx') and meta_sheet is not False\
                 and meta_sheet in pd.ExcelFile(data).sheet_names:
             self.load_meta(data, sheet_name=meta_sheet)
@@ -1016,8 +1018,12 @@ class IamDataFrame(object):
 
         # else, append to `self` or return as `IamDataFrame`
         if append is True:
-            self.append(_df, region=region, inplace=True)
+            if not _df.empty:
+                self.append(_df, region=region, inplace=True)
         else:
+            # TODO remove this line after data refactoring
+            if _df.empty:
+                return _empty_iamframe(self._LONG_IDX + ['value'])
             return IamDataFrame(_df, region=region, meta=self.meta)
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
@@ -1806,6 +1812,11 @@ def _make_index(df, cols=META_IDX):
     return pd.MultiIndex.from_tuples(index, names=tuple(cols))
 
 
+def _empty_iamframe(index):
+    """Return an empty IamDataFrame with the correct index columns"""
+    return IamDataFrame(pd.DataFrame([], columns=index))
+
+
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     """Validate scenarios using criteria on timeseries values
 
@@ -1932,7 +1943,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     data = data.copy()
     idx = list(data.index.names) if not data.index.names == [None] else None
     data = data.reset_index().set_index(META_IDX)
-    meta = meta.loc[meta.index.intersection(data.index)]
+    meta = meta.loc[meta.index.intersection(data.index).drop_duplicates()]
     meta.index.names = META_IDX
     if apply_filter:
         data = data.loc[meta.index]
