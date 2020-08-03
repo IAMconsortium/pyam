@@ -23,7 +23,8 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     if factor:
         # Short code path: use an explicit conversion factor, don't use pint
         ret._data[where] *= factor
-        replace_index_values(ret._data, 'unit', {current: to}, False)
+        ret._data.index = replace_index_values(ret._data, 'unit',
+                                               {current: to}, False)
         return None if inplace else ret
 
     # Convert using a pint.UnitRegistry; default the one from iam_units
@@ -49,7 +50,8 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
 
     # Copy values from the result Quantity and assign units
     ret._data[where] = result.magnitude
-    replace_index_values(ret._data, 'unit', {current: to}, False)
+    ret._data.index = replace_index_values(ret._data, 'unit', {current: to},
+                                           False)
 
     return None if inplace else ret
 
