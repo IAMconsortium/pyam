@@ -14,18 +14,3 @@ def replace_index_values(df, level, mapping, verify_integrity=True):
     """Replace one or several values by mapping at a particular index level"""
     return df.index.set_levels([mapping[i] if i in mapping else i
                                 for i in get_index_levels(df, level)], level)
-
-    levels = []
-    has_level = False
-    for n, l in zip(df.index.names, df.index.levels):
-        if n == level:
-            levels.append([mapping[i] if i in mapping else i for i in l])
-            has_level = True
-        else:
-            levels.append(l)
-    if not has_level:
-        msg = f'This object does not have an index level `{level}`!'
-        raise ValueError(msg)
-
-    return pd.MultiIndex(codes=df.index.codes, names=df.index.names,
-                         levels=levels, verify_integrity=verify_integrity)
