@@ -11,7 +11,10 @@ def get_index_levels(df, level):
 
 
 def replace_index_values(df, level, mapping, verify_integrity=True):
-    """Replace a value in a particular index level"""
+    """Replace one or several values by mapping at a particular index level"""
+    return df.index.set_levels([mapping[i] if i in mapping else i
+                                for i in get_index_levels(df, level)], level)
+
     levels = []
     has_level = False
     for n, l in zip(df.index.names, df.index.levels):
