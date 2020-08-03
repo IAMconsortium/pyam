@@ -196,6 +196,8 @@ class IamDataFrame(object):
     @property
     def data(self):
         """Return the timeseries data as long :class:`pandas.DataFrame`"""
+        if self.empty:  # reset_index fails on empty with `datetime` column
+            return pd.DataFrame([], columns=self._LONG_IDX + ['value'])
         return self._data.reset_index()
 
     @data.setter
@@ -222,7 +224,7 @@ class IamDataFrame(object):
     @property
     def empty(self):
         """Indicator whether this object is empty"""
-        return self.data.empty
+        return self._data.empty
 
     def equals(self, other):
         """Test if two objects contain the same data and meta indicators
