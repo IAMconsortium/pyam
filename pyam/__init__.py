@@ -1,4 +1,4 @@
-import logging
+import logging  # noqa: F401
 
 from pyam.core import *
 from pyam.utils import *
