@@ -55,6 +55,7 @@ from pyam.plotting import mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
+from pyam.index import get_index_levels
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -136,7 +137,7 @@ class IamDataFrame(object):
         _df, self.time_col, self.extra_cols = _data
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
         # cast time_col to desired format
-        self._data = _df.set_index(self._LONG_IDX)
+        self._data = _df.set_index(self._LONG_IDX).value
 
         # define `meta` dataframe for categorization & quantitative indicators
         self.meta = (
@@ -204,7 +205,7 @@ class IamDataFrame(object):
     def data(self, df):
         """Set the timeseries data from a long :class:`pandas.DataFrame`"""
         self._data = format_time_col(df, self.time_col)\
-            .set_index(self._LONG_IDX)
+            .set_index(self._LONG_IDX).value
 
     def copy(self):
         """Make a deepcopy of this object
@@ -257,7 +258,7 @@ class IamDataFrame(object):
 
     def regions(self):
         """Get a list of regions"""
-        return pd.Series(self.data['region'].unique(), name='region')
+        return pd.Series(get_index_levels(self._data, 'region'), name='region')
 
     def variables(self, include_units=False):
         """Get a list of variables
@@ -267,11 +268,18 @@ class IamDataFrame(object):
         include_units : boolean, default False
             include the units
         """
-        if include_units:
-            return self.data[['variable', 'unit']].drop_duplicates()\
-                .reset_index(drop=True).sort_values('variable')
-        else:
-            return pd.Series(self.data.variable.unique(), name='variable')
+        if not include_units:
+            _var = 'variable'
+            return pd.Series(get_index_levels(self._data, _var), name=_var)
+
+        # else construct dataframe from variable and unit levels
+        return (
+            pd.DataFrame(zip(self._data.index.get_level_values('variable'),
+                             self._data.index.get_level_values('unit')),
+                         columns=['variable', 'unit'])
+            .drop_duplicates().sort_values('variable').reset_index(drop=True)
+        )
+
 
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
@@ -1286,6 +1294,7 @@ class IamDataFrame(object):
         ret = self.copy() if not inplace else self
         # TODO remove cast to list after refactoring `_apply_filters()`
         ret._data = ret._data[list(_keep)]
+        ret._data.index = ret._data.index.remove_unused_levels()
 
         idx = _make_index(ret.data)
         if len(idx) == 0:

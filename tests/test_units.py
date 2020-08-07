@@ -17,15 +17,15 @@ def assert_converted_units(df, current, to, exp, **kwargs):
     # testing for `inplace=False` - converted values and expected unit
     _df = df.convert_unit(current, to, **kwargs, inplace=False)
 
-    npt.assert_allclose(_df._data.value, exp.values, rtol=1e-4)
+    npt.assert_allclose(_df._data.values, exp.values, rtol=1e-4)
     # When *to* is only a species symbol (e.g. 'co2e'), units are added and a
     # non-aliased symbol is returned (e.g. 'Mt CO2e'). Compare using 'in' and
     # lower().
-    assert to.lower() in _df.data.unit[5].lower()
+    assert to.lower() in _df._data.index.get_level_values('unit')[5].lower()
 
     # testing for `inplace=True` - converted values and expected unit
     df.convert_unit(current, to, **kwargs, inplace=True)
-    npt.assert_allclose(df._data.value, exp.values, rtol=1e-4)
+    npt.assert_allclose(df._data, exp.values, rtol=1e-4)
     assert to.lower() in df.data.unit[5].lower()
 
 
@@ -129,7 +129,7 @@ def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
         context = f'gwp_{context}'
 
     # Expected values
-    exp_values = test_df._data.value.copy()
+    exp_values = test_df._data.copy()
     exp_values[[False, False, True, True, True, True]] *= exp * exp_factor
 
     # Prepare test data and assert cenverted units

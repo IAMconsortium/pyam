@@ -33,7 +33,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     # Make versions without -equiv
     _current, _to = [i.replace('-equiv', '') for i in [current, to]]
     # Pair of (magnitude, unit)
-    qty = [ret._data[where], _current]
+    qty = [ret.data.loc[where, 'value'].values, _current]
 
     try:
         # Create a vector pint.Quantity

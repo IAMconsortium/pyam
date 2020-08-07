@@ -196,9 +196,16 @@ def test_region(test_df):
 
 
 def test_variable(test_df):
-    exp = pd.Series(
-        data=['Primary Energy', 'Primary Energy|Coal'], name='variable')
+    exp = pd.Series(data=['Primary Energy', 'Primary Energy|Coal'],
+                    name='variable')
     pd.testing.assert_series_equal(test_df.variables(), exp)
+
+
+def test_variable_unit(test_df):
+    exp = pd.DataFrame(
+        [['Primary Energy', 'EJ/yr'], ['Primary Energy|Coal', 'EJ/yr']],
+        columns = ['variable', 'unit'])
+    pd.testing.assert_frame_equal(test_df.variables(include_units=True), exp)
 
 
 def test_variable_unit(test_df):
