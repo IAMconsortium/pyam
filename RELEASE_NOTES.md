@@ -1,6 +1,7 @@
 # Next release
 
-- [#416](https://github.com/IAMconsortium/pyam/pull/416) Include `meta` in new IamDataFrames returned by aggregation functions
+- [#418](https://github.com/IAMconsortium/pyam/pull/418) Read data from World Bank Open Data Catalogue as IamDataFrame.
+- [#416](https://github.com/IAMconsortium/pyam/pull/416) Include `meta` in new IamDataFrames returned by aggregation functions.
 
 # Release v0.7.0
 

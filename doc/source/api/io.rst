@@ -46,3 +46,15 @@ The data is returned as an :class:`IamDataFrame`.
 See `this tutorial <../tutorials/iiasa_dbs.html>`_ for more information.
 
 .. autofunction:: read_iiasa
+
+Connecting to other data resources
+----------------------------------
+
+The package :class:`pandas-datareader`
+(`read the docs <https://pandas-datareader.readthedocs.io>`_)
+implements a number of connections to publicly accessible data resources,
+e.g., the `World Bank Open Data Catalog <https://datacatalog.worldbank.org>`_.
+|pyam| provides a simple utility function to cast the queried timeseries data
+directly as an :class:`IamDataFrame`.
+
+.. autofunction:: read_worldbank

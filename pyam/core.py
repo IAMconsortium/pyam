@@ -792,6 +792,8 @@ class IamDataFrame(object):
         `iam-units <https://github.com/IAMconsortium/units>`_ package.
         This registry can also be accessed directly, using::
 
+        .. code-block:: python
+
             from iam_units import registry
 
         When using this registry, *current* and *to* may contain the symbols of
@@ -1992,7 +1994,7 @@ def read_datapackage(path, data='data', meta='meta'):
         (optional) resource containing a table of categorization and
         quantitative indicators
     """
-    if not HAS_DATAPACKAGE:
+    if not HAS_DATAPACKAGE:  # pragma: no cover
         raise ImportError('required package `datapackage` not found!')
 
     package = Package(path)
