@@ -315,15 +315,13 @@ class IamDataFrame(object):
         ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
-        _data = ret.data.set_index(sorted(ret._LONG_IDX)).append(
-            other.data.set_index(sorted(other._LONG_IDX)),
-            verify_integrity=True)
+        _data = ret._data.append(other._data, verify_integrity=True)
 
         # merge extra columns in `data` and set `self._LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
-        ret.data = sort_data(_data.reset_index(), ret._LONG_IDX)
+        ret._data = _data.sort_index()
 
         if not inplace:
             return ret
