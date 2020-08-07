@@ -204,7 +204,7 @@ def test_variable(test_df):
 def test_variable_unit(test_df):
     exp = pd.DataFrame(
         [['Primary Energy', 'EJ/yr'], ['Primary Energy|Coal', 'EJ/yr']],
-        columns = ['variable', 'unit'])
+        columns=['variable', 'unit'])
     pd.testing.assert_frame_equal(test_df.variables(include_units=True), exp)
 
 
