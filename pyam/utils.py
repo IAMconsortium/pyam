@@ -323,6 +323,7 @@ def merge_meta(left, right, ignore_meta_conflict=False):
 
     return left
 
+
 def find_depth(data, s='', level=None):
     """Return or assert the depth (number of ``|``) of variables
 

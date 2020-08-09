@@ -33,7 +33,6 @@ from pyam.utils import (
     read_pandas,
     format_data,
     format_time_col,
-    sort_data,
     merge_meta,
     find_depth,
     pattern_match,
@@ -237,7 +236,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        other: IamDataFrame
+        other : IamDataFrame
             the other :class:`IamDataFrame` to be compared with `self`
         """
         if not isinstance(other, IamDataFrame):
