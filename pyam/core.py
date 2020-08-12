@@ -1010,8 +1010,11 @@ class IamDataFrame(object):
 
         # else, append to `self` or return as `IamDataFrame`
         if append is True:
-            self.append(_df, region=region, inplace=True)
+            if not _df.empty:
+                self.append(_df, region=region, inplace=True)
         else:
+            if _df.empty:
+                return _empty_iamframe(self._LONG_IDX + ['value'])
             return IamDataFrame(_df, region=region, meta=self.meta)
 
     def check_aggregate_region(self, variable, region='World', subregions=None,
@@ -1794,6 +1797,11 @@ def _make_index(df, cols=META_IDX):
 
     index = pd.unique(list(zip(*[_get_col(col) for col in cols])))
     return pd.MultiIndex.from_tuples(index, names=tuple(cols))
+
+
+def _empty_iamframe(index):
+    """Return an empty IamDataFrame with the correct index columns"""
+    return IamDataFrame(pd.DataFrame([], columns=index))
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
