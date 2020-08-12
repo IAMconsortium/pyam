@@ -25,7 +25,7 @@ REQUIREMENTS = [
 ]
 
 EXTRA_REQUIREMENTS = {
-    'tests': ['coverage', 'coveralls', 'pytest<=6.0.0', 'pytest-cov',
+    'tests': ['coverage', 'coveralls', 'pytest<6.0.0', 'pytest-cov',
               'pytest-mpl'],
     'optional-io-formats': ['datapackage', 'pandas-datareader'],
     'deploy': ['twine', 'setuptools', 'wheel'],
