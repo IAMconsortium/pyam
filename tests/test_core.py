@@ -521,6 +521,24 @@ def test_timeseries_raises(test_df_year):
     pytest.raises(ValueError, _df.timeseries)
 
 
+def test_pivot_table(test_df):
+    dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a'] * 2,
+           'years': [2005, 2010], 'value': [1, 6]}
+    exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
+                                        columns=['years'], values='value')
+    obs = test_df.filter(scenario='scen_a',
+                        variable='Primary Energy').pivot_table(
+                            index=['model', 'scenario'], 
+                            columns=test_df.time_col, aggfunc='sum')
+    npt.assert_array_equal(obs, exp)
+
+
+def test_pivot_table_raises(test_df):
+    pytest.raises(ValueError, test_df.pivot_table, 
+                    index=['model', 'scenario']+[test_df.time_col], 
+                    columns=test_df.time_col)
+
+
 def test_filter_meta_index(test_df):
     obs = test_df.filter(scenario='scen_b').meta.index
     exp = pd.MultiIndex(levels=[['model_a'], ['scen_b']],

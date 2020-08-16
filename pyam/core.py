@@ -349,24 +349,25 @@ class IamDataFrame(object):
         index = [index] if isstr(index) else index
         columns = [columns] if isstr(columns) else columns
 
-        df = self.data
+        if values != 'value':
+            raise ValueError("This method only supports `values='value'`!")
+
+        df = self._data
 
         # allow 'aggfunc' to be passed as string for easier user interface
         if isstr(aggfunc):
             if aggfunc == 'count':
-                df = self.data.groupby(index + columns, as_index=False).count()
+                df = self._data.groupby(index + columns).count()
                 fill_value = 0
             elif aggfunc == 'mean':
-                df = self.data.groupby(index + columns, as_index=False).mean()\
+                df = self._data.groupby(index + columns).mean()\
                     .round(2)
-                aggfunc = np.sum
                 fill_value = 0 if style == 'heatmap' else ""
             elif aggfunc == 'sum':
-                aggfunc = np.sum
+                df = self._data.groupby(index + columns).sum()
                 fill_value = 0 if style == 'heatmap' else ""
 
-        df = df.pivot_table(values=values, index=index, columns=columns,
-                            aggfunc=aggfunc, fill_value=fill_value)
+        df = df.unstack(level=columns, fill_value=fill_value)
         return df
 
     def interpolate(self, time):
@@ -473,13 +474,8 @@ class IamDataFrame(object):
         if self.empty:
             raise ValueError('this `IamDataFrame` is empty')
 
-        index = IAMC_IDX if iamc_index else IAMC_IDX + self.extra_cols
-        df = (
-            self.data
-            .pivot_table(index=index, columns=self.time_col)
-            .value  # column name
-            .rename_axis(None, axis=1)
-        )
+        df = self._data.unstack(level=self.time_col).rename_axis(None, axis=1)
+
         if df.index.has_duplicates:
             raise ValueError('timeseries object has duplicates in index ',
                              'use `iamc_index=False`')
