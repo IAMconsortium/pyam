@@ -383,17 +383,21 @@ class IamDataFrame(object):
             raise ValueError(
                 'The `time` argument `{}` is not an integer'.format(time)
             )
-        index = [i for i in self._LONG_IDX if i not in [self.time_col]]
-        df = self.pivot_table(index=index, columns=[self.time_col],
-                              values='value', aggfunc=np.sum)
-        # drop time-rows where values are already defined
+
+        # get data in wide format, drop rows where value is already defined
+        df = self.timeseries()
         if time in df.columns:
             df = df[np.isnan(df[time])]
-        fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
-        fill_values = fill_values.dropna().reset_index()
-        fill_values = fill_values.rename(columns={0: "value"})
-        fill_values[self.time_col] = time
-        self.data = self.data.append(fill_values, ignore_index=True)
+        # apply fill series, re-add time dimension to index
+        fill_values = df.apply(fill_series, raw=False, axis=1, time=time).dropna()
+        fill_values.index = pd.MultiIndex(
+            codes=fill_values.index.codes + [[0] * len(fill_values)],
+            levels=fill_values.index.levels + [[time]],
+            names=fill_values.index.names + [self.time_col]
+        ).reorder_levels(self._data.index.names)
+        fill_values.name = 'value'
+        # append interpolated values to `_data` and sort index
+        self._data = self._data.append(fill_values).sort_index()
 
     def swap_time_for_year(self, inplace=False):
         """Convert the `time` column to `year`.
