@@ -524,19 +524,19 @@ def test_timeseries_raises(test_df_year):
 def test_pivot_table(test_df):
     dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a'] * 2,
            'years': [2005, 2010], 'value': [1, 6]}
-    exp = pd.DataFrame(dct).pivot_table(index=['model', 'scenario'],
-                                        columns=['years'], values='value')
-    obs = test_df.filter(scenario='scen_a',
-                        variable='Primary Energy').pivot_table(
-                            index=['model', 'scenario'], 
-                            columns=test_df.time_col, aggfunc='sum')
+    args = dict(index=['model', 'scenario'], columns=['years'], values='value')
+    exp = pd.DataFrame(dct).pivot_table(**args)
+    obs = test_df.filter(scenario='scen_a', variable='Primary Energy')\
+        .pivot_table(index=['model', 'scenario'], columns=test_df.time_col,
+                     aggfunc='sum')
     npt.assert_array_equal(obs, exp)
 
 
 def test_pivot_table_raises(test_df):
-    pytest.raises(ValueError, test_df.pivot_table, 
-                    index=['model', 'scenario']+[test_df.time_col], 
-                    columns=test_df.time_col)
+    # using the same dimension in both index and columns raises an error
+    pytest.raises(ValueError, test_df.pivot_table,
+                  index=['model', 'scenario'] + [test_df.time_col],
+                  columns=test_df.time_col)
 
 
 def test_filter_meta_index(test_df):
