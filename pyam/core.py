@@ -54,7 +54,7 @@ from pyam.plotting import mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
-from pyam.index import get_index_levels
+from pyam.index import get_index_levels, append_index_level
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -388,16 +388,16 @@ class IamDataFrame(object):
         df = self.timeseries()
         if time in df.columns:
             df = df[np.isnan(df[time])]
-        # apply fill series, re-add time dimension to index
-        fill_values = df.apply(fill_series, raw=False, axis=1, time=time).dropna()
-        fill_values.index = pd.MultiIndex(
-            codes=fill_values.index.codes + [[0] * len(fill_values)],
-            levels=fill_values.index.levels + [[time]],
-            names=fill_values.index.names + [self.time_col]
-        ).reorder_levels(self._data.index.names)
-        fill_values.name = 'value'
+
+        # apply fill_series, re-add time dimension to index, set series name
+        _values = df.apply(fill_series, raw=False, axis=1, time=time).dropna()
+        _values.index = append_index_level(
+            index=_values.index, codes=[0] * len(_values),
+            level=[time], name=self.time_col, order=self._data.index.names)
+        _values.name = 'value'
+
         # append interpolated values to `_data` and sort index
-        self._data = self._data.append(fill_values).sort_index()
+        self._data = self._data.append(_values).sort_index()
 
     def swap_time_for_year(self, inplace=False):
         """Convert the `time` column to `year`.
