@@ -1947,10 +1947,9 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     meta = meta[keep]
 
     # set the data index to META_IDX and apply filtered meta index
-    data = data.copy()
     idx = list(data.index.names) if not data.index.names == [None] else None
     data = data.reset_index().set_index(META_IDX)
-    meta = meta.loc[meta.index.intersection(data.index).drop_duplicates()]
+    meta = meta.loc[meta.index.intersection(data.index.drop_duplicates())]
     meta.index.names = META_IDX
     if apply_filter:
         data = data.loc[meta.index]
