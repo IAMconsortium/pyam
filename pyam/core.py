@@ -1028,7 +1028,6 @@ class IamDataFrame(object):
             if not _df.empty:
                 self.append(_df, region=region, inplace=True)
         else:
-            # TODO remove this line after data refactoring
             if _df.empty:
                 return _empty_iamframe(self._LONG_IDX + ['value'])
             return IamDataFrame(_df, region=region, meta=self.meta)
