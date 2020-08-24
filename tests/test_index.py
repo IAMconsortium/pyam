@@ -12,7 +12,7 @@ def test_get_index_levels(test_df_index):
 
 def test_get_index_levels_raises(test_df_index):
     """Assert that get_index_levels raises with non-existing level"""
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         get_index_levels(test_df_index, 'foo')
 
 
@@ -30,5 +30,5 @@ def test_replace_index_level(test_pd_df, test_df_index):
 
 def test_replace_index_level_raises(test_df_index):
     """Assert that replace_index_value raises with non-existing level"""
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         replace_index_values(test_df_index, 'foo', {'scen_a': 'scen_c'})

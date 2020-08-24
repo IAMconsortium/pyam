@@ -34,6 +34,7 @@ from pyam.utils import (
     format_data,
     format_time_col,
     merge_meta,
+    get_keep_col,
     find_depth,
     pattern_match,
     years_match,
@@ -1292,7 +1293,7 @@ class IamDataFrame(object):
         ret._data = ret._data[list(_keep)]
         ret._data.index = ret._data.index.remove_unused_levels()
 
-        idx = _make_index(ret.data)
+        idx = _make_index(ret._data)
         if len(idx) == 0:
             logger.warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
@@ -1304,13 +1305,13 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        filters: dict
+        filters : dict
             dictionary of filters of the format (`{col: values}`);
             uses a pseudo-regexp syntax by default,
             but accepts `regexp: True` in the dictionary to use regexp directly
         """
         regexp = filters.pop('regexp', False)
-        keep = np.array([True] * len(self.data))
+        keep = np.array([True] * len(self))
 
         # filter by columns and list of values
         for col, values in filters.items():
@@ -1322,13 +1323,14 @@ class IamDataFrame(object):
                 matches = pattern_match(self.meta[col], values, regexp=regexp,
                                         has_nan=True)
                 cat_idx = self.meta[matches].index
-                keep_col = (self.data[META_IDX].set_index(META_IDX)
-                                .index.isin(cat_idx))
+                keep_col = _make_index(self._data, unique=False).isin(cat_idx)
 
             elif col == 'variable':
                 level = filters['level'] if 'level' in filters else None
-                keep_col = pattern_match(self._data.index.get_level_values(3),
-                                         values, level, regexp)
+                col_values = pd.Series(get_index_levels(self._data, col))
+                where = pattern_match(col_values, values, level, regexp)
+
+                keep_col = get_keep_col(self._data, col_values[where], col)
 
             elif col == 'year':
                 _data = self.data[col] if self.time_col != 'time' \
@@ -1365,13 +1367,17 @@ class IamDataFrame(object):
 
             elif col == 'level':
                 if 'variable' not in filters.keys():
-                    keep_col = find_depth(self._data.index.get_level_values(3),
-                                          level=values)
+                    v = 'variable'
+                    col_values = pd.Series(get_index_levels(self._data, v))
+                    where = find_depth(col_values, level=values)
+                    keep_col = get_keep_col(self._data, col_values[where], v)
                 else:
                     continue
 
-            elif col in self.data.columns:
-                keep_col = pattern_match(self.data[col], values, regexp=regexp)
+            elif col in self._data.index.names:
+                col_values = pd.Series(get_index_levels(self._data, col))
+                where = pattern_match(col_values, values, regexp=regexp)
+                keep_col = get_keep_col(self._data, col_values[where], col)
 
             else:
                 _raise_filter_error(col)
@@ -1807,15 +1813,17 @@ def _apply_criteria(df, criteria, **kwargs):
     return df
 
 
-def _make_index(df, cols=META_IDX):
-    """Create an index from the columns of a dataframe or series"""
+def _make_index(df, cols=META_IDX, unique=True):
+    """Create an index from the columns/index of a dataframe or series"""
     def _get_col(c):
         try:
             return df.index.get_level_values(c)
         except KeyError:
             return df[c]
 
-    index = pd.unique(list(zip(*[_get_col(col) for col in cols])))
+    index = list(zip(*[_get_col(col) for col in cols]))
+    if unique:
+        index = pd.unique(index)
     return pd.MultiIndex.from_tuples(index, names=tuple(cols))
 
 
