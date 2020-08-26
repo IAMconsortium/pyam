@@ -16,7 +16,7 @@ from pyam import IamDataFrame, META_IDX, IAMC_IDX, iiasa
 try:
     iiasa.Connection()
     IIASA_UNAVAILABLE = False
-except ConnectionError:
+except ConnectionError:  # pragma: no cover
     IIASA_UNAVAILABLE = True
 
 TEST_API = 'integration-test'

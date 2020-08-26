@@ -325,7 +325,9 @@ intersphinx_mapping = {
     'numpy': ('https://numpy.org/doc/stable/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'pint': ('https://pint.readthedocs.io/en/stable', None),
-    'ixmp': ('https://message.iiasa.ac.at/projects/ixmp/en/stable/', None)
+    'ixmp': ('https://message.iiasa.ac.at/projects/ixmp/en/stable/', None),
+    'pandas_datareader':
+        ('https://pandas-datareader.readthedocs.io/en/stable', None)
 }
 
 # extend the timeout limit for running notebooks
