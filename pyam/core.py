@@ -602,11 +602,10 @@ class IamDataFrame(object):
                           ('linestyle', linestyle)]:
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
-
         # find all data that matches categorization
-        rows = _apply_criteria(self.data, criteria,
+        rows = _apply_criteria(self._data, criteria,
                                in_range=True, return_test='all')
-        idx = _meta_idx(rows)
+        idx = _make_index(rows)
 
         if len(idx) == 0:
             logger.info("No scenarios satisfy the criteria")
@@ -683,7 +682,7 @@ class IamDataFrame(object):
         exclude_on_fail : bool, optional
             flag scenarios failing validation as `exclude: True`
         """
-        df = _apply_criteria(self.data, criteria, in_range=False)
+        df = _apply_criteria(self._data, criteria, in_range=False)
 
         if not df.empty:
             msg = '{} of {} data points do not satisfy the criteria'
@@ -691,7 +690,6 @@ class IamDataFrame(object):
 
             if exclude_on_fail and len(df) > 0:
                 self._exclude_on_fail(df)
-
             return df
 
     def rename(self, mapping=None, inplace=False, append=False,
@@ -1254,7 +1252,7 @@ class IamDataFrame(object):
 
     def _exclude_on_fail(self, df):
         """Assign a selection of scenarios as `exclude: True` in meta"""
-        idx = df if isinstance(df, pd.MultiIndex) else _meta_idx(df)
+        idx = df if isinstance(df, pd.MultiIndex) else _make_index(df)
         self.meta.loc[idx, 'exclude'] = True
         logger.info('{} non-valid scenario{} will be excluded'
                       .format(len(idx), '' if len(idx) == 1 else 's'))
@@ -1775,17 +1773,19 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
     if not set(check.keys()).issubset(valid_checks):
         msg = 'Unknown checking type: {}'
         raise ValueError(msg.format(check.keys() - valid_checks))
-
-    if 'year' not in rows:
-        rows = rows.copy()
-        rows['year'] = rows['time'].apply(lambda x: x.year)
-
-    where_idx = set(rows.index[rows['year'] == check['year']]) \
+    if 'time' in rows.index.names:
+        where_idx = set(rows.index[rows.index.get_level_values('time').year
+                                    == check['year']]) \
+        if 'year' in check else set(rows.index)
+        
+    else:
+        where_idx = set(rows.index[rows.index.get_level_values('year') 
+                                        == check['year']]) \
         if 'year' in check else set(rows.index)
     rows = rows.loc[list(where_idx)]
 
-    up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
-    lo_op = rows['value'].__ge__ if in_range else rows['value'].__lt__
+    up_op = rows.values.__le__ if in_range else rows.values.__gt__
+    lo_op = rows.values.__ge__ if in_range else rows.values.__lt__
 
     check_idx = []
     for (bd, op) in [('up', up_op), ('lo', lo_op)]:
@@ -1805,7 +1805,7 @@ def _apply_criteria(df, criteria, **kwargs):
     """Apply criteria individually to every model/scenario instance"""
     idxs = []
     for var, check in criteria.items():
-        _df = df[df['variable'] == var]
+        _df = df[df.index.get_level_values('variable') == var]
         for group in _df.groupby(META_IDX):
             grp_idxs = _check_rows(group[-1], check, **kwargs)
             idxs.append(grp_idxs)
