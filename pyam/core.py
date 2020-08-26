@@ -1773,7 +1773,7 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
     if not set(check.keys()).issubset(valid_checks):
         msg = 'Unknown checking type: {}'
         raise ValueError(msg.format(check.keys() - valid_checks))
-    if not 'year' in check:
+    if 'year' not in check:
         where_idx = set(rows.index)
     else:
         if 'time' in rows.index.names:
