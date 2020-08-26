@@ -1773,16 +1773,15 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
     if not set(check.keys()).issubset(valid_checks):
         msg = 'Unknown checking type: {}'
         raise ValueError(msg.format(check.keys() - valid_checks))
-    if 'time' in rows.index.names:
-        where_idx = set(rows.index[rows.index.get_level_values('time').year
-                                   == check['year']]) \
-            if 'year' in check else set(rows.index)
-
+    if not 'year' in check:
+        where_idx = set(rows.index)
     else:
-        where_idx = set(rows.index[rows.index.get_level_values('year')
-                                   == check['year']]) \
-        if 'year' in check else set(rows.index)
-    rows = rows.loc[list(where_idx)]
+        if 'time' in rows.index.names:
+            _years = rows.index.get_level_values('time').year
+        else:
+            _years = rows.index.get_level_values('year')
+        where_idx = set(rows.index[_years == check['year']])
+        rows = rows.loc[list(where_idx)]
 
     up_op = rows.values.__le__ if in_range else rows.values.__gt__
     lo_op = rows.values.__ge__ if in_range else rows.values.__lt__
