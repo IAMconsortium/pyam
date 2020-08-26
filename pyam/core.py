@@ -1775,12 +1775,12 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
         raise ValueError(msg.format(check.keys() - valid_checks))
     if 'time' in rows.index.names:
         where_idx = set(rows.index[rows.index.get_level_values('time').year
-                                    == check['year']]) \
-        if 'year' in check else set(rows.index)
-        
+                                   == check['year']]) \
+            if 'year' in check else set(rows.index)
+
     else:
-        where_idx = set(rows.index[rows.index.get_level_values('year') 
-                                        == check['year']]) \
+        where_idx = set(rows.index[rows.index.get_level_values('year')
+                                   == check['year']]) \
         if 'year' in check else set(rows.index)
     rows = rows.loc[list(where_idx)]
 

@@ -208,13 +208,6 @@ def test_variable_unit(test_df):
     pd.testing.assert_frame_equal(test_df.variables(include_units=True), exp)
 
 
-def test_variable_unit(test_df):
-    dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
-           'unit': ['EJ/yr', 'EJ/yr']}
-    exp = pd.DataFrame.from_dict(dct)[['variable', 'unit']]
-    npt.assert_array_equal(test_df.variables(include_units=True), exp)
-
-
 def test_filter_empty_df():
     # test for issue seen in #254
     df = IamDataFrame(data=df_empty)
@@ -428,7 +421,7 @@ def test_filter_time_range_hour(test_df, hour_range):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `hour` not supported")
         with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(hour=hour_range)
+            test_df.filter(hour=hour_range)
     else:
         obs = test_df.filter(hour=hour_range)
 
@@ -623,7 +616,7 @@ def test_validate_up(test_df):
     else:
         exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
         assert pd.to_datetime(obs.index.get_level_values('time')
-                                    .values[0]).date() == exp_time
+                              .values[0]).date() == exp_time
 
     assert list(test_df['exclude']) == [False, False]  # assert none excluded
 
@@ -636,7 +629,7 @@ def test_validate_lo(test_df):
     else:
         exp_year = pd.to_datetime(datetime.datetime(2005, 6, 17))
         assert pd.to_datetime(obs.index.get_level_values('time')
-                                .values[0]).date() == exp_year
+                              .values[0]).date() == exp_year
 
     assert list(obs.index.get_level_values('scenario').values) == ['scen_a']
 
@@ -649,12 +642,12 @@ def test_validate_both(test_df):
     else:
         exp_time = pd.to_datetime(TEST_DTS)
         obs.index.set_levels(obs.index.get_level_values('time')
-                                .normalize(), level = 5)
+                                .normalize(), level=5)
         assert (pd.to_datetime(obs.index.get_level_values('time').values)
-                                .date == exp_time).all()
+                .date == exp_time).all()
 
-    assert list((obs.index.get_level_values('scenario').values) 
-                                            == ['scen_a', 'scen_b'])
+    exp = ['scen_a', 'scen_b']
+    assert list(obs.index.get_level_values('scenario').values) == exp
 
 
 def test_validate_year(test_df):
@@ -679,10 +672,9 @@ def test_validate_top_level(test_df):
     if 'year' in test_df._data.index.names:
         assert obs.index.get_level_values('year').values[0] == 2010
     else:
-        exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
-        obs_time = pd.to_datetime(
-                        obs.index.get_level_values('time').values[0]).date()
-        assert (obs_time == exp_time)
+        exp_time = datetime.datetime(2010, 7, 21).date()
+        obs_time = obs.index.get_level_values('time')[0].date()
+        assert exp_time == obs_time
     assert list(test_df['exclude']) == [False, True]
 
 
