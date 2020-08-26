@@ -406,7 +406,7 @@ def test_filter_time_range_day(test_df, day_range):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `day` not supported")
         with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(day=day_range)
+            test_df.filter(day=day_range)
     else:
         obs = test_df.filter(day=day_range)
         expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
