@@ -140,12 +140,7 @@ class IamDataFrame(object):
         self._data = _df.set_index(self._LONG_IDX).value
 
         # define `meta` dataframe for categorization & quantitative indicators
-        self.meta = (
-            pd.DataFrame(zip(self._data.index.get_level_values(0),
-                             self._data.index.get_level_values(1)),
-                         columns=META_IDX)
-            .drop_duplicates().set_index(META_IDX)
-        )
+        self.meta = pd.DataFrame(index=_make_index(self._data))
         self.reset_exclude()
 
         # merge meta dataframe (if given in kwargs)
