@@ -165,11 +165,15 @@ class IamDataFrame(object):
             return self.data.__getitem__(key)
 
     def __setitem__(self, key, value):
+        deprecation_warning('Please use `set_meta` or `rename`.',
+                            'Item assignment')
         _key_check = [key] if isstr(key) else key
         if set(_key_check).issubset(self.meta.columns):
-            return self.meta.__setitem__(key, value)
+            self.meta.__setitem__(key, value)
         else:
-            return self.data.__setitem__(key, value)
+            df = self.data
+            df.__setitem__(key, value)
+            self.data = df
 
     def __len__(self):
         return self.data.__len__()
