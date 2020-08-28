@@ -1,6 +1,17 @@
 # Next release
 
-- [#420](https://github.com/IAMconsortium/pyam/pull/420) Refactor `data` object to a pandas.Series 
+## Notes
+
+PR [#420](https://github.com/IAMconsortium/pyam/pull/420) added
+an object `IamDataFrame._data` to handle timeseries data internally. 
+This is implemented as a `pandas.Series` (instead of the previous long-format
+`pandas.DataFrame`) to improve performance.
+The previous behaviour with `IamDataFrame.data` is maintained
+via getter and setter functions.
+
+## Individual updates
+
+- [#420](https://github.com/IAMconsortium/pyam/pull/420) Add a `_data` object (implemented as a pandas.Series) to handle timeseries data internally.
 - [#418](https://github.com/IAMconsortium/pyam/pull/418) Read data from World Bank Open Data Catalogue as IamDataFrame.
 - [#416](https://github.com/IAMconsortium/pyam/pull/416) Include `meta` in new IamDataFrames returned by aggregation functions.
 
