@@ -7,8 +7,8 @@ from pyam import compare, IAMC_IDX
 
 def test_compare(test_df):
     clone = test_df.copy()
-    clone.data.iloc[0, clone.data.columns.get_loc('value')] = 2
-    clone.rename({'variable': {'Primary Energy|Coal': 'Primary Energy|Gas'}},
+    clone._data.iloc[0] = 2
+    clone.rename(variable={'Primary Energy|Coal': 'Primary Energy|Gas'},
                  inplace=True)
 
     obs = compare(test_df, clone, right_label='test_df', left_label='clone')
@@ -26,7 +26,7 @@ def test_compare(test_df):
     exp['scenario'] = 'scen_a'
     exp['region'] = 'World'
     time_col = 'time'
-    if 'year' in test_df.data.columns:
+    if test_df.time_col == 'year':
         exp['year'] = exp['time'].apply(lambda x: x.year)
         exp = exp.drop('time', axis='columns')
         time_col = 'year'

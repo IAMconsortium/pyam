@@ -21,7 +21,7 @@ def test_pattern_match_nan():
     data = pd.Series(['foo', np.nan])
     values = ['baz']
 
-    obs = utils.pattern_match(data, values)
+    obs = utils.pattern_match(data, values, has_nan=True)
     assert (obs == [False, False]).all()
 
 

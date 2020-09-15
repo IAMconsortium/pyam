@@ -176,7 +176,7 @@ def test_aggregate_region(simple_df, variable):
 
     # check custom `region` (will include `World`, so double-count values)
     foo = exp.rename(region={'World': 'foo'})
-    foo.data.value = foo.data.value * 2
+    foo._data = foo._data * 2
     assert_iamframe_equal(simple_df.aggregate_region(variable, region='foo'),
                           foo)
 

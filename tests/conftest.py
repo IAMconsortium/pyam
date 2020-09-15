@@ -141,10 +141,16 @@ def test_df_year():
     yield df
 
 
-# minimal test data provided as pandas.DataFrame (only 'year' time format)
+# minimal test data as pandas.DataFrame (only 'year' time format)
 @pytest.fixture(scope="function")
 def test_pd_df():
     yield TEST_DF.copy()
+
+
+# minimal test data as pandas.DataFrame with index (only 'year' time format)
+@pytest.fixture(scope="function")
+def test_df_index():
+    yield TEST_DF.set_index(IAMC_IDX)
 
 
 # IamDataFrame with variable-and-region-structure for testing aggregation tools

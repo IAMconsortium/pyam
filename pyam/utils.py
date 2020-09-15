@@ -264,7 +264,17 @@ def format_data(df, **kwargs):
     if df.empty:
         logger.warning('Formatted data is empty!')
 
-    return sort_data(df, idx_cols), time_col, extra_cols
+    df = format_time_col(sort_data(df, idx_cols), time_col)
+    return df, time_col, extra_cols
+
+
+def format_time_col(data, time_col):
+    """Format time_col to int (year) or datetime"""
+    if time_col == 'year':
+        data['year'] = to_int(pd.to_numeric(data['year']))
+    elif time_col == 'time':
+        data['time'] = pd.to_datetime(data['time'])
+    return data
 
 
 def _raise_data_error(msg, data):
@@ -313,6 +323,20 @@ def merge_meta(left, right, ignore_meta_conflict=False):
 
     return left
 
+
+def get_keep_col(data, values, col):
+    """Return a list of booleans by filtering on values"""
+    keep_col = np.array([False] * len(data))
+    for v in values:
+        slc = data.index.get_loc_level(v, level=col)[0]
+        if isinstance(slc, slice):
+            for i in range(slc.start, slc.stop, slc.step if slc.step else 1):
+                keep_col[i] = True
+        else:
+            keep_col = np.logical_or(keep_col, slc)
+    return keep_col
+
+
 def find_depth(data, s='', level=None):
     """Return or assert the depth (number of ``|``) of variables
 
@@ -356,7 +380,7 @@ def find_depth(data, s='', level=None):
     return list(map(test, n_pipes))
 
 
-def pattern_match(data, values, level=None, regexp=False, has_nan=True):
+def pattern_match(data, values, level=None, regexp=False, has_nan=False):
     """Return list where data matches values
 
     The function matches model/scenario names, variables, regions

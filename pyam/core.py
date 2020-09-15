@@ -32,9 +32,9 @@ from pyam.utils import (
     read_file,
     read_pandas,
     format_data,
-    sort_data,
+    format_time_col,
     merge_meta,
-    to_int,
+    get_keep_col,
     find_depth,
     pattern_match,
     years_match,
@@ -55,13 +55,14 @@ from pyam.plotting import mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
+from pyam.index import get_index_levels, append_index_level
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """Scenario timeseries data
+    """Scenario timeseries data following the IAMC-structure
 
     The class provides a number of diagnostic features (including validation of
     data, completeness of variables provided), processing tools (e.g.,
@@ -133,17 +134,13 @@ class IamDataFrame(object):
             logger.info('Reading file `{}`'.format(data))
             _data = read_file(data, **kwargs)
 
-        self.data, self.time_col, self.extra_cols = _data
-        # cast time_col to desired format
-        if self.time_col == 'year':
-            self._format_year_col()
-        elif self.time_col == 'time':
-            self._format_datetime_col()
-
+        _df, self.time_col, self.extra_cols = _data
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
+        # cast time_col to desired format
+        self._data = _df.set_index(self._LONG_IDX).value
 
         # define `meta` dataframe for categorization & quantitative indicators
-        self.meta = self.data[META_IDX].drop_duplicates().set_index(META_IDX)
+        self.meta = pd.DataFrame(index=_make_index(self._data))
         self.reset_exclude()
 
         # merge meta dataframe (if given in kwargs)
@@ -160,12 +157,6 @@ class IamDataFrame(object):
         if 'exec' in run_control():
             self._execute_run_control()
 
-    def _format_year_col(self):
-        self.data['year'] = to_int(pd.to_numeric(self.data['year']))
-
-    def _format_datetime_col(self):
-        self.data['time'] = pd.to_datetime(self.data['time'])
-
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
         if set(_key_check).issubset(self.meta.columns):
@@ -174,11 +165,15 @@ class IamDataFrame(object):
             return self.data.__getitem__(key)
 
     def __setitem__(self, key, value):
+        deprecation_warning('Please use `set_meta` or `rename`.',
+                            'Item assignment')
         _key_check = [key] if isstr(key) else key
         if set(_key_check).issubset(self.meta.columns):
-            return self.meta.__setitem__(key, value)
+            self.meta.__setitem__(key, value)
         else:
-            return self.data.__setitem__(key, value)
+            df = self.data
+            df.__setitem__(key, value)
+            self.data = df
 
     def __len__(self):
         return self.data.__len__()
@@ -198,6 +193,19 @@ class IamDataFrame(object):
                 f = getattr(mod, func)
                 f(self)
 
+    @property
+    def data(self):
+        """Return the timeseries data as long :class:`pandas.DataFrame`"""
+        if self.empty:  # reset_index fails on empty with `datetime` column
+            return pd.DataFrame([], columns=self._LONG_IDX + ['value'])
+        return self._data.reset_index()
+
+    @data.setter
+    def data(self, df):
+        """Set the timeseries data from a long :class:`pandas.DataFrame`"""
+        self._data = format_time_col(df, self.time_col)\
+            .set_index(self._LONG_IDX).value
+
     def copy(self):
         """Make a deepcopy of this object
 
@@ -216,7 +224,7 @@ class IamDataFrame(object):
     @property
     def empty(self):
         """Indicator whether this object is empty"""
-        return self.data.empty
+        return self._data.empty
 
     def equals(self, other):
         """Test if two objects contain the same data and meta indicators
@@ -228,7 +236,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        other: IamDataFrame
+        other : IamDataFrame
             the other :class:`IamDataFrame` to be compared with `self`
         """
         if not isinstance(other, IamDataFrame):
@@ -249,7 +257,7 @@ class IamDataFrame(object):
 
     def regions(self):
         """Get a list of regions"""
-        return pd.Series(self.data['region'].unique(), name='region')
+        return pd.Series(get_index_levels(self._data, 'region'), name='region')
 
     def variables(self, include_units=False):
         """Get a list of variables
@@ -259,11 +267,18 @@ class IamDataFrame(object):
         include_units : boolean, default False
             include the units
         """
-        if include_units:
-            return self.data[['variable', 'unit']].drop_duplicates()\
-                .reset_index(drop=True).sort_values('variable')
-        else:
-            return pd.Series(self.data.variable.unique(), name='variable')
+        if not include_units:
+            _var = 'variable'
+            return pd.Series(get_index_levels(self._data, _var), name=_var)
+
+        # else construct dataframe from variable and unit levels
+        return (
+            pd.DataFrame(zip(self._data.index.get_level_values('variable'),
+                             self._data.index.get_level_values('unit')),
+                         columns=['variable', 'unit'])
+            .drop_duplicates().sort_values('variable').reset_index(drop=True)
+        )
+
 
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
@@ -299,15 +314,13 @@ class IamDataFrame(object):
         ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
-        _data = ret.data.set_index(sorted(ret._LONG_IDX)).append(
-            other.data.set_index(sorted(other._LONG_IDX)),
-            verify_integrity=True)
+        _data = ret._data.append(other._data, verify_integrity=True)
 
         # merge extra columns in `data` and set `self._LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
-        ret.data = sort_data(_data.reset_index(), ret._LONG_IDX)
+        ret._data = _data.sort_index()
 
         if not inplace:
             return ret
@@ -336,24 +349,25 @@ class IamDataFrame(object):
         index = [index] if isstr(index) else index
         columns = [columns] if isstr(columns) else columns
 
-        df = self.data
+        if values != 'value':
+            raise ValueError("This method only supports `values='value'`!")
+
+        df = self._data
 
         # allow 'aggfunc' to be passed as string for easier user interface
         if isstr(aggfunc):
             if aggfunc == 'count':
-                df = self.data.groupby(index + columns, as_index=False).count()
+                df = self._data.groupby(index + columns).count()
                 fill_value = 0
             elif aggfunc == 'mean':
-                df = self.data.groupby(index + columns, as_index=False).mean()\
+                df = self._data.groupby(index + columns).mean()\
                     .round(2)
-                aggfunc = np.sum
                 fill_value = 0 if style == 'heatmap' else ""
             elif aggfunc == 'sum':
-                aggfunc = np.sum
+                df = self._data.groupby(index + columns).sum()
                 fill_value = 0 if style == 'heatmap' else ""
 
-        df = df.pivot_table(values=values, index=index, columns=columns,
-                            aggfunc=aggfunc, fill_value=fill_value)
+        df = df.unstack(level=columns, fill_value=fill_value)
         return df
 
     def interpolate(self, time):
@@ -369,17 +383,21 @@ class IamDataFrame(object):
             raise ValueError(
                 'The `time` argument `{}` is not an integer'.format(time)
             )
-        index = [i for i in self._LONG_IDX if i not in [self.time_col]]
-        df = self.pivot_table(index=index, columns=[self.time_col],
-                              values='value', aggfunc=np.sum)
-        # drop time-rows where values are already defined
+
+        # get data in wide format, drop rows where value is already defined
+        df = self.timeseries()
         if time in df.columns:
             df = df[np.isnan(df[time])]
-        fill_values = df.apply(fill_series, raw=False, axis=1, time=time)
-        fill_values = fill_values.dropna().reset_index()
-        fill_values = fill_values.rename(columns={0: "value"})
-        fill_values[self.time_col] = time
-        self.data = self.data.append(fill_values, ignore_index=True)
+
+        # apply fill_series, re-add time dimension to index, set series name
+        _values = df.apply(fill_series, raw=False, axis=1, time=time).dropna()
+        _values.index = append_index_level(
+            index=_values.index, codes=[0] * len(_values),
+            level=[time], name=self.time_col, order=self._data.index.names)
+        _values.name = 'value'
+
+        # append interpolated values to `_data` and sort index
+        self._data = self._data.append(_values).sort_index()
 
     def swap_time_for_year(self, inplace=False):
         """Convert the `time` column to `year`.
@@ -399,14 +417,16 @@ class IamDataFrame(object):
 
         ret = self.copy() if not inplace else self
 
-        ret.data["year"] = ret.data["time"].apply(lambda x: x.year)
-        ret.data = ret.data.drop("time", axis="columns")
+        _data = ret.data
+        _data["year"] = _data["time"].apply(lambda x: x.year)
+        _data = _data.drop("time", axis="columns")
         ret._LONG_IDX = [v if v != "time" else "year" for v in ret._LONG_IDX]
 
-        if any(ret.data[ret._LONG_IDX].duplicated()):
+        if any(_data[ret._LONG_IDX].duplicated()):
             error_msg = ('swapping time for year will result in duplicate '
                          'rows in `data`!')
             raise ValueError(error_msg)
+        ret._data = _data.set_index(IAMC_IDX)
 
         if not inplace:
             return ret
@@ -458,13 +478,8 @@ class IamDataFrame(object):
         if self.empty:
             raise ValueError('this `IamDataFrame` is empty')
 
-        index = IAMC_IDX if iamc_index else IAMC_IDX + self.extra_cols
-        df = (
-            self.data
-            .pivot_table(index=index, columns=self.time_col)
-            .value  # column name
-            .rename_axis(None, axis=1)
-        )
+        df = self._data.unstack(level=self.time_col).rename_axis(None, axis=1)
+
         if df.index.has_duplicates:
             raise ValueError('timeseries object has duplicates in index ',
                              'use `iamc_index=False`')
@@ -586,11 +601,10 @@ class IamDataFrame(object):
                           ('linestyle', linestyle)]:
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
-
         # find all data that matches categorization
-        rows = _apply_criteria(self.data, criteria,
+        rows = _apply_criteria(self._data, criteria,
                                in_range=True, return_test='all')
-        idx = _meta_idx(rows)
+        idx = _make_index(rows)
 
         if len(idx) == 0:
             logger.info("No scenarios satisfy the criteria")
@@ -667,7 +681,7 @@ class IamDataFrame(object):
         exclude_on_fail : bool, optional
             flag scenarios failing validation as `exclude: True`
         """
-        df = _apply_criteria(self.data, criteria, in_range=False)
+        df = _apply_criteria(self._data, criteria, in_range=False)
 
         if not df.empty:
             msg = '{} of {} data points do not satisfy the criteria'
@@ -675,7 +689,6 @@ class IamDataFrame(object):
 
             if exclude_on_fail and len(df) > 0:
                 self._exclude_on_fail(df)
-
             return df
 
     def rename(self, mapping=None, inplace=False, append=False,
@@ -685,7 +698,7 @@ class IamDataFrame(object):
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
 
-        Renaming is only applied to any data where a filter matches for all
+        Renaming is only applied to any data row that matches for all
         columns given in `mapping`. Renaming can only be applied to the `model`
         and `scenario` columns, or to other data columns simultaneously.
 
@@ -744,7 +757,9 @@ class IamDataFrame(object):
         idx = ret.meta.index.isin(_make_index(ret.data[rows]))
 
         # if `check_duplicates`, do the rename on a copy until after the check
-        _data = ret.data.copy() if check_duplicates else ret.data
+        # _data = ret.data.copy() if check_duplicates else ret.data
+        # TODO reactivate this avoidance of creating a copy
+        _data = ret.data
 
         # apply renaming changes
         for col, _mapping in mapping.items():
@@ -1238,7 +1253,7 @@ class IamDataFrame(object):
 
     def _exclude_on_fail(self, df):
         """Assign a selection of scenarios as `exclude: True` in meta"""
-        idx = df if isinstance(df, pd.MultiIndex) else _meta_idx(df)
+        idx = df if isinstance(df, pd.MultiIndex) else _make_index(df)
         self.meta.loc[idx, 'exclude'] = True
         logger.info('{} non-valid scenario{} will be excluded'
                       .format(len(idx), '' if len(idx) == 1 else 's'))
@@ -1273,9 +1288,11 @@ class IamDataFrame(object):
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = self.copy() if not inplace else self
-        ret.data = ret.data[_keep]
+        # TODO remove cast to list after refactoring `_apply_filters()`
+        ret._data = ret._data[list(_keep)]
+        ret._data.index = ret._data.index.remove_unused_levels()
 
-        idx = _make_index(ret.data)
+        idx = _make_index(ret._data)
         if len(idx) == 0:
             logger.warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
@@ -1287,13 +1304,13 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        filters: dict
+        filters : dict
             dictionary of filters of the format (`{col: values}`);
             uses a pseudo-regexp syntax by default,
             but accepts `regexp: True` in the dictionary to use regexp directly
         """
         regexp = filters.pop('regexp', False)
-        keep = np.array([True] * len(self.data))
+        keep = np.array([True] * len(self))
 
         # filter by columns and list of values
         for col, values in filters.items():
@@ -1302,14 +1319,17 @@ class IamDataFrame(object):
                 continue
 
             if col in self.meta.columns:
-                matches = pattern_match(self.meta[col], values, regexp=regexp)
+                matches = pattern_match(self.meta[col], values, regexp=regexp,
+                                        has_nan=True)
                 cat_idx = self.meta[matches].index
-                keep_col = (self.data[META_IDX].set_index(META_IDX)
-                                .index.isin(cat_idx))
+                keep_col = _make_index(self._data, unique=False).isin(cat_idx)
 
             elif col == 'variable':
                 level = filters['level'] if 'level' in filters else None
-                keep_col = pattern_match(self.data[col], values, level, regexp)
+                col_values = pd.Series(get_index_levels(self._data, col))
+                where = pattern_match(col_values, values, level, regexp)
+
+                keep_col = get_keep_col(self._data, col_values[where], col)
 
             elif col == 'year':
                 _data = self.data[col] if self.time_col != 'time' \
@@ -1346,12 +1366,17 @@ class IamDataFrame(object):
 
             elif col == 'level':
                 if 'variable' not in filters.keys():
-                    keep_col = find_depth(self.data['variable'], level=values)
+                    v = 'variable'
+                    col_values = pd.Series(get_index_levels(self._data, v))
+                    where = find_depth(col_values, level=values)
+                    keep_col = get_keep_col(self._data, col_values[where], v)
                 else:
                     continue
 
-            elif col in self.data.columns:
-                keep_col = pattern_match(self.data[col], values, regexp=regexp)
+            elif col in self._data.index.names:
+                col_values = pd.Series(get_index_levels(self._data, col))
+                where = pattern_match(col_values, values, regexp=regexp)
+                keep_col = get_keep_col(self._data, col_values[where], col)
 
             else:
                 _raise_filter_error(col)
@@ -1749,17 +1774,18 @@ def _check_rows(rows, check, in_range=True, return_test='any'):
     if not set(check.keys()).issubset(valid_checks):
         msg = 'Unknown checking type: {}'
         raise ValueError(msg.format(check.keys() - valid_checks))
+    if 'year' not in check:
+        where_idx = set(rows.index)
+    else:
+        if 'time' in rows.index.names:
+            _years = rows.index.get_level_values('time').year
+        else:
+            _years = rows.index.get_level_values('year')
+        where_idx = set(rows.index[_years == check['year']])
+        rows = rows.loc[list(where_idx)]
 
-    if 'year' not in rows:
-        rows = rows.copy()
-        rows['year'] = rows['time'].apply(lambda x: x.year)
-
-    where_idx = set(rows.index[rows['year'] == check['year']]) \
-        if 'year' in check else set(rows.index)
-    rows = rows.loc[list(where_idx)]
-
-    up_op = rows['value'].__le__ if in_range else rows['value'].__gt__
-    lo_op = rows['value'].__ge__ if in_range else rows['value'].__lt__
+    up_op = rows.values.__le__ if in_range else rows.values.__gt__
+    lo_op = rows.values.__ge__ if in_range else rows.values.__lt__
 
     check_idx = []
     for (bd, op) in [('up', up_op), ('lo', lo_op)]:
@@ -1779,7 +1805,7 @@ def _apply_criteria(df, criteria, **kwargs):
     """Apply criteria individually to every model/scenario instance"""
     idxs = []
     for var, check in criteria.items():
-        _df = df[df['variable'] == var]
+        _df = df[df.index.get_level_values('variable') == var]
         for group in _df.groupby(META_IDX):
             grp_idxs = _check_rows(group[-1], check, **kwargs)
             idxs.append(grp_idxs)
@@ -1787,15 +1813,17 @@ def _apply_criteria(df, criteria, **kwargs):
     return df
 
 
-def _make_index(df, cols=META_IDX):
-    """Create an index from the columns of a dataframe or series"""
+def _make_index(df, cols=META_IDX, unique=True):
+    """Create an index from the columns/index of a dataframe or series"""
     def _get_col(c):
         try:
             return df.index.get_level_values(c)
         except KeyError:
             return df[c]
 
-    index = pd.unique(list(zip(*[_get_col(col) for col in cols])))
+    index = list(zip(*[_get_col(col) for col in cols]))
+    if unique:
+        index = pd.unique(index)
     return pd.MultiIndex.from_tuples(index, names=tuple(cols))
 
 
@@ -1927,7 +1955,6 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
     meta = meta[keep]
 
     # set the data index to META_IDX and apply filtered meta index
-    data = data.copy()
     idx = list(data.index.names) if not data.index.names == [None] else None
     data = data.reset_index().set_index(META_IDX)
     meta = meta.loc[meta.index.intersection(data.index.drop_duplicates())]

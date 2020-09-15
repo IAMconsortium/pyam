@@ -41,7 +41,11 @@ def _notebook_run(path, kernel=None, timeout=60, capsys=None):
         for output in cell["outputs"] if output.output_type == "error"
     ]
 
-    os.remove(fname)
+    # removing files fails on CI (GitHub Actions) on Windows & py3.8
+    try:
+        os.remove(fname)
+    except PermissionError:
+        pass
 
     return nb, errors
 
