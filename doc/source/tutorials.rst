@@ -15,11 +15,12 @@ The source code of the tutorials is available in the folder
 
    tutorials/pyam_first_steps.ipynb
    tutorials/data_table_formats.ipynb
+   tutorials/iiasa_dbs.ipynb
+   tutorials/GAMS_to_pyam.ipynb
    tutorials/unit_conversion.ipynb
    tutorials/aggregating_downscaling_consistency.ipynb
    tutorials/subannual_time_resolution.ipynb
    tutorials/ipcc_colors.ipynb
-   tutorials/iiasa_dbs.ipynb
    tutorials/legends.ipynb
    tutorials/aggregating_variables_and_plotting_with_negative_values.ipynb
    tutorials/pyam_logo.ipynb
