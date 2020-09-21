@@ -505,6 +505,14 @@ def datetime_match(data, dts):
     return data.isin(dts)
 
 
+def print_list(x, n=5):
+    """Return a (shortened) printable string of a list"""
+    if len(x) < n + 2:
+        return ', '.join(map(str, x))
+    else:
+        return ', '.join(map(str, x[0:n - 1])) + ', ..., ' + str(x[-1])
+
+
 def to_int(x, index=False):
     """Formatting series or timeseries columns to int and checking validity
 

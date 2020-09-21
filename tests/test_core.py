@@ -119,6 +119,26 @@ def test_init_empty_message(test_pd_df, caplog):
     assert caplog.records[message_idx].levelno == logging.WARNING
 
 
+def test_print(test_df_year):
+    """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
+    exp = '\n'.join([
+        "<class 'pyam.core.IamDataFrame'>",
+        'Index dimensions:',
+        ' * model    : model_a',
+        ' * scenario : scen_a, scen_b',
+        ' * region   : World',
+        ' * variable : Primary Energy, Primary Energy|Coal',
+        ' * unit     : EJ/yr',
+        ' * year     : 2005, 2010',
+        'Meta indicators:',
+        ' * exclude (bool): False',
+        ' * number  (int64): 1, 2',
+        ' * string  (object): foo, nan',
+        'Memory usage: '])
+    obs = test_df_year.info()
+    assert obs.startswith(exp) and obs.endswith('bytes')
+
+
 def test_as_pandas(test_df):
     # test that `as_pandas()` returns the right columns
     df = test_df.copy()
