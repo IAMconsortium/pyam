@@ -182,35 +182,41 @@ class IamDataFrame(object):
     def __repr__(self):
         return self.info()
 
-    def info(self, n=80):
+    def info(self, n=80, meta_rows=5):
         """Print a summary of the object index dimensions and meta indicators
 
         Parameters
         ----------
         n : int
             The maximum line length
+        meta_rows : int
+            The maximum number of meta indicators printed
         """
         # concatenate list of index dimensions and levels
-        repr = f'{type(self)}\nIndex dimensions:\n'
-        _len = max([len(i) for i in self._LONG_IDX]) + 1
-        repr += '\n'.join(
-            [f' * {i:{_len}}: {print_list(get_index_levels(self._data, i))}'
+        info = f'{type(self)}\nIndex dimensions:\n'
+        c1 = max([len(i) for i in self._LONG_IDX]) + 1
+        c2 = n - c1 - 5
+        info += '\n'.join(
+            [f' * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
              for i in self._LONG_IDX])
 
         # concatenate list of meta indicators and levels/values
-        repr += '\nMeta indicators:\n'
-        _len = max([len(i) for i in self.meta.columns[0:n]])
-        repr += '\n'.join(
-            [f' * {m:{_len}} ({t}): {print_list(self.meta[m].unique())}'
-             for m, t in zip(self.meta.columns[0:n], self.meta.dtypes[0:n])])
-        if len(self.meta.columns) > n:  # print `...` if more than n columns
-            repr += f'\n * ...'
+        info += '\nMeta indicators:\n'
+        c1 = max([len(i) for i in self.meta.columns[0:meta_rows]])
+        c2 = n - c1 - 8
+        info += '\n'.join(
+            [f' * {m:{c1}} ({t}): {print_list(self.meta[m].unique(), c2)}'
+             for m, t in zip(self.meta.columns[0:meta_rows],
+                             self.meta.dtypes[0:meta_rows])])
+        # print `...` if more than `meta_rows` columns
+        if len(self.meta.columns) > meta_rows:
+            info += f'\n * ...'
 
         # add info on size
         size = self._data.memory_usage() + sum(self.meta.memory_usage())
-        repr += f'\nMemory usage: {size} bytes'
+        info += f'\nMemory usage: {size} bytes'
 
-        return repr
+        return info
 
     def _execute_run_control(self):
         for module_block in run_control()['exec']:

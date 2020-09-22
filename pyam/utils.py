@@ -505,12 +505,44 @@ def datetime_match(data, dts):
     return data.isin(dts)
 
 
-def print_list(x, n=5):
-    """Return a (shortened) printable string of a list"""
-    if len(x) < n + 2:
-        return ', '.join(map(str, x))
+def print_list(x, n):
+    """Return a printable string of a list shortened to n characters"""
+    # subtract count added at end from line width
+    x = list(map(str, x))
+
+    # write number of elements
+    count = f' ({len(x)})'
+    n -= len(count)
+
+    # if not enough space to write first item, write shortest sensible line
+    if len(x[0]) > n - 5:
+        return '...' + count
+
+    # if only one item in list
+    if len(x) == 1:
+        return f'{x[0]} (1)'
+
+    # add first item
+    lst = f'{x[0]}, '
+    n -= len(lst)
+
+    # if possible, add last item before number of elements
+    if len(x[-1]) + 4 > n:
+        return lst + '...' + count
     else:
-        return ', '.join(map(str, x[0:n - 1])) + ', ..., ' + str(x[-1])
+        count = f'{x[-1]}{count}'
+        n -= len({x[-1]}) + 3
+
+    # iterate over remaining entries until line is full
+    for i in x[1:-1]:
+        if len(i) + 6 <= n:
+            lst += f'{i}, '
+            n -= len(i) + 2
+        else:
+            lst += '... '
+            break
+
+    return lst + count
 
 
 def to_int(x, index=False):
