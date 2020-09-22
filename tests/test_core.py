@@ -124,16 +124,16 @@ def test_print(test_df_year):
     exp = '\n'.join([
         "<class 'pyam.core.IamDataFrame'>",
         'Index dimensions:',
-        ' * model    : model_a',
-        ' * scenario : scen_a, scen_b',
-        ' * region   : World',
-        ' * variable : Primary Energy, Primary Energy|Coal',
-        ' * unit     : EJ/yr',
-        ' * year     : 2005, 2010',
+        ' * model    : model_a (1)',
+        ' * scenario : scen_a, scen_b (2)',
+        ' * region   : World (1)',
+        ' * variable : Primary Energy, Primary Energy|Coal (2)',
+        ' * unit     : EJ/yr (1)',
+        ' * year     : 2005, 2010 (2)',
         'Meta indicators:',
-        ' * exclude (bool): False',
-        ' * number  (int64): 1, 2',
-        ' * string  (object): foo, nan',
+        ' * exclude (bool): False (1)',
+        ' * number  (int64): 1, 2 (2)',
+        ' * string  (object): foo, nan (2)',
         'Memory usage: '])
     obs = test_df_year.info()
     assert obs.startswith(exp) and obs.endswith('bytes')
