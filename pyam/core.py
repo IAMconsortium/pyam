@@ -182,13 +182,13 @@ class IamDataFrame(object):
     def __repr__(self):
         return self.info()
 
-    def info(self, n=5):
+    def info(self, n=80):
         """Print a summary of the object index dimensions and meta indicators
 
         Parameters
         ----------
         n : int
-            The number of index dimension levels and meta indicators to display
+            The maximum line length
         """
         # concatenate list of index dimensions and levels
         repr = f'{type(self)}\nIndex dimensions:\n'
