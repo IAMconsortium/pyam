@@ -201,10 +201,13 @@ class IamDataFrame(object):
              for i in self._LONG_IDX])
 
         # concatenate list of (head of) meta indicators and levels/values
+        def print_meta_row(m, t, lst):
+            _lst = print_list(lst, n - len(m) - len(t) - 7)
+            return f'   {m} ({t}) {_lst}'
+
         info += '\nMeta indicators:\n'
         info += '\n'.join(
-            [f'   {m} ({t}) '
-             + print_list(self.meta[m].unique(), n - len(m) - len(t) - 7)
+            [print_meta_row(m, t, self.meta[m].unique())
              for m, t in zip(self.meta.columns[0:meta_rows],
                              self.meta.dtypes[0:meta_rows])])
         # print `...` if more than `meta_rows` columns
