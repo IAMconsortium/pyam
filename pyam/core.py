@@ -200,16 +200,16 @@ class IamDataFrame(object):
             [f' * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
              for i in self._LONG_IDX])
 
-        # concatenate list of meta indicators and levels/values
+        # concatenate list of (head of) meta indicators and levels/values
         info += '\nMeta indicators:\n'
         info += '\n'.join(
-            [f'   {m} ({t}) ' +
-             print_list(self.meta[m].unique(), n - len(m) - len(t) - 7)
+            [f'   {m} ({t}) '
+             + print_list(self.meta[m].unique(), n - len(m) - len(t) - 7)
              for m, t in zip(self.meta.columns[0:meta_rows],
                              self.meta.dtypes[0:meta_rows])])
         # print `...` if more than `meta_rows` columns
         if len(self.meta.columns) > meta_rows:
-            info += f'\n * ...'
+            info += '\n * ...'
 
         # add info on size (optional)
         if memory_usage:
