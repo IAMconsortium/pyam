@@ -182,7 +182,7 @@ class IamDataFrame(object):
     def __repr__(self):
         return self.info()
 
-    def info(self, n=80, meta_rows=5):
+    def info(self, n=80, meta_rows=5, memory_usage=False):
         """Print a summary of the object index dimensions and meta indicators
 
         Parameters
@@ -212,9 +212,10 @@ class IamDataFrame(object):
         if len(self.meta.columns) > meta_rows:
             info += f'\n * ...'
 
-        # add info on size
-        size = self._data.memory_usage() + sum(self.meta.memory_usage())
-        info += f'\nMemory usage: {size} bytes'
+        # add info on size (optional)
+        if memory_usage:
+            size = self._data.memory_usage() + sum(self.meta.memory_usage())
+            info += f'\nMemory usage: {size} bytes'
 
         return info
 
