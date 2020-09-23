@@ -131,12 +131,13 @@ def test_print(test_df_year):
         ' * unit     : EJ/yr (1)',
         ' * year     : 2005, 2010 (2)',
         'Meta indicators:',
-        ' * exclude (bool): False (1)',
-        ' * number  (int64): 1, 2 (2)',
-        ' * string  (object): foo, nan (2)',
-        'Memory usage: '])
+        '   exclude (bool) False (1)',
+        '   number (int64) 1, 2 (2)',
+        '   string (object) foo, nan (2)'])
     obs = test_df_year.info()
-    assert obs.startswith(exp) and obs.endswith('bytes')
+
+    print(obs)
+    assert obs == exp
 
 
 def test_as_pandas(test_df):
