@@ -44,6 +44,7 @@ from pyam.utils import (
     datetime_match,
     isstr,
     islistable,
+    print_list,
     META_IDX,
     YEAR_IDX,
     IAMC_IDX,
@@ -177,6 +178,48 @@ class IamDataFrame(object):
 
     def __len__(self):
         return self.data.__len__()
+
+    def __repr__(self):
+        return self.info()
+
+    def info(self, n=80, meta_rows=5, memory_usage=False):
+        """Print a summary of the object index dimensions and meta indicators
+
+        Parameters
+        ----------
+        n : int
+            The maximum line length
+        meta_rows : int
+            The maximum number of meta indicators printed
+        """
+        # concatenate list of index dimensions and levels
+        info = f'{type(self)}\nIndex dimensions:\n'
+        c1 = max([len(i) for i in self._LONG_IDX]) + 1
+        c2 = n - c1 - 5
+        info += '\n'.join(
+            [f' * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
+             for i in self._LONG_IDX])
+
+        # concatenate list of (head of) meta indicators and levels/values
+        def print_meta_row(m, t, lst):
+            _lst = print_list(lst, n - len(m) - len(t) - 7)
+            return f'   {m} ({t}) {_lst}'
+
+        info += '\nMeta indicators:\n'
+        info += '\n'.join(
+            [print_meta_row(m, t, self.meta[m].unique())
+             for m, t in zip(self.meta.columns[0:meta_rows],
+                             self.meta.dtypes[0:meta_rows])])
+        # print `...` if more than `meta_rows` columns
+        if len(self.meta.columns) > meta_rows:
+            info += '\n * ...'
+
+        # add info on size (optional)
+        if memory_usage:
+            size = self._data.memory_usage() + sum(self.meta.memory_usage())
+            info += f'\nMemory usage: {size} bytes'
+
+        return info
 
     def _execute_run_control(self):
         for module_block in run_control()['exec']:
