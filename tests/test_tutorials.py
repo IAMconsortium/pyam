@@ -2,27 +2,18 @@ import io
 import os
 import subprocess
 import sys
-import tempfile
 import pytest
 
-from conftest import here
+from conftest import here, IIASA_UNAVAILABLE
 
 try:
     import nbformat
-    jupyter_installed = True
 except:
-    jupyter_installed = False
-
-jupyter_reason = 'requires Jupyter Notebook to be installed'
-
-try:
-    pandoc_installed = subprocess.call(['which', 'pandoc']) == 0
-except:
-    pandoc_installed = False
-
-pandoc_reason = 'requires Pandoc to be installed'
+    pytest.skip('Missing Jupyter Notebook and related dependencies',
+                allow_module_level=True)
 
 tut_path = os.path.join(here, '..', 'doc', 'source', 'tutorials')
+
 
 # taken from the excellent example here:
 # https://blog.thedataincubator.com/2016/06/testing-jupyter-notebooks/
@@ -33,14 +24,12 @@ def _notebook_run(path, kernel=None, timeout=60, capsys=None):
     :returns (parsed nb object, execution errors)
     """
     major_version = sys.version_info[0]
-    kernel = kernel or 'python{}'.format(major_version)
     dirname, __ = os.path.split(path)
     os.chdir(dirname)
     fname = os.path.join(here, 'test.ipynb')
     args = [
         "jupyter", "nbconvert", "--to", "notebook", "--execute",
         "--ExecutePreprocessor.timeout={}".format(timeout),
-        "--ExecutePreprocessor.kernel_name={}".format(kernel),
         "--output", fname, path]
     subprocess.check_call(args)
 
@@ -52,13 +41,15 @@ def _notebook_run(path, kernel=None, timeout=60, capsys=None):
         for output in cell["outputs"] if output.output_type == "error"
     ]
 
-    os.remove(fname)
+    # removing files fails on CI (GitHub Actions) on Windows & py3.8
+    try:
+        os.remove(fname)
+    except PermissionError:
+        pass
 
     return nb, errors
 
 
-@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
-@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_pyam_first_steps(capsys):
     fname = os.path.join(tut_path, 'pyam_first_steps.ipynb')
     nb, errors = _notebook_run(fname, capsys=capsys)
@@ -66,8 +57,6 @@ def test_pyam_first_steps(capsys):
     assert os.path.exists(os.path.join(tut_path, 'tutorial_export.xlsx'))
 
 
-@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
-@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_data_table_formats():
     fname = os.path.join(
         tut_path,
@@ -77,48 +66,37 @@ def test_data_table_formats():
     assert errors == []
 
 
-@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
-@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_unit_conversion():
     fname = os.path.join(tut_path, 'unit_conversion.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
 
 
-@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
-@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_aggregating_downscaling_consistency():
     fname = os.path.join(tut_path, 'aggregating_downscaling_consistency.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
 
 
-@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
-@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_subannual_time_resolution():
     fname = os.path.join(tut_path, 'subannual_time_resolution.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
 
 
-@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
-@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_pyam_logo():
     fname = os.path.join(tut_path, 'pyam_logo.ipynb')
     nb, errors = _notebook_run(fname)
     assert errors == []
 
 
-@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
-@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
+@pytest.mark.skipif(IIASA_UNAVAILABLE, reason='IIASA database API unavailable')
 def test_iiasa_dbs():
     fname = os.path.join(tut_path, 'iiasa_dbs.ipynb')
     nb, errors = _notebook_run(fname, timeout=600)
     assert errors == []
 
 
-@pytest.mark.skipif(not jupyter_installed, reason=jupyter_reason)
-@pytest.mark.skipif(not pandoc_installed, reason=pandoc_reason)
 def test_aggregating_variables_and_plotting_with_negative_values():
     fname = os.path.join(
         tut_path,

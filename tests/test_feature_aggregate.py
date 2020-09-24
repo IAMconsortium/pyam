@@ -6,7 +6,7 @@ import pandas as pd
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 from pyam.testing import assert_iamframe_equal
 
-from conftest import DTS_MAPPING
+from conftest import TEST_YEARS, DTS_MAPPING
 
 LONG_IDX = IAMC_IDX + ['year']
 
@@ -40,6 +40,16 @@ PRICE_MAX_DF = pd.DataFrame([
     columns=LONG_IDX + ['value']
 )
 
+RECURSIVE_DF = pd.DataFrame([
+    ['Secondary Energy|Electricity', 'EJ/yr', 5, 19.],
+    ['Secondary Energy|Electricity|Wind', 'EJ/yr', 5, 17],
+    ['Secondary Energy|Electricity|Wind|Offshore', 'EJ/yr', 1, 5],
+    ['Secondary Energy|Electricity|Wind|Onshore', 'EJ/yr', 4, 12],
+    ['Secondary Energy|Electricity|Solar', 'EJ/yr', np.nan, 2],
+],
+    columns=['variable', 'unit'] + TEST_YEARS
+)
+
 
 @pytest.mark.parametrize("variable,data", (
     ('Primary Energy', PE_MAX_DF),
@@ -55,7 +65,7 @@ def test_aggregate(simple_df, variable, data):
     if simple_df.time_col == 'time':
         _df.year = _df.year.replace(DTS_MAPPING)
         _df.rename({'year': 'time'}, axis='columns', inplace=True)
-    exp = IamDataFrame(_df)
+    exp = IamDataFrame(_df, meta=simple_df.meta)
     for m in ['max', np.max]:
         assert_iamframe_equal(simple_df.aggregate(variable, method=m), exp)
 
@@ -121,6 +131,30 @@ def test_aggregate_by_list_with_components_raises(simple_df):
     pytest.raises(ValueError, simple_df.aggregate, v, components=components)
 
 
+@pytest.mark.parametrize("time_col", (('year'), ('time')))
+def test_aggregate_recursive(time_col):
+    # use the feature `recursive=True`
+    data = RECURSIVE_DF if time_col == 'year' \
+        else RECURSIVE_DF.rename(DTS_MAPPING, axis='columns')
+    df = IamDataFrame(data, model='model_a', scenario='scen_a', region='World')
+    df2 = df.rename(scenario={'scen_a': 'scen_b'})
+    df2.data.value *= 2
+    df.append(df2, inplace=True)
+
+    # create object without variables to be aggregated
+    v = 'Secondary Energy|Electricity'
+    agg_vars = [f'{v}{i}' for i in ['', '|Wind']]
+    df_minimal = df.filter(variable=agg_vars, keep=False)
+
+    # return recursively aggregated data as new object
+    obs = df_minimal.aggregate(variable=v, recursive=True)
+    assert_iamframe_equal(obs, df.filter(variable=agg_vars))
+
+    # append to `self`
+    df_minimal.aggregate(variable=v, recursive=True, append=True)
+    assert_iamframe_equal(df_minimal, df)
+
+
 def test_aggregate_empty(simple_df):
     assert simple_df.aggregate('foo') is None
 
@@ -142,7 +176,7 @@ def test_aggregate_region(simple_df, variable):
 
     # check custom `region` (will include `World`, so double-count values)
     foo = exp.rename(region={'World': 'foo'})
-    foo.data.value = foo.data.value * 2
+    foo._data = foo._data * 2
     assert_iamframe_equal(simple_df.aggregate_region(variable, region='foo'),
                           foo)
 
@@ -228,10 +262,11 @@ def test_aggregate_region_with_other_method(simple_df, variable, data):
     if simple_df.time_col == 'time':
         _df.year = _df.year.replace(DTS_MAPPING)
         _df.rename({'year': 'time'}, axis='columns', inplace=True)
-    exp = IamDataFrame(_df).filter(region='World')
+
+    exp = IamDataFrame(_df, meta=simple_df.meta).filter(region='World')
     for m in ['max', np.max]:
-        assert_iamframe_equal(simple_df.aggregate_region(variable, method=m),
-                              exp)
+        obs = simple_df.aggregate_region(variable, method=m)
+        assert_iamframe_equal(obs, exp)
 
 
 def test_aggregate_region_with_components(simple_df):

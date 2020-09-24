@@ -1,11 +1,4 @@
-#!/usr/bin/env python
-from __future__ import print_function
-
-import glob
-import os
-import shutil
 import versioneer
-
 from setuptools import setup, Command
 from subprocess import call
 
@@ -32,9 +25,15 @@ REQUIREMENTS = [
 ]
 
 EXTRA_REQUIREMENTS = {
-    'tests': ['coverage', 'coveralls', 'pytest', 'pytest-cov', 'pytest-mpl'],
-    'optional-io-formats': ['datapackage'],
+    'tests': ['coverage', 'coveralls', 'pytest<6.0.0', 'pytest-cov',
+              'pytest-mpl'],
+    'optional-io-formats': ['datapackage', 'pandas-datareader'],
     'deploy': ['twine', 'setuptools', 'wheel'],
+    'tutorials': ['pypandoc', 'nbformat', 'nbconvert', 'jupyter_client',
+                  'ipykernel'],
+    'docs': ['sphinx', 'nbsphinx', 'sphinx-gallery', 'cloud_sptheme',
+             'pillow', 'sphinxcontrib-bibtex', 'sphinxcontrib-programoutput',
+             'numpydoc', 'openpyxl']  # docs also requires 'tutorials'
 }
 
 # building the docs on readthedocs fails with a FileNotFoundError
@@ -44,6 +43,7 @@ try:
         LONG_DESCRIPTION = f.read()
 except FileNotFoundError:
     LONG_DESCRIPTION = ''
+
 
 # thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
 class RunTests(Command):
@@ -108,7 +108,7 @@ def main():
         install_requires=install_requirements,
         extras_require=extra_requirements,
     )
-    rtn = setup(**setup_kwargs)
+    setup(**setup_kwargs)
 
 
 if __name__ == "__main__":

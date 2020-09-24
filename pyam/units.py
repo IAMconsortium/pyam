@@ -2,9 +2,9 @@ import logging
 import re
 
 import iam_units
-import pandas as pd
 import pint
 
+from pyam.index import replace_index_values
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +14,18 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     """Internal implementation of unit conversion with explicit kwargs"""
     ret = df.copy() if not inplace else df
 
-    # Mask for rows having *current* units, to be converted
-    where = ret.data['unit'] == current
+    # Mask for rows having *current* units to be converted, args for replace
+    try:
+        where = ret._data.index.get_loc_level(current, 'unit')[0]
+    except KeyError:
+        where = [False] * len(ret)
+
+    index_args = [ret._data, 'unit', {current: to}]
 
     if factor:
         # Short code path: use an explicit conversion factor, don't use pint
-        ret.data.loc[where, 'value'] *= factor
-        ret.data.loc[where, 'unit'] = to
+        ret._data[where] *= factor
+        ret._data.index = replace_index_values(*index_args)
         return None if inplace else ret
 
     # Convert using a pint.UnitRegistry; default the one from iam_units
@@ -44,11 +49,9 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
         # Ordinary conversion, using an empty Context if none was provided
         result = qty.to(_to, context or pint.Context())
 
-    # Copy values from the result Quantity
-    ret.data.loc[where, 'value'] = result.magnitude
-
-    # Assign output units
-    ret.data.loc[where, 'unit'] = to
+    # Copy values from the result Quantity and assign units
+    ret._data[where] = result.magnitude
+    ret._data.index = replace_index_values(*index_args)
 
     return None if inplace else ret
 

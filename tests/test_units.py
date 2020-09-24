@@ -1,31 +1,31 @@
 import pandas as pd
+import numpy.testing as npt
 import pint
 import pytest
 
 from pyam import IamDataFrame
 
-PRECISE_ARG = dict(check_less_precise=True)
-
 
 def get_units_test_df(test_df):
     # modify units in standard test dataframe
-    df = test_df.copy()
-    df.data.loc[0:1, 'unit'] = 'custom_unit'
-    return df
+    df = test_df.data
+    df.loc[0:1, 'unit'] = 'custom_unit'
+    return IamDataFrame(df)
 
 
 def assert_converted_units(df, current, to, exp, **kwargs):
     # testing for `inplace=False` - converted values and expected unit
     _df = df.convert_unit(current, to, **kwargs, inplace=False)
-    pd.testing.assert_series_equal(_df.data.value, exp, **PRECISE_ARG)
+
+    npt.assert_allclose(_df._data.values, exp.values, rtol=1e-4)
     # When *to* is only a species symbol (e.g. 'co2e'), units are added and a
     # non-aliased symbol is returned (e.g. 'Mt CO2e'). Compare using 'in' and
     # lower().
-    assert to.lower() in _df.data.unit[5].lower()
+    assert to.lower() in _df._data.index.get_level_values('unit')[5].lower()
 
     # testing for `inplace=True` - converted values and expected unit
     df.convert_unit(current, to, **kwargs, inplace=True)
-    pd.testing.assert_series_equal(df.data.value, exp, **PRECISE_ARG)
+    npt.assert_allclose(df._data, exp.values, rtol=1e-4)
     assert to.lower() in df.data.unit[5].lower()
 
 
@@ -34,7 +34,7 @@ def assert_converted_units(df, current, to, exp, **kwargs):
     ('EJ', 'TWh')
 ])
 def test_convert_unit_with_pint(test_df, current, to):
-    # unit conversion with default UnitRegistry (i.e, application_registry)
+    """Convert unit with default UnitRegistry (i.e, application_registry)"""
     df = get_units_test_df(test_df)
 
     # replace EJ/yr by EJ to test pint with single unit
@@ -46,14 +46,14 @@ def test_convert_unit_with_pint(test_df, current, to):
 
 
 def test_convert_unit_from_repo(test_df):
-    # unit conversion with definition loaded from `IAMconsortium/units` repo
+    """Convert unit with definition loaded from `IAMconsortium/units` repo"""
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 17.06, 102.361, 68.241, 238.843], name='value')
     assert_converted_units(df, 'EJ/yr', 'Mtce/yr', exp)
 
 
 def test_convert_unit_with_custom_registry(test_df):
-    # unit conversion with custom UnitRegistry
+    """Convert unit conversion with custom UnitRegistry"""
     df = get_units_test_df(test_df).rename(unit={'EJ/yr': 'foo'})
 
     # check that conversion fails with application registry
@@ -128,19 +128,17 @@ def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
         # pyam-style context
         context = f'gwp_{context}'
 
-    # Prepare input data
-    df = test_df.copy()
-    df['variable'] = [i.replace('Primary Energy', 'Emissions|CH4')
-                      for i in df['variable']]
-    df['unit'] = current
-
     # Expected values
-    exp_values = test_df.data.value * exp * exp_factor
+    exp_values = test_df._data.copy()
+    exp_values[[False, False, True, True, True, True]] *= exp * exp_factor
 
+    # Prepare test data and assert cenverted units
+    df = get_units_test_df(test_df).rename(unit={'EJ/yr': current})
     assert_converted_units(df.copy(), current, to, exp_values, context=context)
 
 
 def test_convert_unit_bad_args(test_pd_df):
+    """Unit conversion with bad arguments raises errors."""
     idf = IamDataFrame(test_pd_df)
     # Conversion fails with both *factor* and *registry*
     with pytest.raises(ValueError, match='use either `factor` or `pint...'):
@@ -157,6 +155,7 @@ def test_convert_unit_bad_args(test_pd_df):
 
 
 def test_convert_unit_with_custom_factor(test_df):
+    """Convert units with custom factors."""
     # unit conversion with custom factor
     df = get_units_test_df(test_df)
     exp = pd.Series([1., 6., 1., 6., 4., 14.], name='value')

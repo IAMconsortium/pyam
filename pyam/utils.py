@@ -264,7 +264,17 @@ def format_data(df, **kwargs):
     if df.empty:
         logger.warning('Formatted data is empty!')
 
-    return sort_data(df, idx_cols), time_col, extra_cols
+    df = format_time_col(sort_data(df, idx_cols), time_col)
+    return df, time_col, extra_cols
+
+
+def format_time_col(data, time_col):
+    """Format time_col to int (year) or datetime"""
+    if time_col == 'year':
+        data['year'] = to_int(pd.to_numeric(data['year']))
+    elif time_col == 'time':
+        data['time'] = pd.to_datetime(data['time'])
+    return data
 
 
 def _raise_data_error(msg, data):
@@ -278,6 +288,53 @@ def _raise_data_error(msg, data):
 def sort_data(data, cols):
     """Sort data rows and order columns by cols"""
     return data.sort_values(cols)[cols + ['value']].reset_index(drop=True)
+
+
+def merge_meta(left, right, ignore_meta_conflict=False):
+    """Merge two `meta` tables; raise if values are in conflict (optional)
+
+    If conflicts are ignored, values in `left` take precedence over `right`.
+    """
+    left = left.copy()  # make a copy to not change the original object
+    diff = right.index.difference(left.index)
+    sect = right.index.intersection(left.index)
+
+    # merge `right` into `left` for overlapping scenarios ( `sect`)
+    if not sect.empty:
+        # if not ignored, check that overlapping `meta` columns are equal
+        if not ignore_meta_conflict:
+            cols = [i for i in right.columns if i in left.columns]
+            if not left.loc[sect, cols].equals(right.loc[sect, cols]):
+                conflict_idx = (
+                    pd.concat([right.loc[sect, cols], left.loc[sect, cols]])
+                    .drop_duplicates().index.drop_duplicates()
+                )
+                msg = 'conflict in `meta` for scenarios {}'.format(
+                    [i for i in pd.DataFrame(index=conflict_idx).index])
+                raise ValueError(msg)
+        # merge new columns
+        cols = [i for i in right.columns if i not in left.columns]
+        left = left.merge(right.loc[sect, cols], how='outer',
+                          left_index=True, right_index=True)
+
+    # join `other.meta` for new scenarios (`diff`)
+    if not diff.empty:
+        left = left.append(right.loc[diff, :], sort=False)
+
+    return left
+
+
+def get_keep_col(data, values, col):
+    """Return a list of booleans by filtering on values"""
+    keep_col = np.array([False] * len(data))
+    for v in values:
+        slc = data.index.get_loc_level(v, level=col)[0]
+        if isinstance(slc, slice):
+            for i in range(slc.start, slc.stop, slc.step if slc.step else 1):
+                keep_col[i] = True
+        else:
+            keep_col = np.logical_or(keep_col, slc)
+    return keep_col
 
 
 def find_depth(data, s='', level=None):
@@ -323,7 +380,7 @@ def find_depth(data, s='', level=None):
     return list(map(test, n_pipes))
 
 
-def pattern_match(data, values, level=None, regexp=False, has_nan=True):
+def pattern_match(data, values, level=None, regexp=False, has_nan=False):
     """Return list where data matches values
 
     The function matches model/scenario names, variables, regions
@@ -446,6 +503,46 @@ def datetime_match(data, dts):
         )
         raise TypeError(error_msg)
     return data.isin(dts)
+
+
+def print_list(x, n):
+    """Return a printable string of a list shortened to n characters"""
+    # subtract count added at end from line width
+    x = list(map(str, x))
+
+    # write number of elements
+    count = f' ({len(x)})'
+    n -= len(count)
+
+    # if not enough space to write first item, write shortest sensible line
+    if len(x[0]) > n - 5:
+        return '...' + count
+
+    # if only one item in list
+    if len(x) == 1:
+        return f'{x[0]} (1)'
+
+    # add first item
+    lst = f'{x[0]}, '
+    n -= len(lst)
+
+    # if possible, add last item before number of elements
+    if len(x[-1]) + 4 > n:
+        return lst + '...' + count
+    else:
+        count = f'{x[-1]}{count}'
+        n -= len({x[-1]}) + 3
+
+    # iterate over remaining entries until line is full
+    for i in x[1:-1]:
+        if len(i) + 6 <= n:
+            lst += f'{i}, '
+            n -= len(i) + 2
+        else:
+            lst += '... '
+            break
+
+    return lst + count
 
 
 def to_int(x, index=False):

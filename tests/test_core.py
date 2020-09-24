@@ -46,6 +46,28 @@ def test_init_df_with_index(test_pd_df):
     pd.testing.assert_frame_equal(df.timeseries().reset_index(), test_pd_df)
 
 
+def test_init_from_iamdf(test_df_year):
+    # casting an IamDataFrame instance again works
+    df = IamDataFrame(test_df_year)
+
+    # inplace-operations on the new object have effects on the original object
+    df.rename(scenario={'scen_a': 'scen_foo'}, inplace=True)
+    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+
+    # overwrites on the new object do not have effects on the original object
+    df = df.rename(scenario={'scen_foo': 'scen_bar'})
+    assert all(df.scenarios().values == ['scen_b', 'scen_bar'])
+    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+
+
+def test_init_from_iamdf_raises(test_df_year):
+    # casting an IamDataFrame instance again with extra args fails
+    args = dict(model='foo')
+    match = f'Invalid arguments `{args}` for initializing an IamDataFrame'
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(test_df_year, **args)
+
+
 def test_init_df_with_float_cols_raises(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.5, 2010: 2010.})
     pytest.raises(ValueError, IamDataFrame, data=_test_df)
@@ -88,72 +110,6 @@ def test_init_df_with_extra_col(test_pd_df):
                                   tdf, check_like=True)
 
 
-def test_init_datetime(test_pd_df):
-    tdf = test_pd_df.copy()
-    tmin = datetime.datetime(2005, 6, 17)
-    tmax = datetime.datetime(2010, 6, 17)
-    tdf = tdf.rename(
-        {
-            2005: tmin,
-            2010: tmax,
-        },
-        axis="columns"
-    )
-
-    df = IamDataFrame(tdf)
-
-    assert df["time"].max() == tmax
-    assert df["time"].min() == tmin
-
-
-@pytest.mark.xfail(reason=(
-    "pandas datetime is limited to the time period of ~1677-2262, see "
-    "https://stackoverflow.com/a/37226672"
-))
-def test_init_datetime_long_timespan(test_pd_df):
-    tdf = test_pd_df.copy()
-    tmin = datetime.datetime(2005, 6, 17)
-    tmax = datetime.datetime(3005, 6, 17)
-    tdf = tdf.rename(
-        {
-            2005: tmin,
-            2010: tmax,
-        },
-        axis="columns"
-    )
-
-    df = IamDataFrame(tdf)
-
-    assert df["time"].max() == tmax
-    assert df["time"].min() == tmin
-
-
-def test_init_datetime_subclass_long_timespan(test_pd_df):
-    class TempSubClass(IamDataFrame):
-        def _format_datetime_col(self):
-            # the subclass does not try to coerce the datetimes to pandas
-            # datetimes, instead simply leaving the time column as object type,
-            # so we don't run into the problem of pandas limited time period as
-            # discussed in https://stackoverflow.com/a/37226672
-            pass
-
-    tdf = test_pd_df.copy()
-    tmin = datetime.datetime(2005, 6, 17)
-    tmax = datetime.datetime(3005, 6, 17)
-    tdf = tdf.rename(
-        {
-            2005: tmin,
-            2010: tmax,
-        },
-        axis="columns"
-    )
-
-    df = TempSubClass(tdf)
-
-    assert df["time"].max() == tmax
-    assert df["time"].min() == tmin
-
-
 def test_init_empty_message(test_pd_df, caplog):
     IamDataFrame(data=df_empty)
     drop_message = (
@@ -161,6 +117,56 @@ def test_init_empty_message(test_pd_df, caplog):
     )
     message_idx = caplog.messages.index(drop_message)
     assert caplog.records[message_idx].levelno == logging.WARNING
+
+
+def test_print(test_df_year):
+    """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
+    exp = '\n'.join([
+        "<class 'pyam.core.IamDataFrame'>",
+        'Index dimensions:',
+        ' * model    : model_a (1)',
+        ' * scenario : scen_a, scen_b (2)',
+        ' * region   : World (1)',
+        ' * variable : Primary Energy, Primary Energy|Coal (2)',
+        ' * unit     : EJ/yr (1)',
+        ' * year     : 2005, 2010 (2)',
+        'Meta indicators:',
+        '   exclude (bool) False (1)',
+        '   number (int64) 1, 2 (2)',
+        '   string (object) foo, nan (2)'])
+    obs = test_df_year.info()
+
+    print(obs)
+    assert obs == exp
+
+
+def test_as_pandas(test_df):
+    # test that `as_pandas()` returns the right columns
+    df = test_df.copy()
+    df.set_meta(['foo', 'bar'], name='string')
+    df.set_meta([1, 2], name='number')
+
+    # merge all columns (default)
+    obs = df.as_pandas()
+    cols = ['string', 'number']
+    assert all(i in obs.columns for i in cols)  # assert relevant columns exist
+
+    exp = pd.concat([pd.DataFrame([['foo', 1]] * 4),
+                     pd.DataFrame([['bar', 2]] * 2)])
+    npt.assert_array_equal(obs[cols], exp)  # assert meta columns are merged
+
+    # test deprecated `with_metadata` arg
+    obs = df.as_pandas(with_metadata=True)
+    npt.assert_array_equal(obs[cols], exp)  # assert meta columns are merged
+
+    # merge only one column
+    obs = df.as_pandas(['string'])
+    assert 'string' in obs.columns
+    assert 'number' not in obs.columns
+    npt.assert_array_equal(obs['string'], ['foo'] * 4 + ['bar'] * 2)
+
+    # do not merge any columns
+    npt.assert_array_equal(df.as_pandas(False), df.data)
 
 
 def test_empty_attribute(test_df_year):
@@ -211,16 +217,16 @@ def test_region(test_df):
 
 
 def test_variable(test_df):
-    exp = pd.Series(
-        data=['Primary Energy', 'Primary Energy|Coal'], name='variable')
+    exp = pd.Series(data=['Primary Energy', 'Primary Energy|Coal'],
+                    name='variable')
     pd.testing.assert_series_equal(test_df.variables(), exp)
 
 
 def test_variable_unit(test_df):
-    dct = {'variable': ['Primary Energy', 'Primary Energy|Coal'],
-           'unit': ['EJ/yr', 'EJ/yr']}
-    exp = pd.DataFrame.from_dict(dct)[['variable', 'unit']]
-    npt.assert_array_equal(test_df.variables(include_units=True), exp)
+    exp = pd.DataFrame(
+        [['Primary Energy', 'EJ/yr'], ['Primary Energy|Coal', 'EJ/yr']],
+        columns=['variable', 'unit'])
+    pd.testing.assert_frame_equal(test_df.variables(include_units=True), exp)
 
 
 def test_filter_empty_df():
@@ -333,7 +339,7 @@ def test_filter_hour(test_df, test_hour):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `hour` not supported")
         with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(hour=test_hour)
+            test_df.filter(hour=test_hour)
     else:
         obs = test_df.filter(hour=test_hour)
         test_hour = [test_hour] if isinstance(test_hour, int) else test_hour
@@ -341,7 +347,7 @@ def test_filter_hour(test_df, test_hour):
                          .apply(lambda x: x.hour).isin(test_hour))
         expected = test_df.data["time"].loc[expected_rows].unique()
 
-        unique_time = obs['time'].unique()
+        unique_time = np.array(obs['time'].unique(), dtype=np.datetime64)
         npt.assert_array_equal(unique_time, expected)
 
 
@@ -356,7 +362,7 @@ def test_filter_time_exact_match(test_df):
         obs = test_df.filter(time=datetime.datetime(2005, 6, 17))
         expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
                             dtype=np.datetime64)
-        unique_time = obs['time'].unique()
+        unique_time = np.array(obs['time'].unique(), dtype=np.datetime64)
         assert len(unique_time) == 1
         assert unique_time[0] == expected
 
@@ -421,7 +427,7 @@ def test_filter_time_range_day(test_df, day_range):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `day` not supported")
         with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(day=day_range)
+            test_df.filter(day=day_range)
     else:
         obs = test_df.filter(day=day_range)
         expected = np.array(pd.to_datetime('2005-06-17T00:00:00.0'),
@@ -436,7 +442,7 @@ def test_filter_time_range_hour(test_df, hour_range):
     if "year" in test_df.data.columns:
         error_msg = re.escape("filter by `hour` not supported")
         with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(hour=hour_range)
+            test_df.filter(hour=hour_range)
     else:
         obs = test_df.filter(hour=hour_range)
 
@@ -444,7 +450,7 @@ def test_filter_time_range_hour(test_df, hour_range):
                          .apply(lambda x: x.hour).isin(hour_range))
         expected = test_df.data["time"].loc[expected_rows].unique()
 
-        unique_time = obs['time'].unique()
+        unique_time = np.array(obs['time'].unique(), dtype=np.datetime64)
         npt.assert_array_equal(unique_time, expected)
 
 
@@ -529,6 +535,24 @@ def test_timeseries_raises(test_df_year):
     pytest.raises(ValueError, _df.timeseries)
 
 
+def test_pivot_table(test_df):
+    dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a'] * 2,
+           'years': [2005, 2010], 'value': [1, 6]}
+    args = dict(index=['model', 'scenario'], columns=['years'], values='value')
+    exp = pd.DataFrame(dct).pivot_table(**args)
+    obs = test_df.filter(scenario='scen_a', variable='Primary Energy')\
+        .pivot_table(index=['model', 'scenario'], columns=test_df.time_col,
+                     aggfunc='sum')
+    npt.assert_array_equal(obs, exp)
+
+
+def test_pivot_table_raises(test_df):
+    # using the same dimension in both index and columns raises an error
+    pytest.raises(ValueError, test_df.pivot_table,
+                  index=['model', 'scenario'] + [test_df.time_col],
+                  columns=test_df.time_col)
+
+
 def test_filter_meta_index(test_df):
     obs = test_df.filter(scenario='scen_b').meta.index
     exp = pd.MultiIndex(levels=[['model_a'], ['scen_b']],
@@ -598,7 +622,7 @@ def test_validate_nonexisting(test_df):
     obs = test_df.validate({'Primary Energy|Coal': {'up': 2}},
                            exclude_on_fail=True)
     assert len(obs) == 1
-    assert obs['scenario'].values[0] == 'scen_a'
+    assert obs.index.get_level_values('scenario').values[0] == 'scen_a'
 
     assert list(test_df['exclude']) == [True, False]  # scenario with failed
     # validation excluded, scenario with non-defined value passes validation
@@ -609,11 +633,11 @@ def test_validate_up(test_df):
                            exclude_on_fail=False)
     assert len(obs) == 1
     if 'year' in test_df.data:
-        assert obs['year'].values[0] == 2010
+        assert obs.index.get_level_values('year').values[0] == 2010
     else:
         exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
-        print(exp_time)
-        assert pd.to_datetime(obs['time'].values[0]).date() == exp_time
+        assert pd.to_datetime(obs.index.get_level_values('time')
+                              .values[0]).date() == exp_time
 
     assert list(test_df['exclude']) == [False, False]  # assert none excluded
 
@@ -622,25 +646,29 @@ def test_validate_lo(test_df):
     obs = test_df.validate({'Primary Energy': {'up': 8, 'lo': 2.0}})
     assert len(obs) == 1
     if 'year' in test_df.data:
-        assert obs['year'].values[0] == 2005
+        assert obs.index.get_level_values('year').values[0] == 2005
     else:
         exp_year = pd.to_datetime(datetime.datetime(2005, 6, 17))
-        assert pd.to_datetime(obs['time'].values[0]).date() == exp_year
+        assert pd.to_datetime(obs.index.get_level_values('time')
+                              .values[0]).date() == exp_year
 
-    assert list(obs['scenario'].values) == ['scen_a']
+    assert list(obs.index.get_level_values('scenario').values) == ['scen_a']
 
 
 def test_validate_both(test_df):
     obs = test_df.validate({'Primary Energy': {'up': 6.5, 'lo': 2.0}})
     assert len(obs) == 2
     if 'year' in test_df.data:
-        assert list(obs['year'].values) == [2005, 2010]
+        assert list(obs.index.get_level_values('year').values) == [2005, 2010]
     else:
         exp_time = pd.to_datetime(TEST_DTS)
-        obs.time = obs.time.dt.normalize()
-        assert (pd.to_datetime(obs['time'].values) == exp_time).all()
+        obs.index.set_levels(obs.index.get_level_values('time')
+                                .normalize(), level=5)
+        assert (pd.to_datetime(obs.index.get_level_values('time').values)
+                .date == exp_time).all()
 
-    assert list(obs['scenario'].values) == ['scen_a', 'scen_b']
+    exp = ['scen_a', 'scen_b']
+    assert list(obs.index.get_level_values('scenario').values) == exp
 
 
 def test_validate_year(test_df):
@@ -662,11 +690,12 @@ def test_validate_top_level(test_df):
     obs = validate(test_df, criteria={'Primary Energy': {'up': 6.0}},
                    exclude_on_fail=True, variable='Primary Energy')
     assert len(obs) == 1
-    if 'year' in test_df.data:
-        assert obs['year'].values[0] == 2010
+    if 'year' in test_df._data.index.names:
+        assert obs.index.get_level_values('year').values[0] == 2010
     else:
-        exp_time = pd.to_datetime(datetime.datetime(2010, 7, 21))
-        assert (pd.to_datetime(obs['time'].values[0]).date() == exp_time)
+        exp_time = datetime.datetime(2010, 7, 21).date()
+        obs_time = obs.index.get_level_values('time')[0].date()
+        assert exp_time == obs_time
     assert list(test_df['exclude']) == [False, True]
 
 
@@ -766,8 +795,9 @@ def test_filter_by_int(test_df):
 
 def _r5_regions_exp(df):
     df = df.filter(region='World', keep=False)
-    df['region'] = 'R5MAF'
-    return sort_data(df.data, df._LONG_IDX)
+    data = df.data
+    data['region'] = 'R5MAF'
+    return sort_data(data, df._LONG_IDX)
 
 
 def test_map_regions_r5(reg_df):

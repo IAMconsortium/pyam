@@ -7,7 +7,7 @@ from numpy import testing as npt
 
 from pyam import IamDataFrame, META_IDX, IAMC_IDX, compare
 
-from conftest import TEST_DTS
+from conftest import TEST_DTS, META_COLS
 
 
 RENAME_DF = IamDataFrame(pd.DataFrame([
@@ -85,7 +85,8 @@ def test_append_same_scenario(test_df):
     df = test_df.append(other, ignore_meta_conflict=True)
 
     # check that the new meta.index is updated, but not the original one
-    npt.assert_array_equal(test_df.meta.columns, ['exclude', 'col1'])
+    cols = ['exclude'] + META_COLS + ['col1']
+    npt.assert_array_equal(test_df.meta.columns, cols)
 
     # assert that merging of meta works as expected
     exp = test_df.meta.copy()
@@ -175,25 +176,25 @@ def test_rename_index(test_df):
     obs = test_df.rename(mapping, scenario={'scen_a': 'scen_c'})
 
     # test data changes
-    times = [2005, 2010] if 'year' in test_df.data else TEST_DTS
+    times = [2005, 2010] if obs.time_col == 'year' else obs.data.time.unique()
     exp = pd.DataFrame([
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
-    ], columns=IAMC_IDX + times
+    ], columns=IAMC_IDX + list(times)
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
     else:
-        obs.data.time = obs.data.time.dt.normalize()
         exp.columns = pd.to_datetime(exp.columns)
+
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
     exp = pd.DataFrame([
-        ['model_b', 'scen_c', False],
-        ['model_a', 'scen_b', False],
-    ], columns=['model', 'scenario', 'exclude']
+        ['model_b', 'scen_c', False, 1, 'foo'],
+        ['model_a', 'scen_b', False, 2, np.nan],
+    ], columns=['model', 'scenario', 'exclude'] + META_COLS
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)
 
@@ -204,28 +205,28 @@ def test_rename_append(test_df):
     obs = test_df.rename(mapping, append=True)
 
     # test data changes
-    times = [2005, 2010] if "year" in test_df.data else TEST_DTS
+    times = [2005, 2010] if obs.time_col == 'year' else obs.data.time.unique()
     exp = pd.DataFrame([
         ['model_a', 'scen_a', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
         ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
         ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
         ['model_b', 'scen_c', 'World', 'Primary Energy', 'EJ/yr', 1, 6.],
         ['model_b', 'scen_c', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
-    ], columns=IAMC_IDX + times
+    ], columns=IAMC_IDX + list(times)
     ).set_index(IAMC_IDX).sort_index()
     if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
     else:
-        obs.data.time = obs.data.time.dt.normalize()
         exp.columns = pd.to_datetime(exp.columns)
+
     pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
     exp = pd.DataFrame([
-        ['model_a', 'scen_a', False],
-        ['model_a', 'scen_b', False],
-        ['model_b', 'scen_c', False],
-    ], columns=['model', 'scenario', 'exclude']
+        ['model_a', 'scen_a', False, 1, 'foo'],
+        ['model_a', 'scen_b', False, 2, np.nan],
+        ['model_b', 'scen_c', False, 1, 'foo'],
+    ], columns=['model', 'scenario', 'exclude'] + META_COLS
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)
 

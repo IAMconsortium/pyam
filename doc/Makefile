@@ -6,9 +6,6 @@ PAPER         =
 BUILDDIR      = build
 
 GHCONFIG      = .gh-config
-DOCREPODIR    = build/pyam
-DOCREPOURL    = git@github.com:IAMconsortium/pyam.github.io
-DOCUPDATENAME = pyam.github.io
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)

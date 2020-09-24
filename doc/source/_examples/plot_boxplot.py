@@ -29,10 +29,20 @@ plt.show()
 
 ###############################
 # We don't just have to plot variables, any data or metadata associated with the
-# IamDataFrame can be used. Use the by parameter to add the 3rd dimension, for example for grouping boxplots by  category.
+# IamDataFrame can be used.
+# Use the 'by' parameter to add the 3rd dimension. In example below we us 'region' column
+# but this can similarly be a column from the metadata
 
-data = (df
-        .filter(variable='Emissions|CO2'))
+data = df.filter(variable='Emissions|CO2',
+                 year=[2010,2050,2100])
+data = data.filter(region='World', keep=False)
+                # region='World')
+
 fig, ax = plt.subplots(figsize=(10, 10))
 data.boxplot(x='year', by='region', legend=True, ax=ax)
+
+# Minor adjustments to plot appearances
+ax.hlines(0,-1,5)
+ax.set_xlim([-0.5,2.5])
+plt.legend(loc=1)
 plt.show()

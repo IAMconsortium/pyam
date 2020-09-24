@@ -1,11 +1,18 @@
+import os
 import copy
 import pytest
-import os
-import yaml
+import pandas as pd
+import numpy as np
 
 import numpy.testing as npt
+import pandas.testing as pdt
 
-from pyam import iiasa
+from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
+from pyam.testing import assert_iamframe_equal
+from conftest import IIASA_UNAVAILABLE, META_COLS, TEST_API, TEST_API_NAME
+
+if IIASA_UNAVAILABLE:
+    pytest.skip('IIASA database API unavailable', allow_module_level=True)
 
 # check to see if we can do online testing of db authentication
 TEST_ENV_USER = 'IIASA_CONN_TEST_USER'
@@ -15,74 +22,86 @@ CONN_ENV_REASON = 'Requires env variables defined: {} and {}'.format(
     TEST_ENV_USER, TEST_ENV_PW
 )
 
+VERSION_COLS = ['version', 'is_default']
+META_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 1, True, 1, 'foo'],
+    ['model_a', 'scen_b', 1, True, 2, np.nan],
+    ['model_a', 'scen_a', 2, False, 1, 'bar'],
+    ['model_b', 'scen_a', 1, True, 3, 'baz']
+], columns=META_IDX + VERSION_COLS + META_COLS).set_index(META_IDX)
 
-def test_anon_conn():
-    conn = iiasa.Connection('IXSE_SR15')
-    assert conn.current_connection == 'IXSE_SR15'
+MODEL_B_DF = pd.DataFrame([
+    ['Primary Energy', 'EJ/yr', 'Summer', 1, 3],
+    ['Primary Energy', 'EJ/yr', 'Year', 3, 8],
+    ['Primary Energy|Coal', 'EJ/yr', 'Summer', 0.4, 2],
+    ['Primary Energy|Coal', 'EJ/yr', 'Year', 0.9, 5]
+], columns=['variable', 'unit', 'subannual', 2005, 2010])
 
 
-def test_anon_conn_warning():
-    conn = iiasa.Connection('iamc15')
-    assert conn.current_connection == 'IXSE_SR15'
+def test_unknown_conn():
+    # connecting to an unknown API raises an error
+    pytest.raises(ValueError, iiasa.Connection, 'foo')
+
+
+def test_valid_connections():
+    # connecting to an unknown API raises an error
+    assert TEST_API in iiasa.Connection().valid_connections
+
+
+def test_anon_conn(conn):
+    assert conn.current_connection == TEST_API_NAME
 
 
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
-def test_conn_creds_file(tmp_path):
-    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    path = tmp_path / 'config.yaml'
-    with open(path, 'w') as f:
-        yaml.dump({'username': user, 'password': pw}, f)
-    conn = iiasa.Connection('IXSE_SR15', creds=path)
-    assert conn.current_connection == 'IXSE_SR15'
+def test_conn_creds_config():
+    iiasa.set_config(os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW])
+    conn = iiasa.Connection(TEST_API)
+    assert conn.current_connection == TEST_API_NAME
 
 
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_tuple():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection('IXSE_SR15', creds=(user, pw))
-    assert conn.current_connection == 'IXSE_SR15'
-
-
-def test_conn_bad_creds():
-    pytest.raises(RuntimeError, iiasa.Connection,
-                  'IXSE_SR15', creds=('_foo', '_bar'))
-
-
-def test_anon_conn_tuple_raises():
-    pytest.raises(ValueError, iiasa.Connection, 'foo')
+    conn = iiasa.Connection(TEST_API, creds=(user, pw))
+    assert conn.current_connection == TEST_API_NAME
 
 
 @pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
 def test_conn_creds_dict():
     user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection(
-        'IXSE_SR15', creds={'username': user, 'password': pw})
-    assert conn.current_connection == 'IXSE_SR15'
+    conn = iiasa.Connection(TEST_API, creds={'username': user, 'password': pw})
+    assert conn.current_connection == TEST_API_NAME
+
+
+def test_conn_bad_creds():
+    # connecting with invalid credentials raises an error
+    creds = ('_foo', '_bar')
+    pytest.raises(RuntimeError, iiasa.Connection, TEST_API, creds=creds)
 
 
 def test_conn_creds_dict_raises():
-    pytest.raises(KeyError, iiasa.Connection,
-                  'IXSE_SR15', creds={'username': 'foo'})
+    # connecting with incomplete credentials as dictionary raises an error
+    creds = {'username': 'foo'}
+    pytest.raises(KeyError, iiasa.Connection, TEST_API, creds=creds)
 
 
-def test_variables():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn.variables().values
-    assert 'Emissions|CO2' in obs
+
+def test_variables(conn):
+    # check that connection returns the correct variables
+    npt.assert_array_equal(conn.variables(),
+                           ['Primary Energy', 'Primary Energy|Coal'])
 
 
-def test_regions():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn.regions().values
-    assert 'World' in obs
+def test_regions(conn):
+    # check that connection returns the correct regions
+    npt.assert_array_equal(conn.regions(), ['World', 'region_a'])
 
 
-def test_regions_with_synonyms():
-    conn = iiasa.Connection('IXSE_SR15')
+def test_regions_with_synonyms(conn):
     obs = conn.regions(include_synonyms=True)
-    assert 'synonym' in obs.columns
-    assert (obs[obs.region == 'R5ROWO']
-            .synonym == 'Rest of the World (R5)').all()
+    exp = pd.DataFrame([['World', None], ['region_a', 'ISO_a']],
+                       columns=['region', 'synonym'])
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_regions_empty_response():
@@ -121,105 +140,121 @@ def test_regions_with_synonyms_response():
             .synonym.isin(['Deutschland', 'DE'])).all()
 
 
-def test_metadata():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn.scenario_list()['model'].values
-    assert 'MESSAGEix-GLOBIOM 1.0' in obs
+def test_meta_columns(conn):
+    # test that connection returns the correct list of meta indicators
+    npt.assert_array_equal(conn.meta_columns, META_COLS)
+
+    # test for deprecated version of the function
+    npt.assert_array_equal(conn.available_metadata(), META_COLS)
 
 
-def test_available_indicators():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn.available_metadata()
-    assert 'carbon price|2050' in list(obs)
+@pytest.mark.parametrize("default", [True, False])
+def test_index(conn, default):
+    # test that connection returns the correct index
+    if default:
+        exp = META_DF.loc[META_DF.is_default, ['version']]
+    else:
+        exp = META_DF[VERSION_COLS]
+
+    pdt.assert_frame_equal(conn.index(default=default), exp, check_dtype=False)
 
 
-QUERY_DATA_EXP = {
-    "filters": {
-        "regions": [],
-        "variables": [],
-        "runs": [],
-        "years": [],
-        "units": [],
-        "timeslices": []
-    }
-}
+@pytest.mark.parametrize("default", [True, False])
+def test_meta(conn, default):
+    # test that connection returns the correct meta dataframe
+    if default:
+        exp = META_DF.loc[META_DF.is_default, ['version'] + META_COLS]
+    else:
+        exp = META_DF[VERSION_COLS + META_COLS]
+
+    pdt.assert_frame_equal(conn.meta(default=default), exp, check_dtype=False)
+
+    # test for deprecated version of the function
+    pdt.assert_frame_equal(conn.metadata(default=default), exp,
+                           check_dtype=False)
 
 
-def test_query_data_model_scen():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C')
-    exp = copy.deepcopy(QUERY_DATA_EXP)
-    exp['filters']['runs'] = [2]
-    assert obs == exp
+@pytest.mark.parametrize("kwargs", [
+    {},
+    dict(variable='Primary Energy'),
+    dict(scenario='scen_a', variable='Primary Energy')
+])
+def test_query_year(conn, test_df_year, kwargs):
+    # test reading timeseries data (`model_a` has only yearly data)
+    exp = test_df_year.copy()
+    for i in ['version'] + META_COLS:
+        exp.set_meta(META_DF.iloc[[0, 1]][i])
+
+    # test method via Connection
+    df = conn.query(model='model_a', **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+    # test top-level method
+    df = read_iiasa(TEST_API, model='model_a', **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
-def test_query_data_region():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C',
-                                region='*World*')
-    exp = copy.deepcopy(QUERY_DATA_EXP)
-    exp['filters']['runs'] = [2]
-    exp['filters']['regions'] = ['World']
-    assert obs == exp
+@pytest.mark.parametrize("kwargs", [
+    {},
+    dict(variable='Primary Energy'),
+    dict(scenario='scen_a', variable='Primary Energy')
+])
+def test_query_with_subannual(conn, test_pd_df, kwargs):
+    # test reading timeseries data (including subannual data)
+    exp = IamDataFrame(test_pd_df, subannual='Year')\
+        .append(MODEL_B_DF, model='model_b', scenario='scen_a', region='World')
+    for i in ['version'] + META_COLS:
+        exp.set_meta(META_DF.iloc[[0, 1, 3]][i])
+
+    # test method via Connection
+    df = conn.query(**kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+    # test top-level method
+    df = read_iiasa(TEST_API, **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
-def test_query_data_variables():
-    conn = iiasa.Connection('IXSE_SR15')
-    obs = conn._query_post_data(model='AIM*', scenario='ADVANCE_2020_Med2C',
-                                variable='Emissions|CO2*')
-    exp = copy.deepcopy(QUERY_DATA_EXP)
-    exp['filters']['runs'] = [2]
-    exp['filters']['variables'] = [
-        'Emissions|CO2', 'Emissions|CO2|AFOLU', 'Emissions|CO2|Energy',
-        'Emissions|CO2|Energy and Industrial Processes',
-        'Emissions|CO2|Energy|Demand', 'Emissions|CO2|Energy|Demand|AFOFI',
-        'Emissions|CO2|Energy|Demand|Industry',
-        'Emissions|CO2|Energy|Demand|Other Sector',
-        'Emissions|CO2|Energy|Demand|Residential and Commercial',
-        'Emissions|CO2|Energy|Demand|Transportation',
-        'Emissions|CO2|Energy|Supply',
-        'Emissions|CO2|Energy|Supply|Electricity',
-        'Emissions|CO2|Energy|Supply|Gases',
-        'Emissions|CO2|Energy|Supply|Heat',
-        'Emissions|CO2|Energy|Supply|Liquids',
-        'Emissions|CO2|Energy|Supply|Other Sector',
-        'Emissions|CO2|Energy|Supply|Solids',
-        'Emissions|CO2|Industrial Processes', 'Emissions|CO2|Other'
-    ]
-    for k in obs['filters']:
-        npt.assert_array_equal(obs['filters'][k], exp['filters'][k])
+@pytest.mark.parametrize("kwargs", [
+    {},
+    dict(variable='Primary Energy'),
+    dict(scenario='scen_a', variable='Primary Energy')
+])
+def test_query_with_meta_arg(conn, test_pd_df, kwargs):
+    # test reading timeseries data (including subannual data)
+    exp = IamDataFrame(test_pd_df, subannual='Year')\
+        .append(MODEL_B_DF, model='model_b', scenario='scen_a', region='World')
+    for i in ['version', 'string']:
+        exp.set_meta(META_DF.iloc[[0, 1, 3]][i])
+
+    # test method via Connection
+    df = conn.query(meta=['string'], **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+    # test top-level method
+    df = read_iiasa(TEST_API, meta=['string'], **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
-def test_query_IXSE_SR15():
-    df = iiasa.read_iiasa('IXSE_SR15',
-                          model='AIM*',
-                          scenario='ADVANCE_2020_Med2C',
-                          variable='Emissions|CO2',
-                          region='World',
-                          )
-    assert len(df) == 20
+@pytest.mark.parametrize("kwargs", [
+    {},
+    dict(variable='Primary Energy'),
+    dict(scenario='scen_a', variable='Primary Energy')
+])
+def test_query_with_meta_false(conn, test_pd_df, kwargs):
+    # test reading timeseries data (including subannual data)
+    exp = IamDataFrame(test_pd_df, subannual='Year')\
+        .append(MODEL_B_DF, model='model_b', scenario='scen_a', region='World')
+
+    # test method via Connection
+    df = conn.query(meta=False, **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
+
+    # test top-level method
+    df = read_iiasa(TEST_API, meta=False, **kwargs)
+    assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
-def test_query_IXSE_AR6():
-    with pytest.raises(RuntimeError) as excinfo:
-        variable = 'Emissions|CO2|Energy|Demand|Transportation'
-        creds = dict(username='mahamba', password='verysecret')
-        iiasa.read_iiasa('IXSE_AR6',
-                         scenario='ADVANCE_2020_WB2C',
-                         model='AIM/CGE 2.0',
-                         region='World',
-                         variable=variable,
-                         creds=creds)
-    assert str(excinfo.value).startswith('Login failed for user: mahamba')
-
-
-def test_query_IXSE_SR15_with_metadata():
-    df = iiasa.read_iiasa('IXSE_SR15',
-                          model='MESSAGEix*',
-                          variable=['Emissions|CO2', 'Primary Energy|Coal'],
-                          region='World',
-                          meta=['carbon price|2100 (NPV)', 'category'],
-                          )
-    assert len(df) == 168
-    assert len(df.data) == 168
-    assert len(df.meta) == 7
+def test_query_non_default(conn):
+    # querying for non-default scenario data raises an error
+    pytest.raises(ValueError, conn.query, default=False)

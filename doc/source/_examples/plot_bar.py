@@ -36,7 +36,7 @@ fig.subplots_adjust(right=0.55)
 plt.show()
 
 ###############################
-# We don't just have to plot variables, any data or metadata associated with the
+# We don't just have to plot variables, any data or meta indicators from the
 # IamDataFrame can be used.
 
 data = (df

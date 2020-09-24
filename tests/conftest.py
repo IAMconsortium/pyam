@@ -3,12 +3,24 @@ import matplotlib
 matplotlib.use('agg')
 
 import os
+from requests.exceptions import ConnectionError
 import pytest
+import numpy as np
 import pandas as pd
 
-
 from datetime import datetime
-from pyam import IamDataFrame, IAMC_IDX
+from pyam import IamDataFrame, META_IDX, IAMC_IDX, iiasa
+
+
+# verify whether IIASA database API can be reached, skip tests otherwise
+try:
+    iiasa.Connection()
+    IIASA_UNAVAILABLE = False
+except ConnectionError:  # pragma: no cover
+    IIASA_UNAVAILABLE = True
+
+TEST_API = 'integration-test'
+TEST_API_NAME = 'IXSE_INTEGRATION_TEST'
 
 
 here = os.path.dirname(os.path.realpath(__file__))
@@ -31,6 +43,12 @@ TEST_DF = pd.DataFrame([
 ],
     columns=IAMC_IDX + TEST_YEARS,
 )
+
+META_COLS = ['number', 'string']
+META_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 1, 'foo'],
+    ['model_a', 'scen_b', 2, np.nan],
+], columns=META_IDX + META_COLS).set_index(META_IDX)
 
 
 FULL_FEATURE_DF = pd.DataFrame([
@@ -109,6 +127,8 @@ def test_df(request):
     tdf = TEST_DF.rename({2005: request.param[0], 2010: request.param[1]},
                          axis="columns")
     df = IamDataFrame(data=tdf)
+    for i in META_COLS:
+        df.set_meta(META_DF[i])
     yield df
 
 
@@ -116,13 +136,21 @@ def test_df(request):
 @pytest.fixture(scope="function")
 def test_df_year():
     df = IamDataFrame(data=TEST_DF)
+    for i in META_COLS:
+        df.set_meta(META_DF[i])
     yield df
 
 
-# minimal test data provided as pandas.DataFrame (only 'year' time format)
+# minimal test data as pandas.DataFrame (only 'year' time format)
 @pytest.fixture(scope="function")
 def test_pd_df():
     yield TEST_DF.copy()
+
+
+# minimal test data as pandas.DataFrame with index (only 'year' time format)
+@pytest.fixture(scope="function")
+def test_df_index():
+    yield TEST_DF.set_index(IAMC_IDX)
 
 
 # IamDataFrame with variable-and-region-structure for testing aggregation tools
@@ -135,9 +163,11 @@ def test_pd_df():
 )
 def simple_df(request):
     _df = FULL_FEATURE_DF.copy()
-    if request.param is 'datetime':
+    if request.param == 'datetime':
         _df.rename(DTS_MAPPING, axis="columns", inplace=True)
-    yield IamDataFrame(model='model_a', scenario='scen_a', data=_df)
+    df = IamDataFrame(model='model_a', scenario='scen_a', data=_df)
+    df.set_meta('foo', 'string')
+    yield df
 
 
 # IamDataFrame with subannual time resolution
@@ -154,8 +184,9 @@ def subannual_df():
     mapping = [('year', 1), ('winter', 0.7), ('summer', 0.3)]
     lst = [add_subannual(_df.copy(), name, value) for name, value in mapping]
 
-    yield IamDataFrame(model='model_a', scenario='scen_a', data=pd.concat(lst))
-
+    df = IamDataFrame(model='model_a', scenario='scen_a', data=pd.concat(lst))
+    df.set_meta('foo', 'string')
+    yield df
 
 @pytest.fixture(scope="function")
 def reg_df():
@@ -173,3 +204,9 @@ def plot_df():
 def plot_stack_plot_df():
     df = IamDataFrame(TEST_STACKPLOT_DF)
     yield df
+
+
+@pytest.fixture(scope="session")
+def conn():
+    if not IIASA_UNAVAILABLE:
+        return iiasa.Connection(TEST_API)

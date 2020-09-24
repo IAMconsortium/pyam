@@ -1,5 +1,0 @@
-seaborn==0.9.0
-gdal
-fiona
-"poppler<0.66"
-cython

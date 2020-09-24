@@ -1,6 +1,69 @@
-# Next Release
+# Next release
+
 
 - [#403](https://github.com/IAMconsortium/pyam/pull/403) Add boxplot function.
+
+
+## Notes
+
+PR [#420](https://github.com/IAMconsortium/pyam/pull/420) added
+an object `IamDataFrame._data` to handle timeseries data internally. 
+This is implemented as a `pandas.Series` (instead of the previous long-format
+`pandas.DataFrame`) to improve performance.
+The previous behaviour with `IamDataFrame.data` is maintained
+via getter and setter functions.
+
+## Individual updates
+
+- [#427](https://github.com/IAMconsortium/pyam/pull/427) Add an `info()` function and use in `print(IamDataFrame)`
+- [#424](https://github.com/IAMconsortium/pyam/pull/424) Add a tutorial reading results from a GAMS model (via a gdx file).
+- [#420](https://github.com/IAMconsortium/pyam/pull/420) Add a `_data` object (implemented as a pandas.Series) to handle timeseries data internally.
+- [#418](https://github.com/IAMconsortium/pyam/pull/418) Read data from World Bank Open Data Catalogue as IamDataFrame.
+- [#416](https://github.com/IAMconsortium/pyam/pull/416) Include `meta` in new IamDataFrames returned by aggregation functions.
+
+# Release v0.7.0
+
+## Highlights
+
+- Add new features for aggregating and downscaling timeseries data.
+- Update the plotting library for compatibility with the latest matplotlib release.
+- Refactor the feature to read data directly from an IIASA scenario database API.
+- Migrate the continuous-integration (CI) infrastructure
+  from Travis & Appveyor to GitHub Actions
+  and use CodeCov.io instead of coveralls.io for test coverage metrics.
+
+## API changes
+
+PR [#413](https://github.com/IAMconsortium/pyam/pull/413) changed the
+return type of `pyam.read_iiasa()` and `pyam.iiasa.Connection.query()`
+to an `IamDataFrame` (instead of a `pandas.DataFrame`)
+and loads meta-indicators by default.
+
+Also, the following functions were deprecated for package consistency: 
+- `index()` replaces `scenario_list()` for an overview of all scenarios 
+- `meta_columns` (attribute) replaces `available_metadata()`
+- `meta()` replaces `metadata()`
+
+PR [#402](https://github.com/IAMconsortium/pyam/pull/402) changed the default
+behaviour of `as_pandas()` to include all columns of `meta` in the returned
+dataframe, or only merge columns given by the renamed argument `meta_cols`. 
+The feature to discover meta-columns from a dictionary was split out into
+a utility function `pyam.plotting.mpl_args_to_meta_cols()`.
+
+## Individual Updates
+
+- [#413](https://github.com/IAMconsortium/pyam/pull/413) Refactor IIASA-connection-API and rework all related tests.
+- [#412](https://github.com/IAMconsortium/pyam/pull/412) Add building the docs to GitHub Actions CI.
+- [#411](https://github.com/IAMconsortium/pyam/pull/411) Add feature to pass an explicit weight dataframe to `downscale_region()`.
+- [#410](https://github.com/IAMconsortium/pyam/pull/410) Activate tutorial tests on GitHub Actions CI (py3.8).
+- [#409](https://github.com/IAMconsortium/pyam/pull/409) Remove travis and appveyor CI config.
+- [#408](https://github.com/IAMconsortium/pyam/pull/408) Update badges on the docs page and readme.
+- [#407](https://github.com/IAMconsortium/pyam/pull/407) Add Codecov to Github Actions CI.
+- [#405](https://github.com/IAMconsortium/pyam/pull/405) Add ability for recursivley aggregating variables.
+- [#402](https://github.com/IAMconsortium/pyam/pull/402) Refactor `as_pandas()` and docs for more consistent description of `meta`.
+- [#401](https://github.com/IAMconsortium/pyam/pull/401) Read credentials for IIASA-API-Connection by default from known location.
+- [#396](https://github.com/IAMconsortium/pyam/pull/396) Enable casting to `IamDataFrame` multiple times.
+>>>>>>> 015e8a69f95a20b83dcc302499ad1411114aa539
 - [#394](https://github.com/IAMconsortium/pyam/pull/394) Switch CI to Github Actions.
 - [#393](https://github.com/IAMconsortium/pyam/pull/393) Import ABC from collections.abc for Python 3.10 compatibility.
 - [#380](https://github.com/IAMconsortium/pyam/pull/380) Add compatibility with latest matplotlib and py3.8

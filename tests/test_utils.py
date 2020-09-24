@@ -1,7 +1,9 @@
+import pytest
 import pandas as pd
 import numpy as np
+from pandas import testing as pdt
 
-from pyam import utils
+from pyam import utils, META_IDX
 
 TEST_VARS = pd.Series(['foo', 'foo|bar', 'foo|bar|baz'])
 TEST_CONCAT_SERIES = pd.Series(['foo', 'bar', 'baz'], index=['f', 'b', 'z'])
@@ -19,7 +21,7 @@ def test_pattern_match_nan():
     data = pd.Series(['foo', np.nan])
     values = ['baz']
 
-    obs = utils.pattern_match(data, values)
+    obs = utils.pattern_match(data, values, has_nan=True)
     assert (obs == [False, False]).all()
 
 
@@ -186,3 +188,28 @@ def test_reduce_hierarchy_neg1():
 
 def test_reduce_hierarchy_neg2():
     assert utils.reduce_hierarchy('foo|bar|baz', -2) == 'foo'
+
+
+def test_merge_meta():
+    # test merging of two meta tables
+    left = pd.DataFrame([
+        ['model_a', 'scen_a', 'foo', 1],
+        ['model_a', 'scen_b', 'bar', 2],
+    ], columns=META_IDX + ['string', 'value']).set_index(META_IDX)
+    right = pd.DataFrame([
+        ['model_a', 'scen_a', 'bar', 2],
+        ['model_b', 'scen_a', 'baz', 3],
+    ], columns=META_IDX + ['string', 'value2']).set_index(META_IDX)
+
+    # merge conflict raises an error
+    pytest.raises(ValueError, utils.merge_meta, left, right)
+
+    # merge conflict ignoring errors yields expected results
+    exp = pd.DataFrame([
+        ['model_a', 'scen_a', 'foo', 1, 2],
+        ['model_a', 'scen_b', 'bar', 2, np.nan],
+        ['model_b', 'scen_a', 'baz', np.nan, 3],
+    ], columns=META_IDX + ['string', 'value', 'value2']).set_index(META_IDX)
+
+    obs = utils.merge_meta(left, right, ignore_meta_conflict=True)
+    pdt.assert_frame_equal(exp, obs)

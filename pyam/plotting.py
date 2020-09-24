@@ -95,6 +95,15 @@ def default_props(reset=False, **kwargs):
     return _DEFAULT_PROPS
 
 
+def mpl_args_to_meta_cols(df, **kwargs):
+    """Return the kwargs values (not keys) matching a `df.meta` column name"""
+    cols = set()
+    for arg, value in kwargs.items():
+        if isstr(value) and value in df.meta.columns:
+            cols.add(value)
+    return list(cols)
+
+
 def assign_style_props(df, color=None, marker=None, linestyle=None,
                        cmap=None):
     """Assign the style properties for a plot
