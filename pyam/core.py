@@ -732,7 +732,7 @@ class IamDataFrame(object):
 
             if exclude_on_fail and len(df) > 0:
                 self._exclude_on_fail(df)
-            return df
+            return df.reset_index()
 
     def rename(self, mapping=None, inplace=False, append=False,
                check_duplicates=True, **kwargs):
