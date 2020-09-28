@@ -1,8 +1,6 @@
-from datetime import datetime
 import pandas as pd
 import pandas.testing as pdt
 from pyam import IamDataFrame, validate, categorize, require_variable, META_IDX
-from conftest import TEST_DTS
 
 
 def test_require_variable_pass(test_df):
