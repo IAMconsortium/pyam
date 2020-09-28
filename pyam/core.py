@@ -723,6 +723,13 @@ class IamDataFrame(object):
             ('up' and 'lo' for respective bounds, 'year' for years)
         exclude_on_fail : bool, optional
             flag scenarios failing validation as `exclude: True`
+
+        Returns
+        -------
+        :class:`pandas.DataFrame`
+            All data points that do not satisfy the criteria.
+        None
+            If all scenarios satisfy the criteria.
         """
         df = _apply_criteria(self._data, criteria, in_range=False)
 
