@@ -1,48 +1,61 @@
 from datetime import datetime
 import pandas as pd
-from pyam import IamDataFrame, validate, categorize, require_variable
+import pandas.testing as pdt
+from pyam import IamDataFrame, validate, categorize, require_variable, META_IDX
 from conftest import TEST_DTS
 
 
+def test_require_variable_pass(test_df):
+    # checking that the return-type is correct
+    obs = test_df.require_variable(variable='Primary Energy',
+                                   exclude_on_fail=True)
+    assert obs is None
+    assert list(test_df['exclude']) == [False, False]
+
+
 def test_require_variable(test_df):
+    exp = pd.DataFrame([['model_a', 'scen_b']], columns=META_IDX)
+
+    # checking that the return-type is correct
+    obs = test_df.require_variable(variable='Primary Energy|Coal')
+    pdt.assert_frame_equal(obs, exp)
+    assert list(test_df['exclude']) == [False, False]
+
+    # checking exclude on fail
     obs = test_df.require_variable(variable='Primary Energy|Coal',
                                    exclude_on_fail=True)
-    assert len(obs) == 1
-    assert obs.loc[0, 'scenario'] == 'scen_b'
-
+    pdt.assert_frame_equal(obs, exp)
     assert list(test_df['exclude']) == [False, True]
 
 
 def test_require_variable_top_level(test_df):
+    exp = pd.DataFrame([['model_a', 'scen_b']], columns=META_IDX)
+
+    # checking that the return-type is correct
+    obs = require_variable(test_df, variable='Primary Energy|Coal')
+    pdt.assert_frame_equal(obs, exp)
+    assert list(test_df['exclude']) == [False, False]
+
+    # checking exclude on fail
     obs = require_variable(test_df, variable='Primary Energy|Coal',
                            exclude_on_fail=True)
-    assert len(obs) == 1
-    assert obs.loc[0, 'scenario'] == 'scen_b'
-
+    pdt.assert_frame_equal(obs, exp)
     assert list(test_df['exclude']) == [False, True]
 
 
 def test_require_variable_year_list(test_df):
-    years = [2005, 2010]
-
-    # checking for variables that have ANY of the years in the list
+    # drop first data point
     df = IamDataFrame(test_df.data[1:])
-    df.require_variable(variable='Primary Energy', year=years,
-                        exclude_on_fail=True)
-    df.filter(exclude=False, inplace=True)
+    # checking for variables that have data for ANY of the years in the list
+    obs = df.require_variable(variable='Primary Energy', year=[2005, 2010])
+    assert obs is None
 
-    assert len(df.variables()) == 2
-    assert len(df.scenarios()) == 2
-
-    # checking for variables that have ALL of the years in the list
+    # checking for variables that have data for ALL of the years in the list
     df = IamDataFrame(test_df.data[1:])
-    for y in years:
-        df.require_variable(variable='Primary Energy', year=y,
-                            exclude_on_fail=True)
-    df.filter(exclude=False, inplace=True)
+    exp = pd.DataFrame([['model_a', 'scen_a']], columns=META_IDX)
 
-    assert len(df.variables()) == 1
-    assert len(df.scenarios()) == 1
+    obs = df.require_variable(variable='Primary Energy', year=[2005])
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_validate_all_pass(test_df):
