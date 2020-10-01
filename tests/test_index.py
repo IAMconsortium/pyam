@@ -28,6 +28,19 @@ def test_replace_index_level(test_pd_df, test_df_index):
     pdt.assert_frame_equal(exp, obs)
 
 
+def test_replace_index_level_to_existing(test_pd_df, test_df_index):
+    """Assert that replace_index_value can rename to existing values (#430)"""
+    pd_df = test_pd_df.copy()
+    pd_df['scenario'] = ['scen_c', 'scen_c', 'scen_c']
+    exp = pd_df.set_index(IAMC_IDX)
+
+    obs = test_df_index.copy()
+    obs.index = replace_index_values(obs, 'scenario',
+                                     {'scen_a': 'scen_c', 'scen_b': 'scen_c'})
+
+    pdt.assert_frame_equal(exp, obs)
+
+
 def test_replace_index_level_raises(test_df_index):
     """Assert that replace_index_value raises with non-existing level"""
     with pytest.raises(KeyError):
