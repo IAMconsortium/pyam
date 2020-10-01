@@ -17,12 +17,12 @@ def replace_index_values(df, level, mapping):
         try:  # replace in index codes if value (target) is in the index levels
             _k = _levels.index(key)
             _v = _levels.index(value)
-            _codes = index.codes[n]
-            index = index.set_codes([_v if c == _k else c for c in _codes], n)
+            index = index.set_codes([_v if c == _k else c
+                                     for c in index.codes[n]], n)
             unused_levels = True
         except ValueError:  # else replace key for value in the levels
-            index = index.set_levels([value if l == key else l
-                                     for l in _levels], n)
+            index = index.set_levels([value if i == key else i
+                                     for i in _levels], n)
     if unused_levels:
         index = index.remove_unused_levels()
     return index
