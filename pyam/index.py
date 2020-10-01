@@ -8,9 +8,24 @@ def get_index_levels(df, level):
 
 def replace_index_values(df, level, mapping):
     """Replace one or several category-values at a specific level"""
-    return df.index.set_levels([mapping[i] if i in mapping else i
-                                for i in get_index_levels(df, level)], level)
+    index = df.index.copy()
+    n = index._get_level_number(level)
+    unused_levels = False
 
+    for key, value in mapping.items():
+        _levels = list(index.levels[n])
+        try:  # replace in index codes if value (target) is in the index levels
+            _k = _levels.index(key)
+            _v = _levels.index(value)
+            _codes = index.codes[n]
+            index = index.set_codes([_v if c == _k else c for c in _codes], n)
+            unused_levels = True
+        except ValueError:  # else replace key for value in the levels
+            index = index.set_levels([value if l == key else l
+                                     for l in _levels], n)
+    if unused_levels:
+        index = index.remove_unused_levels()
+    return index
 
 def append_index_level(index, codes, level, name, order=False):
     """Append a level to a pd.MultiIndex"""
