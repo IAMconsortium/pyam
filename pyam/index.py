@@ -12,20 +12,19 @@ def replace_index_values(df, level, mapping):
     n = index._get_level_number(level)
     unused_levels = False
 
-    for key, value in mapping.items():
-        _levels = list(index.levels[n])
-        try:  # replace in index codes if value (target) is in the index levels
-            _k = _levels.index(key)
-            _v = _levels.index(value)
-            index = index.set_codes([_v if c == _k else c
-                                     for c in index.codes[n]], n)
-            unused_levels = True
-        except ValueError:  # else replace key for value in the levels
-            index = index.set_levels([value if i == key else i
-                                     for i in _levels], n)
-    if unused_levels:
-        index = index.remove_unused_levels()
-    return index
+    _levels = [mapping[i] if i in mapping else i for i in index.levels[n]]
+    _unique_levels = list(set(_levels))
+
+    # if no duplicate levels exist after replace, set new levels and return
+    if len(_levels) == len(_unique_levels):
+        return index.set_levels(_levels, n)
+
+    # if duplicate levels exist, re-map the codes
+    levels_mapping = dict([(i, _unique_levels.index(lvl))
+                           for i, lvl in enumerate(_levels)])
+    _codes = [levels_mapping[i] for i in index.codes[n]]
+    return index.set_codes(_codes, n).set_levels(_unique_levels, n)
+
 
 def append_index_level(index, codes, level, name, order=False):
     """Append a level to a pd.MultiIndex"""
