@@ -10,8 +10,8 @@ def replace_index_values(df, level, mapping):
     """Replace one or several category-values at a specific level"""
     index = df.index.copy()
     n = index._get_level_number(level)
-    unused_levels = False
 
+    # replace the levels
     _levels = [mapping[i] if i in mapping else i for i in index.levels[n]]
     _unique_levels = list(set(_levels))
 
