@@ -129,16 +129,18 @@ def test_append_extra_col(test_df, shuffle_cols):
     check_meta_is(res, "col_2", "bye")
 
 
-def test_append_duplicates(test_df_year):
+def test_append_duplicates_raises(test_df_year):
     other = copy.deepcopy(test_df_year)
-    pytest.raises(ValueError, test_df_year.append, other=other)
+    with pytest.raises(ValueError, match='Indexes have overlapping values:'):
+        test_df_year.append(other=other)
 
 
-def test_append_incompatible_col(test_pd_df):
+def test_append_incompatible_col_raises(test_pd_df):
     df = IamDataFrame(test_pd_df)
     test_pd_df['foo'] = 'baz'
     other = IamDataFrame(test_pd_df)
-    pytest.raises(ValueError, df.append, other=other)
+    with pytest.raises(ValueError, match='Incompatible timeseries data index'):
+        df.append(other=other)
 
 
 def test_rename_data_cols_by_dict():
