@@ -134,6 +134,13 @@ def test_append_duplicates(test_df_year):
     pytest.raises(ValueError, test_df_year.append, other=other)
 
 
+def test_append_incompatible_col(test_pd_df):
+    df = IamDataFrame(test_pd_df)
+    test_pd_df['foo'] = 'baz'
+    other = IamDataFrame(test_pd_df)
+    pytest.raises(ValueError, df.append, other=other)
+
+
 def test_rename_data_cols_by_dict():
     mapping = dict(variable={'test_1': 'test', 'test_3': 'test'},
                    region={'region_a': 'region_c'})
