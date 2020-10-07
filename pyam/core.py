@@ -322,7 +322,6 @@ class IamDataFrame(object):
             .drop_duplicates().sort_values('variable').reset_index(drop=True)
         )
 
-
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
         """Append any IamDataFrame-like object to this object
@@ -343,13 +342,29 @@ class IamDataFrame(object):
         kwargs
             passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
             if `other` is not already an IamDataFrame
+
+        Returns
+        -------
+        IamDataFrame
+            If *inplace* is :obj:`False`.
+        None
+            If *inplace* is :obj:`True`.
+
+        Raises
+        ------
+        ValueError
+            if the time domain or other timeseries data index dimenions
+            do not match
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
 
         if self.time_col != other.time_col:
-            raise ValueError('incompatible time format (years vs. datetime)!')
+            raise ValueError('Incompatible time format (`year` vs. `time`)')
+
+        if self._data.index.names != other._data.index.names:
+            raise ValueError('Incompatible timeseries data index dimensions')
 
         ret = self.copy() if not inplace else self
 
