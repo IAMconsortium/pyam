@@ -134,6 +134,8 @@ def test_append_duplicates_raises(test_df_year):
     other = copy.deepcopy(test_df_year)
     with pytest.raises(ValueError, match='Indexes have overlapping values:'):
         test_df_year.append(other=other)
+    with pytest.raises(ValueError, match='Indexes have overlapping values:'):
+        test_df_year.append(other=other, inplace=True)
 
 
 def test_append_incompatible_col_raises(test_pd_df):
@@ -143,6 +145,8 @@ def test_append_incompatible_col_raises(test_pd_df):
     other = IamDataFrame(test_pd_df)
     with pytest.raises(ValueError, match='Incompatible timeseries data index'):
         df.append(other=other)
+    with pytest.raises(ValueError, match='Incompatible timeseries data index'):
+        df.append(other=other, inplace=True)
 
 
 def test_rename_data_cols_by_dict():
