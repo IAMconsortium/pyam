@@ -333,14 +333,14 @@ class IamDataFrame(object):
         Parameters
         ----------
         other : IamDataFrame, ixmp.Scenario, pandas.DataFrame or data file
-            any object castable as IamDataFrame to be appended
+            Any object castable as IamDataFrame to be appended
         ignore_meta_conflict : bool, default False
-            if False and `other` is an IamDataFrame, raise an error if
+            If False and `other` is an IamDataFrame, raise an error if
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
-            if True, do operation inplace and return None
+            If True, do operation inplace and return None
         kwargs
-            passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
+            Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
             if `other` is not already an IamDataFrame
 
         Returns
@@ -353,8 +353,7 @@ class IamDataFrame(object):
         Raises
         ------
         ValueError
-            if the time domain or other timeseries data index dimenions
-            do not match
+            If time domain or other timeseries data index dimension don't match
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)

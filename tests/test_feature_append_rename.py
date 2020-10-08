@@ -130,12 +130,14 @@ def test_append_extra_col(test_df, shuffle_cols):
 
 
 def test_append_duplicates_raises(test_df_year):
+    # Merging objects with overlapping values (merge conflict) raises an error
     other = copy.deepcopy(test_df_year)
     with pytest.raises(ValueError, match='Indexes have overlapping values:'):
         test_df_year.append(other=other)
 
 
 def test_append_incompatible_col_raises(test_pd_df):
+    # Merging objects with different data index dimensions raises an error
     df = IamDataFrame(test_pd_df)
     test_pd_df['foo'] = 'baz'
     other = IamDataFrame(test_pd_df)
