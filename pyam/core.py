@@ -322,7 +322,6 @@ class IamDataFrame(object):
             .drop_duplicates().sort_values('variable').reset_index(drop=True)
         )
 
-
     def append(self, other, ignore_meta_conflict=False, inplace=False,
                **kwargs):
         """Append any IamDataFrame-like object to this object
@@ -334,22 +333,37 @@ class IamDataFrame(object):
         Parameters
         ----------
         other : IamDataFrame, ixmp.Scenario, pandas.DataFrame or data file
-            any object castable as IamDataFrame to be appended
+            Any object castable as IamDataFrame to be appended
         ignore_meta_conflict : bool, default False
-            if False and `other` is an IamDataFrame, raise an error if
+            If False and `other` is an IamDataFrame, raise an error if
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
-            if True, do operation inplace and return None
+            If True, do operation inplace and return None
         kwargs
-            passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
+            Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
             if `other` is not already an IamDataFrame
+
+        Returns
+        -------
+        IamDataFrame
+            If *inplace* is :obj:`False`.
+        None
+            If *inplace* is :obj:`True`.
+
+        Raises
+        ------
+        ValueError
+            If time domain or other timeseries data index dimension don't match
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
 
         if self.time_col != other.time_col:
-            raise ValueError('incompatible time format (years vs. datetime)!')
+            raise ValueError('Incompatible time format (`year` vs. `time`)')
+
+        if self._data.index.names != other._data.index.names:
+            raise ValueError('Incompatible timeseries data index dimensions')
 
         ret = self.copy() if not inplace else self
 

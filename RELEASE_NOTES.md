@@ -11,6 +11,7 @@ via getter and setter functions.
 
 ## Individual updates
 
+- [#436](https://github.com/IAMconsortium/pyam/pull/436) Raise an error with appending mismatching timeseries index dimensions
 - [#427](https://github.com/IAMconsortium/pyam/pull/427) Add an `info()` function and use in `print(IamDataFrame)`
 - [#424](https://github.com/IAMconsortium/pyam/pull/424) Add a tutorial reading results from a GAMS model (via a gdx file).
 - [#420](https://github.com/IAMconsortium/pyam/pull/420) Add a `_data` object (implemented as a pandas.Series) to handle timeseries data internally.
