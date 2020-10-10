@@ -237,6 +237,20 @@ class IamDataFrame(object):
                 f(self)
 
     @property
+    def index(self):
+        """Return all model-scenario combinations as :class:`pandas.MultiIndex`
+
+        The index allows to loop over the available model-scenario combinations
+        using:
+
+        .. code-block:: python
+
+            for model, scenario in df.index:
+                ...
+        """
+        return self.meta.index
+
+    @property
     def data(self):
         """Return the timeseries data as long :class:`pandas.DataFrame`"""
         if self.empty:  # reset_index fails on empty with `datetime` column

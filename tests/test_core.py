@@ -201,6 +201,12 @@ def test_get_item(test_df):
     assert test_df['model'].unique() == ['model_a']
 
 
+def test_index(test_df_year):
+    # assert that the correct index is shown for the IamDataFrame
+    exp = pd.MultiIndex.from_arrays([['model_a'] * 2, ['scen_a', 'scen_b']],
+                                    names=['model', 'scenario'])
+    pd.testing.assert_index_equal(test_df_year.index, exp)
+
 def test_model(test_df):
     exp = pd.Series(data=['model_a'], name='model')
     pd.testing.assert_series_equal(test_df.models(), exp)
