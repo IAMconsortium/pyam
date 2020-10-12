@@ -7,6 +7,7 @@ import matplotlib.cm as cmx
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
 from collections import defaultdict
 from collections.abc import Iterable
@@ -500,6 +501,64 @@ def bar_plot(df, x='year', y='value', bars='variable',
             _title.append('{}: {}'.format(var, values[0]))
     if title and _title:
         title = ' '.join(_title) if title is True else title
+        ax.set_title(title)
+
+    return ax
+
+
+def boxplot(df, y='value', x='year', by=None,
+            ax=None, legend=True, title=None, **kwargs):
+    """ Plot boxplot of data using seaborn.boxplot
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Data to plot as a long-form data frame
+    y : string, optional
+        The column to use for y-axis values representing the distribution
+        within the boxplot
+        default: 'value'
+    x : string, optional
+        The column to use for x-axis points, i.e. the number of boxes the plot
+        will have
+        default: 'year'
+    by: string, optional
+        The column for grouping y-axis values at each x-axis point, i.e. a 3rd
+        dimension.
+        Data should be categorical, not a contiuous variable
+        default: None
+    ax : matplotlib.Axes, optional
+    legend : bool, optional
+        Include a legend
+        default: False
+    title : bool or string, optional
+        Display a default or custom title.
+    kwargs : Additional arguments to pass to the pd.DataFrame.plot()
+    """
+
+    if by:
+        df.sort_values(by, inplace=True)
+
+    if ax is None:
+        fig, ax = plt.subplots()
+
+    # plot
+    sns.boxplot(x=x, y=y, hue=by,
+                data=df, ax=ax, **kwargs)
+
+    # Add legend
+    if legend:
+        ax.legend(loc=2)
+        ax.legend_.set_title('n=' + str(len(df[['model',
+                                                'scenario']].drop_duplicates())),)
+
+    # Axes labels
+    if y == 'value':
+        ax.set_ylabel(df.unit.unique()[0])
+    else:
+        ax.set_ylabel(y)
+
+    if title:
         ax.set_title(title)
 
     return ax

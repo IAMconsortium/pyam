@@ -288,6 +288,28 @@ def test_bar_plot_rc(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_boxplot(plot_df):
+    with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
+        fig, ax = plt.subplots(figsize=(8, 8))
+        (plot_df
+         .filter(variable='Primary Energy', model='test_model')
+         .boxplot(ax=ax,)
+         )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_boxplot_hue(plot_df):
+    with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
+        fig, ax = plt.subplots(figsize=(8, 8))
+        (plot_df
+         .filter(variable='Primary Energy', model='test_model')
+         .boxplot(ax=ax, hue='region')
+         )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_pie_plot_labels(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
