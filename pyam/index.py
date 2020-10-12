@@ -8,8 +8,22 @@ def get_index_levels(df, level):
 
 def replace_index_values(df, level, mapping):
     """Replace one or several category-values at a specific level"""
-    return df.index.set_levels([mapping[i] if i in mapping else i
-                                for i in get_index_levels(df, level)], level)
+    index = df.index.copy()
+    n = index._get_level_number(level)
+
+    # replace the levels
+    _levels = [mapping[i] if i in mapping else i for i in index.levels[n]]
+    _unique_levels = list(set(_levels))
+
+    # if no duplicate levels exist after replace, set new levels and return
+    if len(_levels) == len(_unique_levels):
+        return index.set_levels(_levels, n)
+
+    # if duplicate levels exist, re-map the codes
+    levels_mapping = dict([(i, _unique_levels.index(lvl))
+                           for i, lvl in enumerate(_levels)])
+    _codes = [levels_mapping[i] for i in index.codes[n]]
+    return index.set_codes(_codes, n).set_levels(_unique_levels, n)
 
 
 def append_index_level(index, codes, level, name, order=False):
