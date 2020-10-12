@@ -737,6 +737,13 @@ class IamDataFrame(object):
             ('up' and 'lo' for respective bounds, 'year' for years)
         exclude_on_fail : bool, optional
             flag scenarios failing validation as `exclude: True`
+
+        Returns
+        -------
+        :class:`pandas.DataFrame`
+            All data points that do not satisfy the criteria.
+        None
+            If all scenarios satisfy the criteria.
         """
         df = _apply_criteria(self._data, criteria, in_range=False)
 
@@ -746,7 +753,7 @@ class IamDataFrame(object):
 
             if exclude_on_fail and len(df) > 0:
                 self._exclude_on_fail(df)
-            return df
+            return df.reset_index()
 
     def rename(self, mapping=None, inplace=False, append=False,
                check_duplicates=True, **kwargs):

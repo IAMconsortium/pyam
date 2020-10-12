@@ -13,6 +13,7 @@ via getter and setter functions.
 
 - [#437](https://github.com/IAMconsortium/pyam/pull/437) Improved test for appending mismatched timeseries
 - [#436](https://github.com/IAMconsortium/pyam/pull/436) Raise an error with appending mismatching timeseries index dimensions
+- [#429](https://github.com/IAMconsortium/pyam/pull/429) Fix return type of `validate()` after data refactoring
 - [#427](https://github.com/IAMconsortium/pyam/pull/427) Add an `info()` function and use in `print(IamDataFrame)`
 - [#424](https://github.com/IAMconsortium/pyam/pull/424) Add a tutorial reading results from a GAMS model (via a gdx file).
 - [#420](https://github.com/IAMconsortium/pyam/pull/420) Add a `_data` object (implemented as a pandas.Series) to handle timeseries data internally.
