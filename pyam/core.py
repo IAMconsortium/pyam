@@ -1673,7 +1673,7 @@ class IamDataFrame(object):
         df = self.as_pandas()
         ax = plotting.boxplot(df, *args, **kwargs)
         return ax
-        
+
     def pie_plot(self, *args, **kwargs):
         """Plot a pie chart
 

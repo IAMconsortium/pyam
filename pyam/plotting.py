@@ -2,8 +2,6 @@ import itertools
 import logging
 
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
-import matplotlib.cm as cmx
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
@@ -13,7 +11,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from pyam.run_control import run_control
-from pyam.utils import requires_package, IAMC_IDX, SORT_IDX, isstr
+from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
@@ -543,14 +541,12 @@ def boxplot(df, y='value', x='year', by=None,
         fig, ax = plt.subplots()
 
     # plot
-    sns.boxplot(x=x, y=y, hue=by,
-                data=df, ax=ax, **kwargs)
+    sns.boxplot(x=x, y=y, hue=by, data=df, ax=ax, **kwargs)
 
     # Add legend
     if legend:
         ax.legend(loc=2)
-        ax.legend_.set_title('n=' + str(len(df[['model',
-                                                'scenario']].drop_duplicates())),)
+        ax.legend_.set_title('n=' + str(len(df[META_IDX].drop_duplicates())),)
 
     # Axes labels
     if y == 'value':
