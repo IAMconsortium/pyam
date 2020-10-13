@@ -85,7 +85,6 @@ def default_props(reset=False, **kwargs):
     ----------
     reset : bool
             if True, reset properties and return
-            default: False
     """
     global _DEFAULT_PROPS
     if _DEFAULT_PROPS is None or reset:
@@ -197,19 +196,15 @@ def pie_plot(df, value='value', category='variable',
         Data to plot as a long-form data frame
     value : string, optional
         The column to use for data values
-        default: value
     category : string, optional
         The column to use for labels
-        default: variable
     ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend
-        default: False
     title : bool or string, optional
         Display a default or custom title.
     cmap : string, optional
         A colormap to use.
-        default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
     for col in set(SORT_IDX) - set([category]):
@@ -264,27 +259,21 @@ def stack_plot(df, x='year', y='value', stack='variable',
         Data to plot as a long-form data frame
     x : string, optional
         The column to use for x-axis values
-        default: year
     y : string, optional
         The column to use for y-axis values
-        default: value
     stack: string, optional
         The column to use for stack groupings
-        default: variable
     ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend
-        default: False
     title : bool or string, optional
         Display a default or custom title.
     cmap : string, optional
         A colormap to use.
-        default: None
     total : bool or dict, optional
         If True, plot a total line with default pyam settings. If a dict, then
         plot the total line using the dict key-value pairs as keyword arguments
         to ax.plot(). If None, do not plot the total line.
-        default : None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
     for col in set(SORT_IDX) - set([x, stack]):
@@ -427,25 +416,19 @@ def bar_plot(df, x='year', y='value', bars='variable',
         Data to plot as a long-form data frame
     x : string, optional
         The column to use for x-axis values
-        default: year
     y : string, optional
         The column to use for y-axis values
-        default: value
     bars: string, optional
         The column to use for bar groupings
-        default: variable
     ax : matplotlib.Axes, optional
     orient : string, optional
         Vertical or horizontal orientation.
-        default: variable
     legend : bool, optional
         Include a legend
-        default: False
     title : bool or string, optional
         Display a default or custom title.
     cmap : string, optional
         A colormap to use.
-        default: None
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
     for col in set(SORT_IDX) - set([x, bars]):
@@ -515,22 +498,18 @@ def boxplot(df, y='value', x='year', by=None,
     y : string, optional
         The column to use for y-axis values representing the distribution
         within the boxplot
-        default: 'value'
     x : string, optional
         The column to use for x-axis points, i.e. the number of boxes the plot
         will have
-        default: 'year'
-    by: string, optional
+    by : string, optional
         The column for grouping y-axis values at each x-axis point, i.e. a 3rd
         dimension.
         Data should be categorical, not a contiuous variable
-        default: None
     ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend
-        default: False
     title : bool or string, optional
-        Display a default or custom title.
+        Display a default or custom title
     kwargs : Additional arguments to pass to the pd.DataFrame.plot()
     """
 
@@ -606,30 +585,24 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
     ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend (`None` displays legend only if less than 13 entries)
-        default: None
     title : bool or string, optional
         Display a custom title.
     color : string, optional
         A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
-        default: None
     marker : string
         A valid matplotlib marker or column name. If a column name, common
         values will be provided the same marker.
-        default: 'o'
     linestyle : string, optional
         A valid matplotlib linestyle or column name. If a column name, common
         values will be provided the same linestyle.
         default: None
     cmap : string, optional
         A colormap to use.
-        default: None
     groupby : list-like, optional
         Data grouping for plotting.
-        default: ['model', 'scenario']
     with_lines : bool, optional
         Make the scatter plot with lines connecting common data.
-        default: False
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
     if ax is None:
@@ -699,48 +672,38 @@ def line_plot(df, x='year', y='value', ax=None, legend=None, title=True,
         Data to plot as a long-form data frame
     x : string, optional
         The column to use for x-axis values
-        default: year
     y : string, optional
         The column to use for y-axis values
-        default: value
     ax : matplotlib.Axes, optional
     legend : bool or dictionary, optional
         Add a legend. If a dictionary is provided, it will be used as keyword
         arguments in creating the legend.
-        default: None (displays legend only if less than 13 entries)
     title : bool or string, optional
         Display a default or custom title.
     color : string, optional
         A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
-        default: None
     marker : string, optional
         A valid matplotlib marker or column name. If a column name, common
         values will be provided the same marker.
-        default: None
     linestyle : string, optional
         A valid matplotlib linestyle or column name. If a column name, common
         values will be provided the same linestyle.
-        default: None
     cmap : string, optional
         A colormap to use.
-        default: None
     fill_between : boolean or dict, optional
         Fill lines between minima/maxima of the 'color' argument. This can only
         be used if also providing a 'color' argument. If this is True, then
         default arguments will be provided to `ax.fill_between()`. If this is a
         dictionary, those arguments will be provided instead of defaults.
-        default: None
     final_ranges : boolean or dict, optional
         Add vertical line between minima/maxima of the 'color' argument in the
         last period plotted.  This can only be used if also providing a 'color'
         argument. If this is True, then default arguments will be provided to
         `ax.axvline()`. If this is a dictionary, those arguments will be
         provided instead of defaults.
-        default: None
     rm_legend_label : string, list, optional
         Remove the color, marker, or linestyle label in the legend.
-        default: []
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
     if ax is None:
