@@ -8,8 +8,7 @@ from pyam.utils import (
     isstr,
     find_depth,
     reduce_hierarchy,
-    KNOWN_FUNCS,
-    META_IDX,
+    KNOWN_FUNCS
 )
 
 logger = logging.getLogger(__name__)
@@ -183,15 +182,15 @@ def _agg_weight(df, weight, method):
     if method not in ['sum', np.sum]:
         raise ValueError('only method `np.sum` allowed for weighted average')
 
-    cols = _list_diff(df.columns, ['variable', 'unit', 'value'])
-    _weight = _get_value_col(weight, cols)
+    w_cols = _list_diff(df.columns, ['variable', 'unit', 'value'])
+    _weight = _get_value_col(weight, w_cols)
 
-    if not _get_value_col(df, cols).index.equals(_weight.index):
+    if not _get_value_col(df, w_cols).index.equals(_weight.index):
         raise ValueError('inconsistent index between variable and weight')
 
     _data = _get_value_col(df)
     col1 = _list_diff(_data.index.names, ['region'])
-    col2 = META_IDX + [i for i in ['year', 'time'] if i in _weight.index.names]
+    col2 = _list_diff(w_cols, ['region'])
     return (_data * _weight).groupby(col1).sum() / _weight.groupby(col2).sum()
 
 
