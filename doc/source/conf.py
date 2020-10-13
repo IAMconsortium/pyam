@@ -318,19 +318,18 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-
-# Example configuration for intersphinx: refer to the Python standard library.
+# Intersphinx configuration.
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'pint': ('https://pint.readthedocs.io/en/stable', None),
-    'ixmp': ('https://message.iiasa.ac.at/projects/ixmp/en/stable/', None),
+    'ixmp': ('https://docs.messageix.org/projects/ixmp/en/stable/', None),
     'pandas_datareader':
         ('https://pandas-datareader.readthedocs.io/en/stable', None)
 }
 
-# extend the timeout limit for running notebooks
+# Extend the timeout limit for running notebooks
 nbsphinx_timeout = 120
 
 # prolog for all rst files

@@ -871,7 +871,7 @@ class IamDataFrame(object):
         The default *registry* includes additional unit definitions relevant
         for integrated assessment models and energy systems analysis, via the
         `iam-units <https://github.com/IAMconsortium/units>`_ package.
-        This registry can also be accessed directly, using::
+        This registry can also be accessed directly, using:
 
         .. code-block:: python
 
@@ -898,14 +898,13 @@ class IamDataFrame(object):
             'unit' column.
         factor : value, optional
             Explicit factor for conversion without `pint`.
-        registry : pint.UnitRegistry, optional
+        registry : :class:`pint.UnitRegistry`, optional
             Specific unit registry to use for conversion. Default: the
             `iam-units <https://github.com/IAMconsortium/units>`_ registry.
-        context : str or pint.Context, optional
-            (Name of) a :ref:`pint context <pint:context>` to use in
-            conversion. Required when converting between GHG species using GWP
-            metrics, unless the species indicated by *current* and *to* are the
-            same.
+        context : str or :class:`pint.Context`, optional
+            (Name of) the context to use in conversion.
+            Required when converting between GHG species using GWP metrics,
+            unless the species indicated by *current* and *to* are the same.
         inplace : bool, optional
             Whether to return a new IamDataFrame.
 
