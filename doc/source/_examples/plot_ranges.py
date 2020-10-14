@@ -13,16 +13,20 @@ Ranges of timeseries data
 # This gallery uses the scenario data from the first-steps tutorial.
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
-# you can download the file
-# from https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
+# you can download the file from
+# https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
 # Make sure to place the file in the same folder as this script/notebook.
 
+import matplotlib.pyplot as plt
 import pyam
 df = pyam.IamDataFrame('tutorial_data.csv')
 df
 
 ###############################
+# Highlighting ranges in a line chart
+# ***********************************
+#
 # In this example, we want to highlight the range across a scenario ensemble.
 # We do this by utilizing the `fill_between` argument.
 
@@ -34,6 +38,9 @@ data.line_plot(ax=ax, color='scenario', fill_between=True)
 plt.show()
 
 ###############################
+# More options for highlighting ranges in a line chart
+# ****************************************************
+#
 # The keyword argument `fill_between` can be set to true,
 # or it can be provided specific arguments as a dictionary:
 # in this illustration, we choose a very low transparency value.
@@ -43,7 +50,10 @@ data.line_plot(ax=ax, color='scenario', fill_between=dict(alpha=0.15))
 plt.show()
 
 ###############################
-# To further highligh the range of data, we can also add a bar showing the
+# Even more options for highlighting ranges in a line chart
+# *********************************************************
+#
+# To further highlight the range of data, we can also add a bar showing the
 # range of data in the final time period using `final_ranges`. Similar to
 # `fill_between` it can either be true or have specific arguments.
 

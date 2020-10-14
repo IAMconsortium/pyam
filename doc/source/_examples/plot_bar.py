@@ -1,7 +1,7 @@
 """
-=================
-Stacked bar plots
-=================
+==================
+Stacked bar charts
+==================
 
 """
 # sphinx_gallery_thumbnail_number = 3
@@ -13,8 +13,8 @@ Stacked bar plots
 # This gallery uses the scenario data from the first-steps tutorial.
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
-# you can download the file
-# from https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
+# you can download the file from
+# https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
 # Make sure to place the file in the same folder as this script/notebook.
 
@@ -40,6 +40,18 @@ plt.show()
 
 fig, ax = plt.subplots()
 data.bar_plot(ax=ax, stacked=True, orient='h')
+fig.subplots_adjust(right=0.55)
+plt.show()
+
+###############################
+# Sometimes, stacked bar charts have negative entries.
+# In that case, it helps to add a line showing the net value.
+
+from pyam.plotting import add_net_values_to_bar_plot
+
+fig, ax = plt.subplots()
+data.bar_plot(ax=ax, stacked=True)
+add_net_values_to_bar_plot(ax, color='k')
 fig.subplots_adjust(right=0.55)
 plt.show()
 

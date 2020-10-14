@@ -13,8 +13,8 @@ Pie chart visualizations
 # This gallery uses the scenario data from the first-steps tutorial.
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
-# you can download the file
-# from https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
+# you can download the file from
+# https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
 # Make sure to place the file in the same folder as this script/notebook.
 
@@ -24,6 +24,9 @@ df = pyam.IamDataFrame('tutorial_data.csv')
 df
 
 ###############################
+# A pie chart of the energy supply
+# ********************************
+#
 # We generate a pie plot of all components of primary energy supply
 # for one scenario.
 
@@ -37,6 +40,9 @@ fig.subplots_adjust(right=0.75, left=0.3)
 plt.show()
 
 ###############################
+# A pie chart with a legend
+# *************************
+#
 # Sometimes a legend is preferable to labels, so we can use that instead.
 
 fig, ax = plt.subplots()
@@ -45,6 +51,9 @@ fig.subplots_adjust(right=0.55, left=-0.05)
 plt.show()
 
 ###############################
+# A pie chart of regional contributions
+# *************************************
+#
 # We don't just have to plot subcategories of variables,
 # any data or meta indicators from the IamDataFrame can be used.
 # Here, we show the contribution by region to CO2 emissions.

@@ -13,8 +13,8 @@ Boxplot charts
 # This gallery uses the scenario data from the first-steps tutorial.
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
-# you can download the file
-# from https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
+# you can download the file from
+# https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
 # Make sure to place the file in the same folder as this script/notebook.
 
@@ -24,6 +24,9 @@ df = pyam.IamDataFrame('tutorial_data.csv')
 df
 
 ###############################
+# A boxplot of CO emissions
+# *************************
+#
 # We generate a simple boxplot of CO2 emissions
 # across one scenario implemented by a range of models.
 
@@ -35,7 +38,10 @@ data.boxplot(x='year', ax=ax)
 plt.show()
 
 ###############################
-# We can add sub-groupings of the data by using the keyword argument `by`.
+# A grouped boxplot
+# *****************
+#
+# We can add sub-groupings of the data using the keyword argument `by`.
 
 data = (
     df.filter(scenario='CD-LINKS_NPi2020_1000', variable='Emissions|CO2',
