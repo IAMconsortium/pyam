@@ -4,12 +4,13 @@ Plot Timeseries Data
 ====================
 
 """
-import matplotlib.pyplot as plt
 import pyam
 
 ###############################
-# Read in the data from the first-steps tutorial and show a summary
-# *****************************************************************
+# Read in tutorial data and show a summary
+# ****************************************
+#
+# This gallery uses the scenario data from the first-steps tutorial.
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
 # you can download the file
@@ -33,6 +34,4 @@ data = (
     .filter(region='World', keep=False)
 )
 
-fig, ax = plt.subplots()
-data.line_plot(ax=ax, color='region', title='CO2 emissions by region')
-plt.show()
+data.line_plot(color='region', title='CO2 emissions by region')
