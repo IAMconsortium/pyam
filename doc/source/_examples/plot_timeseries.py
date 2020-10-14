@@ -8,7 +8,10 @@ import matplotlib.pyplot as plt
 import pyam
 
 ###############################
-# Read in the data from the first-steps tutorial and show a summary
+# Read in the data from the first-steps tutorial and show a summary.
+# If you haven't cloned the **pyam** GitHub repository to your machine,
+# you can download the file from https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials
+# Make sure to place the file in the same folder as this script/notebook.
 
 df = pyam.IamDataFrame('tutorial_data.csv')
 df
@@ -23,6 +26,6 @@ data = (
     .filter(region='World', keep=False)
 )
 
-fig, ax = plt.subplots(figsize=(8, 8))
+fig, ax = plt.subplots()
 data.line_plot(ax=ax, color='region')
 plt.show()
