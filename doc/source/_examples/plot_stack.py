@@ -9,33 +9,34 @@ import matplotlib.pyplot as plt
 import pyam
 
 ###############################
-# Read in some example data
+# Read in the data from the first-steps tutorial and show a summary
 
-fname = 'data.csv'
-df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
-print(df.head())
+df = pyam.IamDataFrame('tutorial_data.csv')
+df
 
-###############################
-# We generated a simple stacked stack chart as below
+##############################
+# First, we generate a simple stacked line chart
+# of all components of primary energy supply for one scenario.
 
-data = df.filter(variable='Emissions|CO2|*',
-                 level=0,
-                 region='World')
-data.interpolate(2015)  # some values are missing
+data = df.filter(model='IMAGE 3.0.1', scenario='CD-LINKS_NPi2020_400',
+                 variable='Primary Energy|*', region='World')
 
-fig, ax = plt.subplots(figsize=(10, 10))
-data.stack_plot(ax=ax, total=True)
+fig, ax = plt.subplots()
+data.stack_plot(ax=ax)
 fig.subplots_adjust(right=0.55)
 plt.show()
 
 ###############################
-# We don't just have to plot variables, any data or metadata associated with the
-# IamDataFrame can be used.
+# We don't just have to plot subcategories of variables,
+# any data or meta indicators from the IamDataFrame can be used.
+# Here, we show the contribution by region to total CO2 emissions.
 
-data = (df
-        .filter(variable='Emissions|CO2')
-        .filter(region='World', keep=False)
-        )
-fig, ax = plt.subplots(figsize=(10, 10))
+data = (
+    df.filter(model='IMAGE 3.0.1', scenario='CD-LINKS_NPi2020_400',
+              variable='Emissions|CO2')
+    .filter(region='World', keep=False)
+)
+
+fig, ax = plt.subplots()
 data.stack_plot(ax=ax, stack='region', cmap='tab20', total=True)
 plt.show()

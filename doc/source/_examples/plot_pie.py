@@ -9,38 +9,40 @@ import matplotlib.pyplot as plt
 import pyam
 
 ###############################
-# Read in some example data
+# Read in the data from the first-steps tutorial and show a summary
 
-fname = 'data.csv'
-df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
+df = pyam.IamDataFrame('tutorial_data.csv')
+df
 
 ###############################
-# We generated a simple stacked bar chart as below
+# We generate a pie plot of all components of primary energy supply
+# for one scenario.
 
-data = df.filter(variable='Emissions|CO2|*',
-                 level=0,
-                 year=2050,
+data = df.filter(model='AIM/CGE 2.1', scenario='CD-LINKS_NPi',
+                 variable='Primary Energy|*', year=2050,
                  region='World')
 
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots()
 data.pie_plot(ax=ax)
 fig.subplots_adjust(right=0.75, left=0.3)
 plt.show()
 
 ###############################
-# Sometimes a legend is preferable to labels, we can use those instead.
+# Sometimes a legend is preferable to labels, so we can use that instead.
 
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots()
 data.pie_plot(ax=ax, labels=None, legend=True)
 fig.subplots_adjust(right=0.55, left=-0.05)
 plt.show()
 
 ###############################
-# We don't just have to plot variables, any data or metadata associated with the
-# IamDataFrame can be used.
+# We don't just have to plot subcategories of variables,
+# any data or meta indicators from the IamDataFrame can be used.
+# Here, we show the contribution by region to CO2 emissions.
 
 data = (df
-        .filter(variable='Emissions|CO2', year=2050)
+        .filter(model='AIM/CGE 2.1', scenario='CD-LINKS_NPi',
+                variable='Emissions|CO2', year=2050)
         .filter(region='World', keep=False)
         )
 data.pie_plot(category='region', cmap='tab20')

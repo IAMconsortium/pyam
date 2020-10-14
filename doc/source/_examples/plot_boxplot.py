@@ -9,40 +9,34 @@ import matplotlib.pyplot as plt
 import pyam
 
 ###############################
-# Read in some example data
+# Read in the data from the first-steps tutorial and show a summary
 
-fname = 'data.csv'
-df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
-print(df.head())
+df = pyam.IamDataFrame('tutorial_data.csv')
+df
 
 ###############################
-# We generate a simple boxplot as below
+# We generate a simple boxplot of CO2 emissions
+# across one scenario implemented by a range of models.
 
-data = df.filter(variable='Emissions|CO2|*',
-                 level=0,
-                 region='World')
+data = df.filter(scenario='CD-LINKS_NPi2020_1000',
+                 variable='Emissions|CO2', region='World')
 
-fig, ax = plt.subplots(figsize=(10, 10))
-data.boxplot(x='year', ax=ax,)
-fig.subplots_adjust(right=0.55)
+fig, ax = plt.subplots()
+data.boxplot(x='year', ax=ax)
 plt.show()
 
 ###############################
-# We don't just have to plot variables, any data or metadata associated with the
-# IamDataFrame can be used.
-# Use the 'by' parameter to add the 3rd dimension. In example below we us 'region' column
-# but this can similarly be a column from the metadata
+# We can add sub-groupings of the data by using the keyword argument `by`.
 
-data = df.filter(variable='Emissions|CO2',
-                 year=[2010,2050,2100])
-data = data.filter(region='World', keep=False)
-                # region='World')
+data = (
+    df.filter(scenario='CD-LINKS_NPi2020_1000', variable='Emissions|CO2',
+              year=[2010, 2020, 2030, 2050, 2100])
+    .filter(region='World', keep=False)
+)
 
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots()
 data.boxplot(x='year', by='region', legend=True, ax=ax)
 
-# Minor adjustments to plot appearances
-ax.hlines(0,-1,5)
-ax.set_xlim([-0.5,2.5])
+# We can use any matplotlib arguments to make the figure more appealing.
 plt.legend(loc=1)
 plt.show()

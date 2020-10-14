@@ -11,36 +11,32 @@ import pyam
 from pyam.plotting import add_net_values_to_bar_plot
 
 ###############################
-# Read in some example data
+# Read in the data from the first-steps tutorial and show a summary
 
-fname = 'data.csv'
-df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
-print(df.head())
+df = pyam.IamDataFrame('tutorial_data.csv')
+df
 
 ###############################
-# We generated a simple stacked bar chart as below
+# First, we generate a simple stacked bar chart
+# of the regional breakdown of CO2 emissions in one scenario.
 
-data = df.filter(variable='Emissions|CO2|*',
-                 level=0,
-                 region='World',
-                 year=[2040, 2050, 2060])
+data = (
+    df.filter(model='WITCH-GLOBIOM 4.4', scenario='CD-LINKS_NPi2020_1000',
+              variable='Emissions|CO2')
+    .filter(region='World', keep=False)
+)
 
-fig, ax = plt.subplots(figsize=(6, 6))
-data.bar_plot(ax=ax, stacked=True)
+fig, ax = plt.subplots()
+data.bar_plot(ax=ax, bars='region', stacked=True)
 fig.subplots_adjust(right=0.55)
 plt.show()
 
 ###############################
-# Sometimes stacked bar charts have negative entries - in that case it helps to
-# add a line showing the net value.
+# Sometimes stacked bar charts have negative entries.
+# In that case it helps to add a line showing the net value.
 
-data = df.filter(variable='Emissions|CO2|*',
-                 level=0,
-                 region='World',
-                 year=[2040, 2050, 2060])
-
-fig, ax = plt.subplots(figsize=(6, 6))
-data.bar_plot(ax=ax, stacked=True)
+fig, ax = plt.subplots()
+data.bar_plot(ax=ax, bars='region', stacked=True)
 add_net_values_to_bar_plot(ax, color='k')
 fig.subplots_adjust(right=0.55)
 plt.show()

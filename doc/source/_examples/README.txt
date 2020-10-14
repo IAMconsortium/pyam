@@ -3,4 +3,5 @@
 Plotting Gallery
 ================
 
-A variety of examples of :code:`pyam`'s plotting capabilities.
+A few examples of the plotting and visualization features
+provided by |pyam|.

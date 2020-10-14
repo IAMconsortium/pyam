@@ -7,17 +7,22 @@ Plot Timeseries Data
 import matplotlib.pyplot as plt
 import pyam
 
-fname = 'data.csv'
+###############################
+# Read in the data from the first-steps tutorial and show a summary
 
-df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
+df = pyam.IamDataFrame('tutorial_data.csv')
+df
 
-df = (df
-      .filter(variable='Emissions|CO2')
-      .filter(region='World', keep=False)
-      )
+###############################
+# We show a simple line chart of the regional components
+# of CO2 emissions for one scenario.
 
-print(df.head())
+data = (
+    df.filter(model='REMIND-MAgPIE 1.7-3.0', scenario='CD-LINKS_INDCi',
+              variable='Emissions|CO2')
+    .filter(region='World', keep=False)
+)
 
 fig, ax = plt.subplots(figsize=(8, 8))
-df.line_plot(ax=ax, color='region')
+data.line_plot(ax=ax, color='region')
 plt.show()

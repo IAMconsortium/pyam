@@ -9,41 +9,37 @@ import matplotlib.pyplot as plt
 import pyam
 
 ###############################
-# Read in some example data
+# Read in the data from the first-steps tutorial and show a summary
 
-fname = 'data.csv'
-
-df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
-
-df = (df
-      .filter(variable='Emissions|CO2')
-      .filter(region='World', keep=False)
-      )
-
-print(df.head())
+df = pyam.IamDataFrame('tutorial_data.csv')
+df
 
 ###############################
-# In this example, we want to show the range of a given dataset. We do this
-# utilizing the `fill_between` argument.
+# In this example, we want to highlight the range across a scenario ensemble.
+# We do this by utilizing the `fill_between` argument.
 
-fig, ax = plt.subplots(figsize=(8, 8))
-df.line_plot(ax=ax, color='variable', fill_between=True)
+data = df.filter(scenario='CD-LINKS*',
+                 variable='Emissions|CO2', region='World')
+
+fig, ax = plt.subplots()
+data.line_plot(ax=ax, color='scenario', fill_between=True)
 plt.show()
 
 ###############################
-# `fill_between` can simply be true, or it can be provided specific arguments as
-# a dictionary.
+# The keyword argument `fill_between` can be set to true,
+# or it can be provided specific arguments as a dictionary:
+# in this illustration, we choose a very low transparency value.
 
-fig, ax = plt.subplots(figsize=(8, 8))
-df.line_plot(ax=ax, color='variable', fill_between=dict(alpha=0.75))
+fig, ax = plt.subplots()
+data.line_plot(ax=ax, color='scenario', fill_between=dict(alpha=0.15))
 plt.show()
 
 ###############################
-# To further make the range of data visible, we can also add a bar showing the
+# To further highligh the range of data, we can also add a bar showing the
 # range of data in the final time period using `final_ranges`. Similar to
 # `fill_between` it can either be true or have specific arguments.
 
-fig, ax = plt.subplots(figsize=(8, 8))
-df.line_plot(ax=ax, color='variable', fill_between=True,
-             final_ranges=dict(linewidth=5))
+fig, ax = plt.subplots()
+data.line_plot(ax=ax, color='scenario', fill_between=True,
+               final_ranges=dict(linewidth=5))
 plt.show()
