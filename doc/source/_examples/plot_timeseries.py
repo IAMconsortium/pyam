@@ -1,6 +1,6 @@
 """
 ====================
-Plot Timeseries Data
+Plot timeseries data
 ====================
 
 """
@@ -14,7 +14,7 @@ import pyam
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
 # you can download the file
-# from https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials
+# from https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
 # Make sure to place the file in the same folder as this script/notebook.
 
@@ -27,6 +27,8 @@ df
 #
 # We show a simple line chart of the regional components
 # of CO2 emissions for one scenario.
+#
+# Then, also show the data as a wide IAMC-style dataframe.
 
 data = (
     df.filter(model='REMIND-MAgPIE 1.7-3.0', scenario='CD-LINKS_INDCi',
@@ -35,3 +37,4 @@ data = (
 )
 
 data.line_plot(color='region', title='CO2 emissions by region')
+data.timeseries()
