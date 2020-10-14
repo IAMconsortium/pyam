@@ -1,18 +1,25 @@
 """
-============================================
-Plot Data as a Bar Plot with Net Value Lines
-============================================
+======================================
+Stacked bar plots with net-value lines
+======================================
 
 """
 # sphinx_gallery_thumbnail_number = 2
-import matplotlib.pyplot as plt
-import pyam
-
-from pyam.plotting import add_net_values_to_bar_plot
 
 ###############################
-# Read in the data from the first-steps tutorial and show a summary
+# Read in tutorial data and show a summary
+# ****************************************
+#
+# This gallery uses the scenario data from the first-steps tutorial.
+#
+# If you haven't cloned the **pyam** GitHub repository to your machine,
+# you can download the file
+# from https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
+#
+# Make sure to place the file in the same folder as this script/notebook.
 
+import matplotlib.pyplot as plt
+import pyam
 df = pyam.IamDataFrame('tutorial_data.csv')
 df
 
@@ -34,6 +41,8 @@ plt.show()
 ###############################
 # Sometimes stacked bar charts have negative entries.
 # In that case it helps to add a line showing the net value.
+
+from pyam.plotting import add_net_values_to_bar_plot
 
 fig, ax = plt.subplots()
 data.bar_plot(ax=ax, bars='region', stacked=True)

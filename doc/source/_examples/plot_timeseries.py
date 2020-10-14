@@ -1,11 +1,9 @@
 """
-====================
-Plot timeseries data
-====================
+======================
+Timeseries data charts
+======================
 
 """
-import pyam
-
 ###############################
 # Read in tutorial data and show a summary
 # ****************************************
