@@ -50,12 +50,12 @@ def test_init_from_iamdf(test_df_year):
 
     # inplace-operations on the new object have effects on the original object
     df.rename(scenario={'scen_a': 'scen_foo'}, inplace=True)
-    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+    assert test_df_year.scenario == ['scen_b', 'scen_foo']
 
     # overwrites on the new object do not have effects on the original object
     df = df.rename(scenario={'scen_foo': 'scen_bar'})
-    assert all(df.scenarios().values == ['scen_b', 'scen_bar'])
-    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+    assert df.scenario == ['scen_b', 'scen_bar']
+    assert test_df_year.scenario == ['scen_b', 'scen_foo']
 
 
 def test_init_from_iamdf_raises(test_df_year):
@@ -108,7 +108,7 @@ def test_init_df_with_extra_col(test_pd_df):
                                   tdf, check_like=True)
 
 
-def test_init_empty_message(test_pd_df, caplog):
+def test_init_empty_message(caplog):
     IamDataFrame(data=df_empty)
     drop_message = (
         "Formatted data is empty!"
@@ -197,6 +197,25 @@ def test_equals_raises(test_pd_df):
 
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['model_a']
+
+
+def test_index_attributes(test_df):
+    # assert that the
+    assert test_df.model == ['model_a']
+    assert test_df.scenario == ['scen_a', 'scen_b']
+    assert test_df.region == ['World']
+    assert test_df.variable == ['Primary Energy', 'Primary Energy|Coal']
+    assert test_df.unit == ['EJ/yr']
+    if test_df.time_col == 'year':
+        assert test_df.year == [2005, 2010]
+    else:
+        assert test_df.time.equals(pd.Index(test_df.data.time.unique()))
+
+
+def test_index_attributes_extra_col(test_pd_df):
+    test_pd_df['subannual'] = ['summer', 'summer', 'winter']
+    df = IamDataFrame(test_pd_df)
+    assert df.subannual == ['summer', 'winter']
 
 
 def test_model(test_df):
@@ -503,8 +522,8 @@ def test_filter_year_with_time_col(test_pd_df):
 
 
 def test_filter_as_kwarg(test_df):
-    obs = list(test_df.filter(variable='Primary Energy|Coal').scenarios())
-    assert obs == ['scen_a']
+    _df = test_df.filter(variable='Primary Energy|Coal')
+    assert _df.scenario == ['scen_a']
 
 
 def test_filter_keep_false(test_df):

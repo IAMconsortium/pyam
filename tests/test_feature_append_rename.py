@@ -66,7 +66,7 @@ def test_append_reconstructed_time(test_df):
         .rename({'scenario': {'scen_b': 'scen_c'}})
     other.time_col = other.time_col[0:1] + other.time_col[1:]
     test_df.append(other, inplace=True)
-    assert "scen_c" in test_df.scenarios().values
+    assert "scen_c" in test_df.scenario
 
 
 def test_append_same_scenario(test_df):
