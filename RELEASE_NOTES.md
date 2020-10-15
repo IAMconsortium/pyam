@@ -1,5 +1,14 @@
 # Next release
 
+## API changes
+
+PR [#432](https://github.com/IAMconsortium/pyam/pull/432) added attributes to
+access the list of (unique) items of each index dimension
+(`model`, `scenario`, ...).
+The PR also marked as deprecated the equivalent functions
+(`models()`, `scenarios()`, ...). The new behaviour is closer
+(though still different) to what a pandas user would expect. 
+
 ## Notes
 
 PR [#420](https://github.com/IAMconsortium/pyam/pull/420) added
@@ -14,6 +23,8 @@ via getter and setter functions.
 - [#438](https://github.com/IAMconsortium/pyam/pull/438) Add an `index` attribute of model-scenario combinations
 - [#437](https://github.com/IAMconsortium/pyam/pull/437) Improved test for appending mismatched timeseries
 - [#436](https://github.com/IAMconsortium/pyam/pull/436) Raise an error with appending mismatching timeseries index dimensions
+- [#432](https://github.com/IAMconsortium/pyam/pull/432) Add attributes to access index dimensions
+- [#429](https://github.com/IAMconsortium/pyam/pull/429) Fix return type of `validate()` after data refactoring
 - [#427](https://github.com/IAMconsortium/pyam/pull/427) Add an `info()` function and use in `print(IamDataFrame)`
 - [#424](https://github.com/IAMconsortium/pyam/pull/424) Add a tutorial reading results from a GAMS model (via a gdx file).
 - [#420](https://github.com/IAMconsortium/pyam/pull/420) Add a `_data` object (implemented as a pandas.Series) to handle timeseries data internally.

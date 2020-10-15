@@ -154,6 +154,15 @@ class IamDataFrame(object):
                 and meta_sheet in pd.ExcelFile(data).sheet_names:
             self.load_meta(data, sheet_name=meta_sheet)
 
+        # add time domain and extra-cols as attributes
+        if self.time_col == 'year':
+            setattr(self, 'year', get_index_levels(self._data, 'year'))
+        else:
+            setattr(self, 'time', pd.Index(
+                get_index_levels(self._data, 'time')))
+        for c in self.extra_cols:
+            setattr(self, c, get_index_levels(self._data, c))
+
         # execute user-defined code
         if 'exec' in run_control():
             self._execute_run_control()
@@ -257,8 +266,33 @@ class IamDataFrame(object):
         return self.meta.index
 
     @property
+    def model(self):
+        """Return the list of (unique) model names"""
+        return get_index_levels(self.meta, 'model')
+
+    @property
+    def scenario(self):
+        """Return the list of (unique) scenario names"""
+        return get_index_levels(self.meta, 'scenario')
+
+    @property
+    def region(self):
+        """Return the list of (unique) regions"""
+        return get_index_levels(self._data, 'region')
+
+    @property
+    def variable(self):
+        """Return the list of (unique) variables"""
+        return get_index_levels(self._data, 'variable')
+
+    @property
+    def unit(self):
+        """Return the list of (unique) units"""
+        return get_index_levels(self._data, 'unit')
+
+    @property
     def data(self):
-        """Return the timeseries data as long :class:`pandas.DataFrame`"""
+        """Return the timeseries data as a long :class:`pandas.DataFrame`"""
         if self.empty:  # reset_index fails on empty with `datetime` column
             return pd.DataFrame([], columns=self._LONG_IDX + ['value'])
         return self._data.reset_index()
@@ -312,14 +346,20 @@ class IamDataFrame(object):
 
     def models(self):
         """Get a list of models"""
+        # TODO: deprecate in release >=0.9
+        deprecation_warning('Use the attribute `model` instead.')
         return pd.Series(self.meta.index.levels[0])
 
     def scenarios(self):
         """Get a list of scenarios"""
+        # TODO: deprecate in release >=0.9
+        deprecation_warning('Use the attribute `scenario` instead.')
         return pd.Series(self.meta.index.levels[1])
 
     def regions(self):
         """Get a list of regions"""
+        # TODO: deprecate in release >=0.9
+        deprecation_warning('Use the attribute `region` instead.')
         return pd.Series(get_index_levels(self._data, 'region'), name='region')
 
     def variables(self, include_units=False):
@@ -332,6 +372,7 @@ class IamDataFrame(object):
         """
         if not include_units:
             _var = 'variable'
+            deprecation_warning('Use the attribute `variable` instead.')
             return pd.Series(get_index_levels(self._data, _var), name=_var)
 
         # else construct dataframe from variable and unit levels
@@ -757,6 +798,13 @@ class IamDataFrame(object):
             ('up' and 'lo' for respective bounds, 'year' for years)
         exclude_on_fail : bool, optional
             flag scenarios failing validation as `exclude: True`
+
+        Returns
+        -------
+        :class:`pandas.DataFrame`
+            All data points that do not satisfy the criteria.
+        None
+            If all scenarios satisfy the criteria.
         """
         df = _apply_criteria(self._data, criteria, in_range=False)
 
@@ -766,7 +814,7 @@ class IamDataFrame(object):
 
             if exclude_on_fail and len(df) > 0:
                 self._exclude_on_fail(df)
-            return df
+            return df.reset_index()
 
     def rename(self, mapping=None, inplace=False, append=False,
                check_duplicates=True, **kwargs):
@@ -884,7 +932,7 @@ class IamDataFrame(object):
         The default *registry* includes additional unit definitions relevant
         for integrated assessment models and energy systems analysis, via the
         `iam-units <https://github.com/IAMconsortium/units>`_ package.
-        This registry can also be accessed directly, using::
+        This registry can also be accessed directly, using:
 
         .. code-block:: python
 
@@ -911,14 +959,13 @@ class IamDataFrame(object):
             'unit' column.
         factor : value, optional
             Explicit factor for conversion without `pint`.
-        registry : pint.UnitRegistry, optional
+        registry : :class:`pint.UnitRegistry`, optional
             Specific unit registry to use for conversion. Default: the
             `iam-units <https://github.com/IAMconsortium/units>`_ registry.
-        context : str or pint.Context, optional
-            (Name of) a :ref:`pint context <pint:context>` to use in
-            conversion. Required when converting between GHG species using GWP
-            metrics, unless the species indicated by *current* and *to* are the
-            same.
+        context : str or :class:`pint.Context`, optional
+            (Name of) the context to use in conversion.
+            Required when converting between GHG species using GWP metrics,
+            unless the species indicated by *current* and *to* are the same.
         inplace : bool, optional
             Whether to return a new IamDataFrame.
 
