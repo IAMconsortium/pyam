@@ -11,6 +11,7 @@ via getter and setter functions.
 
 ## Individual updates
 
+- [#438](https://github.com/IAMconsortium/pyam/pull/438) Add an `index` attribute of model-scenario combinations
 - [#437](https://github.com/IAMconsortium/pyam/pull/437) Improved test for appending mismatched timeseries
 - [#436](https://github.com/IAMconsortium/pyam/pull/436) Raise an error with appending mismatching timeseries index dimensions
 - [#427](https://github.com/IAMconsortium/pyam/pull/427) Add an `info()` function and use in `print(IamDataFrame)`
