@@ -11,6 +11,7 @@ via getter and setter functions.
 
 ## Individual updates
 
+- [#440](https://github.com/IAMconsortium/pyam/pull/440) Add `boxplot()` visualization feature
 - [#437](https://github.com/IAMconsortium/pyam/pull/437) Improved test for appending mismatched timeseries
 - [#436](https://github.com/IAMconsortium/pyam/pull/436) Raise an error with appending mismatching timeseries index dimensions
 - [#429](https://github.com/IAMconsortium/pyam/pull/429) Fix return type of `validate()` after data refactoring
