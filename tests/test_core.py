@@ -124,17 +124,16 @@ def test_print(test_df_year):
         'Index dimensions:',
         ' * model    : model_a (1)',
         ' * scenario : scen_a, scen_b (2)',
-        ' * region   : World (1)',
-        ' * variable : Primary Energy, Primary Energy|Coal (2)',
-        ' * unit     : EJ/yr (1)',
-        ' * year     : 2005, 2010 (2)',
+        'Timeseries data coordinates:',
+        '   region   : World (1)',
+        '   variable : Primary Energy, Primary Energy|Coal (2)',
+        '   unit     : EJ/yr (1)',
+        '   year     : 2005, 2010 (2)',
         'Meta indicators:',
         '   exclude (bool) False (1)',
         '   number (int64) 1, 2 (2)',
         '   string (object) foo, nan (2)'])
     obs = test_df_year.info()
-
-    print(obs)
     assert obs == exp
 
 
@@ -197,6 +196,13 @@ def test_equals_raises(test_pd_df):
 
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['model_a']
+
+
+def test_index(test_df_year):
+    # assert that the correct index is shown for the IamDataFrame
+    exp = pd.MultiIndex.from_arrays([['model_a'] * 2, ['scen_a', 'scen_b']],
+                                    names=['model', 'scenario'])
+    pd.testing.assert_index_equal(test_df_year.index, exp)
 
 
 def test_index_attributes(test_df):

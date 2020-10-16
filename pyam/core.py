@@ -207,7 +207,13 @@ class IamDataFrame(object):
         c2 = n - c1 - 5
         info += '\n'.join(
             [f' * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
-             for i in self._LONG_IDX])
+             for i in META_IDX])
+
+        # concatenate list of index of _data (not in META_IDX)
+        info += '\nTimeseries data coordinates:\n'
+        info += '\n'.join(
+            [f'   {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
+             for i in self._LONG_IDX if i not in META_IDX])
 
         # concatenate list of (head of) meta indicators and levels/values
         def print_meta_row(m, t, lst):
@@ -244,6 +250,20 @@ class IamDataFrame(object):
             for func in functions:
                 f = getattr(mod, func)
                 f(self)
+
+    @property
+    def index(self):
+        """Return all model-scenario combinations as :class:`pandas.MultiIndex`
+
+        The index allows to loop over the available model-scenario combinations
+        using:
+
+        .. code-block:: python
+
+            for model, scenario in df.index:
+                ...
+        """
+        return self.meta.index
 
     @property
     def model(self):
