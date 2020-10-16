@@ -50,12 +50,12 @@ def test_init_from_iamdf(test_df_year):
 
     # inplace-operations on the new object have effects on the original object
     df.rename(scenario={'scen_a': 'scen_foo'}, inplace=True)
-    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+    assert test_df_year.scenario == ['scen_b', 'scen_foo']
 
     # overwrites on the new object do not have effects on the original object
     df = df.rename(scenario={'scen_foo': 'scen_bar'})
-    assert all(df.scenarios().values == ['scen_b', 'scen_bar'])
-    assert all(test_df_year.scenarios().values == ['scen_b', 'scen_foo'])
+    assert df.scenario == ['scen_b', 'scen_bar']
+    assert test_df_year.scenario == ['scen_b', 'scen_foo']
 
 
 def test_init_from_iamdf_raises(test_df_year):
@@ -108,7 +108,7 @@ def test_init_df_with_extra_col(test_pd_df):
                                   tdf, check_like=True)
 
 
-def test_init_empty_message(test_pd_df, caplog):
+def test_init_empty_message(caplog):
     IamDataFrame(data=df_empty)
     drop_message = (
         "Formatted data is empty!"
@@ -124,17 +124,16 @@ def test_print(test_df_year):
         'Index dimensions:',
         ' * model    : model_a (1)',
         ' * scenario : scen_a, scen_b (2)',
-        ' * region   : World (1)',
-        ' * variable : Primary Energy, Primary Energy|Coal (2)',
-        ' * unit     : EJ/yr (1)',
-        ' * year     : 2005, 2010 (2)',
+        'Timeseries data coordinates:',
+        '   region   : World (1)',
+        '   variable : Primary Energy, Primary Energy|Coal (2)',
+        '   unit     : EJ/yr (1)',
+        '   year     : 2005, 2010 (2)',
         'Meta indicators:',
         '   exclude (bool) False (1)',
         '   number (int64) 1, 2 (2)',
         '   string (object) foo, nan (2)'])
     obs = test_df_year.info()
-
-    print(obs)
     assert obs == exp
 
 
@@ -197,6 +196,32 @@ def test_equals_raises(test_pd_df):
 
 def test_get_item(test_df):
     assert test_df['model'].unique() == ['model_a']
+
+
+def test_index(test_df_year):
+    # assert that the correct index is shown for the IamDataFrame
+    exp = pd.MultiIndex.from_arrays([['model_a'] * 2, ['scen_a', 'scen_b']],
+                                    names=['model', 'scenario'])
+    pd.testing.assert_index_equal(test_df_year.index, exp)
+
+
+def test_index_attributes(test_df):
+    # assert that the
+    assert test_df.model == ['model_a']
+    assert test_df.scenario == ['scen_a', 'scen_b']
+    assert test_df.region == ['World']
+    assert test_df.variable == ['Primary Energy', 'Primary Energy|Coal']
+    assert test_df.unit == ['EJ/yr']
+    if test_df.time_col == 'year':
+        assert test_df.year == [2005, 2010]
+    else:
+        assert test_df.time.equals(pd.Index(test_df.data.time.unique()))
+
+
+def test_index_attributes_extra_col(test_pd_df):
+    test_pd_df['subannual'] = ['summer', 'summer', 'winter']
+    df = IamDataFrame(test_pd_df)
+    assert df.subannual == ['summer', 'winter']
 
 
 def test_model(test_df):
@@ -503,8 +528,8 @@ def test_filter_year_with_time_col(test_pd_df):
 
 
 def test_filter_as_kwarg(test_df):
-    obs = list(test_df.filter(variable='Primary Energy|Coal').scenarios())
-    assert obs == ['scen_a']
+    _df = test_df.filter(variable='Primary Energy|Coal')
+    assert _df.scenario == ['scen_a']
 
 
 def test_filter_keep_false(test_df):
