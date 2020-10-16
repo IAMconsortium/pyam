@@ -512,9 +512,16 @@ def boxplot(df, y='value', x='year', by=None,
         Display a default or custom title
     kwargs : Additional arguments to pass to the pd.DataFrame.plot()
     """
-
     if by:
-        df.sort_values(by, inplace=True)
+        rc = run_control()
+        if 'palette' not in kwargs and 'color' in rc and by in rc['color']:
+            # TODO this only works if all categories are defined in run_control
+            palette = rc['color'][by]
+            df[by] = df[by].astype('category')
+            df[by].cat.set_categories(list(palette), inplace=True)
+            kwargs['palette'] = palette
+        else:
+            df.sort_values(by, inplace=True)
 
     if ax is None:
         fig, ax = plt.subplots()
