@@ -292,24 +292,15 @@ def test_bar_plot_rc(plot_df):
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_boxplot(plot_df):
-    with update_run_control(RC_TEST_DICT):
-        fig, ax = plt.subplots(figsize=(8, 8))
-        (
-            plot_df.filter(variable='Primary Energy', model='test_model')
-            .boxplot(ax=ax,)
-         )
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.boxplot(ax=ax)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_boxplot_hue(plot_df):
-    with update_run_control(RC_TEST_DICT):
-        df = plot_df.append(plot_df.rename(region={'World': 'foo'}))
-        fig, ax = plt.subplots(figsize=(8, 8))
-        (
-            df.filter(variable='Primary Energy', model='test_model')
-            .boxplot(ax=ax, by='region')
-         )
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.boxplot(ax=ax, by='model')
     return fig
 
 
