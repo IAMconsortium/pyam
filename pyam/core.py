@@ -549,7 +549,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def as_pandas(self, meta_cols=True, with_metadata=None):
+    def as_pandas(self, meta_cols=True):
         """Return object as a pandas.DataFrame
 
         Parameters
@@ -558,13 +558,6 @@ class IamDataFrame(object):
             join `data` with all `meta` columns if True (default)
             or only with columns in list, or return copy of `data` if False
         """
-        # TODO: deprecate/remove `with_metadata` in release >=0.8
-        if with_metadata is not None:
-            deprecation_warning('Please use `meta_cols` instead.',
-                                'The argument `with_metadata')
-            meta_cols = mpl_args_to_meta_cols(self, **with_metadata) \
-                if isinstance(with_metadata, dict) else with_metadata
-
         # merge data and (downselected) meta, or return copy of data
         if meta_cols:
             meta_cols = self.meta.columns if meta_cols is True else meta_cols
