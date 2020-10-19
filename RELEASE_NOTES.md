@@ -1,4 +1,13 @@
-# Next release
+# Release v0.8.0
+
+## Highlights
+
+- Add a `boxplot()` visualization feature to the plotting toolbox.
+- Implement an API to read data from World Bank Open Data Catalogue.
+- Write a tutorial illustrating how to read model results from a GAMS gdx file.
+- Define `index`, `model`, `scenario`, ... attributes
+  and show a summary of the index dimensions on `print()`.
+- Refactor the timeseries data backend for improved performance.
 
 ## API changes
 
