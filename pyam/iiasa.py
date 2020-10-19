@@ -110,7 +110,7 @@ class Connection(object):
         By default, this function will (try to) read user credentials which
         were set using :meth:`pyam.iiasa.set_config(<user>, <password>)`.
         Alternatively, you can provide a path to a yaml file
-        with entries of  'username' and 'password'.
+        with entries of 'username' and 'password'.
     base_url : str, custom authentication server URL
 
     Notes
@@ -220,11 +220,6 @@ class Connection(object):
         cols = ['version'] if default else ['version', 'is_default']
         return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
 
-    def scenario_list(self, default=True):
-        """Deprecated, use :meth:`Connection.index`"""
-        deprecation_warning('Use `Connection.index()` instead.')
-        return self._query_index(default)
-
     @lru_cache()
     def _query_index(self, default=True):
         # TODO merge this function with `meta()`
@@ -245,12 +240,6 @@ class Connection(object):
         r = requests.get(url, headers=headers)
         _check_response(r)
         return pd.read_json(r.content, orient='records')['name']
-
-    def available_metadata(self):
-        """Deprecated, use :attr:`Connection.meta_columns`"""
-        # TODO: deprecate/remove this function in release >=0.8
-        deprecation_warning('Use `Connection.meta_columns` instead.')
-        return self.meta_columns
 
     @lru_cache()
     def meta(self, default=True):
@@ -286,12 +275,6 @@ class Connection(object):
 
         return pd.concat([extract(row) for i, row in df.iterrows()],
                          sort=False)
-
-    def metadata(self, default=True):
-        """Deprecated, use :meth:`Connection.meta`"""
-        # TODO: deprecate/remove this function in release >=0.8
-        deprecation_warning('Use `Connection.meta()` instead.')
-        return self.meta(default=default)
 
     def models(self):
         """List all models in the connected resource"""
