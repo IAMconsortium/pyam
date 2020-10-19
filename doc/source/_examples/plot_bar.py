@@ -1,48 +1,80 @@
 """
-=======================
-Plot Data as a Bar Plot
-=======================
+==================
+Stacked bar charts
+==================
 
 """
-# sphinx_gallery_thumbnail_number = 3
+# sphinx_gallery_thumbnail_number = 4
+
+###############################
+# Read in tutorial data and show a summary
+# ****************************************
+#
+# This gallery uses the scenario data from the first-steps tutorial.
+#
+# If you haven't cloned the **pyam** GitHub repository to your machine,
+# you can download the file from
+# https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
+#
+# Make sure to place the file in the same folder as this script/notebook.
+
 import matplotlib.pyplot as plt
 import pyam
+df = pyam.IamDataFrame('tutorial_data.csv')
+df
 
 ###############################
-# Read in some example data
+# Show stacked bar chart by categories
+# ************************************
+#
+# First, we generate a simple stacked bar chart
+# of all components of primary energy supply for one scenario.
+#
+# Using :code:`plt.tight_layout()` ensures that the plot is nice and tidy.
 
-fname = 'data.csv'
-df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
-print(df.head())
+args = dict(model='WITCH-GLOBIOM 4.4', scenario='CD-LINKS_NPi2020_1000')
+data = df.filter(**args, variable='Primary Energy|*', region='World')
 
-###############################
-# We generated a simple stacked bar chart as below
-
-data = df.filter(variable='Emissions|CO2|*',
-                 level=0,
-                 region='World')
-
-fig, ax = plt.subplots(figsize=(10, 10))
-data.bar_plot(ax=ax, stacked=True)
-fig.subplots_adjust(right=0.55)
-plt.show()
+data.bar_plot(stacked=True, title='Primary energy mix')
+plt.tight_layout()
 
 ###############################
-# We can flip that round for a horizontal chart
+# Flip the direction of a stacked bar chart
+# *****************************************
+#
+# We can flip that round for a horizontal chart.
 
-fig, ax = plt.subplots(figsize=(10, 10))
-data.bar_plot(ax=ax, stacked=True, orient='h')
-fig.subplots_adjust(right=0.55)
-plt.show()
+data.bar_plot(stacked=True, orient='h', title='Primary energy mix')
+plt.tight_layout()
 
 ###############################
-# We don't just have to plot variables, any data or meta indicators from the
-# IamDataFrame can be used.
+# Show stacked bar chart by regions
+# *********************************
+#
+# We don't just have to plot subcategories of variables,
+# any data or meta indicators from the IamDataFrame can be used.
+# Here, we show the contribution by region to total CO2 emissions.
 
-data = (df
-        .filter(variable='Emissions|CO2')
-        .filter(region='World', keep=False)
-        )
-fig, ax = plt.subplots(figsize=(10, 10))
-data.bar_plot(ax=ax, bars='region', stacked=True, cmap='tab20')
-plt.show()
+data = (
+    df.filter(**args, variable='Emissions|CO2')
+    .filter(region='World', keep=False)
+)
+
+data.bar_plot(bars='region', stacked=True,
+              title='CO2 emissions by region', cmap='tab20')
+plt.tight_layout()
+
+###############################
+# Add indicators to show net values
+# *********************************
+#
+# Sometimes, stacked bar charts have negative entries.
+# In that case, it helps to add a line showing the net value.
+
+from pyam.plotting import add_net_values_to_bar_plot
+
+fig, ax = plt.subplots()
+data.bar_plot(ax=ax, bars='region', stacked=True,
+              title='CO2 emissions by region', cmap='tab20')
+add_net_values_to_bar_plot(ax)
+plt.tight_layout()

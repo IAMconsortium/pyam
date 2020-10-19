@@ -27,6 +27,9 @@ MPL_KWARGS = {
 }
 
 
+RC_TEST_DICT = {'color': {'scenario': {'test_scenario': 'black'}}}
+
+
 @contextmanager
 def update_run_control(update):
     run_control().update(update)
@@ -288,6 +291,20 @@ def test_bar_plot_rc(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_boxplot(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.boxplot(ax=ax)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_boxplot_hue(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.boxplot(ax=ax, by='model')
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_pie_plot_labels(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
@@ -310,7 +327,7 @@ def test_pie_plot_legend(plot_df):
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_pie_plot_other(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
+    with update_run_control(RC_TEST_DICT):
         (plot_df
          .filter(variable='Primary Energy', model='test_model', year=2010)
          .pie_plot(ax=ax, category='scenario', cmap='viridis', title='foo')

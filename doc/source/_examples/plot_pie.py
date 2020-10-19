@@ -1,47 +1,66 @@
 """
 ========================
-Plot Data as a Pie Chart
+Pie chart visualizations
 ========================
 
 """
 # sphinx_gallery_thumbnail_number = 3
+
+###############################
+# Read in tutorial data and show a summary
+# ****************************************
+#
+# This gallery uses the scenario data from the first-steps tutorial.
+#
+# If you haven't cloned the **pyam** GitHub repository to your machine,
+# you can download the file from
+# https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
+#
+# Make sure to place the file in the same folder as this script/notebook.
+
 import matplotlib.pyplot as plt
 import pyam
+df = pyam.IamDataFrame('tutorial_data.csv')
+df
 
 ###############################
-# Read in some example data
+# A pie chart of the energy supply
+# ********************************
+#
+# We generate a pie plot of all components of primary energy supply
+# for one scenario.
 
-fname = 'data.csv'
-df = pyam.IamDataFrame(fname, encoding='ISO-8859-1')
-
-###############################
-# We generated a simple stacked bar chart as below
-
-data = df.filter(variable='Emissions|CO2|*',
-                 level=0,
-                 year=2050,
+data = df.filter(model='AIM/CGE 2.1', scenario='CD-LINKS_NPi',
+                 variable='Primary Energy|*', year=2050,
                  region='World')
 
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots()
 data.pie_plot(ax=ax)
 fig.subplots_adjust(right=0.75, left=0.3)
 plt.show()
 
 ###############################
-# Sometimes a legend is preferable to labels, we can use those instead.
+# A pie chart with a legend
+# *************************
+#
+# Sometimes a legend is preferable to labels, so we can use that instead.
 
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots()
 data.pie_plot(ax=ax, labels=None, legend=True)
 fig.subplots_adjust(right=0.55, left=-0.05)
 plt.show()
 
 ###############################
-# We don't just have to plot variables, any data or metadata associated with the
-# IamDataFrame can be used.
+# A pie chart of regional contributions
+# *************************************
+#
+# We don't just have to plot subcategories of variables,
+# any data or meta indicators from the IamDataFrame can be used.
+# Here, we show the contribution by region to CO2 emissions.
 
-data = (df
-        .filter(variable='Emissions|CO2', year=2050)
-        .filter(region='World', keep=False)
-        )
+data = (
+    df.filter(model='AIM/CGE 2.1', scenario='CD-LINKS_NPi',
+              variable='Emissions|CO2', year=2050)
+    .filter(region='World', keep=False)
+)
 data.pie_plot(category='region', cmap='tab20')
-plt.show()
