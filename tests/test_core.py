@@ -117,6 +117,31 @@ def test_init_empty_message(caplog):
     assert caplog.records[message_idx].levelno == logging.WARNING
 
 
+def test_init_with_column_conflict(test_pd_df):
+    # add a column to the timeseries data with a conflict to the meta attribute
+    test_pd_df['meta'] = 'foo'
+
+    # check that initialising an instance with an extra-column `meta` raises
+    msg = re.compile(r"Column name \['meta'\] is illegal for timeseries data.")
+    with pytest.raises(ValueError, match=msg):
+        IamDataFrame(test_pd_df)
+
+    # check that recommended fix works
+    df = IamDataFrame(test_pd_df, alt_meta='meta')
+    assert df.alt_meta == ['foo']
+
+
+def test_set_meta_with_column_conflict(test_df_year):
+    # check that setting a `meta` column with a name conflict raises
+    msg = 'Column model already exists in `data`!'
+    with pytest.raises(ValueError, match=msg):
+        test_df_year.set_meta(name='model', meta='foo')
+
+    msg = 'Name meta is illegal for meta indicators!'
+    with pytest.raises(ValueError, match=msg):
+        test_df_year.set_meta(name='meta', meta='foo')
+
+
 def test_print(test_df_year):
     """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
     exp = '\n'.join([
