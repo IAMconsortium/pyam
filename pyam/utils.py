@@ -25,6 +25,9 @@ IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
 LONG_IDX = IAMC_IDX + ['year']
 
+# illegal terms for data/meta column names to prevent attribute conflicts
+ILLEGAL_COLS = ['data', 'meta']
+
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(zip(range(0, 702),
                           [i for i in string.ascii_uppercase]
@@ -133,7 +136,7 @@ def format_data(df, **kwargs):
         df.name = df.name or 'value'
         df = df.to_frame()
 
-    # Check for R-style year columns, converting where necessary
+    # check for R-style year columns, converting where necessary
     def convert_r_columns(c):
         try:
             first = c[0]
@@ -202,6 +205,14 @@ def format_data(df, **kwargs):
     # reset the index if meaningful entries are included there
     if not list(df.index.names) == [None]:
         df.reset_index(inplace=True)
+
+    # check that there is no column in the timeseries data with reserved names
+    conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
+    if conflict_cols:
+        msg = f'Column name {conflict_cols} is illegal for timeseries data.\n'
+        _args = ', '.join([f"{i}_alt='{i}'" for i in conflict_cols])
+        msg += f'Use `IamDataFrame(..., {_args})` to rename at initalization.'
+        raise ValueError(msg)
 
     # format columns to lower-case and check that all required columns exist
     if not set(IAMC_IDX).issubset(set(df.columns)):

@@ -48,7 +48,8 @@ from pyam.utils import (
     META_IDX,
     YEAR_IDX,
     IAMC_IDX,
-    SORT_IDX
+    SORT_IDX,
+    ILLEGAL_COLS
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
@@ -618,8 +619,10 @@ class IamDataFrame(object):
         if (name or (hasattr(meta, 'name') and meta.name)) in [None, False]:
             raise ValueError('Must pass a name or use a named pd.Series')
         name = name or meta.name
-        if name in self.data.columns:
-            raise ValueError(f'A column `{name}` already exists in `data`!')
+        if name in self._data.index.names:
+            raise ValueError(f'Column {name} already exists in `data`!')
+        if name in ILLEGAL_COLS:
+            raise ValueError(f'Name {name} is illegal for meta indicators!')
 
         # check if meta has a valid index and use it for further workflow
         if hasattr(meta, 'index') and hasattr(meta.index, 'names') \
