@@ -210,7 +210,7 @@ def format_data(df, **kwargs):
     conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
     if conflict_cols:
         msg = f'Column name {conflict_cols} is illegal for timeseries data.\n'
-        _args = ', '.join([f"{i}_alt='{i}'" for i in conflict_cols])
+        _args = ', '.join([f"{i}_1='{i}'" for i in conflict_cols])
         msg += f'Use `IamDataFrame(..., {_args})` to rename at initalization.'
         raise ValueError(msg)
 

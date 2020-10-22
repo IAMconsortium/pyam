@@ -127,8 +127,8 @@ def test_init_with_column_conflict(test_pd_df):
         IamDataFrame(test_pd_df)
 
     # check that recommended fix works
-    df = IamDataFrame(test_pd_df, alt_meta='meta')
-    assert df.alt_meta == ['foo']
+    df = IamDataFrame(test_pd_df, meta_1='meta')
+    assert df.meta_1 == ['foo']
 
 
 def test_set_meta_with_column_conflict(test_df_year):
