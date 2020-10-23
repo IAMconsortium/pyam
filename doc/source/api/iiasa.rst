@@ -17,3 +17,5 @@ See `this tutorial <../tutorials/iiasa_dbs.html>`_ for more information.
 
 .. autofunction:: read_iiasa
    :noindex:
+
+.. autofunction:: set_config
