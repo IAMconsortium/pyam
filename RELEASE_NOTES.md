@@ -1,5 +1,9 @@
 # Next Release
 
+## Individual updates
+
+- [#445](https://github.com/IAMconsortium/pyam/pull/445) Prevent conflicts between attributes and data/meta columns
+
 # Release v0.8.0
 
 ## Highlights
