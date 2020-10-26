@@ -19,5 +19,5 @@ def deprecation_warning(msg, type='This method'):
     warnings.warn(
         '{} {} {}'.format(type, warn, msg),
         DeprecationWarning,
-        stacklevel=2
+        stacklevel=3
     )
