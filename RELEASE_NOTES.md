@@ -2,6 +2,7 @@
 
 ## Individual updates
 
+- [#450](https://github.com/IAMconsortium/pyam/pull/450) Defer logging set-up to when the first logging message is generated
 - [#445](https://github.com/IAMconsortium/pyam/pull/445) Prevent conflicts between attributes and data/meta columns
 - [#444](https://github.com/IAMconsortium/pyam/pull/444) Use warnings module for deprecation warnings
 
