@@ -3,6 +3,7 @@
 ## Individual updates
 
 - [#445](https://github.com/IAMconsortium/pyam/pull/445) Prevent conflicts between attributes and data/meta columns
+- [#444](https://github.com/IAMconsortium/pyam/pull/444) Use warnings module for deprecation warnings
 
 # Release v0.8.0
 

@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 import logging
+import warnings
 
 logger = logging.getLogger(__name__)
 
@@ -15,4 +16,8 @@ def adjust_log_level(logger, level='ERROR'):
 def deprecation_warning(msg, type='This method'):
     """Write deprecation warning to log"""
     warn = 'is deprecated and will be removed in future versions.'
-    logger.warning('{} {} {}'.format(type, warn, msg))
+    warnings.warn(
+        '{} {} {}'.format(type, warn, msg),
+        DeprecationWarning,
+        stacklevel=3
+    )
