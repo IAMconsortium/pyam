@@ -104,7 +104,11 @@ def extract_species(expr):
 def convert_gwp(context, qty, to):
     """Helper for :meth:`convert_unit` to perform GWP conversions."""
     # Remove a leading 'gwp_' to produce the metric name
-    metric = context.split('gwp_')[1] if context else context
+    metric = (
+        context[len('gwp_'):]
+        if context is not None and context.startswith('gwp_')
+        else context
+    )
 
     # Extract the species from *qty* and *to*, allowing supported aliases
     species_from, units_from = extract_species(qty[1])
