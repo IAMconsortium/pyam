@@ -139,7 +139,8 @@ def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
 
 def test_convert_unit_bad_args(test_pd_df):
     """Unit conversion with bad arguments raises errors."""
-    idf = IamDataFrame(test_pd_df)
+    idf = IamDataFrame(test_pd_df).rename(unit={'EJ/yr': 'Mt CH4'})
+
     # Conversion fails with both *factor* and *registry*
     with pytest.raises(ValueError, match='use either `factor` or `pint...'):
         idf.convert_unit('Mt CH4', 'CO2e', factor=1.0, registry=object())
