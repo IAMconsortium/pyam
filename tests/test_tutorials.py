@@ -56,6 +56,16 @@ def test_pyam_first_steps(capsys):
     assert errors == []
     assert os.path.exists(os.path.join(tut_path, 'tutorial_export.xlsx'))
 
+    def has_log_output(cell):
+        return (
+            cell['cell_type'] == 'code' and
+            any(
+                'Running in a notebook' in output.get('text', '')
+                for output in cell['outputs']
+            )
+        )
+    assert any(has_log_output(cell) for cell in nb['cells'])
+
 
 def test_data_table_formats():
     fname = os.path.join(
