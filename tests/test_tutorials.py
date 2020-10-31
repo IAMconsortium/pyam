@@ -58,8 +58,8 @@ def test_pyam_first_steps(capsys):
 
     def has_log_output(cell):
         return (
-            cell['cell_type'] == 'code' and
-            any(
+            cell['cell_type'] == 'code'
+            and any(
                 'Running in a notebook' in output.get('text', '')
                 for output in cell['outputs']
             )
