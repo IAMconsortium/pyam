@@ -21,7 +21,7 @@ and methods.
 
 **Notebook logging behaviour**
 
-Pyam wants to provide sensitive defaults for users unfamiliar with
+|pyam| wants to provide sensible defaults for users unfamiliar with
 `setting up python's logging library <https://realpython.com/python-logging/#basic-configurations>`_,
 and therefore will provide a basic configuration by invoking
 
@@ -33,7 +33,7 @@ and therefore will provide a basic configuration by invoking
 if (and only if):
 
 1. it determines to be running within a notebook, and
-2. logging is still *unconfigured by the time the first logging message is to be emitted*.
+2. logging is still *unconfigured by the time the first logging message by |pyam| is to be emitted*.
 
 **Intersphinx mapping**
 
