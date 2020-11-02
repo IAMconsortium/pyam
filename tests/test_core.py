@@ -156,6 +156,26 @@ def test_print(test_df_year):
     assert obs == exp
 
 
+def test_print_empty(test_df_year):
+    """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
+    exp = '\n'.join([
+        "<class 'pyam.core.IamDataFrame'>",
+        'Index dimensions:',
+        ' * model    : (0)',
+        ' * scenario : (0)',
+        'Timeseries data coordinates:',
+        '   region   : (0)',
+        '   variable : (0)',
+        '   unit     : (0)',
+        '   year     : (0)',
+        'Meta indicators:',
+        '   exclude (bool) (0)',
+        '   number (int64) (0)',
+        '   string (object) (0)'])
+    obs = test_df_year.filter(model='foo').info()
+    assert obs == exp
+
+
 def test_as_pandas(test_df):
     # test that `as_pandas()` returns the right columns
     df = test_df.copy()
