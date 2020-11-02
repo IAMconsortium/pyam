@@ -77,13 +77,6 @@ def test_init_df_with_na_scenario(test_pd_df):
     pytest.raises(ValueError, IamDataFrame, data=test_pd_df)
 
 
-def test_init_df_with_na_unit(test_pd_df):
-    # missing values in the unit column are replaced by an empty string
-    test_pd_df.loc[1, 'unit'] = np.nan
-    df = IamDataFrame(test_pd_df)
-    assert df.unit == ['', 'EJ/yr']
-
-
 def test_init_df_with_float_cols(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005., 2010: 2010.})
     obs = IamDataFrame(_test_df).timeseries().reset_index()
