@@ -261,6 +261,9 @@ def format_data(df, **kwargs):
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True, subset=['value'])
 
+    # replace missing units by an empty string for user-friendly filtering
+    df.loc[df.unit.isnull(), 'unit'] = ''
+
     # verify that there are no nan's left (in columns)
     null_rows = df.isnull().values
     if null_rows.any():

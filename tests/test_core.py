@@ -28,14 +28,6 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 ], columns=['model', 'scenario', 'region', 2010, 2020]
 ).set_index(['model', 'region'])
 
-df_with_na_columns = pd.DataFrame([
-    ['model_a', 'scen_a', 'World', 'Primary Energy', np.nan, 1, 6.],
-    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
-    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
-],
-    columns=IAMC_IDX + [2005, 2010],
-)
-
 df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 
 
@@ -79,8 +71,17 @@ def test_init_df_with_duplicates_raises(test_df):
         IamDataFrame(_df)
 
 
-def test_init_df_with_na_unit(test_df):
-    pytest.raises(ValueError, IamDataFrame, data=df_with_na_columns)
+def test_init_df_with_na_scenario(test_pd_df):
+    # missing values in an index dimension raises an error
+    test_pd_df.loc[1, 'scenario'] = np.nan
+    pytest.raises(ValueError, IamDataFrame, data=test_pd_df)
+
+
+def test_init_df_with_na_unit(test_pd_df):
+    # missing values in the unit column are replaced by an empty string
+    test_pd_df.loc[1, 'unit'] = np.nan
+    df = IamDataFrame(test_pd_df)
+    assert df.unit == ['', 'EJ/yr']
 
 
 def test_init_df_with_float_cols(test_pd_df):
