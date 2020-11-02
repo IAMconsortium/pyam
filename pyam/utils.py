@@ -521,10 +521,12 @@ def datetime_match(data, dts):
 
 def print_list(x, n):
     """Return a printable string of a list shortened to n characters"""
-    # subtract count added at end from line width
-    x = list(map(str, x))
+    # if list is empty, only write count
+    if len(x) == 0:
+        return '(0)'
 
-    # write number of elements
+    # write number of elements, subtract count added at end from line width
+    x = [i if i != '' else "''" for i in map(str, x)]
     count = f' ({len(x)})'
     n -= len(count)
 
