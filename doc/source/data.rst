@@ -82,9 +82,18 @@ in wide format.
 
 .. note::
 
-    When using custom columns for annotations:
-    **pyam** drops any data rows where the 'value' column is 'nan',
-    and it raises an error for 'nan' in any other column.
+    If there are :code:`numpy.nan` in an **pandas.DataFrame**
+    or empty cells in xlsx/csv files when initializing an **IamDataFrame**,
+    it will behave as follows:
+
+    ========= =============================================
+    column    behaviour
+    ========= =============================================
+    'value'   ignore/drop 'nan'
+    'unit'    replace 'nan' by an empty string (:code:`''`)
+    all other raise an error
+    ========= =============================================
+
     Hence, if you are adding variable/region-specific meta information to
     'data', you need to make sure that you **add a value to every single row**.
 
