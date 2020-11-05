@@ -95,7 +95,7 @@ def test_convert_unit_with_custom_registry(test_df):
     ('AR5GWP100', 'ch4-equiv', 28),
 
     # Converting C -> CO2e should work
-    ('AR4GWP100', 'C', 11/3)
+    ('AR4GWP100', 'C', 11 / 3)
 ])
 @pytest.mark.parametrize('current_expr, to_expr, exp_factor', [
     # exp_factor is used when the conversion includes both a species *and* unit
