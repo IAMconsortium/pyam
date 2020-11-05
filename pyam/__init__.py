@@ -26,8 +26,10 @@ try:
             u'IPython.OutputArea.prototype._should_scroll = '
             u'function(lines) { return false; }'
         )
-
-        log_msg = "Running in a notebook, setting root logging level to INFO"
+        log_msg = (
+            "Running in a notebook, "
+            "setting up a basic logging config at level INFO"
+        )
         defer_logging_config(
             logger, log_msg, level="INFO",
             format="%(name)s - %(levelname)s: %(message)s",
