@@ -19,6 +19,22 @@ and methods.
    api/variables
 
 
+**Notebook logging behaviour**
+
+|pyam| wants to provide sensible defaults for users unfamiliar with
+`setting up python's logging library <https://realpython.com/python-logging/#basic-configurations>`_,
+and therefore will provide a basic configuration by invoking
+
+.. code-block:: python
+
+   import logging
+   logging.basicConfig(level="INFO", format="%(name)s - %(levelname)s: %(message)s")
+
+if (and only if):
+
+1. it determines to be running within a notebook, and
+2. logging is still *unconfigured by the time the first logging message by |pyam| is to be emitted*.
+
 **Intersphinx mapping**
 
 To use sphinx.ext.intersphinx_ for generating automatic links from your project

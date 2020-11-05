@@ -3,7 +3,7 @@ linters:
     python: 3
     max-line-length: 79
     fixer: false
-    ignore: I002, F403, E402, E731
+    ignore: I002, F403, E402, E731, W503
     # stickler doesn't support 'exclude' for flake8 properly, so we disable it
     # below with files.ignore:
     # https://github.com/markstory/lint-review/issues/184
