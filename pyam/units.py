@@ -18,7 +18,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     try:
         where = ret._data.index.get_loc_level(current, 'unit')[0]
     except KeyError:
-        return ret
+        return None if inplace else ret
 
     index_args = [ret._data, 'unit', {current: to}]
 
