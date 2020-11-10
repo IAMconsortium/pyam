@@ -127,9 +127,6 @@ def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
     # Handle parameters
     current = current_expr.format(current_species)
     to = to_expr.format('CO2e')
-    if context is not None:
-        # pyam-style context
-        context = f'gwp_{context}'
 
     # Expected values
     exp_values = test_df._data.copy()

@@ -4,6 +4,7 @@ import re
 import iam_units
 import pint
 
+from pyam.logging import deprecation_warning
 from pyam.index import replace_index_values
 
 logger = logging.getLogger(__name__)
@@ -79,7 +80,7 @@ class UndefinedUnitError(pint.UndefinedUnitError):
     def __str__(self):
         return super().__str__() + (
             "\nGWP conversion with IamDataFrame.convert_unit() requires a "
-            "'gwp_...' *context* and mass-based *to* units.")
+            "*context* and mass-based *to* units.")
 
 
 def extract_species(expr):
@@ -104,11 +105,14 @@ def extract_species(expr):
 def convert_gwp(context, qty, to):
     """Helper for :meth:`convert_unit` to perform GWP conversions."""
     # Remove a leading 'gwp_' to produce the metric name
-    metric = (
-        context[len('gwp_'):]
-        if context is not None and context.startswith('gwp_')
-        else context
-    )
+    if context is not None and context.startswith('gwp_'):
+        context = context[len("gwp_"):]
+        deprecation_warning(
+            f"Use context='{context}' instead",
+            type='Prefixing a context with "gwp_"',
+            stacklevel=5
+        )
+    metric = context
 
     # Extract the species from *qty* and *to*, allowing supported aliases
     species_from, units_from = extract_species(qty[1])
