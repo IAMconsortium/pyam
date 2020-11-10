@@ -2,6 +2,7 @@
 
 ## Individual updates
 
+- [#454](https://github.com/IAMconsortium/pyam/pull/454) Enable dimensionless units and fix `info()` if IamDataFrame is empty
 - [#451](https://github.com/IAMconsortium/pyam/pull/451) Fix unit conversions from C to CO2eq
 - [#450](https://github.com/IAMconsortium/pyam/pull/450) Defer logging set-up to when the first logging message is generated
 - [#445](https://github.com/IAMconsortium/pyam/pull/445) Prevent conflicts between attributes and data/meta columns
