@@ -82,7 +82,7 @@ in wide format.
 
 .. note::
 
-    If there are :code:`numpy.nan` in an **pandas.DataFrame**
+    If there are :code:`numpy.nan` in a **pandas.DataFrame**
     or empty cells in xlsx/csv files when initializing an **IamDataFrame**,
     it will behave as follows:
 
