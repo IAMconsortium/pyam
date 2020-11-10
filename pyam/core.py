@@ -937,9 +937,9 @@ class IamDataFrame(object):
         When using this registry, *current* and *to* may contain the symbols of
         greenhouse gas (GHG) species, such as 'CO2e', 'C', 'CH4', 'N2O',
         'HFC236fa', etc., as well as lower-case aliases like 'co2' supported by
-        :mod:`pyam`. In this case, *context* must contain 'gwp\_' followed by
-        the name of a specific global warming potential (GWP) metric supported
-        by :mod:`iam_units`, e.g. 'gwp_AR5GWP100'.
+        :mod:`pyam`. In this case, *context* must be the name of a specific
+        global warming potential (GWP) metric supported by :mod:`iam_units`,
+        e.g. 'AR5GWP100' (optionally prefixed by 'gwp_', e.g. 'gwp_AR5GWP100').
 
         Rows with units other than *current* are not altered.
 
