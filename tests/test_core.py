@@ -636,6 +636,15 @@ def test_interpolate_time_exists(test_pd_df):
     pd.testing.assert_series_equal(obs, exp)
 
 
+def test_interpolate_multiple_times(test_pd_df):
+    _df = test_pd_df.copy()
+    df = IamDataFrame(_df)
+    df.interpolate([2007, 2008])
+    obs = df.filter(year=[2007, 2008]).data['value'].reset_index(drop=True)
+    exp = pd.Series([3, 4, 1.5, 2, 4, 5], name='value')
+    pd.testing.assert_series_equal(obs, exp)
+
+
 def test_interpolate_extra_cols():
     # check hat interpolation with non-matching extra_cols has no effect (#351)
     EXTRA_COL_DF = pd.DataFrame([

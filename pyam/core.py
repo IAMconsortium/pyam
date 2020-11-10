@@ -494,10 +494,15 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        time : int or datetime
+        time : int or datetime, or list-like thereof
              Year or :class:`datetime.datetime` to be interpolated.
              This must match the datetime/year format of `self`.
         """
+        times = time if islistable(time) else [time]
+        for time in times:
+            self._interpolate(time)
+
+    def _interpolate(self, time):
         if self.time_col == 'year' and not isinstance(time, int):
             raise ValueError(
                 'The `time` argument `{}` is not an integer'.format(time)
