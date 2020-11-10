@@ -507,6 +507,8 @@ class IamDataFrame(object):
         df = self.timeseries()
         if time in df.columns:
             df = df[np.isnan(df[time])]
+        if df.empty: # no values with time missing, empty op
+            return
 
         # apply fill_series, re-add time dimension to index, set series name
         _values = df.apply(fill_series, raw=False, axis=1, time=time).dropna()
