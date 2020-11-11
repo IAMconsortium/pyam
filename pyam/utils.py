@@ -401,19 +401,6 @@ def merge_meta(left, right, ignore_conflict=False):
     return left
 
 
-def get_keep_col(data, values, col):
-    """Return a list of booleans by filtering on values"""
-    keep_col = np.array([False] * len(data))
-    for v in values:
-        slc = data.index.get_loc_level(v, level=col)[0]
-        if isinstance(slc, slice):
-            for i in range(slc.start, slc.stop, slc.step if slc.step else 1):
-                keep_col[i] = True
-        else:
-            keep_col = np.logical_or(keep_col, slc)
-    return keep_col
-
-
 def find_depth(data, s="", level=None):
     """Return or assert the depth (number of ``|``) of variables
 
