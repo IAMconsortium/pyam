@@ -455,9 +455,7 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=False):
     values = values if islistable(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
-    _data = data.copy()
-    if has_nan:
-        _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ""
+    _data = data.fillna("") if has_nan else data
 
     for s in values:
         if isstr(s):
