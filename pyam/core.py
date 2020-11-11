@@ -1610,8 +1610,7 @@ class IamDataFrame(object):
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = self.copy() if not inplace else self
-        # TODO remove cast to list after refactoring `_apply_filters()`
-        ret._data = ret._data[list(_keep)]
+        ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
 
         idx = _make_index(ret._data)

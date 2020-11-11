@@ -489,7 +489,7 @@ def years_match(data, years):
     if isinstance(years, dt) or isinstance(years[0], dt):
         error_msg = "Filter by `year` requires integers!"
         raise TypeError(error_msg)
-    return data.isin(years)
+    return np.isin(data, years)
 
 
 def month_match(data, months):
@@ -505,7 +505,7 @@ def day_match(data, days):
 def hour_match(data, hours):
     """Return rows where data matches hours"""
     hours = [hours] if isinstance(hours, int) else hours
-    return data.isin(hours)
+    return np.isin(data, hours)
 
 
 def time_match(data, times, conv_codes, strptime_attr, name):
@@ -551,7 +551,7 @@ def time_match(data, times, conv_codes, strptime_attr, name):
         times = conv_strs(times, conv_codes, name)
         times += to_append
 
-    return data.isin(times)
+    return np.isin(data, times)
 
 
 def datetime_match(data, dts):
@@ -560,7 +560,7 @@ def datetime_match(data, dts):
     if any([not (isinstance(i, (datetime.datetime, np.datetime64))) for i in dts]):
         error_msg = "`time` can only be filtered by datetimes and datetime64s"
         raise TypeError(error_msg)
-    return data.isin(dts)
+    return data.isin(dts).values
 
 
 def print_list(x, n):
