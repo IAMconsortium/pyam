@@ -507,8 +507,8 @@ class IamDataFrame(object):
         # TODO remove, and add kwarg inplace=False in next release
         if 'inplace' not in kwargs:
             deprecation_warning(
-                'Behavior of `interpolate` will change default to `False` in a '
-                'future release. Explicitly set it to avoid this warning.'
+                'Behavior of `interpolate` will change default to `False` in '
+                'a future release. Explicitly set it to avoid this warning.'
             )
             inplace = True
         else:
@@ -520,11 +520,11 @@ class IamDataFrame(object):
         interp_kwargs = dict(method='slinear', axis=1)
         interp_kwargs.update(kwargs)
         time = list(time) if islistable(time) else [time]
-        ## TODO - have to explicitly cast to numpy datetime to sort later,
+        # TODO - have to explicitly cast to numpy datetime to sort later,
         # could enforce as we do for year below
         if self.time_col == 'time':
             time = list(map(np.datetime64, time))
-        if self.time_col == 'year' and not all(isinstance(x, int) for x in time):
+        elif not all(isinstance(x, int) for x in time):
             raise ValueError(
                 'The `time` argument `{}` contains non-integers'.format(time)
             )
@@ -544,14 +544,15 @@ class IamDataFrame(object):
             df[col] = newdf[col]
 
         # replace underlying data object
-        df.columns.name = ret.time_col  # TODO this could be done in timeseries()
+        # TODO naming time_col could be done in timeseries()
+        df.columns.name = ret.time_col  
         df = df.stack()  # long-data to pd.Series
         df.name = 'value'
         ret._data = df
 
         if not inplace:
             return ret
-        
+
     def swap_time_for_year(self, inplace=False):
         """Convert the `time` column to `year`.
 
