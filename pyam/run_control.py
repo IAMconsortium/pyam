@@ -119,7 +119,7 @@ class RunControl(Mapping):
             with open(fname) as f:
                 obj = f.read()
         if not isinstance(obj, dict):
-            obj = yaml.load(obj)
+            obj = yaml.load(obj, Loader=yaml.FullLoader)
         return obj
 
     def recursive_update(self, k, d):
