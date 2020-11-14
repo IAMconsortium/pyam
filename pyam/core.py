@@ -545,7 +545,7 @@ class IamDataFrame(object):
 
         # replace underlying data object
         # TODO naming time_col could be done in timeseries()
-        df.columns.name = ret.time_col 
+        df.columns.name = ret.time_col
         df = df.stack()  # long-data to pd.Series
         df.name = 'value'
         ret._data = df
