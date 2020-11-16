@@ -120,9 +120,6 @@ def read_pandas(path, default_sheet='data', *args, **kwargs):
 
 def read_file(path, *args, **kwargs):
     """Read data from a file"""
-    if not isstr(path):
-        raise ValueError('Reading multiple files not supported, '
-                         'use `IamDataFrame.append()` or `pyam.concat()`')
     format_kwargs = {}
     # extract kwargs that are intended for `format_data`
     for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:

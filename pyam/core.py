@@ -131,6 +131,9 @@ class IamDataFrame(object):
             # TODO read meta indicators from ixmp
             meta = None
             _data = read_ix(data, **kwargs)
+        elif islistable(data):
+            raise ValueError('Initializing from list is not supported, '
+                             'use `IamDataFrame.append()` or `pyam.concat()`')
         else:
             meta = None
             logger.info('Reading file `{}`'.format(data))
