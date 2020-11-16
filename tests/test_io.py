@@ -47,6 +47,28 @@ def test_io_xlsx(test_df, meta_args):
         os.remove(file)
 
 
+def test_init_df_with_na_unit(test_pd_df):
+    # missing values in the unit column are replaced by an empty string
+    test_pd_df.loc[1, 'unit'] = np.nan
+    df = IamDataFrame(test_pd_df)
+    assert df.unit == ['', 'EJ/yr']
+
+    # writing to file and importing as pandas returns `nan`, not empty string
+    file = 'na_unit.csv'
+    df.to_csv(file)
+    df_csv = pd.read_csv(file)
+    assert np.isnan(df_csv.loc[1, 'Unit'])
+    IamDataFrame('na_unit.csv')  # reading from file as IamDataFrame works
+    os.remove(file)
+
+    file = 'na_unit.xlsx'
+    df.to_excel(file)
+    df_excel = pd.read_excel(file)
+    assert np.isnan(df_excel.loc[1, 'Unit'])
+    IamDataFrame('na_unit.xlsx')  # reading from file as IamDataFrame works
+    os.remove(file)
+
+
 @pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
 def test_load_meta(test_df, args):
     file = os.path.join(TEST_DATA_DIR, 'testing_metadata.xlsx')

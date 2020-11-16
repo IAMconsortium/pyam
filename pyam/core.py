@@ -228,7 +228,7 @@ class IamDataFrame(object):
                              self.meta.dtypes[0:meta_rows])])
         # print `...` if more than `meta_rows` columns
         if len(self.meta.columns) > meta_rows:
-            info += '\n * ...'
+            info += '\n   ...'
 
         # add info on size (optional)
         if memory_usage:

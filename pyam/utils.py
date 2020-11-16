@@ -261,6 +261,9 @@ def format_data(df, **kwargs):
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True, subset=['value'])
 
+    # replace missing units by an empty string for user-friendly filtering
+    df.loc[df.unit.isnull(), 'unit'] = ''
+
     # verify that there are no nan's left (in columns)
     null_rows = df.isnull().values
     if null_rows.any():
@@ -518,10 +521,12 @@ def datetime_match(data, dts):
 
 def print_list(x, n):
     """Return a printable string of a list shortened to n characters"""
-    # subtract count added at end from line width
-    x = list(map(str, x))
+    # if list is empty, only write count
+    if len(x) == 0:
+        return '(0)'
 
-    # write number of elements
+    # write number of elements, subtract count added at end from line width
+    x = [i if i != '' else "''" for i in map(str, x)]
     count = f' ({len(x)})'
     n -= len(count)
 
