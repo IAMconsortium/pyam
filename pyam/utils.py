@@ -1,3 +1,4 @@
+from pathlib import Path
 import itertools
 import logging
 import string
@@ -108,7 +109,9 @@ def write_sheet(writer, name, df, index=False):
 
 def read_pandas(path, default_sheet='data', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
-    if path.endswith('csv'):
+    if isinstance(path, Path) and path.suffix == '.csv':
+        df = pd.read_csv(path, *args, **kwargs)
+    elif isstr(path) and path.endswith('csv'):
         df = pd.read_csv(path, *args, **kwargs)
     else:
         xl = pd.ExcelFile(path)

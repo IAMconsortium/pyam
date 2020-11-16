@@ -123,21 +123,35 @@ class IamDataFrame(object):
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop('meta_sheet_name', 'meta')
 
-        # import data from pd.DataFrame or read from source
+        if islistable(data):
+            raise ValueError('Initializing from list is not supported, '
+                             'use `IamDataFrame.append()` or `pyam.concat()`')
+
+        # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             meta = kwargs.pop('meta') if 'meta' in kwargs else None
             _data = format_data(data.copy(), **kwargs)
+        # read data from ixmp Platform instance
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             # TODO read meta indicators from ixmp
             meta = None
             _data = read_ix(data, **kwargs)
-        elif islistable(data):
-            raise ValueError('Initializing from list is not supported, '
-                             'use `IamDataFrame.append()` or `pyam.concat()`')
+        # read from file
         else:
-            meta = None
-            logger.info('Reading file `{}`'.format(data))
-            _data = read_file(data, **kwargs)
+            try:
+                data = Path(data)  # casting str or LocalPath to Path
+                is_file = data.is_file()
+            except TypeError:  # `data` cannot be cast to Path
+                is_file = False
+
+            if is_file:
+                meta = None
+                logger.info('Reading file `{}`'.format(data))
+                _data = read_file(data, **kwargs)
+            # if not a readable file...
+            else:
+                msg = 'IamDataFrame constructor not properly called!'
+                raise ValueError(msg)
 
         _df, self.time_col, self.extra_cols = _data
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
@@ -154,9 +168,10 @@ class IamDataFrame(object):
                                    self.meta, ignore_meta_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
-        if isstr(data) and data.endswith('.xlsx') and meta_sheet is not False\
-                and meta_sheet in pd.ExcelFile(data).sheet_names:
-            self.load_meta(data, sheet_name=meta_sheet)
+        if meta_sheet and isinstance(data, Path) and data.suffix == '.xlsx':
+            excel_file = pd.ExcelFile(data)
+            if meta_sheet in excel_file.sheet_names:
+                self.load_meta(excel_file, sheet_name=meta_sheet)
 
         # add time domain and extra-cols as attributes
         if self.time_col == 'year':
