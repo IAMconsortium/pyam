@@ -500,7 +500,7 @@ class IamDataFrame(object):
         time : int or datetime, or list-like thereof
              Year or :class:`datetime.datetime` to be interpolated.
              This must match the datetime/year format of `self`.
-        inplace : bool, default False
+        inplace : bool, optional
             if True, do operation inplace and return None
         kwargs
             passed to :meth:`pandas.DataFrame.interpolate`
