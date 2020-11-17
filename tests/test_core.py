@@ -670,7 +670,8 @@ def test_interpolate_full_example():
 
 
 def test_interpolate_extra_cols():
-    # check that interpolation with non-matching extra_cols has no effect (#351)
+    # check that interpolation with non-matching extra_cols has no effect
+    # (#351)
     EXTRA_COL_DF = pd.DataFrame([
         ['foo', 2005, 1],
         ['foo', 2010, 2],
