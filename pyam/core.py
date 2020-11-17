@@ -491,7 +491,7 @@ class IamDataFrame(object):
 
     def interpolate(self, time, inplace=None, **kwargs):
         """Interpolate missing values in the timeseries data
-        
+
         This method uses :meth:`pandas.DataFrame.interpolate`,
         which applies linear interpolation by default
 
