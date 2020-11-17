@@ -490,8 +490,10 @@ class IamDataFrame(object):
         return df
 
     def interpolate(self, time, **kwargs):
-        """Interpolate missing values in timeseries (linear interpolation by
-        default). Internally, :meth:`pandas.DataFrame.interpolate` is used.
+        """Interpolate missing values in the timeseries data
+        
+        This method uses :meth:`pandas.DataFrame.interpolate`,
+        which applies linear interpolation by default
 
         Parameters
         ----------
