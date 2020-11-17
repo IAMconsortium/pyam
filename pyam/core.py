@@ -507,14 +507,14 @@ class IamDataFrame(object):
         """
         ##
         # TODO remove, and add kwarg inplace=False in release >= 0.10
-        if 'inplace' is None:  # noqa: F632
+        if inplace is None:
             deprecation_warning(
                 'Behavior of `interpolate` will change to `inplace=False` '
                 'as default in a future release. Set the kwarg explicitly '
                 'to avoid this warning. Use `inplace=True` to keep current '
                 'behavior.'
             )
-            inplace = False
+            inplace = True
         ##
 
         # setup
