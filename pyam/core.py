@@ -506,7 +506,7 @@ class IamDataFrame(object):
             passed to :meth:`pandas.DataFrame.interpolate`
         """
         ##
-        # TODO remove, and add kwarg inplace=False in next release
+        # TODO remove, and add kwarg inplace=False in release >= 0.10
         if 'inplace' not in kwargs:
             deprecation_warning(
                 'Behavior of `interpolate` will change default to `False` in '
