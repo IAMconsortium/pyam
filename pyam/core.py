@@ -514,8 +514,6 @@ class IamDataFrame(object):
                 'to avoid this warning. Use `inplace=True` to keep current '
                 'behavior.'
             )
-            inplace = True
-        else:
             inplace = False
         ##
 

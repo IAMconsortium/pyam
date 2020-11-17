@@ -617,6 +617,8 @@ def test_interpolate(test_pd_df):
     df.interpolate(2007)
     obs = df.filter(year=2007).data['value'].reset_index(drop=True)
     exp = pd.Series([3, 1.5, 4], name='value')
+    print(obs)
+    print(exp)
     pd.testing.assert_series_equal(obs, exp)
 
     # redo the interpolation and check that no duplicates are added
@@ -627,18 +629,16 @@ def test_interpolate(test_pd_df):
     assert all([True if isstr(i) else ~np.isnan(i) for i in df.data.foo])
 
 
-def test_interpolate_time_exists(test_pd_df):
-    _df = test_pd_df.copy()
-    df = IamDataFrame(_df)
+def test_interpolate_time_exists(test_df_year):
+    df = test_df_year
     df.interpolate(2005)
     obs = df.filter(year=2005).data['value'].reset_index(drop=True)
     exp = pd.Series([1.0, 0.5, 2.0], name='value')
     pd.testing.assert_series_equal(obs, exp)
 
 
-def test_interpolate_multiple_times(test_pd_df):
-    _df = test_pd_df.copy()
-    df = IamDataFrame(_df)
+def test_interpolate_with_list(test_df_year):
+    df = test_df_year
     df.interpolate([2007, 2008])
     obs = df.filter(year=[2007, 2008]).data['value'].reset_index(drop=True)
     exp = pd.Series([3, 4, 1.5, 2, 4, 5], name='value')
@@ -670,7 +670,7 @@ def test_interpolate_full_example():
 
 
 def test_interpolate_extra_cols():
-    # check hat interpolation with non-matching extra_cols has no effect (#351)
+    # check that interpolation with non-matching extra_cols has no effect (#351)
     EXTRA_COL_DF = pd.DataFrame([
         ['foo', 2005, 1],
         ['foo', 2010, 2],
@@ -686,7 +686,7 @@ def test_interpolate_extra_cols():
     df2 = df.copy()
     df2.interpolate(2007)
 
-    # interpolate should work as if this is a new index
+    # interpolate should work as if extra_cols is in the _data index
     assert_iamframe_equal(df, df2.filter(year=2007, keep=False))
     obs = df2.filter(year=2007)['value']
     exp = pd.Series([2.4, 1.4], name='value')
