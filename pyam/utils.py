@@ -111,8 +111,6 @@ def read_pandas(path, default_sheet='data', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
     if isinstance(path, Path) and path.suffix == '.csv':
         df = pd.read_csv(path, *args, **kwargs)
-    elif isstr(path) and path.endswith('csv'):
-        df = pd.read_csv(path, *args, **kwargs)
     else:
         xl = pd.ExcelFile(path)
         if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:

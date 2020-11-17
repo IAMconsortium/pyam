@@ -1657,7 +1657,7 @@ class IamDataFrame(object):
             any valid string path or :class:`pathlib.Path`
         """
         # load from file
-        df = read_pandas(path, default_sheet='meta', *args, **kwargs)
+        df = read_pandas(Path(path), default_sheet='meta', *args, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)
         df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
