@@ -217,10 +217,10 @@ def test_merge_meta():
 
 def test_get_variable_components_int():
     assert utils.get_variable_components('foo|bar|baz', 1) == 'bar'
-    
+
 
 def test_get_variable_components_list():
-    assert utils.get_variable_components('foo|bar|baz', [1,2]) == 'bar|baz'
+    assert utils.get_variable_components('foo|bar|baz', [1, 2]) == 'bar|baz'
 
 
 def test_get_variable_components_indexError():
