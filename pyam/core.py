@@ -552,7 +552,7 @@ class IamDataFrame(object):
         df.columns.name = ret.time_col
         df = df.stack()  # long-data to pd.Series
         df.name = 'value'
-        ret._data = df
+        ret._data = df.sort_index()
 
         if not inplace:
             return ret
