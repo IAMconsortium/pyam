@@ -132,14 +132,13 @@ class IamDataFrame(object):
             # TODO read meta indicators from ixmp
             meta = None
             _data = read_ix(data, **kwargs)
-        # read from file
         else:
             if islistable(data):
                 raise ValueError(
                     'Initializing from list is not supported, '
                     'use `IamDataFrame.append()` or `pyam.concat()`'
                 )
-
+            # read from file
             try:
                 data = Path(data)  # casting str or LocalPath to Path
                 is_file = data.is_file()
@@ -1831,9 +1830,8 @@ class IamDataFrame(object):
         inplace : bool, optional
             if True, do operation inplace and return None
         """
-        models = self.meta.index.get_level_values('model').unique()
         fname = fname or run_control()['region_mapping']['default']
-        mapping = read_pandas(fname).rename(str.lower, axis='columns')
+        mapping = read_pandas(Path(fname)).rename(str.lower, axis='columns')
         map_col = map_col.lower()
 
         ret = self.copy() if not inplace else self
@@ -1842,7 +1840,7 @@ class IamDataFrame(object):
 
         # merge data
         dfs = []
-        for model in models:
+        for model in self.model:
             df = _df[_df['model'] == model]
             _col = region_col or '{}.REGION'.format(model)
             _map = mapping.rename(columns={_col.lower(): 'region'})
