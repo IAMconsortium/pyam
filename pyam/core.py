@@ -489,7 +489,7 @@ class IamDataFrame(object):
         df = df.unstack(level=columns, fill_value=fill_value)
         return df
 
-    def interpolate(self, time, **kwargs):
+    def interpolate(self, time, inplace=None, **kwargs):
         """Interpolate missing values in the timeseries data
         
         This method uses :meth:`pandas.DataFrame.interpolate`,
@@ -507,7 +507,7 @@ class IamDataFrame(object):
         """
         ##
         # TODO remove, and add kwarg inplace=False in release >= 0.10
-        if 'inplace' not in kwargs:
+        if 'inplace' is None:
             deprecation_warning(
                 'Behavior of `interpolate` will change to `inplace=False` '
                 'as default in a future release. Set the kwarg explicitly '
@@ -516,7 +516,7 @@ class IamDataFrame(object):
             )
             inplace = True
         else:
-            inplace = kwargs.pop('inplace')
+            inplace = False
         ##
 
         # setup
