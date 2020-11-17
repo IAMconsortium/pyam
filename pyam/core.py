@@ -507,7 +507,7 @@ class IamDataFrame(object):
         """
         ##
         # TODO remove, and add kwarg inplace=False in release >= 0.10
-        if 'inplace' == None:
+        if 'inplace' is None:
             deprecation_warning(
                 'Behavior of `interpolate` will change to `inplace=False` '
                 'as default in a future release. Set the kwarg explicitly '
