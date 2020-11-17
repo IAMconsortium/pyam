@@ -123,10 +123,6 @@ class IamDataFrame(object):
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop('meta_sheet_name', 'meta')
 
-        if islistable(data):
-            raise ValueError('Initializing from list is not supported, '
-                             'use `IamDataFrame.append()` or `pyam.concat()`')
-
         # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             meta = kwargs.pop('meta') if 'meta' in kwargs else None
@@ -138,6 +134,12 @@ class IamDataFrame(object):
             _data = read_ix(data, **kwargs)
         # read from file
         else:
+            if islistable(data):
+                raise ValueError(
+                    'Initializing from list is not supported, '
+                    'use `IamDataFrame.append()` or `pyam.concat()`'
+                )
+
             try:
                 data = Path(data)  # casting str or LocalPath to Path
                 is_file = data.is_file()
