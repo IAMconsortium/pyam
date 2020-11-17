@@ -17,3 +17,5 @@ The package provides several functions to work with such strings.
 .. autofunction:: find_depth
 
 .. autofunction:: reduce_hierarchy
+
+.. autofunction:: get_variable_components

@@ -585,3 +585,10 @@ def reduce_hierarchy(x, depth):
     _x = x.split('|')
     depth = len(_x) + depth - 1 if depth < 0 else depth
     return '|'.join(_x[0:(depth + 1)])
+
+def get_variable_components(x, depths):
+    """Return (or merge and return) the variable component(s) in regard to
+    the hierarchy (indicated by ``|``) of x to the specified depth(s)"""
+    depths = [depths] if type(depths) == int else depths
+    _x = x.split('|')
+    return '|'.join([_x[d] for d in depths])
