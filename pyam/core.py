@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """Scenario timeseries data following the IAMC-structure
+    """Scenario timeseries data following the IAMC data format
 
     The class provides a number of diagnostic features (including validation of
     data, completeness of variables provided), processing tools (e.g.,
@@ -72,11 +72,11 @@ class IamDataFrame(object):
 
     Parameters
     ----------
-    data : ixmp.Scenario, pd.DataFrame or data file
-        an instance of an :class:`ixmp.Scenario`, :class:`pandas.DataFrame`,
-        or data file with the required data columns.
-        A pandas.DataFrame can have the required data as columns or index.
-        Support is provided additionally for R-style data columns for years,
+    data : :class:`pandas.DataFrame`, :class:`ixmp.Scenario`,
+            or file-like object as str or :class:`pathlib.Path`
+        Scenario timeseries data following the IAMC data format or
+        a supported variation as pandas object, a path to a file,
+        or a scenario of an ixmp instance.
     meta : :class:`pandas.DataFrame`, optional
         A dataframe with suitable 'meta' indicators for the new instance.
         The index will be downselected to scenarios present in `data`.
@@ -91,10 +91,14 @@ class IamDataFrame(object):
 
     Notes
     -----
+    A :class:`pandas.DataFrame` can have the required dimensions
+    as columns or index.
+    R-style integer column headers (i.e., `X2015`) are acceptable.
+
     When initializing an :class:`IamDataFrame` from an xlsx file,
     |pyam| will per default look for the sheets 'data' and 'meta' to
     populate the respective tables. Custom sheet names can be specified with
-    kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta')
+    kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta').
     Calling the class with :code:`meta_sheet_name=False` will
     skip the import of the 'meta' table.
 
