@@ -1,3 +1,4 @@
+from pathlib import Path
 import itertools
 import logging
 import string
@@ -108,7 +109,7 @@ def write_sheet(writer, name, df, index=False):
 
 def read_pandas(path, default_sheet='data', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
-    if path.endswith('csv'):
+    if isinstance(path, Path) and path.suffix == '.csv':
         df = pd.read_csv(path, *args, **kwargs)
     else:
         xl = pd.ExcelFile(path)
@@ -120,9 +121,6 @@ def read_pandas(path, default_sheet='data', *args, **kwargs):
 
 def read_file(path, *args, **kwargs):
     """Read data from a file"""
-    if not isstr(path):
-        raise ValueError('Reading multiple files not supported, '
-                         'use `IamDataFrame.append()` or `pyam.concat()`')
     format_kwargs = {}
     # extract kwargs that are intended for `format_data`
     for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:

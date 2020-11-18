@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import pytest
@@ -11,29 +11,26 @@ from conftest import TEST_DATA_DIR
 FILTER_ARGS = dict(scenario='scen_a')
 
 
-def test_io_csv(test_df):
+def test_io_csv(test_df, tmpdir):
     # write to csv
-    file = 'testing_io_write_read.csv'
+    file = tmpdir / 'testing_io_write_read.csv'
     test_df.to_csv(file)
 
-    # read from csv
+    # read from csv and assert that `data` tables are equal
     import_df = IamDataFrame(file)
-
-    # assert that `data` tables are equal and delete file
     pd.testing.assert_frame_equal(test_df.data, import_df.data)
-    os.remove(file)
 
 
 @pytest.mark.parametrize("meta_args", [
     [{}, {}],
     [dict(include_meta='foo'), dict(meta_sheet_name='foo')]
 ])
-def test_io_xlsx(test_df, meta_args):
+def test_io_xlsx(test_df, meta_args, tmpdir):
     # add column to `meta`
     test_df.set_meta(['a', 'b'], 'string')
 
-    # write to xlsx (direct file name and ExcelWriter, see bug report #300)
-    file = 'testing_io_write_read.xlsx'
+    # write to xlsx (direct file name and ExcelWriter, see #300)
+    file = tmpdir / 'testing_io_write_read.xlsx'
     for f in [file, pd.ExcelWriter(file)]:
         test_df.to_excel(f, **meta_args[0])
         if isinstance(f, pd.ExcelWriter):
@@ -44,34 +41,31 @@ def test_io_xlsx(test_df, meta_args):
 
         # assert that IamDataFrame instances are equal and delete file
         assert_iamframe_equal(test_df, import_df)
-        os.remove(file)
 
 
-def test_init_df_with_na_unit(test_pd_df):
+def test_init_df_with_na_unit(test_pd_df, tmpdir):
     # missing values in the unit column are replaced by an empty string
     test_pd_df.loc[1, 'unit'] = np.nan
     df = IamDataFrame(test_pd_df)
     assert df.unit == ['', 'EJ/yr']
 
     # writing to file and importing as pandas returns `nan`, not empty string
-    file = 'na_unit.csv'
+    file = tmpdir / 'na_unit.csv'
     df.to_csv(file)
     df_csv = pd.read_csv(file)
     assert np.isnan(df_csv.loc[1, 'Unit'])
-    IamDataFrame('na_unit.csv')  # reading from file as IamDataFrame works
-    os.remove(file)
+    IamDataFrame(file)  # reading from file as IamDataFrame works
 
-    file = 'na_unit.xlsx'
+    file = tmpdir / 'na_unit.xlsx'
     df.to_excel(file)
     df_excel = pd.read_excel(file)
     assert np.isnan(df_excel.loc[1, 'Unit'])
-    IamDataFrame('na_unit.xlsx')  # reading from file as IamDataFrame works
-    os.remove(file)
+    IamDataFrame(file)  # reading from file as IamDataFrame works
 
 
 @pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
 def test_load_meta(test_df, args):
-    file = os.path.join(TEST_DATA_DIR, 'testing_metadata.xlsx')
+    file = TEST_DATA_DIR / 'testing_metadata.xlsx'
     test_df.load_meta(file, **args)
     obs = test_df.meta
 
@@ -84,32 +78,24 @@ def test_load_meta(test_df, args):
 
 def test_load_ssp_database_downloaded_file(test_pd_df):
     exp = IamDataFrame(test_pd_df).filter(**FILTER_ARGS).as_pandas()
-    obs_df = IamDataFrame(os.path.join(
-        TEST_DATA_DIR, 'test_SSP_database_raw_download.xlsx')
-    )
+    file = TEST_DATA_DIR / 'test_SSP_database_raw_download.xlsx'
+    obs_df = IamDataFrame(file)
     pd.testing.assert_frame_equal(obs_df.as_pandas(), exp)
 
 
 def test_load_rcp_database_downloaded_file(test_pd_df):
     exp = IamDataFrame(test_pd_df).filter(**FILTER_ARGS).as_pandas()
-    obs_df = IamDataFrame(os.path.join(
-        TEST_DATA_DIR, 'test_RCP_database_raw_download.xlsx')
-    )
+    file = TEST_DATA_DIR / 'test_RCP_database_raw_download.xlsx'
+    obs_df = IamDataFrame(file)
     pd.testing.assert_frame_equal(obs_df.as_pandas(), exp)
 
 
-def test_io_datapackage(test_df):
-    file = 'foo.zip'
-
-    # add column to `meta`
+def test_io_datapackage(test_df, tmpdir):
+    # add column to `meta` and write to datapackage
+    file = Path(tmpdir) / 'foo.zip'
     test_df.set_meta(['a', 'b'], 'string')
-
-    # write to datapackage
     test_df.to_datapackage(file)
 
-    # read from csv
+    # read from csv assert that IamDataFrame instances are equal
     import_df = read_datapackage(file)
-
-    # assert that IamDataFrame instances are equal and delete file
     assert_iamframe_equal(test_df, import_df)
-    os.remove(file)

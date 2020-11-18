@@ -64,7 +64,7 @@ logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """Scenario timeseries data following the IAMC-structure
+    """Scenario timeseries data following the IAMC data format
 
     The class provides a number of diagnostic features (including validation of
     data, completeness of variables provided), processing tools (e.g.,
@@ -72,12 +72,14 @@ class IamDataFrame(object):
 
     Parameters
     ----------
-    data : ixmp.Scenario, pd.DataFrame or data file
-        an instance of an :class:`ixmp.Scenario`, :class:`pandas.DataFrame`,
-        or data file with the required data columns.
-        A pandas.DataFrame can have the required data as columns or index.
-        Support is provided additionally for R-style data columns for years,
-        like "X2015", etc.
+    data : :class:`pandas.DataFrame`, :class:`ixmp.Scenario`,
+            or file-like object as str or :class:`pathlib.Path`
+        Scenario timeseries data following the IAMC data format or
+        a supported variation as pandas object, a path to a file,
+        or a scenario of an ixmp instance.
+    meta : :class:`pandas.DataFrame`, optional
+        A dataframe with suitable 'meta' indicators for the new instance.
+        The index will be downselected to scenarios present in `data`.
     kwargs
         If `value=<col>`, melt column `<col>` to 'value' and use `<col>` name
         as 'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
@@ -87,16 +89,16 @@ class IamDataFrame(object):
         - multiple columns, to be concatenated by :code:`|`
         - a string to be used as value for this column
 
-        A :class:`pandas.DataFrame` with suitable `meta` indicators can be
-        passed as `meta=<df>`. The index will be downselected to those
-        scenarios that have timeseries data.
-
     Notes
     -----
+    A :class:`pandas.DataFrame` can have the required dimensions
+    as columns or index.
+    R-style integer column headers (i.e., `X2015`) are acceptable.
+
     When initializing an :class:`IamDataFrame` from an xlsx file,
     |pyam| will per default look for the sheets 'data' and 'meta' to
     populate the respective tables. Custom sheet names can be specified with
-    kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta')
+    kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta').
     Calling the class with :code:`meta_sheet_name=False` will
     skip the import of the 'meta' table.
 
@@ -107,7 +109,7 @@ class IamDataFrame(object):
     This is intended behaviour and consistent with pandas but may be confusing
     for those who are not used to the pandas/Python universe.
     """
-    def __init__(self, data, **kwargs):
+    def __init__(self, data, meta=None, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
@@ -116,25 +118,40 @@ class IamDataFrame(object):
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
-            self._init(data, **kwargs)
+            self._init(data, meta, **kwargs)
 
-    def _init(self, data, **kwargs):
+    def _init(self, data, meta=None, **kwargs):
         """Process data and set attributes for new instance"""
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop('meta_sheet_name', 'meta')
 
-        # import data from pd.DataFrame or read from source
+        # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            meta = kwargs.pop('meta') if 'meta' in kwargs else None
             _data = format_data(data.copy(), **kwargs)
+        # read data from ixmp Platform instance
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             # TODO read meta indicators from ixmp
-            meta = None
             _data = read_ix(data, **kwargs)
         else:
-            meta = None
-            logger.info('Reading file `{}`'.format(data))
-            _data = read_file(data, **kwargs)
+            if islistable(data):
+                raise ValueError(
+                    'Initializing from list is not supported, '
+                    'use `IamDataFrame.append()` or `pyam.concat()`'
+                )
+            # read from file
+            try:
+                data = Path(data)  # casting str or LocalPath to Path
+                is_file = data.is_file()
+            except TypeError:  # `data` cannot be cast to Path
+                is_file = False
+
+            if is_file:
+                logger.info('Reading file `{}`'.format(data))
+                _data = read_file(data, **kwargs)
+            # if not a readable file...
+            else:
+                msg = 'IamDataFrame constructor not properly called!'
+                raise ValueError(msg)
 
         _df, self.time_col, self.extra_cols = _data
         self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
@@ -151,9 +168,10 @@ class IamDataFrame(object):
                                    self.meta, ignore_meta_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
-        if isstr(data) and data.endswith('.xlsx') and meta_sheet is not False\
-                and meta_sheet in pd.ExcelFile(data).sheet_names:
-            self.load_meta(data, sheet_name=meta_sheet)
+        if meta_sheet and isinstance(data, Path) and data.suffix == '.xlsx':
+            excel_file = pd.ExcelFile(data)
+            if meta_sheet in excel_file.sheet_names:
+                self.load_meta(excel_file, sheet_name=meta_sheet)
 
         # add time domain and extra-cols as attributes
         if self.time_col == 'year':
@@ -1637,7 +1655,7 @@ class IamDataFrame(object):
             any valid string path or :class:`pathlib.Path`
         """
         # load from file
-        df = read_pandas(path, default_sheet='meta', *args, **kwargs)
+        df = read_pandas(Path(path), default_sheet='meta', *args, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)
         df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
@@ -1811,9 +1829,8 @@ class IamDataFrame(object):
         inplace : bool, optional
             if True, do operation inplace and return None
         """
-        models = self.meta.index.get_level_values('model').unique()
         fname = fname or run_control()['region_mapping']['default']
-        mapping = read_pandas(fname).rename(str.lower, axis='columns')
+        mapping = read_pandas(Path(fname)).rename(str.lower, axis='columns')
         map_col = map_col.lower()
 
         ret = self.copy() if not inplace else self
@@ -1822,7 +1839,7 @@ class IamDataFrame(object):
 
         # merge data
         dfs = []
-        for model in models:
+        for model in self.model:
             df = _df[_df['model'] == model]
             _col = region_col or '{}.REGION'.format(model)
             _map = mapping.rename(columns={_col.lower(): 'region'})

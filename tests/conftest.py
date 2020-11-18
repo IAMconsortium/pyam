@@ -2,6 +2,7 @@
 import matplotlib
 matplotlib.use('agg')
 
+from pathlib import Path
 import os
 from requests.exceptions import ConnectionError
 import pytest
@@ -23,9 +24,9 @@ TEST_API = 'integration-test'
 TEST_API_NAME = 'IXSE_INTEGRATION_TEST'
 
 
-here = os.path.dirname(os.path.realpath(__file__))
-IMAGE_BASELINE_DIR = os.path.join(here, 'expected_figs')
-TEST_DATA_DIR = os.path.join(here, 'data')
+here = Path(__file__).parent
+IMAGE_BASELINE_DIR = here / 'expected_figs'
+TEST_DATA_DIR = here / 'data'
 
 
 TEST_YEARS = [2005, 2010]
