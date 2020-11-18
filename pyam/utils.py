@@ -599,10 +599,10 @@ def get_variable_components(x, level, join=False):
     join : bool or str, optional
         If True, IAMC-style (``|``) is used as separator for joined components.
     """
-    level = [level] if type(level) == int else level
     _x = x.split('|')
     if join is False:
         return [_x[i] for i in level] if islistable(level) else _x[level]
     else:
+        level = [level] if type(level) == int else level
         join = '|' if join is True else join
         return join.join([_x[i] for i in level])
