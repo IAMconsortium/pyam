@@ -77,7 +77,9 @@ class IamDataFrame(object):
         or data file with the required data columns.
         A pandas.DataFrame can have the required data as columns or index.
         Support is provided additionally for R-style data columns for years,
-        like "X2015", etc.
+    meta : :class:`pandas.DataFrame`, optional
+        A dataframe with suitable 'meta' indicators for the new instance.
+        The index will be downselected to scenarios present in `data`.
     kwargs
         If `value=<col>`, melt column `<col>` to 'value' and use `<col>` name
         as 'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
@@ -86,10 +88,6 @@ class IamDataFrame(object):
         - one column in `data`
         - multiple columns, to be concatenated by :code:`|`
         - a string to be used as value for this column
-
-        A :class:`pandas.DataFrame` with suitable `meta` indicators can be
-        passed as `meta=<df>`. The index will be downselected to those
-        scenarios that have timeseries data.
 
     Notes
     -----
@@ -107,7 +105,7 @@ class IamDataFrame(object):
     This is intended behaviour and consistent with pandas but may be confusing
     for those who are not used to the pandas/Python universe.
     """
-    def __init__(self, data, **kwargs):
+    def __init__(self, data, meta=None, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
@@ -116,21 +114,19 @@ class IamDataFrame(object):
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
-            self._init(data, **kwargs)
+            self._init(data, meta, **kwargs)
 
-    def _init(self, data, **kwargs):
+    def _init(self, data, meta=None, **kwargs):
         """Process data and set attributes for new instance"""
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop('meta_sheet_name', 'meta')
 
         # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            meta = kwargs.pop('meta') if 'meta' in kwargs else None
             _data = format_data(data.copy(), **kwargs)
         # read data from ixmp Platform instance
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             # TODO read meta indicators from ixmp
-            meta = None
             _data = read_ix(data, **kwargs)
         else:
             if islistable(data):
@@ -146,7 +142,6 @@ class IamDataFrame(object):
                 is_file = False
 
             if is_file:
-                meta = None
                 logger.info('Reading file `{}`'.format(data))
                 _data = read_file(data, **kwargs)
             # if not a readable file...
