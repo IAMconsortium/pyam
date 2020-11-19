@@ -588,3 +588,24 @@ def reduce_hierarchy(x, depth):
     _x = x.split('|')
     depth = len(_x) + depth - 1 if depth < 0 else depth
     return '|'.join(_x[0:(depth + 1)])
+
+
+def get_variable_components(x, level, join=False):
+    """Return components for requested level in a list or join these in a str.
+
+    Parameters
+    ----------
+    x : str
+        Uses ``|`` to separate the components of the variable.
+    level : int or list of int
+        Position of the component.
+    join : bool or str, optional
+        If True, IAMC-style (``|``) is used as separator for joined components.
+    """
+    _x = x.split('|')
+    if join is False:
+        return [_x[i] for i in level] if islistable(level) else _x[level]
+    else:
+        level = [level] if type(level) == int else level
+        join = '|' if join is True else join
+        return join.join([_x[i] for i in level])

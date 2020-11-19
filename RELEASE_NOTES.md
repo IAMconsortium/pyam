@@ -2,6 +2,7 @@
 
 ## Individual updates
 
+- [#459](https://github.com/IAMconsortium/pyam/pull/459) Add a `get_variable_components()` function to retrieve or join variable components
 - [#458](https://github.com/IAMconsortium/pyam/pull/458) Enable `Path` for IamDataFrame initialization 
 - [#454](https://github.com/IAMconsortium/pyam/pull/454) Enable dimensionless units and fix `info()` if IamDataFrame is empty
 - [#451](https://github.com/IAMconsortium/pyam/pull/451) Fix unit conversions from C to CO2eq
