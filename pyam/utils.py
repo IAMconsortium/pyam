@@ -1,3 +1,4 @@
+from pathlib import Path
 import itertools
 import logging
 import string
@@ -108,7 +109,7 @@ def write_sheet(writer, name, df, index=False):
 
 def read_pandas(path, default_sheet='data', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
-    if path.endswith('csv'):
+    if isinstance(path, Path) and path.suffix == '.csv':
         df = pd.read_csv(path, *args, **kwargs)
     else:
         xl = pd.ExcelFile(path)
@@ -120,9 +121,6 @@ def read_pandas(path, default_sheet='data', *args, **kwargs):
 
 def read_file(path, *args, **kwargs):
     """Read data from a file"""
-    if not isstr(path):
-        raise ValueError('Reading multiple files not supported, '
-                         'use `IamDataFrame.append()` or `pyam.concat()`')
     format_kwargs = {}
     # extract kwargs that are intended for `format_data`
     for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:
@@ -260,6 +258,9 @@ def format_data(df, **kwargs):
     # cast value column to numeric and drop nan
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True, subset=['value'])
+
+    # replace missing units by an empty string for user-friendly filtering
+    df.loc[df.unit.isnull(), 'unit'] = ''
 
     # verify that there are no nan's left (in columns)
     null_rows = df.isnull().values
@@ -518,10 +519,12 @@ def datetime_match(data, dts):
 
 def print_list(x, n):
     """Return a printable string of a list shortened to n characters"""
-    # subtract count added at end from line width
-    x = list(map(str, x))
+    # if list is empty, only write count
+    if len(x) == 0:
+        return '(0)'
 
-    # write number of elements
+    # write number of elements, subtract count added at end from line width
+    x = [i if i != '' else "''" for i in map(str, x)]
     count = f' ({len(x)})'
     n -= len(count)
 

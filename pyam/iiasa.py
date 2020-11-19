@@ -30,7 +30,7 @@ DEFAULT_IIASA_CREDS = Path('~').expanduser() / '.local' / 'pyam' / 'iiasa.yaml'
 
 
 def set_config(user, password, file=None):
-    """Save username and password for IIASA API connection to file"""
+    """Save username and password for the IIASA API connection to a file"""
     file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
     if not file.parent.exists():
         file.parent.mkdir(parents=True)
@@ -107,14 +107,18 @@ class Connection(object):
         See :attr:`pyam.iiasa.Connection.valid_connections` for a list
         of available APIs.
     creds : str, :class:`pathlib.Path`, list-like, or dict, optional
-        By default, this function will (try to) read user credentials which
-        were set using :meth:`pyam.iiasa.set_config(<user>, <password>)`.
+        By default, the class will search for user credentials which
+        were set using :meth:`pyam.iiasa.set_config`.
         Alternatively, you can provide a path to a yaml file
         with entries of 'username' and 'password'.
-    base_url : str, custom authentication server URL
+    base_url : str, optional
+        custom authentication server URL
 
     Notes
     -----
+    Credentials (username & password) are not required to access any public
+    Scenario Explorer instances (i.e., with Guest login).
+
     Providing credentials as an ordered container (tuple, list, etc.)
     or as a dictionary with keys `user` and `password` is (still) supported
     for backwards compatibility. However, this option is NOT RECOMMENDED
@@ -499,9 +503,12 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL,
     meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
-    creds : dict
-        Credentials to access scenario explorer instance and
-        authentication service APIs (username/password)
+    creds : str, :class:`pathlib.Path`, list-like, or dict, optional
+        | Credentials (username & password) are not required to access
+          any public Scenario Explorer instances (i.e., with Guest login).
+        | See :class:`pyam.iiasa.Connection` for details.
+        | Use :meth:`pyam.iiasa.set_config` to set credentials
+          for accessing private/restricted Scenario Explorer instances.
     base_url : str
         Authentication server URL
     kwargs

@@ -28,14 +28,6 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 ], columns=['model', 'scenario', 'region', 2010, 2020]
 ).set_index(['model', 'region'])
 
-df_with_na_columns = pd.DataFrame([
-    ['model_a', 'scen_a', 'World', 'Primary Energy', np.nan, 1, 6.],
-    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
-    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
-],
-    columns=IAMC_IDX + [2005, 2010],
-)
-
 df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 
 
@@ -79,8 +71,10 @@ def test_init_df_with_duplicates_raises(test_df):
         IamDataFrame(_df)
 
 
-def test_init_df_with_na_unit(test_df):
-    pytest.raises(ValueError, IamDataFrame, data=df_with_na_columns)
+def test_init_df_with_na_scenario(test_pd_df):
+    # missing values in an index dimension raises an error
+    test_pd_df.loc[1, 'scenario'] = np.nan
+    pytest.raises(ValueError, IamDataFrame, data=test_pd_df)
 
 
 def test_init_df_with_float_cols(test_pd_df):
@@ -159,6 +153,26 @@ def test_print(test_df_year):
         '   number (int64) 1, 2 (2)',
         '   string (object) foo, nan (2)'])
     obs = test_df_year.info()
+    assert obs == exp
+
+
+def test_print_empty(test_df_year):
+    """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
+    exp = '\n'.join([
+        "<class 'pyam.core.IamDataFrame'>",
+        'Index dimensions:',
+        ' * model    : (0)',
+        ' * scenario : (0)',
+        'Timeseries data coordinates:',
+        '   region   : (0)',
+        '   variable : (0)',
+        '   unit     : (0)',
+        '   year     : (0)',
+        'Meta indicators:',
+        '   exclude (bool) (0)',
+        '   number (int64) (0)',
+        '   string (object) (0)'])
+    obs = test_df_year.filter(model='foo').info()
     assert obs == exp
 
 
