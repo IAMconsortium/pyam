@@ -9,8 +9,8 @@ Release v\ |version|.
 
 |joss| |doi|
 
-.. |license| image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
-   :target: https://anaconda.org/conda-forge/pyam
+.. |license| image:: https://img.shields.io/badge/License-Apache%202.0-black
+   :target: https://github.com/IAMconsortium/pyam/blob/master/LICENSE
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/

@@ -1,7 +1,7 @@
 pyam: analysis & visualization <br /> of integrated-assessment scenarios
 ========================================================================
 
-[![license](https://anaconda.org/conda-forge/pyam/badges/license.svg)](https://anaconda.org/conda-forge/pyam)
+[![license](https://img.shields.io/badge/License-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/master/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
 [![conda](https://anaconda.org/conda-forge/pyam/badges/version.svg)](https://anaconda.org/conda-forge/pyam)
 [![latest](https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyam)
