@@ -77,19 +77,23 @@ Table of Contents
    :maxdepth: 2
 
    install
+   authors
    contributing
    data
    tutorials
    examples/index
    api
 
-License
--------
+Copyright & License
+-------------------
 
 The development of the |pyam| package was started at the IIASA Energy Program,
-with contributions from a number of individuals & institutions over the years.
+with contributions from a number of `individuals & institutions`_ over the years.
+
 The package is available under the open-source `Apache License`_.
 Refer to the `NOTICE`_ in the GitHub repository for more information.
+
+.. _individuals & institutions: authors.html
 
 .. _Apache License: http://www.apache.org/licenses/LICENSE-2.0.html
 

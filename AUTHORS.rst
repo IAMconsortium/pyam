@@ -1,5 +1,5 @@
-Authors and Contributors
-========================
+Authors and Developers
+======================
 
 The following persons contributed to the development of the |pyam| framework:
 
