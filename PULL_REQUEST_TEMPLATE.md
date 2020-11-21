@@ -2,6 +2,7 @@
 
 - [ ] Tests Added
 - [ ] Documentation Added
+- [ ] Name of contributors Added to AUTHORS.rst
 - [ ] Description in RELEASE_NOTES.md Added
 
 ## Adding to RELEASE_NOTES.md (remove section after adding to RELEASE_NOTES.md)
