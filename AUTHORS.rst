@@ -11,7 +11,7 @@ The following persons contributed to the development of the |pyam| framework:
 - Robin Lamboll `@Rlamboll <https://github.com/Rlamboll>`_
 - Oliver Fricko `@OFR-IIASA <https://github.com/OFR-IIASA>`_
 - Jonas Hörsch `@coroa <https://github.com/coroa>`_
-- Paul Kishimoto `@khaeru <https://github.com/khaeru>`_
+- Paul Natsuo Kishimoto `@khaeru <https://github.com/khaeru>`_
 - Thorsten Burandt `@tburandt <https://github.com/tburandt>`_
 - Ross Ursino `@rossursino <https://github.com/rossursino>`_
 - Maik Budzinski `@mabudz <https://github.com/mabudz>`_
