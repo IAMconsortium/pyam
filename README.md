@@ -1,7 +1,7 @@
 pyam: analysis & visualization <br /> of integrated-assessment scenarios
 ========================================================================
 
-[![license](https://anaconda.org/conda-forge/pyam/badges/license.svg)](https://anaconda.org/conda-forge/pyam)
+[![license](https://img.shields.io/badge/License-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/master/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
 [![conda](https://anaconda.org/conda-forge/pyam/badges/version.svg)](https://anaconda.org/conda-forge/pyam)
 [![latest](https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyam)
@@ -83,7 +83,7 @@ and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
 License
 -------
 
-Copyright 2017-2020 IIASA Energy Program
+Copyright 2017-2020 IIASA and the pyam developer team
 
 The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");
