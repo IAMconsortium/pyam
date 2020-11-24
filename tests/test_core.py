@@ -631,6 +631,8 @@ def test_interpolate(test_pd_df):
     df.interpolate(2007)
     obs = df.filter(year=2007).data['value'].reset_index(drop=True)
     exp = pd.Series([3, 1.5, 4], name='value')
+    print(obs)
+    print(exp)
     pd.testing.assert_series_equal(obs, exp)
 
     # redo the interpolation and check that no duplicates are added
@@ -641,10 +643,53 @@ def test_interpolate(test_pd_df):
     assert all([True if isstr(i) else ~np.isnan(i) for i in df.data.foo])
 
 
+def test_interpolate_time_exists(test_df_year):
+    df = test_df_year
+    df.interpolate(2005)
+    obs = df.filter(year=2005).data['value'].reset_index(drop=True)
+    exp = pd.Series([1.0, 0.5, 2.0], name='value')
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_interpolate_with_list(test_df_year):
+    df = test_df_year
+    df.interpolate([2007, 2008])
+    obs = df.filter(year=[2007, 2008]).data['value'].reset_index(drop=True)
+    exp = pd.Series([3, 4, 1.5, 2, 4, 5], name='value')
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_interpolate_full_example():
+    cols = ['model_a', 'scen_a', 'World']
+    df = IamDataFrame(pd.DataFrame([
+        cols + ['all', 'EJ/yr', 0, 1, 6., 10],
+        cols + ['last', 'EJ/yr', 0, 0.5, 3, np.nan],
+        cols + ['first', 'EJ/yr', 0, np.nan, 2, 7],
+        cols + ['middle', 'EJ/yr', 0, 1, np.nan, 7],
+        cols + ['first two', 'EJ/yr', 0, np.nan, np.nan, 7],
+        cols + ['last two', 'EJ/yr', 0, 1, np.nan, np.nan],
+    ], columns=IAMC_IDX + [2000, 2005, 2010, 2017],
+    ))
+    exp = IamDataFrame(pd.DataFrame([
+        cols + ['all', 'EJ/yr', 0, 1, 6., 7.142857, 10],
+        cols + ['last', 'EJ/yr', 0, 0.5, 3, np.nan, np.nan],
+        cols + ['first', 'EJ/yr', 0, 1., 2, 3.428571, 7],
+        cols + ['middle', 'EJ/yr', 0, 1, np.nan, 4.5, 7],
+        cols + ['first two', 'EJ/yr', 0, 2.058824, np.nan, 4.941176, 7],
+        cols + ['last two', 'EJ/yr', 0, 1, np.nan, np.nan, np.nan],
+    ], columns=IAMC_IDX + [2000, 2005, 2010, 2012, 2017],
+    ))
+    obs = df.interpolate([2005, 2012], inplace=False)
+    assert_iamframe_equal(obs, exp)
+
+
 def test_interpolate_extra_cols():
-    # check hat interpolation with non-matching extra_cols has no effect (#351)
+    # check that interpolation with non-matching extra_cols has no effect
+    # (#351)
     EXTRA_COL_DF = pd.DataFrame([
         ['foo', 2005, 1],
+        ['foo', 2010, 2],
+        ['bar', 2005, 2],
         ['bar', 2010, 3],
     ],
         columns=['extra_col', 'year', 'value'],
@@ -656,8 +701,11 @@ def test_interpolate_extra_cols():
     df2 = df.copy()
     df2.interpolate(2007)
 
-    # assert that interpolation didn't change any data
-    assert_iamframe_equal(df, df2)
+    # interpolate should work as if extra_cols is in the _data index
+    assert_iamframe_equal(df, df2.filter(year=2007, keep=False))
+    obs = df2.filter(year=2007)['value']
+    exp = pd.Series([2.4, 1.4], name='value')
+    pd.testing.assert_series_equal(obs, exp)
 
 
 def test_interpolate_datetimes(test_df):

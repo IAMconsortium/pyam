@@ -507,34 +507,71 @@ class IamDataFrame(object):
         df = df.unstack(level=columns, fill_value=fill_value)
         return df
 
-    def interpolate(self, time):
-        """Interpolate missing values in timeseries (linear interpolation)
+    def interpolate(self, time, inplace=None, **kwargs):
+        """Interpolate missing values in the timeseries data
+
+        This method uses :meth:`pandas.DataFrame.interpolate`,
+        which applies linear interpolation by default
 
         Parameters
         ----------
-        time : int or datetime
+        time : int or datetime, or list-like thereof
              Year or :class:`datetime.datetime` to be interpolated.
              This must match the datetime/year format of `self`.
+        inplace : bool, optional
+            if True, do operation inplace and return None
+        kwargs
+            passed to :meth:`pandas.DataFrame.interpolate`
         """
-        if self.time_col == 'year' and not isinstance(time, int):
-            raise ValueError(
-                'The `time` argument `{}` is not an integer'.format(time)
+        ##
+        # TODO remove, and add kwarg inplace=False in release >= 0.10
+        if inplace is None:
+            deprecation_warning(
+                'Behavior of `interpolate` will change to `inplace=False` '
+                'as default in a future release. Set the kwarg explicitly '
+                'to avoid this warning. Use `inplace=True` to keep current '
+                'behavior.'
             )
+            inplace = True
+        ##
 
-        # get data in wide format, drop rows where value is already defined
-        df = self.timeseries()
-        if time in df.columns:
-            df = df[np.isnan(df[time])]
+        # setup
+        ret = self.copy() if not inplace else self
+        interp_kwargs = dict(method='slinear', axis=1)
+        interp_kwargs.update(kwargs)
+        time = list(time) if islistable(time) else [time]
+        # TODO - have to explicitly cast to numpy datetime to sort later,
+        # could enforce as we do for year below
+        if self.time_col == 'time':
+            time = list(map(np.datetime64, time))
+        elif not all(isinstance(x, int) for x in time):
+            raise ValueError(
+                'The `time` argument `{}` contains non-integers'.format(time)
+            )
+        old_cols = list(ret[ret.time_col].unique())
+        columns = np.sort(np.unique(old_cols + time))
 
-        # apply fill_series, re-add time dimension to index, set series name
-        _values = df.apply(fill_series, raw=False, axis=1, time=time).dropna()
-        _values.index = append_index_level(
-            index=_values.index, codes=[0] * len(_values),
-            level=[time], name=self.time_col, order=self._data.index.names)
-        _values.name = 'value'
+        # calculate a separate dataframe with full interpolation
+        df = ret.timeseries()
+        newdf = (
+            df
+            .reindex(columns=columns)
+            .interpolate(**interp_kwargs)
+        )
 
-        # append interpolated values to `_data` and sort index
-        self._data = self._data.append(_values).sort_index()
+        # replace only columns asked for
+        for col in time:
+            df[col] = newdf[col]
+
+        # replace underlying data object
+        # TODO naming time_col could be done in timeseries()
+        df.columns.name = ret.time_col
+        df = df.stack()  # long-data to pd.Series
+        df.name = 'value'
+        ret._data = df.sort_index()
+
+        if not inplace:
+            return ret
 
     def swap_time_for_year(self, inplace=False):
         """Convert the `time` column to `year`.
