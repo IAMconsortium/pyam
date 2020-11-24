@@ -2,7 +2,12 @@
 
 ## Individual updates
 
+- [#461](https://github.com/IAMconsortium/pyam/pull/461) Add list of authors to repo and docs pages
+- [#459](https://github.com/IAMconsortium/pyam/pull/459) Add a `get_variable_components()` function to retrieve or join variable components
+- [#458](https://github.com/IAMconsortium/pyam/pull/458) Enable `Path` for IamDataFrame initialization 
 - [#456](https://github.com/IAMconsortium/pyam/pull/456) Speed up interpolation and support interpolation for multiple time-points
+- [#454](https://github.com/IAMconsortium/pyam/pull/454) Enable dimensionless units and fix `info()` if IamDataFrame is empty
+- [#451](https://github.com/IAMconsortium/pyam/pull/451) Fix unit conversions from C to CO2eq
 - [#450](https://github.com/IAMconsortium/pyam/pull/450) Defer logging set-up to when the first logging message is generated
 - [#445](https://github.com/IAMconsortium/pyam/pull/445) Prevent conflicts between attributes and data/meta columns
 - [#444](https://github.com/IAMconsortium/pyam/pull/444) Use warnings module for deprecation warnings

@@ -11,6 +11,8 @@
 
 1. Make a release candidate branch (e.g., `rc_v<release version>`)
    and pull request it into `master` with the following updates:
+   1. If it's the first release in a new year,
+      search for `Copyright 2017` and bump the year
    1. Deprecate any stated portion of the API
       (you can find them by searching the code base for "deprecate")
    1. Update `RELEASE_NOTES.md` (see the examples of previous releases)

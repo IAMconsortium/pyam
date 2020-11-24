@@ -4,6 +4,7 @@ import re
 import iam_units
 import pint
 
+from pyam.logging import deprecation_warning
 from pyam.index import replace_index_values
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     try:
         where = ret._data.index.get_loc_level(current, 'unit')[0]
     except KeyError:
-        where = [False] * len(ret)
+        return None if inplace else ret
 
     index_args = [ret._data, 'unit', {current: to}]
 
@@ -37,17 +38,17 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
     qty = [ret.data.loc[where, 'value'].values, _current]
 
     try:
-        # Create a vector pint.Quantity
-        qty = registry.Quantity(*qty)
+        # Create a vector pint.Quantity and convert it ordinarily
+        result = (
+            registry.Quantity(*qty)
+            .to(_to, context if context is not None else pint.Context())
+        )
     except pint.UndefinedUnitError:
         # *qty* might include a GHG species; try GWP conversion
-        result, _to = convert_gwp(context, qty, _to)
+        result, _ = convert_gwp(context, qty, _to)
     except AttributeError:
         # .Quantity() did not exist
         raise TypeError(f'{registry} must be `pint.UnitRegistry`') from None
-    else:
-        # Ordinary conversion, using an empty Context if none was provided
-        result = qty.to(_to, context or pint.Context())
 
     # Copy values from the result Quantity and assign units
     ret._data[where] = result.magnitude
@@ -79,7 +80,7 @@ class UndefinedUnitError(pint.UndefinedUnitError):
     def __str__(self):
         return super().__str__() + (
             "\nGWP conversion with IamDataFrame.convert_unit() requires a "
-            "'gwp_...' *context* and mass-based *to* units.")
+            "*context* and mass-based *to* units.")
 
 
 def extract_species(expr):
@@ -104,7 +105,14 @@ def extract_species(expr):
 def convert_gwp(context, qty, to):
     """Helper for :meth:`convert_unit` to perform GWP conversions."""
     # Remove a leading 'gwp_' to produce the metric name
-    metric = context.split('gwp_')[1] if context else context
+    if context is not None and context.startswith('gwp_'):
+        context = context[len("gwp_"):]
+        deprecation_warning(
+            f"Use context='{context}' instead",
+            type='Prefixing a context with "gwp_"',
+            stacklevel=5
+        )
+    metric = context
 
     # Extract the species from *qty* and *to*, allowing supported aliases
     species_from, units_from = extract_species(qty[1])

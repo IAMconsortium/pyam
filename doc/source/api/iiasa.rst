@@ -3,7 +3,7 @@
 The **Connection** class
 ========================
 
-IIASA's ixmp scenario explorer infrastructure implements a RestAPI
+IIASA's ixmp Scenario Explorer infrastructure implements a RestAPI
 to directly query the database server connected to an explorer instance.
 See https://software.ene.iiasa.ac.at/ixmp-server for more information.
 
@@ -17,3 +17,5 @@ See `this tutorial <../tutorials/iiasa_dbs.html>`_ for more information.
 
 .. autofunction:: read_iiasa
    :noindex:
+
+.. autofunction:: set_config

@@ -13,13 +13,13 @@ def adjust_log_level(logger, level='ERROR'):
     logger.setLevel(old_level)
 
 
-def deprecation_warning(msg, type='This method'):
+def deprecation_warning(msg, type='This method', stacklevel=3):
     """Write deprecation warning to log"""
     warn = 'is deprecated and will be removed in future versions.'
     warnings.warn(
         '{} {} {}'.format(type, warn, msg),
         DeprecationWarning,
-        stacklevel=3
+        stacklevel=stacklevel
     )
 
 
