@@ -1,4 +1,20 @@
-# Next Release
+# Release v0.9.0
+
+## Highlights
+
+ - Extend the data format to work with dimensionless variables
+   (i.e., accept "empty" units).
+ - Refactor the `interpolate()` feature to accept a list of years
+   or `datetime` instances.
+ - Add the list of authors/contributors to the docs.
+
+## API changes
+
+PR [#456](https://github.com/IAMconsortium/pyam/pull/456) changed the interface
+of the `interpolate()` feature to do the operation inplace (previous behaviour)
+or return a new instance (future default).
+A deprecation warning is written if a user does not provide the arg `inplace`
+to warn of the future change.
 
 ## Individual updates
 
