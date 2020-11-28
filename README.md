@@ -73,12 +73,14 @@ The complete documentation is hosted on [Read the Docs](https://pyam-iamc.readth
 The documentation pages can be built locally,
 refer to the instruction in [doc/README](doc/README.md).
 
-Authors
--------
+Authors & Contributors
+----------------------
 
-This package was developed and is currently maintained
+This package was initiated and is currently maintained
 by Matthew Gidden ([@gidden](https://github.com/gidden))
 and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
+
+See the complete [list of contributors](AUTHORS.rst).
 
 License
 -------
