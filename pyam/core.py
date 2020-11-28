@@ -365,19 +365,19 @@ class IamDataFrame(object):
 
     def models(self):
         """Get a list of models"""
-        # TODO: deprecate in release >=0.9
+        # TODO: deprecate in release >=0.10
         deprecation_warning('Use the attribute `model` instead.')
         return pd.Series(self.meta.index.levels[0])
 
     def scenarios(self):
         """Get a list of scenarios"""
-        # TODO: deprecate in release >=0.9
+        # TODO: deprecate in release >=0.10
         deprecation_warning('Use the attribute `scenario` instead.')
         return pd.Series(self.meta.index.levels[1])
 
     def regions(self):
         """Get a list of regions"""
-        # TODO: deprecate in release >=0.9
+        # TODO: deprecate in release >=0.10
         deprecation_warning('Use the attribute `region` instead.')
         return pd.Series(get_index_levels(self._data, 'region'), name='region')
 
@@ -523,8 +523,7 @@ class IamDataFrame(object):
         kwargs
             passed to :meth:`pandas.DataFrame.interpolate`
         """
-        ##
-        # TODO remove, and add kwarg inplace=False in release >= 0.10
+        # TODO deprecate and add kwarg inplace=False in release >= 0.10
         if inplace is None:
             deprecation_warning(
                 'Behavior of `interpolate` will change to `inplace=False` '
