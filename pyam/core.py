@@ -1795,6 +1795,17 @@ class IamDataFrame(object):
         ax = plotting.pie_plot(df, *args, **kwargs)
         return ax
 
+    
+    def sankey_plot(self, mapping):
+        """Plot sankey diagram of existing data using plotly
+    
+        see pyam.plotting.sankey_plot() for all available options
+        """
+        df = self.timeseries()
+        fig = plotting.sankey_plot(df, mapping)
+        return fig
+
+
     def scatter(self, x, y, **kwargs):
         """Plot a scatter chart using meta indicators as columns
 
@@ -2235,3 +2246,4 @@ def read_datapackage(path, data='data', meta='meta'):
         df.meta = _meta.set_index(META_IDX)
 
     return df
+

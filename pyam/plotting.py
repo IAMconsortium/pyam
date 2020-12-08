@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import seaborn as sns
 
 from collections import defaultdict
@@ -879,3 +880,52 @@ def set_panel_label(label, ax=None, x=0.05, y=0.9):
         ax.text(_lim_loc(ax.get_xlim(), x), _lim_loc(ax.get_ylim(), y), label)
     else:
         plt.text(_lim_loc(plt.xlim(), x), _lim_loc(plt.ylim(), y), label)
+
+
+def sankey_plot(df, mapping):
+    """Plot sankey diagram of existing data using plotly.
+    
+        Currently only for one year possible.
+        Parameters
+        ----------
+        df : pd.DataFrame
+            data to plot as wide format
+        mapping : dict
+            assigns the source and target component of a variable
+            {variable: (source, target)}.
+
+        Returns
+        -------
+        fig : plotly.graph_objs._figure.Figure
+    """
+    mapping_df = pd.DataFrame.from_dict(mapping, orient='index',
+                                        columns=['source', 'target'])
+    mapping_df_merged = mapping_df.merge(df, how='left', left_index=True,
+                                         right_on='variable')
+    label_set = set(mapping_df_merged['source']. \
+                    append(mapping_df_merged['target']))
+    label_series = pd.Series(list(label_set))
+    for ind, val in label_series.items():
+        mapping_df_merged.replace(val, ind, inplace=True)
+    region = df.index.levels[df.index.names.index('region')][0]
+    unit = df.index.levels[df.index.names.index('unit')][0]
+    year = df.columns[0]
+    fig = go.Figure(data=[go.Sankey(
+        valuesuffix = unit,
+        node = dict(
+            pad = 15,
+            thickness = 10,
+            line = dict(color = "black", width = 0.5),
+            label = list(label_series),
+            hovertemplate='%{label}: %{value}<extra></extra>',
+            color = "blue"
+            ),
+        link = dict(
+            source = mapping_df_merged.source,
+            target = mapping_df_merged.target,
+            value = mapping_df_merged[year],
+            hovertemplate='"%{source.label}" to "%{target.label}": \
+                %{value}<extra></extra>'
+            ))])
+    fig.update_layout(title_text="%s_%s" %  (region, year), font_size=10)
+    return fig
