@@ -1,5 +1,7 @@
 # Next Release
 
+- [#463](https://github.com/IAMconsortium/pyam/pull/463) Clarification of initialization-error message if file does not exist
+
 # Release v0.9.0
 
 ## Highlights
