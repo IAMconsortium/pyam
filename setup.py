@@ -22,6 +22,7 @@ REQUIREMENTS = [
     'matplotlib',
     'seaborn',
     'six',
+    'xlrd<2.0'
 ]
 
 EXTRA_REQUIREMENTS = {
