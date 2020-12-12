@@ -1762,7 +1762,7 @@ class IamDataFrame(object):
         return plotting.stackplot(self, *args, **kwargs)
 
     def stack_plot(self, *args, **kwargs):
-        """Deprecated, please see `IamDataFrame.stackplot()`"""
+        """Deprecated, please use `IamDataFrame.stackplot()`"""
         deprecation_warning('Please use `stackplot()`.')
         return self.stackplot(*args, **kwargs)
 
