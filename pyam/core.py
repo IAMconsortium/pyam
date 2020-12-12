@@ -141,15 +141,12 @@ class IamDataFrame(object):
             # read from file
             try:
                 data = Path(data)  # casting str or LocalPath to Path
-                is_file = data.is_file()
+                if data.is_file():
+                    logger.info(f'Reading file {data}')
+                    _data = read_file(data, **kwargs)
+                else:
+                    raise FileNotFoundError(f'File {data} does not exist')
             except TypeError:  # `data` cannot be cast to Path
-                is_file = False
-
-            if is_file:
-                logger.info('Reading file `{}`'.format(data))
-                _data = read_file(data, **kwargs)
-            # if not a readable file...
-            else:
                 msg = 'IamDataFrame constructor not properly called!'
                 raise ValueError(msg)
 

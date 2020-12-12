@@ -11,6 +11,34 @@ from conftest import TEST_DATA_DIR
 FILTER_ARGS = dict(scenario='scen_a')
 
 
+def test_data_none():
+    # initializing with 'data=None' raises an error
+    match = 'IamDataFrame constructor not properly called!'
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(None)
+
+
+def test_unknown_type():
+    # initializing with unsupported argument type raises an error
+    match = 'IamDataFrame constructor not properly called!'
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(True)
+
+
+def test_not_a_file():
+    # initializing with a file-like that's not a file raises an error
+    match = 'File foo.csv does not exist'
+    with pytest.raises(FileNotFoundError, match=match):
+        IamDataFrame('foo.csv')
+
+
+def test_io_list():
+    # initializing with a list raises an error
+    match = r'Initializing from list is not supported,*.'
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame([1, 2])
+
+
 def test_io_csv(test_df, tmpdir):
     # write to csv
     file = tmpdir / 'testing_io_write_read.csv'
