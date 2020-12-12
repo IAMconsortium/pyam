@@ -22,10 +22,12 @@ def sankey(df, mapping):
         -------
         fig : plotly.graph_objs._figure.Figure
     """
-    for col in set(df.index.names) - set(['variable']):
-        if len(get_index_levels(df, col)) != 1:
-            msg = 'Can not plot multiple regions. Filter or aggregate before.'
-            raise ValueError(msg)
+    if len(get_index_levels(df, 'region')) != 1:
+        msg = 'Can only plot one region. Filter or aggregate before!'
+        raise ValueError(msg)
+    if len(df.columns) != 1:
+        msg = 'Can only plot one year. Filter before!'
+        raise ValueError(msg)
     
     mapping_df = pd.DataFrame.from_dict(mapping, orient='index',
                                         columns=['source', 'target'])
