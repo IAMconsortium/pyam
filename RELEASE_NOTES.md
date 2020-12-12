@@ -1,5 +1,15 @@
 # Next Release
 
+## API changes
+
+PR [#464](https://github.com/IAMconsortium/pyam/pull/464) changed the name of
+the stacked-area chart to `stackplot()` for consistency with matplotlib and
+seaborn. The PR also adds an `order` kwarg, and the levels are ordered based
+on the `run_control()['color']` dictionary by default.
+
+## Individual updates
+
+- [#464](https://github.com/IAMconsortium/pyam/pull/463) Add `order` arg to `stackplot` 
 - [#463](https://github.com/IAMconsortium/pyam/pull/463) Clarification of initialization-error message if file does not exist
 
 # Release v0.9.0
