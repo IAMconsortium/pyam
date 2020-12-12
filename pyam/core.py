@@ -72,8 +72,8 @@ class IamDataFrame(object):
 
     Parameters
     ----------
-    data : :class:`pandas.DataFrame`, :class:`ixmp.Scenario`,
-            or file-like object as str or :class:`pathlib.Path`
+    data : :class:`pandas.DataFrame`, :class:`ixmp.Scenario`,\
+    or file-like object as str or :class:`pathlib.Path`
         Scenario timeseries data following the IAMC data format or
         a supported variation as pandas object, a path to a file,
         or a scenario of an ixmp instance.
@@ -1753,15 +1753,18 @@ class IamDataFrame(object):
             df.dropna(), x=x, y=y, **kwargs)
         return ax
 
-    def stack_plot(self, *args, **kwargs):
-        """Plot timeseries stacks of existing data
+    def stackplot(self, *args, **kwargs):
+        """Plot a stacked area chart of timeseries data
 
-        see pyam.plotting.stack_plot() for all available options
+        See `pyam.plotting.stackplot <plotting.html#pyam.plotting.stackplot>`_
+        for details.
         """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.stack_plot(df, *args, **kwargs)
-        return ax
+        return plotting.stackplot(self, *args, **kwargs)
+
+    def stack_plot(self, *args, **kwargs):
+        """Deprecated, please see `IamDataFrame.stackplot()`"""
+        deprecation_warning('Please use `stackplot()`.')
+        return self.stackplot(*args, **kwargs)
 
     def bar_plot(self, *args, **kwargs):
         """Plot timeseries bars of existing data

@@ -202,7 +202,7 @@ def plot_df():
 
 
 @pytest.fixture(scope="session")
-def plot_stack_plot_df():
+def plot_stackplot_df():
     df = IamDataFrame(TEST_STACKPLOT_DF)
     yield df
 

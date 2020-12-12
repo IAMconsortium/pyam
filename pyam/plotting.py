@@ -171,7 +171,7 @@ def reshape_line_plot(df, x, y):
     return df
 
 
-def reshape_bar_plot(df, x, y, bars):
+def reshape_bar_plot(df, x, y, bars, **kwargs):
     """Reshape data from long form to "bar plot form".
 
     Bar plot form has x value as the index with one column for bar grouping.
@@ -182,6 +182,18 @@ def reshape_bar_plot(df, x, y, bars):
         logger.warning('Duplicated index found.')
         df = df.drop_duplicates(idx, keep='last')
     df = df.set_index(idx)[y].unstack(x).T
+
+    # reindex to get correct order
+    for key, value in kwargs.items():
+        if df.columns.name == key:
+            # if not given, determine order based on run control (if possible)
+            if value is None and key in run_control()['color']:
+                _cols = df.columns.values
+                # select relevant items from run control, then add other cols
+                value = [i for i in run_control()['color'][key] if i in _cols]
+                value += [i for i in _cols if i not in value]
+            df = df.reindex(columns=value)
+
     return df
 
 
@@ -248,21 +260,25 @@ def pie_plot(df, value='value', category='variable',
     return ax
 
 
-def stack_plot(df, x='year', y='value', stack='variable',
-               ax=None, legend=True, title=True, cmap=None, total=None,
-               **kwargs):
-    """Plot data as a stack chart.
+def stackplot(df, x='year', y='value', stack='variable', order=None,
+              ax=None, legend=True, title=True, cmap=None, total=None,
+              **kwargs):
+    """Plot stacked area chart of timeseries data
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
+    df : :class:`pyam.IamDataFrame`
+        Data to be plotted
     x : string, optional
         The column to use for x-axis values
     y : string, optional
         The column to use for y-axis values
-    stack: string, optional
+    stack : string, optional
         The column to use for stack groupings
+    order : list, optional
+         The order to plot the stack levels and the legend. If not specified,
+         the levels are ordered based on the :meth:`run_control` `color`
+         dictionary of the `stack` argument or alphabetical (if not set).
     ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend
@@ -274,8 +290,12 @@ def stack_plot(df, x='year', y='value', stack='variable',
         If True, plot a total line with default pyam settings. If a dict, then
         plot the total line using the dict key-value pairs as keyword arguments
         to ax.plot(). If None, do not plot the total line.
-    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+    kwargs
+        Additional arguments to pass to :meth:`pandas.DataFrame.plot`
     """
+    # TODO: select only relevant meta columns
+    df = df.as_pandas()
+
     for col in set(SORT_IDX) - set([x, stack]):
         if len(df[col].unique()) > 1:
             msg = 'Can not plot multiple {}s in stack_plot with x={}, stack={}'
@@ -284,8 +304,8 @@ def stack_plot(df, x='year', y='value', stack='variable',
     if ax is None:
         fig, ax = plt.subplots()
 
-    # long form to one column per bar group
-    _df = reshape_bar_plot(df, x, y, stack)
+    # long form to one column per stack group
+    _df = reshape_bar_plot(df, x, y, stack, **{stack: order})
 
     # Line below is for interpolation. On datetimes I think you'd downcast to
     # seconds first and then cast back to datetime at the end..?

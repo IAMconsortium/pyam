@@ -31,13 +31,13 @@ data = df.filter(model='IMAGE 3.0.1', scenario='CD-LINKS_NPi2020_400',
                  variable='Primary Energy|*', region='World')
 
 fig, ax = plt.subplots()
-data.stack_plot(ax=ax)
-fig.subplots_adjust(right=0.55)
+data.stackplot(ax=ax)
+plt.tight_layout()
 plt.show()
 
 ###############################
 # We don't just have to plot subcategories of variables,
-# any data or meta indicators from the IamDataFrame can be used.
+# any data dimension or meta indicators from the IamDataFrame can be used.
 # Here, we show the contribution by region to total CO2 emissions.
 
 data = (
@@ -47,5 +47,6 @@ data = (
 )
 
 fig, ax = plt.subplots()
-data.stack_plot(ax=ax, stack='region', cmap='tab20', total=True)
+data.stackplot(ax=ax, stack='region', cmap='tab20', total=True)
+plt.tight_layout()
 plt.show()
