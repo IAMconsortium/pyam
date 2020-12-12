@@ -25,6 +25,7 @@ try:
 except (ImportError, AttributeError):
     has_ix = False
 
+from pyam import figures
 from pyam import plotting
 from pyam.run_control import run_control
 from pyam.utils import (
@@ -1796,13 +1797,13 @@ class IamDataFrame(object):
         return ax
 
     
-    def sankey_plot(self, mapping):
+    def sankey(self, mapping):
         """Plot sankey diagram of existing data using plotly
     
         see pyam.plotting.sankey_plot() for all available options
         """
         df = self.timeseries()
-        fig = plotting.sankey_plot(df, mapping)
+        fig = figures.sankey(df, mapping)
         return fig
 
 
