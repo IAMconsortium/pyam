@@ -32,8 +32,8 @@ EXTRA_REQUIREMENTS = {
     'deploy': ['twine', 'setuptools', 'wheel'],
     'tutorials': ['pypandoc', 'nbformat', 'nbconvert', 'jupyter_client',
                   'ipykernel'],
-    'docs': ['sphinx', 'nbsphinx', 'sphinx-gallery', 'cloud_sptheme',
-             'pillow', 'sphinxcontrib-bibtex', 'sphinxcontrib-programoutput',
+    'docs': ['sphinx', 'nbsphinx', 'sphinx-gallery', 'cloud_sptheme', 'pillow',
+             'sphinxcontrib-bibtex<2.0', 'sphinxcontrib-programoutput',
              'numpydoc', 'openpyxl']  # docs also requires 'tutorials'
 }
 
