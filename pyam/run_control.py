@@ -17,6 +17,7 @@ _RC_DEFAULTS = {
     'color': {},
     'marker': {},
     'linestyle': {},
+    'order': {},
     'region_mapping': {
         'default': _REG_MAP_PATH('default_mapping.csv'),
     }
@@ -30,7 +31,7 @@ def reset_rc_defaults():
 
 
 def run_control():
-    """Global run control for determining user-defined defaults for plotting style"""
+    """Global run control for user-defined plotting style defaults"""
     global _RUN_CONTROL
     if _RUN_CONTROL is None:
         _RUN_CONTROL = RunControl()
@@ -43,6 +44,11 @@ def _recursive_update(d, u):
         if isinstance(v, Mapping):
             r = _recursive_update(d.get(k, {}), v)
             d[k] = r
+        elif isinstance(v, list):  # values for `order` are lists
+            if k in d:
+                d[k] += [i for i in v if i not in d[k]]
+            else:
+                d[k] = v
         else:
             d[k] = u[k]
     return d

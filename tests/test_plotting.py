@@ -359,11 +359,8 @@ def test_stackplot_order_by_list(plot_df):
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_stackplot_order_by_rc(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    scen_args = {
-        'test_scenario1': 'green',
-        'test_scenario': 'orange'
-    }
-    with update_run_control({'color': {'scenario': scen_args}}):
+    scen_list = ['test_scenario1', 'test_scenario']
+    with update_run_control({'order': {'scenario': scen_list}}):
         (plot_df
          .filter(variable='Primary Energy', model='test_model')
          .stackplot(ax=ax, stack='scenario')

@@ -187,10 +187,10 @@ def reshape_bar_plot(df, x, y, bars, **kwargs):
     for key, value in kwargs.items():
         if df.columns.name == key:
             # if not given, determine order based on run control (if possible)
-            if value is None and key in run_control()['color']:
+            if value is None and key in run_control()['order']:
                 _cols = df.columns.values
                 # select relevant items from run control, then add other cols
-                value = [i for i in run_control()['color'][key] if i in _cols]
+                value = [i for i in run_control()['order'][key] if i in _cols]
                 value += [i for i in _cols if i not in value]
             df = df.reindex(columns=value)
 
@@ -277,8 +277,8 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
         The column to use for stack groupings
     order : list, optional
          The order to plot the stack levels and the legend. If not specified,
-         the levels are ordered based on the :meth:`run_control` `color`
-         dictionary of the `stack` argument or alphabetical (if not set).
+         order uses :meth:`run_control()['order'][<stack>] <pyam.run_control>`
+         (where available) or alphabetical.
     ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend

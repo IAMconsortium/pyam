@@ -1600,7 +1600,7 @@ class IamDataFrame(object):
             any valid string path, :class:`pathlib.Path`
             or :class:`pandas.ExcelWriter`
         sheet_name : string
-            name of sheet which will contain :meth:`timeseries()` data
+            name of sheet which will contain :meth:`timeseries` data
         iamc_index : bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
