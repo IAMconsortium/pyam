@@ -754,11 +754,11 @@ class IamDataFrame(object):
         criteria : dict
             dictionary with variables mapped to applicable checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        color : str
+        color : str, optional
             assign a color to this category for plotting
-        marker : str
+        marker : str, optional
             assign a marker to this category for plotting
-        linestyle : str
+        linestyle : str, optional
             assign a linestyle to this category for plotting
         """
         # add plotting run control

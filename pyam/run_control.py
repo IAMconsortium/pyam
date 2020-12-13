@@ -55,9 +55,9 @@ def _recursive_update(d, u):
 
 
 class RunControl(Mapping):
-    """A thin wrapper around a Python Dictionary to support configuration of
-    harmonization execution. Input can be provided as dictionaries or YAML
-    files.
+    """A thin wrapper around a Python dictionary for plotting style defaults
+
+    Input can be provided as dictionaries or YAML files.
     """
 
     def __init__(self, rc=None, defaults=None):
