@@ -277,7 +277,7 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
         The column to use for stack groupings
     order : list, optional
          The order to plot the stack levels and the legend. If not specified,
-         order uses :meth:`run_control()['order'][<stack>] <pyam.run_control>`
+         order by :meth:`run_control()['order'][\<stack\>] <pyam.run_control>`
          (where available) or alphabetical.
     ax : matplotlib.Axes, optional
     legend : bool, optional
@@ -287,9 +287,10 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     cmap : string, optional
         A colormap to use.
     total : bool or dict, optional
-        If True, plot a total line with default pyam settings. If a dict, then
-        plot the total line using the dict key-value pairs as keyword arguments
-        to ax.plot(). If None, do not plot the total line.
+        If True, plot a total line with default |pyam| settings. If a dict,
+        then plot the total line using the dict key-value pairs as keyword
+        arguments to :meth:`matplotlib.axes.Axes.plot`.
+        If None, do not plot the total line.
     kwargs
         Additional arguments to pass to :meth:`pandas.DataFrame.plot`
     """
