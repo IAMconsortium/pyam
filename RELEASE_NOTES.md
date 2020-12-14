@@ -9,7 +9,7 @@ on the `run_control()['order']` dictionary by default.
 
 ## Individual updates
 
-- [#464](https://github.com/IAMconsortium/pyam/pull/463) Add `order` arg to `stackplot` 
+- [#464](https://github.com/IAMconsortium/pyam/pull/463) Add `order` arg to `stackplot()` 
 - [#463](https://github.com/IAMconsortium/pyam/pull/463) Clarification of initialization-error message if file does not exist
 
 # Release v0.9.0
