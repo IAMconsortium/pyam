@@ -309,6 +309,12 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     # long form to one column per stack group
     _df = reshape_bar_plot(df, x, y, stack, **{stack: order})
 
+    # cannot plot timeseries that do not extend for the entire range
+    has_na = _df.iloc[[0, -1]].isna().any()
+    if any(has_na):
+        msg = 'Can not plot data that does not extend for the entire {} range'
+        raise ValueError(msg.format(x))
+
     def as_series(index, name):
         _idx = [i[0] for i in index]
         return pd.Series([0] * len(index), index=_idx, name=name)
