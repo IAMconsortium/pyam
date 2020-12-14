@@ -317,8 +317,8 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     _rows = pd.concat([as_series(cross_threshold(_df[c], return_type=float), c)
                        for c in _df.columns], axis=1)
     _df = (
-              _df.append(_rows.loc[_rows.index.difference(_df.index)])
-              .sort_index().interpolate(method='index')
+        _df.append(_rows.loc[_rows.index.difference(_df.index)])
+        .sort_index().interpolate(method='index')
     )
 
     # explicitly get colors
