@@ -5,7 +5,7 @@
 PR [#464](https://github.com/IAMconsortium/pyam/pull/464) changed the name of
 the stacked-area chart to `stackplot()` for consistency with matplotlib and
 seaborn. The PR also adds an `order` kwarg, and the levels are ordered based
-on the `run_control()['color']` dictionary by default.
+on the `run_control()['order']` dictionary by default.
 
 ## Individual updates
 
