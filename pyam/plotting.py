@@ -11,6 +11,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from pyam.run_control import run_control
+from pyam.timeseries import cross_threshold
 from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
@@ -308,53 +309,17 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     # long form to one column per stack group
     _df = reshape_bar_plot(df, x, y, stack, **{stack: order})
 
-    # Line below is for interpolation. On datetimes I think you'd downcast to
-    # seconds first and then cast back to datetime at the end..?
-    _df.index = _df.index.astype(float)
+    def as_series(index, name):
+        _idx = [i[0] for i in index]
+        return pd.Series([0] * len(index), index=_idx, name=name)
 
-    time_original = _df.index.values
-    first_zero_times = pd.DataFrame(index=["first_zero_time"])
-
-    both_positive_and_negative = _df.apply(
-        lambda x: (x >= 0).any() and (x < 0).any()
+    # determine all time-indices where a timeseries crosses 0 and add to data
+    _rows = pd.concat([as_series(cross_threshold(_df[c], return_type=float), c)
+                       for c in _df.columns], axis=1)
+    _df = (
+              _df.append(_rows.loc[_rows.index.difference(_df.index)])
+              .sort_index().interpolate(method='index')
     )
-    for col in _df.loc[:, both_positive_and_negative]:
-        values = _df[col].dropna().values
-        positive = (values >= 0)
-        negative = (values < 0)
-        pos_to_neg = positive[:-1] & negative[1:]
-        neg_to_pos = positive[1:] & negative[:-1]
-        crosses = np.argwhere(pos_to_neg | neg_to_pos)
-        for i, cross in enumerate(crosses):
-            cross = cross[0]  # get location
-            x_1 = time_original[cross]
-            x_2 = time_original[cross + 1]
-            y_1 = values[cross]
-            y_2 = values[cross + 1]
-
-            zero_time = x_1 - y_1 * (x_2 - x_1) / (y_2 - y_1)
-            if i == 0:
-                first_zero_times.loc[:, col] = zero_time
-            if zero_time not in _df.index.values:
-                _df.loc[zero_time, :] = np.nan
-
-    first_zero_times = first_zero_times.sort_values(
-        by="first_zero_time",
-        axis=1,
-    )
-    _df = _df.reindex(sorted(_df.index)).interpolate(method="values")
-
-    # Sort lines so that negative timeseries are on the right, positive
-    # timeseries are on the left and timeseries which go from positive to
-    # negative are ordered such that the timeseries which goes negative first
-    # is on the right (case of timeseries which go from negative to positive
-    # is an edge case we haven't thought about as it's unlikely to apply to
-    # us).
-    pos_cols = [c for c in _df if (_df[c] >= 0).all()]
-    cross_cols = first_zero_times.columns[::-1].tolist()
-    neg_cols = [c for c in _df if (_df[c] < 0).all()]
-    col_order = pos_cols + cross_cols + neg_cols
-    _df = _df[col_order]
 
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
@@ -368,30 +333,24 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
             c = rc['color'][stack][key]
         colors[key] = c
 
-    # plot stacks, starting from the top and working our way down to the bottom
-    negative_only_cumulative = _df.applymap(
-        lambda x: x if x < 0 else 0
-    ).cumsum(axis=1)
-    positive_only_cumulative = _df.applymap(lambda x: x if x >= 0 else 0)[
-        col_order[::-1]
-    ].cumsum(axis=1)[
-        col_order
-    ]
-    time = _df.index.values
-    upper = positive_only_cumulative.iloc[:, 0].values
-    for j, col in enumerate(_df):
-        noc_tr = negative_only_cumulative.iloc[:, j].values
-        try:
-            poc_nr = positive_only_cumulative.iloc[:, j + 1].values
-        except IndexError:
-            poc_nr = np.zeros_like(upper)
-        lower = poc_nr.copy()
-        if (noc_tr < 0).any():
-            lower[np.where(poc_nr == 0)] = noc_tr[np.where(poc_nr == 0)]
+    # determine positive and negative parts of the timeseries data
+    _df_pos = _df.applymap(lambda x: max(x, 0))
+    _df_neg = _df.applymap(lambda x: min(x, 0))
 
-        ax.fill_between(time, lower, upper, label=col,
-                        color=colors[col], **kwargs)
-        upper = lower.copy()
+    lower = [0] * len(_df_pos)
+    for col in reversed(_df_pos.columns):
+        upper = _df_pos[col].fillna(0) + lower
+        ax.fill_between(_df_pos.index, upper, lower, label=None,
+                        color=colors[col], linewidth=0, **kwargs)
+        lower = upper
+
+    upper = [0] * len(_df_neg)
+    for col in _df_neg.columns:
+        lower = _df_neg[col].fillna(0) + upper
+        # add label only on negative to have it in right order
+        ax.fill_between(_df_neg.index, upper, lower, label=col,
+                        color=colors[col], linewidth=0, **kwargs)
+        upper = lower
 
     # add total
     if (total is not None) and total:  # cover case where total=False
@@ -400,7 +359,7 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
         total.setdefault("label", "Total")
         total.setdefault("color", "black")
         total.setdefault("lw", 4.0)
-        ax.plot(time, _df.sum(axis=1), **total)
+        ax.plot(_df.index, _df.sum(axis=1), **total)
 
     # add legend
     ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
