@@ -58,6 +58,7 @@ def sankey(df, mapping):
             value=mapping_df_merged[year],
             hovertemplate='"%{source.label}" to "%{target.label}": \
                 %{value}<extra></extra>'
-    ))])
+        )
+    )])
     fig.update_layout(title_text="%s %s" % (region, year), font_size=10)
     return fig
