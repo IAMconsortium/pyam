@@ -380,6 +380,23 @@ def test_stackplot_other(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stackplot_negative():
+    # test that data with both positive & negative values are shown correctly
+    TEST_STACKPLOT_NEGATIVE = pd.DataFrame([
+        ['var1', 1, -1, 0],
+        ['var2', 1, 1, -2],
+        ['var3', -1, 1, 1],
+    ],
+        columns=['variable', 2005, 2010, 2015],
+    )
+    fig, ax = plt.subplots(figsize=(8, 8))
+    df = pyam.IamDataFrame(TEST_STACKPLOT_NEGATIVE, model='model_a',
+                           scenario='scen_a', region='World', unit='foo')
+    df.stackplot(ax=ax, total=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_scatter(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.scatter(ax=ax, x='Primary Energy', y='Primary Energy|Coal')
