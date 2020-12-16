@@ -16,8 +16,13 @@ def sankey(df, mapping):
         df : pd.DataFrame
             data to plot as wide format
         mapping : dict
-            assigns the source and target component of a variable
-            {variable: (source, target)}.
+            Assigns the source and target component of a variable
+
+            .. code-block:: python
+
+            {
+                variable: (source, target),
+                }
 
         Returns
         -------
@@ -30,15 +35,15 @@ def sankey(df, mapping):
         msg = 'Can only plot one year. Filter before!'
         raise ValueError(msg)
 
-    mapping_df = pd.DataFrame.from_dict(mapping, orient='index',
-                                        columns=['source', 'target'])
-    mapping_df_merged = mapping_df.merge(df, how='left', left_index=True,
-                                         right_on='variable')
-    label_set = set(mapping_df_merged['source'].
-                    append(mapping_df_merged['target']))
-    label_series = pd.Series(list(label_set))
-    for ind, val in label_series.items():
-        mapping_df_merged.replace(val, ind, inplace=True)
+    _df = (
+        pd.DataFrame.from_dict(mapping, orient='index',
+                               columns=['source', 'target'])
+        .merge(df, how='left', left_index=True, right_on='variable')
+    )
+    label_mapping = dict([(label, i) for i, label
+                          in enumerate(set(_df['source']
+                                           .append(_df['target'])))])
+    _df.replace(label_mapping, inplace=True)
     region = get_index_levels(df, 'region')[0]
     unit = get_index_levels(df, 'unit')[0]
     year = df.columns[0]
@@ -48,17 +53,18 @@ def sankey(df, mapping):
             pad=15,
             thickness=10,
             line=dict(color="black", width=0.5),
-            label=label_series,
+            label=pd.Series(list(label_mapping)),
             hovertemplate='%{label}: %{value}<extra></extra>',
             color="blue"
         ),
         link=dict(
-            source=mapping_df_merged.source,
-            target=mapping_df_merged.target,
-            value=mapping_df_merged[year],
+            source=_df.source,
+            target=_df.target,
+            value=_df[year],
             hovertemplate='"%{source.label}" to "%{target.label}": \
                 %{value}<extra></extra>'
         )
     )])
-    fig.update_layout(title_text="%s %s" % (region, year), font_size=10)
+    fig.update_layout(title_text=f'region: {region}, year: {year}',
+                      font_size=10)
     return fig
