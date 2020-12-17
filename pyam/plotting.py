@@ -552,7 +552,7 @@ def _get_boxes(ax, xoffset=0.05, width_weight=0.1):
     return {x: (xys[x], widths[x], sum(heights[x])) for x in xys.keys()}
 
 
-def add_net_values_to_bar_plot(axs, color='k'):
+def add_net_values_to_barplot(axs, color='k'):
     """Add net values next to an existing vertical stacked bar chart
 
     Parameters
