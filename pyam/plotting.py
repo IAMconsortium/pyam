@@ -14,6 +14,7 @@ from pyam.run_control import run_control
 from pyam.timeseries import cross_threshold
 from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable,\
     _raise_data_error
+from pyam.index import get_index_levels
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
@@ -179,7 +180,7 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     Matplotlib requires x values as the index with one column for bar grouping.
     Table values come from y values.
     """
-    idx_cols = idx_cols if islistable(idx_cols) else [idx_cols] + [x]
+    idx_cols = idx_cols + [x] if islistable(idx_cols) else [idx_cols] + [x]
 
     # check for duplicates
     rows = df[idx_cols].duplicated()
@@ -192,13 +193,18 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     # reindex to get correct order
     for key, value in kwargs.items():
         if df.columns.name == key:
-            # if not given, determine order based on run control (if possible)
-            if value is None and key in run_control()['order']:
-                _cols = df.columns.values
-                # select relevant items from run control, then add other cols
-                value = [i for i in run_control()['order'][key] if i in _cols]
-                value += [i for i in _cols if i not in value]
-            df = df.reindex(columns=value)
+            axis, _values = 'columns', df.columns.values
+        elif df.index.name == key:
+            axis, _values = 'index', list(df.index)
+        else:
+            raise ValueError(f'No dimension {key} in the data!')
+
+        # if not given, determine order based on run control (if possible)
+        if value is None and key in run_control()['order']:
+            # select relevant items from run control, then add other cols
+            value = [i for i in run_control()['order'][key] if i in _values]
+            value += [i for i in _values if i not in value]
+        df = df.reindex(**{axis: value})
 
     return df
 
