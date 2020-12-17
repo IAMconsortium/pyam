@@ -25,6 +25,7 @@ try:
 except (ImportError, AttributeError):
     has_ix = False
 
+from pyam import figures
 from pyam import plotting
 from pyam.run_control import run_control
 from pyam.utils import (
@@ -1791,6 +1792,15 @@ class IamDataFrame(object):
         df = self.as_pandas()
         ax = plotting.pie_plot(df, *args, **kwargs)
         return ax
+
+    def sankey(self, mapping):
+        """Plot sankey diagram of existing data using plotly
+
+        see pyam.plotting.sankey_plot() for all available options
+        """
+        df = self.timeseries()
+        fig = figures.sankey(df, mapping)
+        return fig
 
     def scatter(self, x, y, **kwargs):
         """Plot a scatter chart using meta indicators as columns

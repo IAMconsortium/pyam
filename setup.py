@@ -18,6 +18,7 @@ REQUIREMENTS = [
     'requests',
     'pandas>=0.25.0',
     'pint',
+    'plotly',
     'PyYAML',
     'matplotlib',
     'seaborn',
