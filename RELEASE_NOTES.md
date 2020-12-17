@@ -20,6 +20,7 @@ to warn of the future change.
 
 ## Individual updates
 
+- [#466](https://github.com/IAMconsortium/pyam/pull/466) Add a `sankey()`function to create sankey diagrams
 - [#461](https://github.com/IAMconsortium/pyam/pull/461) Add list of authors to repo and docs pages
 - [#459](https://github.com/IAMconsortium/pyam/pull/459) Add a `get_variable_components()` function to retrieve or join variable components
 - [#458](https://github.com/IAMconsortium/pyam/pull/458) Enable `Path` for IamDataFrame initialization 

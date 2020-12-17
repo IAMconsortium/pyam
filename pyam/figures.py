@@ -20,7 +20,7 @@ def sankey(df, mapping):
 
             .. code-block:: python
 
-            {
+                {
                 variable: (source, target),
                 }
 
