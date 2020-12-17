@@ -11,7 +11,9 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from pyam.run_control import run_control
-from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr
+from pyam.timeseries import cross_threshold
+from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable,\
+    _raise_data_error
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
@@ -171,17 +173,33 @@ def reshape_line_plot(df, x, y):
     return df
 
 
-def reshape_bar_plot(df, x, y, bars):
+def reshape_mpl(df, x, y, idx_cols, **kwargs):
     """Reshape data from long form to "bar plot form".
 
-    Bar plot form has x value as the index with one column for bar grouping.
+    Matplotlib requires x values as the index with one column for bar grouping.
     Table values come from y values.
     """
-    idx = [bars, x]
-    if df.duplicated(idx).any():
-        logger.warning('Duplicated index found.')
-        df = df.drop_duplicates(idx, keep='last')
-    df = df.set_index(idx)[y].unstack(x).T
+    idx_cols = idx_cols if islistable(idx_cols) else [idx_cols] + [x]
+
+    # check for duplicates
+    rows = df[idx_cols].duplicated()
+    if any(rows):
+        _raise_data_error('Duplicates in plot data', df.loc[rows, idx_cols])
+
+    # reshape the data
+    df = df.set_index(idx_cols)[y].unstack(x).T
+
+    # reindex to get correct order
+    for key, value in kwargs.items():
+        if df.columns.name == key:
+            # if not given, determine order based on run control (if possible)
+            if value is None and key in run_control()['order']:
+                _cols = df.columns.values
+                # select relevant items from run control, then add other cols
+                value = [i for i in run_control()['order'][key] if i in _cols]
+                value += [i for i in _cols if i not in value]
+            df = df.reindex(columns=value)
+
     return df
 
 
@@ -248,21 +266,25 @@ def pie_plot(df, value='value', category='variable',
     return ax
 
 
-def stack_plot(df, x='year', y='value', stack='variable',
-               ax=None, legend=True, title=True, cmap=None, total=None,
-               **kwargs):
-    """Plot data as a stack chart.
+def stackplot(df, x='year', y='value', stack='variable', order=None,
+              ax=None, legend=True, title=True, cmap=None, total=None,
+              **kwargs):
+    """Plot stacked area chart of timeseries data
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
+    df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
+        Data to be plotted
     x : string, optional
         The column to use for x-axis values
     y : string, optional
         The column to use for y-axis values
-    stack: string, optional
+    stack : string, optional
         The column to use for stack groupings
+    order : list, optional
+         The order to plot the stack levels and the legend. If not specified,
+         order by :meth:`run_control()['order'][\<stack\>] <pyam.run_control>`
+         (where available) or alphabetical.
     ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend
@@ -271,11 +293,18 @@ def stack_plot(df, x='year', y='value', stack='variable',
     cmap : string, optional
         A colormap to use.
     total : bool or dict, optional
-        If True, plot a total line with default pyam settings. If a dict, then
-        plot the total line using the dict key-value pairs as keyword arguments
-        to ax.plot(). If None, do not plot the total line.
-    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+        If True, plot a total line with default |pyam| settings. If a dict,
+        then plot the total line using the dict key-value pairs as keyword
+        arguments to :meth:`matplotlib.axes.Axes.plot`.
+        If None, do not plot the total line.
+    kwargs
+        Additional arguments to pass to :meth:`pandas.DataFrame.plot`
     """
+    # cast to DataFrame if necessary
+    # TODO: select only relevant meta columns
+    if not isinstance(df, pd.DataFrame):
+        df = df.as_pandas()
+
     for col in set(SORT_IDX) - set([x, stack]):
         if len(df[col].unique()) > 1:
             msg = 'Can not plot multiple {}s in stack_plot with x={}, stack={}'
@@ -284,56 +313,26 @@ def stack_plot(df, x='year', y='value', stack='variable',
     if ax is None:
         fig, ax = plt.subplots()
 
-    # long form to one column per bar group
-    _df = reshape_bar_plot(df, x, y, stack)
+    # long form to one column per stack group
+    _df = reshape_mpl(df, x, y, stack, **{stack: order})
 
-    # Line below is for interpolation. On datetimes I think you'd downcast to
-    # seconds first and then cast back to datetime at the end..?
-    _df.index = _df.index.astype(float)
+    # cannot plot timeseries that do not extend for the entire range
+    has_na = _df.iloc[[0, -1]].isna().any()
+    if any(has_na):
+        msg = 'Can not plot data that does not extend for the entire {} range'
+        raise ValueError(msg.format(x))
 
-    time_original = _df.index.values
-    first_zero_times = pd.DataFrame(index=["first_zero_time"])
+    def as_series(index, name):
+        _idx = [i[0] for i in index]
+        return pd.Series([0] * len(index), index=_idx, name=name)
 
-    both_positive_and_negative = _df.apply(
-        lambda x: (x >= 0).any() and (x < 0).any()
+    # determine all time-indices where a timeseries crosses 0 and add to data
+    _rows = pd.concat([as_series(cross_threshold(_df[c], return_type=float), c)
+                       for c in _df.columns], axis=1)
+    _df = (
+        _df.append(_rows.loc[_rows.index.difference(_df.index)])
+        .sort_index().interpolate(method='index')
     )
-    for col in _df.loc[:, both_positive_and_negative]:
-        values = _df[col].dropna().values
-        positive = (values >= 0)
-        negative = (values < 0)
-        pos_to_neg = positive[:-1] & negative[1:]
-        neg_to_pos = positive[1:] & negative[:-1]
-        crosses = np.argwhere(pos_to_neg | neg_to_pos)
-        for i, cross in enumerate(crosses):
-            cross = cross[0]  # get location
-            x_1 = time_original[cross]
-            x_2 = time_original[cross + 1]
-            y_1 = values[cross]
-            y_2 = values[cross + 1]
-
-            zero_time = x_1 - y_1 * (x_2 - x_1) / (y_2 - y_1)
-            if i == 0:
-                first_zero_times.loc[:, col] = zero_time
-            if zero_time not in _df.index.values:
-                _df.loc[zero_time, :] = np.nan
-
-    first_zero_times = first_zero_times.sort_values(
-        by="first_zero_time",
-        axis=1,
-    )
-    _df = _df.reindex(sorted(_df.index)).interpolate(method="values")
-
-    # Sort lines so that negative timeseries are on the right, positive
-    # timeseries are on the left and timeseries which go from positive to
-    # negative are ordered such that the timeseries which goes negative first
-    # is on the right (case of timeseries which go from negative to positive
-    # is an edge case we haven't thought about as it's unlikely to apply to
-    # us).
-    pos_cols = [c for c in _df if (_df[c] >= 0).all()]
-    cross_cols = first_zero_times.columns[::-1].tolist()
-    neg_cols = [c for c in _df if (_df[c] < 0).all()]
-    col_order = pos_cols + cross_cols + neg_cols
-    _df = _df[col_order]
 
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
@@ -347,30 +346,24 @@ def stack_plot(df, x='year', y='value', stack='variable',
             c = rc['color'][stack][key]
         colors[key] = c
 
-    # plot stacks, starting from the top and working our way down to the bottom
-    negative_only_cumulative = _df.applymap(
-        lambda x: x if x < 0 else 0
-    ).cumsum(axis=1)
-    positive_only_cumulative = _df.applymap(lambda x: x if x >= 0 else 0)[
-        col_order[::-1]
-    ].cumsum(axis=1)[
-        col_order
-    ]
-    time = _df.index.values
-    upper = positive_only_cumulative.iloc[:, 0].values
-    for j, col in enumerate(_df):
-        noc_tr = negative_only_cumulative.iloc[:, j].values
-        try:
-            poc_nr = positive_only_cumulative.iloc[:, j + 1].values
-        except IndexError:
-            poc_nr = np.zeros_like(upper)
-        lower = poc_nr.copy()
-        if (noc_tr < 0).any():
-            lower[np.where(poc_nr == 0)] = noc_tr[np.where(poc_nr == 0)]
+    # determine positive and negative parts of the timeseries data
+    _df_pos = _df.applymap(lambda x: max(x, 0))
+    _df_neg = _df.applymap(lambda x: min(x, 0))
 
-        ax.fill_between(time, lower, upper, label=col,
-                        color=colors[col], **kwargs)
-        upper = lower.copy()
+    lower = [0] * len(_df_pos)
+    for col in reversed(_df_pos.columns):
+        upper = _df_pos[col].fillna(0) + lower
+        ax.fill_between(_df_pos.index, upper, lower, label=None,
+                        color=colors[col], linewidth=0, **kwargs)
+        lower = upper
+
+    upper = [0] * len(_df_neg)
+    for col in _df_neg.columns:
+        lower = _df_neg[col].fillna(0) + upper
+        # add label only on negative to have it in right order
+        ax.fill_between(_df_neg.index, upper, lower, label=col,
+                        color=colors[col], linewidth=0, **kwargs)
+        upper = lower
 
     # add total
     if (total is not None) and total:  # cover case where total=False
@@ -379,7 +372,7 @@ def stack_plot(df, x='year', y='value', stack='variable',
         total.setdefault("label", "Total")
         total.setdefault("color", "black")
         total.setdefault("lw", 4.0)
-        ax.plot(time, _df.sum(axis=1), **total)
+        ax.plot(_df.index, _df.sum(axis=1), **total)
 
     # add legend
     ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
@@ -440,7 +433,7 @@ def bar_plot(df, x='year', y='value', bars='variable',
         fig, ax = plt.subplots()
 
     # long form to one column per bar group
-    _df = reshape_bar_plot(df, x, y, bars)
+    _df = reshape_mpl(df, x, y, bars)
 
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
