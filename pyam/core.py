@@ -1773,10 +1773,7 @@ class IamDataFrame(object):
         See `pyam.plotting.barplot <plotting.html#pyam.plotting.barplot>`_
         for details.
         """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.bar_plot(df, *args, **kwargs)
-        return ax
+        return plotting.barplot(self, *args, **kwargs)
 
     def bar_plot(self, *args, **kwargs):
         """Deprecated, please use `IamDataFrame.barplot()`"""

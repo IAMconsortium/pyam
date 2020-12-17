@@ -404,21 +404,26 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     return ax
 
 
-def barplot(df, x='year', y='value', bars='variable',
-            ax=None, orient='v', legend=True, title=True, cmap=None,
-            **kwargs):
+def barplot(df, x='year', y='value', bars='variable', order=None,
+            bars_order=None, ax=None, orient='v', legend=True, title=True,
+            cmap=None, **kwargs):
     """Plot data as a stacked or grouped bar chart
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
+    df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
+        Data to be plotted
     x : string, optional
         The column to use for x-axis values
     y : string, optional
         The column to use for y-axis values
-    bars: string, optional
+    bars : string, optional
         The column to use for bar groupings
+    order, bars_order : list, optional
+         The order to plot the levels on the x-axis and the bars (and legend).
+         If not specified, order
+         by :meth:`run_control()['order'][\<stack\>] <pyam.run_control>`
+         (where available) or alphabetical.
     ax : matplotlib.Axes, optional
     orient : string, optional
         Vertical or horizontal orientation.
@@ -430,16 +435,21 @@ def barplot(df, x='year', y='value', bars='variable',
         A colormap to use.
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
+    # cast to DataFrame if necessary
+    # TODO: select only relevant meta columns
+    if not isinstance(df, pd.DataFrame):
+        df = df.as_pandas()
+
     for col in set(SORT_IDX) - set([x, bars]):
         if len(df[col].unique()) > 1:
-            msg = 'Can not plot multiple {}s in bar_plot with x={}, bars={}'
+            msg = 'Can not plot multiple {}s in barplot with x={}, bars={}'
             raise ValueError(msg.format(col, x, bars))
 
     if ax is None:
         fig, ax = plt.subplots()
 
     # long form to one column per bar group
-    _df = reshape_mpl(df, x, y, bars)
+    _df = reshape_mpl(df, x, y, bars, **{x: order, bars: bars_order})
 
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
