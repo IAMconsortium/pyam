@@ -268,7 +268,7 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
 
     Parameters
     ----------
-    df : :class:`pyam.IamDataFrame`
+    df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
         Data to be plotted
     x : string, optional
         The column to use for x-axis values
@@ -295,8 +295,10 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     kwargs
         Additional arguments to pass to :meth:`pandas.DataFrame.plot`
     """
+    # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
-    df = df.as_pandas()
+    if isinstance(df, IamDataFrame):
+        df = df.as_pandas()
 
     for col in set(SORT_IDX) - set([x, stack]):
         if len(df[col].unique()) > 1:
