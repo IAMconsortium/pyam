@@ -12,7 +12,8 @@ from collections.abc import Iterable
 
 from pyam.run_control import run_control
 from pyam.timeseries import cross_threshold
-from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable
+from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable,\
+    _raise_data_error
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
@@ -178,11 +179,15 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     Matplotlib requires x values as the index with one column for bar grouping.
     Table values come from y values.
     """
-    idx = idx_cols if islistable(idx_cols) else [idx_cols] + [x]
-    if df.duplicated(idx).any():
-        logger.warning('Duplicated index found.')
-        df = df.drop_duplicates(idx, keep='last')
-    df = df.set_index(idx)[y].unstack(x).T
+    idx_cols = idx_cols if islistable(idx_cols) else [idx_cols] + [x]
+
+    # check for duplicates
+    rows = df[idx_cols].duplicated()
+    if any(rows):
+        _raise_data_error('Duplicates in plot data', df.loc[rows, idx_cols])
+
+    # reshape the data
+    df = df.set_index(idx_cols)[y].unstack(x).T
 
     # reindex to get correct order
     for key, value in kwargs.items():
