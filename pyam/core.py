@@ -1801,9 +1801,7 @@ class IamDataFrame(object):
 
         see pyam.plotting.sankey_plot() for all available options
         """
-        df = self.timeseries()
-        fig = figures.sankey(df, mapping)
-        return fig
+        return figures.sankey(self, mapping)
 
     def scatter(self, x, y, **kwargs):
         """Plot a scatter chart using meta indicators as columns
