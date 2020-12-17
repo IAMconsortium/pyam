@@ -12,7 +12,7 @@ from collections.abc import Iterable
 
 from pyam.run_control import run_control
 from pyam.timeseries import cross_threshold
-from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr
+from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
@@ -172,13 +172,13 @@ def reshape_line_plot(df, x, y):
     return df
 
 
-def reshape_bar_plot(df, x, y, bars, **kwargs):
+def reshape_mpl(df, x, y, idx_cols, **kwargs):
     """Reshape data from long form to "bar plot form".
 
-    Bar plot form has x value as the index with one column for bar grouping.
+    Matplotlib requires x values as the index with one column for bar grouping.
     Table values come from y values.
     """
-    idx = [bars, x]
+    idx = idx_cols if islistable(idx_cols) else [idx_cols] + [x]
     if df.duplicated(idx).any():
         logger.warning('Duplicated index found.')
         df = df.drop_duplicates(idx, keep='last')
@@ -297,7 +297,7 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     """
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
-    if isinstance(df, IamDataFrame):
+    if not isinstance(df, pd.DataFrame):
         df = df.as_pandas()
 
     for col in set(SORT_IDX) - set([x, stack]):
@@ -309,7 +309,7 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
         fig, ax = plt.subplots()
 
     # long form to one column per stack group
-    _df = reshape_bar_plot(df, x, y, stack, **{stack: order})
+    _df = reshape_mpl(df, x, y, stack, **{stack: order})
 
     # cannot plot timeseries that do not extend for the entire range
     has_na = _df.iloc[[0, -1]].isna().any()
@@ -428,7 +428,7 @@ def bar_plot(df, x='year', y='value', bars='variable',
         fig, ax = plt.subplots()
 
     # long form to one column per bar group
-    _df = reshape_bar_plot(df, x, y, bars)
+    _df = reshape_mpl(df, x, y, bars)
 
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
