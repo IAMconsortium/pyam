@@ -1797,9 +1797,10 @@ class IamDataFrame(object):
         return ax
 
     def sankey(self, mapping):
-        """Plot sankey diagram of existing data using plotly
+        """Plot a sankey diagram
 
-        see pyam.plotting.sankey_plot() for all available options
+        See `pyam.figures.sankey <plotting.html#pyam.plotting.stackplot>`_
+        for details.
         """
         return figures.sankey(self, mapping)
 
