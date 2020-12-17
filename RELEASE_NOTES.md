@@ -2,15 +2,20 @@
 
 ## API changes
 
-PR [#464](https://github.com/IAMconsortium/pyam/pull/464) changed the name of
-the stacked-area chart to `stackplot()` for consistency with matplotlib and
-seaborn. The PR also adds an `order` kwarg, and the levels are ordered based
-on the `run_control()['order']` dictionary by default.
+Several PRs in this release changed the name of plotting functions
+for consistency with matplotlib and seaborn. 
+
+ - `stackplot()` for `stack_plot()`
+ - `barplot()` for `bar_plot()`
+
+These PR also adds an `order` arg to the plotting functions, and the levels
+are ordered based on the `run_control()['order']` dictionary by default.
 
 ## Individual updates
 
-- [#464](https://github.com/IAMconsortium/pyam/pull/463) Add `order` arg to `stackplot()`
+- [#470](https://github.com/IAMconsortium/pyam/pull/470) Add two types of `order` arg to `barplot()`
 - [#466](https://github.com/IAMconsortium/pyam/pull/466) Add a `sankey()`function to create sankey diagrams
+- [#464](https://github.com/IAMconsortium/pyam/pull/464) Add `order` arg to `stackplot()`
 - [#463](https://github.com/IAMconsortium/pyam/pull/463) Clarification of initialization-error message if file does not exist
 
 # Release v0.9.0
