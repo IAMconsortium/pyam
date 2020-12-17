@@ -14,7 +14,7 @@ from pyam.run_control import run_control
 from pyam.timeseries import cross_threshold
 from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable,\
     _raise_data_error
-from pyam.index import get_index_levels
+
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
