@@ -8,45 +8,46 @@ logger = logging.getLogger(__name__)
 
 
 def sankey(df, mapping):
-    """Plot sankey diagram of existing data using plotly.
+    """Plot a sankey diagram
 
-        Currently only for one year possible.
-        Parameters
-        ----------
-        df : pd.DataFrame
-            data to plot as wide format
-        mapping : dict
-            Assigns the source and target component of a variable
+    It is currently only possible to create this diagram for single years.
 
-            .. code-block:: python
+    Parameters
+    ----------
+    df : :class:`pyam.IamDataFrame`
+        Data to be plotted
+    mapping : dict
+        Assigns the source and target component of a variable
 
-                {
+        .. code-block:: python
+
+            {
                 variable: (source, target),
-                }
+            }
 
         Returns
         -------
         fig : plotly.graph_objs._figure.Figure
     """
-    if len(get_index_levels(df, 'region')) != 1:
-        msg = 'Can only plot one region. Filter or aggregate before!'
-        raise ValueError(msg)
-    if len(df.columns) != 1:
-        msg = 'Can only plot one year. Filter before!'
-        raise ValueError(msg)
+    # Check for duplicates
+    for col in [name for name in df._data.index.names if name != 'variable']:
+        levels = get_index_levels(df._data, col)
+        if len(levels) > 1:
+            raise ValueError(f'Non-unique values in column {col}: {levels}')
 
+    # Concatenate the data with source and target columns
     _df = (
         pd.DataFrame.from_dict(mapping, orient='index',
                                columns=['source', 'target'])
-        .merge(df, how='left', left_index=True, right_on='variable')
+        .merge(df._data, how='left', left_index=True, right_on='variable')
     )
     label_mapping = dict([(label, i) for i, label
                           in enumerate(set(_df['source']
                                            .append(_df['target'])))])
     _df.replace(label_mapping, inplace=True)
-    region = get_index_levels(df, 'region')[0]
-    unit = get_index_levels(df, 'unit')[0]
-    year = df.columns[0]
+    region = get_index_levels(_df, 'region')[0]
+    unit = get_index_levels(_df, 'unit')[0]
+    year = get_index_levels(_df, 'year')[0]
     fig = go.Figure(data=[go.Sankey(
         valuesuffix=unit,
         node=dict(
@@ -60,7 +61,7 @@ def sankey(df, mapping):
         link=dict(
             source=_df.source,
             target=_df.target,
-            value=_df[year],
+            value=_df.value,
             hovertemplate='"%{source.label}" to "%{target.label}": \
                 %{value}<extra></extra>'
         )

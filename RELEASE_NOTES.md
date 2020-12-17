@@ -9,7 +9,8 @@ on the `run_control()['order']` dictionary by default.
 
 ## Individual updates
 
-- [#464](https://github.com/IAMconsortium/pyam/pull/463) Add `order` arg to `stackplot()` 
+- [#464](https://github.com/IAMconsortium/pyam/pull/463) Add `order` arg to `stackplot()`
+- [#466](https://github.com/IAMconsortium/pyam/pull/466) Add a `sankey()`function to create sankey diagrams
 - [#463](https://github.com/IAMconsortium/pyam/pull/463) Clarification of initialization-error message if file does not exist
 
 # Release v0.9.0
@@ -32,7 +33,6 @@ to warn of the future change.
 
 ## Individual updates
 
-- [#466](https://github.com/IAMconsortium/pyam/pull/466) Add a `sankey()`function to create sankey diagrams
 - [#461](https://github.com/IAMconsortium/pyam/pull/461) Add list of authors to repo and docs pages
 - [#459](https://github.com/IAMconsortium/pyam/pull/459) Add a `get_variable_components()` function to retrieve or join variable components
 - [#458](https://github.com/IAMconsortium/pyam/pull/458) Enable `Path` for IamDataFrame initialization 

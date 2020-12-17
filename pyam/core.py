@@ -1797,13 +1797,12 @@ class IamDataFrame(object):
         return ax
 
     def sankey(self, mapping):
-        """Plot sankey diagram of existing data using plotly
+        """Plot a sankey diagram
 
-        see pyam.plotting.sankey_plot() for all available options
+        See `pyam.figures.sankey <plotting.html#pyam.plotting.stackplot>`_
+        for details.
         """
-        df = self.timeseries()
-        fig = figures.sankey(df, mapping)
-        return fig
+        return figures.sankey(self, mapping)
 
     def scatter(self, x, y, **kwargs):
         """Plot a scatter chart using meta indicators as columns

@@ -38,3 +38,5 @@ Plotting functions
 ------------------
 
 .. autofunction:: pyam.plotting.stackplot
+
+.. autofunction:: pyam.figures.sankey
