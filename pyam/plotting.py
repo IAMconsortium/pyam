@@ -398,10 +398,10 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     return ax
 
 
-def bar_plot(df, x='year', y='value', bars='variable',
-             ax=None, orient='v', legend=True, title=True, cmap=None,
-             **kwargs):
-    """Plot data as a bar chart.
+def barplot(df, x='year', y='value', bars='variable',
+            ax=None, orient='v', legend=True, title=True, cmap=None,
+            **kwargs):
+    """Plot data as a stacked or grouped bar chart
 
     Parameters
     ----------
