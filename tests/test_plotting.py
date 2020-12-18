@@ -249,6 +249,31 @@ def test_barplot_stacked(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_barplot_stacked_order_by_list(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (
+        plot_df
+        .filter(variable='Primary Energy', model='test_model')
+        .barplot(ax=ax, bars='scenario', order=[2015, 2010],
+                 bars_order=['test_scenario1', 'test_scenario'], stacked=True)
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_barplot_stacked_order_by_rc(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    rc_order = dict(order={'year': [2010], 'scenario': ['test_scenario1']})
+    with update_run_control(rc_order):  # first item from rc, then alphabetical
+        (
+            plot_df
+            .filter(variable='Primary Energy', model='test_model')
+            .barplot(ax=ax, bars='scenario', stacked=True)
+        )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_barplot_stacked_net_line(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     # explicitly add negative contributions for net lines
