@@ -286,8 +286,7 @@ def test_barplot_stacked_net_line(plot_df):
     (df
      .filter(variable='Primary Energy|*', model='test_model1',
              scenario='test_scenario1', region='World')
-     .barplot(ax=ax, bars='variable',
-               stacked=True)
+     .barplot(ax=ax, bars='variable', stacked=True)
      )
     plotting.add_net_values_to_barplot(ax, color='r')
     return fig

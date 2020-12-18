@@ -10,7 +10,7 @@ import seaborn as sns
 from collections import defaultdict
 from collections.abc import Iterable
 
-from pyam import deprecation_warning
+from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.timeseries import cross_threshold
 from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable,\
