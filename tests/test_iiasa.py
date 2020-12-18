@@ -175,7 +175,7 @@ def test_properties(conn, default):
         exp = META_DF.loc[META_DF.is_default, exp_cols]
     else:
         exp_cols = VERSION_COLS
-        exp = META_DF[VERSION_COLS, exp_cols]
+        exp = META_DF[exp_cols]
 
     # assert that the expected audit columns are included
     for col in ['create_user', 'create_date', 'update_user', 'update_date']:
