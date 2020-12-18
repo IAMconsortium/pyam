@@ -295,9 +295,14 @@ class Connection(object):
         """
         _df = self._query_meta(default)
         audit_cols = ['cre_user', 'cre_date', 'upd_user', 'upd_date']
-        cols = META_IDX + ['version'] if default else ['version', 'is_default']
-        return _df[cols + audit_cols].rename(
-            dict([(i, i.replace('_', 'ate_')) for i in audit_cols]))
+        audit_mapping = dict([(i, i.replace('_', 'ate_')) for i in audit_cols])
+        other_cols = ['version'] if default else ['version', 'is_default']
+
+        return (
+            _df[META_IDX + other_cols + audit_cols]
+            .set_index(META_IDX)
+            .rename(columns=audit_mapping)
+        )
 
     def models(self):
         """List all models in the connected resource"""
