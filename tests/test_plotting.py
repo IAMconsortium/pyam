@@ -251,12 +251,10 @@ def test_barplot_stacked(plot_df):
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_barplot_stacked_order_by_list(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    (
-        plot_df
-        .filter(variable='Primary Energy', model='test_model')
+    plot_df\
+        .filter(variable='Primary Energy', model='test_model')\
         .barplot(ax=ax, bars='scenario', order=[2015, 2010],
                  bars_order=['test_scenario1', 'test_scenario'], stacked=True)
-     )
     return fig
 
 
