@@ -10,6 +10,7 @@ import seaborn as sns
 from collections import defaultdict
 from collections.abc import Iterable
 
+from pyam import deprecation_warning
 from pyam.run_control import run_control
 from pyam.timeseries import cross_threshold
 from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable,\
@@ -566,6 +567,12 @@ def _get_boxes(ax, xoffset=0.05, width_weight=0.1):
             widths[x] = b.get_width() * width_weight
             xys[x] = ((x + b.get_width()) + xoffset, 0)
     return {x: (xys[x], widths[x], sum(heights[x])) for x in xys.keys()}
+
+
+def add_net_values_to_bar_plot(axs, color='k'):
+    """Deprecated, please use `pyam.plotting.add_net_values_to_barplot()`"""
+    deprecation_warning('Please use `add_net_values_to_barplot()`.')
+    return add_net_values_to_barplot(axs, color)
 
 
 def add_net_values_to_barplot(axs, color='k'):
