@@ -61,7 +61,7 @@ data = (
 )
 
 data.barplot(bars='region', stacked=True,
-              title='CO2 emissions by region', cmap='tab20')
+             title='CO2 emissions by region', cmap='tab20')
 plt.tight_layout()
 
 ###############################
