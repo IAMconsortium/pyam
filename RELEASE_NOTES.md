@@ -9,6 +9,7 @@ on the `run_control()['order']` dictionary by default.
 
 ## Individual updates
 
+- [#471](https://github.com/IAMconsortium/pyam/pull/471) Add a `iiasa.Connection.properties()` function to retrieve scenario audit data
 - [#464](https://github.com/IAMconsortium/pyam/pull/463) Add `order` arg to `stackplot()`
 - [#466](https://github.com/IAMconsortium/pyam/pull/466) Add a `sankey()`function to create sankey diagrams
 - [#463](https://github.com/IAMconsortium/pyam/pull/463) Clarification of initialization-error message if file does not exist
