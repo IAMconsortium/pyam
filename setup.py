@@ -18,6 +18,7 @@ REQUIREMENTS = [
     'requests',
     'pandas>=0.25.0',
     'pint',
+    'plotly',
     'PyYAML',
     'matplotlib',
     'seaborn',
@@ -27,7 +28,7 @@ REQUIREMENTS = [
 
 EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest<6.0.0', 'pytest-cov',
-              'pytest-mpl'],
+              'pytest-mpl<0.12'],
     'optional-io-formats': ['datapackage', 'pandas-datareader'],
     'deploy': ['twine', 'setuptools', 'wheel'],
     'tutorials': ['pypandoc', 'nbformat', 'nbconvert', 'jupyter_client',
