@@ -9,16 +9,22 @@ Sankey diagram
 # ***************************************
 #
 # This gallery uses a small selection of the data
-# compiled for the IPCC's *Special Report on Global Warming of 1.5°C* ([SR15](http://ipcc.ch/sr15/)).
+# compiled for the IPCC's *Special Report on Global Warming of 1.5°C* (SR15_).
 # The complete scenario ensemble data is publicly available from the
-# [IAMC 1.5°C Scenario Explorer and Data hosted by IIASA](https://data.ene.iiasa.ac.at/iamc-1.5c-explorer).
+# `IAMC 1.5°C Scenario Explorer and Data hosted by IIASA`_.
 #
-# Please read the [License](https://data.ene.iiasa.ac.at/iamc-1.5c-explorer/#/license) page
-# of the IAMC 1.5°C Scenario Explorer before using the full scenario data for scientific analyis or other work.
+# Please read the License_ of the IAMC 1.5°C Scenario Explorer
+# before using the full scenario data for scientific analyis or other work.
+#
+# .. _SR15: http://ipcc.ch/sr15/
+#
+# .. _`IAMC 1.5°C Scenario Explorer and Data hosted by IIASA` : https://data.ene.iiasa.ac.at/iamc-1.5c-explorer
+#
+# .. _License : https://data.ene.iiasa.ac.at/iamc-1.5c-explorer/#/license
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
 # you can download the file from
-# https://github.com/IAMconsortium/pyam/tree/master/doc/source/_examples.
+# https://github.com/IAMconsortium/pyam/tree/master/doc/source/examples_source
 #
 # Make sure to place the file in the same folder as this script/notebook.
 
@@ -34,6 +40,15 @@ df
 # We show a Sankey diagram of a subset of the energy system
 # in the 'CD-LINKS_NPi2020_1000' scenario
 # implemented by the 'REMIND-MAgPIE 1.7-3.0' model.
+#
+# The :meth:`~pyam.figures.sankey` function
+# takes a dictionary to define flows, sources and targets:
+#
+# .. code-block:: python
+#
+#     {
+#         variable: (source, target),
+#     }
 
 sankey_mapping = {
     'Primary Energy|Coal': ('Coal Mining', 'Coal Trade'),
@@ -48,5 +63,4 @@ sankey_mapping = {
     'Final Energy|Gases': ('Gas Network', 'Gas Demand'),
 }
 
-fig = df.filter(year=2050).sankey(mapping=sankey_mapping)
-plotly.io.show(fig)
+df.filter(year=2050).sankey(mapping=sankey_mapping)
