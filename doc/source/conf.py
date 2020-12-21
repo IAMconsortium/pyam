@@ -331,10 +331,12 @@ sphinx_gallery_conf = {
     'examples_dirs': 'examples_source',
     # path where to save gallery generated examples
     'gallery_dirs': 'examples',
-    'backreferences_dir': 'api',
     'reference_url': {'plotly': None,},
     'image_scrapers': image_scrapers,
 }
+
+# Link or path to require.js, set to empty string to disable
+nbsphinx_requirejs_path = ''
 
 # Extend the timeout limit for running notebooks
 nbsphinx_timeout = 120
