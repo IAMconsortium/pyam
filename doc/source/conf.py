@@ -11,13 +11,10 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
-# has to go first for environment setup reasons
-import matplotlib
-matplotlib.use('agg')
-
 from datetime import datetime
 import pyam
+
+from plotly.io._sg_scraper import plotly_sg_scraper
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -32,7 +29,9 @@ import pyam
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'numpydoc',
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
@@ -40,19 +39,12 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinxcontrib.bibtex',
-    'sphinxcontrib.programoutput',
-    'cloud_sptheme.ext.table_styling',
-    'numpydoc',
     'nbsphinx',
     'sphinx_gallery.gen_gallery',
+    'cloud_sptheme.ext.table_styling',
 ]
 
-sphinx_gallery_conf = {
-    # path to your examples scripts
-    'examples_dirs': '_examples',
-    # path where to save gallery generated examples
-    'gallery_dirs': 'examples'
-}
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -328,6 +320,20 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org', None),
     'pandas_datareader':
         ('https://pandas-datareader.readthedocs.io/en/stable', None)
+}
+
+# Set up the plotting gallery with plotly scraper
+image_scrapers = ('matplotlib', plotly_sg_scraper,)
+
+sphinx_gallery_conf = {
+    'doc_module': ('plotly',),
+    # path to your examples scripts
+    'examples_dirs': 'examples_source',
+    # path where to save gallery generated examples
+    'gallery_dirs': 'examples',
+    'backreferences_dir': 'api',
+    'reference_url': {'plotly': None,},
+    'image_scrapers': image_scrapers,
 }
 
 # Extend the timeout limit for running notebooks
