@@ -1777,7 +1777,7 @@ class IamDataFrame(object):
 
     def bar_plot(self, *args, **kwargs):
         """Deprecated, please use `IamDataFrame.barplot()`"""
-        deprecation_warning('Please use `stackplot()`.')
+        deprecation_warning('Please use `barplot()`.')
         return self.barplot(*args, **kwargs)
 
     def boxplot(self, *args, **kwargs):
