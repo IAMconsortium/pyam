@@ -10,10 +10,12 @@ import seaborn as sns
 from collections import defaultdict
 from collections.abc import Iterable
 
+from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.timeseries import cross_threshold
 from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable,\
     _raise_data_error
+
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
@@ -179,7 +181,7 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     Matplotlib requires x values as the index with one column for bar grouping.
     Table values come from y values.
     """
-    idx_cols = idx_cols if islistable(idx_cols) else [idx_cols] + [x]
+    idx_cols = idx_cols + [x] if islistable(idx_cols) else [idx_cols] + [x]
 
     # check for duplicates
     rows = df[idx_cols].duplicated()
@@ -192,13 +194,18 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     # reindex to get correct order
     for key, value in kwargs.items():
         if df.columns.name == key:
-            # if not given, determine order based on run control (if possible)
-            if value is None and key in run_control()['order']:
-                _cols = df.columns.values
-                # select relevant items from run control, then add other cols
-                value = [i for i in run_control()['order'][key] if i in _cols]
-                value += [i for i in _cols if i not in value]
-            df = df.reindex(columns=value)
+            axis, _values = 'columns', df.columns.values
+        elif df.index.name == key:
+            axis, _values = 'index', list(df.index)
+        else:
+            raise ValueError(f'No dimension {key} in the data!')
+
+        # if not given, determine order based on run control (if possible)
+        if value is None and key in run_control()['order']:
+            # select relevant items from run control, then add other cols
+            value = [i for i in run_control()['order'][key] if i in _values]
+            value += [i for i in _values if i not in value]
+        df = df.reindex(**{axis: value})
 
     return df
 
@@ -398,21 +405,26 @@ def stackplot(df, x='year', y='value', stack='variable', order=None,
     return ax
 
 
-def bar_plot(df, x='year', y='value', bars='variable',
-             ax=None, orient='v', legend=True, title=True, cmap=None,
-             **kwargs):
-    """Plot data as a bar chart.
+def barplot(df, x='year', y='value', bars='variable', order=None,
+            bars_order=None, ax=None, orient='v', legend=True, title=True,
+            cmap=None, **kwargs):
+    """Plot data as a stacked or grouped bar chart
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
+    df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
+        Data to be plotted
     x : string, optional
         The column to use for x-axis values
     y : string, optional
         The column to use for y-axis values
-    bars: string, optional
+    bars : string, optional
         The column to use for bar groupings
+    order, bars_order : list, optional
+         The order to plot the levels on the x-axis and the bars (and legend).
+         If not specified, order
+         by :meth:`run_control()['order'][\<stack\>] <pyam.run_control>`
+         (where available) or alphabetical.
     ax : matplotlib.Axes, optional
     orient : string, optional
         Vertical or horizontal orientation.
@@ -424,16 +436,21 @@ def bar_plot(df, x='year', y='value', bars='variable',
         A colormap to use.
     kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
     """
+    # cast to DataFrame if necessary
+    # TODO: select only relevant meta columns
+    if not isinstance(df, pd.DataFrame):
+        df = df.as_pandas()
+
     for col in set(SORT_IDX) - set([x, bars]):
         if len(df[col].unique()) > 1:
-            msg = 'Can not plot multiple {}s in bar_plot with x={}, bars={}'
+            msg = 'Can not plot multiple {}s in barplot with x={}, bars={}'
             raise ValueError(msg.format(col, x, bars))
 
     if ax is None:
         fig, ax = plt.subplots()
 
     # long form to one column per bar group
-    _df = reshape_mpl(df, x, y, bars)
+    _df = reshape_mpl(df, x, y, bars, **{x: order, bars: bars_order})
 
     # explicitly get colors
     defaults = default_props(reset=True, num_colors=len(_df.columns),
@@ -553,6 +570,12 @@ def _get_boxes(ax, xoffset=0.05, width_weight=0.1):
 
 
 def add_net_values_to_bar_plot(axs, color='k'):
+    """Deprecated, please use `pyam.plotting.add_net_values_to_barplot()`"""
+    deprecation_warning('Please use `add_net_values_to_barplot()`.')
+    return add_net_values_to_barplot(axs, color)
+
+
+def add_net_values_to_barplot(axs, color='k'):
     """Add net values next to an existing vertical stacked bar chart
 
     Parameters

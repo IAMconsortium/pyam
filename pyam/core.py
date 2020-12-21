@@ -1767,15 +1767,18 @@ class IamDataFrame(object):
         deprecation_warning('Please use `stackplot()`.')
         return self.stackplot(*args, **kwargs)
 
-    def bar_plot(self, *args, **kwargs):
-        """Plot timeseries bars of existing data
+    def barplot(self, *args, **kwargs):
+        """Plot a grouped or stacked bar chart
 
-        see pyam.plotting.bar_plot() for all available options
+        See `pyam.plotting.barplot <plotting.html#pyam.plotting.barplot>`_
+        for details.
         """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.bar_plot(df, *args, **kwargs)
-        return ax
+        return plotting.barplot(self, *args, **kwargs)
+
+    def bar_plot(self, *args, **kwargs):
+        """Deprecated, please use `IamDataFrame.barplot()`"""
+        deprecation_warning('Please use `barplot()`.')
+        return self.barplot(*args, **kwargs)
 
     def boxplot(self, *args, **kwargs):
         """Plot boxplot of existing data

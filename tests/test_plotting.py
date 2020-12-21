@@ -212,44 +212,67 @@ def test_line_plot_2_vars(plot_df):
     return fig
 
 
-def test_bar_plot_raises(plot_df):
-    pytest.raises(ValueError, plot_df.bar_plot)
+def test_barplot_raises(plot_df):
+    pytest.raises(ValueError, plot_df.barplot)
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_bar_plot(plot_df):
+def test_barplot(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter(variable='Primary Energy', model='test_model')
-     .bar_plot(ax=ax, bars='scenario')
+     .barplot(ax=ax, bars='scenario')
      )
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_bar_plot_h(plot_df):
+def test_barplot_h(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter(variable='Primary Energy', model='test_model')
-     .bar_plot(ax=ax, bars='scenario',
+     .barplot(ax=ax, bars='scenario',
                orient='h')
      )
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_bar_plot_stacked(plot_df):
+def test_barplot_stacked(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter(variable='Primary Energy', model='test_model')
-     .bar_plot(ax=ax, bars='scenario',
+     .barplot(ax=ax, bars='scenario',
                stacked=True)
      )
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_bar_plot_stacked_net_line(plot_df):
+def test_barplot_stacked_order_by_list(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df\
+        .filter(variable='Primary Energy', model='test_model')\
+        .barplot(ax=ax, bars='scenario', order=[2015, 2010],
+                 bars_order=['test_scenario1', 'test_scenario'], stacked=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_barplot_stacked_order_by_rc(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    rc_order = dict(order={'year': [2010], 'scenario': ['test_scenario1']})
+    with update_run_control(rc_order):  # first item from rc, then alphabetical
+        (
+            plot_df
+            .filter(variable='Primary Energy', model='test_model')
+            .barplot(ax=ax, bars='scenario', stacked=True)
+        )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_barplot_stacked_net_line(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     # explicitly add negative contributions for net lines
     df = pyam.IamDataFrame(plot_df.data.copy())
@@ -261,31 +284,30 @@ def test_bar_plot_stacked_net_line(plot_df):
     (df
      .filter(variable='Primary Energy|*', model='test_model1',
              scenario='test_scenario1', region='World')
-     .bar_plot(ax=ax, bars='variable',
-               stacked=True)
+     .barplot(ax=ax, bars='variable', stacked=True)
      )
-    plotting.add_net_values_to_bar_plot(ax, color='r')
+    plotting.add_net_values_to_barplot(ax, color='r')
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_bar_plot_title(plot_df):
+def test_barplot_title(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter(variable='Primary Energy', model='test_model')
-     .bar_plot(ax=ax, bars='scenario',
+     .barplot(ax=ax, bars='scenario',
                title='foo')
      )
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_bar_plot_rc(plot_df):
+def test_barplot_rc(plot_df):
     with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
         fig, ax = plt.subplots(figsize=(8, 8))
         (plot_df
          .filter(variable='Primary Energy', model='test_model')
-         .bar_plot(ax=ax, bars='scenario')
+         .barplot(ax=ax, bars='scenario')
          )
     return fig
 
