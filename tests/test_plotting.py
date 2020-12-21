@@ -21,7 +21,7 @@ TOLERANCE = 6 if IS_WINDOWS else 2
 
 MPL_KWARGS = {
     'style': 'ggplot',
-    'baseline_dir': IMAGE_BASELINE_DIR,
+    'baseline_dir': str(IMAGE_BASELINE_DIR),
     'tolerance': TOLERANCE,
     'savefig_kwargs': {'dpi': 300, 'bbox_inches': 'tight'},
 }
@@ -336,23 +336,63 @@ def test_pie_plot_other(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_stack_plot(plot_df):
+def test_stackplot(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter(variable='Primary Energy', model='test_model')
-     .stack_plot(ax=ax, stack='scenario')
+     .stackplot(ax=ax, stack='scenario')
      )
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_stack_plot_other(plot_df):
+def test_stackplot_order_by_list(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    (plot_df
+     .filter(variable='Primary Energy', model='test_model')
+     .stackplot(ax=ax, stack='scenario',
+                order=['test_scenario1', 'test_scenario'])
+     )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stackplot_order_by_rc(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    scen_list = ['test_scenario1']  # first list from rc, then alphabetical
+    with update_run_control({'order': {'scenario': scen_list}}):
+        (plot_df
+         .filter(variable='Primary Energy', model='test_model')
+         .stackplot(ax=ax, stack='scenario')
+         )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stackplot_other(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     with update_run_control({'color': {'scenario': {'test_scenario': 'black'}}}):
         (plot_df
          .filter(variable='Primary Energy', model='test_model')
-         .stack_plot(ax=ax, stack='scenario', cmap='viridis', title='foo')
+         .stackplot(ax=ax, stack='scenario', cmap='viridis', title='foo')
          )
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_stackplot_negative():
+    # test that data with both positive & negative values are shown correctly
+    TEST_STACKPLOT_NEGATIVE = pd.DataFrame([
+        ['var1', 1, -1, 0],
+        ['var2', 1, 1, -2],
+        ['var3', -1, 1, 1],
+    ],
+        columns=['variable', 2005, 2010, 2015],
+    )
+    fig, ax = plt.subplots(figsize=(8, 8))
+    df = pyam.IamDataFrame(TEST_STACKPLOT_NEGATIVE, model='model_a',
+                           scenario='scen_a', region='World', unit='foo')
+    df.stackplot(ax=ax, total=True)
     return fig
 
 
@@ -408,23 +448,23 @@ def test_add_panel_label(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_stack_plot_negative_emissions(plot_stack_plot_df):
+def test_stackplot_negative_emissions(plot_stackplot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_stack_plot_df.stack_plot(ax=ax)
+    plot_stackplot_df.stackplot(ax=ax)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_stack_plot_negative_emissions_with_total(plot_stack_plot_df):
+def test_stackplot_negative_emissions_with_total(plot_stackplot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_stack_plot_df.stack_plot(ax=ax, total=True)
+    plot_stackplot_df.stackplot(ax=ax, total=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_stack_plot_negative_emissions_kwargs_def_total(plot_stack_plot_df):
+def test_stackplot_negative_emissions_kwargs_def_total(plot_stackplot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_stack_plot_df.stack_plot(
+    plot_stackplot_df.stackplot(
         alpha=0.5,
         total=True,
         ax=ax,
@@ -433,9 +473,9 @@ def test_stack_plot_negative_emissions_kwargs_def_total(plot_stack_plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_stack_plot_negative_emissions_kwargs_custom_total(plot_stack_plot_df):
+def test_stackplot_negative_emissions_kwargs_custom_total(plot_stackplot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_stack_plot_df.stack_plot(
+    plot_stackplot_df.stackplot(
         alpha=0.5,
         total={"color": "grey", "ls": "--", "lw": 2.0},
         ax=ax,
@@ -444,7 +484,7 @@ def test_stack_plot_negative_emissions_kwargs_custom_total(plot_stack_plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
-def test_stack_plot_missing_zero_issue_266(plot_stack_plot_df):
+def test_stackplot_missing_zero_issue_266(plot_stackplot_df):
     df = pyam.IamDataFrame(pd.DataFrame(
         [
             ['a', 1, 2, 3, 4],
@@ -456,6 +496,6 @@ def test_stack_plot_missing_zero_issue_266(plot_stack_plot_df):
     ), model='model_a', scenario='scen_a', region='World', unit='some_unit')
 
     fig, ax = plt.subplots(figsize=(8, 8))
-    df.stack_plot(ax=ax)
+    df.stackplot(ax=ax)
 
     return fig

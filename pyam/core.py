@@ -25,6 +25,7 @@ try:
 except (ImportError, AttributeError):
     has_ix = False
 
+from pyam import figures
 from pyam import plotting
 from pyam.run_control import run_control
 from pyam.utils import (
@@ -72,8 +73,8 @@ class IamDataFrame(object):
 
     Parameters
     ----------
-    data : :class:`pandas.DataFrame`, :class:`ixmp.Scenario`,
-            or file-like object as str or :class:`pathlib.Path`
+    data : :class:`pandas.DataFrame`, :class:`ixmp.Scenario`,\
+    or file-like object as str or :class:`pathlib.Path`
         Scenario timeseries data following the IAMC data format or
         a supported variation as pandas object, a path to a file,
         or a scenario of an ixmp instance.
@@ -754,11 +755,11 @@ class IamDataFrame(object):
         criteria : dict
             dictionary with variables mapped to applicable checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        color : str
+        color : str, optional
             assign a color to this category for plotting
-        marker : str
+        marker : str, optional
             assign a marker to this category for plotting
-        linestyle : str
+        linestyle : str, optional
             assign a linestyle to this category for plotting
         """
         # add plotting run control
@@ -1600,7 +1601,7 @@ class IamDataFrame(object):
             any valid string path, :class:`pathlib.Path`
             or :class:`pandas.ExcelWriter`
         sheet_name : string
-            name of sheet which will contain :meth:`timeseries()` data
+            name of sheet which will contain :meth:`timeseries` data
         iamc_index : bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
@@ -1753,15 +1754,18 @@ class IamDataFrame(object):
             df.dropna(), x=x, y=y, **kwargs)
         return ax
 
-    def stack_plot(self, *args, **kwargs):
-        """Plot timeseries stacks of existing data
+    def stackplot(self, *args, **kwargs):
+        """Plot a stacked area chart of timeseries data
 
-        see pyam.plotting.stack_plot() for all available options
+        See `pyam.plotting.stackplot <plotting.html#pyam.plotting.stackplot>`_
+        for details.
         """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.stack_plot(df, *args, **kwargs)
-        return ax
+        return plotting.stackplot(self, *args, **kwargs)
+
+    def stack_plot(self, *args, **kwargs):
+        """Deprecated, please use `IamDataFrame.stackplot()`"""
+        deprecation_warning('Please use `stackplot()`.')
+        return self.stackplot(*args, **kwargs)
 
     def bar_plot(self, *args, **kwargs):
         """Plot timeseries bars of existing data
@@ -1791,6 +1795,14 @@ class IamDataFrame(object):
         df = self.as_pandas()
         ax = plotting.pie_plot(df, *args, **kwargs)
         return ax
+
+    def sankey(self, mapping):
+        """Plot a sankey diagram
+
+        See `pyam.figures.sankey <plotting.html#pyam.plotting.stackplot>`_
+        for details.
+        """
+        return figures.sankey(self, mapping)
 
     def scatter(self, x, y, **kwargs):
         """Plot a scatter chart using meta indicators as columns
