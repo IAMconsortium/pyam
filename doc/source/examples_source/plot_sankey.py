@@ -51,16 +51,25 @@ df
 #     }
 
 sankey_mapping = {
-    'Primary Energy|Coal': ('Coal Mining', 'Coal Trade'),
-    'Primary Energy|Gas': ('Natural Gas Extraction', 'Gas Network'),
+    'Primary Energy|Coal':
+        ('Coal Mining', 'Coal Trade & Power Generation'),
+    'Primary Energy|Gas':
+        ('Natural Gas Extraction', 'Gas Network & Power Generation'),
     'Secondary Energy|Electricity|Non-Biomass Renewables':
         ('Non-Biomass Renewables', 'Electricity Grid'),
-    'Secondary Energy|Electricity|Nuclear': ('Nuclear', 'Electricity Grid'),
-    'Secondary Energy|Electricity|Coal': ('Coal Trade', 'Electricity Grid'),
-    'Secondary Energy|Electricity|Gas': ('Gas Network', 'Electricity Grid'),
+    'Secondary Energy|Electricity|Nuclear':
+        ('Nuclear', 'Electricity Grid'),
+    'Secondary Energy|Electricity|Coal':
+        ('Coal Trade & Power Generation', 'Electricity Grid'),
+    'Secondary Energy|Electricity|Gas':
+        ('Gas Network & Power Generation', 'Electricity Grid'),
     'Final Energy|Electricity': ('Electricity Grid', 'Electricity Demand'),
-    'Final Energy|Solids|Coal': ('Coal Trade', 'Non-Electricity Coal Demand'),
-    'Final Energy|Gases': ('Gas Network', 'Gas Demand'),
+    'Final Energy|Solids|Coal':
+        ('Coal Trade & Power Generation', 'Non-Electricity Coal Demand'),
+    'Final Energy|Gases':
+        ('Gas Network & Power Generation', 'Gas Demand'),
 }
 
-df.filter(year=2050).sankey(mapping=sankey_mapping)
+fig = df.filter(year=2050).sankey(mapping=sankey_mapping)
+# calling `show()` is necessary to have the thumbnail in the gallery overview
+plotly.io.show(fig)
