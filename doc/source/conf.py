@@ -40,6 +40,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinxcontrib.bibtex',
+    'sphinxcontrib.programoutput',
     'nbsphinx',
     'sphinx_gallery.gen_gallery',
     'cloud_sptheme.ext.table_styling',
