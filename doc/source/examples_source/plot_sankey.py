@@ -23,10 +23,10 @@ Sankey diagram
 # .. _License : https://data.ene.iiasa.ac.at/iamc-1.5c-explorer/#/license
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
-# you can download the file from
+# you can download the data file from
 # https://github.com/IAMconsortium/pyam/tree/master/doc/source/examples_source
 #
-# Make sure to place the file in the same folder as this script/notebook.
+# Make sure to place the data file in the same folder as this script/notebook.
 
 import pyam
 import plotly

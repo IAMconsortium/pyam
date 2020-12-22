@@ -16,7 +16,7 @@ Boxplot charts
 # you can download the file from
 # https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
-# Make sure to place the file in the same folder as this script/notebook.
+# Make sure to place the data file in the same folder as this script/notebook.
 
 import matplotlib.pyplot as plt
 import pyam
@@ -33,8 +33,8 @@ df
 data = df.filter(scenario='CD-LINKS_NPi2020_1000',
                  variable='Emissions|CO2', region='World')
 
-fig, ax = plt.subplots()
-data.boxplot(x='year', ax=ax)
+data.boxplot(x='year')
+plt.tight_layout()
 plt.show()
 
 ###############################
@@ -49,9 +49,9 @@ data = (
     .filter(region='World', keep=False)
 )
 
-fig, ax = plt.subplots()
-data.boxplot(x='year', by='region', legend=True, ax=ax)
+data.boxplot(x='year', by='region', legend=True)
 
 # We can use matplotlib arguments to make the figure more appealing.
 plt.legend(loc=1)
+plt.tight_layout()
 plt.show()

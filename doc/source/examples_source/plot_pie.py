@@ -16,7 +16,7 @@ Pie chart visualizations
 # you can download the file from
 # https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
-# Make sure to place the file in the same folder as this script/notebook.
+# Make sure to place the data file in the same folder as this script/notebook.
 
 import matplotlib.pyplot as plt
 import pyam
@@ -34,9 +34,8 @@ data = df.filter(model='AIM/CGE 2.1', scenario='CD-LINKS_NPi',
                  variable='Primary Energy|*', year=2050,
                  region='World')
 
-fig, ax = plt.subplots()
-data.pie_plot(ax=ax)
-fig.subplots_adjust(right=0.75, left=0.3)
+data.pie_plot()
+plt.tight_layout()
 plt.show()
 
 ###############################
@@ -45,9 +44,8 @@ plt.show()
 #
 # Sometimes a legend is preferable to labels, so we can use that instead.
 
-fig, ax = plt.subplots()
-data.pie_plot(ax=ax, labels=None, legend=True)
-fig.subplots_adjust(right=0.55, left=-0.05)
+data.pie_plot(labels=None, legend=True)
+plt.tight_layout()
 plt.show()
 
 ###############################
@@ -64,3 +62,5 @@ data = (
     .filter(region='World', keep=False)
 )
 data.pie_plot(category='region', cmap='tab20')
+plt.tight_layout()
+plt.show()
