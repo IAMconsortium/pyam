@@ -14,6 +14,7 @@
 from datetime import datetime
 import pyam
 
+from sphinx_gallery.sorting import ExplicitOrder
 from plotly.io._sg_scraper import plotly_sg_scraper
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -331,6 +332,14 @@ sphinx_gallery_conf = {
     'examples_dirs': 'examples_source',
     # path where to save gallery generated examples
     'gallery_dirs': 'examples',
+    'subsection_order':
+        ExplicitOrder(['../examples/plot_timeseries',
+                       '../examples/plot_ranges',
+                       '../examples/plot_stack',
+                       '../examples/plot_bar',
+                       '../examples/plot_boxplot',
+                       '../examples/plot_pie',
+                       '../examples/plot_sankey']),
     'reference_url': {'plotly': None,},
     'image_scrapers': image_scrapers,
 }
