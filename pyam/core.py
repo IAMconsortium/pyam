@@ -1732,7 +1732,7 @@ class IamDataFrame(object):
 
         see pyam.plotting.line_plot() for all available options
         """
-        #TODO merge with `plotting.line` and deprecate
+        # TODO merge with `plotting.line` and deprecate
         df = self.as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
 
         # pivot data if asked for explicit variable name
