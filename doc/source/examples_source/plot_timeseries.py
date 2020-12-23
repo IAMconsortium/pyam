@@ -14,7 +14,7 @@ Timeseries data charts
 # you can download the file from
 # https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
-# Make sure to place the file in the same folder as this script/notebook.
+# Make sure to place the data file in the same folder as this script/notebook.
 
 import pyam
 df = pyam.IamDataFrame('tutorial_data.csv')
@@ -29,9 +29,10 @@ df
 #
 # Then, also show the data as a wide IAMC-style dataframe.
 
+model, scenario = 'REMIND-MAgPIE 1.7-3.0', 'CD-LINKS_INDCi'
+
 data = (
-    df.filter(model='REMIND-MAgPIE 1.7-3.0', scenario='CD-LINKS_INDCi',
-              variable='Emissions|CO2')
+    df.filter(model=model, scenario=scenario, variable='Emissions|CO2')
     .filter(region='World', keep=False)
 )
 

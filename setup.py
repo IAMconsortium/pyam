@@ -35,7 +35,7 @@ EXTRA_REQUIREMENTS = {
                   'ipykernel'],
     'docs': ['sphinx', 'nbsphinx', 'sphinx-gallery', 'cloud_sptheme', 'pillow',
              'sphinxcontrib-bibtex<2.0', 'sphinxcontrib-programoutput',
-             'numpydoc', 'openpyxl']  # docs also requires 'tutorials'
+             'numpydoc', 'openpyxl', 'kaleido']  # docs requires 'tutorials'
 }
 
 # building the docs on readthedocs fails with a FileNotFoundError
