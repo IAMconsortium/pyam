@@ -20,7 +20,7 @@ There are three ways to use the |pyam| plotting library.
 
       IamDataFrame.plot(kind='<kind>', **kwargs)
 
-   This function defaults to the :meth:`pyam.plotting.lineplot` type.
+   This function defaults to the :meth:`pyam.plotting.line` type.
 
 3. Calling any function of either the :mod:`plotting`
    or the :mod:`figures` module directly via
@@ -32,7 +32,7 @@ There are three ways to use the |pyam| plotting library.
    where `df` is either an :class:`IamDataFrame`
    or a suitable :class:`pandas.DataFrame`.
 
-*Check out the* `Plotting Gallery`_ *for examples!*
+Check out the `Plotting Gallery`_ for examples!
 
 .. _`Plotting Gallery` : ../examples/index.html
 
