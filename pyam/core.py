@@ -25,7 +25,6 @@ try:
 except (ImportError, AttributeError):
     has_ix = False
 
-from pyam import figures
 from pyam import plotting
 from pyam.run_control import run_control
 from pyam.utils import (
@@ -54,7 +53,7 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.timeseries import fill_series
-from pyam.plotting import mpl_args_to_meta_cols
+from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
@@ -183,6 +182,9 @@ class IamDataFrame(object):
         # execute user-defined code
         if 'exec' in run_control():
             self._execute_run_control()
+
+        # add the `plot` handler
+        self.plot = PlotAccessor(self)
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
@@ -1730,6 +1732,7 @@ class IamDataFrame(object):
 
         see pyam.plotting.line_plot() for all available options
         """
+        #TODO merge with `plotting.line` and deprecate
         df = self.as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
 
         # pivot data if asked for explicit variable name
@@ -1750,62 +1753,28 @@ class IamDataFrame(object):
             if x != 'year' and y != 'year':
                 df = df.drop('year', axis=1)  # years causes nan's
 
-        ax, handles, labels = plotting.line_plot(
-            df.dropna(), x=x, y=y, **kwargs)
+        ax, handles, labels = plotting.line(df.dropna(), x=x, y=y, **kwargs)
         return ax
-
-    def stackplot(self, *args, **kwargs):
-        """Plot a stacked area chart of timeseries data
-
-        See `pyam.plotting.stackplot <plotting.html#pyam.plotting.stackplot>`_
-        for details.
-        """
-        return plotting.stackplot(self, *args, **kwargs)
 
     def stack_plot(self, *args, **kwargs):
-        """Deprecated, please use `IamDataFrame.stackplot()`"""
-        deprecation_warning('Please use `stackplot()`.')
-        return self.stackplot(*args, **kwargs)
-
-    def barplot(self, *args, **kwargs):
-        """Plot a grouped or stacked bar chart
-
-        See `pyam.plotting.barplot <plotting.html#pyam.plotting.barplot>`_
-        for details.
-        """
-        return plotting.barplot(self, *args, **kwargs)
+        """Deprecated, please use `IamDataFrame.plot.stack()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.stack()`.')
+        return self.plot.stack(*args, **kwargs)
 
     def bar_plot(self, *args, **kwargs):
-        """Deprecated, please use `IamDataFrame.barplot()`"""
-        deprecation_warning('Please use `barplot()`.')
-        return self.barplot(*args, **kwargs)
+        """Deprecated, please use `IamDataFrame.plot.bar()`"""
+        deprecation_warning('Please use `plot.bar()`.')
+        return self.plot.bar(*args, **kwargs)
 
     def boxplot(self, *args, **kwargs):
-        """Plot boxplot of existing data
-
-        see pyam.plotting.boxplot() for all available options
-        """
-        df = self.as_pandas()
-        ax = plotting.boxplot(df, *args, **kwargs)
-        return ax
+        """Deprecated, please use `IamDataFrame.plot.box()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.box()`.')
+        return self.plot.box(**kwargs)
 
     def pie_plot(self, *args, **kwargs):
-        """Plot a pie chart
-
-        see pyam.plotting.pie_plot() for all available options
-        """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.pie_plot(df, *args, **kwargs)
-        return ax
-
-    def sankey(self, mapping):
-        """Plot a sankey diagram
-
-        See `pyam.figures.sankey <plotting.html#pyam.plotting.stackplot>`_
-        for details.
-        """
-        return figures.sankey(self, mapping)
+        """Deprecated, please use `IamDataFrame.plot.pie()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.pie()`.')
+        return self.plot.pie(*args, **kwargs)
 
     def scatter(self, x, y, **kwargs):
         """Plot a scatter chart using meta indicators as columns

@@ -27,7 +27,7 @@ def sankey(df, mapping):
 
         Returns
         -------
-        fig : plotly.graph_objs._figure.Figure
+        fig : :class:`plotly.graph_objects.Figure`
     """
     # Check for duplicates
     for col in [name for name in df._data.index.names if name != 'variable']:

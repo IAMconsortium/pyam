@@ -320,6 +320,7 @@ intersphinx_mapping = {
     'pint': ('https://pint.readthedocs.io/en/stable', None),
     'ixmp': ('https://docs.messageix.org/projects/ixmp/en/stable/', None),
     'matplotlib': ('https://matplotlib.org', None),
+    'plotly': ('https://plotly.com/python-api-reference/', None),
     'pandas_datareader':
         ('https://pandas-datareader.readthedocs.io/en/stable', None)
 }

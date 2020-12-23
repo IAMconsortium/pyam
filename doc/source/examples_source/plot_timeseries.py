@@ -36,5 +36,5 @@ data = (
     .filter(region='World', keep=False)
 )
 
-data.line_plot(color='region', title='CO2 emissions by region')
+data.plot(color='region', title='CO2 emissions by region')
 data.timeseries()

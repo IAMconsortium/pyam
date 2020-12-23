@@ -34,7 +34,7 @@ data = df.filter(model='AIM/CGE 2.1', scenario='CD-LINKS_NPi',
                  variable='Primary Energy|*', year=2050,
                  region='World')
 
-data.pie_plot()
+data.plot.pie()
 plt.tight_layout()
 plt.show()
 
@@ -44,7 +44,7 @@ plt.show()
 #
 # Sometimes a legend is preferable to labels, so we can use that instead.
 
-data.pie_plot(labels=None, legend=True)
+data.plot.pie(labels=None, legend=True)
 plt.tight_layout()
 plt.show()
 
@@ -61,6 +61,6 @@ data = (
               variable='Emissions|CO2', year=2050)
     .filter(region='World', keep=False)
 )
-data.pie_plot(category='region', cmap='tab20')
+data.plot.pie(category='region', cmap='tab20')
 plt.tight_layout()
 plt.show()
