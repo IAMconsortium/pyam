@@ -570,7 +570,7 @@ def box(df, y='value', x='year', by=None, legend=True, title=None, ax=None,
         i.e. a 3rd dimension. Data should be categorical, not a contiuous
         variable.
     legend : bool, optional
-        Include a legend
+        Include a legend.
     title : bool or string, optional
         Display a default or custom title.
     ax : :class:`matplotlib.axes.Axes`, optional
@@ -671,7 +671,9 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
     y : str
         column to be plotted on the y-axis
     legend : bool, optional
-        Include a legend (`None` displays legend only if less than 13 entries)
+        Include a legend. By default, show legend only if less than 13 entries.
+        If a dictionary is provided, it will be used as keyword arguments
+        in creating the legend.
     title : bool or string, optional
         Display a custom title.
     color : string, optional
@@ -742,7 +744,7 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
         labels = sorted(list(set(tuple(legend_data))))
         idxs = [legend_data.index(d) for d in labels]
         handles = [handles[i] for i in idxs]
-    if legend is None and len(labels) < 13 or legend is not False:
+    if legend is not False:
         _add_legend(ax, handles, labels, legend)
 
     # add labels and title
@@ -769,8 +771,9 @@ def line(df, x='year', y='value', legend=None, title=True,
     y : string, optional
         The column to use for y-axis values
     legend : bool or dictionary, optional
-        Add a legend. If a dictionary is provided, it will be used as keyword
-        arguments in creating the legend.
+        Include a legend. By default, show legend only if less than 13 entries.
+        If a dictionary is provided, it will be used as keyword arguments
+        in creating the legend.
     title : bool or string, optional
         Display a default or custom title.
     color : string, optional
