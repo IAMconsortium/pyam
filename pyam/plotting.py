@@ -659,7 +659,7 @@ def add_net_values_to_barplot(axs, color='k'):
 
 def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
             linestyle=None, groupby=['model', 'scenario'], with_lines=False,
-            ax=None, cmap=None,**kwargs):
+            ax=None, cmap=None, **kwargs):
     """Plot data as a scatter chart.
 
     Parameters
