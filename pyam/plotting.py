@@ -246,7 +246,7 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
 
 
 def pie(df, value='value', category='variable', legend=False, title=True,
-        cmap=None, ax=None, **kwargs):
+        ax=None, cmap=None, **kwargs):
     """Plot data as a pie chart.
 
     Parameters
@@ -258,13 +258,19 @@ def pie(df, value='value', category='variable', legend=False, title=True,
     category : string, optional
         The column to use for labels
     legend : bool, optional
-        Include a legend
+        Include a legend.
     title : bool or string, optional
         Display a default or custom title.
+    ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
-        A colormap to use.
-    ax : matplotlib.Axes, optional
-    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+        The name of a registered colormap.
+    kwargs
+        Additional arguments passed to :meth:`pandas.DataFrame.plot`.
+
+    Returns
+    -------
+    ax : :class:`matplotlib.axes.Axes`
+        Modified `ax` or new instance
     """
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
@@ -312,8 +318,8 @@ def pie(df, value='value', category='variable', legend=False, title=True,
     return ax
 
 
-def stack(df, x='year', y='value', stack='variable', order=None,
-          legend=True, title=True, total=None, ax=None, cmap=None, **kwargs):
+def stack(df, x='year', y='value', stack='variable', order=None, total=None,
+          legend=True, title=True, ax=None, cmap=None, **kwargs):
     """Plot a stacked area chart of timeseries data
 
     Parameters
@@ -330,20 +336,25 @@ def stack(df, x='year', y='value', stack='variable', order=None,
          The order to plot the stack levels and the legend. If not specified,
          order by :meth:`run_control()['order'][\<stack\>] <pyam.run_control>`
          (where available) or alphabetical.
-    legend : bool, optional
-        Include a legend
-    title : bool or string, optional
-        Display a default or custom title.
-    ax : :class:`matplotlib.Axes`, optional
-    cmap : string, optional
-        The name of a registered colormap.
     total : bool or dict, optional
         If True, plot a total line with default |pyam| settings. If a dict,
         then plot the total line using the dict key-value pairs as keyword
         arguments to :meth:`matplotlib.axes.Axes.plot`.
         If None, do not plot the total line.
+    legend : bool, optional
+        Include a legend.
+    title : bool or string, optional
+        Display a default or custom title.
+    ax : :class:`matplotlib.axes.Axes`, optional
+    cmap : string, optional
+        The name of a registered colormap.
     kwargs
-        Additional arguments to pass to :meth:`pandas.DataFrame.plot`
+        Additional arguments passed to :meth:`pandas.DataFrame.plot`
+
+    Returns
+    -------
+    ax : :class:`matplotlib.axes.Axes`
+        Modified `ax` or new instance
     """
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
@@ -444,8 +455,7 @@ def stack(df, x='year', y='value', stack='variable', order=None,
 
 
 def bar(df, x='year', y='value', bars='variable', order=None, bars_order=None,
-        orient='v', legend=True, title=True,
-        cmap=None, ax=None, **kwargs):
+        orient='v', legend=True, title=True, ax=None, cmap=None, **kwargs):
     """Plot data as a stacked or grouped bar chart
 
     Parameters
@@ -463,16 +473,22 @@ def bar(df, x='year', y='value', bars='variable', order=None, bars_order=None,
          If not specified, order
          by :meth:`run_control()['order'][\<stack\>] <pyam.run_control>`
          (where available) or alphabetical.
-    ax : matplotlib.Axes, optional
     orient : string, optional
         Vertical or horizontal orientation.
     legend : bool, optional
-        Include a legend
+        Include a legend.
     title : bool or string, optional
         Display a default or custom title.
+    ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
-        A colormap to use.
-    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+        The name of a registered colormap.
+    kwargs
+        Additional arguments passed to :meth:`pandas.DataFrame.plot`
+
+    Returns
+    -------
+    ax : :class:`matplotlib.axes.Axes`
+        Modified `ax` or new instance
     """
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
@@ -556,9 +572,15 @@ def box(df, y='value', x='year', by=None, legend=True, title=None, ax=None,
     legend : bool, optional
         Include a legend
     title : bool or string, optional
-        Display a default or custom title
-    ax : matplotlib.Axes, optional
-    kwargs : Additional arguments to pass to the pd.DataFrame.plot()
+        Display a default or custom title.
+    ax : :class:`matplotlib.axes.Axes`, optional
+    kwargs
+        Additional arguments passed to :meth:`pandas.DataFrame.plot`.
+
+    Returns
+    -------
+    ax : :class:`matplotlib.axes.Axes`
+        Modified `ax` or new instance
     """
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
@@ -635,9 +657,9 @@ def add_net_values_to_barplot(axs, color='k'):
             ax.add_patch(rect)
 
 
-def scatter(df, x, y, ax=None, legend=None, title=None,
-            color=None, marker='o', linestyle=None, cmap=None,
-            groupby=['model', 'scenario'], with_lines=False, **kwargs):
+def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
+            linestyle=None, groupby=['model', 'scenario'], with_lines=False,
+            ax=None, cmap=None,**kwargs):
     """Plot data as a scatter chart.
 
     Parameters
@@ -648,7 +670,6 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
         column to be plotted on the x-axis
     y : str
         column to be plotted on the y-axis
-    ax : matplotlib.Axes, optional
     legend : bool, optional
         Include a legend (`None` displays legend only if less than 13 entries)
     title : bool or string, optional
@@ -663,13 +684,20 @@ def scatter(df, x, y, ax=None, legend=None, title=None,
         A valid matplotlib linestyle or column name. If a column name, common
         values will be provided the same linestyle.
         default: None
-    cmap : string, optional
-        A colormap to use.
     groupby : list-like, optional
         Data grouping for plotting.
     with_lines : bool, optional
         Make the scatter plot with lines connecting common data.
-    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+    ax : :class:`matplotlib.axes.Axes`, optional
+    cmap : string, optional
+        The name of a registered colormap.
+    kwargs
+        Additional arguments passed to :meth:`pandas.DataFrame.plot`.
+
+    Returns
+    -------
+    ax : :class:`matplotlib.axes.Axes`
+        Modified `ax` or new instance
     """
     if ax is None:
         fig, ax = plt.subplots()
@@ -767,10 +795,16 @@ def line(df, x='year', y='value', legend=None, title=True,
         provided instead of defaults.
     rm_legend_label : string, list, optional
         Remove the color, marker, or linestyle label in the legend.
-    ax : matplotlib.Axes, optional
+    ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
-        A colormap to use.
-    kwargs : Additional arguments to pass to the pd.DataFrame.plot() function
+        The name of a registered colormap.
+    kwargs
+        Additional arguments passed to :meth:`pandas.DataFrame.plot`.
+
+    Returns
+    -------
+    ax : :class:`matplotlib.axes.Axes`
+        Modified `ax` or new instance
     """
     if ax is None:
         fig, ax = plt.subplots()
