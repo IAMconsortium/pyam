@@ -2,17 +2,21 @@
 
 ## API changes
 
-Several PRs in this release changed the name of plotting functions
-for consistency with matplotlib and seaborn. 
+Several PRs in this release changed the implementation of the plotting library 
+for better UX and consistency with **pandas**, **matplotlib** and **seaborn**. 
 
- - `stackplot()` for `stack_plot()`
- - `barplot()` for `bar_plot()`
+Replace the calls to plotting features by the following:
+ - `plot(...)` (or `plot(kind='line', ...)`) for `line_plot()`
+ - `plot.stack(...)` for `stack_plot()`
+ - `plot.bar()` for `bar_plot()`
+ - ...
 
-These PR also adds an `order` arg to the plotting functions, and the levels
+These PRs also add an `order` arg to the plotting functions, and the levels
 are ordered based on the `run_control()['order']` dictionary by default.
 
 ## Individual updates
 
+- [#473](https://github.com/IAMconsortium/pyam/pull/473) Refactor to plotting API following pandas/matplotlib implementation
 - [#472](https://github.com/IAMconsortium/pyam/pull/472) Add a ´sankey()` example to the plotting gallery
 - [#470](https://github.com/IAMconsortium/pyam/pull/470) Add two types of `order` arg to `barplot()`
 - [#467](https://github.com/IAMconsortium/pyam/pull/467) Refactor the GAMS-pyam tutorial to use the gamstransfer module
