@@ -517,6 +517,10 @@ def bar(df, x='year', y='value', bars='variable', order=None, bars_order=None,
             c = rc['color'][bars][key]
         color.append(c)
 
+    # change year to str to prevent pandas/matplotlib from auto-ordering (#474)
+    if _df.index.name == 'year':
+        _df.index = map(str, _df.index)
+
     # plot data
     kind = 'bar' if orient.startswith('v') else 'barh'
     _df.plot(kind=kind, color=color, ax=ax, **kwargs)
