@@ -42,7 +42,7 @@ def test_line_plot(plot_df):
     _plot_df = copy.deepcopy(plot_df)
     _plot_df.set_meta(meta=[np.nan] * 4, name='test')
     fig, ax = plt.subplots(figsize=(8, 8))
-    _plot_df.line_plot(ax=ax, legend=True)
+    _plot_df.plot(ax=ax, legend=True)
     return fig
 
 
@@ -50,7 +50,7 @@ def test_line_plot_cmap(plot_df):
     # need to provide cmap and color both
     _plot_df = copy.deepcopy(plot_df)
     _plot_df.set_meta(meta=[np.nan] * 4, name='test')
-    pytest.raises(ValueError, _plot_df.line_plot, cmap='magma')
+    pytest.raises(ValueError, _plot_df.plot, cmap='magma')
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
@@ -58,35 +58,35 @@ def test_line_plot_cmap_color_arg(plot_df):
     _plot_df = copy.deepcopy(plot_df)
     _plot_df.set_meta(meta=[np.nan] * 4, name='test')
     fig, ax = plt.subplots(figsize=(8, 8))
-    _plot_df.line_plot(ax=ax, legend=True, cmap='magma', color='variable')
+    _plot_df.plot(ax=ax, legend=True, cmap='magma', color='variable')
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot_dict_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, legend=dict(loc='outside right'))
+    plot_df.plot(ax=ax, legend=dict(loc='outside right'))
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot_bottom_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, legend=dict(loc='outside bottom'))
+    plot_df.plot(ax=ax, legend=dict(loc='outside bottom'))
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_no_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, legend=False)
+    plot_df.plot(ax=ax, legend=False)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, color='model', legend=True)
+    plot_df.plot(ax=ax, color='model', legend=True)
     return fig
 
 
@@ -111,14 +111,14 @@ def test_line_PYAM_COLORS(plot_df):
     df = pyam.IamDataFrame(pd.concat(dfs))
     fig, ax = plt.subplots(figsize=(8, 8))
     with update_run_control(update):
-        df.line_plot(ax=ax, color='model', legend=True)
+        df.plot(ax=ax, color='model', legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_color_fill_between(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, color='model', fill_between=True, legend=True)
+    plot_df.plot(ax=ax, color='model', fill_between=True, legend=True)
     return fig
 
 
@@ -136,51 +136,51 @@ def test_line_color_fill_between_interpolate(plot_df):
     newdata = ['test_model1', 'test_scenario1', 'World', 'Primary Energy|Coal',
                'EJ/y', 2015, 3.50]
     df.data.loc[len(df.data) + 1] = newdata
-    df.line_plot(ax=ax, color='model', fill_between=True, legend=True)
+    df.plot(ax=ax, color='model', fill_between=True, legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_color_final_ranges(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, color='model', final_ranges=True, legend=True)
+    plot_df.plot(ax=ax, color='model', final_ranges=True, legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_marker_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, marker='model', legend=True)
+    plot_df.plot(ax=ax, marker='model', legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_rm_legend_label(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, marker='model', linestyle='scenario', legend=True,
-                      rm_legend_label='marker')
+    plot_df.plot(ax=ax, marker='model', linestyle='scenario',
+                 legend=True, rm_legend_label='marker')
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_linestyle_legend(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, linestyle='model', legend=True)
+    plot_df.plot(ax=ax, linestyle='model', legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_single_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.line_plot(ax=ax, color='b', linestyle='model', legend=True)
+    plot_df.plot(ax=ax, color='b', linestyle='model', legend=True)
     return fig
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_filter_title(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    plot_df.filter(variable='Primary Energy|Coal').line_plot(
-        ax=ax, color='model', marker='scenario', legend=True)
+    plot_df.filter(variable='Primary Energy|Coal')\
+        .plot(ax=ax, color='model', marker='scenario', legend=True)
     return fig
 
 
@@ -188,7 +188,7 @@ def test_line_filter_title(plot_df):
 def test_line_update_rc(plot_df):
     with update_run_control({'color': {'model': {'test_model1': 'cyan'}}}):
         fig, ax = plt.subplots(figsize=(8, 8))
-        plot_df.line_plot(ax=ax, color='model', legend=True)
+        plot_df.plot(ax=ax, color='model', legend=True)
     return fig
 
 
@@ -197,7 +197,7 @@ def test_line_plot_1_var(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter(model='test_model', scenario='test_scenario')
-     .line_plot(x='Primary Energy', y='year', ax=ax, legend=False)
+     .plot(x='Primary Energy', y='year', ax=ax, legend=False)
      )
     return fig
 
@@ -207,7 +207,7 @@ def test_line_plot_2_vars(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     (plot_df
      .filter(model='test_model', scenario='test_scenario')
-     .line_plot(x='Primary Energy|Coal', y='Primary Energy', ax=ax, legend=False)
+     .plot(x='Primary Energy|Coal', y='Primary Energy', ax=ax, legend=False)
      )
     return fig
 
