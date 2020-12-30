@@ -81,7 +81,7 @@ class PlotAccessor():
         return getattr(self, kind)(**kwargs)
 
     def line(self, **kwargs):
-        self._parent.line_plot(**kwargs)
+        self._parent._line_plot(**kwargs)
 
     def bar(self, **kwargs):
         return bar(self._parent, **kwargs)
@@ -98,11 +98,11 @@ class PlotAccessor():
     def pie(self, **kwargs):
         return pie(self._parent, **kwargs)
 
-    def scatter(self, **kwargs):
-        return self._parent.scatter(**kwargs)
+    def scatter(self, *args, **kwargs):
+        return self._parent._scatter(*args, **kwargs)
 
-    def sankey(self, **kwargs):
-        return figures.sankey(self._parent, **kwargs)
+    def sankey(self, *args, **kwargs):
+        return figures.sankey(self._parent, *args, **kwargs)
 
 
 def reset_default_props(**kwargs):

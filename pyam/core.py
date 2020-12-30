@@ -1727,12 +1727,14 @@ class IamDataFrame(object):
         # set column `exclude` to bool
         self.meta.exclude = self.meta.exclude.astype('bool')
 
-    def line_plot(self, x='year', y='value', **kwargs):
-        """Plot timeseries lines of existing data
+    def line_plot(self, *args, **kwargs):
+        """Deprecated, please use `IamDataFrame.plot()`"""
+        deprecation_warning('Please use `IamDataFrame.plot()`.')
+        return self.plot(*args, **kwargs)
 
-        see pyam.plotting.line_plot() for all available options
-        """
-        # TODO merge with `plotting.line` and deprecate
+    def _line_plot(self, x='year', y='value', **kwargs):
+        """Plot timeseries lines of existing data"""
+        # TODO merge with `plot.line` and deprecate
         df = self.as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
 
         # pivot data if asked for explicit variable name
@@ -1776,11 +1778,14 @@ class IamDataFrame(object):
         deprecation_warning('Please use `IamDataFrame.plot.pie()`.')
         return self.plot.pie(*args, **kwargs)
 
-    def scatter(self, x, y, **kwargs):
-        """Plot a scatter chart using meta indicators as columns
+    def scatter(self, *args, **kwargs):
+        """Deprecated, please use `IamDataFrame.plot.scatter()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.scatter()`.')
+        return self.plot.scatter(*args, **kwargs)
 
-        see pyam.plotting.scatter() for all available options
-        """
+    def _scatter(self, x, y, **kwargs):
+        """Plot a scatter chart using meta indicators as columns"""
+        # TODO merge with `plot.scatter` and deprecate
         variables = self.data['variable'].unique()
         xisvar = x in variables
         yisvar = y in variables
