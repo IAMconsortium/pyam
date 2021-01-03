@@ -330,19 +330,12 @@ image_scrapers = ('matplotlib', plotly_sg_scraper,)
 
 sphinx_gallery_conf = {
     'doc_module': ('plotly',),
-    # path to your examples scripts
-    'examples_dirs': 'examples_source',
+    # path to your example scripts
+    'examples_dirs': 'examples',
     # path where to save gallery generated examples
-    'gallery_dirs': 'examples',
-    'subsection_order':
-        ExplicitOrder(['../examples/plot_timeseries',
-                       '../examples/plot_ranges',
-                       '../examples/plot_stack',
-                       '../examples/plot_bar',
-                       '../examples/plot_boxplot',
-                       '../examples/plot_pie',
-                       '../examples/plot_sankey']),
-    'reference_url': {'plotly': None,},
+    'gallery_dirs': 'gallery',
+#    'subsection_order': ExplicitOrder(examples_folders),
+    'reference_url': {'plotly': None, 'matplotlib': None, 'pyam': None},
     'image_scrapers': image_scrapers,
 }
 
