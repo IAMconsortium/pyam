@@ -711,6 +711,7 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
 
     meta_col_args = dict(color=color, marker=marker, linestyle=linestyle)
     meta_cols = mpl_args_to_meta_cols(df, **meta_col_args)
+
     if not xisvar and not yisvar:
         cols = [x, y] + meta_cols
         data = df.meta[cols].reset_index()
@@ -743,19 +744,18 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
             .rename(columns={'value': var})
         )
 
-    # drop nan and rename to df
-    df = data.dropna()
+    # drop nan
+    data.dropna(inplace=True)
 
-    # create a plotting axes (if note given as kwarg
+    # create a plotting axes (if not given as kwarg)
     if ax is None:
         fig, ax = plt.subplots()
 
     # assign styling properties
-    props = assign_style_props(df, color=color, marker=marker,
-                               linestyle=linestyle, cmap=cmap)
+    props = assign_style_props(data, **meta_col_args, cmap=cmap)
 
     # group data
-    groups = df.groupby(groupby)
+    groups = data.dropna().groupby(groupby)
 
     # loop over grouped dataframe, plot data
     legend_data = []
