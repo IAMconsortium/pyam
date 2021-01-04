@@ -35,7 +35,7 @@ df
 args = dict(model='WITCH-GLOBIOM 4.4', scenario='CD-LINKS_NPi2020_1000')
 data = df.filter(**args, variable='Primary Energy|*', region='World')
 
-data.barplot(stacked=True, title='Primary energy mix')
+data.plot.bar(stacked=True, title='Primary energy mix')
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()
@@ -46,7 +46,7 @@ plt.show()
 #
 # We can flip that round for a horizontal chart.
 
-data.barplot(stacked=True, orient='h', title='Primary energy mix')
+data.plot.bar(stacked=True, orient='h', title='Primary energy mix')
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()
@@ -64,8 +64,8 @@ data = (
     .filter(region='World', keep=False)
 )
 
-data.barplot(bars='region', stacked=True,
-             title='CO2 emissions by region', cmap='tab20')
+data.plot.bar(bars='region', stacked=True,
+              title='CO2 emissions by region', cmap='tab20')
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()
@@ -80,8 +80,8 @@ plt.show()
 from pyam.plotting import add_net_values_to_barplot
 
 fig, ax = plt.subplots()
-data.barplot(ax=ax, bars='region', stacked=True,
-             title='CO2 emissions by region', cmap='tab20')
+data.plot.bar(ax=ax, bars='region', stacked=True,
+              title='CO2 emissions by region', cmap='tab20')
 add_net_values_to_barplot(ax)
 plt.legend(loc=1)
 plt.tight_layout()

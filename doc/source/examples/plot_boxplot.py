@@ -33,7 +33,7 @@ df
 data = df.filter(scenario='CD-LINKS_NPi2020_1000',
                  variable='Emissions|CO2', region='World')
 
-data.boxplot(x='year')
+data.plot.box(x='year')
 plt.tight_layout()
 plt.show()
 
@@ -49,7 +49,7 @@ data = (
     .filter(region='World', keep=False)
 )
 
-data.boxplot(x='year', by='region', legend=True)
+data.plot.box(x='year', by='region', legend=True)
 
 # We can use matplotlib arguments to make the figure more appealing.
 plt.legend(loc=1)

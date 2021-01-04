@@ -116,6 +116,11 @@ def read_pandas(path, default_sheet='data', *args, **kwargs):
         if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
             kwargs['sheet_name'] = default_sheet
         df = pd.read_excel(path, *args, **kwargs)
+
+        # remove unnamed and empty columns
+        empty_cols = [c for c in df.columns if str(c).startswith('Unnamed: ')
+                      and all(np.isnan(df[c]))]
+        df.drop(columns=empty_cols, inplace=True)
     return df
 
 

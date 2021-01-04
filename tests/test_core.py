@@ -97,9 +97,13 @@ def test_init_df_with_extra_col(test_pd_df):
 
     df = IamDataFrame(tdf)
 
+    # check that extra-cols attribute is set correctly
     assert df.extra_cols == [extra_col]
-    pd.testing.assert_frame_equal(df.timeseries().reset_index(),
-                                  tdf, check_like=True)
+
+    # check that timeseries data is as expected
+    obs = df.timeseries().reset_index()
+    exp = tdf[obs.columns]  # get the columns into the right order
+    pd.testing.assert_frame_equal(obs, exp)
 
 
 def test_init_empty_message(caplog):

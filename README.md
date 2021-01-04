@@ -34,7 +34,7 @@ Key features:
    with an interface similar in feel and style to the widely
    used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
  - Advanced visualization and plotting functions
-   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/examples/index.html))
+   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
  - Diagnostic checks for scripted validation of scenario data and results
 
 Data model

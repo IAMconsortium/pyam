@@ -70,6 +70,6 @@ sankey_mapping = {
         ('Gas Network & Power Generation', 'Gas Demand'),
 }
 
-fig = df.filter(year=2050).sankey(mapping=sankey_mapping)
+fig = df.filter(year=2050).plot.sankey(mapping=sankey_mapping)
 # calling `show()` is necessary to have the thumbnail in the gallery overview
 plotly.io.show(fig)

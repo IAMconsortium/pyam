@@ -33,7 +33,7 @@ df
 data = df.filter(scenario='CD-LINKS*',
                  variable='Emissions|CO2', region='World')
 
-data.line_plot(color='scenario', fill_between=True)
+data.plot(color='scenario', fill_between=True)
 plt.tight_layout()
 plt.show()
 
@@ -45,7 +45,7 @@ plt.show()
 # or it can be provided specific arguments as a dictionary:
 # in this illustration, we choose a very low transparency value.
 
-data.line_plot(color='scenario', fill_between=dict(alpha=0.15))
+data.plot(color='scenario', fill_between=dict(alpha=0.15))
 plt.tight_layout()
 plt.show()
 
@@ -57,7 +57,6 @@ plt.show()
 # range of data in the final time period using `final_ranges`. Similar to
 # `fill_between` it can either be true or have specific arguments.
 
-data.line_plot(color='scenario', fill_between=True,
-               final_ranges=dict(linewidth=5))
+data.plot(color='scenario', fill_between=True, final_ranges=dict(linewidth=5))
 plt.tight_layout()
 plt.show()

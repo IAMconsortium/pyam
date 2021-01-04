@@ -32,7 +32,7 @@ model, scenario = 'IMAGE 3.0.1', 'CD-LINKS_NPi2020_400'
 data = df.filter(model=model, scenario=scenario,
                  variable='Primary Energy|*', region='World')
 
-data.stackplot(title=scenario)
+data.plot.stack(title=scenario)
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()
@@ -47,8 +47,8 @@ data = (
     .filter(region='World', keep=False)
 )
 
-data.stackplot(stack='region', cmap='tab20',
-               title=scenario, total=True)
+data.plot.stack(stack='region', cmap='tab20',
+                title=scenario, total=True)
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()
