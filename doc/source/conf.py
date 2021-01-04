@@ -334,7 +334,6 @@ sphinx_gallery_conf = {
     'examples_dirs': 'examples',
     # path where to save gallery generated examples
     'gallery_dirs': 'gallery',
-#    'subsection_order': ExplicitOrder(examples_folders),
     'reference_url': {'plotly': None, 'matplotlib': None, 'pyam': None},
     'image_scrapers': image_scrapers,
 }

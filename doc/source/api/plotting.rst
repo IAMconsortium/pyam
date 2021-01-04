@@ -34,7 +34,7 @@ There are three ways to use the |pyam| plotting library.
 
 Check out the `Plotting Gallery`_ for examples!
 
-.. _`Plotting Gallery` : ../examples/index.html
+.. _`Plotting Gallery` : ../gallery/index.html
 
 The RunControl configuration
 ----------------------------
