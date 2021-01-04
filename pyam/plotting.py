@@ -14,8 +14,8 @@ from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam import figures
 from pyam.timeseries import cross_threshold
-from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, isstr, islistable,\
-    _raise_data_error
+from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, YEAR_IDX,\
+    isstr, islistable, _raise_data_error
 
 
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
@@ -99,7 +99,7 @@ class PlotAccessor():
         return pie(self._parent, **kwargs)
 
     def scatter(self, *args, **kwargs):
-        return self._parent._scatter(*args, **kwargs)
+        return scatter(self._parent, *args, **kwargs)
 
     def sankey(self, *args, **kwargs):
         return figures.sankey(self._parent, *args, **kwargs)
@@ -668,8 +668,8 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
+    df : class:`pyam.IamDataFrame`
+        Data to be plotted
     x : str
         column to be plotted on the x-axis
     y : str
@@ -705,6 +705,48 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+    # process the data
+    xisvar = x in df.variable
+    yisvar = y in df.variable
+
+    meta_col_args = dict(color=color, marker=marker, linestyle=linestyle)
+    meta_cols = mpl_args_to_meta_cols(df, **meta_col_args)
+    if not xisvar and not yisvar:
+        cols = [x, y] + meta_cols
+        data = df.meta[cols].reset_index()
+    elif xisvar and yisvar:
+        # filter pivot both and rename
+        dfx = (
+            df
+            .filter(variable=x)
+            .as_pandas(meta_cols=meta_cols)
+            .rename(columns={'value': x, 'unit': 'xunit'})
+            .set_index(YEAR_IDX)
+            .drop('variable', axis=1)
+        )
+        dfy = (
+            df
+            .filter(variable=y)
+            .as_pandas(meta_cols=meta_cols)
+            .rename(columns={'value': y, 'unit': 'yunit'})
+            .set_index(YEAR_IDX)
+            .drop('variable', axis=1)
+        )
+        data = dfx.join(dfy, lsuffix='_left', rsuffix='').reset_index()
+    else:
+        # filter, merge with meta, and rename value column to match var
+        var = x if xisvar else y
+        data = (
+            df
+            .filter(variable=var)
+            .as_pandas(meta_cols=mpl_args_to_meta_cols(df, **kwargs))
+            .rename(columns={'value': var})
+        )
+
+    # drop nan and rename to df
+    df = data.dropna()
+
+    # create a plotting axes (if note given as kwarg
     if ax is None:
         fig, ax = plt.subplots()
 
