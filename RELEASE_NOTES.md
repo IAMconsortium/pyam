@@ -16,6 +16,7 @@ are ordered based on the `run_control()['order']` dictionary by default.
 
 ## Individual updates
 
+- [#475](https://github.com/IAMconsortium/pyam/pull/475) Add a scatter plot example to the gallery
 - [#473](https://github.com/IAMconsortium/pyam/pull/473) Refactor to plotting API following pandas/matplotlib implementation
 - [#472](https://github.com/IAMconsortium/pyam/pull/472) Add a ´sankey()` example to the plotting gallery
 - [#470](https://github.com/IAMconsortium/pyam/pull/470) Add two types of `order` arg to `barplot()`

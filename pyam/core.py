@@ -46,18 +46,16 @@ from pyam.utils import (
     islistable,
     print_list,
     META_IDX,
-    YEAR_IDX,
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS
 )
 from pyam.read_ixmp import read_ix
-from pyam.timeseries import fill_series
 from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
-from pyam.index import get_index_levels, append_index_level
+from pyam.index import get_index_levels
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -1782,46 +1780,6 @@ class IamDataFrame(object):
         """Deprecated, please use `IamDataFrame.plot.scatter()`"""
         deprecation_warning('Please use `IamDataFrame.plot.scatter()`.')
         return self.plot.scatter(*args, **kwargs)
-
-    def _scatter(self, x, y, **kwargs):
-        """Plot a scatter chart using meta indicators as columns"""
-        # TODO merge with `plot.scatter` and deprecate
-        variables = self.data['variable'].unique()
-        xisvar = x in variables
-        yisvar = y in variables
-        if not xisvar and not yisvar:
-            cols = [x, y] + mpl_args_to_meta_cols(self, **kwargs)
-            df = self.meta[cols].reset_index()
-        elif xisvar and yisvar:
-            # filter pivot both and rename
-            dfx = (
-                self
-                .filter(variable=x)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': x, 'unit': 'xunit'})
-                .set_index(YEAR_IDX)
-                .drop('variable', axis=1)
-            )
-            dfy = (
-                self
-                .filter(variable=y)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': y, 'unit': 'yunit'})
-                .set_index(YEAR_IDX)
-                .drop('variable', axis=1)
-            )
-            df = dfx.join(dfy, lsuffix='_left', rsuffix='').reset_index()
-        else:
-            # filter, merge with meta, and rename value column to match var
-            var = x if xisvar else y
-            df = (
-                self
-                .filter(variable=var)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': var})
-            )
-        ax = plotting.scatter(df.dropna(), x, y, **kwargs)
-        return ax
 
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
                     region_col=None, remove_duplicates=False, inplace=False):
