@@ -77,12 +77,12 @@ plt.show()
 # Sometimes, stacked bar charts have negative entries.
 # In that case, it helps to add a line showing the net value.
 
-from pyam.plotting import add_net_values_to_barplot
+from pyam.plotting import add_net_values_to_bar_plot
 
 fig, ax = plt.subplots()
 data.plot.bar(ax=ax, bars='region', stacked=True,
               title='CO2 emissions by region', cmap='tab20')
-add_net_values_to_barplot(ax)
+add_net_values_to_bar_plot(ax)
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()

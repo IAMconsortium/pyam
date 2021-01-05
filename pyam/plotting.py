@@ -639,13 +639,6 @@ def _get_boxes(ax, xoffset=0.05, width_weight=0.1):
 
 
 def add_net_values_to_bar_plot(axs, color='k'):
-    """Deprecated, please use `pyam.plotting.add_net_values_to_barplot()`"""
-    # TODO: deprecated, remove for release >=1.0
-    deprecation_warning('Please use `add_net_values_to_barplot()`.')
-    return add_net_values_to_barplot(axs, color)
-
-
-def add_net_values_to_barplot(axs, color='k'):
     """Add net values next to an existing vertical stacked bar chart
 
     Parameters
