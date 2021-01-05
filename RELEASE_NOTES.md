@@ -1,4 +1,11 @@
-# Next Release
+# Release v0.10.0
+
+## Highlights
+
+ - Refactor the plotting library for better UX and consistency with **pandas**,
+   **matplotlib** and **seaborn**.
+ - Add a `sankey()` feature to the plotting library.
+ - Rework the documentation and tutorials.
 
 ## API changes
 
@@ -18,7 +25,7 @@ are ordered based on the `run_control()['order']` dictionary by default.
 
 - [#475](https://github.com/IAMconsortium/pyam/pull/475) Add a scatter plot example to the gallery
 - [#473](https://github.com/IAMconsortium/pyam/pull/473) Refactor to plotting API following pandas/matplotlib implementation
-- [#472](https://github.com/IAMconsortium/pyam/pull/472) Add a ´sankey()` example to the plotting gallery
+- [#472](https://github.com/IAMconsortium/pyam/pull/472) Add a `sankey()` example to the plotting gallery
 - [#470](https://github.com/IAMconsortium/pyam/pull/470) Add two types of `order` arg to `barplot()`
 - [#467](https://github.com/IAMconsortium/pyam/pull/467) Refactor the GAMS-pyam tutorial to use the gamstransfer module
 - [#466](https://github.com/IAMconsortium/pyam/pull/466) Add a `sankey()` function to create sankey diagrams

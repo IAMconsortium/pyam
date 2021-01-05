@@ -363,19 +363,19 @@ class IamDataFrame(object):
 
     def models(self):
         """Get a list of models"""
-        # TODO: deprecate in release >=0.10
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `model` instead.')
         return pd.Series(self.meta.index.levels[0])
 
     def scenarios(self):
         """Get a list of scenarios"""
-        # TODO: deprecate in release >=0.10
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `scenario` instead.')
         return pd.Series(self.meta.index.levels[1])
 
     def regions(self):
         """Get a list of regions"""
-        # TODO: deprecate in release >=0.10
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `region` instead.')
         return pd.Series(get_index_levels(self._data, 'region'), name='region')
 
@@ -521,7 +521,7 @@ class IamDataFrame(object):
         kwargs
             passed to :meth:`pandas.DataFrame.interpolate`
         """
-        # TODO deprecate and add kwarg inplace=False in release >= 0.10
+        # TODO deprecate and add kwarg inplace=False in release >= 1.0
         if inplace is None:
             deprecation_warning(
                 'Behavior of `interpolate` will change to `inplace=False` '
@@ -1732,7 +1732,7 @@ class IamDataFrame(object):
 
     def _line_plot(self, x='year', y='value', **kwargs):
         """Plot timeseries lines of existing data"""
-        # TODO merge with `plot.line` and deprecate
+        # TODO merge with `plot.line` and deprecate for release 1.0
         df = self.as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
 
         # pivot data if asked for explicit variable name
@@ -1758,25 +1758,30 @@ class IamDataFrame(object):
 
     def stack_plot(self, *args, **kwargs):
         """Deprecated, please use `IamDataFrame.plot.stack()`"""
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Please use `IamDataFrame.plot.stack()`.')
         return self.plot.stack(*args, **kwargs)
 
     def bar_plot(self, *args, **kwargs):
+        # TODO: deprecated, remove for release >=1.0
         """Deprecated, please use `IamDataFrame.plot.bar()`"""
         deprecation_warning('Please use `plot.bar()`.')
         return self.plot.bar(*args, **kwargs)
 
     def boxplot(self, *args, **kwargs):
+        # TODO: deprecated, remove for release >=1.0
         """Deprecated, please use `IamDataFrame.plot.box()`"""
         deprecation_warning('Please use `IamDataFrame.plot.box()`.')
         return self.plot.box(**kwargs)
 
     def pie_plot(self, *args, **kwargs):
+        # TODO: deprecated, remove for release >=1.0
         """Deprecated, please use `IamDataFrame.plot.pie()`"""
         deprecation_warning('Please use `IamDataFrame.plot.pie()`.')
         return self.plot.pie(*args, **kwargs)
 
     def scatter(self, *args, **kwargs):
+        # TODO: deprecated, remove for release >=1.0
         """Deprecated, please use `IamDataFrame.plot.scatter()`"""
         deprecation_warning('Please use `IamDataFrame.plot.scatter()`.')
         return self.plot.scatter(*args, **kwargs)
