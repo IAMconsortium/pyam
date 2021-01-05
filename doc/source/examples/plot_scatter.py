@@ -63,7 +63,8 @@ df.set_meta(
 # Temperature at the end of the century
 # =====================================
 #
-# The second indicator takes the temperature variable.
+# The second indicator takes the value of the temperature variable
+# in the latest year and assigns it as a meta indicator.
 
 temperature_var = 'AR5 climate diagnostics|Temperature|Global Mean|MAGICC6|MED'
 df.set_meta_from_data(name='temperature', variable=temperature_var, year=2100)
