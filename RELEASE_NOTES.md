@@ -1,5 +1,7 @@
 # Next Release
 
+- [#477](https://github.com/IAMconsortium/pyam/pull/477) Add a nightly test suite
+
 # Release v0.10.0
 
 ## Highlights
