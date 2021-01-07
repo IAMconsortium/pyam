@@ -1,0 +1,50 @@
+# This workflow installs the package on Python 3.8, runs the tests and builds the docs
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: nightly
+# This workflow is called nightly for consistency with programming convention
+# even though it is scheduled to run only once per week...
+
+on:
+  schedule:
+    # see https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events
+    # 05:00 UTC = 06:00 CET = 07:00 CEST
+    - cron: "0 5 * * TUE"
+
+jobs:
+  pytest:
+    strategy:
+      matrix:
+        os:
+        - ubuntu-latest
+        python-version:
+        - '3.8'
+
+      fail-fast: false
+
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} py${{ matrix.python-version }}
+  
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies and package
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .[tests,deploy,optional-io-formats,tutorials,docs]
+
+    - name: Test with pytest (including Matplotlib)
+      run: |
+        pytest tests --mpl
+
+    - name: Build the docs
+      run: |
+        cd doc
+        make html
+        cd ..
