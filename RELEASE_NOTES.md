@@ -1,17 +1,42 @@
 # Next Release
 
+- [#477](https://github.com/IAMconsortium/pyam/pull/477) Add a nightly test suite
+- [#471](https://github.com/IAMconsortium/pyam/pull/471) Add a `iiasa.Connection.properties()` function to retrieve scenario audit data
+
+# Release v0.10.0
+
+## Highlights
+
+ - Refactor the plotting library for better UX and consistency with **pandas**,
+   **matplotlib** and **seaborn**.
+ - Add a `sankey()` feature to the plotting library.
+ - Rework the documentation and tutorials.
+
 ## API changes
 
-PR [#464](https://github.com/IAMconsortium/pyam/pull/464) changed the name of
-the stacked-area chart to `stackplot()` for consistency with matplotlib and
-seaborn. The PR also adds an `order` kwarg, and the levels are ordered based
-on the `run_control()['order']` dictionary by default.
+Several PRs in this release changed the implementation of the plotting library 
+for better UX and consistency with **pandas**, **matplotlib** and **seaborn**. 
+
+Replace the calls to plotting features by the following:
+ - `plot(...)` (or `plot(kind='line', ...)`) for `line_plot()`
+ - `plot.stack(...)` for `stack_plot()`
+ - `plot.bar()` for `bar_plot()`
+ - ...
+
+These PRs also add an `order` arg to the plotting functions, and the levels
+are ordered based on the `run_control()['order']` dictionary by default.
 
 ## Individual updates
 
-- [#471](https://github.com/IAMconsortium/pyam/pull/471) Add a `iiasa.Connection.properties()` function to retrieve scenario audit data
 - [#464](https://github.com/IAMconsortium/pyam/pull/463) Add `order` arg to `stackplot()`
 - [#466](https://github.com/IAMconsortium/pyam/pull/466) Add a `sankey()`function to create sankey diagrams
+- [#475](https://github.com/IAMconsortium/pyam/pull/475) Add a scatter plot example to the gallery
+- [#473](https://github.com/IAMconsortium/pyam/pull/473) Refactor to plotting API following pandas/matplotlib implementation
+- [#472](https://github.com/IAMconsortium/pyam/pull/472) Add a `sankey()` example to the plotting gallery
+- [#470](https://github.com/IAMconsortium/pyam/pull/470) Add two types of `order` arg to `barplot()`
+- [#467](https://github.com/IAMconsortium/pyam/pull/467) Refactor the GAMS-pyam tutorial to use the gamstransfer module
+- [#466](https://github.com/IAMconsortium/pyam/pull/466) Add a `sankey()` function to create sankey diagrams
+- [#464](https://github.com/IAMconsortium/pyam/pull/464) Add `order` arg to `stackplot()`
 - [#463](https://github.com/IAMconsortium/pyam/pull/463) Clarification of initialization-error message if file does not exist
 
 # Release v0.9.0

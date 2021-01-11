@@ -65,7 +65,7 @@ The source code for |pyam| is available on `Github`_.
    data.html
 
 .. _`gallery`:
-   examples/index.html
+   gallery/index.html
 
 .. _`Github`:
    https://github.com/IAMconsortium/pyam
@@ -81,7 +81,7 @@ Table of Contents
    contributing
    data
    tutorials
-   examples/index
+   gallery/index
    api
 
 Copyright & License

@@ -189,6 +189,7 @@ def subannual_df():
     df.set_meta('foo', 'string')
     yield df
 
+
 @pytest.fixture(scope="function")
 def reg_df():
     df = IamDataFrame(data=REG_DF)

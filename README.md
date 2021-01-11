@@ -34,7 +34,7 @@ Key features:
    with an interface similar in feel and style to the widely
    used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
  - Advanced visualization and plotting functions
-   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/examples/index.html))
+   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
  - Diagnostic checks for scripted validation of scenario data and results
 
 Data model
@@ -85,7 +85,7 @@ See the complete [list of contributors](AUTHORS.rst).
 License
 -------
 
-Copyright 2017-2020 IIASA and the pyam developer team
+Copyright 2017-2021 IIASA and the pyam developer team
 
 The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");

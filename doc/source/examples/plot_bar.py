@@ -16,7 +16,7 @@ Stacked bar charts
 # you can download the file from
 # https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
-# Make sure to place the file in the same folder as this script/notebook.
+# Make sure to place the data file in the same folder as this script/notebook.
 
 import matplotlib.pyplot as plt
 import pyam
@@ -35,8 +35,10 @@ df
 args = dict(model='WITCH-GLOBIOM 4.4', scenario='CD-LINKS_NPi2020_1000')
 data = df.filter(**args, variable='Primary Energy|*', region='World')
 
-data.bar_plot(stacked=True, title='Primary energy mix')
+data.plot.bar(stacked=True, title='Primary energy mix')
+plt.legend(loc=1)
 plt.tight_layout()
+plt.show()
 
 ###############################
 # Flip the direction of a stacked bar chart
@@ -44,8 +46,10 @@ plt.tight_layout()
 #
 # We can flip that round for a horizontal chart.
 
-data.bar_plot(stacked=True, orient='h', title='Primary energy mix')
+data.plot.bar(stacked=True, orient='h', title='Primary energy mix')
+plt.legend(loc=1)
 plt.tight_layout()
+plt.show()
 
 ###############################
 # Show stacked bar chart by regions
@@ -60,9 +64,11 @@ data = (
     .filter(region='World', keep=False)
 )
 
-data.bar_plot(bars='region', stacked=True,
+data.plot.bar(bars='region', stacked=True,
               title='CO2 emissions by region', cmap='tab20')
+plt.legend(loc=1)
 plt.tight_layout()
+plt.show()
 
 ###############################
 # Add indicators to show net values
@@ -74,7 +80,9 @@ plt.tight_layout()
 from pyam.plotting import add_net_values_to_bar_plot
 
 fig, ax = plt.subplots()
-data.bar_plot(ax=ax, bars='region', stacked=True,
+data.plot.bar(ax=ax, bars='region', stacked=True,
               title='CO2 emissions by region', cmap='tab20')
 add_net_values_to_bar_plot(ax)
+plt.legend(loc=1)
 plt.tight_layout()
+plt.show()

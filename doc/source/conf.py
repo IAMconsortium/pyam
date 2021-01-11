@@ -11,13 +11,11 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
-# has to go first for environment setup reasons
-import matplotlib
-matplotlib.use('agg')
-
 from datetime import datetime
 import pyam
+
+from sphinx_gallery.sorting import ExplicitOrder
+from plotly.io._sg_scraper import plotly_sg_scraper
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -32,7 +30,9 @@ import pyam
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'numpydoc',
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
@@ -41,18 +41,12 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.bibtex',
     'sphinxcontrib.programoutput',
-    'cloud_sptheme.ext.table_styling',
-    'numpydoc',
     'nbsphinx',
     'sphinx_gallery.gen_gallery',
+    'cloud_sptheme.ext.table_styling',
 ]
 
-sphinx_gallery_conf = {
-    # path to your examples scripts
-    'examples_dirs': '_examples',
-    # path where to save gallery generated examples
-    'gallery_dirs': 'examples'
-}
+autosummary_generate = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -71,7 +65,7 @@ master_doc = 'index'
 # General information about the project.
 project = u'pyam'
 year = datetime.now().year
-copyright = '{}, IIASA and the pyam developer team'.format(year)
+copyright = '2017-{}, IIASA and the pyam developer team'.format(year)
 author = u'pyam developer team'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -326,9 +320,26 @@ intersphinx_mapping = {
     'pint': ('https://pint.readthedocs.io/en/stable', None),
     'ixmp': ('https://docs.messageix.org/projects/ixmp/en/stable/', None),
     'matplotlib': ('https://matplotlib.org', None),
+    'plotly': ('https://plotly.com/python-api-reference/', None),
     'pandas_datareader':
         ('https://pandas-datareader.readthedocs.io/en/stable', None)
 }
+
+# Set up the plotting gallery with plotly scraper
+image_scrapers = ('matplotlib', plotly_sg_scraper,)
+
+sphinx_gallery_conf = {
+    'doc_module': ('plotly',),
+    # path to your example scripts
+    'examples_dirs': 'examples',
+    # path where to save gallery generated examples
+    'gallery_dirs': 'gallery',
+    'reference_url': {'plotly': None, 'matplotlib': None, 'pyam': None},
+    'image_scrapers': image_scrapers,
+}
+
+# Link or path to require.js, set to empty string to disable
+nbsphinx_requirejs_path = ''
 
 # Extend the timeout limit for running notebooks
 nbsphinx_timeout = 120

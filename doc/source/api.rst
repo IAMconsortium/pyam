@@ -1,6 +1,6 @@
 .. currentmodule:: pyam
 
-API reference
+API Reference
 =============
 
 This page gives an overview of the public |pyam| features, objects, functions

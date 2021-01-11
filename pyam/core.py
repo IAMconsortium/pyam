@@ -25,7 +25,6 @@ try:
 except (ImportError, AttributeError):
     has_ix = False
 
-from pyam import figures
 from pyam import plotting
 from pyam.run_control import run_control
 from pyam.utils import (
@@ -47,18 +46,16 @@ from pyam.utils import (
     islistable,
     print_list,
     META_IDX,
-    YEAR_IDX,
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS
 )
 from pyam.read_ixmp import read_ix
-from pyam.timeseries import fill_series
-from pyam.plotting import mpl_args_to_meta_cols
+from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
-from pyam.index import get_index_levels, append_index_level
+from pyam.index import get_index_levels
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -183,6 +180,9 @@ class IamDataFrame(object):
         # execute user-defined code
         if 'exec' in run_control():
             self._execute_run_control()
+
+        # add the `plot` handler
+        self.plot = PlotAccessor(self)
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
@@ -363,19 +363,19 @@ class IamDataFrame(object):
 
     def models(self):
         """Get a list of models"""
-        # TODO: deprecate in release >=0.10
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `model` instead.')
         return pd.Series(self.meta.index.levels[0])
 
     def scenarios(self):
         """Get a list of scenarios"""
-        # TODO: deprecate in release >=0.10
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `scenario` instead.')
         return pd.Series(self.meta.index.levels[1])
 
     def regions(self):
         """Get a list of regions"""
-        # TODO: deprecate in release >=0.10
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `region` instead.')
         return pd.Series(get_index_levels(self._data, 'region'), name='region')
 
@@ -521,7 +521,7 @@ class IamDataFrame(object):
         kwargs
             passed to :meth:`pandas.DataFrame.interpolate`
         """
-        # TODO deprecate and add kwarg inplace=False in release >= 0.10
+        # TODO deprecate and add kwarg inplace=False in release >= 1.0
         if inplace is None:
             deprecation_warning(
                 'Behavior of `interpolate` will change to `inplace=False` '
@@ -1725,11 +1725,14 @@ class IamDataFrame(object):
         # set column `exclude` to bool
         self.meta.exclude = self.meta.exclude.astype('bool')
 
-    def line_plot(self, x='year', y='value', **kwargs):
-        """Plot timeseries lines of existing data
+    def line_plot(self, *args, **kwargs):
+        """Deprecated, please use `IamDataFrame.plot()`"""
+        deprecation_warning('Please use `IamDataFrame.plot()`.')
+        return self.plot(*args, **kwargs)
 
-        see pyam.plotting.line_plot() for all available options
-        """
+    def _line_plot(self, x='year', y='value', **kwargs):
+        """Plot timeseries lines of existing data"""
+        # TODO merge with `plot.line` and deprecate for release 1.0
         df = self.as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
 
         # pivot data if asked for explicit variable name
@@ -1750,101 +1753,38 @@ class IamDataFrame(object):
             if x != 'year' and y != 'year':
                 df = df.drop('year', axis=1)  # years causes nan's
 
-        ax, handles, labels = plotting.line_plot(
-            df.dropna(), x=x, y=y, **kwargs)
+        ax, handles, labels = plotting.line(df.dropna(), x=x, y=y, **kwargs)
         return ax
-
-    def stackplot(self, *args, **kwargs):
-        """Plot a stacked area chart of timeseries data
-
-        See `pyam.plotting.stackplot <plotting.html#pyam.plotting.stackplot>`_
-        for details.
-        """
-        return plotting.stackplot(self, *args, **kwargs)
 
     def stack_plot(self, *args, **kwargs):
-        """Deprecated, please use `IamDataFrame.stackplot()`"""
-        deprecation_warning('Please use `stackplot()`.')
-        return self.stackplot(*args, **kwargs)
+        """Deprecated, please use `IamDataFrame.plot.stack()`"""
+        # TODO: deprecated, remove for release >=1.0
+        deprecation_warning('Please use `IamDataFrame.plot.stack()`.')
+        return self.plot.stack(*args, **kwargs)
 
     def bar_plot(self, *args, **kwargs):
-        """Plot timeseries bars of existing data
-
-        see pyam.plotting.bar_plot() for all available options
-        """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.bar_plot(df, *args, **kwargs)
-        return ax
+        # TODO: deprecated, remove for release >=1.0
+        """Deprecated, please use `IamDataFrame.plot.bar()`"""
+        deprecation_warning('Please use `plot.bar()`.')
+        return self.plot.bar(*args, **kwargs)
 
     def boxplot(self, *args, **kwargs):
-        """Plot boxplot of existing data
-
-        see pyam.plotting.boxplot() for all available options
-        """
-        df = self.as_pandas()
-        ax = plotting.boxplot(df, *args, **kwargs)
-        return ax
+        # TODO: deprecated, remove for release >=1.0
+        """Deprecated, please use `IamDataFrame.plot.box()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.box()`.')
+        return self.plot.box(**kwargs)
 
     def pie_plot(self, *args, **kwargs):
-        """Plot a pie chart
+        # TODO: deprecated, remove for release >=1.0
+        """Deprecated, please use `IamDataFrame.plot.pie()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.pie()`.')
+        return self.plot.pie(*args, **kwargs)
 
-        see pyam.plotting.pie_plot() for all available options
-        """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.pie_plot(df, *args, **kwargs)
-        return ax
-
-    def sankey(self, mapping):
-        """Plot a sankey diagram
-
-        See `pyam.figures.sankey <plotting.html#pyam.plotting.stackplot>`_
-        for details.
-        """
-        return figures.sankey(self, mapping)
-
-    def scatter(self, x, y, **kwargs):
-        """Plot a scatter chart using meta indicators as columns
-
-        see pyam.plotting.scatter() for all available options
-        """
-        variables = self.data['variable'].unique()
-        xisvar = x in variables
-        yisvar = y in variables
-        if not xisvar and not yisvar:
-            cols = [x, y] + mpl_args_to_meta_cols(self, **kwargs)
-            df = self.meta[cols].reset_index()
-        elif xisvar and yisvar:
-            # filter pivot both and rename
-            dfx = (
-                self
-                .filter(variable=x)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': x, 'unit': 'xunit'})
-                .set_index(YEAR_IDX)
-                .drop('variable', axis=1)
-            )
-            dfy = (
-                self
-                .filter(variable=y)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': y, 'unit': 'yunit'})
-                .set_index(YEAR_IDX)
-                .drop('variable', axis=1)
-            )
-            df = dfx.join(dfy, lsuffix='_left', rsuffix='').reset_index()
-        else:
-            # filter, merge with meta, and rename value column to match var
-            var = x if xisvar else y
-            df = (
-                self
-                .filter(variable=var)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': var})
-            )
-        ax = plotting.scatter(df.dropna(), x, y, **kwargs)
-        return ax
+    def scatter(self, *args, **kwargs):
+        # TODO: deprecated, remove for release >=1.0
+        """Deprecated, please use `IamDataFrame.plot.scatter()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.scatter()`.')
+        return self.plot.scatter(*args, **kwargs)
 
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
                     region_col=None, remove_duplicates=False, inplace=False):
