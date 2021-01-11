@@ -1,5 +1,6 @@
 # Next Release
 
+- [#481](https://github.com/IAMconsortium/pyam/pull/481) Enable custom index columns
 - [#477](https://github.com/IAMconsortium/pyam/pull/477) Add a nightly test suite
 
 # Release v0.10.0
