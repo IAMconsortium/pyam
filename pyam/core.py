@@ -222,17 +222,17 @@ class IamDataFrame(object):
         """
         # concatenate list of index dimensions and levels
         info = f'{type(self)}\nIndex dimensions:\n'
-        c1 = max([len(i) for i in self._LONG_IDX]) + 1
+        c1 = max([len(i) for i in self._data.index.names]) + 1
         c2 = n - c1 - 5
         info += '\n'.join(
             [f' * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
-             for i in META_IDX])
+             for i in self.index.names])
 
         # concatenate list of index of _data (not in META_IDX)
         info += '\nTimeseries data coordinates:\n'
         info += '\n'.join(
             [f'   {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
-             for i in self._LONG_IDX if i not in META_IDX])
+             for i in self._data.index.names if i not in self.index.names])
 
         # concatenate list of (head of) meta indicators and levels/values
         def print_meta_row(m, t, lst):
