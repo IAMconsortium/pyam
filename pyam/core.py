@@ -287,12 +287,19 @@ class IamDataFrame(object):
     @property
     def model(self):
         """Return the list of (unique) model names"""
-        return get_index_levels(self.meta, 'model')
+        return self._get_meta_index_levels('model')
 
     @property
     def scenario(self):
         """Return the list of (unique) scenario names"""
-        return get_index_levels(self.meta, 'scenario')
+        return self._get_meta_index_levels('scenario')
+
+    def _get_meta_index_levels(self, name):
+        """Return the list of a level from meta"""
+        if name in self.meta.index.names:
+            return get_index_levels(self.meta, name)
+        # in case of non-standard meta.index.names
+        raise AttributeError(f'Index `{name}` does not exist!')
 
     @property
     def region(self):
