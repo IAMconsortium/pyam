@@ -232,18 +232,18 @@ def format_data(df, index, **kwargs):
     # check whether data in wide format (IAMC) or long format (`value` column)
     if 'value' in df.columns:
         # check if time column is given as `year` (int) or `time` (datetime)
-        cols = df.columns
-        if 'year' in cols:
+        if 'year' in df.columns:
             time_col = 'year'
-        elif 'time' in cols:
+        elif 'time' in df.columns:
             time_col = 'time'
         else:
-            msg = 'invalid time format, must have either `year` or `time`!'
+            msg = 'Invalid time format, must have either `year` or `time`!'
             raise ValueError(msg)
-        extra_cols = list(set(cols) - set(IAMC_IDX + [time_col, 'value']))
+        extra_cols = [c for c in df.columns
+                      if c not in index + REQUIRED_COLS + [time_col, 'value']]
     else:
         # if in wide format, check if columns are years (int) or datetime
-        cols = set(df.columns) - set(IAMC_IDX)
+        cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
         year_cols, time_cols, extra_cols = [], [], []
         for i in cols:
             try:
@@ -264,7 +264,8 @@ def format_data(df, index, **kwargs):
         else:
             msg = 'invalid column format, must be either years or `datetime`!'
             raise ValueError(msg)
-        df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name=time_col,
+        cols = index + REQUIRED_COLS + extra_cols
+        df = pd.melt(df, id_vars=cols, var_name=time_col,
                      value_vars=sorted(melt_cols), value_name='value')
 
     # cast value column to numeric and drop nan
@@ -280,7 +281,7 @@ def format_data(df, index, **kwargs):
         _raise_data_error('empty cells in `data`', df.loc[null_rows])
 
     # check for duplicates and empty data
-    idx_cols = IAMC_IDX + [time_col] + extra_cols
+    idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
     rows = df[idx_cols].duplicated()
     if any(rows):
         _raise_data_error('duplicate rows in `data`', df.loc[rows, idx_cols])
@@ -289,7 +290,7 @@ def format_data(df, index, **kwargs):
         logger.warning('Formatted data is empty!')
 
     df = format_time_col(sort_data(df, idx_cols), time_col)
-    return df, time_col, extra_cols
+    return df.set_index(idx_cols).value, index, time_col, extra_cols
 
 
 def format_time_col(data, time_col):

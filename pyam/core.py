@@ -152,19 +152,17 @@ class IamDataFrame(object):
                 msg = 'IamDataFrame constructor not properly called!'
                 raise ValueError(msg)
 
-        _df, self.time_col, self.extra_cols = _data
-        self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
-        # cast time_col to desired format
-        self._data = _df.set_index(self._LONG_IDX).value
+        self._data, index, self.time_col, self.extra_cols = _data
+        self._LONG_IDX = self._data.index.names
 
         # define `meta` dataframe for categorization & quantitative indicators
-        self.meta = pd.DataFrame(index=_make_index(self._data))
+        self.meta = pd.DataFrame(index=_make_index(self._data, cols=index))
         self.reset_exclude()
 
         # merge meta dataframe (if given in kwargs)
         if meta is not None:
-            self.meta = merge_meta(meta.loc[_make_index(self.data)],
-                                   self.meta, ignore_meta_conflict=True)
+            self.meta = merge_meta(meta.loc[self.meta.index], self.meta,
+                                   ignore_meta_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
         if meta_sheet and isinstance(data, Path) and data.suffix == '.xlsx':
