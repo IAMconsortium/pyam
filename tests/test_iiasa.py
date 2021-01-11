@@ -1,5 +1,4 @@
 import os
-import copy
 import pytest
 import pandas as pd
 import numpy as np
@@ -165,6 +164,24 @@ def test_meta(conn, default):
         exp = META_DF[VERSION_COLS + META_COLS]
 
     pdt.assert_frame_equal(conn.meta(default=default), exp, check_dtype=False)
+
+
+@pytest.mark.parametrize("default", [True, False])
+def test_properties(conn, default):
+    # test that connection returns the correct properties dataframe
+    obs = conn.properties(default=default)
+    if default:
+        exp_cols = ['version']
+        exp = META_DF.loc[META_DF.is_default, exp_cols]
+    else:
+        exp_cols = VERSION_COLS
+        exp = META_DF[exp_cols]
+
+    # assert that the expected audit columns are included
+    for col in ['create_user', 'create_date', 'update_user', 'update_date']:
+        assert col in obs.columns
+    # assert that the values of some columns is as expected
+    pdt.assert_frame_equal(obs[exp_cols], exp, check_dtype=False)
 
 
 @pytest.mark.parametrize("kwargs", [

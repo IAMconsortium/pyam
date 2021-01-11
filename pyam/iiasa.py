@@ -235,6 +235,18 @@ class Connection(object):
         _check_response(r, 'Could not retrieve the resource index')
         return pd.read_json(r.content, orient='records')
 
+    @lru_cache()
+    def _query_meta(self, default=True):
+        # TODO: at present this reads in all data for all scenarios,
+        #  it could be sped up in the future to try to query a subset
+        _default = 'true' if default else 'false'
+        add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
+        url = '/'.join([self._auth_url, add_url.format(_default)])
+        headers = {'Authorization': 'Bearer {}'.format(self._token)}
+        r = requests.get(url, headers=headers)
+        _check_response(r)
+        return pd.read_json(r.content, orient='records')
+
     @property
     @lru_cache()
     def meta_columns(self):
@@ -256,16 +268,7 @@ class Connection(object):
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
-        # TODO: at present this reads in all data for all scenarios,
-        #  it could be sped up in the future to try to query a subset
-        _default = 'true' if default else 'false'
-        add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
-        url = '/'.join([self._auth_url, add_url.format(_default)])
-        headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        r = requests.get(url, headers=headers)
-        _check_response(r)
-        df = pd.read_json(r.content, orient='records')
-
+        df = self._query_meta(default)
         cols = ['version'] if default else ['version', 'is_default']
 
         def extract(row):
@@ -279,6 +282,27 @@ class Connection(object):
 
         return pd.concat([extract(row) for i, row in df.iterrows()],
                          sort=False)
+
+    def properties(self, default=True):
+        """Return the audit properties of scenarios
+
+        Parameters
+        ----------
+        default : bool, optional
+            Return *only* the default version of each scenario.
+            Any (`model`, `scenario`) without a default version is omitted.
+            If :obj:`False`, return all versions.
+        """
+        _df = self._query_meta(default)
+        audit_cols = ['cre_user', 'cre_date', 'upd_user', 'upd_date']
+        audit_mapping = dict([(i, i.replace('_', 'ate_')) for i in audit_cols])
+        other_cols = ['version'] if default else ['version', 'is_default']
+
+        return (
+            _df[META_IDX + other_cols + audit_cols]
+            .set_index(META_IDX)
+            .rename(columns=audit_mapping)
+        )
 
     def models(self):
         """List all models in the connected resource"""
