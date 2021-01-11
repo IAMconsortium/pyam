@@ -26,6 +26,9 @@ IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
 LONG_IDX = IAMC_IDX + ['year']
 
+# required columns
+REQUIRED_COLS = ['region', 'variable', 'unit']
+
 # illegal terms for data/meta column names to prevent attribute conflicts
 ILLEGAL_COLS = ['data', 'meta']
 
@@ -126,14 +129,14 @@ def read_pandas(path, default_sheet='data', *args, **kwargs):
 
 def read_file(path, *args, **kwargs):
     """Read data from a file"""
-    format_kwargs = {}
     # extract kwargs that are intended for `format_data`
+    format_kwargs = dict(index=kwargs.pop('index'))
     for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:
         format_kwargs[c] = kwargs.pop(c)
     return format_data(read_pandas(path, *args, **kwargs), **format_kwargs)
 
 
-def format_data(df, **kwargs):
+def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
     if isinstance(df, pd.Series):
         df.name = df.name or 'value'
@@ -214,13 +217,17 @@ def format_data(df, **kwargs):
     if conflict_cols:
         msg = f'Column name {conflict_cols} is illegal for timeseries data.\n'
         _args = ', '.join([f"{i}_1='{i}'" for i in conflict_cols])
-        msg += f'Use `IamDataFrame(..., {_args})` to rename at initalization.'
+        msg += f'Use `IamDataFrame(..., {_args})` to rename at initialization.'
         raise ValueError(msg)
 
-    # format columns to lower-case and check that all required columns exist
-    if not set(IAMC_IDX).issubset(set(df.columns)):
-        missing = list(set(IAMC_IDX) - set(df.columns))
-        raise ValueError("missing required columns `{}`!".format(missing))
+    # check that index and required columns exist
+    missing_index = [c for c in index if c not in df.columns]
+    if missing_index:
+        raise ValueError(f'Missing index columns `{missing_index}`!')
+
+    missing_required_col = [c for c in REQUIRED_COLS if c not in df.columns]
+    if missing_required_col:
+        raise ValueError(f'Missing required columns `{missing_required_col}`!')
 
     # check whether data in wide format (IAMC) or long format (`value` column)
     if 'value' in df.columns:

@@ -78,6 +78,8 @@ class IamDataFrame(object):
     meta : :class:`pandas.DataFrame`, optional
         A dataframe with suitable 'meta' indicators for the new instance.
         The index will be downselected to scenarios present in `data`.
+    index : list, optional
+        Columns to use for resulting IamDataFrame index.
     kwargs
         If `value=<col>`, melt column `<col>` to 'value' and use `<col>` name
         as 'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
@@ -107,16 +109,18 @@ class IamDataFrame(object):
     This is intended behaviour and consistent with pandas but may be confusing
     for those who are not used to the pandas/Python universe.
     """
-    def __init__(self, data, meta=None, **kwargs):
+    def __init__(self, data, meta=None, index=['model', 'scenario'], **kwargs):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
                 msg = 'Invalid arguments `{}` for initializing an IamDataFrame'
                 raise ValueError(msg.format(kwargs))
+            if index != data.index.names:
+                raise ValueError(f'Index {index} incompatible with:\n{data}')
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
-            self._init(data, meta, **kwargs)
+            self._init(data, meta, index=index, **kwargs)
 
     def _init(self, data, meta=None, **kwargs):
         """Process data and set attributes for new instance"""
