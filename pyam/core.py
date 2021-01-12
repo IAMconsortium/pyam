@@ -116,7 +116,7 @@ class IamDataFrame(object):
                 msg = 'Invalid arguments `{}` for initializing an IamDataFrame'
                 raise ValueError(msg.format(kwargs))
             if index != data.index.names:
-                raise ValueError(f'Index {index} incompatible with:\n{data}')
+                raise ValueError(f'Index `{index}` incompatible with index in `data`:\n{data.index.names}')
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
@@ -299,7 +299,7 @@ class IamDataFrame(object):
         if name in self.meta.index.names:
             return get_index_levels(self.meta, name)
         # in case of non-standard meta.index.names
-        raise AttributeError(f'Index `{name}` does not exist!')
+        raise KeyError(f'Index `{name}` does not exist!')
 
     @property
     def region(self):
