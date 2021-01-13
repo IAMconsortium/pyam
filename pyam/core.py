@@ -160,10 +160,10 @@ class IamDataFrame(object):
         self.meta = pd.DataFrame(index=_make_index(self._data, cols=index))
         self.reset_exclude()
 
-        # merge meta dataframe (if given in kwargs)
+        # if given explicitly, merge meta dataframe after downselecting
         if meta is not None:
-            self.meta = merge_meta(meta.loc[self.meta.index], self.meta,
-                                   ignore_meta_conflict=True)
+            meta = meta.loc[self.meta.index.intersection(meta.index)]
+            self.meta = merge_meta(meta, self.meta, ignore_meta_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
         if meta_sheet and isinstance(data, Path) and data.suffix == '.xlsx':

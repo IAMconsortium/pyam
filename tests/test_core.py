@@ -28,6 +28,14 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 ], columns=['model', 'scenario', 'region', 2010, 2020]
 ).set_index(['model', 'region'])
 
+META_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 1, False],
+    ['model_a', 'scen_b', np.nan, False],
+    ['model_a', 'scen_c', 2, False],
+], columns=META_IDX + ['foo', 'exclude']
+).set_index(META_IDX)
+
+
 df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 
 
@@ -104,6 +112,14 @@ def test_init_df_with_extra_col(test_pd_df):
     obs = df.timeseries().reset_index()
     exp = tdf[obs.columns]  # get the columns into the right order
     pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_init_df_with_meta(test_pd_df):
+    # pass explicit meta dataframe with a scenario that doesn't exist in data
+    df = IamDataFrame(test_pd_df, meta=META_DF.iloc[[0, 2]][['foo']])
+
+    # check that scenario not existing in data is removed during initialization
+    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
 
 
 def test_init_empty_message(caplog):
