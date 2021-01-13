@@ -122,6 +122,17 @@ def test_init_df_with_meta(test_pd_df):
     pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
 
 
+def test_init_df_with_custom_index(test_pd_df):
+    # rename 'model' column and add a version column to the dataframe
+    test_pd_df.rename(columns={'model': 'source'}, inplace=True)
+    test_pd_df['version'] = [1, 2, 3]
+
+    # initialize with custom index columns, check that index is set correctly
+    index = ['source', 'scenario', 'version']
+    df = IamDataFrame(test_pd_df, index=index)
+    assert df.index.names == index
+
+
 def test_init_empty_message(caplog):
     IamDataFrame(data=df_empty)
     drop_message = (
