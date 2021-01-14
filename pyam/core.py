@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """Scenario timeseries data following the IAMC data format
+    """Scenario timeseries data and meta indicators
 
     The class provides a number of diagnostic features (including validation of
     data, completeness of variables provided), processing tools (e.g.,

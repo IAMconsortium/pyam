@@ -60,10 +60,9 @@ def test_init_from_iamdf(test_df_year):
 
 def test_init_from_iamdf_raises(test_df_year):
     # casting an IamDataFrame instance again with extra args fails
-    args = dict(model='foo')
     match = "Invalid arguments \['model'\] for initializing from IamDataFrame"
     with pytest.raises(ValueError, match=match):
-        IamDataFrame(test_df_year, **args)
+        IamDataFrame(test_df_year, model='foo')
 
 
 def test_init_df_with_float_cols_raises(test_pd_df):
@@ -104,9 +103,6 @@ def test_init_df_with_extra_col(test_pd_df):
     tdf[extra_col] = extra_value
 
     df = IamDataFrame(tdf)
-
-    # check that extra-cols attribute is set correctly
-    assert df.extra_cols == [extra_col]
 
     # check that timeseries data is as expected
     obs = df.timeseries().reset_index()
@@ -290,7 +286,7 @@ def test_index(test_df_year):
 
 
 def test_index_attributes(test_df):
-    # assert that the
+    # assert that the index and data column attributes are set correcty
     assert test_df.model == ['model_a']
     assert test_df.scenario == ['scen_a', 'scen_b']
     assert test_df.region == ['World']
