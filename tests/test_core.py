@@ -61,7 +61,7 @@ def test_init_from_iamdf(test_df_year):
 def test_init_from_iamdf_raises(test_df_year):
     # casting an IamDataFrame instance again with extra args fails
     args = dict(model='foo')
-    match = f'Invalid arguments `{args}` for initializing an IamDataFrame'
+    match = "Invalid arguments \['model'\] for initializing from IamDataFrame"
     with pytest.raises(ValueError, match=match):
         IamDataFrame(test_df_year, **args)
 
@@ -121,6 +121,17 @@ def test_init_df_with_meta(test_pd_df):
     # check that scenario not existing in data is removed during initialization
     pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
 
+
+def test_init_df_with_meta_incompatible_index(test_pd_df):
+    # define a meta dataframe with a non-standard index
+    index = ['source', 'scenario']
+    meta = pd.DataFrame([False, False, False], columns=['exclude'],
+                        index=META_DF.index.rename(index))
+
+    # assert that using an incompatible index for the meta arg raises
+    match = "Incompatible `index` \['model', 'scenario'\] with `meta` index *."
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(test_pd_df, meta=meta)
 
 def test_init_df_with_custom_index(test_pd_df):
     # rename 'model' column and add a version column to the dataframe

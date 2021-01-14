@@ -20,6 +20,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # common indices
+DEFAULT_META_INDEX = ['model', 'scenario']
 META_IDX = ['model', 'scenario']
 YEAR_IDX = ['model', 'scenario', 'region', 'year']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']

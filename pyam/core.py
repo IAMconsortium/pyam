@@ -45,6 +45,7 @@ from pyam.utils import (
     isstr,
     islistable,
     print_list,
+    DEFAULT_META_INDEX,
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
@@ -109,12 +110,12 @@ class IamDataFrame(object):
     This is intended behaviour and consistent with pandas but may be confusing
     for those who are not used to the pandas/Python universe.
     """
-    def __init__(self, data, meta=None, index=['model', 'scenario'], **kwargs):
+    def __init__(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
-                msg = 'Invalid arguments `{}` for initializing an IamDataFrame'
-                raise ValueError(msg.format(kwargs))
+                msg = 'Invalid arguments {} for initializing from IamDataFrame'
+                raise ValueError(msg.format(list(kwargs)))
             if index != data.index.names:
                 msg = f'Index {index} incompatible with {type(data)} index '
                 raise ValueError(msg + str(data.index.names))
@@ -123,14 +124,19 @@ class IamDataFrame(object):
         else:
             self._init(data, meta, index=index, **kwargs)
 
-    def _init(self, data, meta=None, **kwargs):
+    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Process data and set attributes for new instance"""
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop('meta_sheet_name', 'meta')
 
+        # if meta is given explicitly, verify that index matches
+        if meta is not None and not meta.index.names == index:
+            raise ValueError(f'Incompatible `index` {index} with `meta` index '
+                             + str(meta.index.names))
+
         # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _data = format_data(data.copy(), **kwargs)
+            _data = format_data(data.copy(), index=index, **kwargs)
         # read data from ixmp Platform instance
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             # TODO read meta indicators from ixmp
@@ -146,7 +152,7 @@ class IamDataFrame(object):
                 data = Path(data)  # casting str or LocalPath to Path
                 if data.is_file():
                     logger.info(f'Reading file {data}')
-                    _data = read_file(data, **kwargs)
+                    _data = read_file(data, index=index, **kwargs)
                 else:
                     raise FileNotFoundError(f'File {data} does not exist')
             except TypeError:  # `data` cannot be cast to Path
