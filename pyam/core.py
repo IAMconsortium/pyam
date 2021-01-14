@@ -49,7 +49,8 @@ from pyam.utils import (
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
-    ILLEGAL_COLS
+    ILLEGAL_COLS,
+    _raise_data_error
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
@@ -484,6 +485,7 @@ class IamDataFrame(object):
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
         ret._data = _data.sort_index()
+        ret._set_attributes()
 
         if not inplace:
             return ret
@@ -594,6 +596,7 @@ class IamDataFrame(object):
         df = df.stack()  # long-data to pd.Series
         df.name = 'value'
         ret._data = df.sort_index()
+        ret._set_attributes()
 
         if not inplace:
             return ret
@@ -611,21 +614,26 @@ class IamDataFrame(object):
         ValueError
             "time" is not a column of `self.data`
         """
-        if "time" not in self.data:
-            raise ValueError("time column must be datetime to use this method")
+        if not self.time_col == 'time':
+            raise ValueError('Time domain must be datetime to use this method')
 
         ret = self.copy() if not inplace else self
 
         _data = ret.data
         _data["year"] = _data["time"].apply(lambda x: x.year)
         _data = _data.drop("time", axis="columns")
-        ret._LONG_IDX = [v if v != "time" else "year" for v in ret._LONG_IDX]
+        _index = [v if v != "time" else "year" for v in ret._LONG_IDX]
 
-        if any(_data[ret._LONG_IDX].duplicated()):
-            error_msg = ('swapping time for year will result in duplicate '
-                         'rows in `data`!')
-            raise ValueError(error_msg)
-        ret._data = _data.set_index(IAMC_IDX)
+        rows = _data[_index].duplicated()
+        if any(rows):
+            error_msg = 'Swapping time for year causes duplicates in `data`'
+            _raise_data_error(error_msg, _data.loc[rows, ret._LONG_IDX])
+
+        # assign data and other attributes
+        ret._LONG_IDX = _index
+        ret._data = _data.set_index(ret._LONG_IDX)
+        ret.time_col = 'year'
+        ret._set_attributes()
 
         if not inplace:
             return ret
@@ -1496,6 +1504,7 @@ class IamDataFrame(object):
         if len(idx) == 0:
             logger.warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
+        ret._set_attributes()
         if not inplace:
             return ret
 
