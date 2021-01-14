@@ -177,14 +177,7 @@ class IamDataFrame(object):
             if meta_sheet in excel_file.sheet_names:
                 self.load_meta(excel_file, sheet_name=meta_sheet)
 
-        # add time domain and extra-cols as attributes
-        if self.time_col == 'year':
-            setattr(self, 'year', get_index_levels(self._data, 'year'))
-        else:
-            setattr(self, 'time', pd.Index(
-                get_index_levels(self._data, 'time')))
-        for c in self.extra_cols:
-            setattr(self, c, get_index_levels(self._data, c))
+        self._set_attributes()
 
         # execute user-defined code
         if 'exec' in run_control():
@@ -192,6 +185,20 @@ class IamDataFrame(object):
 
         # add the `plot` handler
         self.plot = PlotAccessor(self)
+
+    def _set_attributes(self):
+        """Utility function to set attributes"""
+
+        # add time domain and extra-cols as attributes
+        if self.time_col == 'year':
+            setattr(self, 'year', get_index_levels(self._data, 'year'))
+        else:
+            setattr(self, 'time', pd.Index(
+                get_index_levels(self._data, 'time')))
+
+        # set extra-cols as attributes
+        for c in self.extra_cols:
+            setattr(self, c, get_index_levels(self._data, c))
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
