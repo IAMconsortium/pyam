@@ -129,9 +129,10 @@ def test_init_df_with_meta_incompatible_index(test_pd_df):
                         index=META_DF.index.rename(index))
 
     # assert that using an incompatible index for the meta arg raises
-    match = "Incompatible `index` \['model', 'scenario'\] with `meta` index *."
+    match = "Incompatible `index=\['model', 'scenario'\]` with `meta` *."
     with pytest.raises(ValueError, match=match):
         IamDataFrame(test_pd_df, meta=meta)
+
 
 def test_init_df_with_custom_index(test_pd_df):
     # rename 'model' column and add a version column to the dataframe

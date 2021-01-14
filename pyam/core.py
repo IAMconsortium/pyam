@@ -117,8 +117,8 @@ class IamDataFrame(object):
                 msg = 'Invalid arguments {} for initializing from IamDataFrame'
                 raise ValueError(msg.format(list(kwargs)))
             if index != data.index.names:
-                msg = f'Index {index} incompatible with {type(data)} index '
-                raise ValueError(msg + str(data.index.names))
+                msg = f'Incompatible `index={index}` with {type(data)} '
+                raise ValueError(msg + f'(index={data.index.names})')
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
@@ -131,8 +131,8 @@ class IamDataFrame(object):
 
         # if meta is given explicitly, verify that index matches
         if meta is not None and not meta.index.names == index:
-            raise ValueError(f'Incompatible `index` {index} with `meta` index '
-                             + str(meta.index.names))
+            raise ValueError(f'Incompatible `index={index}` with `meta` '
+                             f'(index={meta.index.names})!')
 
         # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
