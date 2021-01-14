@@ -189,14 +189,19 @@ class IamDataFrame(object):
     def _set_attributes(self):
         """Utility function to set attributes"""
 
-        # add time domain and extra-cols as attributes
+        # add time domain as attributes
         if self.time_col == 'year':
             setattr(self, 'year', get_index_levels(self._data, 'year'))
         else:
             setattr(self, 'time', pd.Index(
                 get_index_levels(self._data, 'time')))
 
-        # set extra-cols as attributes
+        # set non-standard index columns as attributes
+        for c in self.meta.index.names:
+            if c not in META_IDX:
+                setattr(self, c, get_index_levels(self.meta, c))
+
+        # set extra data columns as attributes
         for c in self.extra_cols:
             setattr(self, c, get_index_levels(self._data, c))
 

@@ -144,6 +144,12 @@ def test_init_df_with_custom_index(test_pd_df):
     df = IamDataFrame(test_pd_df, index=index)
     assert df.index.names == index
 
+    # check that index attributes were set correctly and that df.model fails
+    assert df.source == ['model_a']
+    assert df.version == [1, 2, 3]
+    with pytest.raises(KeyError, match='Index `model` does not exist!'):
+        df.model
+
 
 def test_init_empty_message(caplog):
     IamDataFrame(data=df_empty)
