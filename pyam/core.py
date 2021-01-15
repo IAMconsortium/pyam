@@ -630,14 +630,14 @@ class IamDataFrame(object):
         rows = _data[_index].duplicated()
         if any(rows):
             error_msg = 'Swapping time for year causes duplicates in `data`'
-            _raise_data_error(error_msg, _data.loc[rows, ret._LONG_IDX])
+            _raise_data_error(error_msg, _data[_index])
 
         # assign data and other attributes
         ret._LONG_IDX = _index
         ret._data = _data.set_index(ret._LONG_IDX)
         ret.time_col = 'year'
         ret._set_attributes()
-        delattr(self, 'time')
+        delattr(ret, 'time')
 
         if not inplace:
             return ret
