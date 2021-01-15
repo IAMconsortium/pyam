@@ -346,6 +346,9 @@ class IamDataFrame(object):
     @data.setter
     def data(self, df):
         """Set the timeseries data from a long :class:`pandas.DataFrame`"""
+        logger.warning('Setting `data` via the setter can cause'
+                       'inconsistencies with `meta` and other attributes.')
+        deprecation_warning('Please use `IamDataFrame(<data>)` instead!')
         self._data = format_time_col(df, self.time_col)\
             .set_index(self._LONG_IDX).value
 
