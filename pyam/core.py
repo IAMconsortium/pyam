@@ -634,6 +634,7 @@ class IamDataFrame(object):
         ret._data = _data.set_index(ret._LONG_IDX)
         ret.time_col = 'year'
         ret._set_attributes()
+        delattr(self, 'time')
 
         if not inplace:
             return ret

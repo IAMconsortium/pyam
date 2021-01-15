@@ -1006,10 +1006,12 @@ def test_swap_time_to_year(test_df, inplace):
 
     if inplace:
         assert obs is None
-        assert compare(test_df, exp).empty
-    else:
-        assert compare(obs, exp).empty
-        assert "year" not in test_df.data.columns
+        obs = test_df
+
+    assert compare(obs, exp).empty
+    assert obs.year == [2005, 2010]
+    with pytest.raises(AttributeError):
+        obs.time
 
 
 @pytest.mark.parametrize("inplace", [True, False])
