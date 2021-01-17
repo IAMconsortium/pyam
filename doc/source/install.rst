@@ -34,8 +34,8 @@ Dependencies
 ------------
 
 Like any software project, we stand on the shoulders of giants. Our particular
-giants include :code:`numpy` :cite:`numpy`, :code:`matplotlib`
-:cite:`matplotlib`, and :code:`pandas` :cite:`pandas`. Explicit requirements are
+giants include **numpy** :cite:`numpy`, **matplotlib**
+:cite:`matplotlib`, and **pandas** :cite:`pandas`. Explicit requirements are
 fully enumerated below.
 
 The required depedencies for |pyam| are:
