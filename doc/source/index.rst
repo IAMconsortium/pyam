@@ -83,6 +83,7 @@ Table of Contents
    tutorials
    gallery/index
    api
+   R_tutorials/pyam_R_tutorial
 
 Copyright & License
 -------------------
