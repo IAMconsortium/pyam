@@ -1,5 +1,6 @@
 # Next Release
 
+- [#483](https://github.com/IAMconsortium/pyam/pull/483) Add a tutorial for integration with R
 - [#477](https://github.com/IAMconsortium/pyam/pull/477) Add a nightly test suite
 - [#471](https://github.com/IAMconsortium/pyam/pull/471) Add a `iiasa.Connection.properties()` function to retrieve scenario audit data
 
