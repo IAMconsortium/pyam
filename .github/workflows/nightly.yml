@@ -6,10 +6,12 @@ name: nightly
 # even though it is scheduled to run only once per week...
 
 on:
-  schedule:
+#  schedule:
     # see https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events
     # 05:00 UTC = 06:00 CET = 07:00 CEST
-    - cron: "0 5 * * TUE"
+#    - cron: "0 5 * * TUE"
+  pull_request:
+    branches: [ '**' ]
 
 jobs:
   pytest:
@@ -33,6 +35,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
+    - name: Install Pandoc
+      uses: r-lib/actions/setup-pandoc@v1
 
     - name: Install dependencies and package
       run: |
