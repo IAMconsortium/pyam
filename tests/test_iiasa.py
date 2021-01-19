@@ -226,12 +226,16 @@ def test_query_with_subannual(conn, test_pd_df, kwargs):
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
+@pytest.mark.parametrize("meta", [
+    ['string'],  # version column is added whether or not stated explicitly
+    ['string', 'version']
+])
 @pytest.mark.parametrize("kwargs", [
     {},
     dict(variable='Primary Energy'),
     dict(scenario='scen_a', variable='Primary Energy')
 ])
-def test_query_with_meta_arg(conn, test_pd_df, kwargs):
+def test_query_with_meta_arg(conn, test_pd_df, meta, kwargs):
     # test reading timeseries data (including subannual data)
     exp = IamDataFrame(test_pd_df, subannual='Year')\
         .append(MODEL_B_DF, model='model_b', scenario='scen_a', region='World')
@@ -239,11 +243,11 @@ def test_query_with_meta_arg(conn, test_pd_df, kwargs):
         exp.set_meta(META_DF.iloc[[0, 1, 3]][i])
 
     # test method via Connection
-    df = conn.query(meta=['string'], **kwargs)
+    df = conn.query(meta=meta, **kwargs)
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
     # test top-level method
-    df = read_iiasa(TEST_API, meta=['string'], **kwargs)
+    df = read_iiasa(TEST_API, meta=meta, **kwargs)
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
