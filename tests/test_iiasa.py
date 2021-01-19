@@ -158,10 +158,11 @@ def test_index(conn, default):
 @pytest.mark.parametrize("default", [True, False])
 def test_meta(conn, default):
     # test that connection returns the correct meta dataframe
+    v = 'version'
     if default:
-        exp = META_DF.loc[META_DF.is_default, ['version'] + META_COLS]
+        exp = META_DF.loc[META_DF.is_default, [v] + META_COLS]
     else:
-        exp = META_DF[VERSION_COLS + META_COLS]
+        exp = META_DF[VERSION_COLS + META_COLS].set_index(v, append=True)
 
     pdt.assert_frame_equal(conn.meta(default=default), exp, check_dtype=False)
 

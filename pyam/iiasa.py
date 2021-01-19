@@ -11,7 +11,8 @@ import pandas as pd
 
 from collections.abc import Mapping
 from pyam.core import IamDataFrame
-from pyam.utils import META_IDX, IAMC_IDX, isstr, pattern_match
+from pyam.utils import META_IDX, IAMC_IDX, isstr, pattern_match, \
+    DEFAULT_META_INDEX
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -270,6 +271,7 @@ class Connection(object):
         """
         df = self._query_meta(default)
         cols = ['version'] if default else ['version', 'is_default']
+        index = DEFAULT_META_INDEX + ([] if default else ['version'])
 
         def extract(row):
             return (
@@ -277,7 +279,7 @@ class Connection(object):
                            pd.Series(row.metadata)])
                 .to_frame()
                 .T
-                .set_index(['model', 'scenario'])
+                .set_index(index)
             )
 
         return pd.concat([extract(row) for i, row in df.iterrows()],
@@ -455,11 +457,6 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
-        # TODO: API returns timeseries data for non-default versions
-        if default is not True:
-            msg = 'Querying for non-default scenarios is not (yet) supported'
-            raise ValueError(msg)
-
         # retrieve data
         headers = {
             'Authorization': 'Bearer {}'.format(self._token),
@@ -485,30 +482,18 @@ class Connection(object):
             if all([i in [-1, 'Year'] for i in timeslices]):
                 data.drop(columns='subannual', inplace=True)
 
-        # check if there are multiple version for any model/scenario
-        lst = (
-            data[META_IDX + ['version']].drop_duplicates()
-            .groupby(META_IDX).count().version
-        )
+        if default:
+            index = DEFAULT_META_INDEX
+            data.drop(columns='version', inplace=True)
+        else:
+            index = DEFAULT_META_INDEX + ['version']
 
-        # checking if there are multiple versions
-        # for every model/scenario combination
-        # TODO this is probably not necessary
-        if len(lst) > 1 and max(lst) > 1:
-            raise ValueError('multiple versions for {}'.format(
-                lst[lst > 1].index.to_list()))
-        data.drop(columns='version', inplace=True)
-
-        # cast to IamDataFrame
-        df = IamDataFrame(data)
-
-        # merge meta categorization and quantitative indications
+        # merge meta indicators (if required) and cast to IamDataFrame
         if meta:
-            _meta = self.meta().loc[df.meta.index]
-            for i in _meta.columns if meta is True else meta + ['version']:
-                df.set_meta(_meta[i])
-
-        return IamDataFrame(df)
+            return IamDataFrame(data, meta=self.meta(default=default),
+                                index=index)
+        else:
+            return IamDataFrame(data, index=index)
 
 
 def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL,
