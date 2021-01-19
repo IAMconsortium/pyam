@@ -226,26 +226,18 @@ class Connection(object):
         return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
 
     @lru_cache()
-    def _query_index(self, default=True):
-        # TODO merge this function with `meta()`
-        default = 'true' if default else 'false'
-        add_url = 'runs?getOnlyDefaultRuns={}'
-        url = '/'.join([self._auth_url, add_url.format(default)])
-        headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        r = requests.get(url, headers=headers)
-        _check_response(r, 'Could not retrieve the resource index')
-        return pd.read_json(r.content, orient='records')
-
-    @lru_cache()
-    def _query_meta(self, default=True):
+    def _query_index(self, default=True, meta=False):
         # TODO: at present this reads in all data for all scenarios,
         #  it could be sped up in the future to try to query a subset
         _default = 'true' if default else 'false'
-        add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
-        url = '/'.join([self._auth_url, add_url.format(_default)])
+        _meta = 'true' if meta else 'false'
+        add_url = f'runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}'
+        url = '/'.join([self._auth_url, add_url])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
+
+        # cast response to dataframe and return
         return pd.read_json(r.content, orient='records')
 
     @property
@@ -269,7 +261,7 @@ class Connection(object):
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
-        df = self._query_meta(default)
+        df = self._query_index(default, meta=True)
         cols = ['version'] if default else ['version', 'is_default']
         index = DEFAULT_META_INDEX + ([] if default else ['version'])
 
@@ -295,7 +287,7 @@ class Connection(object):
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
-        _df = self._query_meta(default)
+        _df = self._query_index(default, meta=True)
         audit_cols = ['cre_user', 'cre_date', 'upd_user', 'upd_date']
         audit_mapping = dict([(i, i.replace('_', 'ate_')) for i in audit_cols])
         other_cols = ['version'] if default else ['version', 'is_default']
@@ -462,6 +454,15 @@ class Connection(object):
             'Authorization': 'Bearer {}'.format(self._token),
             'Content-Type': 'application/json',
         }
+
+        # retrieve meta to obtain run ids
+        _meta = self.meta(default=default)
+        # downselect to subset of meta columns if given as list
+        if islistable(meta):
+            # always merge 'version' (even if not requested explicitly)
+            meta += [] if 'version' in meta else ['version']
+            _meta = _meta[meta]
+
         _args = json.dumps(self._query_post_data(**kwargs))
         url = '/'.join([self._auth_url, 'runs/bulk/ts'])
         logger.debug(f'Query timeseries data from {url} with data {_args}')
@@ -482,20 +483,17 @@ class Connection(object):
             if all([i in [-1, 'Year'] for i in timeslices]):
                 data.drop(columns='subannual', inplace=True)
 
+        # set the index for the IamDataFrame
         if default:
             index = DEFAULT_META_INDEX
             data.drop(columns='version', inplace=True)
         else:
             index = DEFAULT_META_INDEX + ['version']
+            logger.info('Initializing an `IamDataFrame` '
+                        f'with non-default index {index}')
 
         # merge meta indicators (if requested) and cast to IamDataFrame
         if meta:
-            _meta = self.meta(default=default)
-            # downselect to requested meta columns (if given)
-            if islistable(meta):
-                # always merge 'version' (even if not requested explicitly)
-                meta += [] if 'version' in meta else ['version']
-                _meta = _meta[meta]
             return IamDataFrame(data, meta=_meta, index=index)
         else:
             return IamDataFrame(data, index=index)
