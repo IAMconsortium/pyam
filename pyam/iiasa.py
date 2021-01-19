@@ -12,7 +12,7 @@ import pandas as pd
 from collections.abc import Mapping
 from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, IAMC_IDX, isstr, pattern_match, \
-    DEFAULT_META_INDEX
+    DEFAULT_META_INDEX, islistable
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -488,10 +488,15 @@ class Connection(object):
         else:
             index = DEFAULT_META_INDEX + ['version']
 
-        # merge meta indicators (if required) and cast to IamDataFrame
+        # merge meta indicators (if requested) and cast to IamDataFrame
         if meta:
-            return IamDataFrame(data, meta=self.meta(default=default),
-                                index=index)
+            _meta = self.meta(default=default)
+            # downselect to requested meta columns (if given)
+            if islistable(meta):
+                # always merge 'version' (even if not requested explicitly)
+                meta += [] if 'version' in meta else ['version']
+                _meta = _meta[meta]
+            return IamDataFrame(data, meta=_meta, index=index)
         else:
             return IamDataFrame(data, index=index)
 
