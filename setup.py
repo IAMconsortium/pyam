@@ -36,6 +36,7 @@ EXTRA_REQUIREMENTS = {
     'docs': ['sphinx', 'nbsphinx', 'sphinx-gallery', 'cloud_sptheme', 'pillow',
              'sphinxcontrib-bibtex<2.0', 'sphinxcontrib-programoutput',
              'numpydoc', 'openpyxl', 'kaleido']  # docs requires 'tutorials'
+    # GitHub Actions requires pandoc explicitly to build the docs
 }
 
 # building the docs on readthedocs fails with a FileNotFoundError
