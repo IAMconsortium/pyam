@@ -36,6 +36,15 @@ MODEL_B_DF = pd.DataFrame([
     ['Primary Energy|Coal', 'EJ/yr', 'Year', 0.9, 5]
 ], columns=['variable', 'unit', 'subannual', 2005, 2010])
 
+NON_DEFAULT_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 2, 'Primary Energy', 'EJ/yr', 'Year', 2, 7],
+    ['model_a', 'scen_a', 2, 'Primary Energy|Coal', 'EJ/yr', 'Year', 0.8, 4],
+    ['model_b', 'scen_a', 1, 'Primary Energy', 'EJ/yr', 'Summer', 1, 3],
+    ['model_b', 'scen_a', 1, 'Primary Energy', 'EJ/yr', 'Year', 3, 8],
+    ['model_b', 'scen_a', 1, 'Primary Energy|Coal', 'EJ/yr', 'Summer', 0.4, 2],
+    ['model_b', 'scen_a', 1, 'Primary Energy|Coal', 'EJ/yr', 'Year', 0.9, 5]
+], columns=META_IDX + ['version', 'variable', 'unit', 'subannual', 2005, 2010])
+
 
 def test_unknown_conn():
     # connecting to an unknown API raises an error
@@ -270,6 +279,20 @@ def test_query_with_meta_false(conn, test_pd_df, kwargs):
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
 
-def test_query_non_default(conn):
-    # querying for non-default scenario data raises an error
-    pytest.raises(ValueError, conn.query, default=False)
+def test_query_non_default(conn, test_pd_df):
+    # test reading timeseries data with non-default versions & index
+    test_pd_df['subannual'] = 'Year'
+    test_pd_df['version'] = 1
+    df = pd.concat([test_pd_df[NON_DEFAULT_DF.columns], NON_DEFAULT_DF])
+
+    meta = META_DF.set_index('version', append=True)
+    index = ['model', 'scenario', 'version']
+    exp = IamDataFrame(df, meta=meta, index=index, region='World')
+
+    # test method via Connection
+    df = conn.query(default=False)
+    assert_iamframe_equal(df, exp)
+
+    # test top-level method
+    df = read_iiasa(TEST_API, default=False)
+    assert_iamframe_equal(df, exp)

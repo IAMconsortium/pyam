@@ -250,8 +250,7 @@ class Connection(object):
         _check_response(r)
         return pd.read_json(r.content, orient='records')['name']
 
-    @lru_cache()
-    def meta(self, default=True):
+    def meta(self, default=True, **kwargs):
         """Return categories and indicators (meta) of scenarios
 
         Parameters
@@ -259,10 +258,13 @@ class Connection(object):
         default : bool, optional
             Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
-            If :obj:`False`, return all versions.
+            If `False`, return all versions.
         """
         df = self._query_index(default, meta=True)
         cols = ['version'] if default else ['version', 'is_default']
+        if kwargs:
+            if kwargs.pop('run_id', False):
+                cols += ['run_id']
         index = DEFAULT_META_INDEX + ([] if default else ['version'])
 
         def extract(row):
@@ -355,7 +357,7 @@ class Connection(object):
             return df.rename(columns={'name': 'region', 'synonyms': 'synonym'})
         return pd.Series(df['name'].unique(), name='region')
 
-    def _query_post_data(self, **kwargs):
+    def _query_post(self, meta, default=True, **kwargs):
         def _get_kwarg(k):
             # TODO refactor API to return all models if model-list is empty
             x = kwargs.pop(k, '*' if k == 'model' else [])
@@ -376,9 +378,12 @@ class Connection(object):
                 matches |= pattern_match(data, p)
             return data[matches].unique()
 
-        # get unique run ids
-        meta = self._query_index()
-        meta = meta[meta.is_default]
+        # drop non-default runs if only default is requested
+        if default and hasattr(meta, 'is_default'):
+            meta = meta[meta.is_default]
+
+        # determine relevant run id's
+        meta = meta.reset_index()
         models = _match(meta['model'], m_pattern)
         scenarios = _match(meta['scenario'], s_pattern)
         if len(models) == 0 and len(scenarios) == 0:
@@ -449,21 +454,25 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
-        # retrieve data
         headers = {
             'Authorization': 'Bearer {}'.format(self._token),
             'Content-Type': 'application/json',
         }
 
-        # retrieve meta to obtain run ids
-        _meta = self.meta(default=default)
-        # downselect to subset of meta columns if given as list
-        if islistable(meta):
-            # always merge 'version' (even if not requested explicitly)
-            meta += [] if 'version' in meta else ['version']
-            _meta = _meta[meta]
+        # retrieve meta (with run ids) or only index
+        if meta:
+            _meta = self.meta(default=default, run_id=True)
+            # downselect to subset of meta columns if given as list
+            if islistable(meta):
+                # always merge 'version' (even if not requested explicitly)
+                # 'run_id' is required to determine `_args`, dropped later
+                _meta = _meta[set(meta).union(['version', 'run_id'])]
+        else:
+            _meta = self._query_index(default=default)\
+                .set_index(DEFAULT_META_INDEX)
 
-        _args = json.dumps(self._query_post_data(**kwargs))
+        # retrieve data
+        _args = json.dumps(self._query_post(_meta, default=default, **kwargs))
         url = '/'.join([self._auth_url, 'runs/bulk/ts'])
         logger.debug(f'Query timeseries data from {url} with data {_args}')
         r = requests.post(url, headers=headers, data=_args)
@@ -483,7 +492,7 @@ class Connection(object):
             if all([i in [-1, 'Year'] for i in timeslices]):
                 data.drop(columns='subannual', inplace=True)
 
-        # set the index for the IamDataFrame
+        # define the index for the IamDataFrame
         if default:
             index = DEFAULT_META_INDEX
             data.drop(columns='version', inplace=True)
@@ -494,6 +503,9 @@ class Connection(object):
 
         # merge meta indicators (if requested) and cast to IamDataFrame
         if meta:
+            # 'run_id' is necessary to retrieve data, not returned by default
+            if not (islistable(meta) and 'run_id' in meta):
+                _meta.drop(columns='run_id', inplace=True)
             return IamDataFrame(data, meta=_meta, index=index)
         else:
             return IamDataFrame(data, index=index)
