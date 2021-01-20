@@ -83,6 +83,10 @@ Table of Contents
    tutorials
    gallery/index
    api
+
+.. toctree::
+   :maxdepth: 1
+
    R_tutorials/pyam_R_tutorial
 
 Copyright & License
