@@ -2,6 +2,7 @@
 
 - [#481](https://github.com/IAMconsortium/pyam/pull/481) Enable custom index columns
 - [#477](https://github.com/IAMconsortium/pyam/pull/477) Add a nightly test suite
+- [#476](https://github.com/IAMconsortium/pyam/pull/476) Add docstrings to plotting functions `df.plot.<kind>()`
 - [#471](https://github.com/IAMconsortium/pyam/pull/471) Add a `iiasa.Connection.properties()` function to retrieve scenario audit data
 
 # Release v0.10.0
