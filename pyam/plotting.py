@@ -12,7 +12,7 @@ from collections.abc import Iterable
 
 from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
-from pyam import figures
+from pyam.figures import sankey
 from pyam.timeseries import cross_threshold
 from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, YEAR_IDX,\
     isstr, islistable, _raise_data_error
@@ -77,6 +77,20 @@ class PlotAccessor():
     def __init__(self, df):
         self._parent = df
 
+        # assign plotting functions as attributes
+        PLOT_MAPPING = {
+            'line': line,
+            'bar': bar,
+            'stack': stack,
+            'box': box,
+            'pie': pie,
+            'scatter': scatter,
+            'sankey': sankey
+        }
+        # inherit the docstring from the plot function
+        for name, func in PLOT_MAPPING.items():
+            getattr(self, name).__func__.__doc__ = func.__doc__
+
     def __call__(self, kind='line', *args, **kwargs):
         return getattr(self, kind)(**kwargs)
 
@@ -102,7 +116,7 @@ class PlotAccessor():
         return scatter(self._parent, *args, **kwargs)
 
     def sankey(self, *args, **kwargs):
-        return figures.sankey(self._parent, *args, **kwargs)
+        return sankey(self._parent, *args, **kwargs)
 
 
 def reset_default_props(**kwargs):
