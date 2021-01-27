@@ -54,9 +54,6 @@ def test_io_csv(test_df, tmpdir):
     [dict(include_meta='foo'), dict(meta_sheet_name='foo')]
 ])
 def test_io_xlsx(test_df, meta_args, tmpdir):
-    # add column to `meta`
-    test_df.set_meta(['a', 'b'], 'string')
-
     # write to xlsx (direct file name and ExcelWriter, see #300)
     file = tmpdir / 'testing_io_write_read.xlsx'
     for f in [file, pd.ExcelWriter(file)]:
@@ -67,8 +64,28 @@ def test_io_xlsx(test_df, meta_args, tmpdir):
         # read from xlsx
         import_df = IamDataFrame(file, **meta_args[1])
 
-        # assert that IamDataFrame instances are equal and delete file
+        # assert that IamDataFrame instances are equal
         assert_iamframe_equal(test_df, import_df)
+
+
+@pytest.mark.parametrize("sheets, sheetname", [
+    [['data1', 'data2'], dict(sheet_name='data*')],
+    [['data1', 'foo'], dict(sheet_name=['data*', 'foo'])]
+])
+def test_io_xlsx_multiple_data_sheets(test_df, sheets, sheetname, tmpdir):
+    # write data to separate sheets in excel file
+    file = tmpdir / 'testing_io_write_read.xlsx'
+    xl = pd.ExcelWriter(file)
+    for i, (model, scenario) in enumerate(test_df.index):
+        test_df.filter(scenario=scenario).to_excel(xl, sheet_name=sheets[i])
+    test_df.export_meta(xl)
+    xl.close()
+
+    # read from xlsx
+    import_df = IamDataFrame(file, **sheetname)
+
+    # assert that IamDataFrame instances are equal
+    assert_iamframe_equal(test_df, import_df)
 
 
 def test_init_df_with_na_unit(test_pd_df, tmpdir):

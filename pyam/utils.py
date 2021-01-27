@@ -111,15 +111,20 @@ def write_sheet(writer, name, df, index=False):
             pass
 
 
-def read_pandas(path, default_sheet='data', *args, **kwargs):
+def read_pandas(path, default_sheet_name='data*', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
     if isinstance(path, Path) and path.suffix == '.csv':
         df = pd.read_csv(path, *args, **kwargs)
     else:
         xl = pd.ExcelFile(path)
-        if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
-            kwargs['sheet_name'] = default_sheet
-        df = pd.read_excel(path, *args, **kwargs)
+        sheet_names = pd.Series(xl.sheet_names)
+        if len(sheet_names) > 1:
+            sheets = kwargs.pop('sheet_name', default_sheet_name)
+            # apply pattern-matching for sheet names (use * as wildcard)
+            sheets = sheet_names[pattern_match(sheet_names, values=sheets)]
+            df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
+        else:
+            df = pd.read_excel(path, *args, **kwargs)
 
         # remove unnamed and empty columns
         empty_cols = [c for c in df.columns if str(c).startswith('Unnamed: ')
@@ -414,8 +419,7 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=False):
     for filtering (str, int, bool)
     """
     matches = np.array([False] * len(data))
-    if not isinstance(values, Iterable) or isstr(values):
-        values = [values]
+    values = values if islistable(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.copy()
