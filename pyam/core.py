@@ -98,9 +98,10 @@ class IamDataFrame(object):
     R-style integer column headers (i.e., `X2015`) are acceptable.
 
     When initializing an :class:`IamDataFrame` from an xlsx file,
-    |pyam| will per default look for the sheets 'data' and 'meta' to
-    populate the respective tables. Custom sheet names can be specified with
-    kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta').
+    |pyam| will per default parse all sheets starting with 'data'
+    for timeseries and a sheet 'meta' to populate the respective table.
+    Custom sheet names can be specified with kwargs :code:`sheet_name` ('data')
+    and :code:`meta_sheet_name` ('meta').
     Calling the class with :code:`meta_sheet_name=False` will
     skip the import of the 'meta' table.
 
