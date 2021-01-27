@@ -1,5 +1,14 @@
 # Next Release
 
+## API changes
+
+PR [#488](https://github.com/IAMconsortium/pyam/pull/488) changes the default
+behavior when initializing an IamDataFrame from xlsx: now, all sheets names
+starting with `data` will be parsed for timeseries data.
+
+## Individual updates
+
+- [#488](https://github.com/IAMconsortium/pyam/pull/488) Read all sheets starting with `data` when reading from xlsx
 - [#481](https://github.com/IAMconsortium/pyam/pull/481) Enable custom index columns
 - [#477](https://github.com/IAMconsortium/pyam/pull/477) Add a nightly test suite
 - [#476](https://github.com/IAMconsortium/pyam/pull/476) Add docstrings to plotting functions `df.plot.<kind>()`
