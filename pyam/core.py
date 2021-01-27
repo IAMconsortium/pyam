@@ -1681,9 +1681,9 @@ class IamDataFrame(object):
         sheet_name : str
             name of sheet which will contain dataframe of 'meta' indicators
         """
+        close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
-            close = True
-            excel_writer = pd.ExcelWriter(excel_writer)
+            excel_writer, close = pd.ExcelWriter(excel_writer), True
         write_sheet(excel_writer, sheet_name, self.meta, index=True)
         if close:
             excel_writer.close()
