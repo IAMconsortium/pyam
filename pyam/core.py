@@ -100,6 +100,7 @@ class IamDataFrame(object):
     When initializing an :class:`IamDataFrame` from an xlsx file,
     |pyam| will per default parse all sheets starting with 'data'
     for timeseries and a sheet 'meta' to populate the respective table.
+    Specific sheets can be chosen with a str or list of sheetnames.
     Custom sheet names can be specified with kwargs :code:`sheet_name` ('data')
     and :code:`meta_sheet_name` ('meta').
     Calling the class with :code:`meta_sheet_name=False` will

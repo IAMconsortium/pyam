@@ -122,7 +122,13 @@ def read_pandas(path, sheet_name='data*', *args, **kwargs):
             sheets = kwargs.pop('sheet_name', sheet_name)
             # apply pattern-matching for sheet names (use * as wildcard)
             sheets = sheet_names[pattern_match(sheet_names, values=sheets)]
-            df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
+            # df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
+            lst = []
+            for s in sheets:
+                logger.info(f'Reading sheet {s}')
+                lst.append(xl.parse(s, *args, **kwargs))
+            df = pd.concat(lst)
+                        
         else:
             df = pd.read_excel(path, *args, **kwargs)
 
