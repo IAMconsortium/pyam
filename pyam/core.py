@@ -1722,16 +1722,18 @@ class IamDataFrame(object):
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
 
-    def load_meta(self, path, *args, **kwargs):
+    def load_meta(self, path, sheet_name='meta', *args, **kwargs):
         """Load 'meta' indicators from file
 
         Parameters
         ----------
         path : str or path object
-            any valid string path or :class:`pathlib.Path`
+            Any valid string path or :class:`pathlib.Path`
+        sheet_name : str, optional
+            Name of the sheet to be parsed
         """
         # load from file
-        df = read_pandas(Path(path), *args, **kwargs)
+        df = read_pandas(Path(path), sheet_name=sheet_name, *args, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)
         df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
