@@ -45,26 +45,26 @@ from pyam.utils import (
     isstr,
     islistable,
     print_list,
+    DEFAULT_META_INDEX,
     META_IDX,
-    YEAR_IDX,
     IAMC_IDX,
     SORT_IDX,
-    ILLEGAL_COLS
+    ILLEGAL_COLS,
+    _raise_data_error
 )
 from pyam.read_ixmp import read_ix
-from pyam.timeseries import fill_series
-from pyam.plotting import mpl_args_to_meta_cols
+from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
 from pyam._aggregate import _aggregate, _aggregate_region, _aggregate_time,\
     _aggregate_recursive, _group_and_agg
 from pyam.units import convert_unit
-from pyam.index import get_index_levels, append_index_level
+from pyam.index import get_index_levels
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """Scenario timeseries data following the IAMC-structure
+    """Scenario timeseries data and meta indicators
 
     The class provides a number of diagnostic features (including validation of
     data, completeness of variables provided), processing tools (e.g.,
@@ -72,12 +72,16 @@ class IamDataFrame(object):
 
     Parameters
     ----------
-    data : ixmp.Scenario, pd.DataFrame or data file
-        an instance of an :class:`ixmp.Scenario`, :class:`pandas.DataFrame`,
-        or data file with the required data columns.
-        A pandas.DataFrame can have the required data as columns or index.
-        Support is provided additionally for R-style data columns for years,
-        like "X2015", etc.
+    data : :class:`pandas.DataFrame`, :class:`ixmp.Scenario`,\
+    or file-like object as str or :class:`pathlib.Path`
+        Scenario timeseries data following the IAMC data format or
+        a supported variation as pandas object, a path to a file,
+        or a scenario of an ixmp instance.
+    meta : :class:`pandas.DataFrame`, optional
+        A dataframe with suitable 'meta' indicators for the new instance.
+        The index will be downselected to scenarios present in `data`.
+    index : list, optional
+        Columns to use for resulting IamDataFrame index.
     kwargs
         If `value=<col>`, melt column `<col>` to 'value' and use `<col>` name
         as 'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
@@ -87,16 +91,18 @@ class IamDataFrame(object):
         - multiple columns, to be concatenated by :code:`|`
         - a string to be used as value for this column
 
-        A :class:`pandas.DataFrame` with suitable `meta` indicators can be
-        passed as `meta=<df>`. The index will be downselected to those
-        scenarios that have timeseries data.
-
     Notes
     -----
+    A :class:`pandas.DataFrame` can have the required dimensions
+    as columns or index.
+    R-style integer column headers (i.e., `X2015`) are acceptable.
+
     When initializing an :class:`IamDataFrame` from an xlsx file,
-    |pyam| will per default look for the sheets 'data' and 'meta' to
-    populate the respective tables. Custom sheet names can be specified with
-    kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta')
+    |pyam| will per default parse all sheets starting with 'data'
+    for timeseries and a sheet 'meta' to populate the respective table.
+    Specific sheets can be chosen with a str or list of sheetnames.
+    Custom sheet names can be specified with kwargs :code:`sheet_name` ('data')
+    and :code:`meta_sheet_name` ('meta').
     Calling the class with :code:`meta_sheet_name=False` will
     skip the import of the 'meta' table.
 
@@ -107,66 +113,100 @@ class IamDataFrame(object):
     This is intended behaviour and consistent with pandas but may be confusing
     for those who are not used to the pandas/Python universe.
     """
-    def __init__(self, data, **kwargs):
+    def __init__(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
-                msg = 'Invalid arguments `{}` for initializing an IamDataFrame'
-                raise ValueError(msg.format(kwargs))
+                msg = 'Invalid arguments {} for initializing from IamDataFrame'
+                raise ValueError(msg.format(list(kwargs)))
+            if index != data.index.names:
+                msg = f'Incompatible `index={index}` with {type(data)} '
+                raise ValueError(msg + f'(index={data.index.names})')
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
-            self._init(data, **kwargs)
+            self._init(data, meta, index=index, **kwargs)
 
-    def _init(self, data, **kwargs):
+    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Process data and set attributes for new instance"""
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop('meta_sheet_name', 'meta')
 
-        # import data from pd.DataFrame or read from source
+        # if meta is given explicitly, verify that index matches
+        if meta is not None and not meta.index.names == index:
+            raise ValueError(f'Incompatible `index={index}` with `meta` '
+                             f'(index={meta.index.names})!')
+
+        # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            meta = kwargs.pop('meta') if 'meta' in kwargs else None
-            _data = format_data(data.copy(), **kwargs)
+            _data = format_data(data.copy(), index=index, **kwargs)
+        # read data from ixmp Platform instance
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             # TODO read meta indicators from ixmp
-            meta = None
             _data = read_ix(data, **kwargs)
         else:
-            meta = None
-            logger.info('Reading file `{}`'.format(data))
-            _data = read_file(data, **kwargs)
+            if islistable(data):
+                raise ValueError(
+                    'Initializing from list is not supported, '
+                    'use `IamDataFrame.append()` or `pyam.concat()`'
+                )
+            # read from file
+            try:
+                data = Path(data)  # casting str or LocalPath to Path
+                if data.is_file():
+                    logger.info(f'Reading file {data}')
+                    _data = read_file(data, index=index, **kwargs)
+                else:
+                    raise FileNotFoundError(f'File {data} does not exist')
+            except TypeError:  # `data` cannot be cast to Path
+                msg = 'IamDataFrame constructor not properly called!'
+                raise ValueError(msg)
 
-        _df, self.time_col, self.extra_cols = _data
-        self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
-        # cast time_col to desired format
-        self._data = _df.set_index(self._LONG_IDX).value
+        self._data, index, self.time_col, self.extra_cols = _data
+        self._LONG_IDX = self._data.index.names
 
         # define `meta` dataframe for categorization & quantitative indicators
-        self.meta = pd.DataFrame(index=_make_index(self._data))
+        self.meta = pd.DataFrame(index=_make_index(self._data, cols=index))
         self.reset_exclude()
 
-        # merge meta dataframe (if given in kwargs)
+        # if given explicitly, merge meta dataframe after downselecting
         if meta is not None:
-            self.meta = merge_meta(meta.loc[_make_index(self.data)],
-                                   self.meta, ignore_meta_conflict=True)
+            meta = meta.loc[self.meta.index.intersection(meta.index)]
+            self.meta = merge_meta(meta, self.meta, ignore_meta_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
-        if isstr(data) and data.endswith('.xlsx') and meta_sheet is not False\
-                and meta_sheet in pd.ExcelFile(data).sheet_names:
-            self.load_meta(data, sheet_name=meta_sheet)
+        if meta_sheet and isinstance(data, Path) and data.suffix == '.xlsx':
+            excel_file = pd.ExcelFile(data)
+            if meta_sheet in excel_file.sheet_names:
+                self.load_meta(excel_file, sheet_name=meta_sheet)
 
-        # add time domain and extra-cols as attributes
+        self._set_attributes()
+
+        # execute user-defined code
+        if 'exec' in run_control():
+            self._execute_run_control()
+
+        # add the `plot` handler
+        self.plot = PlotAccessor(self)
+
+    def _set_attributes(self):
+        """Utility function to set attributes"""
+
+        # add time domain as attributes
         if self.time_col == 'year':
             setattr(self, 'year', get_index_levels(self._data, 'year'))
         else:
             setattr(self, 'time', pd.Index(
                 get_index_levels(self._data, 'time')))
+
+        # set non-standard index columns as attributes
+        for c in self.meta.index.names:
+            if c not in META_IDX:
+                setattr(self, c, get_index_levels(self.meta, c))
+
+        # set extra data columns as attributes
         for c in self.extra_cols:
             setattr(self, c, get_index_levels(self._data, c))
-
-        # execute user-defined code
-        if 'exec' in run_control():
-            self._execute_run_control()
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
@@ -204,17 +244,17 @@ class IamDataFrame(object):
         """
         # concatenate list of index dimensions and levels
         info = f'{type(self)}\nIndex dimensions:\n'
-        c1 = max([len(i) for i in self._LONG_IDX]) + 1
+        c1 = max([len(i) for i in self._data.index.names]) + 1
         c2 = n - c1 - 5
         info += '\n'.join(
             [f' * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
-             for i in META_IDX])
+             for i in self.index.names])
 
         # concatenate list of index of _data (not in META_IDX)
         info += '\nTimeseries data coordinates:\n'
         info += '\n'.join(
             [f'   {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
-             for i in self._LONG_IDX if i not in META_IDX])
+             for i in self._data.index.names if i not in self.index.names])
 
         # concatenate list of (head of) meta indicators and levels/values
         def print_meta_row(m, t, lst):
@@ -228,7 +268,7 @@ class IamDataFrame(object):
                              self.meta.dtypes[0:meta_rows])])
         # print `...` if more than `meta_rows` columns
         if len(self.meta.columns) > meta_rows:
-            info += '\n * ...'
+            info += '\n   ...'
 
         # add info on size (optional)
         if memory_usage:
@@ -269,12 +309,19 @@ class IamDataFrame(object):
     @property
     def model(self):
         """Return the list of (unique) model names"""
-        return get_index_levels(self.meta, 'model')
+        return self._get_meta_index_levels('model')
 
     @property
     def scenario(self):
         """Return the list of (unique) scenario names"""
-        return get_index_levels(self.meta, 'scenario')
+        return self._get_meta_index_levels('scenario')
+
+    def _get_meta_index_levels(self, name):
+        """Return the list of a level from meta"""
+        if name in self.meta.index.names:
+            return get_index_levels(self.meta, name)
+        # in case of non-standard meta.index.names
+        raise KeyError(f'Index `{name}` does not exist!')
 
     @property
     def region(self):
@@ -301,6 +348,9 @@ class IamDataFrame(object):
     @data.setter
     def data(self, df):
         """Set the timeseries data from a long :class:`pandas.DataFrame`"""
+        logger.warning('Setting `data` via the setter can cause'
+                       'inconsistencies with `meta` and other attributes.')
+        deprecation_warning('Please use `IamDataFrame(<data>)` instead!')
         self._data = format_time_col(df, self.time_col)\
             .set_index(self._LONG_IDX).value
 
@@ -347,19 +397,19 @@ class IamDataFrame(object):
 
     def models(self):
         """Get a list of models"""
-        # TODO: deprecate in release >=0.9
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `model` instead.')
         return pd.Series(self.meta.index.levels[0])
 
     def scenarios(self):
         """Get a list of scenarios"""
-        # TODO: deprecate in release >=0.9
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `scenario` instead.')
         return pd.Series(self.meta.index.levels[1])
 
     def regions(self):
         """Get a list of regions"""
-        # TODO: deprecate in release >=0.9
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Use the attribute `region` instead.')
         return pd.Series(get_index_levels(self._data, 'region'), name='region')
 
@@ -440,6 +490,7 @@ class IamDataFrame(object):
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
         ret._data = _data.sort_index()
+        ret._set_attributes()
 
         if not inplace:
             return ret
@@ -489,34 +540,71 @@ class IamDataFrame(object):
         df = df.unstack(level=columns, fill_value=fill_value)
         return df
 
-    def interpolate(self, time):
-        """Interpolate missing values in timeseries (linear interpolation)
+    def interpolate(self, time, inplace=None, **kwargs):
+        """Interpolate missing values in the timeseries data
+
+        This method uses :meth:`pandas.DataFrame.interpolate`,
+        which applies linear interpolation by default
 
         Parameters
         ----------
-        time : int or datetime
+        time : int or datetime, or list-like thereof
              Year or :class:`datetime.datetime` to be interpolated.
              This must match the datetime/year format of `self`.
+        inplace : bool, optional
+            if True, do operation inplace and return None
+        kwargs
+            passed to :meth:`pandas.DataFrame.interpolate`
         """
-        if self.time_col == 'year' and not isinstance(time, int):
-            raise ValueError(
-                'The `time` argument `{}` is not an integer'.format(time)
+        # TODO deprecate and add kwarg inplace=False in release >= 1.0
+        if inplace is None:
+            deprecation_warning(
+                'Behavior of `interpolate` will change to `inplace=False` '
+                'as default in a future release. Set the kwarg explicitly '
+                'to avoid this warning. Use `inplace=True` to keep current '
+                'behavior.'
             )
+            inplace = True
+        ##
 
-        # get data in wide format, drop rows where value is already defined
-        df = self.timeseries()
-        if time in df.columns:
-            df = df[np.isnan(df[time])]
+        # setup
+        ret = self.copy() if not inplace else self
+        interp_kwargs = dict(method='slinear', axis=1)
+        interp_kwargs.update(kwargs)
+        time = list(time) if islistable(time) else [time]
+        # TODO - have to explicitly cast to numpy datetime to sort later,
+        # could enforce as we do for year below
+        if self.time_col == 'time':
+            time = list(map(np.datetime64, time))
+        elif not all(isinstance(x, int) for x in time):
+            raise ValueError(
+                'The `time` argument `{}` contains non-integers'.format(time)
+            )
+        old_cols = list(ret[ret.time_col].unique())
+        columns = np.sort(np.unique(old_cols + time))
 
-        # apply fill_series, re-add time dimension to index, set series name
-        _values = df.apply(fill_series, raw=False, axis=1, time=time).dropna()
-        _values.index = append_index_level(
-            index=_values.index, codes=[0] * len(_values),
-            level=[time], name=self.time_col, order=self._data.index.names)
-        _values.name = 'value'
+        # calculate a separate dataframe with full interpolation
+        df = ret.timeseries()
+        newdf = (
+            df
+            .reindex(columns=columns)
+            .interpolate(**interp_kwargs)
+        )
 
-        # append interpolated values to `_data` and sort index
-        self._data = self._data.append(_values).sort_index()
+        # replace only columns asked for
+        for col in time:
+            df[col] = newdf[col]
+
+        # replace underlying data object
+        # TODO naming time_col could be done in timeseries()
+        df.columns.name = ret.time_col
+        df = df.stack()  # long-data to pd.Series
+        df.name = 'value'
+        ret._data = df.sort_index()
+        ret._set_attributes()
+
+        if not inplace:
+            return ret
 
     def swap_time_for_year(self, inplace=False):
         """Convert the `time` column to `year`.
@@ -531,21 +619,27 @@ class IamDataFrame(object):
         ValueError
             "time" is not a column of `self.data`
         """
-        if "time" not in self.data:
-            raise ValueError("time column must be datetime to use this method")
+        if not self.time_col == 'time':
+            raise ValueError('Time domain must be datetime to use this method')
 
         ret = self.copy() if not inplace else self
 
         _data = ret.data
         _data["year"] = _data["time"].apply(lambda x: x.year)
         _data = _data.drop("time", axis="columns")
-        ret._LONG_IDX = [v if v != "time" else "year" for v in ret._LONG_IDX]
+        _index = [v if v != "time" else "year" for v in ret._LONG_IDX]
 
-        if any(_data[ret._LONG_IDX].duplicated()):
-            error_msg = ('swapping time for year will result in duplicate '
-                         'rows in `data`!')
-            raise ValueError(error_msg)
-        ret._data = _data.set_index(IAMC_IDX)
+        rows = _data[_index].duplicated()
+        if any(rows):
+            error_msg = 'Swapping time for year causes duplicates in `data`'
+            _raise_data_error(error_msg, _data[_index])
+
+        # assign data and other attributes
+        ret._LONG_IDX = _index
+        ret._data = _data.set_index(ret._LONG_IDX)
+        ret.time_col = 'year'
+        ret._set_attributes()
+        delattr(ret, 'time')
 
         if not inplace:
             return ret
@@ -703,11 +797,11 @@ class IamDataFrame(object):
         criteria : dict
             dictionary with variables mapped to applicable checks
             ('up' and 'lo' for respective bounds, 'year' for years - optional)
-        color : str
+        color : str, optional
             assign a color to this category for plotting
-        marker : str
+        marker : str, optional
             assign a marker to this category for plotting
-        linestyle : str
+        linestyle : str, optional
             assign a linestyle to this category for plotting
         """
         # add plotting run control
@@ -937,9 +1031,9 @@ class IamDataFrame(object):
         When using this registry, *current* and *to* may contain the symbols of
         greenhouse gas (GHG) species, such as 'CO2e', 'C', 'CH4', 'N2O',
         'HFC236fa', etc., as well as lower-case aliases like 'co2' supported by
-        :mod:`pyam`. In this case, *context* must contain 'gwp\_' followed by
-        the name of a specific global warming potential (GWP) metric supported
-        by :mod:`iam_units`, e.g. 'gwp_AR5GWP100'.
+        :mod:`pyam`. In this case, *context* must be the name of a specific
+        global warming potential (GWP) metric supported by :mod:`iam_units`,
+        e.g. 'AR5GWP100' (optionally prefixed by 'gwp_', e.g. 'gwp_AR5GWP100').
 
         Rows with units other than *current* are not altered.
 
@@ -1416,6 +1510,7 @@ class IamDataFrame(object):
         if len(idx) == 0:
             logger.warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
+        ret._set_attributes()
         if not inplace:
             return ret
 
@@ -1549,7 +1644,7 @@ class IamDataFrame(object):
             any valid string path, :class:`pathlib.Path`
             or :class:`pandas.ExcelWriter`
         sheet_name : string
-            name of sheet which will contain :meth:`timeseries()` data
+            name of sheet which will contain :meth:`timeseries` data
         iamc_index : bool, default False
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
@@ -1588,9 +1683,9 @@ class IamDataFrame(object):
         sheet_name : str
             name of sheet which will contain dataframe of 'meta' indicators
         """
+        close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
-            close = True
-            excel_writer = pd.ExcelWriter(excel_writer)
+            excel_writer, close = pd.ExcelWriter(excel_writer), True
         write_sheet(excel_writer, sheet_name, self.meta, index=True)
         if close:
             excel_writer.close()
@@ -1628,16 +1723,18 @@ class IamDataFrame(object):
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
 
-    def load_meta(self, path, *args, **kwargs):
+    def load_meta(self, path, sheet_name='meta', *args, **kwargs):
         """Load 'meta' indicators from file
 
         Parameters
         ----------
         path : str or path object
-            any valid string path or :class:`pathlib.Path`
+            Any valid string path or :class:`pathlib.Path`
+        sheet_name : str, optional
+            Name of the sheet to be parsed
         """
         # load from file
-        df = read_pandas(path, default_sheet='meta', *args, **kwargs)
+        df = read_pandas(Path(path), sheet_name=sheet_name, *args, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)
         df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
@@ -1673,11 +1770,14 @@ class IamDataFrame(object):
         # set column `exclude` to bool
         self.meta.exclude = self.meta.exclude.astype('bool')
 
-    def line_plot(self, x='year', y='value', **kwargs):
-        """Plot timeseries lines of existing data
+    def line_plot(self, *args, **kwargs):
+        """Deprecated, please use `IamDataFrame.plot()`"""
+        deprecation_warning('Please use `IamDataFrame.plot()`.')
+        return self.plot(*args, **kwargs)
 
-        see pyam.plotting.line_plot() for all available options
-        """
+    def _line_plot(self, x='year', y='value', **kwargs):
+        """Plot timeseries lines of existing data"""
+        # TODO merge with `plot.line` and deprecate for release 1.0
         df = self.as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
 
         # pivot data if asked for explicit variable name
@@ -1698,90 +1798,38 @@ class IamDataFrame(object):
             if x != 'year' and y != 'year':
                 df = df.drop('year', axis=1)  # years causes nan's
 
-        ax, handles, labels = plotting.line_plot(
-            df.dropna(), x=x, y=y, **kwargs)
+        ax, handles, labels = plotting.line(df.dropna(), x=x, y=y, **kwargs)
         return ax
 
     def stack_plot(self, *args, **kwargs):
-        """Plot timeseries stacks of existing data
-
-        see pyam.plotting.stack_plot() for all available options
-        """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.stack_plot(df, *args, **kwargs)
-        return ax
+        """Deprecated, please use `IamDataFrame.plot.stack()`"""
+        # TODO: deprecated, remove for release >=1.0
+        deprecation_warning('Please use `IamDataFrame.plot.stack()`.')
+        return self.plot.stack(*args, **kwargs)
 
     def bar_plot(self, *args, **kwargs):
-        """Plot timeseries bars of existing data
-
-        see pyam.plotting.bar_plot() for all available options
-        """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.bar_plot(df, *args, **kwargs)
-        return ax
+        # TODO: deprecated, remove for release >=1.0
+        """Deprecated, please use `IamDataFrame.plot.bar()`"""
+        deprecation_warning('Please use `plot.bar()`.')
+        return self.plot.bar(*args, **kwargs)
 
     def boxplot(self, *args, **kwargs):
-        """Plot boxplot of existing data
-
-        see pyam.plotting.boxplot() for all available options
-        """
-        df = self.as_pandas()
-        ax = plotting.boxplot(df, *args, **kwargs)
-        return ax
+        # TODO: deprecated, remove for release >=1.0
+        """Deprecated, please use `IamDataFrame.plot.box()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.box()`.')
+        return self.plot.box(**kwargs)
 
     def pie_plot(self, *args, **kwargs):
-        """Plot a pie chart
+        # TODO: deprecated, remove for release >=1.0
+        """Deprecated, please use `IamDataFrame.plot.pie()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.pie()`.')
+        return self.plot.pie(*args, **kwargs)
 
-        see pyam.plotting.pie_plot() for all available options
-        """
-        # TODO: select only relevant meta columns
-        df = self.as_pandas()
-        ax = plotting.pie_plot(df, *args, **kwargs)
-        return ax
-
-    def scatter(self, x, y, **kwargs):
-        """Plot a scatter chart using meta indicators as columns
-
-        see pyam.plotting.scatter() for all available options
-        """
-        variables = self.data['variable'].unique()
-        xisvar = x in variables
-        yisvar = y in variables
-        if not xisvar and not yisvar:
-            cols = [x, y] + mpl_args_to_meta_cols(self, **kwargs)
-            df = self.meta[cols].reset_index()
-        elif xisvar and yisvar:
-            # filter pivot both and rename
-            dfx = (
-                self
-                .filter(variable=x)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': x, 'unit': 'xunit'})
-                .set_index(YEAR_IDX)
-                .drop('variable', axis=1)
-            )
-            dfy = (
-                self
-                .filter(variable=y)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': y, 'unit': 'yunit'})
-                .set_index(YEAR_IDX)
-                .drop('variable', axis=1)
-            )
-            df = dfx.join(dfy, lsuffix='_left', rsuffix='').reset_index()
-        else:
-            # filter, merge with meta, and rename value column to match var
-            var = x if xisvar else y
-            df = (
-                self
-                .filter(variable=var)
-                .as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-                .rename(columns={'value': var})
-            )
-        ax = plotting.scatter(df.dropna(), x, y, **kwargs)
-        return ax
+    def scatter(self, *args, **kwargs):
+        # TODO: deprecated, remove for release >=1.0
+        """Deprecated, please use `IamDataFrame.plot.scatter()`"""
+        deprecation_warning('Please use `IamDataFrame.plot.scatter()`.')
+        return self.plot.scatter(*args, **kwargs)
 
     def map_regions(self, map_col, agg=None, copy_col=None, fname=None,
                     region_col=None, remove_duplicates=False, inplace=False):
@@ -1811,9 +1859,8 @@ class IamDataFrame(object):
         inplace : bool, optional
             if True, do operation inplace and return None
         """
-        models = self.meta.index.get_level_values('model').unique()
         fname = fname or run_control()['region_mapping']['default']
-        mapping = read_pandas(fname).rename(str.lower, axis='columns')
+        mapping = read_pandas(Path(fname)).rename(str.lower, axis='columns')
         map_col = map_col.lower()
 
         ret = self.copy() if not inplace else self
@@ -1822,7 +1869,7 @@ class IamDataFrame(object):
 
         # merge data
         dfs = []
-        for model in models:
+        for model in self.model:
             df = _df[_df['model'] == model]
             _col = region_col or '{}.REGION'.format(model)
             _map = mapping.rename(columns={_col.lower(): 'region'})

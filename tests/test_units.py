@@ -92,7 +92,11 @@ def test_convert_unit_with_custom_registry(test_df):
 
     # Using "-equiv" after a unit should make no difference
     ('AR4GWP100', 'co2-equiv', 1.),
-    ('AR5GWP100', 'ch4-equiv', 28)
+    ('AR5GWP100', 'ch4-equiv', 28),
+
+    # Converting C -> CO2e should work
+    # TODO remove context once IAMconsortium/units#23 is resolved
+    ('AR4GWP100', 'C', 11 / 3)
 ])
 @pytest.mark.parametrize('current_expr, to_expr, exp_factor', [
     # exp_factor is used when the conversion includes both a species *and* unit
@@ -124,9 +128,6 @@ def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
     # Handle parameters
     current = current_expr.format(current_species)
     to = to_expr.format('CO2e')
-    if context is not None:
-        # pyam-style context
-        context = f'gwp_{context}'
 
     # Expected values
     exp_values = test_df._data.copy()
@@ -139,7 +140,8 @@ def test_convert_gwp(test_df, context, current_species, current_expr, to_expr,
 
 def test_convert_unit_bad_args(test_pd_df):
     """Unit conversion with bad arguments raises errors."""
-    idf = IamDataFrame(test_pd_df)
+    idf = IamDataFrame(test_pd_df).rename(unit={'EJ/yr': 'Mt CH4'})
+
     # Conversion fails with both *factor* and *registry*
     with pytest.raises(ValueError, match='use either `factor` or `pint...'):
         idf.convert_unit('Mt CH4', 'CO2e', factor=1.0, registry=object())

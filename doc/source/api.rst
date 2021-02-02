@@ -1,6 +1,6 @@
 .. currentmodule:: pyam
 
-API reference
+API Reference
 =============
 
 This page gives an overview of the public |pyam| features, objects, functions
@@ -13,6 +13,7 @@ and methods.
    api/general
    api/iamdataframe
    api/filtering
+   api/plotting
    api/iiasa
    api/statistics
    api/timeseries

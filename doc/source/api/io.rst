@@ -33,10 +33,10 @@ The |pyam| package supports reading and writing to the
 .. automethod:: IamDataFrame.to_datapackage
    :noindex:
 
-Connecting to an IIASA scenario explorer instance
+Connecting to an IIASA Scenario Explorer instance
 -------------------------------------------------
 
-IIASA's ixmp scenario explorer infrastructure implements a RestAPI
+IIASA's ixmp Scenario Explorer infrastructure implements a RestAPI
 to directly query the database server connected to an explorer instance.
 See https://software.ene.iiasa.ac.at/ixmp-server for more information.
 

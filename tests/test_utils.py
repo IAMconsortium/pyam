@@ -213,3 +213,27 @@ def test_merge_meta():
 
     obs = utils.merge_meta(left, right, ignore_meta_conflict=True)
     pdt.assert_frame_equal(exp, obs)
+
+
+def test_get_variable_components_int():
+    assert utils.get_variable_components('foo|bar|baz', 1) == 'bar'
+
+
+def test_get_variable_components_list():
+    assert utils.get_variable_components('foo|bar|baz',
+                                         [1, 2]) == ['bar', 'baz']
+
+
+def test_get_variable_components_indexError():
+    with pytest.raises(IndexError):
+        utils.get_variable_components('foo|bar|baz', 3)
+
+
+def test_get_variable_components_joinTRUE():
+    assert utils.get_variable_components('foo|bar|baz', [0, 2],
+                                         join=True) == 'foo|baz'
+
+
+def test_get_variable_components_joinstr():
+    assert utils.get_variable_components('foo|bar|baz', [2, 1],
+                                         join='_') == 'baz_bar'

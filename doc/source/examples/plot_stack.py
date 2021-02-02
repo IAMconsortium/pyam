@@ -16,7 +16,7 @@ Stacked line charts
 # you can download the file from
 # https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials.
 #
-# Make sure to place the file in the same folder as this script/notebook.
+# Make sure to place the data file in the same folder as this script/notebook.
 
 import matplotlib.pyplot as plt
 import pyam
@@ -27,25 +27,28 @@ df
 # First, we generate a simple stacked line chart
 # of all components of primary energy supply for one scenario.
 
-data = df.filter(model='IMAGE 3.0.1', scenario='CD-LINKS_NPi2020_400',
+model, scenario = 'IMAGE 3.0.1', 'CD-LINKS_NPi2020_400'
+
+data = df.filter(model=model, scenario=scenario,
                  variable='Primary Energy|*', region='World')
 
-fig, ax = plt.subplots()
-data.stack_plot(ax=ax)
-fig.subplots_adjust(right=0.55)
+data.plot.stack(title=scenario)
+plt.legend(loc=1)
+plt.tight_layout()
 plt.show()
 
 ###############################
 # We don't just have to plot subcategories of variables,
-# any data or meta indicators from the IamDataFrame can be used.
+# any data dimension or meta indicators from the IamDataFrame can be used.
 # Here, we show the contribution by region to total CO2 emissions.
 
 data = (
-    df.filter(model='IMAGE 3.0.1', scenario='CD-LINKS_NPi2020_400',
-              variable='Emissions|CO2')
+    df.filter(model=model, scenario=scenario, variable='Emissions|CO2')
     .filter(region='World', keep=False)
 )
 
-fig, ax = plt.subplots()
-data.stack_plot(ax=ax, stack='region', cmap='tab20', total=True)
+data.plot.stack(stack='region', cmap='tab20',
+                title=scenario, total=True)
+plt.legend(loc=1)
+plt.tight_layout()
 plt.show()

@@ -1,3 +1,4 @@
+from pathlib import Path
 import itertools
 import logging
 import string
@@ -19,11 +20,15 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # common indices
+DEFAULT_META_INDEX = ['model', 'scenario']
 META_IDX = ['model', 'scenario']
 YEAR_IDX = ['model', 'scenario', 'region', 'year']
 IAMC_IDX = ['model', 'scenario', 'region', 'variable', 'unit']
 SORT_IDX = ['model', 'scenario', 'variable', 'year', 'region']
 LONG_IDX = IAMC_IDX + ['year']
+
+# required columns
+REQUIRED_COLS = ['region', 'variable', 'unit']
 
 # illegal terms for data/meta column names to prevent attribute conflicts
 ILLEGAL_COLS = ['data', 'meta']
@@ -106,31 +111,44 @@ def write_sheet(writer, name, df, index=False):
             pass
 
 
-def read_pandas(path, default_sheet='data', *args, **kwargs):
+def read_pandas(path, sheet_name='data*', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
-    if path.endswith('csv'):
+    if isinstance(path, Path) and path.suffix == '.csv':
         df = pd.read_csv(path, *args, **kwargs)
     else:
         xl = pd.ExcelFile(path)
-        if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
-            kwargs['sheet_name'] = default_sheet
-        df = pd.read_excel(path, *args, **kwargs)
+        sheet_names = pd.Series(xl.sheet_names)
+        if len(sheet_names) > 1:
+            sheets = kwargs.pop('sheet_name', sheet_name)
+            # apply pattern-matching for sheet names (use * as wildcard)
+            sheets = sheet_names[pattern_match(sheet_names, values=sheets)]
+            # df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
+            lst = []
+            for s in sheets:
+                logger.info(f'Reading sheet {s}')
+                lst.append(xl.parse(s, *args, **kwargs))
+            df = pd.concat(lst)
+                        
+        else:
+            df = pd.read_excel(path, *args, **kwargs)
+
+        # remove unnamed and empty columns
+        empty_cols = [c for c in df.columns if str(c).startswith('Unnamed: ')
+                      and all(np.isnan(df[c]))]
+        df.drop(columns=empty_cols, inplace=True)
     return df
 
 
 def read_file(path, *args, **kwargs):
     """Read data from a file"""
-    if not isstr(path):
-        raise ValueError('Reading multiple files not supported, '
-                         'use `IamDataFrame.append()` or `pyam.concat()`')
-    format_kwargs = {}
     # extract kwargs that are intended for `format_data`
+    format_kwargs = dict(index=kwargs.pop('index'))
     for c in [i for i in IAMC_IDX + ['year', 'time', 'value'] if i in kwargs]:
         format_kwargs[c] = kwargs.pop(c)
     return format_data(read_pandas(path, *args, **kwargs), **format_kwargs)
 
 
-def format_data(df, **kwargs):
+def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
     if isinstance(df, pd.Series):
         df.name = df.name or 'value'
@@ -211,29 +229,33 @@ def format_data(df, **kwargs):
     if conflict_cols:
         msg = f'Column name {conflict_cols} is illegal for timeseries data.\n'
         _args = ', '.join([f"{i}_1='{i}'" for i in conflict_cols])
-        msg += f'Use `IamDataFrame(..., {_args})` to rename at initalization.'
+        msg += f'Use `IamDataFrame(..., {_args})` to rename at initialization.'
         raise ValueError(msg)
 
-    # format columns to lower-case and check that all required columns exist
-    if not set(IAMC_IDX).issubset(set(df.columns)):
-        missing = list(set(IAMC_IDX) - set(df.columns))
-        raise ValueError("missing required columns `{}`!".format(missing))
+    # check that index and required columns exist
+    missing_index = [c for c in index if c not in df.columns]
+    if missing_index:
+        raise ValueError(f'Missing index columns `{missing_index}`!')
+
+    missing_required_col = [c for c in REQUIRED_COLS if c not in df.columns]
+    if missing_required_col:
+        raise ValueError(f'Missing required columns `{missing_required_col}`!')
 
     # check whether data in wide format (IAMC) or long format (`value` column)
     if 'value' in df.columns:
         # check if time column is given as `year` (int) or `time` (datetime)
-        cols = df.columns
-        if 'year' in cols:
+        if 'year' in df.columns:
             time_col = 'year'
-        elif 'time' in cols:
+        elif 'time' in df.columns:
             time_col = 'time'
         else:
-            msg = 'invalid time format, must have either `year` or `time`!'
+            msg = 'Invalid time format, must have either `year` or `time`!'
             raise ValueError(msg)
-        extra_cols = list(set(cols) - set(IAMC_IDX + [time_col, 'value']))
+        extra_cols = [c for c in df.columns
+                      if c not in index + REQUIRED_COLS + [time_col, 'value']]
     else:
         # if in wide format, check if columns are years (int) or datetime
-        cols = set(df.columns) - set(IAMC_IDX)
+        cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
         year_cols, time_cols, extra_cols = [], [], []
         for i in cols:
             try:
@@ -254,12 +276,16 @@ def format_data(df, **kwargs):
         else:
             msg = 'invalid column format, must be either years or `datetime`!'
             raise ValueError(msg)
-        df = pd.melt(df, id_vars=IAMC_IDX + extra_cols, var_name=time_col,
+        cols = index + REQUIRED_COLS + extra_cols
+        df = pd.melt(df, id_vars=cols, var_name=time_col,
                      value_vars=sorted(melt_cols), value_name='value')
 
     # cast value column to numeric and drop nan
     df['value'] = df['value'].astype('float64')
     df.dropna(inplace=True, subset=['value'])
+
+    # replace missing units by an empty string for user-friendly filtering
+    df.loc[df.unit.isnull(), 'unit'] = ''
 
     # verify that there are no nan's left (in columns)
     null_rows = df.isnull().values
@@ -267,7 +293,7 @@ def format_data(df, **kwargs):
         _raise_data_error('empty cells in `data`', df.loc[null_rows])
 
     # check for duplicates and empty data
-    idx_cols = IAMC_IDX + [time_col] + extra_cols
+    idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
     rows = df[idx_cols].duplicated()
     if any(rows):
         _raise_data_error('duplicate rows in `data`', df.loc[rows, idx_cols])
@@ -276,7 +302,7 @@ def format_data(df, **kwargs):
         logger.warning('Formatted data is empty!')
 
     df = format_time_col(sort_data(df, idx_cols), time_col)
-    return df, time_col, extra_cols
+    return df.set_index(idx_cols).value, index, time_col, extra_cols
 
 
 def format_time_col(data, time_col):
@@ -399,8 +425,7 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=False):
     for filtering (str, int, bool)
     """
     matches = np.array([False] * len(data))
-    if not isinstance(values, Iterable) or isstr(values):
-        values = [values]
+    values = values if islistable(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.copy()
@@ -518,10 +543,12 @@ def datetime_match(data, dts):
 
 def print_list(x, n):
     """Return a printable string of a list shortened to n characters"""
-    # subtract count added at end from line width
-    x = list(map(str, x))
+    # if list is empty, only write count
+    if len(x) == 0:
+        return '(0)'
 
-    # write number of elements
+    # write number of elements, subtract count added at end from line width
+    x = [i if i != '' else "''" for i in map(str, x)]
     count = f' ({len(x)})'
     n -= len(count)
 
@@ -585,3 +612,24 @@ def reduce_hierarchy(x, depth):
     _x = x.split('|')
     depth = len(_x) + depth - 1 if depth < 0 else depth
     return '|'.join(_x[0:(depth + 1)])
+
+
+def get_variable_components(x, level, join=False):
+    """Return components for requested level in a list or join these in a str.
+
+    Parameters
+    ----------
+    x : str
+        Uses ``|`` to separate the components of the variable.
+    level : int or list of int
+        Position of the component.
+    join : bool or str, optional
+        If True, IAMC-style (``|``) is used as separator for joined components.
+    """
+    _x = x.split('|')
+    if join is False:
+        return [_x[i] for i in level] if islistable(level) else _x[level]
+    else:
+        level = [level] if type(level) == int else level
+        join = '|' if join is True else join
+        return join.join([_x[i] for i in level])

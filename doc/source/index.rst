@@ -9,8 +9,8 @@ Release v\ |version|.
 
 |joss| |doi|
 
-.. |license| image:: https://anaconda.org/conda-forge/pyam/badges/license.svg
-   :target: https://anaconda.org/conda-forge/pyam
+.. |license| image:: https://img.shields.io/badge/License-Apache%202.0-black
+   :target: https://github.com/IAMconsortium/pyam/blob/master/LICENSE
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
@@ -65,7 +65,7 @@ The source code for |pyam| is available on `Github`_.
    data.html
 
 .. _`gallery`:
-   examples/index.html
+   gallery/index.html
 
 .. _`Github`:
    https://github.com/IAMconsortium/pyam
@@ -77,18 +77,27 @@ Table of Contents
    :maxdepth: 2
 
    install
+   authors
    contributing
    data
    tutorials
-   examples/index
+   gallery/index
    api
 
-License
--------
+Copyright & License
+-------------------
 
-|pyam| is available under the open source `Apache License`_.
+The development of the |pyam| package was started at the IIASA Energy Program,
+with contributions from a number of `individuals & institutions`_ over the years.
+
+The package is available under the open-source `Apache License`_.
+Refer to the `NOTICE`_ in the GitHub repository for more information.
+
+.. _individuals & institutions: authors.html
 
 .. _Apache License: http://www.apache.org/licenses/LICENSE-2.0.html
+
+.. _NOTICE: https://github.com/IAMconsortium/pyam/blob/master/NOTICE.md
 
 Scientific reference
 --------------------

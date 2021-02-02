@@ -1,7 +1,7 @@
 pyam: analysis & visualization <br /> of integrated-assessment scenarios
 ========================================================================
 
-[![license](https://anaconda.org/conda-forge/pyam/badges/license.svg)](https://anaconda.org/conda-forge/pyam)
+[![license](https://img.shields.io/badge/License-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/master/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
 [![conda](https://anaconda.org/conda-forge/pyam/badges/version.svg)](https://anaconda.org/conda-forge/pyam)
 [![latest](https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyam)
@@ -34,7 +34,7 @@ Key features:
    with an interface similar in feel and style to the widely
    used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
  - Advanced visualization and plotting functions
-   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/examples/index.html))
+   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
  - Diagnostic checks for scripted validation of scenario data and results
 
 Data model
@@ -73,17 +73,19 @@ The complete documentation is hosted on [Read the Docs](https://pyam-iamc.readth
 The documentation pages can be built locally,
 refer to the instruction in [doc/README](doc/README.md).
 
-Authors
--------
+Authors & Contributors
+----------------------
 
-This package was developed and is currently maintained
+This package was initiated and is currently maintained
 by Matthew Gidden ([@gidden](https://github.com/gidden))
 and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
+
+See the complete [list of contributors](AUTHORS.rst).
 
 License
 -------
 
-Copyright 2017-2020 IIASA Energy Program
+Copyright 2017-2021 IIASA and the pyam developer team
 
 The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");

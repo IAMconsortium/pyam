@@ -28,13 +28,13 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 ], columns=['model', 'scenario', 'region', 2010, 2020]
 ).set_index(['model', 'region'])
 
-df_with_na_columns = pd.DataFrame([
-    ['model_a', 'scen_a', 'World', 'Primary Energy', np.nan, 1, 6.],
-    ['model_a', 'scen_a', 'World', 'Primary Energy|Coal', 'EJ/yr', 0.5, 3],
-    ['model_a', 'scen_b', 'World', 'Primary Energy', 'EJ/yr', 2, 7],
-],
-    columns=IAMC_IDX + [2005, 2010],
-)
+META_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 1, False],
+    ['model_a', 'scen_b', np.nan, False],
+    ['model_a', 'scen_c', 2, False],
+], columns=META_IDX + ['foo', 'exclude']
+).set_index(META_IDX)
+
 
 df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 
@@ -60,10 +60,9 @@ def test_init_from_iamdf(test_df_year):
 
 def test_init_from_iamdf_raises(test_df_year):
     # casting an IamDataFrame instance again with extra args fails
-    args = dict(model='foo')
-    match = f'Invalid arguments `{args}` for initializing an IamDataFrame'
+    match = "Invalid arguments \['model'\] for initializing from IamDataFrame"
     with pytest.raises(ValueError, match=match):
-        IamDataFrame(test_df_year, **args)
+        IamDataFrame(test_df_year, model='foo')
 
 
 def test_init_df_with_float_cols_raises(test_pd_df):
@@ -79,8 +78,10 @@ def test_init_df_with_duplicates_raises(test_df):
         IamDataFrame(_df)
 
 
-def test_init_df_with_na_unit(test_df):
-    pytest.raises(ValueError, IamDataFrame, data=df_with_na_columns)
+def test_init_df_with_na_scenario(test_pd_df):
+    # missing values in an index dimension raises an error
+    test_pd_df.loc[1, 'scenario'] = np.nan
+    pytest.raises(ValueError, IamDataFrame, data=test_pd_df)
 
 
 def test_init_df_with_float_cols(test_pd_df):
@@ -103,9 +104,47 @@ def test_init_df_with_extra_col(test_pd_df):
 
     df = IamDataFrame(tdf)
 
-    assert df.extra_cols == [extra_col]
-    pd.testing.assert_frame_equal(df.timeseries().reset_index(),
-                                  tdf, check_like=True)
+    # check that timeseries data is as expected
+    obs = df.timeseries().reset_index()
+    exp = tdf[obs.columns]  # get the columns into the right order
+    pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_init_df_with_meta(test_pd_df):
+    # pass explicit meta dataframe with a scenario that doesn't exist in data
+    df = IamDataFrame(test_pd_df, meta=META_DF.iloc[[0, 2]][['foo']])
+
+    # check that scenario not existing in data is removed during initialization
+    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+
+
+def test_init_df_with_meta_incompatible_index(test_pd_df):
+    # define a meta dataframe with a non-standard index
+    index = ['source', 'scenario']
+    meta = pd.DataFrame([False, False, False], columns=['exclude'],
+                        index=META_DF.index.rename(index))
+
+    # assert that using an incompatible index for the meta arg raises
+    match = "Incompatible `index=\['model', 'scenario'\]` with `meta` *."
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(test_pd_df, meta=meta)
+
+
+def test_init_df_with_custom_index(test_pd_df):
+    # rename 'model' column and add a version column to the dataframe
+    test_pd_df.rename(columns={'model': 'source'}, inplace=True)
+    test_pd_df['version'] = [1, 2, 3]
+
+    # initialize with custom index columns, check that index is set correctly
+    index = ['source', 'scenario', 'version']
+    df = IamDataFrame(test_pd_df, index=index)
+    assert df.index.names == index
+
+    # check that index attributes were set correctly and that df.model fails
+    assert df.source == ['model_a']
+    assert df.version == [1, 2, 3]
+    with pytest.raises(KeyError, match='Index `model` does not exist!'):
+        df.model
 
 
 def test_init_empty_message(caplog):
@@ -159,6 +198,26 @@ def test_print(test_df_year):
         '   number (int64) 1, 2 (2)',
         '   string (object) foo, nan (2)'])
     obs = test_df_year.info()
+    assert obs == exp
+
+
+def test_print_empty(test_df_year):
+    """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
+    exp = '\n'.join([
+        "<class 'pyam.core.IamDataFrame'>",
+        'Index dimensions:',
+        ' * model    : (0)',
+        ' * scenario : (0)',
+        'Timeseries data coordinates:',
+        '   region   : (0)',
+        '   variable : (0)',
+        '   unit     : (0)',
+        '   year     : (0)',
+        'Meta indicators:',
+        '   exclude (bool) (0)',
+        '   number (int64) (0)',
+        '   string (object) (0)'])
+    obs = test_df_year.filter(model='foo').info()
     assert obs == exp
 
 
@@ -227,7 +286,7 @@ def test_index(test_df_year):
 
 
 def test_index_attributes(test_df):
-    # assert that the
+    # assert that the index and data column attributes are set correcty
     assert test_df.model == ['model_a']
     assert test_df.scenario == ['scen_a', 'scen_b']
     assert test_df.region == ['World']
@@ -617,6 +676,8 @@ def test_interpolate(test_pd_df):
     df.interpolate(2007)
     obs = df.filter(year=2007).data['value'].reset_index(drop=True)
     exp = pd.Series([3, 1.5, 4], name='value')
+    print(obs)
+    print(exp)
     pd.testing.assert_series_equal(obs, exp)
 
     # redo the interpolation and check that no duplicates are added
@@ -627,10 +688,53 @@ def test_interpolate(test_pd_df):
     assert all([True if isstr(i) else ~np.isnan(i) for i in df.data.foo])
 
 
+def test_interpolate_time_exists(test_df_year):
+    df = test_df_year
+    df.interpolate(2005)
+    obs = df.filter(year=2005).data['value'].reset_index(drop=True)
+    exp = pd.Series([1.0, 0.5, 2.0], name='value')
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_interpolate_with_list(test_df_year):
+    df = test_df_year
+    df.interpolate([2007, 2008])
+    obs = df.filter(year=[2007, 2008]).data['value'].reset_index(drop=True)
+    exp = pd.Series([3, 4, 1.5, 2, 4, 5], name='value')
+    pd.testing.assert_series_equal(obs, exp)
+
+
+def test_interpolate_full_example():
+    cols = ['model_a', 'scen_a', 'World']
+    df = IamDataFrame(pd.DataFrame([
+        cols + ['all', 'EJ/yr', 0, 1, 6., 10],
+        cols + ['last', 'EJ/yr', 0, 0.5, 3, np.nan],
+        cols + ['first', 'EJ/yr', 0, np.nan, 2, 7],
+        cols + ['middle', 'EJ/yr', 0, 1, np.nan, 7],
+        cols + ['first two', 'EJ/yr', 0, np.nan, np.nan, 7],
+        cols + ['last two', 'EJ/yr', 0, 1, np.nan, np.nan],
+    ], columns=IAMC_IDX + [2000, 2005, 2010, 2017],
+    ))
+    exp = IamDataFrame(pd.DataFrame([
+        cols + ['all', 'EJ/yr', 0, 1, 6., 7.142857, 10],
+        cols + ['last', 'EJ/yr', 0, 0.5, 3, np.nan, np.nan],
+        cols + ['first', 'EJ/yr', 0, 1., 2, 3.428571, 7],
+        cols + ['middle', 'EJ/yr', 0, 1, np.nan, 4.5, 7],
+        cols + ['first two', 'EJ/yr', 0, 2.058824, np.nan, 4.941176, 7],
+        cols + ['last two', 'EJ/yr', 0, 1, np.nan, np.nan, np.nan],
+    ], columns=IAMC_IDX + [2000, 2005, 2010, 2012, 2017],
+    ))
+    obs = df.interpolate([2005, 2012], inplace=False)
+    assert_iamframe_equal(obs, exp)
+
+
 def test_interpolate_extra_cols():
-    # check hat interpolation with non-matching extra_cols has no effect (#351)
+    # check that interpolation with non-matching extra_cols has no effect
+    # (#351)
     EXTRA_COL_DF = pd.DataFrame([
         ['foo', 2005, 1],
+        ['foo', 2010, 2],
+        ['bar', 2005, 2],
         ['bar', 2010, 3],
     ],
         columns=['extra_col', 'year', 'value'],
@@ -642,8 +746,11 @@ def test_interpolate_extra_cols():
     df2 = df.copy()
     df2.interpolate(2007)
 
-    # assert that interpolation didn't change any data
-    assert_iamframe_equal(df, df2)
+    # interpolate should work as if extra_cols is in the _data index
+    assert_iamframe_equal(df, df2.filter(year=2007, keep=False))
+    obs = df2.filter(year=2007)['value']
+    exp = pd.Series([2.4, 1.4], name='value')
+    pd.testing.assert_series_equal(obs, exp)
 
 
 def test_interpolate_datetimes(test_df):
@@ -899,10 +1006,12 @@ def test_swap_time_to_year(test_df, inplace):
 
     if inplace:
         assert obs is None
-        assert compare(test_df, exp).empty
-    else:
-        assert compare(obs, exp).empty
-        assert "year" not in test_df.data.columns
+        obs = test_df
+
+    assert compare(obs, exp).empty
+    assert obs.year == [2005, 2010]
+    with pytest.raises(AttributeError):
+        obs.time
 
 
 @pytest.mark.parametrize("inplace", [True, False])
