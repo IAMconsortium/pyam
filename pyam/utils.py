@@ -118,6 +118,8 @@ def read_pandas(path, sheet_name='data*', *args, **kwargs):
     else:
         xl = pd.ExcelFile(path)
         sheet_names = pd.Series(xl.sheet_names)
+
+        # reading multiple sheets
         if len(sheet_names) > 1:
             sheets = kwargs.pop('sheet_name', sheet_name)
             # apply pattern-matching for sheet names (use * as wildcard)
@@ -131,7 +133,8 @@ def read_pandas(path, sheet_name='data*', *args, **kwargs):
                 logger.info(f'Reading sheet {s}')
                 lst.append(xl.parse(s, *args, **kwargs))
             df = pd.concat(lst)
-                        
+
+        # read single sheet (if only one exists in file) ignoring sheet name
         else:
             df = pd.read_excel(path, *args, **kwargs)
 
