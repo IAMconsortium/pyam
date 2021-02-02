@@ -127,12 +127,7 @@ def read_pandas(path, sheet_name='data*', *args, **kwargs):
             if not sheets:
                 raise ValueError(f'No sheets {sheet_name} in file {path}!')
 
-            # df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
-            lst = []
-            for s in sheets:
-                logger.info(f'Reading sheet {s}')
-                lst.append(xl.parse(s, *args, **kwargs))
-            df = pd.concat(lst)
+            df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
 
         # read single sheet (if only one exists in file) ignoring sheet name
         else:
