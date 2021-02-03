@@ -114,7 +114,7 @@ def write_sheet(writer, name, df, index=False):
 def read_pandas(path, sheet_name='data*', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
     if isinstance(path, Path) and path.suffix == '.csv':
-        df = pd.read_csv(path, *args, **kwargs)
+        return pd.read_csv(path, *args, **kwargs)
     else:
         xl = pd.ExcelFile(path)
         sheet_names = pd.Series(xl.sheet_names)
@@ -133,11 +133,10 @@ def read_pandas(path, sheet_name='data*', *args, **kwargs):
         else:
             df = pd.read_excel(path, *args, **kwargs)
 
-        # remove unnamed and empty columns
+        # remove unnamed and empty columns, and rows were all values are nan
         empty_cols = [c for c in df.columns if str(c).startswith('Unnamed: ')
                       and all(np.isnan(df[c]))]
-        df.drop(columns=empty_cols, inplace=True)
-    return df
+        return df.drop(columns=empty_cols).dropna(axis=0, how='all')
 
 
 def read_file(path, *args, **kwargs):
