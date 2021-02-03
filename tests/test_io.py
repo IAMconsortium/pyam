@@ -7,7 +7,7 @@ from pyam import IamDataFrame, read_datapackage
 from pyam.utils import META_IDX
 from pyam.testing import assert_iamframe_equal
 
-from conftest import TEST_DATA_DIR
+from conftest import TEST_DATA_DIR, META_DF
 
 FILTER_ARGS = dict(scenario='scen_a')
 
@@ -109,17 +109,25 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
     IamDataFrame(file)  # reading from file as IamDataFrame works
 
 
-@pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
-def test_load_meta(test_df, args):
-    file = TEST_DATA_DIR / 'testing_metadata.xlsx'
-    test_df.load_meta(file, **args)
-    obs = test_df.meta
+@pytest.mark.parametrize("sheet_name, init_args, meta",[
+    ('meta', {}, META_DF),
+    ('meta', dict(sheet_name='meta'), META_DF),
+    ('foo', dict(sheet_name='foo'), META_DF),
+    ('foo', dict(sheet_name='foo'), META_DF.iloc[0:1]),
+])
+def test_load_meta(test_pd_df, sheet_name, init_args, meta, tmpdir):
+    """Test loading meta from an Excel file"""
+    exp = IamDataFrame(test_pd_df, meta=meta)
 
-    dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a', 'scen_b'],
-           'category': ['imported', np.nan], 'exclude': [False, False]}
-    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
-    pd.testing.assert_series_equal(obs['exclude'], exp['exclude'])
-    pd.testing.assert_series_equal(obs['category'], exp['category'])
+    # write meta to file (without an exclude col)
+    file = tmpdir / 'testing_io_meta.xlsx'
+    meta.to_excel(file, sheet_name=sheet_name)
+
+    # initialize a new IamDataFrame and load meta from file
+    obs = IamDataFrame(test_pd_df)
+    obs.load_meta(file)
+
+    assert_iamframe_equal(obs, exp)
 
 
 def test_load_meta_wrong_index(test_df_year, tmpdir):
