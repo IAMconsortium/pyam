@@ -45,6 +45,7 @@ from pyam.utils import (
     isstr,
     islistable,
     print_list,
+    s,
     DEFAULT_META_INDEX,
     META_IDX,
     IAMC_IDX,
