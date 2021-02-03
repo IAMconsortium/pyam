@@ -109,19 +109,23 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
     IamDataFrame(file)  # reading from file as IamDataFrame works
 
 
-@pytest.mark.parametrize("sheet_name, init_args, meta",[
-    ('meta', {}, META_DF),
-    ('meta', dict(sheet_name='meta'), META_DF),
-    ('foo', dict(sheet_name='foo'), META_DF),
-    ('foo', dict(sheet_name='foo'), META_DF.iloc[0:1]),
+@pytest.mark.parametrize("sheet_name, init_args, rename",[
+    ('meta', {}, False),
+    ('meta', dict(sheet_name='meta'), False),
+    ('foo', dict(sheet_name='foo'), False),
+    ('foo', dict(sheet_name='foo'), True),
 ])
-def test_load_meta(test_pd_df, sheet_name, init_args, meta, tmpdir):
+def test_load_meta(test_pd_df, sheet_name, init_args, rename, tmpdir):
     """Test loading meta from an Excel file"""
+    meta = META_DF.copy()
+    if rename:
+        meta = meta.iloc[0:1]
+
     exp = IamDataFrame(test_pd_df, meta=meta)
 
     # write meta to file (without an exclude col)
     file = tmpdir / 'testing_io_meta.xlsx'
-    meta.to_excel(file, sheet_name=sheet_name)
+    meta.reset_index().to_excel(file, sheet_name=sheet_name, index=False)
 
     # initialize a new IamDataFrame and load meta from file
     obs = IamDataFrame(test_pd_df)
