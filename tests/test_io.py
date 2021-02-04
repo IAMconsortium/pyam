@@ -109,7 +109,7 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
     IamDataFrame(file)  # reading from file as IamDataFrame works
 
 
-@pytest.mark.parametrize("sheet_name, init_args, rename",[
+@pytest.mark.parametrize("sheet_name, init_args, rename", [
     ('meta', {}, False),
     ('meta', dict(sheet_name='meta'), False),
     ('foo', dict(sheet_name='foo'), False),

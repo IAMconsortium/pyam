@@ -634,6 +634,7 @@ def get_variable_components(x, level, join=False):
         join = '|' if join is True else join
         return join.join([_x[i] for i in level])
 
+
 def s(n):
     """Return an s if n!=1 for nicer formatting of log messages"""
     return 's' if n != 1 else ''
