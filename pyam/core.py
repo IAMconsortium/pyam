@@ -45,6 +45,7 @@ from pyam.utils import (
     isstr,
     islistable,
     print_list,
+    s,
     DEFAULT_META_INDEX,
     META_IDX,
     IAMC_IDX,
@@ -172,13 +173,14 @@ class IamDataFrame(object):
         # if given explicitly, merge meta dataframe after downselecting
         if meta is not None:
             meta = meta.loc[self.meta.index.intersection(meta.index)]
-            self.meta = merge_meta(meta, self.meta, ignore_meta_conflict=True)
+            self.meta = merge_meta(meta, self.meta, ignore_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
         if meta_sheet and isinstance(data, Path) and data.suffix == '.xlsx':
             excel_file = pd.ExcelFile(data)
             if meta_sheet in excel_file.sheet_names:
-                self.load_meta(excel_file, sheet_name=meta_sheet)
+                self.load_meta(excel_file, sheet_name=meta_sheet,
+                               ignore_conflict=True)
 
         self._set_attributes()
 
@@ -1723,52 +1725,60 @@ class IamDataFrame(object):
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
 
-    def load_meta(self, path, sheet_name='meta', *args, **kwargs):
+    def load_meta(self, path, sheet_name='meta', ignore_conflict=False,
+                  *args, **kwargs):
         """Load 'meta' indicators from file
 
         Parameters
         ----------
-        path : str or path object
-            Any valid string path or :class:`pathlib.Path`
+        path : str or :class:`pathlib.Path`
+            A valid path
         sheet_name : str, optional
             Name of the sheet to be parsed
+        ignore_conflict : bool, optional
+            If `True`, values in `path` take precedence over existing `meta`.
+            If `False`, raise an error in case of conflicts.
+        kwargs
+            passed to :func:`pandas.read_excel`
         """
         # load from file
-        df = read_pandas(Path(path), sheet_name=sheet_name, *args, **kwargs)
+        df = read_pandas(path, sheet_name=sheet_name, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)
         df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
 
-        # check that required columns exist
-        req_cols = ['model', 'scenario', 'exclude']
-        if not set(req_cols).issubset(set(df.columns)):
-            e = 'File `{}` does not have required columns {}!'
-            raise ValueError(e.format(path, req_cols))
+        # check that required index columns exist
+        missing_cols = [c for c in self.index.names if c not in df.columns]
+        if missing_cols:
+            raise ValueError(f'File {Path(path)} (sheet {sheet_name}) '
+                             f'missing required index columns {missing_cols}!')
 
         # set index, filter to relevant scenarios from imported file
-        df.set_index(META_IDX, inplace=True)
-        idx = self.meta.index.intersection(df.index)
+        n = len(df)
+        df.set_index(self.index.names, inplace=True)
+        df = df.loc[self.meta.index.intersection(df.index)]
 
-        n_invalid = len(df) - len(idx)
-        if n_invalid > 0:
-            msg = 'Ignoring {} scenario{} from imported meta file'
-            logger.warning(msg.format(n_invalid, 's' if n_invalid > 1 else ''))
+        # skip import of meta indicators if np
+        if not n:
+            logger.info(f'No scenarios found in sheet {sheet_name}')
+            return
 
-        if idx.empty:
-            raise ValueError('No valid scenarios in imported meta file!')
+        msg = 'Reading meta indicators'
+        # indicate if not all scenarios are included in the meta file
+        if len(df) < len(self.meta):
+            i = len(self.meta)
+            msg += f' for {len(df)} out of {i} scenario{s(i)}'
 
-        df = df.loc[idx]
+        # indicate if more scenarios exist in meta file than in self
+        invalid = n - len(df)
+        if invalid:
+            msg += f', ignoring {invalid} scenario{s(invalid)} from file'
+            logger.warning(msg)
+        else:
+            logger.info(msg)
 
-        # merge in imported meta indicators
-        msg = 'Importing meta indicators for {} scenario{} (for total of {})'
-        logger.info(msg.format(len(df), 's' if len(df) > 1 else '',
-                                 len(self.meta)))
-
-        for col in df.columns:
-            self._new_meta_column(col)
-            self.meta[col] = df[col].combine_first(self.meta[col])
-        # set column `exclude` to bool
-        self.meta.exclude = self.meta.exclude.astype('bool')
+        # merge imported meta indicators
+        self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
 
     def line_plot(self, *args, **kwargs):
         """Deprecated, please use `IamDataFrame.plot()`"""

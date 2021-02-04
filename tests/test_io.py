@@ -4,9 +4,10 @@ import numpy as np
 import pytest
 
 from pyam import IamDataFrame, read_datapackage
+from pyam.utils import META_IDX
 from pyam.testing import assert_iamframe_equal
 
-from conftest import TEST_DATA_DIR
+from conftest import TEST_DATA_DIR, META_DF
 
 FILTER_ARGS = dict(scenario='scen_a')
 
@@ -108,17 +109,55 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
     IamDataFrame(file)  # reading from file as IamDataFrame works
 
 
-@pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
-def test_load_meta(test_df, args):
-    file = TEST_DATA_DIR / 'testing_metadata.xlsx'
-    test_df.load_meta(file, **args)
-    obs = test_df.meta
+@pytest.mark.parametrize("sheet_name, init_args, rename", [
+    ('meta', {}, False),
+    ('meta', dict(sheet_name='meta'), False),
+    ('foo', dict(sheet_name='foo'), False),
+    ('foo', dict(sheet_name='foo'), True),
+])
+def test_load_meta(test_pd_df, sheet_name, init_args, rename, tmpdir):
+    """Test loading meta from an Excel file"""
+    meta = META_DF.copy()
+    # downselect meta
+    if rename:
+        meta = meta.iloc[0:1]
 
-    dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a', 'scen_b'],
-           'category': ['imported', np.nan], 'exclude': [False, False]}
-    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
-    pd.testing.assert_series_equal(obs['exclude'], exp['exclude'])
-    pd.testing.assert_series_equal(obs['category'], exp['category'])
+    # initialize a new IamDataFrame directly from data and meta
+    exp = IamDataFrame(test_pd_df, meta=meta)
+
+    # write meta to file (without an exclude col)
+    file = tmpdir / 'testing_io_meta.xlsx'
+    meta.reset_index().to_excel(file, sheet_name=sheet_name, index=False)
+
+    # initialize a new IamDataFrame and load meta from file
+    obs = IamDataFrame(test_pd_df)
+    obs.load_meta(file)
+
+    assert_iamframe_equal(obs, exp)
+
+
+def test_load_meta_wrong_index(test_df_year, tmpdir):
+    """Loading meta without (at least) index cols as headers raises an error"""
+
+    # write meta frame with wrong index to file, then load to the IamDataFrame
+    file = tmpdir / 'testing_meta_empty.xlsx'
+    pd.DataFrame(columns=['model', 'foo']).to_excel(file, index=False)
+
+    match = ".* \(sheet meta\) missing required index columns \['scenario'\]\!"
+    with pytest.raises(ValueError, match=match):
+        test_df_year.load_meta(file)
+
+
+def test_load_meta_empty_rows(test_df_year, tmpdir):
+    """Loading empty meta table (columns but no rows) from an Excel file"""
+    exp = test_df_year.copy()  # loading empty file has no effect
+
+    # write empty meta frame to file, then load to the IamDataFrame
+    file = tmpdir / 'testing_meta_empty.xlsx'
+    pd.DataFrame(columns=META_IDX).to_excel(file, index=False)
+    test_df_year.load_meta(file)
+
+    assert_iamframe_equal(test_df_year, exp)
 
 
 def test_load_ssp_database_downloaded_file(test_pd_df):
