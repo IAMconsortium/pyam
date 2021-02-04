@@ -211,7 +211,7 @@ def test_merge_meta():
         ['model_b', 'scen_a', 'baz', np.nan, 3],
     ], columns=META_IDX + ['string', 'value', 'value2']).set_index(META_IDX)
 
-    obs = utils.merge_meta(left, right, ignore_meta_conflict=True)
+    obs = utils.merge_meta(left, right, ignore_conflict=True)
     pdt.assert_frame_equal(exp, obs)
 
 

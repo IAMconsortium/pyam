@@ -111,21 +111,32 @@ def write_sheet(writer, name, df, index=False):
             pass
 
 
-def read_pandas(path, default_sheet='data', *args, **kwargs):
+def read_pandas(path, sheet_name='data*', *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
     if isinstance(path, Path) and path.suffix == '.csv':
-        df = pd.read_csv(path, *args, **kwargs)
+        return pd.read_csv(path, *args, **kwargs)
     else:
         xl = pd.ExcelFile(path)
-        if len(xl.sheet_names) > 1 and 'sheet_name' not in kwargs:
-            kwargs['sheet_name'] = default_sheet
-        df = pd.read_excel(path, *args, **kwargs)
+        sheet_names = pd.Series(xl.sheet_names)
 
-        # remove unnamed and empty columns
+        # reading multiple sheets
+        if len(sheet_names) > 1:
+            sheets = kwargs.pop('sheet_name', sheet_name)
+            # apply pattern-matching for sheet names (use * as wildcard)
+            sheets = sheet_names[pattern_match(sheet_names, values=sheets)]
+            if sheets.empty:
+                raise ValueError(f'No sheets {sheet_name} in file {path}!')
+
+            df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
+
+        # read single sheet (if only one exists in file) ignoring sheet name
+        else:
+            df = pd.read_excel(path, *args, **kwargs)
+
+        # remove unnamed and empty columns, and rows were all values are nan
         empty_cols = [c for c in df.columns if str(c).startswith('Unnamed: ')
                       and all(np.isnan(df[c]))]
-        df.drop(columns=empty_cols, inplace=True)
-    return df
+        return df.drop(columns=empty_cols).dropna(axis=0, how='all')
 
 
 def read_file(path, *args, **kwargs):
@@ -316,7 +327,7 @@ def sort_data(data, cols):
     return data.sort_values(cols)[cols + ['value']].reset_index(drop=True)
 
 
-def merge_meta(left, right, ignore_meta_conflict=False):
+def merge_meta(left, right, ignore_conflict=False):
     """Merge two `meta` tables; raise if values are in conflict (optional)
 
     If conflicts are ignored, values in `left` take precedence over `right`.
@@ -328,7 +339,7 @@ def merge_meta(left, right, ignore_meta_conflict=False):
     # merge `right` into `left` for overlapping scenarios ( `sect`)
     if not sect.empty:
         # if not ignored, check that overlapping `meta` columns are equal
-        if not ignore_meta_conflict:
+        if not ignore_conflict:
             cols = [i for i in right.columns if i in left.columns]
             if not left.loc[sect, cols].equals(right.loc[sect, cols]):
                 conflict_idx = (
@@ -414,8 +425,7 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=False):
     for filtering (str, int, bool)
     """
     matches = np.array([False] * len(data))
-    if not isinstance(values, Iterable) or isstr(values):
-        values = [values]
+    values = values if islistable(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.copy()
@@ -623,3 +633,8 @@ def get_variable_components(x, level, join=False):
         level = [level] if type(level) == int else level
         join = '|' if join is True else join
         return join.join([_x[i] for i in level])
+
+
+def s(n):
+    """Return an s if n!=1 for nicer formatting of log messages"""
+    return 's' if n != 1 else ''
