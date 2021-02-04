@@ -327,7 +327,7 @@ def sort_data(data, cols):
     return data.sort_values(cols)[cols + ['value']].reset_index(drop=True)
 
 
-def merge_meta(left, right, ignore_meta_conflict=False):
+def merge_meta(left, right, ignore_conflict=False):
     """Merge two `meta` tables; raise if values are in conflict (optional)
 
     If conflicts are ignored, values in `left` take precedence over `right`.
@@ -339,7 +339,7 @@ def merge_meta(left, right, ignore_meta_conflict=False):
     # merge `right` into `left` for overlapping scenarios ( `sect`)
     if not sect.empty:
         # if not ignored, check that overlapping `meta` columns are equal
-        if not ignore_meta_conflict:
+        if not ignore_conflict:
             cols = [i for i in right.columns if i in left.columns]
             if not left.loc[sect, cols].equals(right.loc[sect, cols]):
                 conflict_idx = (

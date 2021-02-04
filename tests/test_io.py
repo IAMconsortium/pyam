@@ -118,9 +118,11 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
 def test_load_meta(test_pd_df, sheet_name, init_args, rename, tmpdir):
     """Test loading meta from an Excel file"""
     meta = META_DF.copy()
+    # downselect meta
     if rename:
         meta = meta.iloc[0:1]
 
+    # initialize a new IamDataFrame directly from data and meta
     exp = IamDataFrame(test_pd_df, meta=meta)
 
     # write meta to file (without an exclude col)

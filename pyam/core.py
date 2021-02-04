@@ -173,13 +173,14 @@ class IamDataFrame(object):
         # if given explicitly, merge meta dataframe after downselecting
         if meta is not None:
             meta = meta.loc[self.meta.index.intersection(meta.index)]
-            self.meta = merge_meta(meta, self.meta, ignore_meta_conflict=True)
+            self.meta = merge_meta(meta, self.meta, ignore_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
         if meta_sheet and isinstance(data, Path) and data.suffix == '.xlsx':
             excel_file = pd.ExcelFile(data)
             if meta_sheet in excel_file.sheet_names:
-                self.load_meta(excel_file, sheet_name=meta_sheet)
+                self.load_meta(excel_file, sheet_name=meta_sheet,
+                               ignore_conflict=True)
 
         self._set_attributes()
 
@@ -1724,18 +1725,24 @@ class IamDataFrame(object):
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
 
-    def load_meta(self, path, sheet_name='meta', *args, **kwargs):
+    def load_meta(self, path, sheet_name='meta', ignore_conflict=False,
+                  *args, **kwargs):
         """Load 'meta' indicators from file
 
         Parameters
         ----------
-        path : str or path object
-            Any valid string path or :class:`pathlib.Path`
+        path : str or :class:`pathlib.Path`
+            A valid path
         sheet_name : str, optional
             Name of the sheet to be parsed
+        ignore_conflict : bool, optional
+            If `True`, values in `path` take precedence over existing `meta``
+            If `False`, raise an error in case of conflicts.
+        kwargs
+            passed to :func:`pandas.read_excel`
         """
         # load from file
-        df = read_pandas(path, sheet_name=sheet_name, *args, **kwargs)
+        df = read_pandas(path, sheet_name=sheet_name, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)
         df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
@@ -1771,7 +1778,7 @@ class IamDataFrame(object):
             logger.info(msg)
 
         # merge imported meta indicators
-        self.meta = merge_meta(df, self.meta, True)
+        self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
 
     def line_plot(self, *args, **kwargs):
         """Deprecated, please use `IamDataFrame.plot()`"""
