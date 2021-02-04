@@ -1736,7 +1736,7 @@ class IamDataFrame(object):
         sheet_name : str, optional
             Name of the sheet to be parsed
         ignore_conflict : bool, optional
-            If `True`, values in `path` take precedence over existing `meta``
+            If `True`, values in `path` take precedence over existing `meta`.
             If `False`, raise an error in case of conflicts.
         kwargs
             passed to :func:`pandas.read_excel`
