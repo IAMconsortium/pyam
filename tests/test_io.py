@@ -117,10 +117,8 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
 ])
 def test_load_meta_xlsx(test_pd_df, sheet_name, init_args, rename, tmpdir):
     """Test loading meta from an Excel file"""
-    meta = META_DF.copy()
     # downselect meta
-    if rename:
-        meta = meta.iloc[0:1]
+    meta = META_DF.iloc[0:1] if rename else META_DF
 
     # initialize a new IamDataFrame directly from data and meta
     exp = IamDataFrame(test_pd_df, meta=meta)
@@ -139,10 +137,7 @@ def test_load_meta_xlsx(test_pd_df, sheet_name, init_args, rename, tmpdir):
 @pytest.mark.parametrize("rename", [True, False])
 def test_load_meta_csv(test_pd_df, rename, tmpdir):
     """Test loading meta from an csv file"""
-    meta = META_DF.copy()
-    # downselect meta
-    if rename:
-        meta = meta.iloc[0:1]
+    meta = META_DF.iloc[0:1] if rename else META_DF
 
     # initialize a new IamDataFrame directly from data and meta
     exp = IamDataFrame(test_pd_df, meta=meta)
