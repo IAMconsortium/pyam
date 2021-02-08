@@ -229,7 +229,7 @@ class IamDataFrame(object):
             self.data = df
 
     def __len__(self):
-        return self.data.__len__()
+        return len(self._data)
 
     def __repr__(self):
         return self.info()
