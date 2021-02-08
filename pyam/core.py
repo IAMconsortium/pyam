@@ -1731,7 +1731,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path : str, :class:`pathlib.Path` or :class:´pandas.ExcelFile`
+        path : str, :class:`pathlib.Path` or :class:`pandas.ExcelFile`
             A valid path or instance of an xlsx or csv file
         sheet_name : str, optional
             Name of the sheet to be parsed (if xlsx)
@@ -1739,7 +1739,7 @@ class IamDataFrame(object):
             If `True`, values in `path` take precedence over existing `meta`.
             If `False`, raise an error in case of conflicts.
         kwargs
-            passed to :func:`pandas.read_excel` or :func:`pandas.read_csv`
+            Passed to :func:`pandas.read_excel` or :func:`pandas.read_csv`
         """
         # load from file
         path = path if isinstance(path, pd.ExcelFile) else Path(path)
