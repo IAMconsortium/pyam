@@ -115,12 +115,10 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
     ('foo', dict(sheet_name='foo'), False),
     ('foo', dict(sheet_name='foo'), True),
 ])
-def test_load_meta(test_pd_df, sheet_name, init_args, rename, tmpdir):
+def test_load_meta_xlsx(test_pd_df, sheet_name, init_args, rename, tmpdir):
     """Test loading meta from an Excel file"""
-    meta = META_DF.copy()
     # downselect meta
-    if rename:
-        meta = meta.iloc[0:1]
+    meta = META_DF.iloc[0:1] if rename else META_DF
 
     # initialize a new IamDataFrame directly from data and meta
     exp = IamDataFrame(test_pd_df, meta=meta)
@@ -128,6 +126,25 @@ def test_load_meta(test_pd_df, sheet_name, init_args, rename, tmpdir):
     # write meta to file (without an exclude col)
     file = tmpdir / 'testing_io_meta.xlsx'
     meta.reset_index().to_excel(file, sheet_name=sheet_name, index=False)
+
+    # initialize a new IamDataFrame and load meta from file
+    obs = IamDataFrame(test_pd_df)
+    obs.load_meta(file)
+
+    assert_iamframe_equal(obs, exp)
+
+
+@pytest.mark.parametrize("rename", [True, False])
+def test_load_meta_csv(test_pd_df, rename, tmpdir):
+    """Test loading meta from an csv file"""
+    meta = META_DF.iloc[0:1] if rename else META_DF
+
+    # initialize a new IamDataFrame directly from data and meta
+    exp = IamDataFrame(test_pd_df, meta=meta)
+
+    # write meta to file (without an exclude col)
+    file = tmpdir / 'testing_io_meta.csv'
+    meta.reset_index().to_csv(file, index=False)
 
     # initialize a new IamDataFrame and load meta from file
     obs = IamDataFrame(test_pd_df)

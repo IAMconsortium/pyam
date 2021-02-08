@@ -1731,17 +1731,18 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path : str or :class:`pathlib.Path`
-            A valid path
+        path : str, :class:`pathlib.Path` or :class:`pandas.ExcelFile`
+            A valid path or instance of an xlsx or csv file
         sheet_name : str, optional
-            Name of the sheet to be parsed
+            Name of the sheet to be parsed (if xlsx)
         ignore_conflict : bool, optional
             If `True`, values in `path` take precedence over existing `meta`.
             If `False`, raise an error in case of conflicts.
         kwargs
-            passed to :func:`pandas.read_excel`
+            Passed to :func:`pandas.read_excel` or :func:`pandas.read_csv`
         """
         # load from file
+        path = path if isinstance(path, pd.ExcelFile) else Path(path)
         df = read_pandas(path, sheet_name=sheet_name, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)

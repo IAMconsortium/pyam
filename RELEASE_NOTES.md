@@ -8,6 +8,7 @@ starting with `data` will be parsed for timeseries data.
 
 ## Individual updates
 
+- [#496](https://github.com/IAMconsortium/pyam/pull/496) Enable loading meta from csv file
 - [#494](https://github.com/IAMconsortium/pyam/pull/494) Small performance improvements
 - [#491](https://github.com/IAMconsortium/pyam/pull/491) Allow loading meta from file without exclude columns or with empty rows
 - [#488](https://github.com/IAMconsortium/pyam/pull/488) Read all sheets starting with `data` when reading from xlsx
