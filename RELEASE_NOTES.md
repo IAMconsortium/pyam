@@ -8,6 +8,7 @@ starting with `data` will be parsed for timeseries data.
 
 ## Individual updates
 
+- [#497](https://github.com/IAMconsortium/pyam/pull/497) Add a module for reading data from the UNFCCC Data Inventory 
 - [#496](https://github.com/IAMconsortium/pyam/pull/496) Enable loading meta from csv file
 - [#494](https://github.com/IAMconsortium/pyam/pull/494) Small performance improvements
 - [#491](https://github.com/IAMconsortium/pyam/pull/491) Allow loading meta from file without exclude columns or with empty rows
