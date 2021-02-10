@@ -1,9 +1,0 @@
-ignore:
-  - 'setup.py'
-
-coverage:
-  precision: 1
-  status:
-    project:
-      default:
-        threshold: 0.7%
