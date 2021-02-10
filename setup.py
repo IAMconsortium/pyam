@@ -30,7 +30,7 @@ EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest<6.0.0', 'pytest-cov',
               'pytest-mpl<0.12'],
     'optional-io-formats': ['datapackage', 'pandas-datareader',
-                            'unfccc_di_api'],
+                            'unfccc_di_api>=2.0'],
     'deploy': ['twine', 'setuptools', 'wheel'],
     'tutorials': ['pypandoc', 'nbformat', 'nbconvert', 'jupyter_client',
                   'ipykernel'],

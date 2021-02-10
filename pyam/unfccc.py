@@ -10,34 +10,12 @@ except ImportError:  # pragma: no cover
 
 from pyam import IamDataFrame
 from pyam.utils import pattern_match, isstr, islistable
-from pyam.string_utils import unformat_subscript
 
 # columns from UNFCCC data that can be used for variable names
 NAME_COLS = ['category', 'classification', 'measure', 'gas']
 
 # UNFCCC-reader instance (instantiated at first use)
 _READER = None
-
-# mapping from gas as simple string to subscript-format used by UNFCCC DI API
-GAS_MAPPING = {
-    'CH4': 'CH₄',
-    'CO2': 'CO₂',
-    'N2O': 'N₂O',
-    'NF3': 'NF₃',
-    'SF6': 'SF₆',
-    'CF4': 'CF₄',
-    'C2F6': 'C₂F₆',
-    'c-C3F6': 'c-C₃F₆',
-    'C3F8': 'C₃F₈',
-    'c-C4F8': 'c-C₄F₈',
-    'C4F10': 'C₄F₁₀',
-    'C5F12': 'C5F₁₂',  # this seems to be a bug in the UNFCCC API
-    'C6F14': 'C₆F₁₄',
-    'C10F18': 'C₁₀F₁₈',
-    'NH3': 'NH₃',
-    'NOx': 'NOₓ',
-    'SO2': 'SO₂'
-}
 
 
 def read_unfccc(party_code, gases=None, tier=None, mapping=None,
@@ -97,11 +75,6 @@ def read_unfccc(party_code, gases=None, tier=None, mapping=None,
     if _READER is None:
         _READER = unfccc_di_api.UNFCCCApiReader()
 
-    # change `gases` kwarg to subscript-format used by UNFCCC
-    if gases is not None:
-        gases = [GAS_MAPPING.get(g, g)
-                 for g in (gases if islistable(gases) else [gases])]
-
     # retrieve data, drop non-numeric data and base year
     data = _READER.query(party_code=party_code, gases=gases)
     data = data[~np.isnan(data.numberValue)]
@@ -142,12 +115,7 @@ def read_unfccc(party_code, gases=None, tier=None, mapping=None,
     data.loc[:, 'unit'] = data.apply(_compile_unit, axis=1)
     data.drop(columns='gas', inplace=True)
 
-    # cast to IamDataFrame, unformat subscripts
-    df = IamDataFrame(data, model=model, scenario=scenario, region='party')
-    for col, values in [('variable', df.variable), ('unit', df.unit)]:
-        df.rename({col: _rename_mapping(values)}, inplace=True)
-
-    return df
+    return IamDataFrame(data, model=model, scenario=scenario, region='party')
 
 
 def _compile_variable(i, variable):
@@ -159,19 +127,9 @@ def _compile_variable(i, variable):
 
 def _compile_unit(i):
     """Append gas to unit and update CO2e for pint/iam-unit compatibility"""
-    if 'CO₂ equivalent' in i['unit']:
-        return i['unit'].replace('CO₂ equivalent', 'CO2e')
+    if ' equivalent' in i['unit']:
+        return i['unit'].replace('CO2 equivalent', 'CO2e')
     if i['unit'] in ['kt', 't']:
         return ' '.join([i['unit'], i['gas']])
     else:
         return i['unit']
-
-
-def _rename_mapping(lst):
-    """Create a mapping to non-subscripted strings"""
-    dct = {}
-    for g in lst:
-        _g = unformat_subscript(g)
-        if _g != g:
-            dct[g] = _g
-    return dct
