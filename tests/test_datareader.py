@@ -15,7 +15,7 @@ except ConnectionError:
 WB_REASON = 'World Bank API unavailable'
 
 WB_DF = pd.DataFrame([
-    ['foo', 'WDI', 'Canada', 'GDP', 'n/a', 39356.9,	40517.5, 42141.8],
+    ['foo', 'WDI', 'Canada', 'GDP', 'n/a', 39356.9, 40517.5, 42141.8],
     ['foo', 'WDI', 'Mexico', 'GDP', 'n/a', 17262.3, 17693.0, 17846.0],
     ['foo', 'WDI', 'United States', 'GDP', 'n/a', 51569.8, 53035.7, 54395.4]
 ], columns=IAMC_IDX + [2003, 2004, 2005])
@@ -25,5 +25,5 @@ WB_DF = pd.DataFrame([
 def test_worldbank():
     obs = read_worldbank(model='foo', indicator={'NY.GDP.PCAP.PP.KD': 'GDP'})
     exp = IamDataFrame(WB_DF)
-    # test data with 1% relative tolerance to guard against minor data changes
-    assert_iamframe_equal(obs, exp, rtol=1.0e-2)
+    # test data with 5% relative tolerance to guard against minor data changes
+    assert_iamframe_equal(obs, exp, rtol=5.0e-2)
