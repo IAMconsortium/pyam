@@ -14,9 +14,8 @@ from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.figures import sankey
 from pyam.timeseries import cross_threshold
-from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, YEAR_IDX,\
-    isstr, islistable, _raise_data_error
-
+from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, YEAR_IDX, \
+    isstr, to_list, _raise_data_error
 
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
@@ -230,7 +229,7 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     Matplotlib requires x values as the index with one column for bar grouping.
     Table values come from y values.
     """
-    idx_cols = idx_cols + [x] if islistable(idx_cols) else [idx_cols] + [x]
+    idx_cols = to_list(idx_cols) + [x]
 
     # check for duplicates
     rows = df[idx_cols].duplicated()

@@ -9,7 +9,7 @@ except ImportError:  # pragma: no cover
     HAS_UNFCCC = False
 
 from pyam import IamDataFrame
-from pyam.utils import pattern_match, isstr, as_list
+from pyam.utils import pattern_match, isstr, to_list
 
 # columns from UNFCCC data that can be used for variable names
 NAME_COLS = ['category', 'classification', 'measure', 'gas']
@@ -76,7 +76,7 @@ def read_unfccc(party_code, gases=None, tier=None, mapping=None,
         _READER = unfccc_di_api.UNFCCCApiReader()
 
     # retrieve data, drop non-numeric data and base year
-    data = _READER.query(party_code=party_code, gases=as_list(gases))
+    data = _READER.query(party_code=party_code, gases=to_list(gases))
     data = data[~np.isnan(data.numberValue)]
     data = data[data.year != 'Base year']
 
@@ -85,7 +85,7 @@ def read_unfccc(party_code, gases=None, tier=None, mapping=None,
         _category = data.category.unique()
         mapping = {}
 
-        for t in as_list(tier):
+        for t in to_list(tier):
             # treatment of tear 1
             if t == 1:
                 pattern = re.compile('.\\.  ')  # pattern of top-level category
