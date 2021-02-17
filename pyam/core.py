@@ -350,7 +350,7 @@ class IamDataFrame(object):
     @data.setter
     def data(self, df):
         """Set the timeseries data from a long :class:`pandas.DataFrame`"""
-        logger.warning('Setting `data` via the setter can cause'
+        logger.warning('Setting `data` via the setter can cause '
                        'inconsistencies with `meta` and other attributes.')
         deprecation_warning('Please use `IamDataFrame(<data>)` instead!')
         self._data = format_time_col(df, self.time_col)\
@@ -1002,8 +1002,13 @@ class IamDataFrame(object):
                 conflict_rows = merged.loc[merged.duplicated(), self._LONG_IDX]
                 raise ValueError(msg.format(conflict_rows.drop_duplicates()))
 
-        # merge using `groupby().sum()`
-        ret.data = _data.groupby(ret._LONG_IDX).sum().reset_index()
+        # merge using `groupby().sum()` only if duplicates exist
+        if _data[ret._LONG_IDX].duplicated().any():
+            _data = _data.groupby(ret._LONG_IDX).sum().reset_index()
+
+        # overwrite _data
+        ret._data = format_time_col(_data, ret.time_col)\
+            .set_index(ret._LONG_IDX).value
 
         if not inplace:
             return ret

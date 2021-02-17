@@ -322,7 +322,9 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org', None),
     'plotly': ('https://plotly.com/python-api-reference/', None),
     'pandas_datareader':
-        ('https://pandas-datareader.readthedocs.io/en/stable', None)
+        ('https://pandas-datareader.readthedocs.io/en/stable', None),
+    'unfccc_di_api':
+        ('https://unfccc-di-api.readthedocs.io/en/stable', None)
 }
 
 # Set up the plotting gallery with plotly scraper

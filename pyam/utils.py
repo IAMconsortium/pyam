@@ -77,6 +77,11 @@ def islistable(x):
     return isinstance(x, Iterable) and not isstr(x)
 
 
+def as_list(x):
+    """Return x as a list"""
+    return x if islistable(x) else [x]
+
+
 def write_sheet(writer, name, df, index=False):
     """Write a pandas.DataFrame to an ExcelWriter
 

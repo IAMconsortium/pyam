@@ -16,6 +16,7 @@ The source code of the tutorials is available in the folder
    tutorials/pyam_first_steps.ipynb
    tutorials/data_table_formats.ipynb
    tutorials/iiasa_dbs.ipynb
+   tutorials/unfccc.ipynb
    tutorials/GAMS_to_pyam.ipynb
    tutorials/unit_conversion.ipynb
    tutorials/aggregating_downscaling_consistency.ipynb
