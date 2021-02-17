@@ -25,4 +25,5 @@ WB_DF = pd.DataFrame([
 def test_worldbank():
     obs = read_worldbank(model='foo', indicator={'NY.GDP.PCAP.PP.KD': 'GDP'})
     exp = IamDataFrame(WB_DF)
-    assert_iamframe_equal(obs, exp)
+    # test data with 1% relative tolerance to guard against minor data changes
+    assert_iamframe_equal(obs, exp, rtol=1.0e-2)
