@@ -901,6 +901,18 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
         order = dict([(i, None) for i in order or idx_cols])
     df = reshape_mpl(df, x, y, idx_cols, **order)
 
+    # determine the columns that should go into the legend
+    idx_cols.remove(x)
+    title_cols = []
+    for col in idx_cols:
+        values = get_index_levels(df.columns, col)
+        if len(values) == 1 and col not in [color, marker, linestyle]:
+            if col == 'unit' and y == 'value':
+                unit = values[0]
+            else:
+                title_cols.append(f'{col}: {values[0]}')
+#            df.columns = df.columns.droplevel(col)
+
     # determine index of column name in reshaped dataframe
     prop_idx = {}
     for kind, var in [('color', color), ('marker', marker),
@@ -909,8 +921,6 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
             prop_idx[kind] = df.columns.names.index(var)
 
     # plot data, keeping track of which legend labels to apply
-    no_label = [rm_legend_label] if isstr(rm_legend_label) else rm_legend_label
-
     for col, data in df.iteritems():
         pargs = {}
         labels = []
@@ -921,7 +931,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
             if kind in props:
                 label = col[prop_idx[kind]]
                 pargs[key] = props[kind][label]
-                if kind not in no_label:
+                if kind not in to_list(rm_legend_label):
                     labels.append(repr(label).lstrip("u'").strip("'"))
             else:
                 pargs[key] = var
@@ -998,21 +1008,12 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
 
     # add default labels if possible
     ax.set_xlabel(x.title())
-    units = get_index_levels(df.columns, 'unit')
-    units_for_ylabel = len(units) == 1 and x == 'year' and y == 'value'
-    ylabel = units[0] if units_for_ylabel else y.title()
-    ax.set_ylabel(ylabel)
+    if unit:
+        ax.set_ylabel(unit)
 
-    # build a default title if possible
+    # show a default title from columns with a unique value or a custom title
     if title:
-        default_title = []
-        for var in ['model', 'scenario', 'region', 'variable']:
-            if var in df.columns.names:
-                values = df.columns.get_level_values(var).unique()
-                if len(values) == 1:
-                    default_title.append('{}: {}'.format(var, values[0]))
-        title = ' '.join(default_title) if title is True else title
-        ax.set_title(title)
+        ax.set_title(' '.join(title_cols) if title is True else title)
 
     return ax
 
