@@ -904,6 +904,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
     # determine the columns that should go into the legend
     idx_cols.remove(x)
     title_cols = []
+    unit = None
     for col in idx_cols:
         values = get_index_levels(df.columns, col)
         if len(values) == 1 and col not in [color, marker, linestyle]:
