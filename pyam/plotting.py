@@ -209,27 +209,15 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
     return props
 
 
-def reshape_line_plot(df, x, y):
-    """Reshape data from long form to "line plot form".
-
-    Line plot form has x value as the index with one column for each line.
-    Each column has data points as values and all metadata as column headers.
-    """
-    idx = list(df.columns.drop(y))
-    if df.duplicated(idx).any():
-        logger.warning('Duplicated index found.')
-        df = df.drop_duplicates(idx, keep='last')
-    df = df.set_index(idx)[y].unstack(x).T
-    return df
-
-
 def reshape_mpl(df, x, y, idx_cols, **kwargs):
     """Reshape data from long form to "bar plot form".
 
     Matplotlib requires x values as the index with one column for bar grouping.
     Table values come from y values.
     """
-    idx_cols = to_list(idx_cols) + [x]
+    idx_cols = to_list(idx_cols)
+    if x not in idx_cols:
+        idx_cols += [x]
 
     # check for duplicates
     rows = df[idx_cols].duplicated()
@@ -817,8 +805,8 @@ def line(df, x='year', y='value', legend=None, title=True,
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
+    df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
+        Data to be plotted
     x : string, optional
         The column to use for x-axis values
     y : string, optional
@@ -875,7 +863,8 @@ def line(df, x='year', y='value', legend=None, title=True,
         raise ValueError('Must use `color` kwarg if using `final_ranges`')
 
     # reshape data for use in line_plot
-    df = reshape_line_plot(df, x, y)  # long form to one column per line
+    idx_cols = list(df.columns.drop(y))
+    df = reshape_mpl(df, x, y, idx_cols)  # long form to one column per line
 
     # determine index of column name in reshaped dataframe
     prop_idx = {}
