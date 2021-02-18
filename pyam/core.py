@@ -1788,6 +1788,7 @@ class IamDataFrame(object):
 
     def line_plot(self, *args, **kwargs):
         """Deprecated, please use `IamDataFrame.plot()`"""
+        # TODO: deprecated, remove for release >=1.0
         deprecation_warning('Please use `IamDataFrame.plot()`.')
         return self.plot(*args, **kwargs)
 
