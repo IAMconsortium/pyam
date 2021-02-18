@@ -846,7 +846,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
         argument. If this is True, then default arguments will be provided to
         `ax.axvline()`. If this is a dictionary, those arguments will be
         provided instead of defaults.
-    rm_legend_label : string, list, optional
+    rm_legend_label : string or list, optional
         Remove the color, marker, or linestyle label in the legend.
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
@@ -990,16 +990,15 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
         ax.set_xticklabels(xlabels)
 
     # build unique legend handles and labels
-    handles, labels = ax.get_legend_handles_labels()
-    handles, labels = np.array(handles), np.array(labels)
+    handles, labels = [np.array(i) for i in ax.get_legend_handles_labels()]
     _, idx = np.unique(labels, return_index=True)
-    handles, labels = handles[idx], labels[idx]
+    idx.sort()
     if legend is not False:
-        _add_legend(ax, handles, labels, legend)
+        _add_legend(ax, handles[idx], labels[idx], legend)
 
     # add default labels if possible
     ax.set_xlabel(x.title())
-    units = df.columns.get_level_values('unit').unique()
+    units = get_index_levels(df.columns, 'unit')
     units_for_ylabel = len(units) == 1 and x == 'year' and y == 'value'
     ylabel = units[0] if units_for_ylabel else y.title()
     ax.set_ylabel(ylabel)
