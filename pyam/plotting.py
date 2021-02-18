@@ -1015,7 +1015,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
         title = ' '.join(default_title) if title is True else title
         ax.set_title(title)
 
-    return ax, handles, labels
+    return ax
 
 
 def _add_legend(ax, handles, labels, legend):
