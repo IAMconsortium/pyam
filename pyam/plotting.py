@@ -1019,8 +1019,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
 
 def _add_legend(ax, handles, labels, legend):
     if legend is None and len(labels) >= MAX_LEGEND_LABELS:
-        logger.info('>={} labels, not applying legend'.format(
-            MAX_LEGEND_LABELS))
+        logger.info(f'>={MAX_LEGEND_LABELS} labels, not applying legend')
     else:
         legend = {} if legend in [True, None] else legend
         loc = legend.pop('loc', 'best')
