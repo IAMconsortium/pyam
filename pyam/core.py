@@ -1791,32 +1791,6 @@ class IamDataFrame(object):
         deprecation_warning('Please use `IamDataFrame.plot()`.')
         return self.plot(*args, **kwargs)
 
-    def _line_plot(self, x='year', y='value', **kwargs):
-        """Plot timeseries lines of existing data"""
-        # TODO merge with `plot.line` and deprecate for release 1.0
-        df = self.as_pandas(meta_cols=mpl_args_to_meta_cols(self, **kwargs))
-
-        # pivot data if asked for explicit variable name
-        variables = df['variable'].unique()
-        if x in variables or y in variables:
-            keep_vars = set([x, y]) & set(variables)
-            df = df[df['variable'].isin(keep_vars)]
-            idx = list(set(df.columns) - set(['value']))
-            df = (df
-                  .reset_index()
-                  .set_index(idx)
-                  .value  # df -> series
-                  .unstack(level='variable')  # keep_vars are columns
-                  .rename_axis(None, axis=1)  # rm column index name
-                  .reset_index()
-                  .set_index(META_IDX)
-                  )
-            if x != 'year' and y != 'year':
-                df = df.drop('year', axis=1)  # years causes nan's
-
-        ax, handles, labels = plotting.line(df.dropna(), x=x, y=y, **kwargs)
-        return ax
-
     def stack_plot(self, *args, **kwargs):
         """Deprecated, please use `IamDataFrame.plot.stack()`"""
         # TODO: deprecated, remove for release >=1.0

@@ -94,7 +94,7 @@ class PlotAccessor():
         return getattr(self, kind)(**kwargs)
 
     def line(self, **kwargs):
-        self._parent._line_plot(**kwargs)
+        return line(self._parent, **kwargs)
 
     def bar(self, **kwargs):
         return bar(self._parent, **kwargs)
@@ -850,6 +850,30 @@ def line(df, x='year', y='value', legend=None, title=True,
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+
+    # cast to DataFrame if necessary
+    if not isinstance(df, pd.DataFrame):
+        meta_col_args = dict(color=color, marker=marker, linestyle=linestyle)
+        df = df.as_pandas(meta_cols=mpl_args_to_meta_cols(df, **meta_col_args))
+
+    # pivot data if asked for explicit variable name
+    variables = df['variable'].unique()
+    if x in variables or y in variables:
+        keep_vars = set([x, y]) & set(variables)
+        df = df[df['variable'].isin(keep_vars)]
+        idx = list(set(df.columns) - set(['value']))
+        df = (df
+              .reset_index()
+              .set_index(idx)
+              .value  # df -> series
+              .unstack(level='variable')  # keep_vars are columns
+              .rename_axis(None, axis=1)  # rm column index name
+              .reset_index()
+              .set_index(META_IDX)
+              )
+        if x != 'year' and y != 'year':
+            df = df.drop('year', axis=1)  # years causes nan's
+
     if ax is None:
         fig, ax = plt.subplots()
 
