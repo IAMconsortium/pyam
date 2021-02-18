@@ -10,12 +10,12 @@ import seaborn as sns
 from collections import defaultdict
 from collections.abc import Iterable
 
-from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.figures import sankey
 from pyam.timeseries import cross_threshold
 from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, YEAR_IDX, \
     isstr, to_list, _raise_data_error
+from pyam.index import get_index_levels
 
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
@@ -229,10 +229,14 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
 
     # reindex to get correct order
     for key, value in kwargs.items():
-        if df.columns.name == key:
+        level = None
+        if df.columns.name == key:  # single-dimension index
             axis, _values = 'columns', df.columns.values
-        elif df.index.name == key:
+        elif df.index.name == key:  # single-dimension index
             axis, _values = 'index', list(df.index)
+        elif key in df.columns.names:  # several dimensions -> pd.MultiIndex
+            axis, _values = 'columns', get_index_levels(df.columns, key)
+            level = key
         else:
             raise ValueError(f'No dimension {key} in the data!')
 
@@ -241,7 +245,7 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
             # select relevant items from run control, then add other cols
             value = [i for i in run_control()['order'][key] if i in _values]
             value += [i for i in _values if i not in value]
-        df = df.reindex(**{axis: value})
+        df = df.reindex(**{axis: value, 'level': level})
 
     return df
 
@@ -797,7 +801,7 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
     return ax
 
 
-def line(df, x='year', y='value', legend=None, title=True,
+def line(df, x='year', y='value', order=None, legend=None, title=True,
          color=None, marker=None, linestyle=None,
          fill_between=None, final_ranges=None,
          rm_legend_label=[], ax=None, cmap=None, **kwargs):
@@ -811,6 +815,11 @@ def line(df, x='year', y='value', legend=None, title=True,
         The column to use for x-axis values
     y : string, optional
         The column to use for y-axis values
+    order : dict or list, optional
+         The order of lines and the legend as :code:`{<column>: [<order>]}` or
+         a list of columns where ordering should be applied. If not specified,
+         order by :meth:`run_control()['order'][\<column\>] <pyam.run_control>`
+         (where available) or alphabetical.
     legend : bool or dictionary, optional
         Include a legend. By default, show legend only if less than 13 entries.
         If a dictionary is provided, it will be used as keyword arguments
@@ -886,9 +895,11 @@ def line(df, x='year', y='value', legend=None, title=True,
     if final_ranges and 'color' not in props:
         raise ValueError('Must use `color` kwarg if using `final_ranges`')
 
-    # reshape data for use in line_plot
+    # prepare a dict for ordering, reshape data for use in line_plot
     idx_cols = list(df.columns.drop(y))
-    df = reshape_mpl(df, x, y, idx_cols)  # long form to one column per line
+    if not isinstance(order, dict):
+        order = dict([(i, None) for i in order or idx_cols])
+    df = reshape_mpl(df, x, y, idx_cols, **order)
 
     # determine index of column name in reshaped dataframe
     prop_idx = {}
