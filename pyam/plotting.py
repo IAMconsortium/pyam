@@ -915,9 +915,9 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
             else:
                 if col != 'unit':
                     title_cols.append(f'{col}: {values[0]}')
-            #if isinstance(df.columns, pd.MultiIndex):
+            # if isinstance(df.columns, pd.MultiIndex):
             #    df.columns = df.columns.droplevel(col)
-            #else:  # cannot drop last remaining level, so replace by empty list
+            # else:  # cannot drop last remaining level, replace by empty list
             #    df.columns = ['']
 
     # determine index of column name in reshaped dataframe
