@@ -904,15 +904,20 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
     # determine the columns that should go into the legend
     idx_cols.remove(x)
     title_cols = []
-    unit = None
+    y_label = None
     for col in idx_cols:
         values = get_index_levels(df.columns, col)
         if len(values) == 1 and col not in [color, marker, linestyle]:
             if col == 'unit' and y == 'value':
-                unit = values[0]
+                y_label = values[0]
+            elif col == y and col != 'value':
+                y_label = values[0]
             else:
                 title_cols.append(f'{col}: {values[0]}')
-            df.columns = df.columns.droplevel(col)
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.droplevel(col)
+            else:  # cannot drop last remaining level, so replace by empty list
+                df.columns = ['']
 
     # determine index of column name in reshaped dataframe
     prop_idx = {}
@@ -1007,8 +1012,8 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
 
     # add default labels if possible
     ax.set_xlabel(x.title())
-    if unit:
-        ax.set_ylabel(unit)
+    if y_label:
+        ax.set_ylabel(y_label)
 
     # show a default title from columns with a unique value or a custom title
     if title:
