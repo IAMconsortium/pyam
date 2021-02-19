@@ -912,7 +912,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
                 unit = values[0]
             else:
                 title_cols.append(f'{col}: {values[0]}')
-#            df.columns = df.columns.droplevel(col)
+            df.columns = df.columns.droplevel(col)
 
     # determine index of column name in reshaped dataframe
     prop_idx = {}
@@ -938,9 +938,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
                 pargs[key] = var
         kwargs.update(pargs)
         data = data.dropna()
-        data.plot(ax=ax, **kwargs)
-        if labels:
-            ax.lines[-1].set_label(' '.join(labels))
+        data.plot(ax=ax, label=' - '.join(labels if labels else col), **kwargs)
 
     if fill_between:
         _kwargs = {'alpha': 0.25} if fill_between in [True, None] \
@@ -1014,7 +1012,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
 
     # show a default title from columns with a unique value or a custom title
     if title:
-        ax.set_title(' '.join(title_cols) if title is True else title)
+        ax.set_title(' - '.join(title_cols) if title is True else title)
 
     return ax
 
