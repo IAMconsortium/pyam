@@ -915,10 +915,10 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
             else:
                 if col != 'unit':
                     title_cols.append(f'{col}: {values[0]}')
-            # if isinstance(df.columns, pd.MultiIndex):
-            #    df.columns = df.columns.droplevel(col)
-            # else:  # cannot drop last remaining level, replace by empty list
-            #    df.columns = ['']
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.droplevel(col)
+            else:  # cannot drop last remaining level, replace by empty list
+                df.columns = ['']
 
     # determine index of column name in reshaped dataframe
     prop_idx = {}
@@ -929,6 +929,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
 
     # plot data, keeping track of which legend labels to apply
     for col, data in df.iteritems():
+        col = to_list(col)  # handle case where columns only have 1 dimension
         pargs = {}
         labels = []
         # build plotting args and line legend labels
@@ -944,8 +945,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
                 pargs[key] = var
         kwargs.update(pargs)
         data = data.dropna()
-        label = ' '.join(labels) if labels else f"({', '.join(col)})"
-        data.plot(ax=ax, label=label, **kwargs)
+        data.plot(ax=ax, label=' - '.join(labels if labels else col), **kwargs)
 
     if fill_between:
         _kwargs = {'alpha': 0.25} if fill_between in [True, None] \
@@ -1018,7 +1018,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
 
     # show a default title from columns with a unique value or a custom title
     if title:
-        ax.set_title(' '.join(title_cols) if title is True else title)
+        ax.set_title(' - '.join(title_cols) if title is True else title)
 
     return ax
 
