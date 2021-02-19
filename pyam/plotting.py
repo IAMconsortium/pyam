@@ -1012,8 +1012,7 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
 
     # add default labels if possible
     ax.set_xlabel(x.title())
-    if y_label:
-        ax.set_ylabel(y_label)
+    ax.set_ylabel(y_label or y.title())
 
     # show a default title from columns with a unique value or a custom title
     if title:
