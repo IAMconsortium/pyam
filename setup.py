@@ -29,13 +29,15 @@ REQUIREMENTS = [
 EXTRA_REQUIREMENTS = {
     'tests': ['coverage', 'coveralls', 'pytest<6.0.0', 'pytest-cov',
               'pytest-mpl<0.12'],
-    'optional-io-formats': ['datapackage', 'pandas-datareader'],
+    'optional-io-formats': ['datapackage', 'pandas-datareader',
+                            'unfccc_di_api>=2.0'],
     'deploy': ['twine', 'setuptools', 'wheel'],
     'tutorials': ['pypandoc', 'nbformat', 'nbconvert', 'jupyter_client',
                   'ipykernel'],
     'docs': ['sphinx', 'nbsphinx', 'sphinx-gallery', 'cloud_sptheme', 'pillow',
              'sphinxcontrib-bibtex<2.0', 'sphinxcontrib-programoutput',
              'numpydoc', 'openpyxl', 'kaleido']  # docs requires 'tutorials'
+    # GitHub Actions requires pandoc explicitly to build the docs
 }
 
 # building the docs on readthedocs fails with a FileNotFoundError

@@ -11,7 +11,8 @@ import pandas as pd
 
 from collections.abc import Mapping
 from pyam.core import IamDataFrame
-from pyam.utils import META_IDX, IAMC_IDX, isstr, pattern_match
+from pyam.utils import META_IDX, IAMC_IDX, isstr, pattern_match, \
+    DEFAULT_META_INDEX, islistable
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -225,26 +226,18 @@ class Connection(object):
         return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
 
     @lru_cache()
-    def _query_index(self, default=True):
-        # TODO merge this function with `meta()`
-        default = 'true' if default else 'false'
-        add_url = 'runs?getOnlyDefaultRuns={}'
-        url = '/'.join([self._auth_url, add_url.format(default)])
-        headers = {'Authorization': 'Bearer {}'.format(self._token)}
-        r = requests.get(url, headers=headers)
-        _check_response(r, 'Could not retrieve the resource index')
-        return pd.read_json(r.content, orient='records')
-
-    @lru_cache()
-    def _query_meta(self, default=True):
+    def _query_index(self, default=True, meta=False):
         # TODO: at present this reads in all data for all scenarios,
         #  it could be sped up in the future to try to query a subset
         _default = 'true' if default else 'false'
-        add_url = 'runs?getOnlyDefaultRuns={}&includeMetadata=true'
-        url = '/'.join([self._auth_url, add_url.format(_default)])
+        _meta = 'true' if meta else 'false'
+        add_url = f'runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}'
+        url = '/'.join([self._auth_url, add_url])
         headers = {'Authorization': 'Bearer {}'.format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
+
+        # cast response to dataframe and return
         return pd.read_json(r.content, orient='records')
 
     @property
@@ -257,8 +250,7 @@ class Connection(object):
         _check_response(r)
         return pd.read_json(r.content, orient='records')['name']
 
-    @lru_cache()
-    def meta(self, default=True):
+    def meta(self, default=True, **kwargs):
         """Return categories and indicators (meta) of scenarios
 
         Parameters
@@ -266,10 +258,14 @@ class Connection(object):
         default : bool, optional
             Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
-            If :obj:`False`, return all versions.
+            If `False`, return all versions.
         """
-        df = self._query_meta(default)
+        df = self._query_index(default, meta=True)
         cols = ['version'] if default else ['version', 'is_default']
+        if kwargs:
+            if kwargs.pop('run_id', False):
+                cols += ['run_id']
+        index = DEFAULT_META_INDEX + ([] if default else ['version'])
 
         def extract(row):
             return (
@@ -277,7 +273,7 @@ class Connection(object):
                            pd.Series(row.metadata)])
                 .to_frame()
                 .T
-                .set_index(['model', 'scenario'])
+                .set_index(index)
             )
 
         return pd.concat([extract(row) for i, row in df.iterrows()],
@@ -293,7 +289,7 @@ class Connection(object):
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
         """
-        _df = self._query_meta(default)
+        _df = self._query_index(default, meta=True)
         audit_cols = ['cre_user', 'cre_date', 'upd_user', 'upd_date']
         audit_mapping = dict([(i, i.replace('_', 'ate_')) for i in audit_cols])
         other_cols = ['version'] if default else ['version', 'is_default']
@@ -361,7 +357,7 @@ class Connection(object):
             return df.rename(columns={'name': 'region', 'synonyms': 'synonym'})
         return pd.Series(df['name'].unique(), name='region')
 
-    def _query_post_data(self, **kwargs):
+    def _query_post(self, meta, default=True, **kwargs):
         def _get_kwarg(k):
             # TODO refactor API to return all models if model-list is empty
             x = kwargs.pop(k, '*' if k == 'model' else [])
@@ -382,9 +378,12 @@ class Connection(object):
                 matches |= pattern_match(data, p)
             return data[matches].unique()
 
-        # get unique run ids
-        meta = self._query_index()
-        meta = meta[meta.is_default]
+        # drop non-default runs if only default is requested
+        if default and hasattr(meta, 'is_default'):
+            meta = meta[meta.is_default]
+
+        # determine relevant run id's
+        meta = meta.reset_index()
         models = _match(meta['model'], m_pattern)
         scenarios = _match(meta['scenario'], s_pattern)
         if len(models) == 0 and len(scenarios) == 0:
@@ -455,17 +454,25 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
-        # TODO: API returns timeseries data for non-default versions
-        if default is not True:
-            msg = 'Querying for non-default scenarios is not (yet) supported'
-            raise ValueError(msg)
-
-        # retrieve data
         headers = {
             'Authorization': 'Bearer {}'.format(self._token),
             'Content-Type': 'application/json',
         }
-        _args = json.dumps(self._query_post_data(**kwargs))
+
+        # retrieve meta (with run ids) or only index
+        if meta:
+            _meta = self.meta(default=default, run_id=True)
+            # downselect to subset of meta columns if given as list
+            if islistable(meta):
+                # always merge 'version' (even if not requested explicitly)
+                # 'run_id' is required to determine `_args`, dropped later
+                _meta = _meta[set(meta).union(['version', 'run_id'])]
+        else:
+            _meta = self._query_index(default=default)\
+                .set_index(DEFAULT_META_INDEX)
+
+        # retrieve data
+        _args = json.dumps(self._query_post(_meta, default=default, **kwargs))
         url = '/'.join([self._auth_url, 'runs/bulk/ts'])
         logger.debug(f'Query timeseries data from {url} with data {_args}')
         r = requests.post(url, headers=headers, data=_args)
@@ -485,30 +492,23 @@ class Connection(object):
             if all([i in [-1, 'Year'] for i in timeslices]):
                 data.drop(columns='subannual', inplace=True)
 
-        # check if there are multiple version for any model/scenario
-        lst = (
-            data[META_IDX + ['version']].drop_duplicates()
-            .groupby(META_IDX).count().version
-        )
+        # define the index for the IamDataFrame
+        if default:
+            index = DEFAULT_META_INDEX
+            data.drop(columns='version', inplace=True)
+        else:
+            index = DEFAULT_META_INDEX + ['version']
+            logger.info('Initializing an `IamDataFrame` '
+                        f'with non-default index {index}')
 
-        # checking if there are multiple versions
-        # for every model/scenario combination
-        # TODO this is probably not necessary
-        if len(lst) > 1 and max(lst) > 1:
-            raise ValueError('multiple versions for {}'.format(
-                lst[lst > 1].index.to_list()))
-        data.drop(columns='version', inplace=True)
-
-        # cast to IamDataFrame
-        df = IamDataFrame(data)
-
-        # merge meta categorization and quantitative indications
+        # merge meta indicators (if requested) and cast to IamDataFrame
         if meta:
-            _meta = self.meta().loc[df.meta.index]
-            for i in _meta.columns if meta is True else meta + ['version']:
-                df.set_meta(_meta[i])
-
-        return IamDataFrame(df)
+            # 'run_id' is necessary to retrieve data, not returned by default
+            if not (islistable(meta) and 'run_id' in meta):
+                _meta.drop(columns='run_id', inplace=True)
+            return IamDataFrame(data, meta=_meta, index=index)
+        else:
+            return IamDataFrame(data, index=index)
 
 
 def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL,

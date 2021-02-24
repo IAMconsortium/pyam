@@ -28,6 +28,14 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame([
 ], columns=['model', 'scenario', 'region', 2010, 2020]
 ).set_index(['model', 'region'])
 
+META_DF = pd.DataFrame([
+    ['model_a', 'scen_a', 1, False],
+    ['model_a', 'scen_b', np.nan, False],
+    ['model_a', 'scen_c', 2, False],
+], columns=META_IDX + ['foo', 'exclude']
+).set_index(META_IDX)
+
+
 df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 
 
@@ -52,10 +60,9 @@ def test_init_from_iamdf(test_df_year):
 
 def test_init_from_iamdf_raises(test_df_year):
     # casting an IamDataFrame instance again with extra args fails
-    args = dict(model='foo')
-    match = f'Invalid arguments `{args}` for initializing an IamDataFrame'
+    match = "Invalid arguments \['model'\] for initializing from IamDataFrame"
     with pytest.raises(ValueError, match=match):
-        IamDataFrame(test_df_year, **args)
+        IamDataFrame(test_df_year, model='foo')
 
 
 def test_init_df_with_float_cols_raises(test_pd_df):
@@ -97,13 +104,47 @@ def test_init_df_with_extra_col(test_pd_df):
 
     df = IamDataFrame(tdf)
 
-    # check that extra-cols attribute is set correctly
-    assert df.extra_cols == [extra_col]
-
     # check that timeseries data is as expected
     obs = df.timeseries().reset_index()
     exp = tdf[obs.columns]  # get the columns into the right order
     pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_init_df_with_meta(test_pd_df):
+    # pass explicit meta dataframe with a scenario that doesn't exist in data
+    df = IamDataFrame(test_pd_df, meta=META_DF.iloc[[0, 2]][['foo']])
+
+    # check that scenario not existing in data is removed during initialization
+    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+
+
+def test_init_df_with_meta_incompatible_index(test_pd_df):
+    # define a meta dataframe with a non-standard index
+    index = ['source', 'scenario']
+    meta = pd.DataFrame([False, False, False], columns=['exclude'],
+                        index=META_DF.index.rename(index))
+
+    # assert that using an incompatible index for the meta arg raises
+    match = "Incompatible `index=\['model', 'scenario'\]` with `meta` *."
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(test_pd_df, meta=meta)
+
+
+def test_init_df_with_custom_index(test_pd_df):
+    # rename 'model' column and add a version column to the dataframe
+    test_pd_df.rename(columns={'model': 'source'}, inplace=True)
+    test_pd_df['version'] = [1, 2, 3]
+
+    # initialize with custom index columns, check that index is set correctly
+    index = ['source', 'scenario', 'version']
+    df = IamDataFrame(test_pd_df, index=index)
+    assert df.index.names == index
+
+    # check that index attributes were set correctly and that df.model fails
+    assert df.source == ['model_a']
+    assert df.version == [1, 2, 3]
+    with pytest.raises(KeyError, match='Index `model` does not exist!'):
+        df.model
 
 
 def test_init_empty_message(caplog):
@@ -245,7 +286,7 @@ def test_index(test_df_year):
 
 
 def test_index_attributes(test_df):
-    # assert that the
+    # assert that the index and data column attributes are set correcty
     assert test_df.model == ['model_a']
     assert test_df.scenario == ['scen_a', 'scen_b']
     assert test_df.region == ['World']
@@ -965,10 +1006,12 @@ def test_swap_time_to_year(test_df, inplace):
 
     if inplace:
         assert obs is None
-        assert compare(test_df, exp).empty
-    else:
-        assert compare(obs, exp).empty
-        assert "year" not in test_df.data.columns
+        obs = test_df
+
+    assert compare(obs, exp).empty
+    assert obs.year == [2005, 2010]
+    with pytest.raises(AttributeError):
+        obs.time
 
 
 @pytest.mark.parametrize("inplace", [True, False])

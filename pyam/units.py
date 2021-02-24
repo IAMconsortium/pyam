@@ -25,7 +25,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
 
     if factor:
         # Short code path: use an explicit conversion factor, don't use pint
-        ret._data[where] *= factor
+        ret._data.loc[where] *= factor
         ret._data.index = replace_index_values(*index_args)
         return None if inplace else ret
 
@@ -51,7 +51,7 @@ def convert_unit(df, current, to, factor=None, registry=None, context=None,
         raise TypeError(f'{registry} must be `pint.UnitRegistry`') from None
 
     # Copy values from the result Quantity and assign units
-    ret._data[where] = result.magnitude
+    ret._data.loc[where] = result.magnitude
     ret._data.index = replace_index_values(*index_args)
 
     return None if inplace else ret

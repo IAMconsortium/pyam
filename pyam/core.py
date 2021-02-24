@@ -45,10 +45,13 @@ from pyam.utils import (
     isstr,
     islistable,
     print_list,
+    s,
+    DEFAULT_META_INDEX,
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
-    ILLEGAL_COLS
+    ILLEGAL_COLS,
+    _raise_data_error
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
@@ -62,7 +65,7 @@ logger = logging.getLogger(__name__)
 
 
 class IamDataFrame(object):
-    """Scenario timeseries data following the IAMC data format
+    """Scenario timeseries data and meta indicators
 
     The class provides a number of diagnostic features (including validation of
     data, completeness of variables provided), processing tools (e.g.,
@@ -78,6 +81,8 @@ class IamDataFrame(object):
     meta : :class:`pandas.DataFrame`, optional
         A dataframe with suitable 'meta' indicators for the new instance.
         The index will be downselected to scenarios present in `data`.
+    index : list, optional
+        Columns to use for resulting IamDataFrame index.
     kwargs
         If `value=<col>`, melt column `<col>` to 'value' and use `<col>` name
         as 'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
@@ -94,9 +99,11 @@ class IamDataFrame(object):
     R-style integer column headers (i.e., `X2015`) are acceptable.
 
     When initializing an :class:`IamDataFrame` from an xlsx file,
-    |pyam| will per default look for the sheets 'data' and 'meta' to
-    populate the respective tables. Custom sheet names can be specified with
-    kwargs :code:`sheet_name` ('data') and :code:`meta_sheet_name` ('meta').
+    |pyam| will per default parse all sheets starting with 'data'
+    for timeseries and a sheet 'meta' to populate the respective table.
+    Sheet names can be specified with kwargs :code:`sheet_name` ('data')
+    and :code:`meta_sheet_name` ('meta'), where
+    values can be a string or a list and '*' is interpreted as a wildcard.
     Calling the class with :code:`meta_sheet_name=False` will
     skip the import of the 'meta' table.
 
@@ -107,25 +114,33 @@ class IamDataFrame(object):
     This is intended behaviour and consistent with pandas but may be confusing
     for those who are not used to the pandas/Python universe.
     """
-    def __init__(self, data, meta=None, **kwargs):
+    def __init__(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
-                msg = 'Invalid arguments `{}` for initializing an IamDataFrame'
-                raise ValueError(msg.format(kwargs))
+                msg = 'Invalid arguments {} for initializing from IamDataFrame'
+                raise ValueError(msg.format(list(kwargs)))
+            if index != data.index.names:
+                msg = f'Incompatible `index={index}` with {type(data)} '
+                raise ValueError(msg + f'(index={data.index.names})')
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
-            self._init(data, meta, **kwargs)
+            self._init(data, meta, index=index, **kwargs)
 
-    def _init(self, data, meta=None, **kwargs):
+    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Process data and set attributes for new instance"""
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop('meta_sheet_name', 'meta')
 
+        # if meta is given explicitly, verify that index matches
+        if meta is not None and not meta.index.names == index:
+            raise ValueError(f'Incompatible `index={index}` with `meta` '
+                             f'(index={meta.index.names})!')
+
         # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _data = format_data(data.copy(), **kwargs)
+            _data = format_data(data.copy(), index=index, **kwargs)
         # read data from ixmp Platform instance
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             # TODO read meta indicators from ixmp
@@ -141,41 +156,33 @@ class IamDataFrame(object):
                 data = Path(data)  # casting str or LocalPath to Path
                 if data.is_file():
                     logger.info(f'Reading file {data}')
-                    _data = read_file(data, **kwargs)
+                    _data = read_file(data, index=index, **kwargs)
                 else:
                     raise FileNotFoundError(f'File {data} does not exist')
             except TypeError:  # `data` cannot be cast to Path
                 msg = 'IamDataFrame constructor not properly called!'
                 raise ValueError(msg)
 
-        _df, self.time_col, self.extra_cols = _data
-        self._LONG_IDX = IAMC_IDX + [self.time_col] + self.extra_cols
-        # cast time_col to desired format
-        self._data = _df.set_index(self._LONG_IDX).value
+        self._data, index, self.time_col, self.extra_cols = _data
+        self._LONG_IDX = self._data.index.names
 
         # define `meta` dataframe for categorization & quantitative indicators
-        self.meta = pd.DataFrame(index=_make_index(self._data))
+        self.meta = pd.DataFrame(index=_make_index(self._data, cols=index))
         self.reset_exclude()
 
-        # merge meta dataframe (if given in kwargs)
+        # if given explicitly, merge meta dataframe after downselecting
         if meta is not None:
-            self.meta = merge_meta(meta.loc[_make_index(self.data)],
-                                   self.meta, ignore_meta_conflict=True)
+            meta = meta.loc[self.meta.index.intersection(meta.index)]
+            self.meta = merge_meta(meta, self.meta, ignore_conflict=True)
 
         # if initializing from xlsx, try to load `meta` table from file
         if meta_sheet and isinstance(data, Path) and data.suffix == '.xlsx':
             excel_file = pd.ExcelFile(data)
             if meta_sheet in excel_file.sheet_names:
-                self.load_meta(excel_file, sheet_name=meta_sheet)
+                self.load_meta(excel_file, sheet_name=meta_sheet,
+                               ignore_conflict=True)
 
-        # add time domain and extra-cols as attributes
-        if self.time_col == 'year':
-            setattr(self, 'year', get_index_levels(self._data, 'year'))
-        else:
-            setattr(self, 'time', pd.Index(
-                get_index_levels(self._data, 'time')))
-        for c in self.extra_cols:
-            setattr(self, c, get_index_levels(self._data, c))
+        self._set_attributes()
 
         # execute user-defined code
         if 'exec' in run_control():
@@ -183,6 +190,25 @@ class IamDataFrame(object):
 
         # add the `plot` handler
         self.plot = PlotAccessor(self)
+
+    def _set_attributes(self):
+        """Utility function to set attributes"""
+
+        # add time domain as attributes
+        if self.time_col == 'year':
+            setattr(self, 'year', get_index_levels(self._data, 'year'))
+        else:
+            setattr(self, 'time', pd.Index(
+                get_index_levels(self._data, 'time')))
+
+        # set non-standard index columns as attributes
+        for c in self.meta.index.names:
+            if c not in META_IDX:
+                setattr(self, c, get_index_levels(self.meta, c))
+
+        # set extra data columns as attributes
+        for c in self.extra_cols:
+            setattr(self, c, get_index_levels(self._data, c))
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
@@ -203,7 +229,7 @@ class IamDataFrame(object):
             self.data = df
 
     def __len__(self):
-        return self.data.__len__()
+        return len(self._data)
 
     def __repr__(self):
         return self.info()
@@ -220,17 +246,17 @@ class IamDataFrame(object):
         """
         # concatenate list of index dimensions and levels
         info = f'{type(self)}\nIndex dimensions:\n'
-        c1 = max([len(i) for i in self._LONG_IDX]) + 1
+        c1 = max([len(i) for i in self._data.index.names]) + 1
         c2 = n - c1 - 5
         info += '\n'.join(
             [f' * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
-             for i in META_IDX])
+             for i in self.index.names])
 
         # concatenate list of index of _data (not in META_IDX)
         info += '\nTimeseries data coordinates:\n'
         info += '\n'.join(
             [f'   {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}'
-             for i in self._LONG_IDX if i not in META_IDX])
+             for i in self._data.index.names if i not in self.index.names])
 
         # concatenate list of (head of) meta indicators and levels/values
         def print_meta_row(m, t, lst):
@@ -285,12 +311,19 @@ class IamDataFrame(object):
     @property
     def model(self):
         """Return the list of (unique) model names"""
-        return get_index_levels(self.meta, 'model')
+        return self._get_meta_index_levels('model')
 
     @property
     def scenario(self):
         """Return the list of (unique) scenario names"""
-        return get_index_levels(self.meta, 'scenario')
+        return self._get_meta_index_levels('scenario')
+
+    def _get_meta_index_levels(self, name):
+        """Return the list of a level from meta"""
+        if name in self.meta.index.names:
+            return get_index_levels(self.meta, name)
+        # in case of non-standard meta.index.names
+        raise KeyError(f'Index `{name}` does not exist!')
 
     @property
     def region(self):
@@ -317,6 +350,9 @@ class IamDataFrame(object):
     @data.setter
     def data(self, df):
         """Set the timeseries data from a long :class:`pandas.DataFrame`"""
+        logger.warning('Setting `data` via the setter can cause '
+                       'inconsistencies with `meta` and other attributes.')
+        deprecation_warning('Please use `IamDataFrame(<data>)` instead!')
         self._data = format_time_col(df, self.time_col)\
             .set_index(self._LONG_IDX).value
 
@@ -456,6 +492,7 @@ class IamDataFrame(object):
                            if i not in ret.extra_cols]
         ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
         ret._data = _data.sort_index()
+        ret._set_attributes()
 
         if not inplace:
             return ret
@@ -566,6 +603,7 @@ class IamDataFrame(object):
         df = df.stack()  # long-data to pd.Series
         df.name = 'value'
         ret._data = df.sort_index()
+        ret._set_attributes()
 
         if not inplace:
             return ret
@@ -583,21 +621,27 @@ class IamDataFrame(object):
         ValueError
             "time" is not a column of `self.data`
         """
-        if "time" not in self.data:
-            raise ValueError("time column must be datetime to use this method")
+        if not self.time_col == 'time':
+            raise ValueError('Time domain must be datetime to use this method')
 
         ret = self.copy() if not inplace else self
 
         _data = ret.data
         _data["year"] = _data["time"].apply(lambda x: x.year)
         _data = _data.drop("time", axis="columns")
-        ret._LONG_IDX = [v if v != "time" else "year" for v in ret._LONG_IDX]
+        _index = [v if v != "time" else "year" for v in ret._LONG_IDX]
 
-        if any(_data[ret._LONG_IDX].duplicated()):
-            error_msg = ('swapping time for year will result in duplicate '
-                         'rows in `data`!')
-            raise ValueError(error_msg)
-        ret._data = _data.set_index(IAMC_IDX)
+        rows = _data[_index].duplicated()
+        if any(rows):
+            error_msg = 'Swapping time for year causes duplicates in `data`'
+            _raise_data_error(error_msg, _data[_index])
+
+        # assign data and other attributes
+        ret._LONG_IDX = _index
+        ret._data = _data.set_index(ret._LONG_IDX)
+        ret.time_col = 'year'
+        ret._set_attributes()
+        delattr(ret, 'time')
 
         if not inplace:
             return ret
@@ -958,8 +1002,13 @@ class IamDataFrame(object):
                 conflict_rows = merged.loc[merged.duplicated(), self._LONG_IDX]
                 raise ValueError(msg.format(conflict_rows.drop_duplicates()))
 
-        # merge using `groupby().sum()`
-        ret.data = _data.groupby(ret._LONG_IDX).sum().reset_index()
+        # merge using `groupby().sum()` only if duplicates exist
+        if _data[ret._LONG_IDX].duplicated().any():
+            _data = _data.groupby(ret._LONG_IDX).sum().reset_index()
+
+        # overwrite _data
+        ret._data = format_time_col(_data, ret.time_col)\
+            .set_index(ret._LONG_IDX).value
 
         if not inplace:
             return ret
@@ -1468,6 +1517,7 @@ class IamDataFrame(object):
         if len(idx) == 0:
             logger.warning('Filtered IamDataFrame is empty!')
         ret.meta = ret.meta.loc[idx]
+        ret._set_attributes()
         if not inplace:
             return ret
 
@@ -1640,9 +1690,9 @@ class IamDataFrame(object):
         sheet_name : str
             name of sheet which will contain dataframe of 'meta' indicators
         """
+        close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
-            close = True
-            excel_writer = pd.ExcelWriter(excel_writer)
+            excel_writer, close = pd.ExcelWriter(excel_writer), True
         write_sheet(excel_writer, sheet_name, self.meta, index=True)
         if close:
             excel_writer.close()
@@ -1680,50 +1730,61 @@ class IamDataFrame(object):
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
 
-    def load_meta(self, path, *args, **kwargs):
+    def load_meta(self, path, sheet_name='meta', ignore_conflict=False,
+                  *args, **kwargs):
         """Load 'meta' indicators from file
 
         Parameters
         ----------
-        path : str or path object
-            any valid string path or :class:`pathlib.Path`
+        path : str, :class:`pathlib.Path` or :class:`pandas.ExcelFile`
+            A valid path or instance of an xlsx or csv file
+        sheet_name : str, optional
+            Name of the sheet to be parsed (if xlsx)
+        ignore_conflict : bool, optional
+            If `True`, values in `path` take precedence over existing `meta`.
+            If `False`, raise an error in case of conflicts.
+        kwargs
+            Passed to :func:`pandas.read_excel` or :func:`pandas.read_csv`
         """
         # load from file
-        df = read_pandas(Path(path), default_sheet='meta', *args, **kwargs)
+        path = path if isinstance(path, pd.ExcelFile) else Path(path)
+        df = read_pandas(path, sheet_name=sheet_name, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)
         df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
 
-        # check that required columns exist
-        req_cols = ['model', 'scenario', 'exclude']
-        if not set(req_cols).issubset(set(df.columns)):
-            e = 'File `{}` does not have required columns {}!'
-            raise ValueError(e.format(path, req_cols))
+        # check that required index columns exist
+        missing_cols = [c for c in self.index.names if c not in df.columns]
+        if missing_cols:
+            raise ValueError(f'File {Path(path)} (sheet {sheet_name}) '
+                             f'missing required index columns {missing_cols}!')
 
         # set index, filter to relevant scenarios from imported file
-        df.set_index(META_IDX, inplace=True)
-        idx = self.meta.index.intersection(df.index)
+        n = len(df)
+        df.set_index(self.index.names, inplace=True)
+        df = df.loc[self.meta.index.intersection(df.index)]
 
-        n_invalid = len(df) - len(idx)
-        if n_invalid > 0:
-            msg = 'Ignoring {} scenario{} from imported meta file'
-            logger.warning(msg.format(n_invalid, 's' if n_invalid > 1 else ''))
+        # skip import of meta indicators if np
+        if not n:
+            logger.info(f'No scenarios found in sheet {sheet_name}')
+            return
 
-        if idx.empty:
-            raise ValueError('No valid scenarios in imported meta file!')
+        msg = 'Reading meta indicators'
+        # indicate if not all scenarios are included in the meta file
+        if len(df) < len(self.meta):
+            i = len(self.meta)
+            msg += f' for {len(df)} out of {i} scenario{s(i)}'
 
-        df = df.loc[idx]
+        # indicate if more scenarios exist in meta file than in self
+        invalid = n - len(df)
+        if invalid:
+            msg += f', ignoring {invalid} scenario{s(invalid)} from file'
+            logger.warning(msg)
+        else:
+            logger.info(msg)
 
-        # merge in imported meta indicators
-        msg = 'Importing meta indicators for {} scenario{} (for total of {})'
-        logger.info(msg.format(len(df), 's' if len(df) > 1 else '',
-                                 len(self.meta)))
-
-        for col in df.columns:
-            self._new_meta_column(col)
-            self.meta[col] = df[col].combine_first(self.meta[col])
-        # set column `exclude` to bool
-        self.meta.exclude = self.meta.exclude.astype('bool')
+        # merge imported meta indicators
+        self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
 
     def line_plot(self, *args, **kwargs):
         """Deprecated, please use `IamDataFrame.plot()`"""

@@ -44,7 +44,7 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
 
     Returns
     -------
-    IamDataFrame
+    :class:`IamDataFrame`
     """
     if not HAS_DATAREADER:  # pragma: no cover
         raise ImportError('Required package `pandas-datareader` not found!')

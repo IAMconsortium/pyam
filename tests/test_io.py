@@ -4,9 +4,10 @@ import numpy as np
 import pytest
 
 from pyam import IamDataFrame, read_datapackage
+from pyam.utils import META_IDX
 from pyam.testing import assert_iamframe_equal
 
-from conftest import TEST_DATA_DIR
+from conftest import TEST_DATA_DIR, META_DF
 
 FILTER_ARGS = dict(scenario='scen_a')
 
@@ -54,9 +55,6 @@ def test_io_csv(test_df, tmpdir):
     [dict(include_meta='foo'), dict(meta_sheet_name='foo')]
 ])
 def test_io_xlsx(test_df, meta_args, tmpdir):
-    # add column to `meta`
-    test_df.set_meta(['a', 'b'], 'string')
-
     # write to xlsx (direct file name and ExcelWriter, see #300)
     file = tmpdir / 'testing_io_write_read.xlsx'
     for f in [file, pd.ExcelWriter(file)]:
@@ -67,8 +65,28 @@ def test_io_xlsx(test_df, meta_args, tmpdir):
         # read from xlsx
         import_df = IamDataFrame(file, **meta_args[1])
 
-        # assert that IamDataFrame instances are equal and delete file
+        # assert that IamDataFrame instances are equal
         assert_iamframe_equal(test_df, import_df)
+
+
+@pytest.mark.parametrize("sheets, sheetname", [
+    [['data1', 'data2'], dict(sheet_name='data*')],
+    [['data1', 'foo'], dict(sheet_name=['data*', 'foo'])]
+])
+def test_io_xlsx_multiple_data_sheets(test_df, sheets, sheetname, tmpdir):
+    # write data to separate sheets in excel file
+    file = tmpdir / 'testing_io_write_read.xlsx'
+    xl = pd.ExcelWriter(file)
+    for i, (model, scenario) in enumerate(test_df.index):
+        test_df.filter(scenario=scenario).to_excel(xl, sheet_name=sheets[i])
+    test_df.export_meta(xl)
+    xl.close()
+
+    # read from xlsx
+    import_df = IamDataFrame(file, **sheetname)
+
+    # assert that IamDataFrame instances are equal
+    assert_iamframe_equal(test_df, import_df)
 
 
 def test_init_df_with_na_unit(test_pd_df, tmpdir):
@@ -91,17 +109,72 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
     IamDataFrame(file)  # reading from file as IamDataFrame works
 
 
-@pytest.mark.parametrize("args", [{}, dict(sheet_name='meta')])
-def test_load_meta(test_df, args):
-    file = TEST_DATA_DIR / 'testing_metadata.xlsx'
-    test_df.load_meta(file, **args)
-    obs = test_df.meta
+@pytest.mark.parametrize("sheet_name, init_args, rename", [
+    ('meta', {}, False),
+    ('meta', dict(sheet_name='meta'), False),
+    ('foo', dict(sheet_name='foo'), False),
+    ('foo', dict(sheet_name='foo'), True),
+])
+def test_load_meta_xlsx(test_pd_df, sheet_name, init_args, rename, tmpdir):
+    """Test loading meta from an Excel file"""
+    # downselect meta
+    meta = META_DF.iloc[0:1] if rename else META_DF
 
-    dct = {'model': ['model_a'] * 2, 'scenario': ['scen_a', 'scen_b'],
-           'category': ['imported', np.nan], 'exclude': [False, False]}
-    exp = pd.DataFrame(dct).set_index(['model', 'scenario'])
-    pd.testing.assert_series_equal(obs['exclude'], exp['exclude'])
-    pd.testing.assert_series_equal(obs['category'], exp['category'])
+    # initialize a new IamDataFrame directly from data and meta
+    exp = IamDataFrame(test_pd_df, meta=meta)
+
+    # write meta to file (without an exclude col)
+    file = tmpdir / 'testing_io_meta.xlsx'
+    meta.reset_index().to_excel(file, sheet_name=sheet_name, index=False)
+
+    # initialize a new IamDataFrame and load meta from file
+    obs = IamDataFrame(test_pd_df)
+    obs.load_meta(file)
+
+    assert_iamframe_equal(obs, exp)
+
+
+@pytest.mark.parametrize("rename", [True, False])
+def test_load_meta_csv(test_pd_df, rename, tmpdir):
+    """Test loading meta from an csv file"""
+    meta = META_DF.iloc[0:1] if rename else META_DF
+
+    # initialize a new IamDataFrame directly from data and meta
+    exp = IamDataFrame(test_pd_df, meta=meta)
+
+    # write meta to file (without an exclude col)
+    file = tmpdir / 'testing_io_meta.csv'
+    meta.reset_index().to_csv(file, index=False)
+
+    # initialize a new IamDataFrame and load meta from file
+    obs = IamDataFrame(test_pd_df)
+    obs.load_meta(file)
+
+    assert_iamframe_equal(obs, exp)
+
+
+def test_load_meta_wrong_index(test_df_year, tmpdir):
+    """Loading meta without (at least) index cols as headers raises an error"""
+
+    # write meta frame with wrong index to file, then load to the IamDataFrame
+    file = tmpdir / 'testing_meta_empty.xlsx'
+    pd.DataFrame(columns=['model', 'foo']).to_excel(file, index=False)
+
+    match = ".* \(sheet meta\) missing required index columns \['scenario'\]\!"
+    with pytest.raises(ValueError, match=match):
+        test_df_year.load_meta(file)
+
+
+def test_load_meta_empty_rows(test_df_year, tmpdir):
+    """Loading empty meta table (columns but no rows) from an Excel file"""
+    exp = test_df_year.copy()  # loading empty file has no effect
+
+    # write empty meta frame to file, then load to the IamDataFrame
+    file = tmpdir / 'testing_meta_empty.xlsx'
+    pd.DataFrame(columns=META_IDX).to_excel(file, index=False)
+    test_df_year.load_meta(file)
+
+    assert_iamframe_equal(test_df_year, exp)
 
 
 def test_load_ssp_database_downloaded_file(test_pd_df):

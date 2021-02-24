@@ -1,15 +1,31 @@
 # Next Release
 
+## API changes
+
+PR [#488](https://github.com/IAMconsortium/pyam/pull/488) changes the default
+behavior when initializing an IamDataFrame from xlsx: now, all sheets names
+starting with `data` will be parsed for timeseries data.
+
+## Individual updates
+
+- [#497](https://github.com/IAMconsortium/pyam/pull/497) Add a module for reading data from the UNFCCC Data Inventory 
+- [#496](https://github.com/IAMconsortium/pyam/pull/496) Enable loading meta from csv file
+- [#494](https://github.com/IAMconsortium/pyam/pull/494) Small performance improvements
+- [#491](https://github.com/IAMconsortium/pyam/pull/491) Allow loading meta from file without exclude columns or with empty rows
+- [#488](https://github.com/IAMconsortium/pyam/pull/488) Read all sheets starting with `data` when reading from xlsx
+- [#486](https://github.com/IAMconsortium/pyam/pull/486) Enable reading non-default scenario versions from IIASA API
 - [#483](https://github.com/IAMconsortium/pyam/pull/483) Add a tutorial for integration with R
+- [#481](https://github.com/IAMconsortium/pyam/pull/481) Enable custom index columns
 - [#477](https://github.com/IAMconsortium/pyam/pull/477) Add a nightly test suite
+- [#476](https://github.com/IAMconsortium/pyam/pull/476) Add docstrings to plotting functions `df.plot.<kind>()`
 - [#471](https://github.com/IAMconsortium/pyam/pull/471) Add a `iiasa.Connection.properties()` function to retrieve scenario audit data
 
 # Release v0.10.0
 
 ## Highlights
 
- - Refactor the plotting library for better UX and consistency with **pandas**,
-   **matplotlib** and **seaborn**.
+ - Refactor the plotting library for better UX and consistency
+   with **pandas**, **matplotlib** and **seaborn**.
  - Add a `sankey()` feature to the plotting library.
  - Rework the documentation and tutorials.
 

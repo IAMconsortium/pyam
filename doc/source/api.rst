@@ -12,12 +12,14 @@ and methods.
    api/io
    api/general
    api/iamdataframe
+   api/database
    api/filtering
    api/plotting
    api/iiasa
    api/statistics
    api/timeseries
    api/variables
+   api/string_utils
 
 
 **Notebook logging behaviour**
