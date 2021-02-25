@@ -6,10 +6,12 @@ pyam: analysis & visualization <br /> of integrated-assessment scenarios
 [![conda](https://anaconda.org/conda-forge/pyam/badges/version.svg)](https://anaconda.org/conda-forge/pyam)
 [![latest](https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyam)
 
-[![pytest-38](https://github.com/IAMconsortium/pyam/workflows/pytest%20(3.8)/badge.svg?branch=master)](https://github.com/IAMconsortium/pyam/actions?query=workflow%3A%22pytest+%283.8%29%22+branch%3Amaster)
-[![pytest-37](https://github.com/IAMconsortium/pyam/workflows/pytest%20(3.7)/badge.svg?branch=master)](https://github.com/IAMconsortium/pyam/actions?query=workflow%3A%22pytest+%283.7%29%22+branch%3Amaster)
-[![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/master/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
+<!-- replace python version by dynamic reference to pypi once Python versions are configured there -->
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![python](https://img.shields.io/badge/python-3.7_|_3.8_|_3.9-blue)](https://github.com/IAMconsortium/pyam)
+[![pytest](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml/badge.svg)](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml)
 [![ReadTheDocs](https://readthedocs.org/projects/pyam-iamc/badge/?version=latest)](https://pyam-iamc.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/master/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
 
 [![doi](https://zenodo.org/badge/113359260.svg)](https://zenodo.org/badge/latestdoi/113359260)
 [![joss](https://joss.theoj.org/papers/10.21105/joss.01095/status.svg)](https://joss.theoj.org/papers/10.21105/joss.01095)
