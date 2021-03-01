@@ -2187,25 +2187,61 @@ def compare(left, right, left_label='left', right_label='right',
     return ret[[right_label, left_label]]
 
 
-def concat(dfs):
+def concat(dfs, ignore_meta_conflict=False, **kwargs):
     """Concatenate a series of IamDataFrame-like objects
 
     Parameters
     ----------
     dfs : list of IamDataFrames
         a list of :class:`IamDataFrame` instances
+    ignore_meta_conflict : bool, default False
+        If False and `other` is an IamDataFrame, raise an error if
+        any meta columns present in `self` and `other` are not identical.
+    kwargs
+        Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
+        if at least one of dfs is not already an IamDataFrame
+    
+    Returns
+    -------
+    IamDataFrame
+    
+    Raises
+    ------
+    ValueError
+        If time domain or other timeseries data index dimension don't match
     """
     if isstr(dfs) or not hasattr(dfs, '__iter__'):
         msg = 'Argument must be a non-string iterable (e.g., list or tuple)'
         raise TypeError(msg)
+    
+    for i in range(len(dfs)):
+        if not isinstance(dfs[i], IamDataFrame):
+            dfs[i] = IamDataFrame(dfs[i], **kwargs)
+            ignore_meta_conflict = True
+            
+        if dfs[0].time_col != dfs[i].time_col:
+            raise ValueError('Incompatible time format (`year` vs. `time`)')
+        
+        if dfs[0]._data.index.names != dfs[i]._data.index.names:
+            raise ValueError('Incompatible timeseries data index dimensions')
 
-    _df = None
+    _df = dfs[0].copy()
+    
+    # merge `meta` tables
     for df in dfs:
-        df = df if isinstance(df, IamDataFrame) else IamDataFrame(df)
-        if _df is None:
-            _df = df.copy()
-        else:
-            _df.append(df, inplace=True)
+        _df.meta = merge_meta(_df.meta, df.meta, ignore_meta_conflict)
+        
+    # concatenate data (verify integrity for no duplicates)
+    _dfs_data = [df._data for df in dfs]
+    _data = pd.concat(_dfs_data, verify_integrity=False)
+    
+    # merge extra columns in `data` and set `self._LONG_IDX`
+    for df in dfs:
+        _df.extra_cols += [i for i in df.extra_cols
+                           if i not in _df.extra_cols]
+    _df._LONG_IDX = IAMC_IDX + [_df.time_col] + _df.extra_cols
+    _df._data = _data.sort_index()
+
     return _df
 
 
