@@ -4,8 +4,9 @@ import warnings
 
 logger = logging.getLogger(__name__)
 
+
 @contextmanager
-def adjust_log_level(logger, level='ERROR'):
+def adjust_log_level(logger, level="ERROR"):
     """Context manager to change log level"""
     old_level = logger.getEffectiveLevel()
     logger.setLevel(level)
@@ -13,13 +14,11 @@ def adjust_log_level(logger, level='ERROR'):
     logger.setLevel(old_level)
 
 
-def deprecation_warning(msg, type='This method', stacklevel=3):
+def deprecation_warning(msg, type="This method", stacklevel=3):
     """Write deprecation warning to log"""
-    warn = 'is deprecated and will be removed in future versions.'
+    warn = "is deprecated and will be removed in future versions."
     warnings.warn(
-        '{} {} {}'.format(type, warn, msg),
-        DeprecationWarning,
-        stacklevel=stacklevel
+        "{} {} {}".format(type, warn, msg), DeprecationWarning, stacklevel=stacklevel
     )
 
 
@@ -40,6 +39,7 @@ class ConfigPseudoHandler(logging.Handler):
     **config_kwargs
         Arguments to pass on to logging.basicConfig
     """
+
     def __init__(self, logger, log_msg=None, **config_kwargs):
         super().__init__()
 

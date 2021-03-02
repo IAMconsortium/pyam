@@ -10,17 +10,18 @@ _RUN_CONTROL = None
 
 # path to regional mapping files
 _REG_MAP_PATH = lambda x: os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 'region_mappings', x)
+    os.path.abspath(os.path.dirname(__file__)), "region_mappings", x
+)
 
 # defaults for run control
 _RC_DEFAULTS = {
-    'color': {},
-    'marker': {},
-    'linestyle': {},
-    'order': {},
-    'region_mapping': {
-        'default': _REG_MAP_PATH('default_mapping.csv'),
-    }
+    "color": {},
+    "marker": {},
+    "linestyle": {},
+    "order": {},
+    "region_mapping": {
+        "default": _REG_MAP_PATH("default_mapping.csv"),
+    },
 }
 
 
@@ -108,17 +109,18 @@ class RunControl(Mapping):
 
         _fname = os.path.join(os.path.dirname(fyaml), fname)
         if not os.path.exists(_fname):
-            msg = "YAML key '{}' in {}: {} is not a valid relative " + \
-                "or absolute path"
+            msg = (
+                "YAML key '{}' in {}: {} is not a valid relative " + "or absolute path"
+            )
             raise IOError(msg.format(key, fyaml, fname))
         return _fname
 
     def _load_yaml(self, obj):
         check_rel_paths = False
-        if hasattr(obj, 'read'):  # it's a file
+        if hasattr(obj, "read"):  # it's a file
             obj = obj.read()
         if isstr(obj) and not os.path.exists(obj):
-            raise IOError('File {} does not exist'.format(obj))
+            raise IOError("File {} does not exist".format(obj))
         if isstr(obj) and os.path.exists(obj):
             check_rel_paths = True
             fname = obj

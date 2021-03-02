@@ -3,13 +3,7 @@ import numpy as np
 import logging
 
 from pyam.logging import adjust_log_level
-from pyam.utils import (
-    islistable,
-    isstr,
-    find_depth,
-    reduce_hierarchy,
-    KNOWN_FUNCS
-)
+from pyam.utils import islistable, isstr, find_depth, reduce_hierarchy, KNOWN_FUNCS
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +12,12 @@ def _aggregate(df, variable, components=None, method=np.sum):
     """Internal implementation of the `aggregate` function"""
     # list of variables require default components (no manual list)
     if islistable(variable) and components is not None:
-        raise ValueError('aggregating by list of variables cannot use '
-                         'custom components')
+        raise ValueError(
+            "aggregating by list of variables cannot use " "custom components"
+        )
 
     mapping = {}
-    msg = 'cannot aggregate variable `{}` because it has no components'
+    msg = "cannot aggregate variable `{}` because it has no components"
     # if single variable
     if isstr(variable):
         # default components to all variables one level below `variable`
@@ -48,7 +43,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
 
     # rename all components to `variable` and aggregate
     _df = df.data[df._apply_filters(variable=mapping.keys())].copy()
-    _df['variable'].replace(mapping, inplace=True)
+    _df["variable"].replace(mapping, inplace=True)
     return _group_and_agg(_df, [], method)
 
 
@@ -61,12 +56,8 @@ def _aggregate_recursive(df, variable, method=np.sum):
     sub_variables = []
     for d in reversed(range(1, max(find_depth(df.data.variable)) + 1)):
         depth = find_depth(df.data.variable)
-        var_list = (
-            df.data.variable[[i == d for i in depth]]
-            .unique()
-        )
-        vars_up = pd.Series(
-            [reduce_hierarchy(i, -1) for i in var_list]).unique()
+        var_list = df.data.variable[[i == d for i in depth]].unique()
+        vars_up = pd.Series([reduce_hierarchy(i, -1) for i in var_list]).unique()
 
         if [i for i, entr in enumerate(vars_up) if entr.startswith(variable)]:
             for v in vars_up:
@@ -87,24 +78,26 @@ def _aggregate_recursive(df, variable, method=np.sum):
     return _df_aggregated.data
 
 
-def _aggregate_region(df, variable, region, subregions=None, components=False,
-                      method='sum', weight=None):
+def _aggregate_region(
+    df, variable, region, subregions=None, components=False, method="sum", weight=None
+):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
-        msg = 'aggregating by list of variables with components ' \
-              'is not supported'
+        msg = "aggregating by list of variables with components " "is not supported"
         raise ValueError(msg)
 
     if weight is not None and components is not False:
-        msg = 'using weights and components in one operation not supported'
+        msg = "using weights and components in one operation not supported"
         raise ValueError(msg)
 
     # default subregions to all regions other than `region`
     subregions = subregions or df._all_other_regions(region, variable)
 
     if not len(subregions):
-        msg = 'cannot aggregate variable `{}` to `{}` because it does not'\
-              ' exist in any subregion'
+        msg = (
+            "cannot aggregate variable `{}` to `{}` because it does not"
+            " exist in any subregion"
+        )
         logger.info(msg.format(variable, region))
 
         return
@@ -113,12 +106,13 @@ def _aggregate_region(df, variable, region, subregions=None, components=False,
     subregion_df = df.filter(region=subregions)
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
-        col = 'region'
+        col = "region"
         _data = _group_and_agg(subregion_df.data[rows], col, method=method)
     else:
         weight_rows = subregion_df._apply_filters(variable=weight)
-        _data = _agg_weight(subregion_df.data[rows],
-                            subregion_df.data[weight_rows], method)
+        _data = _agg_weight(
+            subregion_df.data[rows], subregion_df.data[weight_rows], method
+        )
 
     # if not `components=False`, add components at the `region` level
     if components is not False:
@@ -137,8 +131,8 @@ def _aggregate_region(df, variable, region, subregions=None, components=False,
             # rename all components to `variable` and aggregate
             rows = region_df._apply_filters(variable=components)
             _df = region_df.data[rows].copy()
-            _df['variable'] = variable
-            _data = _data.add(_group_and_agg(_df, 'region'), fill_value=0)
+            _df["variable"] = variable
+            _data = _data.add(_group_and_agg(_df, "region"), fill_value=0)
 
     return _data
 
@@ -152,45 +146,48 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
     # compute aggregate over time
     filter_args = dict(variable=variable)
     filter_args[column] = components
-    index = _list_diff(df.data.columns, [column, 'value'])
+    index = _list_diff(df.data.columns, [column, "value"])
 
     _data = pd.concat(
         [
-            df.filter(**filter_args).data
-            .pivot_table(index=index, columns=column)
-            .value
-            .rename_axis(None, axis=1)
+            df.filter(**filter_args)
+            .data.pivot_table(index=index, columns=column)
+            .value.rename_axis(None, axis=1)
             .apply(_get_method_func(method), axis=1)
-        ], names=[column] + index, keys=[value])
+        ],
+        names=[column] + index,
+        keys=[value],
+    )
 
     # reset index-level order to original IamDataFrame
     _data.index = _data.index.reorder_levels(df._LONG_IDX)
 
     return _data
 
+
 def _group_and_agg(df, by, method=np.sum):
     """Groupby & aggregate `df` by column(s), return indexed `pd.Series`"""
     by = [by] if isstr(by) else by
-    cols = [c for c in list(df.columns) if c not in ['value'] + by]
+    cols = [c for c in list(df.columns) if c not in ["value"] + by]
     # pick aggregator func (default: sum)
-    return df.groupby(cols)['value'].agg(_get_method_func(method))
+    return df.groupby(cols)["value"].agg(_get_method_func(method))
 
 
 def _agg_weight(df, weight, method):
     """Aggregate `df` by regions with weights, return indexed `pd.Series`"""
     # only summation allowed with weights
-    if method not in ['sum', np.sum]:
-        raise ValueError('only method `np.sum` allowed for weighted average')
+    if method not in ["sum", np.sum]:
+        raise ValueError("only method `np.sum` allowed for weighted average")
 
-    w_cols = _list_diff(df.columns, ['variable', 'unit', 'value'])
+    w_cols = _list_diff(df.columns, ["variable", "unit", "value"])
     _weight = _get_value_col(weight, w_cols)
 
     if not _get_value_col(df, w_cols).index.equals(_weight.index):
-        raise ValueError('inconsistent index between variable and weight')
+        raise ValueError("inconsistent index between variable and weight")
 
     _data = _get_value_col(df)
-    col1 = _list_diff(_data.index.names, ['region'])
-    col2 = _list_diff(w_cols, ['region'])
+    col1 = _list_diff(_data.index.names, ["region"])
+    col2 = _list_diff(w_cols, ["region"])
     return (_data * _weight).groupby(col1).sum() / _weight.groupby(col2).sum()
 
 
@@ -201,8 +198,8 @@ def _list_diff(lst, exclude):
 
 def _get_value_col(df, cols=None):
     """Return the value column as `pd.Series sorted by index"""
-    cols = cols or [i for i in df.columns if i != 'value']
-    return df.set_index(cols)['value'].sort_index()
+    cols = cols or [i for i in df.columns if i != "value"]
+    return df.set_index(cols)["value"].sort_index()
 
 
 def _get_method_func(method):
@@ -214,4 +211,4 @@ def _get_method_func(method):
         return KNOWN_FUNCS[method]
 
     # raise error if `method` is a string but not in dict of known methods
-    raise ValueError('method `{}` is not a known aggregator'.format(method))
+    raise ValueError("method `{}` is not a known aggregator".format(method))

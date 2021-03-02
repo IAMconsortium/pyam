@@ -13,8 +13,15 @@ from collections.abc import Iterable
 from pyam.run_control import run_control
 from pyam.figures import sankey
 from pyam.timeseries import cross_threshold
-from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, YEAR_IDX, \
-    isstr, to_list, _raise_data_error
+from pyam.utils import (
+    META_IDX,
+    IAMC_IDX,
+    SORT_IDX,
+    YEAR_IDX,
+    isstr,
+    to_list,
+    _raise_data_error,
+)
 from pyam.index import get_index_levels
 
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
@@ -33,8 +40,8 @@ MAX_LEGEND_LABELS = 13
 
 # default legend kwargs for putting legends outside of plots
 OUTSIDE_LEGEND = {
-    'right': dict(loc='center left', bbox_to_anchor=(1.0, 0.5)),
-    'bottom': dict(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3),
+    "right": dict(loc="center left", bbox_to_anchor=(1.0, 0.5)),
+    "bottom": dict(loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=3),
 }
 
 PYAM_COLORS = {
@@ -44,53 +51,54 @@ PYAM_COLORS = {
     #   for l in f.readlines():
     #     rgb = np.array([int(x) for x in l.strip().split()]) / 256
     #     print(matplotlib.colors.rgb2hex(rgb))
-    'AR6-SSP1': "#1e9583",
-    'AR6-SSP2': "#4576be",
-    'AR6-SSP3': "#f11111",
-    'AR6-SSP4': "#e78731",
-    'AR6-SSP5': "#8036a7",
-    'AR6-SSP1-1.9': "#1e9583",
-    'AR6-SSP1-2.6': "#1d3354",
-    'AR6-SSP2-4.5': "#e9dc3d",
-    'AR6-SSP3-7.0': "#f11111",
-    'AR6-SSP3-LowNTCF': "#f11111",
-    'AR6-SSP4-3.4': "#63bce4",
-    'AR6-SSP4-6.0': "#e78731",
-    'AR6-SSP5-3.4-OS': "#996dc8",
-    'AR6-SSP5-8.5': "#830b22",
-    'AR6-RCP-2.6': "#980002",
-    'AR6-RCP-4.5': "#c37900",
-    'AR6-RCP-6.0': "#709fcc",
-    'AR6-RCP-8.5': "#003466",
+    "AR6-SSP1": "#1e9583",
+    "AR6-SSP2": "#4576be",
+    "AR6-SSP3": "#f11111",
+    "AR6-SSP4": "#e78731",
+    "AR6-SSP5": "#8036a7",
+    "AR6-SSP1-1.9": "#1e9583",
+    "AR6-SSP1-2.6": "#1d3354",
+    "AR6-SSP2-4.5": "#e9dc3d",
+    "AR6-SSP3-7.0": "#f11111",
+    "AR6-SSP3-LowNTCF": "#f11111",
+    "AR6-SSP4-3.4": "#63bce4",
+    "AR6-SSP4-6.0": "#e78731",
+    "AR6-SSP5-3.4-OS": "#996dc8",
+    "AR6-SSP5-8.5": "#830b22",
+    "AR6-RCP-2.6": "#980002",
+    "AR6-RCP-4.5": "#c37900",
+    "AR6-RCP-6.0": "#709fcc",
+    "AR6-RCP-8.5": "#003466",
     # AR5 colours from
     # https://tdaviesbarnard.co.uk/1202/ipcc-official-colors-rcp/
-    'AR5-RCP-2.6': "#0000FF",
-    'AR5-RCP-4.5': "#79BCFF",
-    'AR5-RCP-6.0': "#FF822D",
-    'AR5-RCP-8.5': "#FF0000",
+    "AR5-RCP-2.6": "#0000FF",
+    "AR5-RCP-4.5": "#79BCFF",
+    "AR5-RCP-6.0": "#FF822D",
+    "AR5-RCP-8.5": "#FF0000",
 }
 
 
-class PlotAccessor():
+class PlotAccessor:
     """Make plots of IamDataFrame instances"""
+
     def __init__(self, df):
         self._parent = df
 
         # assign plotting functions as attributes
         PLOT_MAPPING = {
-            'line': line,
-            'bar': bar,
-            'stack': stack,
-            'box': box,
-            'pie': pie,
-            'scatter': scatter,
-            'sankey': sankey
+            "line": line,
+            "bar": bar,
+            "stack": stack,
+            "box": box,
+            "pie": pie,
+            "scatter": scatter,
+            "sankey": sankey,
         }
         # inherit the docstring from the plot function
         for name, func in PLOT_MAPPING.items():
             getattr(self, name).__func__.__doc__ = func.__doc__
 
-    def __call__(self, kind='line', *args, **kwargs):
+    def __call__(self, kind="line", *args, **kwargs):
         return getattr(self, kind)(**kwargs)
 
     def line(self, **kwargs):
@@ -103,7 +111,7 @@ class PlotAccessor():
         return stack(self._parent, **kwargs)
 
     def hist(self, **kwargs):
-        raise NotImplementedError('Histogram plot not implemented yet!')
+        raise NotImplementedError("Histogram plot not implemented yet!")
 
     def box(self, **kwargs):
         return box(self._parent, **kwargs)
@@ -121,12 +129,13 @@ class PlotAccessor():
 def reset_default_props(**kwargs):
     """Reset properties to initial cycle point"""
     global _DEFAULT_PROPS
-    pcycle = plt.rcParams['axes.prop_cycle']
+    pcycle = plt.rcParams["axes.prop_cycle"]
     _DEFAULT_PROPS = {
-        'color': itertools.cycle(_get_standard_colors(**kwargs))
-        if len(kwargs) > 0 else itertools.cycle([x['color'] for x in pcycle]),
-        'marker': itertools.cycle(['o', 'x', '.', '+', '*']),
-        'linestyle': itertools.cycle(['-', '--', '-.', ':']),
+        "color": itertools.cycle(_get_standard_colors(**kwargs))
+        if len(kwargs) > 0
+        else itertools.cycle([x["color"] for x in pcycle]),
+        "marker": itertools.cycle(["o", "x", ".", "+", "*"]),
+        "linestyle": itertools.cycle(["-", "--", "-.", ":"]),
     }
 
 
@@ -153,8 +162,7 @@ def mpl_args_to_meta_cols(df, **kwargs):
     return list(cols)
 
 
-def assign_style_props(df, color=None, marker=None, linestyle=None,
-                       cmap=None):
+def assign_style_props(df, color=None, marker=None, linestyle=None, cmap=None):
     """Assign the style properties for a plot
 
     Parameters
@@ -163,17 +171,20 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
         data to be used for style properties
     """
     if color is None and cmap is not None:
-        raise ValueError('`cmap` must be provided with the `color` argument')
+        raise ValueError("`cmap` must be provided with the `color` argument")
 
     # determine color, marker, and linestyle for each line
-    n = len(df[color].unique()) if color in df.columns else \
-        len(df[list(set(df.columns) & set(IAMC_IDX))].drop_duplicates())
+    n = (
+        len(df[color].unique())
+        if color in df.columns
+        else len(df[list(set(df.columns) & set(IAMC_IDX))].drop_duplicates())
+    )
     defaults = default_props(reset=True, num_colors=n, colormap=cmap)
 
     props = {}
     rc = run_control()
 
-    kinds = [('color', color), ('marker', marker), ('linestyle', linestyle)]
+    kinds = [("color", color), ("marker", marker), ("linestyle", linestyle)]
 
     for kind, var in kinds:
         rc_has_kind = kind in rc
@@ -191,8 +202,8 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
             props[kind] = props_for_kind
 
     # update for special properties only if they exist in props
-    if 'color' in props:
-        d = props['color']
+    if "color" in props:
+        d = props["color"]
         values = list(d.values())
         # find if any colors in our properties corresponds with special colors
         # we know about
@@ -205,7 +216,7 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
             for k, v in zip(keys, values):
                 d[k] = PYAM_COLORS[v]
             # replace props with updated dict without special colors
-            props['color'] = d
+            props["color"] = d
     return props
 
 
@@ -222,7 +233,7 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     # check for duplicates
     rows = df[idx_cols].duplicated()
     if any(rows):
-        _raise_data_error('Duplicates in plot data', df.loc[rows, idx_cols])
+        _raise_data_error("Duplicates in plot data", df.loc[rows, idx_cols])
 
     # reshape the data
     df = df.set_index(idx_cols)[y].unstack(x).T
@@ -231,27 +242,35 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     for key, value in kwargs.items():
         level = None
         if df.columns.name == key:  # single-dimension index
-            axis, _values = 'columns', df.columns.values
+            axis, _values = "columns", df.columns.values
         elif df.index.name == key:  # single-dimension index
-            axis, _values = 'index', list(df.index)
+            axis, _values = "index", list(df.index)
         elif key in df.columns.names:  # several dimensions -> pd.MultiIndex
-            axis, _values = 'columns', get_index_levels(df.columns, key)
+            axis, _values = "columns", get_index_levels(df.columns, key)
             level = key
         else:
-            raise ValueError(f'No dimension {key} in the data!')
+            raise ValueError(f"No dimension {key} in the data!")
 
         # if not given, determine order based on run control (if possible)
-        if value is None and key in run_control()['order']:
+        if value is None and key in run_control()["order"]:
             # select relevant items from run control, then add other cols
-            value = [i for i in run_control()['order'][key] if i in _values]
+            value = [i for i in run_control()["order"][key] if i in _values]
             value += [i for i in _values if i not in value]
-        df = df.reindex(**{axis: value, 'level': level})
+        df = df.reindex(**{axis: value, "level": level})
 
     return df
 
 
-def pie(df, value='value', category='variable', legend=False, title=True,
-        ax=None, cmap=None, **kwargs):
+def pie(
+    df,
+    value="value",
+    category="variable",
+    legend=False,
+    title=True,
+    ax=None,
+    cmap=None,
+    **kwargs,
+):
     """Plot data as a pie chart.
 
     Parameters
@@ -284,8 +303,10 @@ def pie(df, value='value', category='variable', legend=False, title=True,
 
     for col in set(SORT_IDX) - set([category]):
         if len(df[col].unique()) > 1:
-            msg = 'Can not plot multiple {}s in a pie plot with value={},' +\
-                ' category={}'
+            msg = (
+                "Can not plot multiple {}s in a pie plot with value={},"
+                + " category={}"
+            )
             raise ValueError(msg.format(col, value, category))
 
     if ax is None:
@@ -298,33 +319,43 @@ def pie(df, value='value', category='variable', legend=False, title=True,
     _df = _df.abs()
 
     # explicitly get colors
-    defaults = default_props(reset=True, num_colors=len(_df.index),
-                             colormap=cmap)['color']
+    defaults = default_props(reset=True, num_colors=len(_df.index), colormap=cmap)[
+        "color"
+    ]
     rc = run_control()
     color = []
     for key, c in zip(_df.index, defaults):
-        if 'color' in rc and \
-           category in rc['color'] and \
-           key in rc['color'][category]:
-            c = rc['color'][category][key]
+        if "color" in rc and category in rc["color"] and key in rc["color"][category]:
+            c = rc["color"][category][key]
         color.append(c)
 
     # plot data
-    _df.plot(kind='pie', colors=color, ax=ax, explode=explode, **kwargs)
+    _df.plot(kind="pie", colors=color, ax=ax, explode=explode, **kwargs)
 
     # add legend
-    ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5), labels=_df.index)
+    ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), labels=_df.index)
     if not legend:
         ax.legend_.remove()
 
     # remove label
-    ax.set_ylabel('')
+    ax.set_ylabel("")
 
     return ax
 
 
-def stack(df, x='year', y='value', stack='variable', order=None, total=None,
-          legend=True, title=True, ax=None, cmap=None, **kwargs):
+def stack(
+    df,
+    x="year",
+    y="value",
+    stack="variable",
+    order=None,
+    total=None,
+    legend=True,
+    title=True,
+    ax=None,
+    cmap=None,
+    **kwargs,
+):
     """Plot a stacked area chart of timeseries data
 
     Parameters
@@ -368,7 +399,7 @@ def stack(df, x='year', y='value', stack='variable', order=None, total=None,
 
     for col in set(SORT_IDX) - set([x, stack]):
         if len(df[col].unique()) > 1:
-            msg = 'Can not plot multiple {}s in stack_plot with x={}, stack={}'
+            msg = "Can not plot multiple {}s in stack_plot with x={}, stack={}"
             raise ValueError(msg.format(col, x, stack))
 
     if ax is None:
@@ -380,7 +411,7 @@ def stack(df, x='year', y='value', stack='variable', order=None, total=None,
     # cannot plot timeseries that do not extend for the entire range
     has_na = _df.iloc[[0, -1]].isna().any()
     if any(has_na):
-        msg = 'Can not plot data that does not extend for the entire {} range'
+        msg = "Can not plot data that does not extend for the entire {} range"
         raise ValueError(msg.format(x))
 
     def as_series(index, name):
@@ -388,23 +419,27 @@ def stack(df, x='year', y='value', stack='variable', order=None, total=None,
         return pd.Series([0] * len(index), index=_idx, name=name)
 
     # determine all time-indices where a timeseries crosses 0 and add to data
-    _rows = pd.concat([as_series(cross_threshold(_df[c], return_type=float), c)
-                       for c in _df.columns], axis=1)
+    _rows = pd.concat(
+        [as_series(cross_threshold(_df[c], return_type=float), c) for c in _df.columns],
+        axis=1,
+    )
     _df = (
         _df.append(_rows.loc[_rows.index.difference(_df.index)])
-        .sort_index().interpolate(method='index')
+        .sort_index()
+        .interpolate(method="index")
     )
 
     # explicitly get colors
-    defaults = default_props(reset=True, num_colors=len(_df.columns),
-                             colormap=cmap)['color']
+    defaults = default_props(reset=True, num_colors=len(_df.columns), colormap=cmap)[
+        "color"
+    ]
     rc = run_control()
     colors = {}
     for key in _df.columns:
         c = next(defaults)
-        c_in_rc = 'color' in rc
-        if c_in_rc and stack in rc['color'] and key in rc['color'][stack]:
-            c = rc['color'][stack][key]
+        c_in_rc = "color" in rc
+        if c_in_rc and stack in rc["color"] and key in rc["color"][stack]:
+            c = rc["color"][stack][key]
         colors[key] = c
 
     # determine positive and negative parts of the timeseries data
@@ -414,16 +449,30 @@ def stack(df, x='year', y='value', stack='variable', order=None, total=None,
     lower = [0] * len(_df_pos)
     for col in reversed(_df_pos.columns):
         upper = _df_pos[col].fillna(0) + lower
-        ax.fill_between(_df_pos.index, upper, lower, label=None,
-                        color=colors[col], linewidth=0, **kwargs)
+        ax.fill_between(
+            _df_pos.index,
+            upper,
+            lower,
+            label=None,
+            color=colors[col],
+            linewidth=0,
+            **kwargs,
+        )
         lower = upper
 
     upper = [0] * len(_df_neg)
     for col in _df_neg.columns:
         lower = _df_neg[col].fillna(0) + upper
         # add label only on negative to have it in right order
-        ax.fill_between(_df_neg.index, upper, lower, label=col,
-                        color=colors[col], linewidth=0, **kwargs)
+        ax.fill_between(
+            _df_neg.index,
+            upper,
+            lower,
+            label=col,
+            color=colors[col],
+            linewidth=0,
+            **kwargs,
+        )
         upper = lower
 
     # add total
@@ -436,31 +485,43 @@ def stack(df, x='year', y='value', stack='variable', order=None, total=None,
         ax.plot(_df.index, _df.sum(axis=1), **total)
 
     # add legend
-    ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+    ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5))
     if not legend:
         ax.legend_.remove()
 
     # add default labels if possible
     ax.set_xlabel(x.capitalize())
-    units = df['unit'].unique()
+    units = df["unit"].unique()
     if len(units) == 1:
         ax.set_ylabel(units[0])
 
     # build a default title if possible
     _title = []
-    for var in ['model', 'scenario', 'region', 'variable']:
+    for var in ["model", "scenario", "region", "variable"]:
         values = df[var].unique()
         if len(values) == 1:
-            _title.append('{}: {}'.format(var, values[0]))
+            _title.append("{}: {}".format(var, values[0]))
     if title and _title:
-        title = ' '.join(_title) if title is True else title
+        title = " ".join(_title) if title is True else title
         ax.set_title(title)
 
     return ax
 
 
-def bar(df, x='year', y='value', bars='variable', order=None, bars_order=None,
-        orient='v', legend=True, title=True, ax=None, cmap=None, **kwargs):
+def bar(
+    df,
+    x="year",
+    y="value",
+    bars="variable",
+    order=None,
+    bars_order=None,
+    orient="v",
+    legend=True,
+    title=True,
+    ax=None,
+    cmap=None,
+    **kwargs,
+):
     """Plot data as a stacked or grouped bar chart
 
     Parameters
@@ -502,7 +563,7 @@ def bar(df, x='year', y='value', bars='variable', order=None, bars_order=None,
 
     for col in set(SORT_IDX) - set([x, bars]):
         if len(df[col].unique()) > 1:
-            msg = 'Can not plot multiple {}s in bar plot with x={}, bars={}'
+            msg = "Can not plot multiple {}s in bar plot with x={}, bars={}"
             raise ValueError(msg.format(col, x, bars))
 
     if ax is None:
@@ -512,57 +573,57 @@ def bar(df, x='year', y='value', bars='variable', order=None, bars_order=None,
     _df = reshape_mpl(df, x, y, bars, **{x: order, bars: bars_order})
 
     # explicitly get colors
-    defaults = default_props(reset=True, num_colors=len(_df.columns),
-                             colormap=cmap)['color']
+    defaults = default_props(reset=True, num_colors=len(_df.columns), colormap=cmap)[
+        "color"
+    ]
     rc = run_control()
     color = []
     for key in _df.columns:
         c = next(defaults)
-        if 'color' in rc and bars in rc['color'] and key in rc['color'][bars]:
-            c = rc['color'][bars][key]
+        if "color" in rc and bars in rc["color"] and key in rc["color"][bars]:
+            c = rc["color"][bars][key]
         color.append(c)
 
     # change year to str to prevent pandas/matplotlib from auto-ordering (#474)
-    if _df.index.name == 'year':
+    if _df.index.name == "year":
         _df.index = map(str, _df.index)
 
     # plot data
-    kind = 'bar' if orient.startswith('v') else 'barh'
+    kind = "bar" if orient.startswith("v") else "barh"
     _df.plot(kind=kind, color=color, ax=ax, **kwargs)
 
     # add legend
-    ax.legend(loc='center left', bbox_to_anchor=(1.0, 0.5))
+    ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5))
     if not legend:
         ax.legend_.remove()
 
     # add default labels if possible
-    if orient == 'v':
+    if orient == "v":
         ax.set_xlabel(x.capitalize())
     else:
         ax.set_ylabel(x.capitalize())
-    units = df['unit'].unique()
-    if len(units) == 1 and y == 'value':
-        if orient == 'v':
+    units = df["unit"].unique()
+    if len(units) == 1 and y == "value":
+        if orient == "v":
             ax.set_ylabel(units[0])
         else:
             ax.set_xlabel(units[0])
 
     # build a default title if possible
     _title = []
-    for var in ['model', 'scenario', 'region', 'variable']:
+    for var in ["model", "scenario", "region", "variable"]:
         values = df[var].unique()
         if len(values) == 1:
-            _title.append('{}: {}'.format(var, values[0]))
+            _title.append("{}: {}".format(var, values[0]))
     if title and _title:
-        title = ' '.join(_title) if title is True else title
+        title = " ".join(_title) if title is True else title
         ax.set_title(title)
 
     return ax
 
 
-def box(df, y='value', x='year', by=None, legend=True, title=None, ax=None,
-        **kwargs):
-    """ Plot boxplot of data using seaborn.boxplot
+def box(df, y="value", x="year", by=None, legend=True, title=None, ax=None, **kwargs):
+    """Plot boxplot of data using seaborn.boxplot
 
     Parameters
     ----------
@@ -598,12 +659,12 @@ def box(df, y='value', x='year', by=None, legend=True, title=None, ax=None,
 
     if by:
         rc = run_control()
-        if 'palette' not in kwargs and 'color' in rc and by in rc['color']:
+        if "palette" not in kwargs and "color" in rc and by in rc["color"]:
             # TODO this only works if all categories are defined in run_control
-            palette = rc['color'][by]
-            df[by] = df[by].astype('category')
+            palette = rc["color"][by]
+            df[by] = df[by].astype("category")
             df[by].cat.set_categories(list(palette), inplace=True)
-            kwargs['palette'] = palette
+            kwargs["palette"] = palette
         else:
             df.sort_values(by, inplace=True)
 
@@ -616,10 +677,12 @@ def box(df, y='value', x='year', by=None, legend=True, title=None, ax=None,
     # Add legend
     if legend:
         ax.legend(loc=2)
-        ax.legend_.set_title('n=' + str(len(df[META_IDX].drop_duplicates())),)
+        ax.legend_.set_title(
+            "n=" + str(len(df[META_IDX].drop_duplicates())),
+        )
 
     # Axes labels
-    if y == 'value':
+    if y == "value":
         ax.set_ylabel(df.unit.unique()[0])
     else:
         ax.set_ylabel(y)
@@ -643,7 +706,7 @@ def _get_boxes(ax, xoffset=0.05, width_weight=0.1):
     return {x: (xys[x], widths[x], sum(heights[x])) for x in xys.keys()}
 
 
-def add_net_values_to_bar_plot(axs, color='k'):
+def add_net_values_to_bar_plot(axs, color="k"):
     """Add net values next to an existing vertical stacked bar chart
 
     Parameters
@@ -660,9 +723,21 @@ def add_net_values_to_bar_plot(axs, color='k'):
             ax.add_patch(rect)
 
 
-def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
-            linestyle=None, groupby=['model', 'scenario'], with_lines=False,
-            ax=None, cmap=None, **kwargs):
+def scatter(
+    df,
+    x,
+    y,
+    legend=None,
+    title=None,
+    color=None,
+    marker="o",
+    linestyle=None,
+    groupby=["model", "scenario"],
+    with_lines=False,
+    ax=None,
+    cmap=None,
+    **kwargs,
+):
     """Plot data as a scatter chart.
 
     Parameters
@@ -717,30 +792,27 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
     elif xisvar and yisvar:
         # filter pivot both and rename
         dfx = (
-            df
-            .filter(variable=x)
+            df.filter(variable=x)
             .as_pandas(meta_cols=meta_cols)
-            .rename(columns={'value': x, 'unit': 'xunit'})
+            .rename(columns={"value": x, "unit": "xunit"})
             .set_index(YEAR_IDX)
-            .drop('variable', axis=1)
+            .drop("variable", axis=1)
         )
         dfy = (
-            df
-            .filter(variable=y)
+            df.filter(variable=y)
             .as_pandas(meta_cols=meta_cols)
-            .rename(columns={'value': y, 'unit': 'yunit'})
+            .rename(columns={"value": y, "unit": "yunit"})
             .set_index(YEAR_IDX)
-            .drop('variable', axis=1)
+            .drop("variable", axis=1)
         )
-        data = dfx.join(dfy, lsuffix='_left', rsuffix='').reset_index()
+        data = dfx.join(dfy, lsuffix="_left", rsuffix="").reset_index()
     else:
         # filter, merge with meta, and rename value column to match var
         var = x if xisvar else y
         data = (
-            df
-            .filter(variable=var)
+            df.filter(variable=var)
             .as_pandas(meta_cols=mpl_args_to_meta_cols(df, **kwargs))
-            .rename(columns={'value': var})
+            .rename(columns={"value": var})
         )
 
     # drop nan
@@ -761,9 +833,11 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
     for name, group in groups:
         pargs = {}
         labels = []
-        for key, kind, var in [('c', 'color', color),
-                               ('marker', 'marker', marker),
-                               ('linestyle', 'linestyle', linestyle)]:
+        for key, kind, var in [
+            ("c", "color", color),
+            ("marker", "marker", marker),
+            ("linestyle", "linestyle", linestyle),
+        ]:
             if kind in props:
                 label = group[var].values[0]
                 pargs[key] = props[kind][group[var].values[0]]
@@ -772,20 +846,20 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
                 pargs[key] = var
 
         if len(labels) > 0:
-            legend_data.append(' '.join(labels))
+            legend_data.append(" ".join(labels))
         else:
-            legend_data.append(' '.join(name))
+            legend_data.append(" ".join(name))
         kwargs.update(pargs)
-        label = ' '.join(group[g].iloc[0] for g in groupby)
+        label = " ".join(group[g].iloc[0] for g in groupby)
         if with_lines:
             ax.plot(group[x], group[y], label=label, **kwargs)
         else:
-            kwargs.pop('linestyle')  # scatter() can't take a linestyle
+            kwargs.pop("linestyle")  # scatter() can't take a linestyle
             ax.scatter(group[x], group[y], label=label, **kwargs)
 
     # build legend handles and labels
     handles, labels = ax.get_legend_handles_labels()
-    if legend_data != [''] * len(legend_data):
+    if legend_data != [""] * len(legend_data):
         labels = sorted(list(set(tuple(legend_data))))
         idxs = [legend_data.index(d) for d in labels]
         handles = [handles[i] for i in idxs]
@@ -801,10 +875,23 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
     return ax
 
 
-def line(df, x='year', y='value', order=None, legend=None, title=True,
-         color=None, marker=None, linestyle=None,
-         fill_between=None, final_ranges=None,
-         rm_legend_label=[], ax=None, cmap=None, **kwargs):
+def line(
+    df,
+    x="year",
+    y="value",
+    order=None,
+    legend=None,
+    title=True,
+    color=None,
+    marker=None,
+    linestyle=None,
+    fill_between=None,
+    final_ranges=None,
+    rm_legend_label=[],
+    ax=None,
+    cmap=None,
+    **kwargs,
+):
     """Plot data as lines with or without markers.
 
     Parameters
@@ -866,34 +953,34 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
         df = df.as_pandas(meta_cols=mpl_args_to_meta_cols(df, **meta_col_args))
 
     # pivot data if asked for explicit variable name
-    variables = df['variable'].unique()
+    variables = df["variable"].unique()
     if x in variables or y in variables:
         keep_vars = set([x, y]) & set(variables)
-        df = df[df['variable'].isin(keep_vars)]
-        idx = list(set(df.columns) - set(['value']))
-        df = (df
-              .reset_index()
-              .set_index(idx)
-              .value  # df -> series
-              .unstack(level='variable')  # keep_vars are columns
-              .rename_axis(None, axis=1)  # rm column index name
-              .reset_index()
-              .set_index(META_IDX)
-              )
-        if x != 'year' and y != 'year':
-            df = df.drop('year', axis=1)  # years causes nan's
+        df = df[df["variable"].isin(keep_vars)]
+        idx = list(set(df.columns) - set(["value"]))
+        df = (
+            df.reset_index()
+            .set_index(idx)
+            .value.unstack(level="variable")  # df -> series  # keep_vars are columns
+            .rename_axis(None, axis=1)  # rm column index name
+            .reset_index()
+            .set_index(META_IDX)
+        )
+        if x != "year" and y != "year":
+            df = df.drop("year", axis=1)  # years causes nan's
 
     if ax is None:
         fig, ax = plt.subplots()
 
     # assign styling properties
-    props = assign_style_props(df, color=color, marker=marker,
-                               linestyle=linestyle, cmap=cmap)
+    props = assign_style_props(
+        df, color=color, marker=marker, linestyle=linestyle, cmap=cmap
+    )
 
-    if fill_between and 'color' not in props:
-        raise ValueError('Must use `color` kwarg if using `fill_between`')
-    if final_ranges and 'color' not in props:
-        raise ValueError('Must use `color` kwarg if using `final_ranges`')
+    if fill_between and "color" not in props:
+        raise ValueError("Must use `color` kwarg if using `fill_between`")
+    if final_ranges and "color" not in props:
+        raise ValueError("Must use `color` kwarg if using `final_ranges`")
 
     # prepare a dict for ordering, reshape data for use in line_plot
     idx_cols = list(df.columns.drop(y))
@@ -908,22 +995,21 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
     for col in idx_cols:
         values = get_index_levels(df.columns, col)
         if len(values) == 1 and col not in [color, marker, linestyle]:
-            if col == 'unit' and y == 'value':
+            if col == "unit" and y == "value":
                 y_label = values[0]
-            elif col == y and col != 'value':
+            elif col == y and col != "value":
                 y_label = values[0]
             else:
-                if col != 'unit':
-                    title_cols.append(f'{col}: {values[0]}')
+                if col != "unit":
+                    title_cols.append(f"{col}: {values[0]}")
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.droplevel(col)
             else:  # cannot drop last remaining level, replace by empty list
-                df.columns = ['']
+                df.columns = [""]
 
     # determine index of column name in reshaped dataframe
     prop_idx = {}
-    for kind, var in [('color', color), ('marker', marker),
-                      ('linestyle', linestyle)]:
+    for kind, var in [("color", color), ("marker", marker), ("linestyle", linestyle)]:
         if var is not None and var in df.columns.names:
             prop_idx[kind] = df.columns.names.index(var)
 
@@ -933,9 +1019,11 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
         pargs = {}
         labels = []
         # build plotting args and line legend labels
-        for key, kind, var in [('c', 'color', color),
-                               ('marker', 'marker', marker),
-                               ('linestyle', 'linestyle', linestyle)]:
+        for key, kind, var in [
+            ("c", "color", color),
+            ("marker", "marker", marker),
+            ("linestyle", "linestyle", linestyle),
+        ]:
             if kind in props:
                 label = col[prop_idx[kind]]
                 pargs[key] = props[kind][label]
@@ -945,42 +1033,47 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
                 pargs[key] = var
         kwargs.update(pargs)
         data = data.dropna()
-        data.plot(ax=ax, label=' - '.join(labels if labels else col), **kwargs)
+        data.plot(ax=ax, label=" - ".join(labels if labels else col), **kwargs)
 
     if fill_between:
-        _kwargs = {'alpha': 0.25} if fill_between in [True, None] \
-            else fill_between
+        _kwargs = {"alpha": 0.25} if fill_between in [True, None] else fill_between
         data = df.T
         columns = data.columns
         # get outer boundary mins and maxes
         allmins = data.groupby(color).min()
         intermins = (
-            data.dropna(axis=1).groupby(color).min()  # nonan data
+            data.dropna(axis=1)
+            .groupby(color)
+            .min()  # nonan data
             .reindex(columns=columns)  # refill with nans
-            .T.interpolate(method='index').T  # interpolate
+            .T.interpolate(method="index")
+            .T  # interpolate
         )
         mins = pd.concat([allmins, intermins]).min(level=0)
         allmaxs = data.groupby(color).max()
         intermaxs = (
-            data.dropna(axis=1).groupby(color).max()  # nonan data
+            data.dropna(axis=1)
+            .groupby(color)
+            .max()  # nonan data
             .reindex(columns=columns)  # refill with nans
-            .T.interpolate(method='index').T  # interpolate
+            .T.interpolate(method="index")
+            .T  # interpolate
         )
         maxs = pd.concat([allmaxs, intermaxs]).max(level=0)
         # do the fill
         for idx in mins.index:
             ymin = mins.loc[idx]
             ymax = maxs.loc[idx]
-            ax.fill_between(ymin.index, ymin, ymax,
-                            facecolor=props['color'][idx], **_kwargs)
+            ax.fill_between(
+                ymin.index, ymin, ymax, facecolor=props["color"][idx], **_kwargs
+            )
 
     # add bars to the end of the plot showing range
     if final_ranges:
         # have to explicitly draw it to get the tick labels (these change once
         # you add the vlines)
         plt.gcf().canvas.draw()
-        _kwargs = {'linewidth': 2} if final_ranges in [True, None] \
-            else final_ranges
+        _kwargs = {"linewidth": 2} if final_ranges in [True, None] else final_ranges
         first = df.index[0]
         final = df.index[-1]
         mins = df.T.groupby(color).min()[final]
@@ -997,8 +1090,9 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
             xpos = final + xdiff * extra_space * (i + 1)
             _ymin = (mins[idx] - ymin) / ydiff
             _ymax = (maxs[idx] - ymin) / ydiff
-            ax.axvline(xpos, ymin=_ymin, ymax=_ymax,
-                       color=props['color'][idx], **_kwargs)
+            ax.axvline(
+                xpos, ymin=_ymin, ymax=_ymax, color=props["color"][idx], **_kwargs
+            )
         # for equal spacing between xmin and first datapoint and xmax and last
         # line
         ax.set_xlim(xmin, xpos + first - xmin)
@@ -1018,18 +1112,18 @@ def line(df, x='year', y='value', order=None, legend=None, title=True,
 
     # show a default title from columns with a unique value or a custom title
     if title:
-        ax.set_title(' - '.join(title_cols) if title is True else title)
+        ax.set_title(" - ".join(title_cols) if title is True else title)
 
     return ax
 
 
 def _add_legend(ax, handles, labels, legend):
     if legend is None and len(labels) >= MAX_LEGEND_LABELS:
-        logger.info(f'>={MAX_LEGEND_LABELS} labels, not applying legend')
+        logger.info(f">={MAX_LEGEND_LABELS} labels, not applying legend")
     else:
         legend = {} if legend in [True, None] else legend
-        loc = legend.pop('loc', 'best')
-        outside = loc.split(' ')[1] if loc.startswith('outside ') else False
+        loc = legend.pop("loc", "best")
+        outside = loc.split(" ")[1] if loc.startswith("outside ") else False
         _legend = OUTSIDE_LEGEND[outside] if outside else dict(loc=loc)
         _legend.update(legend)
         ax.legend(handles, labels, **_legend)
@@ -1049,6 +1143,7 @@ def set_panel_label(label, ax=None, x=0.05, y=0.9):
     y : number, default 0.9
         relative location of label to y-axis
     """
+
     def _lim_loc(lim, loc):
         return lim[0] + (lim[1] - lim[0]) * loc
 

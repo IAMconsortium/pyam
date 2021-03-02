@@ -25,8 +25,10 @@ class Statistics(object):
         All should fall between 0 and 1. The default is `[.25, .5, .75]`,
         which returns the 25th, 50th, and 75th percentiles.
     """
-    def __init__(self, df, groupby=None, filters=None, rows=False,
-                 percentiles=[0.25, 0.5, 0.75]):
+
+    def __init__(
+        self, df, groupby=None, filters=None, rows=False, percentiles=[0.25, 0.5, 0.75]
+    ):
         self.df = df
         self.idx_depth = None
 
@@ -41,22 +43,25 @@ class Statistics(object):
             self.groupby = groupby
             self.idx_depth = 2
         elif groupby is not None:
-            raise ValueError('arg `{}` not valid `groupby`'.format(groupby))
+            raise ValueError("arg `{}` not valid `groupby`".format(groupby))
         if self.col is not None and self.col not in df.meta.columns:
-            raise ValueError('column `{}` not in `df.meta`'.format(self.col))
+            raise ValueError("column `{}` not in `df.meta`".format(self.col))
 
         # if neither groupby nor filters is given, use filters to describe all
         # and assume that rows are used
         if groupby is None and filters is None:
-            self.filters = [('', {})]
+            self.filters = [("", {})]
             rows = True
         else:
             self.filters = filters if filters is not None else []
 
         # set lists to sort index and subindex
         self._idx = [] if self.col is None else [self.col]
-        self._sub_idx = self.groupby[self.col] or self.df[self.col].unique() \
-            if self.col is not None else []
+        self._sub_idx = (
+            self.groupby[self.col] or self.df[self.col].unique()
+            if self.col is not None
+            else []
+        )
         self._headers, self._subheaders = ([], [])
 
         # assing `filters` settings and check that specifications are valid
@@ -65,25 +70,34 @@ class Statistics(object):
             if isstr(idx):
                 self._add_to_index(idx)
             else:
-                if not (isinstance(idx, tuple) and len(idx) == 2 and
-                        isstr(idx[0]) or not isstr(idx[1])):
-                    raise ValueError('`{}` is not a valid index'.format(idx))
+                if not (
+                    isinstance(idx, tuple)
+                    and len(idx) == 2
+                    and isstr(idx[0])
+                    or not isstr(idx[1])
+                ):
+                    raise ValueError("`{}` is not a valid index".format(idx))
                 self._add_to_index(idx[0], idx[1])
             # check that filters in tuple are valid
             if not isinstance(_filter, dict):
-                raise ValueError('`{}` is not a valid filter'.format(_filter))
+                raise ValueError("`{}` is not a valid filter".format(_filter))
             elif not (set(_filter) - set(META_IDX)).issubset(df.meta):
-                raise ValueError('column `{}` not in `df.meta`'.format(
-                    set(_filter) - set(META_IDX) - set(df.meta)))
+                raise ValueError(
+                    "column `{}` not in `df.meta`".format(
+                        set(_filter) - set(META_IDX) - set(df.meta)
+                    )
+                )
 
         self.stats = None
         self.rows = [] if rows else None
 
         # percentiles for passing to `pandas.describe()`
         self.percentiles = list(percentiles)
-        self._describe_cols = (['count', 'mean', 'std', 'min'] +
-                               ['{:.0%}'.format(i) for i in self.percentiles] +
-                               ['max'])
+        self._describe_cols = (
+            ["count", "mean", "std", "min"]
+            + ["{:.0%}".format(i) for i in self.percentiles]
+            + ["max"]
+        )
 
     def _add_to_index(self, idx, sub_idx=None):
         # assign index depth if not set
@@ -91,13 +105,14 @@ class Statistics(object):
             self.idx_depth = 1 if sub_idx is None else 2
         # check that index matches depth
         if self.groupby is not None and sub_idx is None:
-            msg = 'if `groupby` is used, index `{}` must have format `{}`'
-            raise ValueError(msg.format(idx, '(idx0, idx1)'))
+            msg = "if `groupby` is used, index `{}` must have format `{}`"
+            raise ValueError(msg.format(idx, "(idx0, idx1)"))
         if self.idx_depth == 1 and sub_idx is not None:
-            raise ValueError('index depth set to 1, found `({}, {})`'
-                             .format(idx, sub_idx))
+            raise ValueError(
+                "index depth set to 1, found `({}, {})`".format(idx, sub_idx)
+            )
         if self.idx_depth == 2 and sub_idx is None:
-            raise ValueError('index depth set to 2, found `({})`'.format(idx))
+            raise ValueError("index depth set to 2, found `({})`".format(idx))
 
         # append to lists for sorting index
         if idx not in self._idx:
@@ -134,14 +149,14 @@ class Statistics(object):
         """
         # verify validity of specifications
         if self.rows is not None and row is None:
-            raise ValueError('row specification required')
+            raise ValueError("row specification required")
         if self.rows is None and row is not None:
-            raise ValueError('row arg illegal for this `Statistics` instance')
+            raise ValueError("row arg illegal for this `Statistics` instance")
         if isinstance(data, pd.Series):
             if subheader is not None:
                 data.name = subheader
             elif data.name is None:
-                msg = '`data` must be named `pd.Series` or provide `subheader`'
+                msg = "`data` must be named `pd.Series` or provide `subheader`"
                 raise ValueError(msg)
             data = pd.DataFrame(data)
 
@@ -155,35 +170,38 @@ class Statistics(object):
             filter_args = dict(data=data, df=self.df, join_meta=True)
             filter_args.update(self.groupby)
             _stats = (
-                filter_by_meta(**filter_args).groupby(self.col)
+                filter_by_meta(**filter_args)
+                .groupby(self.col)
                 .describe(percentiles=self.percentiles)
             )
-            _stats = pd.concat([_stats], keys=[self.col], names=[''], axis=0)
+            _stats = pd.concat([_stats], keys=[self.col], names=[""], axis=0)
             if self.rows:
-                _stats['row'] = row
-                _stats.set_index('row', append=True, inplace=True)
-            _stats.index.names = [''] * 3 if self.rows else [''] * 2
+                _stats["row"] = row
+                _stats.set_index("row", append=True, inplace=True)
+            _stats.index.names = [""] * 3 if self.rows else [""] * 2
 
         # describe with filter feature
         for (idx, _filter) in self.filters:
             filter_args = dict(data=data, df=self.df)
             filter_args.update(_filter)
-            _stats_f = (
-                filter_by_meta(**filter_args)
-                .describe(percentiles=self.percentiles)
+            _stats_f = filter_by_meta(**filter_args).describe(
+                percentiles=self.percentiles
             )
             _stats_f = pd.DataFrame(_stats_f.unstack()).T
             if self.idx_depth == 1:
                 levels = [[idx]]
             else:
                 levels = [[idx[0]], [idx[1]]]
-            lvls, lbls = (levels, [[0]] * self.idx_depth) if not self.rows \
+            lvls, lbls = (
+                (levels, [[0]] * self.idx_depth)
+                if not self.rows
                 else (levels + [[row]], [[0]] * (self.idx_depth + 1))
+            )
             _stats_f.index = pd.MultiIndex(levels=lvls, codes=lbls)
             _stats = _stats_f if _stats is None else _stats.append(_stats_f)
 
         # add header
-        _stats = pd.concat([_stats], keys=[header], names=[''], axis=1)
+        _stats = pd.concat([_stats], keys=[header], names=[""], axis=1)
         subheader = _stats.columns.get_level_values(1).unique()
         self._add_to_header(header, subheader)
 
@@ -210,8 +228,9 @@ class Statistics(object):
         if copy:
             return ret
 
-    def summarize(self, center='mean', fullrange=None, interquartile=None,
-                  custom_format='{:.2f}'):
+    def summarize(
+        self, center="mean", fullrange=None, interquartile=None, custom_format="{:.2f}"
+    ):
         """Format the compiled statistics to a concise string output
 
         Parameters
@@ -228,58 +247,68 @@ class Statistics(object):
         # call `reindex()` to reorder index and columns
         self.reindex(copy=False)
 
-        center = 'median' if center == '50%' else center
+        center = "median" if center == "50%" else center
         if fullrange is None and interquartile is None:
             fullrange = True
-        return self.stats.apply(format_rows, center=center,
-                                fullrange=fullrange,
-                                interquartile=interquartile,
-                                custom_format=custom_format,
-                                axis=1, raw=False)
+        return self.stats.apply(
+            format_rows,
+            center=center,
+            fullrange=fullrange,
+            interquartile=interquartile,
+            custom_format=custom_format,
+            axis=1,
+            raw=False,
+        )
+
 
 # %% auxiliary functions
 
 
-def format_rows(row, center, fullrange=None, interquartile=None,
-                custom_format='{:.2f}'):
+def format_rows(
+    row, center, fullrange=None, interquartile=None, custom_format="{:.2f}"
+):
     """Format a row with `describe()` columns to a concise string"""
     if (fullrange or 0) + (interquartile or 0) == 1:
-        legend = '{} ({})'.format(center, 'max, min' if fullrange is True
-                                  else 'interquartile range')
+        legend = "{} ({})".format(
+            center, "max, min" if fullrange is True else "interquartile range"
+        )
         index = row.index.droplevel(2).drop_duplicates()
-        count_arg = dict(tuples=[('count', '')], names=[None, legend])
+        count_arg = dict(tuples=[("count", "")], names=[None, legend])
     else:
-        msg = 'displaying multiple range formats simultaneously not supported'
+        msg = "displaying multiple range formats simultaneously not supported"
         raise NotImplementedError(msg)
 
-    ret = pd.Series(index=pd.MultiIndex.from_tuples(**count_arg).append(index),
-                    dtype=float)
+    ret = pd.Series(
+        index=pd.MultiIndex.from_tuples(**count_arg).append(index), dtype=float
+    )
 
     row = row.sort_index()
-    center = '50%' if center == 'median' else center
+    center = "50%" if center == "median" else center
 
     # get maximum of `count` and write to first entry of return series
-    count = max([i for i in row.loc[(slice(None), slice(None), 'count')]
-                 if not np.isnan(i)])
-    ret.loc[('count', '')] = ('{:.0f}'.format(count)) if count > 1 else ''
+    count = max(
+        [i for i in row.loc[(slice(None), slice(None), "count")] if not np.isnan(i)]
+    )
+    ret.loc[("count", "")] = ("{:.0f}".format(count)) if count > 1 else ""
 
     # set upper and lower for the range
-    upper, lower = ('max', 'min') if fullrange is True else ('75%', '25%')
+    upper, lower = ("max", "min") if fullrange is True else ("75%", "25%")
 
     # format `describe()` columns to string output
     for i in index:
         x = row.loc[i]
-        _count = x['count']
+        _count = x["count"]
         if np.isnan(_count) or _count == 0:
-            s = ''
+            s = ""
         elif _count > 1:
-            s = '{f} ({f}, {f})'.format(f=custom_format)\
-                .format(x[center], x[upper], x[lower])
+            s = "{f} ({f}, {f})".format(f=custom_format).format(
+                x[center], x[upper], x[lower]
+            )
         elif _count == 1:
-            s = '{f}'.format(f=custom_format).format(x['50%'])
+            s = "{f}".format(f=custom_format).format(x["50%"])
         # add count of this section as `[]` if different from count_max
         if 0 < _count < count:
-            s += ' [{:.0f}]'.format(_count)
+            s += " [{:.0f}]".format(_count)
         ret.loc[i] = s
 
     return ret

@@ -5,11 +5,13 @@ def test_logger_namespacing(test_df, caplog):
     with caplog.at_level(logging.INFO, logger="pyam.core"):
         test_df.filter(model="junk")
 
-    assert caplog.record_tuples == [(
-        "pyam.core",  # namespacing
-        logging.WARNING,  # level
-        "Filtered IamDataFrame is empty!",  # message
-    )]
+    assert caplog.record_tuples == [
+        (
+            "pyam.core",  # namespacing
+            logging.WARNING,  # level
+            "Filtered IamDataFrame is empty!",  # message
+        )
+    ]
 
 
 def test_adjusting_logger_level(test_df, caplog):

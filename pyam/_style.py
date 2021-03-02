@@ -31,8 +31,8 @@ def _get_standard_colors(
     elif color is not None:
         if colormap is not None:
             warnings.warn(
-                "'color' and 'colormap' cannot be used " +
-                "simultaneously. Using 'color'"
+                "'color' and 'colormap' cannot be used "
+                + "simultaneously. Using 'color'"
             )
         colors = list(color) if is_list_like(color) else color
     else:
@@ -40,11 +40,9 @@ def _get_standard_colors(
             # need to call list() on the result to copy so we don't
             # modify the global rcParams below
             try:
-                colors = [c["color"]
-                          for c in list(plt.rcParams["axes.prop_cycle"])]
+                colors = [c["color"] for c in list(plt.rcParams["axes.prop_cycle"])]
             except KeyError:
-                colors = list(plt.rcParams.get(
-                    "axes.color_cycle", list("bgrcmyk")))
+                colors = list(plt.rcParams.get("axes.color_cycle", list("bgrcmyk")))
             if isinstance(colors, str):
                 colors = list(colors)
 
@@ -76,8 +74,7 @@ def _get_standard_colors(
         # check whether each character can be convertible to colors
         maybe_color_cycle = _maybe_valid_colors(list(colors))
         if maybe_single_color and maybe_color_cycle and len(colors) > 1:
-            hex_color = [c["color"]
-                         for c in list(plt.rcParams["axes.prop_cycle"])]
+            hex_color = [c["color"] for c in list(plt.rcParams["axes.prop_cycle"])]
             colors = [hex_color[int(colors[1])]]
         elif maybe_single_color:
             colors = [colors]

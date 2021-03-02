@@ -12,47 +12,54 @@ logo = r"""
 """
 
 REQUIREMENTS = [
-    'argparse',
-    'iam-units>=2020.4.12',
-    'numpy',
-    'requests',
-    'pandas>=0.25.0',
-    'pint',
-    'plotly',
-    'PyYAML',
-    'matplotlib',
-    'seaborn',
-    'six',
-    'xlrd<2.0'
+    "argparse",
+    "iam-units>=2020.4.12",
+    "numpy",
+    "requests",
+    "pandas>=0.25.0",
+    "pint",
+    "plotly",
+    "PyYAML",
+    "matplotlib",
+    "seaborn",
+    "six",
+    "xlrd<2.0",
 ]
 
 EXTRA_REQUIREMENTS = {
-    'tests': ['coverage', 'coveralls', 'pytest<6.0.0', 'pytest-cov',
-              'pytest-mpl<0.12'],
-    'optional-io-formats': ['datapackage', 'pandas-datareader',
-                            'unfccc_di_api>=2.0'],
-    'deploy': ['twine', 'setuptools', 'wheel'],
-    'tutorials': ['pypandoc', 'nbformat', 'nbconvert', 'jupyter_client',
-                  'ipykernel'],
-    'docs': ['sphinx', 'nbsphinx', 'sphinx-gallery', 'cloud_sptheme', 'pillow',
-             'sphinxcontrib-bibtex<2.0', 'sphinxcontrib-programoutput',
-             'numpydoc', 'openpyxl', 'kaleido']  # docs requires 'tutorials'
+    "tests": ["coverage", "coveralls", "pytest<6.0.0", "pytest-cov", "pytest-mpl<0.12"],
+    "optional-io-formats": ["datapackage", "pandas-datareader", "unfccc_di_api>=2.0"],
+    "deploy": ["twine", "setuptools", "wheel"],
+    "tutorials": ["pypandoc", "nbformat", "nbconvert", "jupyter_client", "ipykernel"],
+    "docs": [
+        "sphinx",
+        "nbsphinx",
+        "sphinx-gallery",
+        "cloud_sptheme",
+        "pillow",
+        "sphinxcontrib-bibtex<2.0",
+        "sphinxcontrib-programoutput",
+        "numpydoc",
+        "openpyxl",
+        "kaleido",
+    ]  # docs requires 'tutorials'
     # GitHub Actions requires pandoc explicitly to build the docs
 }
 
 # building the docs on readthedocs fails with a FileNotFoundError
 # https://github.com/IAMconsortium/pyam/issues/363
 try:
-    with open('README.md', 'r') as f:
+    with open("README.md", "r") as f:
         LONG_DESCRIPTION = f.read()
 except FileNotFoundError:
-    LONG_DESCRIPTION = ''
+    LONG_DESCRIPTION = ""
 
 
 # thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
 class RunTests(Command):
     """Run all tests."""
-    description = 'run tests'
+
+    description = "run tests"
     user_options = []
 
     def initialize_options(self):
@@ -63,48 +70,48 @@ class RunTests(Command):
 
     def run(self):
         """Run all tests!"""
-        errno = call(['py.test', '--cov=skele', '--cov-report=term-missing'])
+        errno = call(["py.test", "--cov=skele", "--cov-report=term-missing"])
         raise SystemExit(errno)
 
 
 CMDCLASS = versioneer.get_cmdclass()
-CMDCLASS.update({'test': RunTests})
+CMDCLASS.update({"test": RunTests})
 
 
 def main():
     print(logo)
-    description = 'Analysis & visualization of integrated-assessment scenarios'
+    description = "Analysis & visualization of integrated-assessment scenarios"
     classifiers = [
-        'License :: OSI Approved :: Apache Software License',
+        "License :: OSI Approved :: Apache Software License",
     ]
     packages = [
-        'pyam',
+        "pyam",
     ]
     pack_dir = {
-        'pyam': 'pyam',
+        "pyam": "pyam",
     }
     entry_points = {
-        'console_scripts': [
+        "console_scripts": [
             # list CLIs here
         ],
     }
     package_data = {
-        'pyam': ['region_mappings/*'],
+        "pyam": ["region_mappings/*"],
     }
     install_requirements = REQUIREMENTS
     extra_requirements = EXTRA_REQUIREMENTS
     setup_kwargs = dict(
-        name='pyam-iamc',
+        name="pyam-iamc",
         version=versioneer.get_version(),
         cmdclass=CMDCLASS,
         description=description,
         classifiers=classifiers,
-        license='Apache License 2.0',
-        author='Matthew Gidden & Daniel Huppmann',
-        author_email='pyam+owner@groups.io',
-        url='https://github.com/IAMconsortium/pyam',
+        license="Apache License 2.0",
+        author="Matthew Gidden & Daniel Huppmann",
+        author_email="pyam+owner@groups.io",
+        url="https://github.com/IAMconsortium/pyam",
         long_description=LONG_DESCRIPTION,
-        long_description_content_type='text/markdown',
+        long_description_content_type="text/markdown",
         packages=packages,
         package_dir=pack_dir,
         entry_points=entry_points,
