@@ -20,7 +20,8 @@ Stacked bar charts
 
 import matplotlib.pyplot as plt
 import pyam
-df = pyam.IamDataFrame('tutorial_data.csv')
+
+df = pyam.IamDataFrame("tutorial_data.csv")
 df
 
 ###############################
@@ -32,10 +33,10 @@ df
 #
 # Using :code:`plt.tight_layout()` ensures that the plot is nice and tidy.
 
-args = dict(model='WITCH-GLOBIOM 4.4', scenario='CD-LINKS_NPi2020_1000')
-data = df.filter(**args, variable='Primary Energy|*', region='World')
+args = dict(model="WITCH-GLOBIOM 4.4", scenario="CD-LINKS_NPi2020_1000")
+data = df.filter(**args, variable="Primary Energy|*", region="World")
 
-data.plot.bar(stacked=True, title='Primary energy mix')
+data.plot.bar(stacked=True, title="Primary energy mix")
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()
@@ -46,7 +47,7 @@ plt.show()
 #
 # We can flip that round for a horizontal chart.
 
-data.plot.bar(stacked=True, orient='h', title='Primary energy mix')
+data.plot.bar(stacked=True, orient="h", title="Primary energy mix")
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()
@@ -59,13 +60,11 @@ plt.show()
 # any data or meta indicators from the IamDataFrame can be used.
 # Here, we show the contribution by region to total CO2 emissions.
 
-data = (
-    df.filter(**args, variable='Emissions|CO2')
-    .filter(region='World', keep=False)
-)
+data = df.filter(**args, variable="Emissions|CO2").filter(region="World", keep=False)
 
-data.plot.bar(bars='region', stacked=True,
-              title='CO2 emissions by region', cmap='tab20')
+data.plot.bar(
+    bars="region", stacked=True, title="CO2 emissions by region", cmap="tab20"
+)
 plt.legend(loc=1)
 plt.tight_layout()
 plt.show()
@@ -80,8 +79,9 @@ plt.show()
 from pyam.plotting import add_net_values_to_bar_plot
 
 fig, ax = plt.subplots()
-data.plot.bar(ax=ax, bars='region', stacked=True,
-              title='CO2 emissions by region', cmap='tab20')
+data.plot.bar(
+    ax=ax, bars="region", stacked=True, title="CO2 emissions by region", cmap="tab20"
+)
 add_net_values_to_bar_plot(ax)
 plt.legend(loc=1)
 plt.tight_layout()
