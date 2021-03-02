@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 try:
     wb.get_indicators()
     WB_UNAVAILABLE = False
-except ConnectionError:
+except (ReadTimeout, ConnectionError):
     WB_UNAVAILABLE = True
 
 WB_REASON = "World Bank API unavailable"
