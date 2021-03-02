@@ -10,13 +10,12 @@ import seaborn as sns
 from collections import defaultdict
 from collections.abc import Iterable
 
-from pyam.logging import deprecation_warning
 from pyam.run_control import run_control
 from pyam.figures import sankey
 from pyam.timeseries import cross_threshold
-from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, YEAR_IDX,\
-    isstr, islistable, _raise_data_error
-
+from pyam.utils import META_IDX, IAMC_IDX, SORT_IDX, YEAR_IDX, \
+    isstr, to_list, _raise_data_error
+from pyam.index import get_index_levels
 
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
@@ -95,7 +94,7 @@ class PlotAccessor():
         return getattr(self, kind)(**kwargs)
 
     def line(self, **kwargs):
-        self._parent._line_plot(**kwargs)
+        return line(self._parent, **kwargs)
 
     def bar(self, **kwargs):
         return bar(self._parent, **kwargs)
@@ -210,27 +209,15 @@ def assign_style_props(df, color=None, marker=None, linestyle=None,
     return props
 
 
-def reshape_line_plot(df, x, y):
-    """Reshape data from long form to "line plot form".
-
-    Line plot form has x value as the index with one column for each line.
-    Each column has data points as values and all metadata as column headers.
-    """
-    idx = list(df.columns.drop(y))
-    if df.duplicated(idx).any():
-        logger.warning('Duplicated index found.')
-        df = df.drop_duplicates(idx, keep='last')
-    df = df.set_index(idx)[y].unstack(x).T
-    return df
-
-
 def reshape_mpl(df, x, y, idx_cols, **kwargs):
     """Reshape data from long form to "bar plot form".
 
     Matplotlib requires x values as the index with one column for bar grouping.
     Table values come from y values.
     """
-    idx_cols = idx_cols + [x] if islistable(idx_cols) else [idx_cols] + [x]
+    idx_cols = to_list(idx_cols)
+    if x not in idx_cols:
+        idx_cols += [x]
 
     # check for duplicates
     rows = df[idx_cols].duplicated()
@@ -242,10 +229,14 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
 
     # reindex to get correct order
     for key, value in kwargs.items():
-        if df.columns.name == key:
+        level = None
+        if df.columns.name == key:  # single-dimension index
             axis, _values = 'columns', df.columns.values
-        elif df.index.name == key:
+        elif df.index.name == key:  # single-dimension index
             axis, _values = 'index', list(df.index)
+        elif key in df.columns.names:  # several dimensions -> pd.MultiIndex
+            axis, _values = 'columns', get_index_levels(df.columns, key)
+            level = key
         else:
             raise ValueError(f'No dimension {key} in the data!')
 
@@ -254,7 +245,7 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
             # select relevant items from run control, then add other cols
             value = [i for i in run_control()['order'][key] if i in _values]
             value += [i for i in _values if i not in value]
-        df = df.reindex(**{axis: value})
+        df = df.reindex(**{axis: value, 'level': level})
 
     return df
 
@@ -810,7 +801,7 @@ def scatter(df, x, y, legend=None, title=None, color=None, marker='o',
     return ax
 
 
-def line(df, x='year', y='value', legend=None, title=True,
+def line(df, x='year', y='value', order=None, legend=None, title=True,
          color=None, marker=None, linestyle=None,
          fill_between=None, final_ranges=None,
          rm_legend_label=[], ax=None, cmap=None, **kwargs):
@@ -818,12 +809,17 @@ def line(df, x='year', y='value', legend=None, title=True,
 
     Parameters
     ----------
-    df : pd.DataFrame
-        Data to plot as a long-form data frame
+    df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
+        Data to be plotted
     x : string, optional
         The column to use for x-axis values
     y : string, optional
         The column to use for y-axis values
+    order : dict or list, optional
+         The order of lines and the legend as :code:`{<column>: [<order>]}` or
+         a list of columns where ordering should be applied. If not specified,
+         order by :meth:`run_control()['order'][\<column\>] <pyam.run_control>`
+         (where available) or alphabetical.
     legend : bool or dictionary, optional
         Include a legend. By default, show legend only if less than 13 entries.
         If a dictionary is provided, it will be used as keyword arguments
@@ -850,7 +846,7 @@ def line(df, x='year', y='value', legend=None, title=True,
         argument. If this is True, then default arguments will be provided to
         `ax.axvline()`. If this is a dictionary, those arguments will be
         provided instead of defaults.
-    rm_legend_label : string, list, optional
+    rm_legend_label : string or list, optional
         Remove the color, marker, or linestyle label in the legend.
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
@@ -863,6 +859,30 @@ def line(df, x='year', y='value', legend=None, title=True,
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+
+    # cast to DataFrame if necessary
+    if not isinstance(df, pd.DataFrame):
+        meta_col_args = dict(color=color, marker=marker, linestyle=linestyle)
+        df = df.as_pandas(meta_cols=mpl_args_to_meta_cols(df, **meta_col_args))
+
+    # pivot data if asked for explicit variable name
+    variables = df['variable'].unique()
+    if x in variables or y in variables:
+        keep_vars = set([x, y]) & set(variables)
+        df = df[df['variable'].isin(keep_vars)]
+        idx = list(set(df.columns) - set(['value']))
+        df = (df
+              .reset_index()
+              .set_index(idx)
+              .value  # df -> series
+              .unstack(level='variable')  # keep_vars are columns
+              .rename_axis(None, axis=1)  # rm column index name
+              .reset_index()
+              .set_index(META_IDX)
+              )
+        if x != 'year' and y != 'year':
+            df = df.drop('year', axis=1)  # years causes nan's
+
     if ax is None:
         fig, ax = plt.subplots()
 
@@ -875,8 +895,30 @@ def line(df, x='year', y='value', legend=None, title=True,
     if final_ranges and 'color' not in props:
         raise ValueError('Must use `color` kwarg if using `final_ranges`')
 
-    # reshape data for use in line_plot
-    df = reshape_line_plot(df, x, y)  # long form to one column per line
+    # prepare a dict for ordering, reshape data for use in line_plot
+    idx_cols = list(df.columns.drop(y))
+    if not isinstance(order, dict):
+        order = dict([(i, None) for i in order or idx_cols])
+    df = reshape_mpl(df, x, y, idx_cols, **order)
+
+    # determine the columns that should go into the legend
+    idx_cols.remove(x)
+    title_cols = []
+    y_label = None
+    for col in idx_cols:
+        values = get_index_levels(df.columns, col)
+        if len(values) == 1 and col not in [color, marker, linestyle]:
+            if col == 'unit' and y == 'value':
+                y_label = values[0]
+            elif col == y and col != 'value':
+                y_label = values[0]
+            else:
+                if col != 'unit':
+                    title_cols.append(f'{col}: {values[0]}')
+            if isinstance(df.columns, pd.MultiIndex):
+                df.columns = df.columns.droplevel(col)
+            else:  # cannot drop last remaining level, replace by empty list
+                df.columns = ['']
 
     # determine index of column name in reshaped dataframe
     prop_idx = {}
@@ -886,9 +928,8 @@ def line(df, x='year', y='value', legend=None, title=True,
             prop_idx[kind] = df.columns.names.index(var)
 
     # plot data, keeping track of which legend labels to apply
-    no_label = [rm_legend_label] if isstr(rm_legend_label) else rm_legend_label
-
     for col, data in df.iteritems():
+        col = to_list(col)  # handle case where columns only have 1 dimension
         pargs = {}
         labels = []
         # build plotting args and line legend labels
@@ -898,15 +939,13 @@ def line(df, x='year', y='value', legend=None, title=True,
             if kind in props:
                 label = col[prop_idx[kind]]
                 pargs[key] = props[kind][label]
-                if kind not in no_label:
+                if kind not in to_list(rm_legend_label):
                     labels.append(repr(label).lstrip("u'").strip("'"))
             else:
                 pargs[key] = var
         kwargs.update(pargs)
         data = data.dropna()
-        data.plot(ax=ax, **kwargs)
-        if labels:
-            ax.lines[-1].set_label(' '.join(labels))
+        data.plot(ax=ax, label=' - '.join(labels if labels else col), **kwargs)
 
     if fill_between:
         _kwargs = {'alpha': 0.25} if fill_between in [True, None] \
@@ -967,38 +1006,26 @@ def line(df, x='year', y='value', legend=None, title=True,
         ax.set_xticklabels(xlabels)
 
     # build unique legend handles and labels
-    handles, labels = ax.get_legend_handles_labels()
-    handles, labels = np.array(handles), np.array(labels)
+    handles, labels = [np.array(i) for i in ax.get_legend_handles_labels()]
     _, idx = np.unique(labels, return_index=True)
-    handles, labels = handles[idx], labels[idx]
+    idx.sort()
     if legend is not False:
-        _add_legend(ax, handles, labels, legend)
+        _add_legend(ax, handles[idx], labels[idx], legend)
 
     # add default labels if possible
     ax.set_xlabel(x.title())
-    units = df.columns.get_level_values('unit').unique()
-    units_for_ylabel = len(units) == 1 and x == 'year' and y == 'value'
-    ylabel = units[0] if units_for_ylabel else y.title()
-    ax.set_ylabel(ylabel)
+    ax.set_ylabel(y_label or y.title())
 
-    # build a default title if possible
+    # show a default title from columns with a unique value or a custom title
     if title:
-        default_title = []
-        for var in ['model', 'scenario', 'region', 'variable']:
-            if var in df.columns.names:
-                values = df.columns.get_level_values(var).unique()
-                if len(values) == 1:
-                    default_title.append('{}: {}'.format(var, values[0]))
-        title = ' '.join(default_title) if title is True else title
-        ax.set_title(title)
+        ax.set_title(' - '.join(title_cols) if title is True else title)
 
-    return ax, handles, labels
+    return ax
 
 
 def _add_legend(ax, handles, labels, legend):
     if legend is None and len(labels) >= MAX_LEGEND_LABELS:
-        logger.info('>={} labels, not applying legend'.format(
-            MAX_LEGEND_LABELS))
+        logger.info(f'>={MAX_LEGEND_LABELS} labels, not applying legend')
     else:
         legend = {} if legend in [True, None] else legend
         loc = legend.pop('loc', 'best')

@@ -212,6 +212,24 @@ def test_line_plot_2_vars(plot_df):
     return fig
 
 
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_order_by_dict(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    order = dict(model=['test_model1', 'test_model'],
+                 scenario=['test_scenario1', 'test_scenario'])
+    plot_df.plot(order=order, ax=ax)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_order_by_rc(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    order = dict(model=['test_model1'], scenario=['test_scenario1'])
+    with update_run_control(order):  # first item from rc, then alphabetical
+        plot_df.plot(order=order, ax=ax)
+    return fig
+
+
 def test_barplot_raises(plot_df):
     pytest.raises(ValueError, plot_df.plot.bar)
 

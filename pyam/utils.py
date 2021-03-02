@@ -77,7 +77,7 @@ def islistable(x):
     return isinstance(x, Iterable) and not isstr(x)
 
 
-def as_list(x):
+def to_list(x):
     """Return x as a list"""
     return x if islistable(x) else [x]
 

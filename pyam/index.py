@@ -2,9 +2,19 @@ import pandas as pd
 import numpy as np
 
 
-def get_index_levels(df, level):
+def get_index_levels(index, level):
     """Return the category-values for a specific level"""
-    return list(df.index.levels[df.index._get_level_number(level)])
+
+    if not isinstance(index, pd.Index):
+        index = index.index  # assume that the arg `index` is a pd.DataFrame
+
+    if isinstance(index, pd.MultiIndex):
+        return list(index.levels[index._get_level_number(level)])
+
+    # if index is one-dimensional, make sure that the "level" is the name
+    if index.name != level:
+        raise KeyError('Index does not have a level {level}')
+    return list(index)
 
 
 def replace_index_values(df, level, mapping):
