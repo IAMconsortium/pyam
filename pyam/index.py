@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from .utils import print_list
+
 
 def get_index_levels(index, level):
     """Return the category-values for a specific level"""
@@ -47,3 +49,28 @@ def append_index_level(index, codes, level, name, order=False):
     if order:
         new_index = new_index.reorder_levels(order)
     return new_index
+
+
+def verify_index_integrity(df):
+    """Verify integrity of index
+
+    Arguments
+    ---------
+    df : Union[pd.DataFrame, pd.Series, pd.Index]
+
+    Raises
+    ------
+    ValueError
+    """
+    index = df if isinstance(df, pd.Index) else df.index
+    if not index.is_unique:
+        overlap = index[index.duplicated()].unique()
+
+        n = 80
+        c1 = max([len(i) for i in overlap]) + 1
+        c2 = n - c1 - 5
+        summary = "\n".join(
+            f" * {i:{c1}}: {print_list(get_index_levels(overlap, i), c2)}"
+            for i in overlap.names
+        )
+        raise ValueError(f"Indexes have overlapping values:\n{summary}")

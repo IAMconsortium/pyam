@@ -65,7 +65,7 @@ from pyam._aggregate import (
     _group_and_agg,
 )
 from pyam.units import convert_unit
-from pyam.index import get_index_levels
+from pyam.index import get_index_levels, verify_index_integrity
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -461,7 +461,14 @@ class IamDataFrame(object):
             .reset_index(drop=True)
         )
 
-    def append(self, other, ignore_meta_conflict=False, inplace=False, **kwargs):
+    def append(
+        self,
+        other,
+        ignore_meta_conflict=False,
+        inplace=False,
+        verify_integrity=True,
+        **kwargs,
+    ):
         """Append any IamDataFrame-like object to this object
 
         Indicators in `other.meta` that are not in `self.meta` are merged.
@@ -477,6 +484,8 @@ class IamDataFrame(object):
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, default False
             If True, do operation inplace and return None
+        verify_integrity : bool, default True
+            If True, verify integrity of index
         kwargs
             Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
             if `other` is not already an IamDataFrame
@@ -509,7 +518,9 @@ class IamDataFrame(object):
         ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
-        _data = ret._data.append(other._data, verify_integrity=True)
+        _data = ret._data.append(other._data)
+        if verify_integrity:
+            verify_index_integrity(_data)
 
         # merge extra columns in `data` and set `self._LONG_IDX`
         ret.extra_cols += [i for i in other.extra_cols if i not in ret.extra_cols]
@@ -2309,7 +2320,9 @@ def concat(dfs):
         if _df is None:
             _df = df.copy()
         else:
-            _df.append(df, inplace=True)
+            _df.append(df, inplace=True, verify_integrity=False)
+
+    verify_index_integrity(_df._data)
     return _df
 
 
