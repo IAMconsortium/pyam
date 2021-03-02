@@ -707,7 +707,10 @@ class IamDataFrame(object):
         if self.empty:
             raise ValueError("This IamDataFrame is empty!")
 
-        df = self._data.unstack(level=self.time_col).rename_axis(None, axis=1)
+        s = self._data
+        if iamc_index:
+            s = s.droplevel(self.extra_cols)
+        df = s.unstack(level=self.time_col).rename_axis(None, axis=1).sort_index(axis=1)
 
         if df.index.has_duplicates:
             raise ValueError(
