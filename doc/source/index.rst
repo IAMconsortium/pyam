@@ -7,7 +7,7 @@ Release v\ |version|.
 
 |black| |python| |pytest| |rtd| |codecov|
 
-|joss| |doi|
+|doi| |joss| |groupsio| |slack|
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-black
    :target: https://github.com/IAMconsortium/pyam/blob/master/LICENSE
@@ -24,10 +24,10 @@ Release v\ |version|.
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
 
-.. |python| image:: https://img.shields.io/badge/python-3.7_|_3.8_|_3.9-blue
+.. |python| image:: https://img.shields.io/badge/python-3.7_|_3.8_|_3.9-blue?logo=python&logoColor=white
    :target: https://github.com/IAMconsortium/pyam
 
-.. |pytest| image:: https://github.com/danielhuppmann/pyam/actions/workflows/pytest.yml/badge.svg
+.. |pytest| image:: https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml/badge.svg
    :target: https://github.com/danielhuppmann/pyam/actions/workflows/pytest.yml
 
 .. |rtd| image:: https://readthedocs.org/projects/pyam-iamc/badge/?version=latest
@@ -37,11 +37,18 @@ Release v\ |version|.
 .. |codecov| image:: https://codecov.io/gh/IAMconsortium/pyam/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/IAMconsortium/pyam
 
+.. |doi| image:: https://zenodo.org/badge/113359260.svg
+   :target: https://zenodo.org/badge/latestdoi/113359260
+
 .. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
    :target: https://joss.theoj.org/papers/10.21105/joss.01095
 
-.. |doi| image:: https://zenodo.org/badge/113359260.svg
-   :target: https://zenodo.org/badge/latestdoi/113359260
+.. |groupsio| image:: https://img.shields.io/badge/groups.io-pyam-blue
+   :target: https://pyam.groups.io/g/forum
+
+.. |slack| image:: https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack
+   :target: https://pyam-iamc.slack.com
+
 
 Overview
 --------
