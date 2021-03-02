@@ -20,10 +20,6 @@ pyam: analysis & visualization <br /> of integrated-assessment scenarios
 
 ****
 
-**Documentation on [Read the Docs](https://pyam-iamc.readthedocs.io)**
-
-**Questions? Start a discussion on our [mailing list](https://groups.io/g/pyam)**
-
 Overview and scope
 ------------------
 
@@ -40,6 +36,8 @@ Key features:
  - Advanced visualization and plotting functions
    (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
  - Diagnostic checks for scripted validation of scenario data and results
+
+The complete **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
 
 Data model
 ----------
