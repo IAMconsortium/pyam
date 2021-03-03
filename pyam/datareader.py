@@ -2,13 +2,14 @@ from pyam import IamDataFrame
 
 try:
     import pandas_datareader.wb as wb
+
     HAS_DATAREADER = True
 except ImportError:  # pragma: no cover
     wb = None
     HAS_DATAREADER = False
 
 
-def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
+def read_worldbank(model="World Bank", scenario="WDI", **kwargs):
     """Read data from the World Bank Data Catalogue and return as IamDataFrame
 
     This function is a simple wrapper for the class
@@ -47,15 +48,21 @@ def read_worldbank(model='World Bank', scenario='WDI', **kwargs):
     :class:`IamDataFrame`
     """
     if not HAS_DATAREADER:  # pragma: no cover
-        raise ImportError('Required package `pandas-datareader` not found!')
+        raise ImportError("Required package `pandas-datareader` not found!")
 
     data = wb.download(**kwargs)
-    df = IamDataFrame(data.reset_index(), model=model, scenario=scenario,
-                      value=data.columns, unit='n/a', region='country')
+    df = IamDataFrame(
+        data.reset_index(),
+        model=model,
+        scenario=scenario,
+        value=data.columns,
+        unit="n/a",
+        region="country",
+    )
     # TODO use wb.get_indicators to retrieve corrent units (where available)
 
     # if `indicator` is a mapping, use it for renaming
-    if 'indicator' in kwargs and isinstance(kwargs['indicator'], dict):
-        df.rename(variable=kwargs['indicator'], inplace=True)
+    if "indicator" in kwargs and isinstance(kwargs["indicator"], dict):
+        df.rename(variable=kwargs["indicator"], inplace=True)
 
     return df

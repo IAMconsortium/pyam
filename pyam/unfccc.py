@@ -3,6 +3,7 @@ import numpy as np
 
 try:
     import unfccc_di_api
+
     HAS_UNFCCC = True
 except ImportError:  # pragma: no cover
     unfccc_di_api = None
@@ -12,14 +13,20 @@ from pyam import IamDataFrame
 from pyam.utils import pattern_match, isstr, to_list
 
 # columns from UNFCCC data that can be used for variable names
-NAME_COLS = ['category', 'classification', 'measure', 'gas']
+NAME_COLS = ["category", "classification", "measure", "gas"]
 
 # UNFCCC-reader instance (instantiated at first use)
 _READER = None
 
 
-def read_unfccc(party_code, gases=None, tier=None, mapping=None,
-                model='UNFCCC', scenario='Data Inventory'):
+def read_unfccc(
+    party_code,
+    gases=None,
+    tier=None,
+    mapping=None,
+    model="UNFCCC",
+    scenario="Data Inventory",
+):
     """Read data from the UNFCCC Data Inventory
 
     This function is a wrappter for the
@@ -64,12 +71,11 @@ def read_unfccc(party_code, gases=None, tier=None, mapping=None,
     :class:`IamDataFrame`
     """
     if not HAS_UNFCCC:  # pragma: no cover
-        raise ImportError('Required package `unfccc-di-api` not found!')
+        raise ImportError("Required package `unfccc-di-api` not found!")
 
     # check that only one of `tier` or `mapping` is provided
-    if (tier is None and mapping is None) or \
-            (tier is not None and mapping is not None):
-        raise ValueError('Please specify either `tier` or `mapping`!')
+    if (tier is None and mapping is None) or (tier is not None and mapping is not None):
+        raise ValueError("Please specify either `tier` or `mapping`!")
 
     global _READER
     if _READER is None:
@@ -78,7 +84,7 @@ def read_unfccc(party_code, gases=None, tier=None, mapping=None,
     # retrieve data, drop non-numeric data and base year
     data = _READER.query(party_code=party_code, gases=to_list(gases))
     data = data[~np.isnan(data.numberValue)]
-    data = data[data.year != 'Base year']
+    data = data[data.year != "Base year"]
 
     # create the mapping from the data if `tier` is given
     if tier is not None:
@@ -88,48 +94,53 @@ def read_unfccc(party_code, gases=None, tier=None, mapping=None,
         for t in to_list(tier):
             # treatment of tear 1
             if t == 1:
-                pattern = re.compile('.\\.  ')  # pattern of top-level category
+                pattern = re.compile(".\\.  ")  # pattern of top-level category
                 for i in [i for i in _category if pattern.match(i)]:
-                    key = 'Emissions|{gas}|' + i[4:]
-                    mapping[key] = (i, 'Total for category',
-                                    'Net emissions/removals', '*')
+                    key = "Emissions|{gas}|" + i[4:]
+                    mapping[key] = (
+                        i,
+                        "Total for category",
+                        "Net emissions/removals",
+                        "*",
+                    )
             else:
-                raise ValueError(f'Unknown value for `tier`: {t}')
+                raise ValueError(f"Unknown value for `tier`: {t}")
 
     # add new `variable` column, iterate over mapping to determine variables
-    data['variable'] = None
+    data["variable"] = None
     for variable, value in mapping.items():
         matches = np.array([True] * len(data))
         for i, col in enumerate(NAME_COLS):
             matches &= pattern_match(data[col], value[i])
 
-        data.loc[matches, 'variable'] = data.loc[matches]\
-            .apply(_compile_variable, variable=variable, axis=1)
+        data.loc[matches, "variable"] = data.loc[matches].apply(
+            _compile_variable, variable=variable, axis=1
+        )
 
     # drop unspecified rows and columns, rename value column
-    cols = ['party', 'variable', 'unit', 'year', 'gas', 'numberValue']
+    cols = ["party", "variable", "unit", "year", "gas", "numberValue"]
     data = data.loc[[isstr(i) for i in data.variable], cols]
-    data.rename(columns={'numberValue': 'value'}, inplace=True)
+    data.rename(columns={"numberValue": "value"}, inplace=True)
 
     # append `gas` to unit, drop `gas` column
-    data.loc[:, 'unit'] = data.apply(_compile_unit, axis=1)
-    data.drop(columns='gas', inplace=True)
+    data.loc[:, "unit"] = data.apply(_compile_unit, axis=1)
+    data.drop(columns="gas", inplace=True)
 
-    return IamDataFrame(data, model=model, scenario=scenario, region='party')
+    return IamDataFrame(data, model=model, scenario=scenario, region="party")
 
 
 def _compile_variable(i, variable):
     """Translate UNFCCC columns into an IAMC-style variable"""
-    if i['variable']:
-        raise ValueError('Conflict in variable mapping!')
+    if i["variable"]:
+        raise ValueError("Conflict in variable mapping!")
     return variable.format(**dict((c, i[c]) for c in NAME_COLS))
 
 
 def _compile_unit(i):
     """Append gas to unit and update CO2e for pint/iam-unit compatibility"""
-    if ' equivalent' in i['unit']:
-        return i['unit'].replace('CO2 equivalent', 'CO2e')
-    if i['unit'] in ['kt', 't']:
-        return ' '.join([i['unit'], i['gas']])
+    if " equivalent" in i["unit"]:
+        return i["unit"].replace("CO2 equivalent", "CO2e")
+    if i["unit"] in ["kt", "t"]:
+        return " ".join([i["unit"], i["gas"]])
     else:
-        return i['unit']
+        return i["unit"]

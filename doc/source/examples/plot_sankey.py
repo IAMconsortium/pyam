@@ -30,7 +30,8 @@ Sankey diagram
 
 import pyam
 import plotly
-df = pyam.IamDataFrame('sankey_data.csv')
+
+df = pyam.IamDataFrame("sankey_data.csv")
 df
 
 ###############################
@@ -51,23 +52,27 @@ df
 #     }
 
 sankey_mapping = {
-    'Primary Energy|Coal':
-        ('Coal Mining', 'Coal Trade & Power Generation'),
-    'Primary Energy|Gas':
-        ('Natural Gas Extraction', 'Gas Network & Power Generation'),
-    'Secondary Energy|Electricity|Non-Biomass Renewables':
-        ('Non-Biomass Renewables', 'Electricity Grid'),
-    'Secondary Energy|Electricity|Nuclear':
-        ('Nuclear', 'Electricity Grid'),
-    'Secondary Energy|Electricity|Coal':
-        ('Coal Trade & Power Generation', 'Electricity Grid'),
-    'Secondary Energy|Electricity|Gas':
-        ('Gas Network & Power Generation', 'Electricity Grid'),
-    'Final Energy|Electricity': ('Electricity Grid', 'Electricity Demand'),
-    'Final Energy|Solids|Coal':
-        ('Coal Trade & Power Generation', 'Non-Electricity Coal Demand'),
-    'Final Energy|Gases':
-        ('Gas Network & Power Generation', 'Gas Demand'),
+    "Primary Energy|Coal": ("Coal Mining", "Coal Trade & Power Generation"),
+    "Primary Energy|Gas": ("Natural Gas Extraction", "Gas Network & Power Generation"),
+    "Secondary Energy|Electricity|Non-Biomass Renewables": (
+        "Non-Biomass Renewables",
+        "Electricity Grid",
+    ),
+    "Secondary Energy|Electricity|Nuclear": ("Nuclear", "Electricity Grid"),
+    "Secondary Energy|Electricity|Coal": (
+        "Coal Trade & Power Generation",
+        "Electricity Grid",
+    ),
+    "Secondary Energy|Electricity|Gas": (
+        "Gas Network & Power Generation",
+        "Electricity Grid",
+    ),
+    "Final Energy|Electricity": ("Electricity Grid", "Electricity Demand"),
+    "Final Energy|Solids|Coal": (
+        "Coal Trade & Power Generation",
+        "Non-Electricity Coal Demand",
+    ),
+    "Final Energy|Gases": ("Gas Network & Power Generation", "Gas Demand"),
 }
 
 fig = df.filter(year=2050).plot.sankey(mapping=sankey_mapping)

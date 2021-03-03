@@ -20,7 +20,8 @@ Pie chart visualizations
 
 import matplotlib.pyplot as plt
 import pyam
-df = pyam.IamDataFrame('tutorial_data.csv')
+
+df = pyam.IamDataFrame("tutorial_data.csv")
 df
 
 ###############################
@@ -30,9 +31,13 @@ df
 # We generate a pie plot of all components of primary energy supply
 # for one scenario.
 
-data = df.filter(model='AIM/CGE 2.1', scenario='CD-LINKS_NPi',
-                 variable='Primary Energy|*', year=2050,
-                 region='World')
+data = df.filter(
+    model="AIM/CGE 2.1",
+    scenario="CD-LINKS_NPi",
+    variable="Primary Energy|*",
+    year=2050,
+    region="World",
+)
 
 data.plot.pie()
 plt.tight_layout()
@@ -56,11 +61,9 @@ plt.show()
 # any data or meta indicators from the IamDataFrame can be used.
 # Here, we show the contribution by region to CO2 emissions.
 
-data = (
-    df.filter(model='AIM/CGE 2.1', scenario='CD-LINKS_NPi',
-              variable='Emissions|CO2', year=2050)
-    .filter(region='World', keep=False)
-)
-data.plot.pie(category='region', cmap='tab20')
+data = df.filter(
+    model="AIM/CGE 2.1", scenario="CD-LINKS_NPi", variable="Emissions|CO2", year=2050
+).filter(region="World", keep=False)
+data.plot.pie(category="region", cmap="tab20")
 plt.tight_layout()
 plt.show()

@@ -20,7 +20,8 @@ Boxplot charts
 
 import matplotlib.pyplot as plt
 import pyam
-df = pyam.IamDataFrame('tutorial_data.csv')
+
+df = pyam.IamDataFrame("tutorial_data.csv")
 df
 
 ###############################
@@ -30,10 +31,11 @@ df
 # We generate a simple boxplot of CO2 emissions
 # across one scenario implemented by a range of models.
 
-data = df.filter(scenario='CD-LINKS_NPi2020_1000',
-                 variable='Emissions|CO2', region='World')
+data = df.filter(
+    scenario="CD-LINKS_NPi2020_1000", variable="Emissions|CO2", region="World"
+)
 
-data.plot.box(x='year')
+data.plot.box(x="year")
 plt.tight_layout()
 plt.show()
 
@@ -43,13 +45,13 @@ plt.show()
 #
 # We can add sub-groupings of the data using the keyword argument `by`.
 
-data = (
-    df.filter(scenario='CD-LINKS_NPi2020_1000', variable='Emissions|CO2',
-              year=[2010, 2020, 2030, 2050, 2100])
-    .filter(region='World', keep=False)
-)
+data = df.filter(
+    scenario="CD-LINKS_NPi2020_1000",
+    variable="Emissions|CO2",
+    year=[2010, 2020, 2030, 2050, 2100],
+).filter(region="World", keep=False)
 
-data.plot.box(x='year', by='region', legend=True)
+data.plot.box(x="year", by="region", legend=True)
 
 # We can use matplotlib arguments to make the figure more appealing.
 plt.legend(loc=1)

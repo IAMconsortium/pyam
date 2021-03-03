@@ -5,9 +5,9 @@ Release v\ |version|.
 
 |license| |pypi| |conda| |latest|
 
-|pytest-38| |pytest-37| |codecov| |rtd|
+|black| |python| |pytest| |rtd| |codecov|
 
-|joss| |doi|
+|doi| |joss| |groupsio| |slack|
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-black
    :target: https://github.com/IAMconsortium/pyam/blob/master/LICENSE
@@ -21,24 +21,34 @@ Release v\ |version|.
 .. |latest| image:: https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg
    :target: https://anaconda.org/conda-forge/pyam
 
-.. |pytest-38| image:: https://github.com/IAMconsortium/pyam/workflows/pytest%20(3.8)/badge.svg?branch=master
-   :target: https://github.com/IAMconsortium/pyam/actions?query=workflow%3A%22pytest+%283.8%29%22+branch%3Amaster
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
 
-.. |pytest-37| image:: https://github.com/IAMconsortium/pyam/workflows/pytest%20(3.7)/badge.svg?branch=master
-   :target: https://github.com/IAMconsortium/pyam/actions?query=workflow%3A%22pytest+%283.7%29%22+branch%3Amaster
+.. |python| image:: https://img.shields.io/badge/python-3.7_|_3.8_|_3.9-blue?logo=python&logoColor=white
+   :target: https://github.com/IAMconsortium/pyam
 
-.. |codecov| image:: https://codecov.io/gh/IAMconsortium/pyam/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/IAMconsortium/pyam
+.. |pytest| image:: https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml/badge.svg
+   :target: https://github.com/danielhuppmann/pyam/actions/workflows/pytest.yml
 
 .. |rtd| image:: https://readthedocs.org/projects/pyam-iamc/badge/?version=latest
    :target: https://pyam-iamc.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
-   :target: https://joss.theoj.org/papers/10.21105/joss.01095
+.. |codecov| image:: https://codecov.io/gh/IAMconsortium/pyam/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/IAMconsortium/pyam
 
 .. |doi| image:: https://zenodo.org/badge/113359260.svg
    :target: https://zenodo.org/badge/latestdoi/113359260
+
+.. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
+   :target: https://joss.theoj.org/papers/10.21105/joss.01095
+
+.. |groupsio| image:: https://img.shields.io/badge/groups.io-pyam-blue
+   :target: https://pyam.groups.io/g/forum
+
+.. |slack| image:: https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack
+   :target: https://pyam-iamc.slack.com
+
 
 Overview
 --------

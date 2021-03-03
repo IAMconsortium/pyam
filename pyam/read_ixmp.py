@@ -14,10 +14,10 @@ def read_ix(ix, **kwargs):
     kwargs: arguments passed to ixmp.TimeSeries.timeseries()
     """
     if not isinstance(ix, ixmp.TimeSeries):
-        error = 'not recognized as valid ixmp class: {}'.format(ix)
+        error = "not recognized as valid ixmp class: {}".format(ix)
         raise ValueError(error)
 
     df = ix.timeseries(iamc=False, **kwargs)
-    df['model'] = ix.model
-    df['scenario'] = ix.scenario
-    return df, 'year', []
+    df["model"] = ix.model
+    df["scenario"] = ix.scenario
+    return df, "year", []

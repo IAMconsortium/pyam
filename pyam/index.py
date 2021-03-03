@@ -13,7 +13,7 @@ def get_index_levels(index, level):
 
     # if index is one-dimensional, make sure that the "level" is the name
     if index.name != level:
-        raise KeyError('Index does not have a level {level}')
+        raise KeyError("Index does not have a level {level}")
     return list(index)
 
 
@@ -42,7 +42,8 @@ def append_index_level(index, codes, level, name, order=False):
     new_index = pd.MultiIndex(
         codes=index.codes + [codes],
         levels=index.levels + [level],
-        names=index.names + [name])
+        names=index.names + [name],
+    )
     if order:
         new_index = new_index.reorder_levels(order)
     return new_index

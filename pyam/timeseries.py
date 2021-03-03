@@ -50,12 +50,16 @@ def cumulative(x, first_year, last_year):
     # if the timeseries does not cover the range `[first_year, last_year]`,
     # return nan to avoid erroneous aggregation
     if min(x.index) > first_year:
-        logger.warning('the timeseries `{}` does not start by {}'.format(
-            x.name or x, first_year))
+        logger.warning(
+            "the timeseries `{}` does not start by {}".format(x.name or x, first_year)
+        )
         return np.nan
     if max(x.index) < last_year:
-        logger.warning('the timeseries `{}` does not extend until {}'
-                         .format(x.name or x, last_year))
+        logger.warning(
+            "the timeseries `{}` does not extend until {}".format(
+                x.name or x, last_year
+            )
+        )
         return np.nan
 
     # make sure we're using integers
@@ -64,8 +68,9 @@ def cumulative(x, first_year, last_year):
     x[first_year] = fill_series(x, first_year)
     x[last_year] = fill_series(x, last_year)
 
-    years = [i for i in x.index if i >= first_year and i <= last_year
-             and ~np.isnan(x[i])]
+    years = [
+        i for i in x.index if i >= first_year and i <= last_year and ~np.isnan(x[i])
+    ]
     years.sort()
 
     # loop over years
@@ -75,8 +80,7 @@ def cumulative(x, first_year, last_year):
             next_yr = years[i + 1]
             # the summation is shifted to include the first year fully in sum,
             # otherwise, would return a weighted average of `yr` and `next_yr`
-            value += ((next_yr - yr - 1) * x[next_yr] +
-                      (next_yr - yr + 1) * x[yr]) / 2
+            value += ((next_yr - yr - 1) * x[next_yr] + (next_yr - yr + 1) * x[yr]) / 2
 
         # the loop above does not include the last element in range
         # (`last_year`), therefore added explicitly
@@ -85,8 +89,9 @@ def cumulative(x, first_year, last_year):
         return value
 
 
-def cross_threshold(x, threshold=0, direction=['from above', 'from below'],
-                    return_type=int):
+def cross_threshold(
+    x, threshold=0, direction=["from above", "from below"], return_type=int
+):
     """Returns a list of the years in which a timeseries crosses a threshold
 
     Parameters
@@ -102,8 +107,8 @@ def cross_threshold(x, threshold=0, direction=['from above', 'from below'],
         Whether to cast the returned values to integer (years)
     """
     direction = [direction] if isstr(direction) else list(direction)
-    if not set(direction).issubset(set(['from above', 'from below'])):
-        raise ValueError('invalid direction `{}`'.format(direction))
+    if not set(direction).issubset(set(["from above", "from below"])):
+        raise ValueError("invalid direction `{}`".format(direction))
 
     # get the values and time-domain index
     x = x.dropna()
@@ -112,9 +117,9 @@ def cross_threshold(x, threshold=0, direction=['from above', 'from below'],
 
     # determine all indices before crossing the threshold
     pre = [False] * (len(x) - 1)
-    if 'from above' in direction:
+    if "from above" in direction:
         pre |= positive[:-1] & negative[1:]
-    if 'from below' in direction:
+    if "from below" in direction:
         pre |= positive[1:] & negative[:-1]
     pre = np.argwhere(pre)
     # determine all indices after crossing the threshold
