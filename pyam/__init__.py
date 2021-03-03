@@ -23,7 +23,7 @@ try:
     shell = get_ipython()
     if isinstance(shell, ZMQInteractiveShell):
         shell.run_cell_magic(
-            u"javascript",
+            u'javascript',
             u"",
             u"IPython.OutputArea.prototype._should_scroll = "
             u"function(lines) { return false; }",
