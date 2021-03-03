@@ -500,7 +500,7 @@ def years_match(data, years):
     years = [years] if (isinstance(years, (int, np.int64))) else years
     dt = (datetime.datetime, np.datetime64)
     if isinstance(years, dt) or isinstance(years[0], dt):
-        error_msg = "`year` can only be filtered with ints or lists of ints"
+        error_msg = "Filter by `year` requires integers!"
         raise TypeError(error_msg)
     return data.isin(years)
 

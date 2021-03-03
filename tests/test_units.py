@@ -141,7 +141,7 @@ def test_convert_unit_bad_args(test_pd_df):
     idf = IamDataFrame(test_pd_df).rename(unit={"EJ/yr": "Mt CH4"})
 
     # Conversion fails with both *factor* and *registry*
-    with pytest.raises(ValueError, match="use either `factor` or `pint..."):
+    with pytest.raises(ValueError, match="Use either `factor` or `registry`!"):
         idf.convert_unit("Mt CH4", "CO2e", factor=1.0, registry=object())
 
     # Conversion fails with an invalid registry

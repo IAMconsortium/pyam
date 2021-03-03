@@ -28,9 +28,8 @@ try:
             u"IPython.OutputArea.prototype._should_scroll = "
             u"function(lines) { return false; }",
         )
-        log_msg = (
-            "Running in a notebook, setting up a basic logging config at level INFO"
-        )
+        log_msg = "Running in a notebook, setting up a basic logging at level INFO"
+
         defer_logging_config(
             logger,
             log_msg,

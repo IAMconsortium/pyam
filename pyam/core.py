@@ -608,9 +608,8 @@ class IamDataFrame(object):
         if self.time_col == "time":
             time = list(map(np.datetime64, time))
         elif not all(isinstance(x, int) for x in time):
-            raise ValueError(
-                "The `time` argument `{}` contains non-integers".format(time)
-            )
+            raise ValueError(f"The `time` argument {time} contains non-integers")
+
         old_cols = list(ret[ret.time_col].unique())
         columns = np.sort(np.unique(old_cols + time))
 
@@ -706,13 +705,13 @@ class IamDataFrame(object):
             reducing to IAMC-index yields an index with duplicates
         """
         if self.empty:
-            raise ValueError("this `IamDataFrame` is empty")
+            raise ValueError("This IamDataFrame is empty!")
 
         df = self._data.unstack(level=self.time_col).rename_axis(None, axis=1)
 
         if df.index.has_duplicates:
             raise ValueError(
-                "timeseries object has duplicates in index ", "use `iamc_index=False`"
+                "Data with IAMC-index has duplicated index, use `iamc_index=False`"
             )
         return df
 
@@ -763,11 +762,11 @@ class IamDataFrame(object):
         if isinstance(index, pd.DataFrame):
             index = index.set_index(META_IDX).index
         if not isinstance(index, pd.MultiIndex):
-            raise ValueError("index cannot be coerced to pd.MultiIndex")
+            raise ValueError("Index cannot be coerced to pd.MultiIndex")
 
         # raise error if index is not unique
         if index.duplicated().any():
-            raise ValueError("non-unique ['model', 'scenario'] index!")
+            raise ValueError("Non-unique ['model', 'scenario'] index!")
 
         # create pd.Series from meta, index and name if provided
         meta = pd.Series(data=meta, index=index, name=name)
@@ -778,8 +777,7 @@ class IamDataFrame(object):
         # check if trying to add model-scenario index not existing in self
         diff = meta.index.difference(self.meta.index)
         if not diff.empty:
-            msg = "Adding meta for non-existing scenarios:\n{}"
-            raise ValueError(msg.format(diff))
+            raise ValueError(f"Adding meta for non-existing scenarios:\n{diff}")
 
         self._new_meta_column(name)
         self.meta[name] = meta[name].combine_first(self.meta[name])
@@ -853,7 +851,7 @@ class IamDataFrame(object):
     def _new_meta_column(self, name):
         """Add a column to meta if it doesn't exist, set value to nan"""
         if name is None:
-            raise ValueError("cannot add a meta column `{}`".format(name))
+            raise ValueError(f"Cannot add a meta column {name}")
         if name not in self.meta:
             self.meta[name] = np.nan
 
@@ -971,8 +969,7 @@ class IamDataFrame(object):
         mapping = mapping or {}
         duplicate = set(mapping).intersection(kwargs)
         if duplicate:
-            msg = "conflicting rename args for columns `{}`".format(duplicate)
-            raise ValueError(msg)
+            raise ValueError(f"Conflicting rename args for columns {duplicate}")
         mapping.update(kwargs)
 
         # determine columns that are not `model` or `scenario`
@@ -980,7 +977,7 @@ class IamDataFrame(object):
 
         # changing index and data columns can cause model-scenario mismatch
         if any(i in mapping for i in META_IDX) and any(i in mapping for i in data_cols):
-            msg = "Renaming index and data cols simultaneously not supported!"
+            msg = "Renaming index and data columns simultaneously not supported!"
             raise ValueError(msg)
 
         # translate rename mapping to `filter()` arguments
@@ -1010,10 +1007,10 @@ class IamDataFrame(object):
                 _index = pd.DataFrame(index=ret.meta.index).reset_index()
                 _index.loc[idx, col] = _index.loc[idx, col].replace(_mapping)
                 if _index.duplicated().any():
-                    raise ValueError("Renaming to non-unique `{}` index!".format(col))
+                    raise ValueError(f"Renaming to non-unique {col} index!")
                 ret.meta.index = _index.set_index(META_IDX).index
             elif col not in data_cols:
-                raise ValueError("Renaming by `{}` not supported!".format(col))
+                raise ValueError(f"Renaming by {col} not supported!")
             _data.loc[rows, col] = _data.loc[rows, col].replace(_mapping)
 
         # check if duplicates exist between the renamed and not-renamed data
@@ -1109,7 +1106,7 @@ class IamDataFrame(object):
         # Handle user input
         # Check that (only) either factor or registry/context is provided
         if factor and any([registry, context]):
-            raise ValueError("use either `factor` or `pint.UnitRegistry`")
+            raise ValueError("Use either `factor` or `registry`!")
 
         # new standard method, remove this comment when deprecating above
         return convert_unit(self, current, to, factor, registry, context, inplace)
@@ -1168,7 +1165,7 @@ class IamDataFrame(object):
 
         if recursive is True:
             if components is not None:
-                msg = "Recursive aggregation cannot take explicit components"
+                msg = "Recursive aggregation cannot take explicit components!"
                 raise ValueError(msg)
             _df = _aggregate_recursive(self, variable, method=method)
         else:
@@ -1460,7 +1457,7 @@ class IamDataFrame(object):
             else return downscaled data as new IamDataFrame
         """
         if proxy is not None and weight is not None:
-            raise ValueError("Using both `proxy` and `weight` arguments is not valid")
+            raise ValueError("Using both `proxy` and `weight` arguments is not valid!")
         elif proxy is not None:
             # get default subregions if not specified and select data from self
             subregions = subregions or self._all_other_regions(region)
@@ -1475,7 +1472,7 @@ class IamDataFrame(object):
                 rows = ~weight.index.isin([region], level="region")
             _proxy = weight[rows].stack()
         else:
-            raise ValueError("Either a `proxy` or `weight` argument is required")
+            raise ValueError("Either a `proxy` or `weight` argument is required!")
 
         _value = (
             self.data[self._apply_filters(variable=variable, region=region)]
@@ -1589,8 +1586,7 @@ class IamDataFrame(object):
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
         """
         if not isinstance(keep, bool):
-            msg = "`filter(keep={}, ...)` is not valid, must be boolean"
-            raise ValueError(msg.format(keep))
+            raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")
 
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
@@ -2029,7 +2025,8 @@ def _meta_idx(data):
 
 
 def _raise_filter_error(col):
-    raise ValueError("filter by `{}` not supported".format(col))
+    """Raise an error if not possible to filter by col"""
+    raise ValueError(f"Filter by `{col}` not supported!")
 
 
 def _check_rows(rows, check, in_range=True, return_test="any"):
@@ -2230,7 +2227,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
         to nan if `(model, scenario)` not in `df.meta.index`)
     """
     if not set(META_IDX).issubset(data.index.names + list(data.columns)):
-        raise ValueError("missing required index dimensions or columns!")
+        raise ValueError("Missing required index dimensions or columns!")
 
     meta = pd.DataFrame(df.meta[list(set(kwargs) - set(META_IDX))].copy())
 
@@ -2331,7 +2328,7 @@ def read_datapackage(path, data="data", meta="meta"):
         quantitative indicators
     """
     if not HAS_DATAPACKAGE:  # pragma: no cover
-        raise ImportError("required package `datapackage` not found!")
+        raise ImportError("Required package `datapackage` not found!")
 
     package = Package(path)
 
