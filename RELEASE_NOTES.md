@@ -8,6 +8,7 @@ starting with `data` will be parsed for timeseries data.
 
 ## Individual updates
 
+- [#502](https://github.com/IAMconsortium/pyam/pull/502) Switch to Black code style
 - [#499](https://github.com/IAMconsortium/pyam/pull/499) Implement `order` feature in line plot 
 - [#497](https://github.com/IAMconsortium/pyam/pull/497) Add a module for reading data from the UNFCCC Data Inventory 
 - [#496](https://github.com/IAMconsortium/pyam/pull/496) Enable loading meta from csv file
