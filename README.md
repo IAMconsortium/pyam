@@ -97,43 +97,17 @@ Install
 -------
 
 For basic instructions,
-[read the docs](https://pyam-iamc.readthedocs.io/en/stable/install.html).
+please [read the docs](https://pyam-iamc.readthedocs.io/en/stable/install.html)!
 
-To install from source after cloning this repository, simply run
+To install from source (including all dependencies)
+after cloning this repository, simply run
 
 ```
-pip install -e .
+pip install -e .[tests,optional-io-formats,tutorials]
 ```
 
-### Development
-
-To setup a development environment, the simplest route is to make yourself 
-a conda environment and then follow the `Makefile`. 
-
-```sh
-# pyam can be replaced with any other name
-# you don't have to specify your python version if you don't want
-conda create --name pyam pip python=X.Y.Z
-conda activate pyam  # may be  simply `source activate pyam` or just `activate pyam`
-# use the make file to create your development environment
-# (you only require the -B flag the first time, thereafter you can
-# just run `make virtual-environment` and it will only update if
-# environment definition files have been updaed)
-make -B virtual-environment
-```
-
-Instead of conda you could also use a pip virtualenv:
-```sh
-mkdir venv
-virtualenv venv -p python3
-. venv/bin/activate
-pip install -e .[test,optional-io-formats]
-```
-
-To check everything has installed correctly, run
+To check that the package was installed correctly, run
 
 ```
 pytest tests
 ```
-
-All the tests should pass.
