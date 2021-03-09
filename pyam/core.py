@@ -479,12 +479,12 @@ class IamDataFrame(object):
         ----------
         other : IamDataFrame, ixmp.Scenario, pandas.DataFrame or data file
             Any object castable as IamDataFrame to be appended
-        ignore_meta_conflict : bool, default False
+        ignore_meta_conflict : bool, optional
             If False and `other` is an IamDataFrame, raise an error if
             any meta columns present in `self` and `other` are not identical.
-        inplace : bool, default False
+        inplace : bool, optional
             If True, do operation inplace and return None
-        verify_integrity : bool, default True
+        verify_integrity : bool, optional
             If True, verify integrity of index
         kwargs
             Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
