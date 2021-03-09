@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from .utils import print_list
+from .utils import _raise_data_error
 
 
 def get_index_levels(index, level):
@@ -66,11 +66,4 @@ def verify_index_integrity(df):
     if not index.is_unique:
         overlap = index[index.duplicated()].unique()
 
-        n = 80
-        c1 = max([len(i) for i in overlap]) + 1
-        c2 = n - c1 - 5
-        summary = "\n".join(
-            f" * {i:{c1}}: {print_list(get_index_levels(overlap, i), c2)}"
-            for i in overlap.names
-        )
-        raise ValueError(f"Indexes have overlapping values:\n{summary}")
+        _raise_data_error("Timeseries data has overlapping values", overlap.to_frame(index=False))
