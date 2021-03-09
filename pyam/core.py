@@ -709,6 +709,10 @@ class IamDataFrame(object):
 
         s = self._data
         if iamc_index:
+            if self.time_col == "time":
+                raise ValueError(
+                    "Cannot use IAMC-index with continuous-time data format!"
+                )
             s = s.droplevel(self.extra_cols)
         df = s.unstack(level=self.time_col).rename_axis(None, axis=1).sort_index(axis=1)
 
