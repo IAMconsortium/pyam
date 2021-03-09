@@ -66,4 +66,6 @@ def verify_index_integrity(df):
     if not index.is_unique:
         overlap = index[index.duplicated()].unique()
 
-        _raise_data_error("Timeseries data has overlapping values", overlap.to_frame(index=False))
+        _raise_data_error(
+            "Timeseries data has overlapping values", overlap.to_frame(index=False)
+        )
