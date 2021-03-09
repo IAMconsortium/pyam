@@ -693,7 +693,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        iamc_index : bool, default False
+        iamc_index : bool, optional
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
 
