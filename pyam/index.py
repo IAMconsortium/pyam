@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from .utils import _raise_data_error
+
 
 def get_index_levels(index, level):
     """Return the category-values for a specific level"""
@@ -47,3 +49,23 @@ def append_index_level(index, codes, level, name, order=False):
     if order:
         new_index = new_index.reorder_levels(order)
     return new_index
+
+
+def verify_index_integrity(df):
+    """Verify integrity of index
+
+    Arguments
+    ---------
+    df : Union[pd.DataFrame, pd.Series, pd.Index]
+
+    Raises
+    ------
+    ValueError
+    """
+    index = df if isinstance(df, pd.Index) else df.index
+    if not index.is_unique:
+        overlap = index[index.duplicated()].unique()
+
+        _raise_data_error(
+            "Timeseries data has overlapping values", overlap.to_frame(index=False)
+        )

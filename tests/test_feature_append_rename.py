@@ -148,7 +148,7 @@ def test_append_extra_col(test_df, shuffle_cols):
 def test_append_duplicates_raises(test_df_year, inplace):
     # Merging objects with overlapping values (merge conflict) raises an error
     other = copy.deepcopy(test_df_year)
-    with pytest.raises(ValueError, match="Indexes have overlapping values:"):
+    with pytest.raises(ValueError, match="Timeseries data has overlapping values:"):
         test_df_year.append(other=other, inplace=inplace)
 
 
