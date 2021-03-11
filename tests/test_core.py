@@ -670,6 +670,20 @@ def test_timeseries_to_iamc_index(test_pd_df, test_df_year):
     pdt.assert_frame_equal(obs, exp)
 
 
+def test_timeseries_to_iamc_index_duplicated_raises(test_pd_df):
+    """Assert that using `timeseries(iamc_index=True)` raises if there are duplicates"""
+    test_pd_df = pd.concat([test_pd_df, test_pd_df])
+    # adding an extra-col creates a unique index
+    test_pd_df["foo"] = ["bar", "bar", "bar", "baz", "baz", "baz"]
+    exta_col_df = IamDataFrame(test_pd_df)
+    assert exta_col_df.extra_cols == ["foo"]
+
+    # dropping the extra-column by setting `iamc_index=True` creates duplicated index
+    match = "Index contains duplicate entries, cannot reshape"
+    with pytest.raises(ValueError, match=match):
+        exta_col_df.timeseries(iamc_index=True)
+
+
 def test_pivot_table(test_df):
     dct = {
         "model": ["model_a"] * 2,

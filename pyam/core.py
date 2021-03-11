@@ -714,12 +714,9 @@ class IamDataFrame(object):
                     "Cannot use IAMC-index with continuous-time data format!"
                 )
             s = s.droplevel(self.extra_cols)
+
         df = s.unstack(level=self.time_col).rename_axis(None, axis=1).sort_index(axis=1)
 
-        if df.index.has_duplicates:
-            raise ValueError(
-                "Data with IAMC-index has duplicated index, use `iamc_index=False`"
-            )
         return df
 
     def reset_exclude(self):
