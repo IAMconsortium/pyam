@@ -6,6 +6,7 @@ import datetime
 import numpy as np
 import pandas as pd
 from numpy import testing as npt
+from pandas import testing as pdt
 
 from pyam import IamDataFrame, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
 from pyam.core import _meta_idx, concat
@@ -655,6 +656,18 @@ def test_timeseries_time_iamc_raises(test_df_time):
     match = "Cannot use IAMC-index with continuous-time data format!"
     with pytest.raises(ValueError, match=match):
         test_df_time.timeseries(iamc_index=True)
+
+
+def test_timeseries_to_iamc_index(test_pd_df, test_df_year):
+    """Reducing timeseries() of an IamDataFrame with extra-columns to IAMC-index"""
+    test_pd_df["foo"] = "bar"
+    exta_col_df = IamDataFrame(test_pd_df)
+    assert exta_col_df.extra_cols == ["foo"]
+
+    # assert that reducing to IAMC-columns (dropping extra-columns) with timeseries()
+    obs = exta_col_df.timeseries(iamc_index=True)
+    exp = test_df_year.timeseries()
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pivot_table(test_df):
