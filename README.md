@@ -103,7 +103,7 @@ To install from source (including all dependencies)
 after cloning this repository, simply run
 
 ```
-pip install -e .[tests,optional-io-formats,tutorials]
+pip install --editable .[tests,optional-io-formats,tutorials]
 ```
 
 To check that the package was installed correctly, run

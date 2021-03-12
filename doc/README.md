@@ -12,7 +12,7 @@ To install the **pyam** package and all dependencies, run the following
 (in the top-level directory of this repository).
 
 ```
-pip install -e .[docs,tutorials]
+pip install --editable .[docs,tutorials]
 ```
 
 Writing in Restructed Text
