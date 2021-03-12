@@ -647,7 +647,7 @@ def test_timeseries(test_df):
 def test_timeseries_empty_raises(test_df_year):
     """Calling `timeseries()` on an empty IamDataFrame raises"""
     _df = test_df_year.filter(model="foo")
-    with pytest.raises(ValueError,match="This IamDataFrame is empty!"):
+    with pytest.raises(ValueError, match="This IamDataFrame is empty!"):
         _df.timeseries()
 
 
