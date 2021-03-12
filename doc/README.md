@@ -15,8 +15,8 @@ To install the **pyam** package and all dependencies, run the following
 pip install --editable .[docs,tutorials]
 ```
 
-Writing in Restructed Text
---------------------------
+Writing in Restructured Text
+----------------------------
 
 There are a number of guides to get started, for example
 on [sourceforge](https://docutils.sourceforge.io/docs/user/rst/quickref.html).
