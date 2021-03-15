@@ -13,11 +13,11 @@ def _aggregate(df, variable, components=None, method=np.sum):
     # list of variables require default components (no manual list)
     if islistable(variable) and components is not None:
         raise ValueError(
-            "aggregating by list of variables cannot use " "custom components"
+            "Aggregating by list of variables cannot use custom components"
         )
 
     mapping = {}
-    msg = "cannot aggregate variable `{}` because it has no components"
+    msg = "Cannot aggregate variable `{}` because it has no components"
     # if single variable
     if isstr(variable):
         # default components to all variables one level below `variable`
@@ -83,23 +83,21 @@ def _aggregate_region(
 ):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
-        msg = "aggregating by list of variables with components " "is not supported"
+        msg = "Aggregating by list of variables with components is not supported"
         raise ValueError(msg)
 
     if weight is not None and components is not False:
-        msg = "using weights and components in one operation not supported"
+        msg = "Using weights and components in one operation not supported"
         raise ValueError(msg)
 
     # default subregions to all regions other than `region`
     subregions = subregions or df._all_other_regions(region, variable)
 
     if not len(subregions):
-        msg = (
-            "cannot aggregate variable `{}` to `{}` because it does not"
-            " exist in any subregion"
+        logger.info(
+            f"Cannot aggregate variable `{variable}` to `{region}` "
+            "because it does not exist in any subregion"
         )
-        logger.info(msg.format(variable, region))
-
         return
 
     # compute aggregate over all subregions
@@ -177,13 +175,13 @@ def _agg_weight(df, weight, method):
     """Aggregate `df` by regions with weights, return indexed `pd.Series`"""
     # only summation allowed with weights
     if method not in ["sum", np.sum]:
-        raise ValueError("only method `np.sum` allowed for weighted average")
+        raise ValueError("Only method `np.sum` allowed for weighted average")
 
     w_cols = _list_diff(df.columns, ["variable", "unit", "value"])
     _weight = _get_value_col(weight, w_cols)
 
     if not _get_value_col(df, w_cols).index.equals(_weight.index):
-        raise ValueError("inconsistent index between variable and weight")
+        raise ValueError("Inconsistent index between variable and weight")
 
     _data = _get_value_col(df)
     col1 = _list_diff(_data.index.names, ["region"])
@@ -211,4 +209,4 @@ def _get_method_func(method):
         return KNOWN_FUNCS[method]
 
     # raise error if `method` is a string but not in dict of known methods
-    raise ValueError("method `{}` is not a known aggregator".format(method))
+    raise ValueError(f"Method `{method}` is not a known aggregator")
