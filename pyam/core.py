@@ -1356,7 +1356,7 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(region=region, variable=variable)
         if not rows.any():
-            logger.info(f"Variable `{variable}` does not exist in region `{region}`")
+            logger.info(f"Variable '{variable}' does not exist in region '{region}'!")
             return
 
         df_region, df_subregions = _group_and_agg(self.data[rows], "region").align(
@@ -1467,7 +1467,7 @@ class IamDataFrame(object):
             else return downscaled data as new IamDataFrame
         """
         if proxy is not None and weight is not None:
-            raise ValueError("Using both `proxy` and `weight` arguments is not valid!")
+            raise ValueError("Using both 'proxy' and 'weight' arguments is not valid!")
         elif proxy is not None:
             # get default subregions if not specified and select data from self
             subregions = subregions or self._all_other_regions(region)
@@ -1482,7 +1482,7 @@ class IamDataFrame(object):
                 rows = ~weight.index.isin([region], level="region")
             _proxy = weight[rows].stack()
         else:
-            raise ValueError("Either a `proxy` or `weight` argument is required!")
+            raise ValueError("Either a 'proxy' or 'weight' argument is required!")
 
         _value = (
             self.data[self._apply_filters(variable=variable, region=region)]

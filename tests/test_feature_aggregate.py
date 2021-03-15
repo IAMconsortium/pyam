@@ -196,8 +196,8 @@ def test_aggregate_region_log(simple_df, caplog):
     caplog.set_level(logging.INFO, logger="pyam._aggregate")
     simple_df.aggregate_region("foo")
     msg = (
-        "Cannot aggregate variable `foo` to `World` "
-        "because it does not exist in any subregion"
+        "Cannot aggregate variable 'foo' to 'World' "
+        "because it does not exist in any subregion!"
     )
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "INFO"
@@ -224,7 +224,7 @@ def test_check_aggregate_region_log(simple_df, caplog):
         ).check_aggregate_region("Primary Energy")
     )
     print(caplog.messages)
-    msg = "Variable `Primary Energy` does not exist in region `World`"
+    msg = "Variable 'Primary Energy' does not exist in region 'World'!"
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "INFO"
 
