@@ -1503,7 +1503,7 @@ class IamDataFrame(object):
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
         rows = self._apply_filters(variable=variable)
-        return set(self.data[rows].region) - set([region])
+        return set(self._data[rows].index.get_level_values("region")) - set([region])
 
     def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
@@ -1511,7 +1511,7 @@ class IamDataFrame(object):
         If `level=0`, for `variable='foo'`, return `['foo|bar']`, but don't
         include `'foo|bar|baz'`, which is a sub-sub-category. If `level=None`,
         all variables below `variable` in the hierarchy are returned."""
-        var_list = pd.Series(self.data.variable.unique())
+        var_list = pd.Series(self.variable)
         return var_list[pattern_match(var_list, "{}|*".format(variable), level=level)]
 
     def _get_cols(self, cols):
