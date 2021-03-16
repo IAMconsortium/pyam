@@ -83,12 +83,10 @@ def _aggregate_region(
 ):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
-        msg = "Aggregating by list of variables with components is not supported!"
-        raise ValueError(msg)
+        raise ValueError("Aggregating by a list with components is not supported!")
 
     if weight is not None and components is not False:
-        msg = "Using weights and components in one operation not supported!"
-        raise ValueError(msg)
+        raise ValueError("Using weights and components in one operation not supported!")
 
     # default subregions to all regions other than `region`
     subregions = subregions or df._all_other_regions(region, variable)
