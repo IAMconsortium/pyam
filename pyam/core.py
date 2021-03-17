@@ -8,6 +8,8 @@ import sys
 import numpy as np
 import pandas as pd
 
+import yaml  # this is a test to try out how flake8 versus black behave on stickler just because
+
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
