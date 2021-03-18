@@ -171,7 +171,7 @@ def test_load_meta_wrong_index(test_df_year, tmpdir):
 
 
 def test_load_meta_empty_rows(test_df_year, tmpdir):
-    """Loading empty meta table (columns but no rows) from an Excel file"""
+    """Loading empty meta table (columns but no rows) from xlsx file"""
     exp = test_df_year.copy()  # loading empty file has no effect
 
     # write empty meta frame to file, then load to the IamDataFrame
@@ -180,6 +180,13 @@ def test_load_meta_empty_rows(test_df_year, tmpdir):
     test_df_year.load_meta(file)
 
     assert_iamframe_equal(test_df_year, exp)
+
+
+def test_load_meta_empty(test_pd_df):
+    """Initializing from xlsx where 'meta' has no rows and non-empty invisible header"""
+    obs = IamDataFrame(TEST_DATA_DIR / "empty_meta_sheet.xlsx")
+    exp = IamDataFrame(test_pd_df)
+    assert_iamframe_equal(obs, exp)
 
 
 def test_load_ssp_database_downloaded_file(test_pd_df):

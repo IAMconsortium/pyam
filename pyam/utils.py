@@ -156,11 +156,13 @@ def read_pandas(path, sheet_name="data*", *args, **kwargs):
             df = pd.read_excel(path, *args, **kwargs)
 
         # remove unnamed and empty columns, and rows were all values are nan
-        empty_cols = [
-            c
-            for c in df.columns
-            if str(c).startswith("Unnamed: ") and all(np.isnan(df[c]))
-        ]
+        def is_empty(name, s):
+            if str(name).startswith("Unnamed: "):
+                if len(s) == 0 or all(np.isnan(s)):
+                    return True
+            return False
+
+        empty_cols = [c for c in df.columns if is_empty(c, df[c])]
         return df.drop(columns=empty_cols).dropna(axis=0, how="all")
 
 
