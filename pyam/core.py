@@ -2302,13 +2302,28 @@ def compare(
     return ret[[right_label, left_label]]
 
 
-def concat(dfs):
+def concat(dfs, ignore_meta_conflict=False, **kwargs):
     """Concatenate a series of IamDataFrame-like objects
 
     Parameters
     ----------
     dfs : list of IamDataFrames
         a list of :class:`IamDataFrame` instances
+    ignore_meta_conflict : bool, default False
+        If False and `other` is an IamDataFrame, raise an error if
+        any meta columns present in `self` and `other` are not identical.
+    kwargs
+        Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
+        if at least one of dfs is not already an IamDataFrame
+    
+    Returns
+    -------
+    IamDataFrame
+    
+    Raises
+    ------
+    ValueError
+        If time domain or other timeseries data index dimension don't match
     """
     if isstr(dfs) or not hasattr(dfs, "__iter__"):
         msg = "Argument must be a non-string iterable (e.g., list or tuple)"
