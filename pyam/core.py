@@ -500,7 +500,7 @@ class IamDataFrame(object):
         Raises
         ------
         ValueError
-            If time domain or other timeseries data index dimension don't match
+            If time domain or other timeseries data index dimension don't match.
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
@@ -2313,7 +2313,8 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
         If False, raise an error if any meta columns present in `dfs` are not identical.
         If True, values in earlier elements of `dfs` take precendence.
     kwargs
-        Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`.
+        Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
+        for any item of `dfs` which isn't already an IamDataFrame.
 
     Returns
     -------
@@ -2322,7 +2323,7 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
     Raises
     ------
     TypeError
-        If first argument is not a list.
+        If `dfs` is not a list.
     ValueError
         If time domain or other timeseries data index dimension don't match.
     """
@@ -2353,7 +2354,7 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
         if _meta_merge:
             ret_meta = merge_meta(ret_meta, df.meta, ignore_meta_conflict)
 
-    # cast do IamDataFrame, this will verify integrity as part of `__init__()`
+    # return as new IamDataFrame, this will verify integrity as part of `__init__()`
     return IamDataFrame(pd.concat(ret_data, verify_integrity=False), meta=ret_meta)
 
 
