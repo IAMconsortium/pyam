@@ -2310,11 +2310,10 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
     dfs : list of IamDataFrames
         A list of :class:`IamDataFrame` instances
     ignore_meta_conflict : bool, default False
-        If False and `other` is an IamDataFrame, raise an error if
-        any meta columns present in `self` and `other` are not identical.
+        If False, raise an error if any meta columns present in `dfs` are not identical.
+        If True, values in earlier elements of `dfs` take precendence.
     kwargs
-        Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
-        if at least one of dfs is not already an IamDataFrame
+        Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`.
 
     Returns
     -------
@@ -2333,16 +2332,29 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
             f"you passed an object of type '{dfs.__class__.__name__}'!"
         )
 
-    _df = None
-    for df in dfs:
-        df = df if isinstance(df, IamDataFrame) else IamDataFrame(df)
-        if _df is None:
-            _df = df.copy()
-        else:
-            _df.append(df, inplace=True, verify_integrity=False)
+    # cast first element in list to IamDataFrame (if necessary)
+    df = dfs[0] if isinstance(dfs[0], IamDataFrame) else IamDataFrame(dfs[0], **kwargs)
+    ret_data, ret_meta = [df._data], df.meta
+    index, time_col = df._data.index.names, df.time_col
 
-    verify_index_integrity(_df._data)
-    return _df
+    for i, df in enumerate(dfs[1:]):
+        # skip merging meta if element is a pd.DataFrame
+        _meta_merge = False if isinstance(df, pd.DataFrame) else True
+        df = IamDataFrame(df, **kwargs) if not isinstance(df, IamDataFrame) else df
+
+        msg = f"Item {i} has "
+        if df.time_col != time_col:
+            raise ValueError(msg + "incompatible time format ('year' vs. 'time')")
+
+        if df._data.index.names != index:
+            raise ValueError(msg + "incompatible timeseries data index dimensions")
+
+        ret_data.append(df._data)
+        if _meta_merge:
+            ret_meta = merge_meta(ret_meta, df.meta, ignore_meta_conflict)
+
+    # cast do IamDataFrame, this will verify integrity as part of `__init__()`
+    return IamDataFrame(pd.concat(ret_data, verify_integrity=False), meta=ret_meta)
 
 
 def read_datapackage(path, data="data", meta="meta"):
