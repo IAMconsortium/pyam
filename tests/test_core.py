@@ -1000,6 +1000,12 @@ def test_concat_fails_iterable(test_pd_df):
             concat(dfs)
 
 
+def test_concat_single_item(test_df):
+    """Check that calling concat on a single-item list returns identical object"""
+    obs = concat([test_df])
+    assert_iamframe_equal(obs, test_df)
+
+
 def test_concat(test_df):
     left = IamDataFrame(test_df.data.copy())
     right = left.data.copy()
