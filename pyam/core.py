@@ -2327,9 +2327,11 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
     ValueError
         If time domain or other timeseries data index dimension don't match.
     """
-    if isstr(dfs) or not hasattr(dfs, "__iter__"):
-        msg = "Argument must be a non-string iterable (e.g., list or tuple)"
-        raise TypeError(msg)
+    if not islistable(dfs) or isinstance(dfs, pd.DataFrame):
+        raise TypeError(
+            f"First argument must be an iterable, "
+            f"you passed an object of type '{dfs.__class__.__name__}'!"
+        )
 
     _df = None
     for df in dfs:

@@ -991,12 +991,13 @@ def test_pd_join_by_meta_nonmatching_index(test_df):
     pd.testing.assert_frame_equal(obs.sort_index(level=1), exp)
 
 
-def test_concat_fails_iter():
-    pytest.raises(TypeError, concat, 1)
+def test_concat_fails_iterable(test_pd_df):
+    """Check that calling concat with a non-iterable raises"""
+    msg = "First argument must be an iterable, you passed an object of type '{}'!"
 
-
-def test_concat_fails_notdf():
-    pytest.raises(TypeError, concat, "foo")
+    for dfs, type_ in [(1, "int"), ("foo", "str"), (test_pd_df, "DataFrame")]:
+        with pytest.raises(TypeError, match=msg.format(type_)):
+            concat(dfs)
 
 
 def test_concat(test_df):
