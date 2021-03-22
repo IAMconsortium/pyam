@@ -8,6 +8,7 @@ starting with `data` will be parsed for timeseries data.
 
 ## Individual updates
 
+- [#510](https://github.com/IAMconsortium/pyam/pull/510) Improve performance of `pyam.concat()`
 - [#508](https://github.com/IAMconsortium/pyam/pull/508) Bugfix for non-empty but invisible header and no rows in 'meta' sheet
 - [#502](https://github.com/IAMconsortium/pyam/pull/502) Switch to Black code style
 - [#499](https://github.com/IAMconsortium/pyam/pull/499) Implement `order` feature in line plot 
