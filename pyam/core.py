@@ -704,7 +704,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        iamc_index : bool, default False
+        iamc_index : bool, optional
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
 
@@ -718,12 +718,16 @@ class IamDataFrame(object):
         if self.empty:
             raise ValueError("This IamDataFrame is empty!")
 
-        df = self._data.unstack(level=self.time_col).rename_axis(None, axis=1)
+        s = self._data
+        if iamc_index:
+            if self.time_col == "time":
+                raise ValueError(
+                    "Cannot use IAMC-index with continuous-time data format!"
+                )
+            s = s.droplevel(self.extra_cols)
 
-        if df.index.has_duplicates:
-            raise ValueError(
-                "Data with IAMC-index has duplicated index, use `iamc_index=False`"
-            )
+        df = s.unstack(level=self.time_col).rename_axis(None, axis=1).sort_index(axis=1)
+
         return df
 
     def reset_exclude(self):

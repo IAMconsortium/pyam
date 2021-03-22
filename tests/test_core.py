@@ -6,6 +6,7 @@ import datetime
 import numpy as np
 import pandas as pd
 from numpy import testing as npt
+from pandas import testing as pdt
 
 from pyam import IamDataFrame, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
 from pyam.core import _meta_idx, concat
@@ -643,9 +644,44 @@ def test_timeseries(test_df):
     npt.assert_array_equal(obs, exp)
 
 
-def test_timeseries_raises(test_df_year):
+def test_timeseries_empty_raises(test_df_year):
+    """Calling `timeseries()` on an empty IamDataFrame raises"""
     _df = test_df_year.filter(model="foo")
-    pytest.raises(ValueError, _df.timeseries)
+    with pytest.raises(ValueError, match="This IamDataFrame is empty!"):
+        _df.timeseries()
+
+
+def test_timeseries_time_iamc_raises(test_df_time):
+    """Calling `timeseries(iamc_index=True)` on a continuous-time IamDataFrame raises"""
+    match = "Cannot use IAMC-index with continuous-time data format!"
+    with pytest.raises(ValueError, match=match):
+        test_df_time.timeseries(iamc_index=True)
+
+
+def test_timeseries_to_iamc_index(test_pd_df, test_df_year):
+    """Reducing timeseries() of an IamDataFrame with extra-columns to IAMC-index"""
+    test_pd_df["foo"] = "bar"
+    exta_col_df = IamDataFrame(test_pd_df)
+    assert exta_col_df.extra_cols == ["foo"]
+
+    # assert that reducing to IAMC-columns (dropping extra-columns) with timeseries()
+    obs = exta_col_df.timeseries(iamc_index=True)
+    exp = test_df_year.timeseries()
+    pdt.assert_frame_equal(obs, exp)
+
+
+def test_timeseries_to_iamc_index_duplicated_raises(test_pd_df):
+    """Assert that using `timeseries(iamc_index=True)` raises if there are duplicates"""
+    test_pd_df = pd.concat([test_pd_df, test_pd_df])
+    # adding an extra-col creates a unique index
+    test_pd_df["foo"] = ["bar", "bar", "bar", "baz", "baz", "baz"]
+    exta_col_df = IamDataFrame(test_pd_df)
+    assert exta_col_df.extra_cols == ["foo"]
+
+    # dropping the extra-column by setting `iamc_index=True` creates duplicated index
+    match = "Index contains duplicate entries, cannot reshape"
+    with pytest.raises(ValueError, match=match):
+        exta_col_df.timeseries(iamc_index=True)
 
 
 def test_pivot_table(test_df):
