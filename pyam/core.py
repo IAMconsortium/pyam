@@ -1683,20 +1683,14 @@ class IamDataFrame(object):
             elif col in self._data.index.names:
                 lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
 
-                try:
-                    # fast-path in case all options are exact matches
-                    keys = values if islistable(values) else [values]
-                    codes = [lvl_index.get_loc(k) for k in keys]
-                except KeyError:
-                    # There might be patterns in at least one of the values
-                    matches = pattern_match(
-                        lvl_index,
-                        values,
-                        regexp=regexp,
-                        level=level if col == "variable" else None,
-                        has_nan=True,
-                    )
-                    (codes,) = np.where(matches)
+                codes = pattern_match(
+                    lvl_index,
+                    values,
+                    regexp=regexp,
+                    level=level if col == "variable" else None,
+                    has_nan=True,
+                    return_codes=True
+                )
 
                 keep_col = get_keep_col(lvl_codes, codes)
 

@@ -444,27 +444,39 @@ def find_depth(data, s="", level=None):
     return list(map(test, n_pipes))
 
 
-def pattern_match(data, values, level=None, regexp=False, has_nan=False):
+def pattern_match(data, values, level=None, regexp=False, has_nan=False, return_codes=False):
     """Return list where data matches values
 
     The function matches model/scenario names, variables, regions
     and meta columns to pseudo-regex (if `regexp == False`)
     for filtering (str, int, bool)
     """
-    matches = np.array([False] * len(data))
+    codes = []
+    matches = np.zeros(len(data), dtype=bool)
     values = values if islistable(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.fillna("") if has_nan else data
 
     for s in values:
+        if return_codes and isinstance(data, pd.Index):
+            try:
+                codes.append(data.get_loc(s))
+                continue
+            except KeyError:
+                pass
+
         if isstr(s):
             pattern = re.compile(_escape_regexp(s) + "$" if not regexp else s)
-            subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
-            matches = np.logical_or(matches, _data.isin(subset) & depth)
+            matches |= data.str.match(pattern) & depth
         else:
             matches = np.logical_or(matches, data == s)
+    
+    if return_codes:
+        codes.extend(np.where(matches)[0])
+        return codes
+
     return matches
 
 
