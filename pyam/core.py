@@ -2347,7 +2347,9 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
             raise ValueError("Items have incompatible time format ('year' vs. 'time')!")
 
         if df._data.index.names != index:
-            raise ValueError("Items have incompatible timeseries data index dimensions!")
+            raise ValueError(
+                "Items have incompatible timeseries data index dimensions!"
+            )
 
         ret_data.append(df._data)
         if _meta_merge:
