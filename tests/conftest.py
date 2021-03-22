@@ -145,6 +145,17 @@ def test_df_year():
     yield df
 
 
+# minimal IamDataFrame for specifically testing 'time'-column features
+@pytest.fixture(scope="function")
+def test_df_time():
+    df = IamDataFrame(
+        data=TEST_DF.rename({2005: TEST_DTS[0], 2010: TEST_DTS[1]}, axis="columns")
+    )
+    for i in META_COLS:
+        df.set_meta(META_DF[i])
+    yield df
+
+
 # minimal test data as pandas.DataFrame (only 'year' time format)
 @pytest.fixture(scope="function")
 def test_pd_df():

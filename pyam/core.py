@@ -2338,17 +2338,16 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
     ret_data, ret_meta = [df._data], df.meta
     index, time_col = df._data.index.names, df.time_col
 
-    for i, df in enumerate(dfs[1:]):
+    for df in dfs[1:]:
         # skip merging meta if element is a pd.DataFrame
         _meta_merge = False if isinstance(df, pd.DataFrame) else True
         df = IamDataFrame(df, **kwargs) if not isinstance(df, IamDataFrame) else df
 
-        msg = f"Item {i} has "
         if df.time_col != time_col:
-            raise ValueError(msg + "incompatible time format ('year' vs. 'time')")
+            raise ValueError("Items have incompatible time format ('year' vs. 'time')!")
 
         if df._data.index.names != index:
-            raise ValueError(msg + "incompatible timeseries data index dimensions")
+            raise ValueError("Items have incompatible timeseries data index dimensions!")
 
         ret_data.append(df._data)
         if _meta_merge:

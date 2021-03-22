@@ -1006,6 +1006,24 @@ def test_concat_single_item(test_df):
     assert_iamframe_equal(obs, test_df)
 
 
+def test_concat_incompatible_time(test_df_year, test_df_time):
+    """Check that calling concat with incompatible time formats raises"""
+    match = re.escape("Items have incompatible time format ('year' vs. 'time')!")
+    with pytest.raises(ValueError, match=match):
+        concat([test_df_year, test_df_time])
+
+
+def test_concat_incompatible_cols(test_pd_df):
+    """Check that calling concat on a single-item list returns identical object"""
+    df1 = IamDataFrame(test_pd_df)
+    test_pd_df["extra_col"] = "foo"
+    df2 = IamDataFrame(test_pd_df)
+
+    match = "Items have incompatible timeseries data index dimensions!"
+    with pytest.raises(ValueError, match=match):
+        concat([df1, df2])
+
+
 def test_concat(test_df):
     left = IamDataFrame(test_df.data.copy())
     right = left.data.copy()
