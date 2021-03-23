@@ -1,3 +1,8 @@
 ---
 linters:
     black:
+    flake8:
+        python: 3
+        ignore: I002, F403, E402, E731, W503, W605
+        max-line-length: 88
+        max-complexity: 20

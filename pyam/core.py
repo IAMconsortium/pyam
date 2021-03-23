@@ -36,7 +36,6 @@ from pyam.utils import (
     format_data,
     format_time_col,
     merge_meta,
-    get_keep_col,
     find_depth,
     pattern_match,
     years_match,
@@ -65,7 +64,12 @@ from pyam._aggregate import (
     _group_and_agg,
 )
 from pyam.units import convert_unit
-from pyam.index import get_index_levels, verify_index_integrity
+from pyam.index import (
+    get_index_levels,
+    get_index_levels_codes,
+    get_keep_col,
+    verify_index_integrity,
+)
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -500,7 +504,7 @@ class IamDataFrame(object):
         Raises
         ------
         ValueError
-            If time domain or other timeseries data index dimension don't match
+            If time domain or other timeseries data index dimension don't match.
         """
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
@@ -704,7 +708,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        iamc_index : bool, default False
+        iamc_index : bool, optional
             if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns
 
@@ -718,12 +722,16 @@ class IamDataFrame(object):
         if self.empty:
             raise ValueError("This IamDataFrame is empty!")
 
-        df = self._data.unstack(level=self.time_col).rename_axis(None, axis=1)
+        s = self._data
+        if iamc_index:
+            if self.time_col == "time":
+                raise ValueError(
+                    "Cannot use IAMC-index with continuous-time data format!"
+                )
+            s = s.droplevel(self.extra_cols)
 
-        if df.index.has_duplicates:
-            raise ValueError(
-                "Data with IAMC-index has duplicated index, use `iamc_index=False`"
-            )
+        df = s.unstack(level=self.time_col).rename_axis(None, axis=1).sort_index(axis=1)
+
         return df
 
     def reset_exclude(self):
@@ -1605,8 +1613,7 @@ class IamDataFrame(object):
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = self.copy() if not inplace else self
-        # TODO remove cast to list after refactoring `_apply_filters()`
-        ret._data = ret._data[list(_keep)]
+        ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
 
         idx = _make_index(ret._data)
@@ -1617,7 +1624,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def _apply_filters(self, **filters):
+    def _apply_filters(self, level=None, **filters):
         """Determine rows to keep in data for given set of filters
 
         Parameters
@@ -1628,7 +1635,7 @@ class IamDataFrame(object):
             but accepts `regexp: True` in the dictionary to use regexp directly
         """
         regexp = filters.pop("regexp", False)
-        keep = np.array([True] * len(self))
+        keep = np.ones(len(self), dtype=bool)
 
         # filter by columns and list of values
         for col, values in filters.items():
@@ -1642,14 +1649,6 @@ class IamDataFrame(object):
                 )
                 cat_idx = self.meta[matches].index
                 keep_col = _make_index(self._data, unique=False).isin(cat_idx)
-
-            elif col == "variable":
-                level = filters["level"] if "level" in filters else None
-                col_values = pd.Series(get_index_levels(self._data, col))
-                where = pattern_match(col_values, values, level, regexp)
-
-                keep_col = get_keep_col(self._data, col_values[where], col)
-
             elif col == "year":
                 _data = (
                     self.data[col]
@@ -1684,22 +1683,30 @@ class IamDataFrame(object):
             elif col == "time" and self.time_col == "time":
                 keep_col = datetime_match(self.data[col], values)
 
-            elif col == "level":
-                if "variable" not in filters.keys():
-                    v = "variable"
-                    col_values = pd.Series(get_index_levels(self._data, v))
-                    where = find_depth(col_values, level=values)
-                    keep_col = get_keep_col(self._data, col_values[where], v)
-                else:
-                    continue
-
             elif col in self._data.index.names:
-                col_values = pd.Series(get_index_levels(self._data, col))
-                where = pattern_match(col_values, values, regexp=regexp)
-                keep_col = get_keep_col(self._data, col_values[where], col)
+                lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
+
+                codes = pattern_match(
+                    lvl_index,
+                    values,
+                    regexp=regexp,
+                    level=level if col == "variable" else None,
+                    has_nan=True,
+                    return_codes=True,
+                )
+
+                keep_col = get_keep_col(lvl_codes, codes)
 
             else:
                 _raise_filter_error(col)
+
+            keep = np.logical_and(keep, keep_col)
+
+        if level is not None and "variable" not in filters:
+            col = "variable"
+            lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
+            matches = find_depth(lvl_index, level=level)
+            keep_col = get_keep_col(lvl_codes, matches)
 
             keep = np.logical_and(keep, keep_col)
 
@@ -2305,28 +2312,61 @@ def compare(
     return ret[[right_label, left_label]]
 
 
-def concat(dfs):
+def concat(dfs, ignore_meta_conflict=False, **kwargs):
     """Concatenate a series of IamDataFrame-like objects
 
     Parameters
     ----------
     dfs : list of IamDataFrames
-        a list of :class:`IamDataFrame` instances
+        A list of :class:`IamDataFrame` instances
+    ignore_meta_conflict : bool, default False
+        If False, raise an error if any meta columns present in `dfs` are not identical.
+        If True, values in earlier elements of `dfs` take precendence.
+    kwargs
+        Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
+        for any item of `dfs` which isn't already an IamDataFrame.
+
+    Returns
+    -------
+    IamDataFrame
+
+    Raises
+    ------
+    TypeError
+        If `dfs` is not a list.
+    ValueError
+        If time domain or other timeseries data index dimension don't match.
     """
-    if isstr(dfs) or not hasattr(dfs, "__iter__"):
-        msg = "Argument must be a non-string iterable (e.g., list or tuple)"
-        raise TypeError(msg)
+    if not islistable(dfs) or isinstance(dfs, pd.DataFrame):
+        raise TypeError(
+            f"First argument must be an iterable, "
+            f"you passed an object of type '{dfs.__class__.__name__}'!"
+        )
 
-    _df = None
-    for df in dfs:
-        df = df if isinstance(df, IamDataFrame) else IamDataFrame(df)
-        if _df is None:
-            _df = df.copy()
-        else:
-            _df.append(df, inplace=True, verify_integrity=False)
+    # cast first element in list to IamDataFrame (if necessary)
+    df = dfs[0] if isinstance(dfs[0], IamDataFrame) else IamDataFrame(dfs[0], **kwargs)
+    ret_data, ret_meta = [df._data], df.meta
+    index, time_col = df._data.index.names, df.time_col
 
-    verify_index_integrity(_df._data)
-    return _df
+    for df in dfs[1:]:
+        # skip merging meta if element is a pd.DataFrame
+        _meta_merge = False if isinstance(df, pd.DataFrame) else True
+        df = IamDataFrame(df, **kwargs) if not isinstance(df, IamDataFrame) else df
+
+        if df.time_col != time_col:
+            raise ValueError("Items have incompatible time format ('year' vs. 'time')!")
+
+        if df._data.index.names != index:
+            raise ValueError(
+                "Items have incompatible timeseries data index dimensions!"
+            )
+
+        ret_data.append(df._data)
+        if _meta_merge:
+            ret_meta = merge_meta(ret_meta, df.meta, ignore_meta_conflict)
+
+    # return as new IamDataFrame, this will verify integrity as part of `__init__()`
+    return IamDataFrame(pd.concat(ret_data, verify_integrity=False), meta=ret_meta)
 
 
 def read_datapackage(path, data="data", meta="meta"):

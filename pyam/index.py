@@ -19,6 +19,27 @@ def get_index_levels(index, level):
     return list(index)
 
 
+def get_index_levels_codes(df, level):
+    """Return the category-values and codes for a specific level"""
+    level = df.index._get_level_number(level)
+    return df.index.levels[level], df.index.codes[level]
+
+
+def get_keep_col(codes, matches):
+    """Return boolean mask where *matches* appear in *codes*
+
+    *matches* can be given as either:
+    1. A boolean mask against the levels of a multiindex, or
+    2. An subset of integers in *codes*
+    """
+    matches = np.asanyarray(matches)
+
+    if np.issubdtype(matches.dtype, "bool"):
+        (matches,) = np.where(matches)
+
+    return np.isin(codes, matches)
+
+
 def replace_index_values(df, level, mapping):
     """Replace one or several category-values at a specific level"""
     index = df if isinstance(df, pd.Index) else df.index

@@ -28,7 +28,7 @@ Release v\ |version|.
    :target: https://github.com/IAMconsortium/pyam
 
 .. |pytest| image:: https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml/badge.svg
-   :target: https://github.com/danielhuppmann/pyam/actions/workflows/pytest.yml
+   :target: https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml
 
 .. |rtd| image:: https://readthedocs.org/projects/pyam-iamc/badge/?version=latest
    :target: https://pyam-iamc.readthedocs.io/en/latest/?badge=latest

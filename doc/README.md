@@ -1,20 +1,25 @@
 Building the docs
 ==================
 
-We use Sphinx and restructured text for building the documentation pages.
-Detailed documentation of the package is built from mark-up docstrings
+We use Sphinx and restructured text (rst) for building the documentation pages.
+Detailed documentation of the package is built from mark-up docstrings 
 in the source code.
 
 Dependencies
 ------------
 
-These can be found in ``environment.yml``.
+To install the **pyam** package and all dependencies, run the following
+(in the top-level directory of this repository).
 
-Writing in Restructed Text
---------------------------
+```
+pip install --editable .[docs,tutorials]
+```
 
-There are a number of guides out there, e.g. on `docutils
-<http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_.
+Writing in Restructured Text
+----------------------------
+
+There are a number of guides to get started, for example
+on [sourceforge](https://docutils.sourceforge.io/docs/user/rst/quickref.html).
 
 Building the documentation pages
 --------------------------------
@@ -27,9 +32,4 @@ On Windows, from the command line, run::
 
     ./make.bat
 
-You can then view the site by::
-
-    cd build
-    python -m SimpleHTTPServer
-
-and pointing your browser at http://localhost:8000/html/
+The rendered html pages will be located in `doc/build/html/index.html`.

@@ -156,11 +156,13 @@ def read_pandas(path, sheet_name="data*", *args, **kwargs):
             df = pd.read_excel(path, *args, **kwargs)
 
         # remove unnamed and empty columns, and rows were all values are nan
-        empty_cols = [
-            c
-            for c in df.columns
-            if str(c).startswith("Unnamed: ") and all(np.isnan(df[c]))
-        ]
+        def is_empty(name, s):
+            if str(name).startswith("Unnamed: "):
+                if len(s) == 0 or all(np.isnan(s)):
+                    return True
+            return False
+
+        empty_cols = [c for c in df.columns if is_empty(c, df[c])]
         return df.drop(columns=empty_cols).dropna(axis=0, how="all")
 
 
@@ -399,19 +401,6 @@ def merge_meta(left, right, ignore_conflict=False):
     return left
 
 
-def get_keep_col(data, values, col):
-    """Return a list of booleans by filtering on values"""
-    keep_col = np.array([False] * len(data))
-    for v in values:
-        slc = data.index.get_loc_level(v, level=col)[0]
-        if isinstance(slc, slice):
-            for i in range(slc.start, slc.stop, slc.step if slc.step else 1):
-                keep_col[i] = True
-        else:
-            keep_col = np.logical_or(keep_col, slc)
-    return keep_col
-
-
 def find_depth(data, s="", level=None):
     """Return or assert the depth (number of ``|``) of variables
 
@@ -455,29 +444,41 @@ def find_depth(data, s="", level=None):
     return list(map(test, n_pipes))
 
 
-def pattern_match(data, values, level=None, regexp=False, has_nan=False):
+def pattern_match(
+    data, values, level=None, regexp=False, has_nan=False, return_codes=False
+):
     """Return list where data matches values
 
     The function matches model/scenario names, variables, regions
     and meta columns to pseudo-regex (if `regexp == False`)
     for filtering (str, int, bool)
     """
-    matches = np.array([False] * len(data))
+    codes = []
+    matches = np.zeros(len(data), dtype=bool)
     values = values if islistable(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
-    _data = data.copy()
-    if has_nan:
-        _data.loc[[np.isnan(i) if not isstr(i) else False for i in _data]] = ""
+    _data = data.fillna("") if has_nan else data
 
     for s in values:
+        if return_codes and isinstance(data, pd.Index):
+            try:
+                codes.append(data.get_loc(s))
+                continue
+            except KeyError:
+                pass
+
         if isstr(s):
             pattern = re.compile(_escape_regexp(s) + "$" if not regexp else s)
-            subset = filter(pattern.match, _data)
             depth = True if level is None else find_depth(_data, s, level)
-            matches = np.logical_or(matches, _data.isin(subset) & depth)
+            matches |= data.str.match(pattern) & depth
         else:
             matches = np.logical_or(matches, data == s)
+
+    if return_codes:
+        codes.extend(np.where(matches)[0])
+        return codes
+
     return matches
 
 
@@ -502,7 +503,7 @@ def years_match(data, years):
     if isinstance(years, dt) or isinstance(years[0], dt):
         error_msg = "Filter by `year` requires integers!"
         raise TypeError(error_msg)
-    return data.isin(years)
+    return np.isin(data, years)
 
 
 def month_match(data, months):
@@ -518,7 +519,7 @@ def day_match(data, days):
 def hour_match(data, hours):
     """Return rows where data matches hours"""
     hours = [hours] if isinstance(hours, int) else hours
-    return data.isin(hours)
+    return np.isin(data, hours)
 
 
 def time_match(data, times, conv_codes, strptime_attr, name):
@@ -564,7 +565,7 @@ def time_match(data, times, conv_codes, strptime_attr, name):
         times = conv_strs(times, conv_codes, name)
         times += to_append
 
-    return data.isin(times)
+    return np.isin(data, times)
 
 
 def datetime_match(data, dts):
@@ -573,7 +574,7 @@ def datetime_match(data, dts):
     if any([not (isinstance(i, (datetime.datetime, np.datetime64))) for i in dts]):
         error_msg = "`time` can only be filtered by datetimes and datetime64s"
         raise TypeError(error_msg)
-    return data.isin(dts)
+    return data.isin(dts).values
 
 
 def print_list(x, n):
