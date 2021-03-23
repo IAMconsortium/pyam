@@ -162,11 +162,10 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
 
 
 def _group_and_agg(df, by, method=np.sum):
-    """Groupby & aggregate `df` by column(s), return indexed `pd.Series`"""
-    by = [by] if isstr(by) else by
-    cols = [c for c in list(df.columns) if c not in ["value"] + by]
+    """Group-by & aggregate `pd.Series` by index names on `by`"""
+    cols = [c for c in list(df.index.names) if c not in to_list(by)]
     # pick aggregator func (default: sum)
-    return df.groupby(cols)["value"].agg(_get_method_func(method))
+    return df.groupby(cols).agg(_get_method_func(method))
 
 
 def _agg_weight(df, weight, method):
