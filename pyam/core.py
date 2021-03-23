@@ -1502,7 +1502,7 @@ class IamDataFrame(object):
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
         rows = self._apply_filters(variable=variable)
-        return set(self._data[rows].index.get_level_values("region")) - set([region])
+        return self._data[rows].index.get_level_values("region").difference([region])
 
     def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
