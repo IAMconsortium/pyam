@@ -10,10 +10,11 @@ logger = logging.getLogger(__name__)
 
 def _aggregate(df, variable, components=None, method=np.sum):
     """Internal implementation of the `aggregate` function"""
+
     # list of variables require default components (no manual list)
     if islistable(variable) and components is not None:
         raise ValueError(
-            "Aggregating by list of variables cannot use custom components!"
+            "Aggregating by list of variables cannot use `components`!"
         )
 
     mapping = {}
@@ -102,8 +103,7 @@ def _aggregate_region(
     subregion_df = df.filter(region=subregions)
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
-        col = "region"
-        _data = _group_and_agg(subregion_df.data[rows], col, method=method)
+        _data = _group_and_agg(subregion_df.data[rows], "region", method=method)
     else:
         weight_rows = subregion_df._apply_filters(variable=weight)
         _data = _agg_weight(
