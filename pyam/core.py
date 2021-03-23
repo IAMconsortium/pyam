@@ -36,7 +36,6 @@ from pyam.utils import (
     format_data,
     format_time_col,
     merge_meta,
-    get_keep_col,
     find_depth,
     pattern_match,
     years_match,
@@ -65,7 +64,12 @@ from pyam._aggregate import (
     _group_and_agg,
 )
 from pyam.units import convert_unit
-from pyam.index import get_index_levels, verify_index_integrity
+from pyam.index import (
+    get_index_levels,
+    get_index_levels_codes,
+    get_keep_col,
+    verify_index_integrity,
+)
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -1606,8 +1610,7 @@ class IamDataFrame(object):
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = self.copy() if not inplace else self
-        # TODO remove cast to list after refactoring `_apply_filters()`
-        ret._data = ret._data[list(_keep)]
+        ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
 
         idx = _make_index(ret._data)
@@ -1618,7 +1621,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def _apply_filters(self, **filters):
+    def _apply_filters(self, level=None, **filters):
         """Determine rows to keep in data for given set of filters
 
         Parameters
@@ -1629,7 +1632,7 @@ class IamDataFrame(object):
             but accepts `regexp: True` in the dictionary to use regexp directly
         """
         regexp = filters.pop("regexp", False)
-        keep = np.array([True] * len(self))
+        keep = np.ones(len(self), dtype=bool)
 
         # filter by columns and list of values
         for col, values in filters.items():
@@ -1643,14 +1646,6 @@ class IamDataFrame(object):
                 )
                 cat_idx = self.meta[matches].index
                 keep_col = _make_index(self._data, unique=False).isin(cat_idx)
-
-            elif col == "variable":
-                level = filters["level"] if "level" in filters else None
-                col_values = pd.Series(get_index_levels(self._data, col))
-                where = pattern_match(col_values, values, level, regexp)
-
-                keep_col = get_keep_col(self._data, col_values[where], col)
-
             elif col == "year":
                 _data = (
                     self.data[col]
@@ -1685,22 +1680,30 @@ class IamDataFrame(object):
             elif col == "time" and self.time_col == "time":
                 keep_col = datetime_match(self.data[col], values)
 
-            elif col == "level":
-                if "variable" not in filters.keys():
-                    v = "variable"
-                    col_values = pd.Series(get_index_levels(self._data, v))
-                    where = find_depth(col_values, level=values)
-                    keep_col = get_keep_col(self._data, col_values[where], v)
-                else:
-                    continue
-
             elif col in self._data.index.names:
-                col_values = pd.Series(get_index_levels(self._data, col))
-                where = pattern_match(col_values, values, regexp=regexp)
-                keep_col = get_keep_col(self._data, col_values[where], col)
+                lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
+
+                codes = pattern_match(
+                    lvl_index,
+                    values,
+                    regexp=regexp,
+                    level=level if col == "variable" else None,
+                    has_nan=True,
+                    return_codes=True,
+                )
+
+                keep_col = get_keep_col(lvl_codes, codes)
 
             else:
                 _raise_filter_error(col)
+
+            keep = np.logical_and(keep, keep_col)
+
+        if level is not None and "variable" not in filters:
+            col = "variable"
+            lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
+            matches = find_depth(lvl_index, level=level)
+            keep_col = get_keep_col(lvl_codes, matches)
 
             keep = np.logical_and(keep, keep_col)
 
