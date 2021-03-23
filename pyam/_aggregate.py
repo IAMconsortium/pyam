@@ -2,8 +2,16 @@ import pandas as pd
 import numpy as np
 import logging
 
+from pyam.index import replace_index_values
 from pyam.logging import adjust_log_level
-from pyam.utils import islistable, isstr, find_depth, reduce_hierarchy, KNOWN_FUNCS
+from pyam.utils import (
+    islistable,
+    isstr,
+    find_depth,
+    reduce_hierarchy,
+    KNOWN_FUNCS,
+    to_list,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +22,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
     # list of variables require default components (no manual list)
     if islistable(variable) and components is not None:
         raise ValueError(
-            "Aggregating by list of variables cannot use `components`!"
+            "Aggregating by list of variables does not support `components`!"
         )
 
     mapping = {}
@@ -43,8 +51,8 @@ def _aggregate(df, variable, components=None, method=np.sum):
                 mapping[c] = v
 
     # rename all components to `variable` and aggregate
-    _df = df.data[df._apply_filters(variable=mapping.keys())].copy()
-    _df["variable"].replace(mapping, inplace=True)
+    _df = df._data[df._apply_filters(variable=mapping.keys())]
+    _df.index = replace_index_values(_df, "variable", mapping)
     return _group_and_agg(_df, [], method)
 
 
@@ -103,7 +111,7 @@ def _aggregate_region(
     subregion_df = df.filter(region=subregions)
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
-        _data = _group_and_agg(subregion_df.data[rows], "region", method=method)
+        _data = _group_and_agg(subregion_df._data[rows], "region", method=method)
     else:
         weight_rows = subregion_df._apply_filters(variable=weight)
         _data = _agg_weight(
@@ -126,8 +134,9 @@ def _aggregate_region(
         if len(components):
             # rename all components to `variable` and aggregate
             rows = region_df._apply_filters(variable=components)
-            _df = region_df.data[rows].copy()
-            _df["variable"] = variable
+            _df = region_df._data[rows]
+            mapping = dict([(c, variable) for c in components])
+            _df.index = replace_index_values(_df.index, "variable", mapping)
             _data = _data.add(_group_and_agg(_df, "region"), fill_value=0)
 
     return _data

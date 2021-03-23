@@ -1230,7 +1230,7 @@ class IamDataFrame(object):
 
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable)
-        df_var, df_components = _group_and_agg(self.data[rows], [], method).align(
+        df_var, df_components = _group_and_agg(self._data[rows], [], method).align(
             df_components
         )
 
@@ -1363,7 +1363,7 @@ class IamDataFrame(object):
             logger.info(f"Variable '{variable}' does not exist in region '{region}'!")
             return
 
-        df_region, df_subregions = _group_and_agg(self.data[rows], "region").align(
+        df_region, df_subregions = _group_and_agg(self._data[rows], "region").align(
             df_subregions
         )
 
