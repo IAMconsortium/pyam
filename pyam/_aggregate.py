@@ -92,7 +92,9 @@ def _aggregate_region(
 ):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
-        raise ValueError("Aggregating by a list with components is not supported!")
+        raise ValueError(
+            "Aggregating by list of variables with components is not supported!"
+        )
 
     if weight is not None and components is not False:
         raise ValueError("Using weights and components in one operation not supported!")
@@ -115,7 +117,7 @@ def _aggregate_region(
     else:
         weight_rows = subregion_df._apply_filters(variable=weight)
         _data = _agg_weight(
-            subregion_df.data[rows], subregion_df.data[weight_rows], method
+            subregion_df._data[rows], subregion_df._data[weight_rows], method
         )
 
     # if not `components=False`, add components at the `region` level
@@ -177,22 +179,21 @@ def _group_and_agg(df, by, method=np.sum):
     return df.groupby(cols).agg(_get_method_func(method))
 
 
-def _agg_weight(df, weight, method):
-    """Aggregate `df` by regions with weights, return indexed `pd.Series`"""
+def _agg_weight(data, weight, method):
+    """Aggregate `data` by regions with weights, return indexed `pd.Series`"""
+
     # only summation allowed with weights
     if method not in ["sum", np.sum]:
         raise ValueError("Only method 'np.sum' allowed for weighted average!")
 
-    w_cols = _list_diff(df.columns, ["variable", "unit", "value"])
-    _weight = _get_value_col(weight, w_cols)
+    weight = weight.droplevel(["variable", "unit"])
 
-    if not _get_value_col(df, w_cols).index.equals(_weight.index):
+    if not data.droplevel(["variable", "unit"]).index.equals(weight.index):
         raise ValueError("Inconsistent index between variable and weight!")
 
-    _data = _get_value_col(df)
-    col1 = _list_diff(_data.index.names, ["region"])
-    col2 = _list_diff(w_cols, ["region"])
-    return (_data * _weight).groupby(col1).sum() / _weight.groupby(col2).sum()
+    col1 = _list_diff(data.index.names, ["region"])
+    col2 = _list_diff(data.index.names, ["region", "variable", "unit"])
+    return (data * weight).groupby(col1).sum() / weight.groupby(col2).sum()
 
 
 def _list_diff(lst, exclude):
