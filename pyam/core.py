@@ -1689,7 +1689,7 @@ class IamDataFrame(object):
                     regexp=regexp,
                     level=level if col == "variable" else None,
                     has_nan=True,
-                    return_codes=True
+                    return_codes=True,
                 )
 
                 keep_col = get_keep_col(lvl_codes, codes)

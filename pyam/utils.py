@@ -444,7 +444,9 @@ def find_depth(data, s="", level=None):
     return list(map(test, n_pipes))
 
 
-def pattern_match(data, values, level=None, regexp=False, has_nan=False, return_codes=False):
+def pattern_match(
+    data, values, level=None, regexp=False, has_nan=False, return_codes=False
+):
     """Return list where data matches values
 
     The function matches model/scenario names, variables, regions
@@ -472,7 +474,7 @@ def pattern_match(data, values, level=None, regexp=False, has_nan=False, return_
             matches |= data.str.match(pattern) & depth
         else:
             matches = np.logical_or(matches, data == s)
-    
+
     if return_codes:
         codes.extend(np.where(matches)[0])
         return codes
