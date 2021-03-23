@@ -47,7 +47,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
     return _group_and_agg(_df, [], method)
 
 
-def _aggregate_recursive(df, variable, method=np.sum):
+def _aggregate_recursive(df, variable):
     """Recursive aggregation along the variable tree"""
     _df_aggregated = None
     _df = df.copy()

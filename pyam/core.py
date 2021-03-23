@@ -1176,9 +1176,13 @@ class IamDataFrame(object):
 
         if recursive is True:
             if components is not None:
-                msg = "Recursive aggregation cannot take explicit components!"
-                raise ValueError(msg)
-            _df = _aggregate_recursive(self, variable, method=method)
+                raise ValueError("Recursive aggregation cannot take `components`!")
+            if method != "sum":
+                raise ValueError(
+                    "Recursive aggregation only supported with `method='sum'!"
+                )
+
+            _df = _aggregate_recursive(self, variable)
         else:
             _df = _aggregate(self, variable, components=components, method=method)
 
