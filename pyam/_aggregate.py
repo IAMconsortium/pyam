@@ -153,7 +153,7 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
     # compute aggregate over time
     filter_args = dict(variable=variable)
     filter_args[column] = components
-    index = _list_diff(df.data.columns, [column, "value"])
+    index = df._data.index.names.difference([column, "value"])
 
     _data = pd.concat(
         [
@@ -191,20 +191,9 @@ def _agg_weight(data, weight, method):
     if not data.droplevel(["variable", "unit"]).index.equals(weight.index):
         raise ValueError("Inconsistent index between variable and weight!")
 
-    col1 = _list_diff(data.index.names, ["region"])
-    col2 = _list_diff(data.index.names, ["region", "variable", "unit"])
+    col1 = data.index.names.difference(["region"])
+    col2 = data.index.names.difference(["region", "variable", "unit"])
     return (data * weight).groupby(col1).sum() / weight.groupby(col2).sum()
-
-
-def _list_diff(lst, exclude):
-    """Return the list minus those elements in `exclude`"""
-    return [i for i in lst if i not in exclude]
-
-
-def _get_value_col(df, cols=None):
-    """Return the value column as `pd.Series sorted by index"""
-    cols = cols or [i for i in df.columns if i != "value"]
-    return df.set_index(cols)["value"].sort_index()
 
 
 def _get_method_func(method):
