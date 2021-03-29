@@ -2314,7 +2314,7 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
 
     Parameters
     ----------
-    dfs : list of IamDataFrames
+    dfs : iterable of IamDataFrames
         A list of :class:`IamDataFrame` instances
     ignore_meta_conflict : bool, default False
         If False, raise an error if any meta columns present in `dfs` are not identical.
@@ -2340,15 +2340,20 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
             f"you passed an object of type '{dfs.__class__.__name__}'!"
         )
 
-    # cast first element in list to IamDataFrame (if necessary)
-    df = dfs[0] if isinstance(dfs[0], IamDataFrame) else IamDataFrame(dfs[0], **kwargs)
+    dfs_iter = iter(dfs)
+
+    # cast to IamDataFrame if necessary
+    def as_iamdataframe(df):
+        return df if isinstance(df, IamDataFrame) else IamDataFrame(df, **kwargs)
+
+    df = as_iamdataframe(next(dfs_iter))
     ret_data, ret_meta = [df._data], df.meta
     index, time_col = df._data.index.names, df.time_col
 
-    for df in dfs[1:]:
+    for df in dfs_iter:
         # skip merging meta if element is a pd.DataFrame
-        _meta_merge = False if isinstance(df, pd.DataFrame) else True
-        df = IamDataFrame(df, **kwargs) if not isinstance(df, IamDataFrame) else df
+        _meta_merge = not isinstance(df, pd.DataFrame)
+        df = as_iamdataframe(df)
 
         if df.time_col != time_col:
             raise ValueError("Items have incompatible time format ('year' vs. 'time')!")
