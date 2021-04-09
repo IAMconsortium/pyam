@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import logging
+from itertools import compress
 
 from pyam.index import replace_index_values
 from pyam.logging import adjust_log_level
@@ -58,33 +59,22 @@ def _aggregate(df, variable, components=None, method=np.sum):
 
 def _aggregate_recursive(df, variable):
     """Recursive aggregation along the variable tree"""
-    _df_aggregated = None
-    _df = df.copy()
 
-    # iterate over variables to find all subcategories to be aggregated
-    sub_variables = []
-    for d in reversed(range(1, max(find_depth(df.data.variable)) + 1)):
-        depth = find_depth(df.data.variable)
-        var_list = df.data.variable[[i == d for i in depth]].unique()
-        vars_up = pd.Series([reduce_hierarchy(i, -1) for i in var_list]).unique()
+    # downselect to components of `variable`, initialize list for aggregated (new) data
+    _df = df.filter(variable=f"{variable}|*")
+    data_list = []
 
-        if [i for i, entr in enumerate(vars_up) if entr.startswith(variable)]:
-            for v in vars_up:
-                sub_variables.append(v)
+    # iterate over variables (bottom-up) and aggregate all components up to `variable`
+    for d in reversed(range(find_depth(variable), max(find_depth(_df.variable)))):
+        components = compress(_df.variable, find_depth(_df.variable, level=d+1))
+        var_list = set([reduce_hierarchy(v, -1) for v in components])
 
-    sub_variables = reversed(sorted(set(sub_variables)))
+        # a temporary dataframe allows to distinguish between full data and new data
+        temp_df = _df.aggregate(variable=var_list)
+        _df.append(temp_df, inplace=True)
+        data_list.append(temp_df._data)
 
-    # iterate over subcategories (bottom-up) and perform aggregation
-    for entry in sub_variables:
-        _df.aggregate(variable=entry, append=True)
-        _df_temp = _df.aggregate(variable=entry, append=False)
-
-        if _df_aggregated is None:
-            _df_aggregated = _df_temp.copy()
-        else:
-            _df_aggregated.append(_df_temp, inplace=True)
-
-    return _df_aggregated.data
+    return pd.concat(data_list)
 
 
 def _aggregate_region(

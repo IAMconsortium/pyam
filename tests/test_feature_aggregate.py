@@ -164,7 +164,7 @@ def test_aggregate_recursive(time_col):
 
 
 def test_aggregate_empty(simple_df):
-    assert simple_df.aggregate("foo") is None
+    assert simple_df.aggregate("foo").empty
 
 
 def test_aggregate_unknown_method(simple_df):

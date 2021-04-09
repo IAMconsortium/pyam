@@ -5,7 +5,7 @@ from pandas import testing as pdt
 
 from pyam import utils, META_IDX
 
-TEST_VARS = pd.Series(["foo", "foo|bar", "foo|bar|baz"])
+TEST_VARS = ["foo", "foo|bar", "foo|bar|baz"]
 TEST_CONCAT_SERIES = pd.Series(["foo", "bar", "baz"], index=["f", "b", "z"])
 
 
@@ -97,9 +97,13 @@ def test_pattern_regexp():
     assert (obs == [True, True, False]).all()
 
 
-def test_find_depth():
+def test_find_depth_as_list():
     obs = utils.find_depth(TEST_VARS)
     assert obs == [0, 1, 2]
+
+
+def test_find_depth_as_str():
+    assert utils.find_depth("foo|bar|baz") == 2
 
 
 def test_find_depth_with_str():

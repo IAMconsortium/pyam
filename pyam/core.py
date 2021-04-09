@@ -1158,28 +1158,30 @@ class IamDataFrame(object):
     def aggregate(
         self, variable, components=None, method="sum", recursive=False, append=False
     ):
-        """Aggregate timeseries components or sub-categories within each region
+        """Aggregate timeseries by components or subcategories within each region
 
         Parameters
         ----------
         variable : str or list of str
-            variable(s) for which the aggregate will be computed
+            Variable(s) for which the aggregate will be computed.
         components : list of str, optional
-            list of variables to aggregate, defaults to all sub-categories
-            of `variable`
+            Components to be aggregate, defaults to all subcategories of `variable`.
         method : func or str, optional
-            method to use for aggregation,
-            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+            Aggregation method, e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
         recursive : bool, optional
-            iterate recursively over all subcategories of `variable`
+            Iterate recursively (bottom-up) over all subcategories of `variable`.
         append : bool, optional
-            append the aggregate timeseries to `self` and return None,
-            else return aggregate timeseries as new :class:`IamDataFrame`
+            Whether to append aggregated timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Aggregated timeseries data or None if `inplace=True`.
 
         Notes
         -----
-        The aggregation function interprets any missing values
-        (:any:`numpy.nan`) for individual components as 0.
+        The aggregation function interprets any missing values (:any:`numpy.nan`)
+        for individual components as 0.
         """
 
         if recursive is True:
@@ -1187,21 +1189,19 @@ class IamDataFrame(object):
                 raise ValueError("Recursive aggregation cannot take `components`!")
             if method != "sum":
                 raise ValueError(
-                    "Recursive aggregation only supported with `method='sum'!"
+                    "Recursive aggregation only supported with `method='sum'`!"
                 )
 
-            _df = _aggregate_recursive(self, variable)
+            _df = IamDataFrame(_aggregate_recursive(self, variable), meta=self.meta)
         else:
             _df = _aggregate(self, variable, components=components, method=method)
-
-        # return None if there is nothing to aggregate
-        if _df is None:
-            return None
 
         # else, append to `self` or return as `IamDataFrame`
         if append is True:
             self.append(_df, inplace=True)
         else:
+            if _df is None or _df.empty:
+                return _empty_iamframe(self._LONG_IDX + ["value"])
             return IamDataFrame(_df, meta=self.meta)
 
     def check_aggregate(
