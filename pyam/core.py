@@ -2340,17 +2340,20 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
             f"you passed an object of type '{dfs.__class__.__name__}'!"
         )
 
-    dfs_iter = iter(dfs)
+    dfs = list(dfs)
+
+    if len(dfs) < 1:
+        raise ValueError("No objects to concatenate")
 
     # cast to IamDataFrame if necessary
     def as_iamdataframe(df):
         return df if isinstance(df, IamDataFrame) else IamDataFrame(df, **kwargs)
 
-    df = as_iamdataframe(next(dfs_iter))
+    df = as_iamdataframe(dfs[0])
     ret_data, ret_meta = [df._data], df.meta
     index, time_col = df._data.index.names, df.time_col
 
-    for df in dfs_iter:
+    for df in dfs[1:]:
         # skip merging meta if element is a pd.DataFrame
         _meta_merge = not isinstance(df, pd.DataFrame)
         df = as_iamdataframe(df)
