@@ -66,7 +66,7 @@ def _aggregate_recursive(df, variable):
 
     # iterate over variables (bottom-up) and aggregate all components up to `variable`
     for d in reversed(range(find_depth(variable), max(find_depth(_df.variable)))):
-        components = compress(_df.variable, find_depth(_df.variable, level=d+1))
+        components = compress(_df.variable, find_depth(_df.variable, level=d + 1))
         var_list = set([reduce_hierarchy(v, -1) for v in components])
 
         # a temporary dataframe allows to distinguish between full data and new data
