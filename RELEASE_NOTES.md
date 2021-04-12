@@ -2,6 +2,12 @@
 
 ## API changes
 
+PR [#507](https://github.com/IAMconsortium/pyam/pull/507) harmonizes the behavior of
+the `aggregate()` and `aggregate_region()` methods when performing "empty" aggregation,
+i.e., no components exist to perform the requested aggregation.
+In the new implementation, an empty IamDataFrame is returned if `append=False`
+(instead of None).
+
 PR [#488](https://github.com/IAMconsortium/pyam/pull/488) changes the default
 behavior when initializing an IamDataFrame from xlsx: now, all sheets names
 starting with `data` will be parsed for timeseries data.
