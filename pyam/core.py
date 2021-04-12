@@ -506,6 +506,9 @@ class IamDataFrame(object):
         ValueError
             If time domain or other timeseries data index dimension don't match.
         """
+        if other is None:
+            return None if inplace else self.copy()
+
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
@@ -515,6 +518,9 @@ class IamDataFrame(object):
 
         if self._data.index.names != other._data.index.names:
             raise ValueError("Incompatible timeseries data index dimensions")
+
+        if other.empty:
+            return None if inplace else self.copy()
 
         ret = self.copy() if not inplace else self
 
@@ -1307,16 +1313,11 @@ class IamDataFrame(object):
             weight=weight,
         )
 
-        # return None if there is nothing to aggregate
-        if _df is None:
-            return None
-
         # else, append to `self` or return as `IamDataFrame`
         if append is True:
-            if not _df.empty:
-                self.append(_df, region=region, inplace=True)
+            self.append(_df, region=region, inplace=True)
         else:
-            if _df.empty:
+            if _df is None or _df.empty:
                 return _empty_iamframe(self._LONG_IDX + ["value"])
             return IamDataFrame(_df, region=region, meta=self.meta)
 
