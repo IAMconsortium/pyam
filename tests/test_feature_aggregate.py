@@ -160,17 +160,25 @@ def test_aggregate_recursive(time_col):
     assert_iamframe_equal(df_minimal, df)
 
 
-@pytest.mark.parametrize("variable", ("Primary Energy|Coal", "foo"))
-def test_aggregate_empty(test_df, variable):
+@pytest.mark.parametrize(
+    "variable, append", (("Primary Energy|Coal", "foo"), (False, True))
+)
+def test_aggregate_empty(test_df, variable, append, caplog):
     """Check for performing an "empty" aggregation"""
+    caplog.set_level(logging.INFO, logger="pyam._aggregate")
 
-    # with `append=False` (default), an empty instance is returned
-    assert test_df.aggregate(variable).empty
+    if append:
+        # with `append=True`, the instance is unchanged
+        obs = test_df.copy()
+        obs.aggregate(variable, append=True)
+        assert_iamframe_equal(test_df, obs)
+    else:
+        # with `append=False` (default), an empty instance is returned
+        assert test_df.aggregate(variable).empty
 
-    # with `append=True`, the instance is unchanged
-    obs = test_df.copy()
-    obs.aggregate(variable, append=True)
-    assert_iamframe_equal(test_df, obs)
+    msg = f"Cannot aggregate variable '{variable}' because it has no components!"
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "INFO"
 
 
 def test_aggregate_unknown_method(simple_df):
@@ -194,18 +202,6 @@ def test_aggregate_region(simple_df, variable):
     foo = exp.rename(region={"World": "foo"})
     foo._data = foo._data * 2
     assert_iamframe_equal(simple_df.aggregate_region(variable, region="foo"), foo)
-
-
-def test_aggregate_region_log(simple_df, caplog):
-    # verify that `aggregate_region()` writes log on empty assertion
-    caplog.set_level(logging.INFO, logger="pyam._aggregate")
-    simple_df.aggregate_region("foo")
-    msg = (
-        "Cannot aggregate variable 'foo' to 'World' "
-        "because it does not exist in any subregion!"
-    )
-    idx = caplog.messages.index(msg)
-    assert caplog.records[idx].levelname == "INFO"
 
 
 def test_check_aggregate_region(simple_df):
@@ -332,17 +328,28 @@ def test_aggregate_region_with_components_and_weights_raises(simple_df):
     )
 
 
-@pytest.mark.parametrize("variable", ("Primary Energy", "foo"))
-def test_aggregate_region_empty(test_df, variable):
+@pytest.mark.parametrize("variable, append", (("Primary Energy", "foo"), (False, True)))
+def test_aggregate_region_empty(test_df, variable, append, caplog):
     """Check for performing an "empty" aggregation"""
+    caplog.set_level(logging.INFO, logger="pyam._aggregate")
 
-    # with `append=False` (default), an empty instance is returned
-    assert test_df.aggregate_region(variable).empty
+    if append:
+        # with `append=True`, the instance is unchanged
+        obs = test_df.copy()
+        obs.aggregate_region(variable, append=True)
+        assert_iamframe_equal(test_df, obs)
 
-    # with `append=True`, the instance is unchanged
-    obs = test_df.copy()
-    obs.aggregate_region(variable, append=True)
-    assert_iamframe_equal(test_df, obs)
+    else:
+        # with `append=False` (default), an empty instance is returned
+        assert test_df.aggregate_region(variable).empty
+
+    caplog.set_level(logging.INFO, logger="pyam._aggregate")
+    msg = (
+        f"Cannot aggregate variable '{variable}' to 'World' "
+        "because it does not exist in any subregion!"
+    )
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "INFO"
 
 
 def test_aggregate_region_unknown_method(simple_df):
