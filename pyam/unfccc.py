@@ -37,9 +37,9 @@ def read_unfccc(
     IAM model comparison projects. For compatibility with the
     `iam-units <https://github.com/IAMconsortium/units>`_ package
     and the :meth:`convert_unit <IamDataFrame.convert_unit>`,
-    emissions species are formatted to standard text (:code:`CO2`)
-    instead of subscripts (:code:`CO₂`) and the unit ':code:`CO₂ equivalent`'
-    used by UNFCCC is replaced by ':code:`CO2e`'.
+    emissions species are formatted to standard text ('CO2')
+    instead of subscripts ('CO₂') and the unit 'CO₂ equivalent'
+    used by UNFCCC is replaced by 'CO2e'.
 
     Parameters
     ----------
@@ -53,11 +53,13 @@ def read_unfccc(
         used in IPCC reports and IAM model comparison projects
     mapping : dict, optional
         Mapping to cast UNFCCC-data columns into IAMC-style variables, e.g.
-        ```
-        {
-            'Emissions|{gas}|Energy': ('1.  Energy', '*', '*', '*')
-        }
-        ```
+
+        .. code-block:: python
+
+            {
+                'Emissions|{gas}|Energy': ('1.  Energy', '*', '*', '*'),
+            }
+
         where the tuple corresponds to filters for the columns
         `['category', 'classification', 'measure', 'gas']`
         and `{<col>}` tags in the key are replaced by the column value.
