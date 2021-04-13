@@ -111,7 +111,7 @@ def _aggregate_region(
         )
 
     # if not `components=False`, add components at the `region` level
-    if components is not False:
+    if components:
         with adjust_log_level(logger):
             region_df = df.filter(region=region)
 

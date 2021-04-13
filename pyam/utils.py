@@ -415,9 +415,14 @@ def find_depth(data, s="", level=None):
         whether depth satisfies the condition (equality if level is int,
         >= if ``.+``,  <= if ``.-``)
     """
-    # determine whether `data` is a string or a list
-    unique = False if islistable(data) else True
+    if isstr(data):
+        return _find_depth([data], s, level)[0]
 
+    return _find_depth(data, s, level)
+
+
+def _find_depth(data, s="", level=None):
+    """Internal implementation of `find_depth()´"""
     # remove wildcard as last character from string, escape regex characters
     _s = re.compile("^" + _escape_regexp(s.rstrip("*")))
     _p = re.compile("\\|")
@@ -430,7 +435,7 @@ def find_depth(data, s="", level=None):
 
     # if no level test is specified, return the depth as (list of) int
     if level is None:
-        return list(n_pipes)[0] if unique else list(n_pipes)
+        return list(n_pipes)
 
     # if `level` is given, set function for finding depth level =, >=, <= |s
     if not isstr(level):
@@ -444,7 +449,7 @@ def find_depth(data, s="", level=None):
     else:
         raise ValueError("Unknown level type: `{}`".format(level))
 
-    return list(map(test, n_pipes))[0] if unique else list(map(test, n_pipes))
+    return list(map(test, n_pipes))
 
 
 def pattern_match(
