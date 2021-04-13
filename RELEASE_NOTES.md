@@ -1,4 +1,14 @@
-# Next Release
+# Release v0.11.0
+
+## Highlights
+
+- Easily order data in the line plot feature.
+- Add a module for reading data from the [UNFCCC Data Inventory](https://di.unfccc.int/).
+- Improved integration with any [IIASA Scenario Explorer instance](https://data.ece.iiasa.ac.at):
+  read non-default versions from the connected database
+  and obtain the "audit" info (scenario upload/edit timestamp and user).
+- Performance improvements when aggregating or concatenating data.
+- Refactor the entire code base to the [Black code style](https://black.readthedocs.io/).
 
 ## API changes
 
