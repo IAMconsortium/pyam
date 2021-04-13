@@ -9,8 +9,8 @@
 
 ## Steps for publishing a new release
 
-1. Make a release candidate branch (e.g., `rc_v<release version>`)
-   and pull request it into `master` with the following updates:
+1. Make a release candidate branch (e.g., `release/rc_v<release version>`)
+   and pull request it into `main` with the following updates:
    1. If it's the first release in a new year,
       search for `Copyright 2017` and bump the year
    1. Deprecate any stated portion of the API
@@ -26,8 +26,8 @@
   1. Run `make publish-on-testpypi`
      - this should "just work" - if it does not, fix any issues,
        retag (`git tag -d` then `git tag`), and try again
-  1. Once successful, delete the tag, and merge the candidate PR into `master` on Github
-1. Switch to the now-updated master branch: `git checkout master` and `git pull upstream master`
+  1. Once successful, delete the tag, and merge the candidate PR into `main` on Github
+1. Switch to the now-updated main branch: `git checkout main` and `git pull upstream main`
 1. Tag the release number: `git tag v<release version>`, e.g., `git tag v1.2.0`
    - `versioneer` automatically updates the version number based on the tag
    - this is now the official tagged commit
@@ -46,7 +46,7 @@
 1. Confirm that the doc pages are updated on https://pyam-iamc.readthedocs.io/
    - both the **latest** and the **stable** versions point to the new release
    - the new release has been added to the list of available versions
-1. Add a new line "# Next Release" at the top of `RELEASE_NOTES.md` and commit to `master`
+1. Add a new line "# Next Release" at the top of `RELEASE_NOTES.md` and commit to `main`
 1. Announce it on our mailing list: https://groups.io/g/pyam
    - again, copy the rendered HTML from the Github release directly in the email
 

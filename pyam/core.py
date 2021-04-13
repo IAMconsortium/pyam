@@ -1088,7 +1088,7 @@ class IamDataFrame(object):
         'HFC236fa', etc., as well as lower-case aliases like 'co2' supported by
         :mod:`pyam`. In this case, *context* must be the name of a specific
         global warming potential (GWP) metric supported by :mod:`iam_units`,
-        e.g. 'AR5GWP100' (optionally prefixed by 'gwp_', e.g. 'gwp_AR5GWP100').
+        e.g. 'AR5GWP100' (optionally prefixed by '\gwp_', e.g. 'gwp_AR5GWP100').
 
         Rows with units other than *current* are not altered.
 
@@ -1607,6 +1607,7 @@ class IamDataFrame(object):
              - arguments for filtering by `datetime.datetime` or np.datetime64
                ('month', 'hour', 'time')
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
+
         """
         if not isinstance(keep, bool):
             raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")

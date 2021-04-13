@@ -19,8 +19,6 @@ and methods.
    api/statistics
    api/timeseries
    api/variables
-   api/string_utils
-
 
 **Notebook logging behaviour**
 

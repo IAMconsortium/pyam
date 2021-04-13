@@ -24,7 +24,7 @@ Sankey diagram
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
 # you can download the data file from
-# https://github.com/IAMconsortium/pyam/tree/master/doc/source/examples_source
+# https://github.com/IAMconsortium/pyam/tree/main/doc/source/examples_source
 #
 # Make sure to place the data file in the same folder as this script/notebook.
 

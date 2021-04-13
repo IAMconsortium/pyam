@@ -10,7 +10,7 @@ Release v\ |version|.
 |doi| |joss| |groupsio| |slack|
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-black
-   :target: https://github.com/IAMconsortium/pyam/blob/master/LICENSE
+   :target: https://github.com/IAMconsortium/pyam/blob/main/LICENSE
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
@@ -34,7 +34,7 @@ Release v\ |version|.
    :target: https://pyam-iamc.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-.. |codecov| image:: https://codecov.io/gh/IAMconsortium/pyam/branch/master/graph/badge.svg
+.. |codecov| image:: https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg
    :target: https://codecov.io/gh/IAMconsortium/pyam
 
 .. |doi| image:: https://zenodo.org/badge/113359260.svg
