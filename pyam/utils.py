@@ -406,7 +406,7 @@ def find_depth(data, s="", level=None):
 
     Parameters
     ----------
-    data : pandas.Series of strings
+    data : str or list of strings
         IAMC-style variables
     s : str, default ''
         remove leading `s` from any variable in `data`
@@ -415,6 +415,14 @@ def find_depth(data, s="", level=None):
         whether depth satisfies the condition (equality if level is int,
         >= if ``.+``,  <= if ``.-``)
     """
+    if isstr(data):
+        return _find_depth([data], s, level)[0]
+
+    return _find_depth(data, s, level)
+
+
+def _find_depth(data, s="", level=None):
+    """Internal implementation of `find_depth()´"""
     # remove wildcard as last character from string, escape regex characters
     _s = re.compile("^" + _escape_regexp(s.rstrip("*")))
     _p = re.compile("\\|")
@@ -423,9 +431,9 @@ def find_depth(data, s="", level=None):
     def _count_pipes(val):
         return len(_p.findall(re.sub(_s, "", val))) if _s.match(val) else None
 
-    n_pipes = map(_count_pipes, data)
+    n_pipes = map(_count_pipes, to_list(data))
 
-    # if no level test is specified, return the depth as int
+    # if no level test is specified, return the depth as (list of) int
     if level is None:
         return list(n_pipes)
 

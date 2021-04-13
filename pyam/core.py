@@ -506,6 +506,9 @@ class IamDataFrame(object):
         ValueError
             If time domain or other timeseries data index dimension don't match.
         """
+        if other is None:
+            return None if inplace else self.copy()
+
         if not isinstance(other, IamDataFrame):
             other = IamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
@@ -515,6 +518,9 @@ class IamDataFrame(object):
 
         if self._data.index.names != other._data.index.names:
             raise ValueError("Incompatible timeseries data index dimensions")
+
+        if other.empty:
+            return None if inplace else self.copy()
 
         ret = self.copy() if not inplace else self
 
@@ -1158,46 +1164,50 @@ class IamDataFrame(object):
     def aggregate(
         self, variable, components=None, method="sum", recursive=False, append=False
     ):
-        """Aggregate timeseries components or sub-categories within each region
+        """Aggregate timeseries by components or subcategories within each region
 
         Parameters
         ----------
         variable : str or list of str
-            variable(s) for which the aggregate will be computed
+            Variable(s) for which the aggregate will be computed.
         components : list of str, optional
-            list of variables to aggregate, defaults to all sub-categories
-            of `variable`
+            Components to be aggregate, defaults to all subcategories of `variable`.
         method : func or str, optional
-            method to use for aggregation,
-            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+            Aggregation method, e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
         recursive : bool, optional
-            iterate recursively over all subcategories of `variable`
+            Iterate recursively (bottom-up) over all subcategories of `variable`.
         append : bool, optional
-            append the aggregate timeseries to `self` and return None,
-            else return aggregate timeseries as new :class:`IamDataFrame`
+            Whether to append aggregated timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Aggregated timeseries data or None if `inplace=True`.
 
         Notes
         -----
-        The aggregation function interprets any missing values
-        (:any:`numpy.nan`) for individual components as 0.
+        The aggregation function interprets any missing values (:any:`numpy.nan`)
+        for individual components as 0.
         """
 
         if recursive is True:
             if components is not None:
-                msg = "Recursive aggregation cannot take explicit components!"
-                raise ValueError(msg)
-            _df = _aggregate_recursive(self, variable, method=method)
+                raise ValueError("Recursive aggregation cannot take `components`!")
+            if method != "sum":
+                raise ValueError(
+                    "Recursive aggregation only supported with `method='sum'`!"
+                )
+
+            _df = IamDataFrame(_aggregate_recursive(self, variable), meta=self.meta)
         else:
             _df = _aggregate(self, variable, components=components, method=method)
 
-        # return None if there is nothing to aggregate
-        if _df is None:
-            return None
-
         # else, append to `self` or return as `IamDataFrame`
-        if append is True:
+        if append:
             self.append(_df, inplace=True)
         else:
+            if _df is None or _df.empty:
+                return _empty_iamframe(self._LONG_IDX + ["value"])
             return IamDataFrame(_df, meta=self.meta)
 
     def check_aggregate(
@@ -1234,7 +1244,7 @@ class IamDataFrame(object):
 
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(variable=variable)
-        df_var, df_components = _group_and_agg(self.data[rows], [], method).align(
+        df_var, df_components = _group_and_agg(self._data[rows], [], method).align(
             df_components
         )
 
@@ -1303,16 +1313,11 @@ class IamDataFrame(object):
             weight=weight,
         )
 
-        # return None if there is nothing to aggregate
-        if _df is None:
-            return None
-
         # else, append to `self` or return as `IamDataFrame`
-        if append is True:
-            if not _df.empty:
-                self.append(_df, region=region, inplace=True)
+        if append:
+            self.append(_df, region=region, inplace=True)
         else:
-            if _df.empty:
+            if _df is None or _df.empty:
                 return _empty_iamframe(self._LONG_IDX + ["value"])
             return IamDataFrame(_df, region=region, meta=self.meta)
 
@@ -1364,11 +1369,10 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(region=region, variable=variable)
         if not rows.any():
-            msg = "variable `{}` does not exist in region `{}`"
-            logger.info(msg.format(variable, region))
+            logger.info(f"Variable '{variable}' does not exist in region '{region}'!")
             return
 
-        df_region, df_subregions = _group_and_agg(self.data[rows], "region").align(
+        df_region, df_subregions = _group_and_agg(self._data[rows], "region").align(
             df_subregions
         )
 
@@ -1476,7 +1480,7 @@ class IamDataFrame(object):
             else return downscaled data as new IamDataFrame
         """
         if proxy is not None and weight is not None:
-            raise ValueError("Using both `proxy` and `weight` arguments is not valid!")
+            raise ValueError("Using both 'proxy' and 'weight' arguments is not valid!")
         elif proxy is not None:
             # get default subregions if not specified and select data from self
             subregions = subregions or self._all_other_regions(region)
@@ -1491,7 +1495,7 @@ class IamDataFrame(object):
                 rows = ~weight.index.isin([region], level="region")
             _proxy = weight[rows].stack()
         else:
-            raise ValueError("Either a `proxy` or `weight` argument is required!")
+            raise ValueError("Either a 'proxy' or 'weight' argument is required!")
 
         _value = (
             self.data[self._apply_filters(variable=variable, region=region)]
@@ -1511,7 +1515,7 @@ class IamDataFrame(object):
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
         rows = self._apply_filters(variable=variable)
-        return set(self.data[rows].region) - set([region])
+        return self._data[rows].index.get_level_values("region").difference([region])
 
     def _variable_components(self, variable, level=0):
         """Get all components (sub-categories) of a variable for a given level
@@ -1519,7 +1523,7 @@ class IamDataFrame(object):
         If `level=0`, for `variable='foo'`, return `['foo|bar']`, but don't
         include `'foo|bar|baz'`, which is a sub-sub-category. If `level=None`,
         all variables below `variable` in the hierarchy are returned."""
-        var_list = pd.Series(self.data.variable.unique())
+        var_list = pd.Series(self.variable)
         return var_list[pattern_match(var_list, "{}|*".format(variable), level=level)]
 
     def _get_cols(self, cols):
