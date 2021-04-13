@@ -47,7 +47,7 @@ def read_unfccc(
         ISO3-style code for UNFCCC party (country)
     gases : str or list of str, optional
         Emission species to be queried from the data inventory can be stated
-        as subscript-format (:code:`CO₂`) or simple text (:code:`CO2`)
+        as subscript-format ('CO₂') or simple text ('CO2')
     tier : int or list of int
         Pre-specified groupings of UNFCCC data to a variable naming format
         used in IPCC reports and IAM model comparison projects
