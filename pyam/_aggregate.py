@@ -127,7 +127,7 @@ def _aggregate_region(
             # rename all components to `variable` and aggregate
             rows = region_df._apply_filters(variable=components)
             _df = region_df._data[rows]
-            mapping = dict([(c, variable) for c in components])
+            mapping = {c: variable for c in components}
             _df.index = replace_index_values(_df.index, "variable", mapping)
             _data = _data.add(_group_and_agg(_df, "region"), fill_value=0)
 
@@ -143,7 +143,7 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
     # compute aggregate over time
     filter_args = dict(variable=variable)
     filter_args[column] = components
-    index = df._data.index.names.difference([column, "value"])
+    index = df._data.index.names.difference([column])
 
     _data = pd.concat(
         [
@@ -164,7 +164,7 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
 
 def _group_and_agg(df, by, method=np.sum):
     """Group-by & aggregate `pd.Series` by index names on `by`"""
-    cols = [c for c in list(df.index.names) if c not in to_list(by)]
+    cols = df.index.names.difference(to_list(by))
     # pick aggregator func (default: sum)
     return df.groupby(cols).agg(_get_method_func(method))
 
