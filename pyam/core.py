@@ -2315,7 +2315,7 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
     Parameters
     ----------
     dfs : iterable of IamDataFrames
-        A list of :class:`IamDataFrame` instances
+        A list of objects castable to :class:`IamDataFrame`
     ignore_meta_conflict : bool, default False
         If False, raise an error if any meta columns present in `dfs` are not identical.
         If True, values in earlier elements of `dfs` take precendence.
