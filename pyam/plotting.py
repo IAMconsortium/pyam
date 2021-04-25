@@ -1015,7 +1015,8 @@ def line(
 
     # plot data, keeping track of which legend labels to apply
     for col, data in df.iteritems():
-        col = to_list(col)  # handle case where columns only have 1 dimension
+        # handle case where columns are not strings or only have 1 dimension
+        col = list(map(str, to_list(col)))
         pargs = {}
         labels = []
         # build plotting args and line legend labels
