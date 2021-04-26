@@ -1013,6 +1013,9 @@ def line(
         if var is not None and var in df.columns.names:
             prop_idx[kind] = df.columns.names.index(var)
 
+    # pop label to avoid multiple values for plot-kwarg
+    label = kwargs.pop("label", None)
+
     # plot data, keeping track of which legend labels to apply
     for col, data in df.iteritems():
         # handle case where columns are not strings or only have 1 dimension
@@ -1026,15 +1029,15 @@ def line(
             ("linestyle", "linestyle", linestyle),
         ]:
             if kind in props:
-                label = col[prop_idx[kind]]
-                pargs[key] = props[kind][label]
+                _label = col[prop_idx[kind]]
+                pargs[key] = props[kind][_label]
                 if kind not in to_list(rm_legend_label):
-                    labels.append(repr(label).lstrip("u'").strip("'"))
+                    labels.append(repr(_label).lstrip("u'").strip("'"))
             else:
                 pargs[key] = var
         kwargs.update(pargs)
         data = data.dropna()
-        data.plot(ax=ax, label=" - ".join(labels if labels else col), **kwargs)
+        data.plot(ax=ax, label=label or " - ".join(labels if labels else col), **kwargs)
 
     if fill_between:
         _kwargs = {"alpha": 0.25} if fill_between in [True, None] else fill_between
@@ -1101,11 +1104,14 @@ def line(
         ax.set_xticklabels(xlabels)
 
     # build unique legend handles and labels
-    handles, labels = [np.array(i) for i in ax.get_legend_handles_labels()]
-    _, idx = np.unique(labels, return_index=True)
-    idx.sort()
     if legend is not False:
-        _add_legend(ax, handles[idx], labels[idx], legend)
+        handles, labels = [np.array(i) for i in ax.get_legend_handles_labels()]
+        if label is not None:  # label given explicitly via kwarg
+            _add_legend(ax, handles, labels, legend)
+        else:
+            _, idx = np.unique(labels, return_index=True)
+            idx.sort()
+            _add_legend(ax, handles[idx], labels[idx], legend)
 
     # add default labels if possible
     ax.set_xlabel(x.title())
