@@ -1,5 +1,7 @@
 # Next Release
 
+- [#519](https://github.com/IAMconsortium/pyam/pull/519) Enable explicit `label` and fix for non-string items in plot legend 
+
 # Release v0.11.0
 
 ## Highlights

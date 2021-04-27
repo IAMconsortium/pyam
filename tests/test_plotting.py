@@ -84,6 +84,20 @@ def test_line_no_legend(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_label(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.plot(ax=ax, label="foo")
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_plot_label_color(plot_df):
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.plot(ax=ax, label="foo", color="red")
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.plot(ax=ax, color="model", legend=True)
