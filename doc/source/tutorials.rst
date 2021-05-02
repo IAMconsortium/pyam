@@ -5,7 +5,7 @@ Tutorials
 
 All tutorials currently use the *IAMC template* for yearly data,
 but |pyam| also supports timeseries data with a sub-annual resolution.
-Please read the `Data Model <data.html>`_ section of the docs for more information.
+Please read the `Data Model <data.html>`_ section for more information.
 
 The source code is available in the folder
 `doc/source/tutorials`_ of the |pyam| GitHub repository.
