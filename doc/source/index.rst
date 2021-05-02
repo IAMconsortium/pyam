@@ -122,6 +122,11 @@ Table of Contents
 
    R_tutorials/pyam_R_tutorial
 
+.. toctree::
+   :maxdepth: 1
+
+   references
+
 Copyright & License
 -------------------
 
@@ -136,10 +141,3 @@ Refer to the `NOTICE`_ in the GitHub repository for more information.
 .. _Apache License: http://www.apache.org/licenses/LICENSE-2.0.html
 
 .. _NOTICE: https://github.com/IAMconsortium/pyam/blob/master/NOTICE.md
-
-Scientific reference
---------------------
-
-.. bibliography:: _bib/index.bib
-   :style: plain
-   :all:

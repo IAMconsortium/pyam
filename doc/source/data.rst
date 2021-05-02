@@ -221,10 +221,3 @@ The returned object is a :class:`pandas.DataFrame` down-selected to those
 models-and-scenarios where the 'meta' column satisfies the criteria given
 by :code:`col=...` .
 Optionally, the 'meta' columns are joined to the returned dataframe.
-
-References
-----------
-
-.. bibliography:: _bib/data.bib
-   :style: plain
-   :cited:

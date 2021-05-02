@@ -41,10 +41,3 @@ fully enumerated below.
 The required depedencies for |pyam| are:
 
   .. program-output:: python -c 'import sys; sys.path.insert(0, "../.."); from setup import REQUIREMENTS; print("\n".join([r for r in REQUIREMENTS]))'
-
-References
-----------
-
-.. bibliography:: _bib/install.bib
-   :style: plain
-   :cited:
