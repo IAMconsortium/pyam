@@ -38,22 +38,35 @@ macro-energy scenarios, energy systems analysis, and sectoral studies.
 
 The comprehensive **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
 
-Data model
-----------
+Timeseries types & data formats
+-------------------------------
 
-An illustrative example of the timeseries format developed by the
-[Integrated Assessment Modeling Consortium](https://www.iamconsortium.org) (IAMC)
-is shown below.
-The row is taken from the [IAMC 1.5°C scenario explorer](https://data.ene.iiasa.ac.at/iamc-1.5c-explorer),
-showing a scenario from the [CD-LINKS](https://www.cd-links.org) project.
-[Read the docs](https://pyam-iamc.readthedocs.io/en/stable/data.html)
-for more information on the IAMC format and the ``pyam`` data model.
+### Yearly data
+
+The pyam package was initially developed to work with the *IAMC template*,
+a timeseries format for *yearly data* developed and used by the
+[Integrated Assessment Modeling Consortium](https://www.iamconsortium.org) (IAMC).
 
 | **model** | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
 |-----------|--------------|------------|----------------|----------|----------|----------|----------|
 | MESSAGE   | CD-LINKS 400 | World      | Primary Energy | EJ/y     |    462.5 |    500.7 |      ... |
 | ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
 
+*An illustration of the IAMC template using a scenario
+from the [CD-LINKS](https://www.cd-links.org) project*  
+*via the The [IAMC 1.5°C Scenario Explorer](https://data.ece.iiasa.ac.at/iamc-1.5c-explorer)*
+
+### Subannual time resolution
+
+The package also supports timeseries data with a *sub-annual time resolution*:
+ - Continuous-time data using the Python [datetime format](https://docs.python.org/3/library/datetime.html)
+ - "Representative timeslices" (e.g., "winter-night", "summer-day")
+   using the pyam *extra-columns* feature 
+   
+[Read the docs](https://pyam-iamc.readthedocs.io/en/stable/data.html)
+for more information about the pyam data model
+or look at the [data-table tutorial](pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.ipynb)
+to see how to cast from a variety of timeseries formats to a **pyam.IamDataFrame**.
 
 Tutorials
 ---------
