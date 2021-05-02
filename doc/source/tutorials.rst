@@ -3,11 +3,15 @@
 Tutorials
 *********
 
-The source code of the tutorials is available in the folder
-`doc/source/tutorials`_ of the **pyam** GitHub repository.
+All tutorials currently use the *IAMC template* for yearly data,
+but |pyam| also supports timeseries data with a sub-annual resolution.
+Please read the `Data Model <data.html>`_ section of the docs for more information.
+
+The source code is available in the folder
+`doc/source/tutorials`_ of the |pyam| GitHub repository.
 
 .. _`doc/source/tutorials`:
-   https://github.com/IAMconsortium/pyam/tree/master/doc/source/tutorials
+   https://github.com/IAMconsortium/pyam/tree/main/doc/source/tutorials
 
 .. toctree::
    :maxdepth: 1
