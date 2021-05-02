@@ -30,17 +30,16 @@ of any scenario data provided in this format.
    Illustrative example of IAMC-format timeseries data |br|
    via the `IAMC 1.5°C Scenario Explorer`_ (:cite:`Huppmann:2019:scenario-data`)
 
-.. _`IAMC 1.5°C Scenario Explorer`: https://data.ene.iiasa.ac.at/iamc-1.5c-explorer
+.. _`IAMC 1.5°C Scenario Explorer`: https://data.ece.iiasa.ac.at/iamc-1.5c-explorer
 
-Refer to `data.ene.iiasa.ac.at/database`_ for a list of previous use cases.
+Refer to https://data.ece.iiasa.ac.at/ for a selected list of previous projects
+using the IAMC data format.
 
 .. _`IPCC`: https://www.ipcc.ch
 
 .. _`EMF`: https://emf.stanford.edu
 
 .. _`CD-LINKS`: https://www.cd-links.org
-
-.. _`data.ene.iiasa.ac.at/database`: https://data.ene.iiasa.ac.at/database
 
 The pyam data model
 -------------------
