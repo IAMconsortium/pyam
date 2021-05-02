@@ -144,7 +144,7 @@ In this case, the time index is named 'year'.
 
 Two additional use cases are supported by |pyam|:
 
-- continuous-time timeseries data by using an index named 'time'
+- continuous-time timeseries data by using an index named 'time' |br|
   populated by :class:`datetime.datetime` instances
   (replacing the 'year' index)
 
@@ -164,7 +164,7 @@ these columns are included in the 'data' table as custom *extra-columns*.
 This feature can be used, for example, to distinguish between multiple
 climate models providing different values for the variable
 :code:`Temperature|Global Mean`.
-It can also be used to represent "representative timeslices", e.g.,
+It can also be used to describe "representative timeslices", e.g.,
 "summer-day", "winter-night", ... by adding an extra-column "subannual".
 
 .. warning::
