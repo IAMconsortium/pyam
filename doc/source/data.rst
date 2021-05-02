@@ -69,6 +69,8 @@ When initializing an :class:`IamDataFrame`, the timeseries data can be provided
 in *long format*, where each datapoint is one row in a column named 'value',
 or it can follow the standard IAMC-style *wide format* (see the example above),
 where each timeseries is one row and the timesteps are represented as columns.
+Refer to the the `data-table tutorial <tutorials/data_table_formats.ipynb>`_
+for more information.
 
 The attribute :attr:`data <pyam.IamDataFrame.data>` returns the timeseries data
 in long format as a :class:`pandas.DataFrame`, while
