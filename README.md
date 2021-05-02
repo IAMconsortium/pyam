@@ -25,19 +25,18 @@ Overview and scope
 
 The open-source Python package **pyam** provides a suite of tools and functions
 for analyzing and visualizing input data (i.e., assumptions/parametrization) 
-and results (model output) of integrated-assessment scenarios.
+and results (model output) of integrated-assessment models,
+macro-energy scenarios, energy systems analysis, and sectoral studies.
 
-Key features:
+### Key features:
 
- - Simple analysis of timeseries data in the IAMC format
-   (more about it [here](https://pyam-iamc.readthedocs.io/en/stable/data.html))
-   with an interface similar in feel and style to the widely
-   used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
+ - Simple analysis of scenario timeseries data with an interface similar in feel & style
+   to the widely used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
  - Advanced visualization and plotting functions
    (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
- - Diagnostic checks for scripted validation of scenario data and results
+ - Scripted validation and processing of scenario data and results
 
-The complete **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
+The comprehensive **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
 
 Data model
 ----------
@@ -70,7 +69,7 @@ in the folder [doc/source/tutorials](doc/source/tutorials) of this repository.
 Documentation
 -------------
 
-The complete documentation is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io).
+The comprehensive documentation is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io).
 
 The documentation pages can be built locally,
 refer to the instruction in [doc/README](doc/README.md).

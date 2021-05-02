@@ -49,30 +49,24 @@ Release v\ |version|.
 .. |slack| image:: https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack
    :target: https://pyam-iamc.slack.com
 
-
 Overview
 --------
 
 The open-source Python package |pyam| :cite:`Gidden:2019:pyam`
 provides a suite of tools and functions for analyzing and visualizing
 input data (i.e., assumptions/parametrization) 
-and results (model output) of integrated-assessment scenarios,
-energy systems analysis, and sectoral studies.
+and results (model output) of integrated-assessment models,
+macro-energy scenarios, energy systems analysis, and sectoral studies.
 
-Key features:
-~~~~~~~~~~~~~
+Key features
+~~~~~~~~~~~~
 
- - Simple analysis of timeseries data in the IAMC format (more about it `here`_) |br|
-   with an interface similar in feel & style to the widely
-   used :class:`pandas.DataFrame`
- - Advanced visualization and plotting functions (see the `gallery`_)
- - Features for scripted validation & processing of scenario data
-   and results
+ - Simple analysis of scenario timeseries data with an interface similar in feel & style
+   to the widely used :class:`pandas.DataFrame`
+ - Advanced visualization and plotting functions (see the gallery_)
+ - Features for scripted validation & processing of scenario data and results
 
 The source code for |pyam| is available on `Github`_.
-
-.. _`here`:
-   data.html
 
 .. _`gallery`:
    gallery/index.html
