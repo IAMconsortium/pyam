@@ -22,8 +22,8 @@ within the *Energy Modeling Forum* (`EMF`_) hosted by Stanford University.
 
 The table below shows a typical example of integrated-assessment scenario data
 following the IAMC format from the Horizon 2020 `CD-LINKS`_ project.
-The |pyam| package is geared for analysis and visualization of any scenario
-data provided in this structure.
+The |pyam| package was initially developed for analysis and visualization
+of any scenario data provided in this format.
 
 .. figure:: _static/iamc_template.png
 
@@ -106,10 +106,10 @@ in wide format.
 
 .. _variables:
 
-The 'variable' index
-^^^^^^^^^^^^^^^^^^^^
+The 'variable' column
+^^^^^^^^^^^^^^^^^^^^^
 
-The 'variable' index describes the type of information represented
+The 'variable' column (or coordinate) describes the type of information represented
 in the specific timeseries.
 The variable implements a "semi-hierarchical" structure
 using the :code:`|` character (*pipe*, not l or i) to indicate the *depth*.
@@ -141,29 +141,30 @@ temporal dimension of any scenario data was restricted to full years
 represented as integer values.
 In this case, the time index is named 'year'.
 
-Two additional use cases are currently supported by |pyam|
-in development mode (beta):
-
-- representative sub-annual timesteps via the `custom columns`_ feature
+Two additional use cases are supported by |pyam|:
 
 - continuous-time timeseries data by using an index named 'time'
   populated by :class:`datetime.datetime` instances
   (replacing the 'year' index)
 
+- representative sub-annual timeslices via the `extra-columns`_ feature
+
 Please reach out to the developers to get more information on this
 ongoing work.
 
-.. _`custom columns`:
+.. _`extra-columns`:
 
-Custom columns of the 'data' table
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Custom *extra-columns* of the 'data' table
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If an :class:`IamDataFrame` is initialised with columns that are not in the
 list above nor interpreted as belonging to the time dimension (in wide format),
-these columns are included in the 'data' table as additional, custom columns.
+these columns are included in the 'data' table as custom *extra-columns*.
 This feature can be used, for example, to distinguish between multiple
 climate models providing different values for the variable
 :code:`Temperature|Global Mean`.
+It can also be used to represent "representative timeslices", e.g.,
+"summer-day", "winter-night", ... by adding an extra-column "subannual".
 
 .. warning::
 
@@ -198,7 +199,7 @@ the 'data' dataframe.
     :code:`Temperature|Global Mean`, or whether a data point is from the 
     original data source or the result of an operation), this should operate on
     the 'data' table of the **IamDataFrame** using the
-    custom-columns feature (see `custom columns`_ above).
+    custom-columns feature (see `extra-columns`_ above).
 
 Filtering
 ---------
@@ -208,8 +209,8 @@ The |pyam| package provides two methods for filtering scenario data:
 An existing :class:`IamDataFrame` can be filtered using
 :meth:`filter(col=...) <pyam.IamDataFrame.filter>`,
 where :code:`col` can be any column of the 'data' table (i.e.,
-'model', 'scenario', 'region', 'unit', 'year'/'time' or any `custom
-columns`_), or a column of the 'meta' table. The returned object is
+'model', 'scenario', 'region', 'unit', 'year'/'time' or any `extra-columns`_),
+or a column of the 'meta' table. The returned object is
 a new :class:`IamDataFrame` instance.
 
 A :class:`pandas.DataFrame` ('data') with columns or index
