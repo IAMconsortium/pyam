@@ -1,5 +1,5 @@
-**pyam**: analysis and visualization of integrated-assessment scenarios
-=======================================================================
+**pyam**: analysis and visualization |br| of integrated-assessment & macro-energy scenarios
+===========================================================================================
 
 Release v\ |version|.
 
