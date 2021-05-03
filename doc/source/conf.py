@@ -64,8 +64,7 @@ master_doc = "index"
 
 # General information about the project.
 project = u"pyam"
-year = datetime.now().year
-copyright = "2017-{}, IIASA and the pyam developer team".format(year)
+copyright = f"2017-{datetime.now().year}, IIASA and the pyam developer team"
 author = u"pyam developer team"
 
 # The version info for the project you're documenting, acts as replacement for
