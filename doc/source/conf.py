@@ -63,9 +63,9 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"pyam"
+project = "pyam"
 copyright = f"2017-{datetime.now().year}, IIASA and the pyam developer team"
-author = u"pyam developer team"
+author = "pyam developer team"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -130,10 +130,18 @@ html_theme = "alabaster"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
+description = "<br>".join(
+    [
+        "analysis and visualization",
+        "of integrated-assessment",
+        "& macro-energy scenarios",
+    ]
+)
+
 html_theme_options = {
     "logo": "logo.svg",
     "logo_name": True,
-    "description": "analysis & visualization of integrated-assessment scenarios",
+    "description": description,
     "page_width": "1120px",
     "sidebar_width": "230px",
     "github_button": True,
@@ -245,7 +253,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "pyam.tex", u"pyam Documentation", u"\\_\\_authors\\_\\_", "manual"),
+    (master_doc, "pyam.tex", "pyam Documentation", "\\_\\_authors\\_\\_", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -273,7 +281,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "pyam", u"pyam Documentation", [author], 1)]
+man_pages = [(master_doc, "pyam", "pyam Documentation", [author], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -288,7 +296,7 @@ texinfo_documents = [
     (
         master_doc,
         "pyam",
-        u"pyam Documentation",
+        "pyam Documentation",
         author,
         "pyam",
         "One line description of project.",
