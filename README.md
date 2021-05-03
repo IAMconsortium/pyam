@@ -1,5 +1,5 @@
-pyam: analysis & visualization <br /> of integrated-assessment scenarios
-========================================================================
+pyam: analysis & visualization <br /> of integrated-assessment and macro-energy scenarios
+=========================================================================================
 
 [![license](https://img.shields.io/badge/License-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
@@ -25,36 +25,47 @@ Overview and scope
 
 The open-source Python package **pyam** provides a suite of tools and functions
 for analyzing and visualizing input data (i.e., assumptions/parametrization) 
-and results (model output) of integrated-assessment scenarios.
+and results (model output) of integrated-assessment models,
+macro-energy scenarios, energy systems analysis, and sectoral studies.
 
-Key features:
+The comprehensive **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
 
- - Simple analysis of timeseries data in the IAMC format
-   (more about it [here](https://pyam-iamc.readthedocs.io/en/stable/data.html))
-   with an interface similar in feel and style to the widely
-   used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
+### Key features
+
+ - Simple analysis of scenario timeseries data with an interface similar in feel & style
+   to the widely used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
  - Advanced visualization and plotting functions
    (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
- - Diagnostic checks for scripted validation of scenario data and results
+ - Scripted validation and processing of scenario data and results
 
-The complete **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
+### Timeseries types & data formats
 
-Data model
-----------
+#### Yearly data
 
-An illustrative example of the timeseries format developed by the
-[Integrated Assessment Modeling Consortium](https://www.iamconsortium.org) (IAMC)
-is shown below.
-The row is taken from the [IAMC 1.5°C scenario explorer](https://data.ene.iiasa.ac.at/iamc-1.5c-explorer),
-showing a scenario from the [CD-LINKS](https://www.cd-links.org) project.
-[Read the docs](https://pyam-iamc.readthedocs.io/en/stable/data.html)
-for more information on the IAMC format and the ``pyam`` data model.
+The pyam package was initially developed to work with the *IAMC template*,
+a timeseries format for *yearly data* developed and used by the
+[Integrated Assessment Modeling Consortium](https://www.iamconsortium.org) (IAMC).
 
 | **model** | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
 |-----------|--------------|------------|----------------|----------|----------|----------|----------|
 | MESSAGE   | CD-LINKS 400 | World      | Primary Energy | EJ/y     |    462.5 |    500.7 |      ... |
 | ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
 
+*An illustration of the IAMC template using a scenario
+from the [CD-LINKS](https://www.cd-links.org) project*  
+*via the The [IAMC 1.5°C Scenario Explorer](https://data.ece.iiasa.ac.at/iamc-1.5c-explorer)*
+
+#### Subannual time resolution
+
+The package also supports timeseries data with a *sub-annual time resolution*:
+ - Continuous-time data using the Python [datetime format](https://docs.python.org/3/library/datetime.html)
+ - "Representative timeslices" (e.g., "winter-night", "summer-day")
+   using the pyam *extra-columns* feature 
+   
+[Read the docs](https://pyam-iamc.readthedocs.io/en/stable/data.html)
+for more information about the pyam data model
+or look at the [data-table tutorial](pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.ipynb)
+to see how to cast from a variety of timeseries formats to a **pyam.IamDataFrame**.
 
 Tutorials
 ---------
@@ -70,7 +81,7 @@ in the folder [doc/source/tutorials](doc/source/tutorials) of this repository.
 Documentation
 -------------
 
-The complete documentation is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io).
+The comprehensive documentation is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io).
 
 The documentation pages can be built locally,
 refer to the instruction in [doc/README](doc/README.md).

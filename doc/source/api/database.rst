@@ -8,7 +8,7 @@ Connecting to an IIASA Scenario Explorer instance
 
 IIASA's ixmp Scenario Explorer infrastructure implements a RestAPI
 to directly query the database server connected to an explorer instance.
-See https://software.ene.iiasa.ac.at/ixmp-server for more information.
+See https://software.ece.iiasa.ac.at/ixmp-server for more information.
 
 The |pyam| package uses this interface to read timeseries data as well as
 categorization and quantitative indicators.

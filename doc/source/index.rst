@@ -1,5 +1,5 @@
-**pyam**: analysis and visualization of integrated-assessment scenarios
-=======================================================================
+**pyam**: analysis and visualization |br| of integrated-assessment & macro-energy scenarios
+===========================================================================================
 
 Release v\ |version|.
 
@@ -49,36 +49,53 @@ Release v\ |version|.
 .. |slack| image:: https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack
    :target: https://pyam-iamc.slack.com
 
-
 Overview
 --------
 
 The open-source Python package |pyam| :cite:`Gidden:2019:pyam`
 provides a suite of tools and functions for analyzing and visualizing
 input data (i.e., assumptions/parametrization) 
-and results (model output) of integrated-assessment scenarios,
-energy systems analysis, and sectoral studies.
+and results (model output) of integrated-assessment models,
+macro-energy scenarios, energy systems analysis, and sectoral studies.
 
-Key features:
-~~~~~~~~~~~~~
+The source code is available on `Github <https://github.com/IAMconsortium/pyam>`_.
 
- - Simple analysis of timeseries data in the IAMC format (more about it `here`_) |br|
-   with an interface similar in feel & style to the widely
-   used :class:`pandas.DataFrame`
- - Advanced visualization and plotting functions (see the `gallery`_)
- - Features for scripted validation & processing of scenario data
-   and results
+Key features
+~~~~~~~~~~~~
 
-The source code for |pyam| is available on `Github`_.
+ - Simple analysis of scenario timeseries data with an interface similar in feel & style
+   |br| to the widely used :class:`pandas.DataFrame`
+ - Advanced visualization and plotting functions (see the `gallery <gallery/index.html>`_)
+ - Features for scripted validation & processing of scenario data and results
 
-.. _`here`:
-   data.html
+Timeseries types & data formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. _`gallery`:
-   gallery/index.html
+Yearly data
+^^^^^^^^^^^
 
-.. _`Github`:
-   https://github.com/IAMconsortium/pyam
+The |pyam| package was initially developed to work with the *IAMC template*,
+a timeseries format for *yearly data* developed and used by the
+`Integrated Assessment Modeling Consortium <https://www.iamconsortium.org>`_ (IAMC).
+
+.. figure:: _static/iamc_template.png
+
+   Illustrative example of IAMC-format timeseries data |br|
+   via the `IAMC 1.5°C Scenario Explorer`_ (:cite:`Huppmann:2019:scenario-data`)
+
+.. _`IAMC 1.5°C Scenario Explorer`: https://data.ene.iiasa.ac.at/iamc-1.5c-explorer
+
+Subannual time resolution
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The package also supports timeseries data with a *sub-annual time resolution*:
+ - Continuous-time data using the Python `datetime format <https://docs.python.org/3/library/datetime.html>`_
+ - "Representative timeslices" (e.g., "winter-night", "summer-day") |br|
+   using the pyam *extra-columns* feature
+
+Please read the `Data Model <data.html>`_ section for more information
+or look at the `data-table tutorial <tutorials/data_table_formats.ipynb>`_
+to see how to cast from a variety of timeseries formats to an :class:`IamDataFrame`.
 
 Table of Contents
 -----------------
@@ -99,6 +116,11 @@ Table of Contents
 
    R_tutorials/pyam_R_tutorial
 
+.. toctree::
+   :maxdepth: 1
+
+   references
+
 Copyright & License
 -------------------
 
@@ -113,10 +135,3 @@ Refer to the `NOTICE`_ in the GitHub repository for more information.
 .. _Apache License: http://www.apache.org/licenses/LICENSE-2.0.html
 
 .. _NOTICE: https://github.com/IAMconsortium/pyam/blob/master/NOTICE.md
-
-Scientific reference
---------------------
-
-.. bibliography:: _bib/index.bib
-   :style: plain
-   :all:
