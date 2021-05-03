@@ -1,5 +1,5 @@
-pyam: analysis & visualization <br /> of integrated-assessment scenarios
-========================================================================
+pyam: analysis & visualization <br /> of integrated-assessment and macro-energy scenarios
+=========================================================================================
 
 [![license](https://img.shields.io/badge/License-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
@@ -28,6 +28,8 @@ for analyzing and visualizing input data (i.e., assumptions/parametrization)
 and results (model output) of integrated-assessment models,
 macro-energy scenarios, energy systems analysis, and sectoral studies.
 
+The comprehensive **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
+
 ### Key features
 
  - Simple analysis of scenario timeseries data with an interface similar in feel & style
@@ -35,8 +37,6 @@ macro-energy scenarios, energy systems analysis, and sectoral studies.
  - Advanced visualization and plotting functions
    (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
  - Scripted validation and processing of scenario data and results
-
-The comprehensive **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
 
 ### Timeseries types & data formats
 
