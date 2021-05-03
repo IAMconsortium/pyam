@@ -28,7 +28,7 @@ for analyzing and visualizing input data (i.e., assumptions/parametrization)
 and results (model output) of integrated-assessment models,
 macro-energy scenarios, energy systems analysis, and sectoral studies.
 
-### Key features:
+### Key features
 
  - Simple analysis of scenario timeseries data with an interface similar in feel & style
    to the widely used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
@@ -38,10 +38,9 @@ macro-energy scenarios, energy systems analysis, and sectoral studies.
 
 The comprehensive **documentation** is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io)!
 
-Timeseries types & data formats
--------------------------------
+### Timeseries types & data formats
 
-### Yearly data
+#### Yearly data
 
 The pyam package was initially developed to work with the *IAMC template*,
 a timeseries format for *yearly data* developed and used by the
@@ -56,7 +55,7 @@ a timeseries format for *yearly data* developed and used by the
 from the [CD-LINKS](https://www.cd-links.org) project*  
 *via the The [IAMC 1.5°C Scenario Explorer](https://data.ece.iiasa.ac.at/iamc-1.5c-explorer)*
 
-### Subannual time resolution
+#### Subannual time resolution
 
 The package also supports timeseries data with a *sub-annual time resolution*:
  - Continuous-time data using the Python [datetime format](https://docs.python.org/3/library/datetime.html)
