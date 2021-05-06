@@ -63,6 +63,7 @@ from pyam._aggregate import (
     _aggregate_recursive,
     _group_and_agg,
 )
+from pyam._ops import _op_data
 from pyam.units import convert_unit
 from pyam.index import (
     get_index_levels,
@@ -1728,6 +1729,33 @@ class IamDataFrame(object):
             self.data[col] = self.data[col].apply(func, *args, **kwargs)
         else:
             self.meta[col] = self.meta[col].apply(func, *args, **kwargs)
+
+    def subtract(self, a, b, name, axis="variable", append=False):
+        """Compute the difference of timeseries data between `a` and `b` along an `axis`
+
+        This function computes `a - b`.
+
+        Parameters
+        ----------
+        a, b : str or list of str
+            Items to be used for the subtraction.
+        name : str
+            Name of the computed timeseries data.
+        axis : str, optional
+            Axis along which to compute.
+        append : bool, optional
+            Whether to append aggregated timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+        """
+        _value = _op_data(self, a, b, name, "subtract", axis=axis)
+        if append:
+            self.append(_value, inplace=True)
+        else:
+            return IamDataFrame(_value, meta=self.meta)
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""

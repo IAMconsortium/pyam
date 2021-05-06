@@ -63,9 +63,9 @@ def replace_index_values(df, level, mapping):
 def append_index_level(index, codes, level, name, order=False):
     """Append a level to a pd.MultiIndex"""
     new_index = pd.MultiIndex(
-        codes=index.codes + [codes],
-        levels=index.levels + [level],
-        names=index.names + [name],
+        codes=index.codes + [[codes] * len(index.codes[0])],
+        levels=index.levels + [[level]],
+        names=index.names + [name]
     )
     if order:
         new_index = new_index.reorder_levels(order)
