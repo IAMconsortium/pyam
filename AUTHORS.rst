@@ -18,3 +18,4 @@ The following persons contributed to the development of the |pyam| framework:
 - Jarmo Kikstra `@jkikstra <https://github.com/jkikstra>`_
 - Michael Pimmer `@fonfon <https://github.com/fonfon>`_
 - Patrick Jürgens `@pjuergens <https://github.com/pjuergens>`_
+- Florian Maczek `@macflo8 <https://github.com/macflo8>`_
