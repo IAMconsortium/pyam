@@ -1,20 +1,20 @@
 from pyam.index import append_index_level
 
 
-def subtract(a, b):
-    return a - b
-
-
 def add(a, b):
     return a + b
 
 
-def divide(a, b):
-    return a / b
+def subtract(a, b):
+    return a - b
 
 
 def multiply(a, b):
     return a * b
+
+
+def divide(a, b):
+    return a / b
 
 
 KNOWN_OPS = {
