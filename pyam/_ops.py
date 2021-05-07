@@ -5,7 +5,24 @@ def subtract(a, b):
     return a - b
 
 
-KNOWN_OPS = {"subtract": subtract}
+def add(a, b):
+    return a + b
+
+
+def divide(a, b):
+    return a / b
+
+
+def multiply(a, b):
+    return a * b
+
+
+KNOWN_OPS = {
+    "subtract": subtract,
+    "add": add,
+    "divide": divide,
+    "multiply": multiply,
+}
 
 
 def _op_data(df, a, b, name, method, axis):
