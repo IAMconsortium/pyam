@@ -61,5 +61,3 @@ def test_append_index():
         names=["region", "scenario"],
     )
     pdt.assert_index_equal(obs, exp)
-
-
