@@ -1,27 +1,12 @@
+import operator
 from pyam.index import append_index_level
 
 
-def add(a, b):
-    return a + b
-
-
-def subtract(a, b):
-    return a - b
-
-
-def multiply(a, b):
-    return a * b
-
-
-def divide(a, b):
-    return a / b
-
-
 KNOWN_OPS = {
-    "subtract": subtract,
-    "add": add,
-    "divide": divide,
-    "multiply": multiply,
+    "add": operator.add,
+    "subtract": operator.sub,
+    "multiply": operator.mul,
+    "divide": operator.truediv,
 }
 
 
