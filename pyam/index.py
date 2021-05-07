@@ -65,7 +65,7 @@ def append_index_level(index, codes, level, name, order=False):
     new_index = pd.MultiIndex(
         codes=index.codes + [[codes] * len(index.codes[0])],
         levels=index.levels + [[level]],
-        names=index.names + [name]
+        names=index.names + [name],
     )
     if order:
         new_index = new_index.reorder_levels(order)
