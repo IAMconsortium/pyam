@@ -1733,14 +1733,17 @@ class IamDataFrame(object):
     def subtract(self, a, b, name, axis="variable", append=False):
         """Compute the difference of timeseries data between `a` and `b` along an `axis`
 
-        This function computes `a - b`.
+        This function computes `a - b`. If `a` or `b` are lists, the method applies
+        :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
+        If either `a` or `b` are not defined for a row, no value is computed
+        for that row.
 
         Parameters
         ----------
         a, b : str or list of str
             Items to be used for the subtraction.
         name : str
-            Name of the computed timeseries data.
+            Name of the computed timeseries data on the `axis`.
         axis : str, optional
             Axis along which to compute.
         append : bool, optional
