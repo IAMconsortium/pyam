@@ -18,7 +18,7 @@ def test_subtract_variable(test_df_year, append):
         region="World",
         variable=v[2],
         unit="EJ/yr",
-        meta=test_df_year.meta
+        meta=test_df_year.meta,
     )
 
     if append:

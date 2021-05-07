@@ -5,9 +5,7 @@ def subtract(a, b):
     return a - b
 
 
-KNOWN_OPS = {
-    "subtract": subtract
-}
+KNOWN_OPS = {"subtract": subtract}
 
 
 def _op_data(df, a, b, name, method, axis):
