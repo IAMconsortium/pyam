@@ -24,6 +24,6 @@ def _op_data(df, a, b, name, method, axis):
     _b = df.filter(**{axis: b})._data.groupby(cols).sum()
 
     _value = method(_a, _b)
-    _value.index = append_index_level(_value.index, 0, name, axis)
+    _value.index = append_index_level(_value.index, codes=0, level=name, name=axis)
 
     return _value
