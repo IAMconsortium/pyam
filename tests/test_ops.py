@@ -194,10 +194,10 @@ def test_divide_scenario(test_df_year, append):
 def test_ops_unknown_axis(test_df_year):
     """Using an unknown axis raises an error"""
     with pytest.raises(ValueError, match="Unknown axis: foo"):
-        _op_data(test_df_year, "_", "_", "_", "_", "foo")
+        _op_data(test_df_year, "_", "_", "_", "foo")
 
 
 def test_ops_unknown_method(test_df_year):
     """Using an unknown method raises an error"""
     with pytest.raises(ValueError, match="Unknown method: foo"):
-        _op_data(test_df_year, "_", "_", "_", "foo", "variable")
+        _op_data(test_df_year, "_", "_", "foo", "variable")

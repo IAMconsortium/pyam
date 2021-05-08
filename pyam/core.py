@@ -1183,7 +1183,7 @@ class IamDataFrame(object):
         Returns
         -------
         :class:`IamDataFrame` or **None**
-            Aggregated timeseries data or None if `inplace=True`.
+            Aggregated timeseries data or None if `append=True`.
 
         Notes
         -----
@@ -1754,7 +1754,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, a, b, name, "add", axis=axis)
+        _value = _op_data(self, (a, b), name, "add", axis=axis)
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1784,7 +1784,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, a, b, name, "subtract", axis=axis)
+        _value = _op_data(self, (a, b), name, "subtract", axis=axis)
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1814,7 +1814,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, a, b, name, "multiply", axis=axis)
+        _value = _op_data(self, (a, b), name, "multiply", axis=axis)
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1844,7 +1844,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, a, b, name, "divide", axis=axis)
+        _value = _op_data(self, (a, b), name, "divide", axis=axis)
         if append:
             self.append(_value, inplace=True)
         else:
