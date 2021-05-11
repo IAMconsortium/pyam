@@ -16,7 +16,7 @@ REQUIREMENTS = [
     "iam-units>=2020.4.12",
     "numpy",
     "requests",
-    "pandas>=0.25.0",
+    "pandas>=1.1.1",
     "pint",
     "plotly",
     "PyYAML",
