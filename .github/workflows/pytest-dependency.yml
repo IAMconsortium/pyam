@@ -5,7 +5,7 @@ name: pytest with old versions of dependencies
 
 on:
   push:
-    branches: [ '**' ]
+    branches: [ 'main' ]
   pull_request:
     branches: [ '**' ]
 
