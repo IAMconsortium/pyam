@@ -18,6 +18,8 @@ def _op_data(df, method_args, name, method, axis):
 
     if method in KNOWN_OPS:
         method = KNOWN_OPS[method]
+    elif callable(method):
+        pass
     else:
         raise ValueError(f"Unknown method: {method}")
 

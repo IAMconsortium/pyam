@@ -1850,6 +1850,37 @@ class IamDataFrame(object):
         else:
             return IamDataFrame(_value, meta=self.meta)
 
+    def apply(self, name, components, func, axis="variable", append=False):
+        """Apply a (self defined) function to components of timeseries data along an `axis`
+
+        This function computes a (self defined) function func with arguments `components`.
+        The length of components needs to match the number of required arguments
+        of `func`.
+
+        Parameters
+        ----------
+        name : str
+            Name of the computed timeseries data on the `axis`.
+        components : list of str
+            list of variables to be included in the function.
+        func : function
+            Function to apply to `components` along `axis`.
+        axis : str, optional
+            Axis along which to compute.
+        append : bool, optional
+            Whether to append aggregated timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+        """
+        _value = _op_data(self, components, name, func, axis=axis)
+        if append:
+            self.append(_value, inplace=True)
+        else:
+            return IamDataFrame(_value, meta=self.meta)
+
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
         df = self.timeseries(iamc_index=iamc_index).reset_index()
