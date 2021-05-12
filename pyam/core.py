@@ -977,7 +977,31 @@ class IamDataFrame(object):
 
         The following methods are implemented:
 
-        - "count": use the inverse of the number of scenarios grouped by `axis` names
+        - "count": use the inverse of the number of scenarios grouped by `axis` names.
+
+          Using the following method on an IamDataFrame with three scenarios
+
+          .. code-block:: python
+
+              df.compute_bias(name="bias-weight", method="count", axis="scenario")
+
+          results in the following column to be added to *df.meta*:
+
+          .. list-table::
+             :header-rows: 1
+
+             * - model
+               - scenario
+               - bias-weight
+             * - model_a
+               - scen_a
+               - 0.5
+             * - model_a
+               - scen_b
+               - 1
+             * - model_b
+               - scen_a
+               - 0.5
 
         """
         _compute_bias(self, name, method, axis)
@@ -1088,7 +1112,7 @@ class IamDataFrame(object):
     def convert_unit(
         self, current, to, factor=None, registry=None, context=None, inplace=False
     ):
-        r"""Convert all data having *current* units to new units.
+        """Convert all timeseries data having *current* units to new units.
 
         If *factor* is given, existing values are multiplied by it, and the
         *to* units are assigned to the 'unit' column.
