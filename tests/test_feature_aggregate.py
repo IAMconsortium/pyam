@@ -179,11 +179,11 @@ def test_aggregate_skip_intermediate(time_col):
     df_minimal = df.filter(variable=agg_vars, keep=False)
 
     # return recursively aggregated data as new object
-    obs = df_minimal.aggregate(variable=v, recursive=True)
+    obs = df_minimal.aggregate(variable=v, recursive=True, skip_intermediate=True)
     assert_iamframe_equal(obs, df.filter(variable=agg_vars))
 
     # append to `self`
-    df_minimal.aggregate(variable=v, recursive=True, append=True)
+    df_minimal.aggregate(variable=v, recursive=True, append=True, skip_intermediate=True)
     assert_iamframe_equal(df_minimal, df)
 
 
