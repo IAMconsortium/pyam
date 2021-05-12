@@ -57,7 +57,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
     return _group_and_agg(_df, [], method)
 
 
-def _aggregate_recursive(df, variable):
+def _aggregate_recursive(df, variable, skip_intermediate=False):
     """Recursive aggregation along the variable tree"""
 
     # downselect to components of `variable`, initialize list for aggregated (new) data
@@ -69,6 +69,9 @@ def _aggregate_recursive(df, variable):
         components = compress(_df.variable, find_depth(_df.variable, level=d + 1))
         var_list = set([reduce_hierarchy(v, -1) for v in components])
 
+        if skip_intermediate:
+            # skip aggregating variables that already exist in dataframe _df
+            var_list = var_list - set(_df.variable)
         # a temporary dataframe allows to distinguish between full data and new data
         temp_df = _df.aggregate(variable=var_list)
         _df.append(temp_df, inplace=True)

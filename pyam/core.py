@@ -1163,7 +1163,8 @@ class IamDataFrame(object):
             return ret
 
     def aggregate(
-        self, variable, components=None, method="sum", recursive=False, append=False
+        self, variable, components=None, method="sum", recursive=False, append=False,
+        skip_intermediate=False
     ):
         """Aggregate timeseries by components or subcategories within each region
 
@@ -1179,6 +1180,9 @@ class IamDataFrame(object):
             Iterate recursively (bottom-up) over all subcategories of `variable`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
+        skip_intermediate : bool, optional
+            Skip aggregating already existing intermediate variables. Only has an
+            effect if recursive=True
 
         Returns
         -------
@@ -1199,7 +1203,7 @@ class IamDataFrame(object):
                     "Recursive aggregation only supported with `method='sum'`!"
                 )
 
-            _df = IamDataFrame(_aggregate_recursive(self, variable), meta=self.meta)
+            _df = IamDataFrame(_aggregate_recursive(self, variable, skip_intermediate), meta=self.meta)
         else:
             _df = _aggregate(self, variable, components=components, method=method)
 
