@@ -183,8 +183,9 @@ def test_aggregate_skip_intermediate(time_col):
     assert_iamframe_equal(obs, df.filter(variable=agg_vars))
 
     # append to `self`
-    df_minimal.aggregate(variable=v, recursive=True, append=True,
-                         skip_intermediate=True)
+    df_minimal.aggregate(
+        variable=v, recursive=True, append=True, skip_intermediate=True
+    )
     assert_iamframe_equal(df_minimal, df)
 
 
