@@ -1,5 +1,6 @@
 # Next Release
 
+- [#533](https://github.com/IAMconsortium/pyam/pull/533) Add an `apply()` function for custom mathematical operations
 - [#527](https://github.com/IAMconsortium/pyam/pull/527) Add an in-dataframe basic mathematical operations `subtract`, `add`, `multiply`, `divide`
 - [#519](https://github.com/IAMconsortium/pyam/pull/519) Enable explicit `label` and fix for non-string items in plot legend 
 
