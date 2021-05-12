@@ -1169,7 +1169,7 @@ class IamDataFrame(object):
         method="sum",
         recursive=False,
         append=False,
-        skip_intermediate=False
+        skip_intermediate=False,
     ):
         """Aggregate timeseries by components or subcategories within each region
 
