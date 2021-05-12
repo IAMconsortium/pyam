@@ -20,7 +20,7 @@ REQUIREMENTS = [
     "pint",
     "plotly",
     "PyYAML",
-    "matplotlib",
+    "matplotlib>=3.2.0",
     "seaborn",
     "six",
     "xlrd<2.0",
