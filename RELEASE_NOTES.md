@@ -1,6 +1,6 @@
 # Next Release
 
-- [#] Add an option to skip existing intermediate variables when aggregating recursivly
+- [#532](https://github.com/IAMconsortium/pyam/pull/532) Add an option to skip existing intermediate variables when aggregating recursivly
 - [#527](https://github.com/IAMconsortium/pyam/pull/527) Add an in-dataframe basic mathematical operations `subtract`, `add`, `multiply`, `divide`
 - [#519](https://github.com/IAMconsortium/pyam/pull/519) Enable explicit `label` and fix for non-string items in plot legend 
 
