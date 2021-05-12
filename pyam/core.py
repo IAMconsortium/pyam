@@ -1163,7 +1163,12 @@ class IamDataFrame(object):
             return ret
 
     def aggregate(
-        self, variable, components=None, method="sum", recursive=False, append=False,
+        self,
+        variable,
+        components=None,
+        method="sum",
+        recursive=False,
+        append=False,
         skip_intermediate=False
     ):
         """Aggregate timeseries by components or subcategories within each region
