@@ -72,14 +72,24 @@ def _aggregate_recursive(df, variable, skip_intermediate=False):
         components = compress(_df.variable, find_depth(_df.variable, level=d + 1))
         var_list = set([reduce_hierarchy(v, -1) for v in components])
 
+        # collect already existing variables
+        if skip_intermediate:
+            intermediate_var = var_list.intersection(set(_df.variable))
+        else:
+            intermediate_var = False
+
         # a temporary dataframe allows to distinguish between full data and new data
         temp_df = _df.aggregate(variable=var_list)
-        # if skip_intermediate delete already existing entries in _data
-        if skip_intermediate:
+        # if intermediate variables exist, delete already existing entries in _data
+        if intermediate_var:
             # index which doesn't exist in _df-index yet
             _index = temp_df._data.index.difference(_df._data.index)
             temp_df._data = temp_df._data[_index]
         _df.append(temp_df, inplace=True)
+        # check consistency of intermediate variable
+        if intermediate_var:
+            if _df.check_aggregate(intermediate_var):
+                raise ValueError(f"Aggregated data is inconsistent.")
         data_list.append(temp_df._data)
 
     return pd.concat(data_list)
