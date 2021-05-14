@@ -143,7 +143,7 @@ def test_aggregate_recursive(time_col):
     )
     df = IamDataFrame(data, model="model_a", scenario="scen_a", region="World")
     df2 = df.rename(scenario={"scen_a": "scen_b"})
-    df2.data.value *= 2
+    df2._data *= 2
     df.append(df2, inplace=True)
 
     # create object without variables to be aggregated
@@ -170,7 +170,7 @@ def test_aggregate_skip_intermediate(time_col):
     )
     df = IamDataFrame(data, model="model_a", scenario="scen_a", region="World")
     df2 = df.rename(scenario={"scen_a": "scen_b"})
-    df2.data.value *= 2
+    df2._data *= 2
     df.append(df2, inplace=True)
 
     # create object without variables to be aggregated, but with intermediate variables
