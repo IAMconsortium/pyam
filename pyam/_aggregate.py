@@ -64,7 +64,7 @@ def _aggregate_recursive(df, variable, skip_intermediate=False):
     _df = df.filter(variable=f"{variable}|*")
     if skip_intermediate:
         # keep variable at highest level if it exists
-        _df.append(df.filter(variable=variable))
+        _df.append(df.filter(variable=variable), inplace=True)
     data_list = []
 
     # iterate over variables (bottom-up) and aggregate all components up to `variable`
