@@ -69,11 +69,13 @@ def _aggregate_recursive(df, variable, skip_intermediate=False):
         components = compress(_df.variable, find_depth(_df.variable, level=d + 1))
         var_list = set([reduce_hierarchy(v, -1) for v in components])
 
-        if skip_intermediate:
-            # skip aggregating variables that already exist in dataframe _df
-            var_list = var_list - set(_df.variable)
         # a temporary dataframe allows to distinguish between full data and new data
         temp_df = _df.aggregate(variable=var_list)
+        # if skip_intermediate delete already existing entries in _data
+        if skip_intermediate:
+            # index which doesn't exist in _df-index yet
+            _index = temp_df._data.index.difference(_df._data.index)
+            temp_df._data = temp_df._data[_index]
         _df.append(temp_df, inplace=True)
         data_list.append(temp_df._data)
 
