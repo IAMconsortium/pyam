@@ -89,7 +89,7 @@ def _aggregate_recursive(df, variable, skip_intermediate=False):
         # check consistency of intermediate variable
         if intermediate_var:
             if _df.check_aggregate(intermediate_var):
-                raise ValueError(f"Aggregated data is inconsistent.")
+                raise ValueError("Aggregated data is inconsistent.")
         data_list.append(temp_df._data)
 
     return pd.concat(data_list)
