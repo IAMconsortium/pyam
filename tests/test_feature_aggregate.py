@@ -177,12 +177,6 @@ def test_aggregate_skip_intermediate(time_col):
     agg_vars = [f"{v}{i}" for i in [""]]
     df_minimal = df.filter(variable=agg_vars, scenario="scen_a", keep=False)
 
-    # return recursively aggregated data as new object
-    obs = df_minimal.aggregate(
-        variable=v, recursive=True, skip_intermediate=True, append=True
-    )
-    assert_iamframe_equal(obs, df)
-
     # append to `self`
     df_minimal.aggregate(
         variable=v, recursive=True, append=True, skip_intermediate=True
