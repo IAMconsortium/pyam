@@ -78,7 +78,14 @@ def _aggregate_recursive(df, variable):
 
 
 def _aggregate_region(
-    df, variable, region, subregions=None, components=False, method="sum", weight=None, drop_negative=True
+        df,
+        variable,
+        region,
+        subregions=None,
+        components=False,
+        method="sum",
+        weight=None,
+        drop_negative=True
 ):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
@@ -107,7 +114,10 @@ def _aggregate_region(
     else:
         weight_rows = subregion_df._apply_filters(variable=weight)
         _data = _agg_weight(
-            subregion_df._data[rows], subregion_df._data[weight_rows], method, drop_negative
+            subregion_df._data[rows],
+            subregion_df._data[weight_rows],
+            method,
+            drop_negative
         )
 
     # if not `components=False`, add components at the `region` level
@@ -183,9 +193,11 @@ def _agg_weight(data, weight, method, drop_negative):
 
     if drop_negative is True:
         if any(i < 0 for i in weight):
-            logger.warning("Some of the weights are negative. All data with negative values will be dropped. "
-                          "If you don't want the values to be dropped please use the keyword drop_negative=False")
-        # Drop negative weights
+            logger.warning("Some of the weights are negative. "
+                           "All data with negative values will be dropped. "
+                           "If you don't want the values to be dropped "
+                           "please use the keyword drop_negative=False")
+            # Drop negative weights
             for index, value in weight.items():
                 if value < 0:
                     weight = weight.drop(labels=[index])

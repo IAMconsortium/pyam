@@ -1416,7 +1416,14 @@ class IamDataFrame(object):
         """
         # compute aggregate from subregions, return None if no subregions
         df_subregions = _aggregate_region(
-            self, variable, region, subregions, components, method, weight, drop_negative
+            self,
+            variable,
+            region,
+            subregions,
+            components,
+            method,
+            weight,
+            drop_negative
         )
 
         if df_subregions is None:

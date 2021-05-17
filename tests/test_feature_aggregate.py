@@ -320,8 +320,10 @@ def test_aggregate_region_with_components(simple_df):
 )
 def test_agg_weight(data, variable, weight):
 
-    test_1 = IamDataFrame(data).aggregate_region(variable, weight=weight, drop_negative=False)._data
-    test_2 = IamDataFrame(data).aggregate_region(variable, weight=weight, drop_negative=True)._data
+    test_1 = IamDataFrame(data)\
+        .aggregate_region(variable, weight=weight, drop_negative=False)._data
+    test_2 = IamDataFrame(data)\
+        .aggregate_region(variable, weight=weight, drop_negative=True)._data
 
     assert not test_1.equals(test_2)
 
