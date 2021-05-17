@@ -1323,6 +1323,7 @@ class IamDataFrame(object):
         method="sum",
         weight=None,
         append=False,
+        drop_negative=True
     ):
         """Aggregate a timeseries over a number of subregions
 
@@ -1351,6 +1352,8 @@ class IamDataFrame(object):
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
+        drop_negative : bool, default True
+            drops negative weights for aggregation (e.g. emission is negative)
         """
         _df = _aggregate_region(
             self,
@@ -1360,6 +1363,7 @@ class IamDataFrame(object):
             components=components,
             method=method,
             weight=weight,
+            drop_negative=drop_negative,
         )
 
         # else, append to `self` or return as `IamDataFrame`
@@ -1379,6 +1383,7 @@ class IamDataFrame(object):
         method="sum",
         weight=None,
         exclude_on_fail=False,
+        drop_negative=True,
         **kwargs,
     ):
         """Check whether a timeseries matches the aggregation across subregions
@@ -1404,12 +1409,14 @@ class IamDataFrame(object):
             (currently only supported with `method='sum'`)
         exclude_on_fail : boolean, optional
             flag scenarios failing validation as `exclude: True`
+        drop_negative : bool, default True
+            drops negative weights for aggregation (e.g. emission is negative)
         kwargs : arguments for comparison of values
             passed to :func:`numpy.isclose`
         """
         # compute aggregate from subregions, return None if no subregions
         df_subregions = _aggregate_region(
-            self, variable, region, subregions, components, method, weight
+            self, variable, region, subregions, components, method, weight, drop_negative
         )
 
         if df_subregions is None:

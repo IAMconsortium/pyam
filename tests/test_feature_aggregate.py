@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 from pyam.testing import assert_iamframe_equal
-
 from conftest import TEST_YEARS, DTS_MAPPING
 
 LONG_IDX = IAMC_IDX + ["year"]
@@ -51,6 +50,20 @@ RECURSIVE_DF = pd.DataFrame(
         ["Secondary Energy|Electricity|Solar", "EJ/yr", np.nan, 2],
     ],
     columns=["variable", "unit"] + TEST_YEARS,
+)
+
+NEG_WEIGHTS_DF = pd.DataFrame(
+    [
+        ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2005, -4.0],
+        ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2010, 5.0],
+        ["model_a", "scen_a", "reg_b", "Emissions|CO2", "EJ/yr", 2005, 2.0],
+        ["model_a", "scen_a", "reg_b", "Emissions|CO2", "EJ/yr", 2010, 3.0],
+        ["model_a", "scen_a", "reg_a", "Price|Carbon", "USD/tCO2", 2005, 6.0],
+        ["model_a", "scen_a", "reg_a", "Price|Carbon", "USD/tCO2", 2010, 6.0],
+        ["model_a", "scen_a", "reg_b", "Price|Carbon", "USD/tCO2", 2005, 3.0],
+        ["model_a", "scen_a", "reg_b", "Price|Carbon", "USD/tCO2", 2010, 4.0],
+    ],
+    columns=LONG_IDX + ["value"],
 )
 
 
@@ -297,6 +310,20 @@ def test_aggregate_region_with_components(simple_df):
     # rename emissions of bunker to test setting components as list
     _df = simple_df.rename(variable={"Emissions|CO2|Bunkers": "foo"})
     assert _df.check_aggregate_region(v, components=["foo"]) is None
+
+
+@pytest.mark.parametrize(
+    "data, variable, weight",
+    (
+        (NEG_WEIGHTS_DF, 'Price|Carbon', 'Emissions|CO2'),
+    ),
+)
+def test_agg_weight(data, variable, weight):
+
+    test_1 = IamDataFrame(data).aggregate_region(variable, weight=weight, drop_negative=False)._data
+    test_2 = IamDataFrame(data).aggregate_region(variable, weight=weight, drop_negative=True)._data
+
+    assert not test_1.equals(test_2)
 
 
 def test_aggregate_region_with_weights(simple_df):
