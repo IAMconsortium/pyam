@@ -1323,7 +1323,7 @@ class IamDataFrame(object):
         method="sum",
         weight=None,
         append=False,
-        drop_negative=True
+        drop_negative=True,
     ):
         """Aggregate a timeseries over a number of subregions
 
@@ -1423,7 +1423,7 @@ class IamDataFrame(object):
             components,
             method,
             weight,
-            drop_negative
+            drop_negative,
         )
 
         if df_subregions is None:
