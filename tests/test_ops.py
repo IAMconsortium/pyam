@@ -191,6 +191,41 @@ def test_divide_scenario(test_df_year, append):
         assert_iamframe_equal(exp, obs)
 
 
+@pytest.mark.parametrize("append", (False, True))
+def test_apply_variable(plot_stackplot_df, append):
+    """Verify that in-dataframe apply works on the default `variable` axis"""
+
+    def custom_func(a, b, c, d):
+        return a / c + b / d
+
+    args = ["Emissions|CO2|Tar", "Emissions|CO2|Cars", "Emissions|CO2|LUC"]
+    kwds = {"d": "Emissions|CO2|Agg"}
+    exp = IamDataFrame(
+        pd.DataFrame(
+            [
+                0.3 / (-0.3) + 1.6 / 0.5,
+                0.35 / (-0.6) + 3.8 / (-0.1),
+                0.35 / (-1.2) + 3.0 / (-0.5),
+                0.33 / (-1.0) + 2.5 / (-0.7),
+            ],
+            index=[2005, 2010, 2015, 2020],
+        ).T,
+        model="IMG",
+        scenario="a_scen",
+        region="World",
+        variable="new variable",
+        unit="Mt CO2/yr",
+    )
+
+    if append:
+        obs = test_df_year.copy()
+        obs.apply(custom_func, append=True, args=args, **kwds)
+        assert_iamframe_equal(test_df_year.append(exp), obs)
+    else:
+        obs = test_df_year.apply(custom_func, args=args, **kwds)
+        assert_iamframe_equal(exp, obs)
+
+
 def test_ops_unknown_axis(test_df_year):
     """Using an unknown axis raises an error"""
     with pytest.raises(ValueError, match="Unknown axis: foo"):
