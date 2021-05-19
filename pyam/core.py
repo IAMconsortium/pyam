@@ -1850,7 +1850,7 @@ class IamDataFrame(object):
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def apply(self, name, components, func, axis="variable", append=False):
+    def apply(self, func, name="new variable", axis="variable", append=False, args=(), **kwds)
         """Apply a (self defined) function to components of timeseries data along an `axis`
 
         This function computes a (self defined) function func with arguments `components`.
@@ -1859,23 +1859,27 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        name : str
-            Name of the computed timeseries data on the `axis`.
-        components : list of str
-            list of variables to be included in the function.
         func : function
             Function to apply to `components` along `axis`.
+        name : str
+            Name of the computed timeseries data on the `axis`.
         axis : str, optional
             Axis along which to compute.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
+        args : tuple or list of str
+            List of variables to pass as positional arguments to `func`.
+        **kwds
+            Additional keyword arguments to pass as keyword arguments to `func`. If the
+            name of a variable is given, the associated timeseries is passed. Otherwise
+            the value itself is passed.
 
         Returns
         -------
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, components, name, func, axis=axis)
+        _value = _op_data(self, args, name, func, axis=axis, **kwds)
         if append:
             self.append(_value, inplace=True)
         else:
