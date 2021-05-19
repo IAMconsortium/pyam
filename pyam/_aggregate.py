@@ -83,7 +83,7 @@ def _aggregate_recursive(df, variable, recursive):
             temp_df._data = temp_df._data[_index]
         _df.append(temp_df, inplace=True)
         # check consistency of intermediate variable
-        if not recursive=='skip-validate':
+        if not recursive == 'skip-validate':
             if intermediate_var:
                 if _df.check_aggregate(intermediate_var):
                     raise ValueError("Aggregated data is inconsistent.")
