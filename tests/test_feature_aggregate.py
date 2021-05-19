@@ -108,8 +108,7 @@ def test_check_aggregate_top_level(simple_df):
 
 
 @pytest.mark.parametrize(
-    "variable",
-    (("Primary Energy"), (["Primary Energy", "Emissions|CO2"])),
+    "variable", (("Primary Energy"), (["Primary Energy", "Emissions|CO2"])),
 )
 def test_aggregate_append(simple_df, variable):
     # remove `variable`, do aggregate and append, check equality to original
@@ -179,9 +178,7 @@ def test_aggregate_skip_intermediate(time_col):
     df_minimal = df.filter(variable=agg_vars, scenario="scen_a", keep=False)
 
     # append to `self`
-    df_minimal.aggregate(
-        variable=v, recursive='skip-validate', append=True
-    )
+    df_minimal.aggregate(variable=v, recursive="skip-validate", append=True)
     assert_iamframe_equal(df_minimal, df)
 
 
@@ -384,11 +381,7 @@ def test_aggregate_region_unknown_method(simple_df):
 
 
 @pytest.mark.parametrize(
-    "variable",
-    (
-        "Primary Energy",
-        ["Primary Energy", "Primary Energy|Coal"],
-    ),
+    "variable", ("Primary Energy", ["Primary Energy", "Primary Energy|Coal"],),
 )
 def test_aggregate_time(subannual_df, variable):
     # check that `variable` is a a direct sum and matches given total
