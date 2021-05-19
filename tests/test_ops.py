@@ -110,7 +110,7 @@ def test_multiply_variable(test_df_year, append):
         scenario="scen_a",
         region="World",
         variable=v[2],
-        unit="EJ/yr",
+        unit="EJ^2/yr^2",
         meta=test_df_year.meta,
     )
 
@@ -133,7 +133,7 @@ def test_multiply_scenario(test_df_year, append):
         scenario=v[2],
         region="World",
         variable="Primary Energy",
-        unit="EJ/yr",
+        unit="EJ^2/yr^2",
     )
 
     if append:
@@ -156,7 +156,7 @@ def test_divide_variable(test_df_year, append):
         scenario="scen_a",
         region="World",
         variable=v[2],
-        unit="EJ/yr",
+        unit="dimensionless",
         meta=test_df_year.meta,
     )
 
@@ -179,7 +179,7 @@ def test_divide_scenario(test_df_year, append):
         scenario=v[2],
         region="World",
         variable="Primary Energy",
-        unit="EJ/yr",
+        unit="dimensionless",
     )
 
     if append:
