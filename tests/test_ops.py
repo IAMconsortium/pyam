@@ -218,11 +218,11 @@ def test_apply_variable(plot_stackplot_df, append):
     )
 
     if append:
-        obs = test_df_year.copy()
+        obs = plot_stackplot_df.copy()
         obs.apply(custom_func, append=True, args=args, **kwds)
-        assert_iamframe_equal(test_df_year.append(exp), obs)
+        assert_iamframe_equal(plot_stackplot_df.append(exp), obs)
     else:
-        obs = test_df_year.apply(custom_func, args=args, **kwds)
+        obs = plot_stackplot_df.apply(custom_func, args=args, **kwds)
         assert_iamframe_equal(exp, obs)
 
 
