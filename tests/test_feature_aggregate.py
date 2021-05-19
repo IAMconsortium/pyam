@@ -162,7 +162,7 @@ def test_aggregate_recursive(time_col):
 
 @pytest.mark.parametrize("time_col", (("year"), ("time")))
 def test_aggregate_skip_intermediate(time_col):
-    # use the feature `recursive=True` and `skip_intermediate=True`
+    # use the feature `recursive=skip-validate`
     data = (
         RECURSIVE_DF
         if time_col == "year"
@@ -180,7 +180,7 @@ def test_aggregate_skip_intermediate(time_col):
 
     # append to `self`
     df_minimal.aggregate(
-        variable=v, recursive=True, append=True, skip_intermediate=True
+        variable=v, recursive='skip-validate', append=True
     )
     assert_iamframe_equal(df_minimal, df)
 

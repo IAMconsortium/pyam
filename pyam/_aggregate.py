@@ -57,14 +57,13 @@ def _aggregate(df, variable, components=None, method=np.sum):
     return _group_and_agg(_df, [], method)
 
 
-def _aggregate_recursive(df, variable, skip_intermediate=False):
+def _aggregate_recursive(df, variable, recursive):
     """Recursive aggregation along the variable tree"""
 
     # downselect to components of `variable`, initialize list for aggregated (new) data
     _df = df.filter(variable=f"{variable}|*")
-    if skip_intermediate:
-        # keep variable at highest level if it exists
-        _df.append(df.filter(variable=variable), inplace=True)
+    # keep variable at highest level if it exists
+    _df.append(df.filter(variable=variable), inplace=True)
     data_list = []
 
     # iterate over variables (bottom-up) and aggregate all components up to `variable`
@@ -73,10 +72,7 @@ def _aggregate_recursive(df, variable, skip_intermediate=False):
         var_list = set([reduce_hierarchy(v, -1) for v in components])
 
         # collect already existing variables
-        if skip_intermediate:
-            intermediate_var = var_list.intersection(set(_df.variable))
-        else:
-            intermediate_var = False
+        intermediate_var = var_list.intersection(set(_df.variable))
 
         # a temporary dataframe allows to distinguish between full data and new data
         temp_df = _df.aggregate(variable=var_list)
@@ -87,9 +83,10 @@ def _aggregate_recursive(df, variable, skip_intermediate=False):
             temp_df._data = temp_df._data[_index]
         _df.append(temp_df, inplace=True)
         # check consistency of intermediate variable
-        if intermediate_var:
-            if _df.check_aggregate(intermediate_var):
-                raise ValueError("Aggregated data is inconsistent.")
+        if not recursive=='skip-validate':
+            if intermediate_var:
+                if _df.check_aggregate(intermediate_var):
+                    raise ValueError("Aggregated data is inconsistent.")
         data_list.append(temp_df._data)
 
     return pd.concat(data_list)

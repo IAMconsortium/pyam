@@ -1169,7 +1169,6 @@ class IamDataFrame(object):
         method="sum",
         recursive=False,
         append=False,
-        skip_intermediate=False,
     ):
         """Aggregate timeseries by components or subcategories within each region
 
@@ -1181,13 +1180,13 @@ class IamDataFrame(object):
             Components to be aggregate, defaults to all subcategories of `variable`.
         method : func or str, optional
             Aggregation method, e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-        recursive : bool, optional
+        recursive : bool or str, optional
             Iterate recursively (bottom-up) over all subcategories of `variable`.
+            If there are existing intermediate variables, it validates the aggregated
+            value.
+            If recursive='skip-validate', it skips the validation.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
-        skip_intermediate : bool, optional
-            Skip aggregating already existing intermediate variables. Only has an
-            effect if recursive=True
 
         Returns
         -------
@@ -1200,7 +1199,7 @@ class IamDataFrame(object):
         for individual components as 0.
         """
 
-        if recursive is True:
+        if recursive:
             if components is not None:
                 raise ValueError("Recursive aggregation cannot take `components`!")
             if method != "sum":
@@ -1209,7 +1208,7 @@ class IamDataFrame(object):
                 )
 
             _df = IamDataFrame(
-                _aggregate_recursive(self, variable, skip_intermediate), meta=self.meta
+                _aggregate_recursive(self, variable, recursive), meta=self.meta
             )
         else:
             _df = _aggregate(self, variable, components=components, method=method)
