@@ -1851,9 +1851,10 @@ class IamDataFrame(object):
             return IamDataFrame(_value, meta=self.meta)
 
     def apply(self, func, name="new variable", axis="variable", append=False, args=(), **kwds)
-        """Apply a (self defined) function to components of timeseries data along an `axis`
+        """Apply a function to components of timeseries data along an `axis`
 
-        This function computes a (self defined) function func with arguments `components`.
+        This function computes a function func using timeseries data selected along an `axis`
+        downselected by keyword arguments.
         The length of components needs to match the number of required arguments
         of `func`.
 
