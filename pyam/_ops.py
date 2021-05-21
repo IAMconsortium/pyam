@@ -34,3 +34,28 @@ def _op_data(df, method_args, name, method, axis, **kwds):
     _value.index = append_index_level(_value.index, codes=0, level=name, name=axis)
 
     return _value
+
+def _get_values(df, axis, value, cols):
+    """Return the value of the time series, if value is in axis. Otherwise
+    return values itself.
+
+    Parameters
+    ----------
+    df : IamDataFrame
+        IamDataFrame to select the values from.
+    axis : str
+        Axis in `df` that contains value.
+    value : str or list of str or any
+        Either str or list of str in axis or anything else.
+    cols : list
+        Columns in df that are not `axis`.
+
+    Returns
+    -------
+    Either filtered timeseries from `df` or `value`
+
+    """
+    if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
+       return df.filter(**{axis: value})._data.groupby(cols).sum()
+    else:
+       return value
