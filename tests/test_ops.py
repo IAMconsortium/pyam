@@ -195,8 +195,8 @@ def test_divide_scenario(test_df_year, append):
 def test_apply_variable(plot_stackplot_df, append):
     """Verify that in-dataframe apply works on the default `variable` axis"""
 
-    def custom_func(a, b, c, d):
-        return a / c + b / d
+    def custom_func(a, b, c, d, e):
+        return a / c + b / d + e
 
     args = ["Emissions|CO2|Tar", "Emissions|CO2|Cars", "Emissions|CO2|LUC"]
     kwds = {"d": "Emissions|CO2|Agg"}
