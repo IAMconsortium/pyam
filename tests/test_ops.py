@@ -223,7 +223,7 @@ def test_apply_variable(plot_stackplot_df, append):
         assert_iamframe_equal(plot_stackplot_df.append(exp), obs)
     else:
         obs = plot_stackplot_df.apply(
-            custom_func, name="new variable", args=args, **kwds,
+            custom_func, name="new variable", args=args, **kwds
         )
         assert_iamframe_equal(exp, obs)
 
