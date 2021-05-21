@@ -1851,7 +1851,7 @@ class IamDataFrame(object):
             return IamDataFrame(_value, meta=self.meta)
 
     def apply(
-        self, func, name="new variable", axis="variable", append=False, args=(), **kwds
+        self, func, name, axis="variable", append=False, args=(), **kwds
     ):
         """Apply a function to components of timeseries data along an `axis`
 
