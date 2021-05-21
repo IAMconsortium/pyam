@@ -25,7 +25,7 @@ def _op_data(df, method_args, name, method, axis, **kwds):
         raise ValueError(f"Unknown method: {method}")
 
     cols = df._data.index.names.difference([axis])
-    _args = [df.filter(**{axis: i})._data.groupby(cols).sum() for i in method_args]
+    _args = [_get_values(df, axis, value, cols) for value in method_args]
 
     for key, value in kwds.items():
         kwds[key] = _get_values(df, axis, value, cols)
