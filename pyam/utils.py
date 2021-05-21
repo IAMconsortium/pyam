@@ -11,6 +11,7 @@ import time
 import numpy as np
 import pandas as pd
 from collections.abc import Iterable
+from pyam.index import get_index_levels
 
 try:
     import seaborn as sns
@@ -683,3 +684,10 @@ def get_variable_components(x, level, join=False):
 def s(n):
     """Return an s if n!=1 for nicer formatting of log messages"""
     return "s" if n != 1 else ""
+
+
+def _get_values(df, axis, value, cols):
+     if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
+        return df.filter(**{axis: value})._data.groupby(cols).sum()
+     else:
+        return value
