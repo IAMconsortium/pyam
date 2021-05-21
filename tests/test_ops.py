@@ -199,14 +199,14 @@ def test_apply_variable(plot_stackplot_df, append):
         return a / c + b / d + e
 
     args = ["Emissions|CO2|Tar", "Emissions|CO2|Cars", "Emissions|CO2|LUC"]
-    kwds = {"d": "Emissions|CO2|Agg"}
+    kwds = {"d": "Emissions|CO2|Agg", "e": 5}
     exp = IamDataFrame(
         pd.DataFrame(
             [
-                0.3 / (-0.3) + 1.6 / 0.5,
-                0.35 / (-0.6) + 3.8 / (-0.1),
-                0.35 / (-1.2) + 3.0 / (-0.5),
-                0.33 / (-1.0) + 2.5 / (-0.7),
+                0.3 / (-0.3) + 1.6 / 0.5 + 5,
+                0.35 / (-0.6) + 3.8 / (-0.1) + 5,
+                0.35 / (-1.2) + 3.0 / (-0.5) + 5,
+                0.33 / (-1.0) + 2.5 / (-0.7) + 5,
             ],
             index=[2005, 2010, 2015, 2020],
         ).T,
@@ -219,10 +219,10 @@ def test_apply_variable(plot_stackplot_df, append):
 
     if append:
         obs = plot_stackplot_df.copy()
-        obs.apply(custom_func, append=True, args=args, **kwds)
+        obs.apply(custom_func, name="new variable", append=True, args=args, **kwds)
         assert_iamframe_equal(plot_stackplot_df.append(exp), obs)
     else:
-        obs = plot_stackplot_df.apply(custom_func, args=args, **kwds)
+        obs = plot_stackplot_df.apply(custom_func, name="new variable", args=args, **kwds)
         assert_iamframe_equal(exp, obs)
 
 
