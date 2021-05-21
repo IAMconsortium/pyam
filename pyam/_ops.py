@@ -28,8 +28,7 @@ def _op_data(df, method_args, name, method, axis, **kwds):
     _args = [df.filter(**{axis: i})._data.groupby(cols).sum() for i in method_args]
 
     for key, value in kwds.items():
-        if value in get_index_levels(df._data, axis):
-            kwds[key] = df.filter(**{axis: value})._data.groupby(cols).sum()
+        kwds[key] = _get_values(df, axis, value, cols)
 
     _value = method(*_args, **kwds)
     _value.index = append_index_level(_value.index, codes=0, level=name, name=axis)
