@@ -199,10 +199,7 @@ def test_apply_variable(plot_stackplot_df, append):
         return a / c + b / d + e
 
     args = ["Emissions|CO2|Tar", "Emissions|CO2|Cars", "Emissions|CO2|LUC"]
-    kwds = {
-        "d": "Emissions|CO2|Agg",
-        "e": 5,
-    }
+    kwds = {"d": "Emissions|CO2|Agg", "e": 5}
     exp = IamDataFrame(
         pd.DataFrame(
             [
