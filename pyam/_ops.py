@@ -35,6 +35,7 @@ def _op_data(df, method_args, name, method, axis, **kwds):
 
     return _value
 
+
 def _get_values(df, axis, value, cols):
     """Return the value of the time series, if value is in axis. Otherwise
     return values itself.
@@ -56,6 +57,6 @@ def _get_values(df, axis, value, cols):
 
     """
     if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
-       return df.filter(**{axis: value})._data.groupby(cols).sum()
+        return df.filter(**{axis: value})._data.groupby(cols).sum()
     else:
-       return value
+        return value

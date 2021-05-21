@@ -190,7 +190,6 @@ def test_divide_scenario(test_df_year, append):
         obs = test_df_year.divide(*v, axis="scenario")
         assert_iamframe_equal(exp, obs)
 
-
 @pytest.mark.parametrize("append", (False, True))
 def test_apply_variable(plot_stackplot_df, append):
     """Verify that in-dataframe apply works on the default `variable` axis"""
