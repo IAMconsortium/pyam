@@ -1,5 +1,6 @@
 import operator
 from pyam.index import append_index_level, get_index_levels
+from pyam.utils import to_list
 
 
 KNOWN_OPS = {
