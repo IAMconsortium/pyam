@@ -1,4 +1,5 @@
 import operator
+import pandas as pd
 from pyam.index import append_index_level, get_index_levels
 from pyam.utils import to_list
 

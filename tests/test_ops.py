@@ -127,7 +127,6 @@ def test_subtract_scenario(test_df_year, append):
 def test_multiply_variable(test_df_year, arg, value, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    v = ("Primary Energy", arg, "Product")
     exp = IamDataFrame(
         pd.DataFrame(value, index=["scenario", 2005, 2010]).T,
         model="model_a",
