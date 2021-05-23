@@ -1802,7 +1802,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, "add", axis=axis, args=(a, b))
+        _value = _op_data(self, name, "add", axis=axis, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1832,7 +1832,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, "subtract", axis=axis, args=(a, b))
+        _value = _op_data(self, name, "subtract", axis=axis, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1862,7 +1862,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, "multiply", axis=axis, args=(a, b))
+        _value = _op_data(self, name, "multiply", axis=axis, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1892,7 +1892,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, "divide", axis=axis, args=(a, b))
+        _value = _op_data(self, name, "divide", axis=axis, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
