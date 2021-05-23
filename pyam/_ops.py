@@ -41,8 +41,7 @@ def _op_data(df, method_args, name, method, axis, **kwds):
 
 
 def _get_values(df, axis, value, cols):
-    """Return the value of the time series, if value is in axis. Otherwise
-    return values itself.
+    """Return grouped data if value is in axis. Otherwise return value.
 
     Parameters
     ----------
