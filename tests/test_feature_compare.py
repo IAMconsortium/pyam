@@ -10,15 +10,15 @@ def test_compare(test_df):
     clone._data.iloc[0] = 2
     clone.rename(variable={"Primary Energy|Coal": "Primary Energy|Gas"}, inplace=True)
 
-    obs = compare(test_df, clone, right_label="test_df", left_label="clone")
+    obs = compare(test_df, clone, left_label="test_df", right_label="clone")
 
     exp = pd.DataFrame(
         [
-            ["Primary Energy", "EJ/yr", dt.datetime(2005, 6, 17), 2, 1],
-            ["Primary Energy|Coal", "EJ/yr", dt.datetime(2005, 6, 17), np.nan, 0.5],
-            ["Primary Energy|Coal", "EJ/yr", dt.datetime(2010, 7, 21), np.nan, 3],
-            ["Primary Energy|Gas", "EJ/yr", dt.datetime(2005, 6, 17), 0.5, np.nan],
-            ["Primary Energy|Gas", "EJ/yr", dt.datetime(2010, 7, 21), 3, np.nan],
+            ["Primary Energy", "EJ/yr", dt.datetime(2005, 6, 17), 1, 2],
+            ["Primary Energy|Coal", "EJ/yr", dt.datetime(2005, 6, 17), 0.5, np.nan],
+            ["Primary Energy|Coal", "EJ/yr", dt.datetime(2010, 7, 21), 3, np.nan],
+            ["Primary Energy|Gas", "EJ/yr", dt.datetime(2005, 6, 17), np.nan, 0.5],
+            ["Primary Energy|Gas", "EJ/yr", dt.datetime(2010, 7, 21), np.nan, 3],
         ],
         columns=["variable", "unit", "time", "test_df", "clone"],
     )
