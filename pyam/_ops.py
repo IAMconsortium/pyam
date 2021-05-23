@@ -12,7 +12,7 @@ KNOWN_OPS = {
 }
 
 
-def _op_data(df, method_args, name, method, axis, **kwds):
+def _op_data(df, name, method, axis, args=(), **kwds):
     """Internal implementation of numerical operations on timeseries"""
 
     if axis not in df._data.index.names:
@@ -26,7 +26,7 @@ def _op_data(df, method_args, name, method, axis, **kwds):
         raise ValueError(f"Unknown method: {method}")
 
     cols = df._data.index.names.difference([axis])
-    _args = [_get_values(df, axis, value, cols) for value in method_args]
+    _args = [_get_values(df, axis, value, cols) for value in args]
 
     for key, value in kwds.items():
         kwds[key] = _get_values(df, axis, value, cols)
