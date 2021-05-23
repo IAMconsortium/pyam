@@ -4,11 +4,28 @@ from pyam.index import append_index_level, get_index_levels
 from pyam.utils import to_list
 
 
+# these functions have to be defined explicitly to allow calling them with keyword args
+def add(a, b):
+    return operator.add(a, b)
+
+
+def subtract(a, b):
+    return operator.sub(a, b)
+
+
+def multiply(a, b):
+    return operator.mul(a, b)
+
+
+def divide(a, b):
+    return operator.truediv(a, b)
+
+
 KNOWN_OPS = {
-    "add": operator.add,
-    "subtract": operator.sub,
-    "multiply": operator.mul,
-    "divide": operator.truediv,
+    "add": add,
+    "subtract": subtract,
+    "multiply": multiply,
+    "divide": divide,
 }
 
 
