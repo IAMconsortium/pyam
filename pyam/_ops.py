@@ -29,7 +29,7 @@ KNOWN_OPS = {
 }
 
 
-def _op_data(df, name, method, axis, args=(), **kwds):
+def _op_data(df, name, method, axis, fillna=None, args=(), **kwds):
     """Internal implementation of numerical operations on timeseries"""
 
     if axis not in df._data.index.names:
