@@ -8,7 +8,7 @@ from pyam._ops import _op_data
 
 def test_add_raises(test_df_year):
     """Calling an operation with args that don't return an IamDataFrame raises"""
-    match = "The value returned by the method cannot be cast to an IamDataFrame: 5"
+    match = "Value returned by `add` cannot be cast to an IamDataFrame: 5"
     with pytest.raises(ValueError, match=match):
         test_df_year.add(2, 3, "foo")
 

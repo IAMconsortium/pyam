@@ -33,7 +33,7 @@ def _op_data(df, method_args, name, method, axis, **kwds):
 
     _value = method(*_args, **kwds)
     if not isinstance(_value, pd.Series):
-        msg = "The value returned by the method cannot be cast to an IamDataFrame"
+        msg = f"Value returned by `{method.__name__}` cannot be cast to an IamDataFrame"
         raise ValueError(f"{msg}: {_value}")
     _value.index = append_index_level(_value.index, codes=0, level=name, name=axis)
 
