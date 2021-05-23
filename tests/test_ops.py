@@ -6,27 +6,32 @@ from pyam.testing import assert_iamframe_equal
 from pyam._ops import _op_data
 
 
+@pytest.mark.parametrize(
+    "arg, value",
+    (
+        ("Primary Energy|Coal", ["scen_a", 1 + 0.5, 6 + 3]),
+        (2, [["scen_a", "scen_b"], [1 + 2, 2 + 2], [6 + 2, 7 + 2]]),
+    ),
+)
 @pytest.mark.parametrize("append", (False, True))
-def test_add_variable(test_df_year, append):
+def test_add_variable(test_df_year, arg, value, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    v = ("Primary Energy", "Primary Energy|Coal", "Sum")
     exp = IamDataFrame(
-        pd.DataFrame([1 + 0.5, 6 + 3], index=[2005, 2010]).T,
+        pd.DataFrame(value, index=["scenario", 2005, 2010]).T,
         model="model_a",
-        scenario="scen_a",
         region="World",
-        variable=v[2],
+        variable="Sum",
         unit="EJ/yr",
         meta=test_df_year.meta,
     )
 
     if append:
         obs = test_df_year.copy()
-        obs.add(*v, append=True)
+        obs.add("Primary Energy", arg, "Sum", append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        assert_iamframe_equal(exp, test_df_year.add(*v))
+        assert_iamframe_equal(exp, test_df_year.add("Primary Energy", arg, "Sum"))
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -52,27 +57,32 @@ def test_add_scenario(test_df_year, append):
         assert_iamframe_equal(exp, obs)
 
 
+@pytest.mark.parametrize(
+    "arg, value",
+    (
+        ("Primary Energy|Coal", ["scen_a", 1 - 0.5, 6 - 3]),
+        (2, [["scen_a", "scen_b"], [1 - 2, 2 - 2], [6 - 2, 7 - 2]]),
+    ),
+)
 @pytest.mark.parametrize("append", (False, True))
-def test_subtract_variable(test_df_year, append):
+def test_subtract_variable(test_df_year, arg, value, append):
     """Verify that in-dataframe subtraction works on the default `variable` axis"""
 
-    v = ("Primary Energy", "Primary Energy|Coal", "Primary Energy|Other")
     exp = IamDataFrame(
-        pd.DataFrame([1 - 0.5, 6 - 3], index=[2005, 2010]).T,
+        pd.DataFrame(value, index=["scenario", 2005, 2010]).T,
         model="model_a",
-        scenario="scen_a",
         region="World",
-        variable=v[2],
+        variable="Diff",
         unit="EJ/yr",
         meta=test_df_year.meta,
     )
 
     if append:
         obs = test_df_year.copy()
-        obs.subtract(*v, append=True)
+        obs.subtract("Primary Energy", arg, "Diff", append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        obs = test_df_year.subtract(*v)
+        obs = test_df_year.subtract("Primary Energy", arg, "Diff")
         assert_iamframe_equal(exp, obs)
 
 
@@ -99,27 +109,33 @@ def test_subtract_scenario(test_df_year, append):
         assert_iamframe_equal(exp, obs)
 
 
+@pytest.mark.parametrize(
+    "arg, value",
+    (
+        ("Primary Energy|Coal", ["scen_a", 1 * 0.5, 6 * 3]),
+        (2, [["scen_a", "scen_b"], [1 * 2, 2 * 2], [6 * 2, 7 * 2]]),
+    ),
+)
 @pytest.mark.parametrize("append", (False, True))
-def test_multiply_variable(test_df_year, append):
+def test_multiply_variable(test_df_year, arg, value, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    v = ("Primary Energy", "Primary Energy|Coal", "Product")
+    v = ("Primary Energy", arg, "Product")
     exp = IamDataFrame(
-        pd.DataFrame([1 * 0.5, 6 * 3], index=[2005, 2010]).T,
+        pd.DataFrame(value, index=["scenario", 2005, 2010]).T,
         model="model_a",
-        scenario="scen_a",
         region="World",
-        variable=v[2],
+        variable="Prod",
         unit="EJ/yr",
         meta=test_df_year.meta,
     )
 
     if append:
         obs = test_df_year.copy()
-        obs.multiply(*v, append=True)
+        obs.multiply("Primary Energy", arg, "Prod", append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        assert_iamframe_equal(exp, test_df_year.multiply(*v))
+        assert_iamframe_equal(exp, test_df_year.multiply("Primary Energy", arg, "Prod"))
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -145,27 +161,32 @@ def test_multiply_scenario(test_df_year, append):
         assert_iamframe_equal(exp, obs)
 
 
+@pytest.mark.parametrize(
+    "arg, value",
+    (
+        ("Primary Energy|Coal", ["scen_a", 1 / 0.5, 6 / 3]),
+        (2, [["scen_a", "scen_b"], [1 / 2, 2 / 2], [6 / 2, 7 / 2]]),
+    ),
+)
 @pytest.mark.parametrize("append", (False, True))
-def test_divide_variable(test_df_year, append):
+def test_divide_variable(test_df_year, arg, value, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    v = ("Primary Energy", "Primary Energy|Coal", "Ratio")
     exp = IamDataFrame(
-        pd.DataFrame([1 / 0.5, 6 / 3], index=[2005, 2010]).T,
+        pd.DataFrame(value, index=["scenario", 2005, 2010]).T,
         model="model_a",
-        scenario="scen_a",
         region="World",
-        variable=v[2],
+        variable="Ratio",
         unit="EJ/yr",
         meta=test_df_year.meta,
     )
 
     if append:
         obs = test_df_year.copy()
-        obs.divide(*v, append=True)
+        obs.divide("Primary Energy", arg, "Ratio", append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        assert_iamframe_equal(exp, test_df_year.divide(*v))
+        assert_iamframe_equal(exp, test_df_year.divide("Primary Energy", arg, "Ratio"))
 
 
 @pytest.mark.parametrize("append", (False, True))
