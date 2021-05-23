@@ -1788,7 +1788,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        a, b : str or list of str
+        a, b : str, list of str or a number
             Items to be used for the addition.
         name : str
             Name of the computed timeseries data on the `axis`.
@@ -1818,7 +1818,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        a, b : str or list of str
+        a, b : str, list of str or a number
             Items to be used for the subtraction.
         name : str
             Name of the computed timeseries data on the `axis`.
@@ -1848,7 +1848,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        a, b : str or list of str
+        a, b : str, list of str or a number
             Items to be used for the division.
         name : str
             Name of the computed timeseries data on the `axis`.
@@ -1878,7 +1878,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        a, b : str or list of str
+        a, b : str, list of str or a number
             Items to be used for the division.
         name : str
             Name of the computed timeseries data on the `axis`.
