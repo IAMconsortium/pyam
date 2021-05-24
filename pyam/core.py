@@ -1796,7 +1796,7 @@ class IamDataFrame(object):
             Axis along which to compute.
         fillna : dict or scalar, optional
             Value to fill holes when rows are not defined for either `a` or `b`.
-            Can be a scalar or a dictionary of the form :code:`{item: default}`.
+            Can be a scalar or a dictionary of the form :code:`{arg: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1829,7 +1829,7 @@ class IamDataFrame(object):
             Axis along which to compute.
         fillna : dict or scalar, optional
             Value to fill holes when rows are not defined for either `a` or `b`.
-            Can be a scalar or a dictionary of the form :code:`{item: default}`.
+            Can be a scalar or a dictionary of the form :code:`{arg: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1862,7 +1862,7 @@ class IamDataFrame(object):
             Axis along which to compute.
         fillna : dict or scalar, optional
             Value to fill holes when rows are not defined for either `a` or `b`.
-            Can be a scalar or a dictionary of the form :code:`{item: default}`.
+            Can be a scalar or a dictionary of the form :code:`{arg: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1895,7 +1895,7 @@ class IamDataFrame(object):
             Axis along which to compute.
         fillna : dict or scalar, optional
             Value to fill holes when rows are not defined for either `a` or `b`.
-            Can be a scalar or a dictionary of the form :code:`{item: default}`.
+            Can be a scalar or a dictionary of the form :code:`{arg: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 

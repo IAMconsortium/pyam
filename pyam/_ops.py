@@ -45,6 +45,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), **kwds):
     cols = df._data.index.names.difference([axis])
 
     # replace args and and kwds with values of `df._data` if applicable
+    # _data_args and _data_kwds track if an argument was replaced by `df._data` values
     _args, _data_args = [None] * len(args), [False] * len(args)
     for i, value in enumerate(args):
         _args[i], _data_args[i] = _get_values(df, axis, value, cols, f"_arg{i}")
