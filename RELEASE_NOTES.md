@@ -1,5 +1,6 @@
 # Next Release
 
+- [#537](https://github.com/IAMconsortium/pyam/pull/537) Enhance binary ops to support numerical arguments
 - [#533](https://github.com/IAMconsortium/pyam/pull/533) Add an `apply()` function for custom mathematical operations
 - [#527](https://github.com/IAMconsortium/pyam/pull/527) Add an in-dataframe basic mathematical operations `subtract`, `add`, `multiply`, `divide`
 - [#523](https://github.com/IAMconsortium/pyam/pull/523) Add feature to compute weights for de-biasing using count
