@@ -11,6 +11,8 @@ import pandas as pd
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from pyam._debiasing import _compute_bias
+
 try:
     from datapackage import Package
 
@@ -958,6 +960,52 @@ class IamDataFrame(object):
                 self._exclude_on_fail(df)
             return df.reset_index()
 
+    def compute_bias(self, name, method, axis):
+        """Compute the bias weights and add to 'meta'
+
+        Parameters
+        ----------
+        name : str
+           Column name in the 'meta' dataframe
+        method : str
+            Method to compute the bias weights, see the notes
+        axis : str
+            Index dimensions on which to apply the `method`
+
+        Notes
+        -----
+
+        The following methods are implemented:
+
+        - "count": use the inverse of the number of scenarios grouped by `axis` names.
+
+          Using the following method on an IamDataFrame with three scenarios
+
+          .. code-block:: python
+
+              df.compute_bias(name="bias-weight", method="count", axis="scenario")
+
+          results in the following column to be added to *df.meta*:
+
+          .. list-table::
+             :header-rows: 1
+
+             * - model
+               - scenario
+               - bias-weight
+             * - model_a
+               - scen_a
+               - 0.5
+             * - model_a
+               - scen_b
+               - 1
+             * - model_b
+               - scen_a
+               - 0.5
+
+        """
+        _compute_bias(self, name, method, axis)
+
     def rename(
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs
     ):
@@ -1064,7 +1112,7 @@ class IamDataFrame(object):
     def convert_unit(
         self, current, to, factor=None, registry=None, context=None, inplace=False
     ):
-        r"""Convert all data having *current* units to new units.
+        """Convert all timeseries data having *current* units to new units.
 
         If *factor* is given, existing values are multiplied by it, and the
         *to* units are assigned to the 'unit' column.
@@ -1855,6 +1903,42 @@ class IamDataFrame(object):
             Computed timeseries data or None if `append=True`.
         """
         _value = _op_data(self, (a, b), name, "divide", axis=axis)
+        if append:
+            self.append(_value, inplace=True)
+        else:
+            return IamDataFrame(_value, meta=self.meta)
+
+    def apply(self, func, name, axis="variable", append=False, args=(), **kwds):
+        """Apply a function to components of timeseries data along an `axis`
+
+        This function computes a function `func` using timeseries data selected
+        along an `axis` downselected by keyword arguments.
+        The length of components needs to match the number of required arguments
+        of `func`.
+
+        Parameters
+        ----------
+        func : function
+            Function to apply to `components` along `axis`.
+        name : str
+            Name of the computed timeseries data on the `axis`.
+        axis : str, optional
+            Axis along which to compute.
+        append : bool, optional
+            Whether to append aggregated timeseries data to this instance.
+        args : tuple or list of str
+            List of variables to pass as positional arguments to `func`.
+        **kwds
+            Additional keyword arguments to pass as keyword arguments to `func`. If the
+            name of a variable is given, the associated timeseries is passed. Otherwise
+            the value itself is passed.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+        """
+        _value = _op_data(self, args, name, func, axis=axis, **kwds)
         if append:
             self.append(_value, inplace=True)
         else:
