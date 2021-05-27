@@ -1788,7 +1788,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        a, b : str or list of str
+        a, b : str, list of str or a number
             Items to be used for the addition.
         name : str
             Name of the computed timeseries data on the `axis`.
@@ -1802,7 +1802,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, (a, b), name, "add", axis=axis)
+        _value = _op_data(self, name, "add", axis=axis, args=(a, b))
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1818,7 +1818,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        a, b : str or list of str
+        a, b : str, list of str or a number
             Items to be used for the subtraction.
         name : str
             Name of the computed timeseries data on the `axis`.
@@ -1832,7 +1832,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, (a, b), name, "subtract", axis=axis)
+        _value = _op_data(self, name, "subtract", axis=axis, args=(a, b))
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1848,7 +1848,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        a, b : str or list of str
+        a, b : str, list of str or a number
             Items to be used for the division.
         name : str
             Name of the computed timeseries data on the `axis`.
@@ -1862,7 +1862,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, (a, b), name, "multiply", axis=axis)
+        _value = _op_data(self, name, "multiply", axis=axis, args=(a, b))
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1878,7 +1878,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        a, b : str or list of str
+        a, b : str, list of str or a number
             Items to be used for the division.
         name : str
             Name of the computed timeseries data on the `axis`.
@@ -1892,7 +1892,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, (a, b), name, "divide", axis=axis)
+        _value = _op_data(self, name, "divide", axis=axis, args=(a, b))
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1928,7 +1928,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, args, name, func, axis=axis, **kwds)
+        _value = _op_data(self, name, func, axis=axis, args=args, **kwds)
         if append:
             self.append(_value, inplace=True)
         else:
@@ -2508,15 +2508,15 @@ def compare(
     """
     ret = pd.concat(
         {
-            right_label: right.data.set_index(right._LONG_IDX),
             left_label: left.data.set_index(left._LONG_IDX),
+            right_label: right.data.set_index(right._LONG_IDX),
         },
         axis=1,
     )
     ret.columns = ret.columns.droplevel(1)
     if drop_close:
         ret = ret[~np.isclose(ret[left_label], ret[right_label], **kwargs)]
-    return ret[[right_label, left_label]]
+    return ret
 
 
 def concat(dfs, ignore_meta_conflict=False, **kwargs):
