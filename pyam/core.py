@@ -58,6 +58,7 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
+from pyam._compare import _compare
 from pyam._aggregate import (
     _aggregate,
     _aggregate_region,
@@ -2516,17 +2517,9 @@ def compare(
     kwargs : arguments for comparison of values
         passed to :func:`numpy.isclose`
     """
-    ret = pd.concat(
-        {
-            left_label: left.data.set_index(left._LONG_IDX),
-            right_label: right.data.set_index(right._LONG_IDX),
-        },
-        axis=1,
+    return _compare(
+        left, right, left_label="left", right_label="right", drop_close=True, **kwargs
     )
-    ret.columns = ret.columns.droplevel(1)
-    if drop_close:
-        ret = ret[~np.isclose(ret[left_label], ret[right_label], **kwargs)]
-    return ret
 
 
 def concat(dfs, ignore_meta_conflict=False, **kwargs):
