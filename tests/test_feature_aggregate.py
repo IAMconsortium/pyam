@@ -151,6 +151,11 @@ def test_aggregate_skip_intermediate(recursive_df):
     agg_vars = [f"{v}{i}" for i in ["", "|Wind"]]
     df_minimal.filter(variable=agg_vars, scenario="scen_b", keep=False, inplace=True)
 
+    # simply calling recursive aggregation raises an error
+    match = "Aggregated values are inconsistent with existing data:"
+    with pytest.raises(ValueError, match=match):
+        df_minimal.aggregate(variable=v, recursive=True, append=True)
+
     # append to `self` with skipping validation
     df_minimal.aggregate(variable=v, recursive="skip-validate", append=True)
     assert_iamframe_equal(df_minimal, recursive_df)
