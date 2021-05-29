@@ -2517,9 +2517,7 @@ def compare(
     kwargs : arguments for comparison of values
         passed to :func:`numpy.isclose`
     """
-    return _compare(
-        left, right, left_label="left", right_label="right", drop_close=True, **kwargs
-    )
+    return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
 
 
 def concat(dfs, ignore_meta_conflict=False, **kwargs):
