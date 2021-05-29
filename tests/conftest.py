@@ -105,6 +105,18 @@ REG_DF = pd.DataFrame(
 )
 
 
+RECURSIVE_DF = pd.DataFrame(
+    [
+        ["Secondary Energy|Electricity", "EJ/yr", 5, 19.0],
+        ["Secondary Energy|Electricity|Wind", "EJ/yr", 5, 17],
+        ["Secondary Energy|Electricity|Wind|Offshore", "EJ/yr", 1, 5],
+        ["Secondary Energy|Electricity|Wind|Onshore", "EJ/yr", 4, 12],
+        ["Secondary Energy|Electricity|Solar", "EJ/yr", np.nan, 2],
+    ],
+    columns=["variable", "unit"] + TEST_YEARS,
+)
+
+
 TEST_STACKPLOT_DF = pd.DataFrame(
     [
         ["World", "Emissions|CO2|Energy|Oil", "Mt CO2/yr", 2, 3.2, 2.0, 1.8],
@@ -207,6 +219,24 @@ def reg_df():
 @pytest.fixture(scope="session")
 def plot_df():
     df = IamDataFrame(data=os.path.join(TEST_DATA_DIR, "plot_data.csv"))
+    yield df
+
+
+# IamDataFrame with two scenarios and structure for recursive aggregation
+@pytest.fixture(scope="function", params=["year", "datetime"])
+def recursive_df(request):
+
+    data = (
+        RECURSIVE_DF
+        if request.param == "year"
+        else RECURSIVE_DF.rename(DTS_MAPPING, axis="columns")
+    )
+
+    df = IamDataFrame(data, model="model_a", scenario="scen_a", region="World")
+    df2 = df.rename(scenario={"scen_a": "scen_b"})
+    df2._data *= 2
+    df.append(df2, inplace=True)
+
     yield df
 
 
