@@ -687,7 +687,7 @@ class IamDataFrame(object):
 
         # assign data and other attributes
         ret._LONG_IDX = _index
-        ret._data = _data.set_index(ret._LONG_IDX)
+        ret._data = _data.set_index(ret._LONG_IDX).value
         ret.time_col = "year"
         ret._set_attributes()
         delattr(ret, "time")
