@@ -1,0 +1,33 @@
+# This workflow installs the package and runs the tests with older versions of dependencies
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: pytest-dependency
+
+on:
+  push:
+    branches: [ 'main' ]
+  pull_request:
+    branches: [ '**' ]
+
+jobs:
+  pytest-dependency:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+
+    - name: Install specific out-dated version of dependencies
+      run: pip install pandas==1.1.1 matplotlib==3.2.0
+      # Update the corresponding package requirements when changing dependency versions
+
+    - name: Install other dependencies and package
+      run: pip install -e .[tests,deploy,optional-io-formats,tutorials]
+
+    - name: Test with pytest
+      run: pytest tests --mpl
