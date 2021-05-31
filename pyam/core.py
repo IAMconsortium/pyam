@@ -1778,13 +1778,13 @@ class IamDataFrame(object):
         else:
             self.meta[col] = self.meta[col].apply(func, *args, **kwargs)
 
-    def add(self, a, b, name, axis="variable", append=False):
+    def add(self, a, b, name, axis="variable", fillna=None, append=False):
         """Compute the addition of timeseries data between `a` and `b` along an `axis`
 
         This function computes `a + b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
-        If either `a` or `b` are not defined for a row, no value is computed
-        for that row.
+        If either `a` or `b` are not defined for a row and `fillna` is not specified,
+        no value is computed for that row.
 
         Parameters
         ----------
@@ -1794,6 +1794,9 @@ class IamDataFrame(object):
             Name of the computed timeseries data on the `axis`.
         axis : str, optional
             Axis along which to compute.
+        fillna : dict or scalar, optional
+            Value to fill holes when rows are not defined for either `a` or `b`.
+            Can be a scalar or a dictionary of the form :code:`{arg: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1802,19 +1805,19 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, "add", axis=axis, args=(a, b))
+        _value = _op_data(self, name, "add", axis=axis, fillna=fillna, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def subtract(self, a, b, name, axis="variable", append=False):
+    def subtract(self, a, b, name, axis="variable", fillna=None, append=False):
         """Compute the difference of timeseries data between `a` and `b` along an `axis`
 
         This function computes `a - b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
-        If either `a` or `b` are not defined for a row, no value is computed
-        for that row.
+        If either `a` or `b` are not defined for a row and `fillna` is not specified,
+        no value is computed for that row.
 
         Parameters
         ----------
@@ -1824,6 +1827,9 @@ class IamDataFrame(object):
             Name of the computed timeseries data on the `axis`.
         axis : str, optional
             Axis along which to compute.
+        fillna : dict or scalar, optional
+            Value to fill holes when rows are not defined for either `a` or `b`.
+            Can be a scalar or a dictionary of the form :code:`{arg: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1832,19 +1838,19 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, "subtract", axis=axis, args=(a, b))
+        _value = _op_data(self, name, "subtract", axis=axis, fillna=fillna, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def multiply(self, a, b, name, axis="variable", append=False):
-        """Compute the division of timeseries data between `a` and `b` along an `axis`
+    def multiply(self, a, b, name, axis="variable", fillna=None, append=False):
+        """Compute the product of timeseries data between `a` and `b` along an `axis`
 
         This function computes `a * b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
-        If either `a` or `b` are not defined for a row, no value is computed
-        for that row.
+        If either `a` or `b` are not defined for a row and `fillna` is not specified,
+        no value is computed for that row.
 
         Parameters
         ----------
@@ -1854,6 +1860,9 @@ class IamDataFrame(object):
             Name of the computed timeseries data on the `axis`.
         axis : str, optional
             Axis along which to compute.
+        fillna : dict or scalar, optional
+            Value to fill holes when rows are not defined for either `a` or `b`.
+            Can be a scalar or a dictionary of the form :code:`{arg: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1862,19 +1871,19 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, "multiply", axis=axis, args=(a, b))
+        _value = _op_data(self, name, "multiply", axis=axis, fillna=fillna, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def divide(self, a, b, name, axis="variable", append=False):
+    def divide(self, a, b, name, axis="variable", fillna=None, append=False):
         """Compute the division of timeseries data between `a` and `b` along an `axis`
 
         This function computes `a / b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
-        If either `a` or `b` are not defined for a row, no value is computed
-        for that row.
+        If either `a` or `b` are not defined for a row and `fillna` is not specified,
+        no value is computed for that row.
 
         Parameters
         ----------
@@ -1884,6 +1893,9 @@ class IamDataFrame(object):
             Name of the computed timeseries data on the `axis`.
         axis : str, optional
             Axis along which to compute.
+        fillna : dict or scalar, optional
+            Value to fill holes when rows are not defined for either `a` or `b`.
+            Can be a scalar or a dictionary of the form :code:`{arg: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1892,13 +1904,15 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, "divide", axis=axis, args=(a, b))
+        _value = _op_data(self, name, "divide", axis=axis, fillna=fillna, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def apply(self, func, name, axis="variable", append=False, args=(), **kwds):
+    def apply(
+        self, func, name, axis="variable", fillna=None, append=False, args=(), **kwds
+    ):
         """Apply a function to components of timeseries data along an `axis`
 
         This function computes a function `func` using timeseries data selected
@@ -1914,6 +1928,9 @@ class IamDataFrame(object):
             Name of the computed timeseries data on the `axis`.
         axis : str, optional
             Axis along which to compute.
+        fillna : dict or scalar, optional
+            Value to fill holes when rows are not defined for items in `args` or `kwds`.
+            Can be a scalar or a dictionary of the form :code:`{kwd: default}`.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
         args : tuple or list of str
@@ -1928,7 +1945,7 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _value = _op_data(self, name, func, axis=axis, args=args, **kwds)
+        _value = _op_data(self, name, func, axis=axis, fillna=fillna, args=args, **kwds)
         if append:
             self.append(_value, inplace=True)
         else:
