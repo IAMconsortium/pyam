@@ -25,7 +25,7 @@ jobs:
     - name: Install specific out-dated version of dependencies
       # Update the corresponding package requirements when changing
       # minimum dependency versions
-      run: pip install pandas==1.1.1 matplotlib==3.2.0 iam-units==2020.4.12
+      run: pip install pandas==1.1.1 matplotlib==3.2.0 iam-units==2020.4.21
 
     - name: Install other dependencies and package
       run: pip install -e .[tests,deploy,optional-io-formats,tutorials]
