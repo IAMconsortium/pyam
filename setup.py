@@ -17,7 +17,7 @@ logo = r"""
 # ./.github/workflows/pytest-depedency.yml
 REQUIREMENTS = [
     "argparse",
-    "iam-units>=2020.4.12",
+    "iam-units>=2020.4.21",
     "numpy",
     "requests",
     "pandas>=1.1.1",
