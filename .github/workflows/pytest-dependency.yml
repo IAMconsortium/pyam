@@ -22,12 +22,13 @@ jobs:
       with:
         python-version: '3.7'
 
+    - name: Install specific out-dated version of dependencies
+      # Update the corresponding package requirements when changing
+      # minimum dependency versions
+      run: pip install pandas==1.1.1 matplotlib==3.2.0 iam-units==2020.4.12
+
     - name: Install other dependencies and package
       run: pip install -e .[tests,deploy,optional-io-formats,tutorials]
-
-    - name: Install specific out-dated version of dependencies
-      run: pip install pandas==1.1.1 matplotlib==3.2.0 iam-units==2020.4.12
-      # Update the corresponding package requirements when changing dependency versions
 
     - name: Test with pytest
       run: pytest tests --mpl
