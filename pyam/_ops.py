@@ -2,6 +2,7 @@ import operator
 import pandas as pd
 from pyam.index import append_index_level, get_index_levels
 from pyam.utils import to_list
+from iam_units import registry
 
 
 # these functions have to be defined explicitly to allow calling them with keyword args
@@ -70,14 +71,19 @@ def _op_data(df, name, method, axis, fillna=None, args=(), **kwds):
                 kwds[key] = _data[key]
 
     # apply method and check that returned object is valid
-    _value = method(*_args, **kwds)
-    if not isinstance(_value, pd.Series):
+    result = method(*_args, **kwds)
+    if not isinstance(result, pd.Series):
         msg = f"Value returned by `{method.__name__}` cannot be cast to an IamDataFrame"
-        raise ValueError(f"{msg}: {_value}")
+        raise ValueError(f"{msg}: {result}")
 
-    # insert the index level and reset the series name
-    _value.index = append_index_level(_value.index, codes=0, level=name, name=axis)
-    return _value.rename(index=None)
+    rename_args = ("dimensionless", "")
+    _value = pd.DataFrame(
+        [[i.magnitude, str(i.units).replace(*rename_args)] for i in result.values],
+        columns=["value", "unit"],
+        # append the `name` to the index on the `axis`
+        index=append_index_level(result.index, codes=0, level=name, name=axis),
+    )
+    return _value.set_index("unit", append=True)
 
 
 def _get_values(df, axis, value, cols, name):
@@ -102,7 +108,14 @@ def _get_values(df, axis, value, cols, name):
 
     """
     if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
-        _data = df.filter(**{axis: value})._data.groupby(cols).sum().rename(index=name)
-        return _data, True
+        _data = df.filter(**{axis: value})._data.groupby(cols).sum()
+        _data = pd.Series(
+            [
+                registry.Quantity(v, u)
+                for v, u in zip(_data.values, _data.index.get_level_values("unit"))
+            ],
+            index=_data.reset_index("unit", drop=True).index,
+        )
+        return _data.rename(index=name), True
     else:
         return value, False
