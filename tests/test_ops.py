@@ -56,7 +56,7 @@ def test_add_raises(test_df_year):
 def test_add_variable(test_df_year, arg, df_func, fillna, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    exp = df_func(operator.add, "Sum", unit="EJ/yr", meta=test_df_year.meta)
+    exp = df_func(operator.add, "Sum", unit="exajoule / year", meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Sum")
     if append:
@@ -78,7 +78,7 @@ def test_add_scenario(test_df_year, append):
         scenario=v[2],
         region="World",
         variable="Primary Energy",
-        unit="EJ/yr",
+        unit="exajoule / year",
     )
 
     if append:
