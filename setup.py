@@ -11,9 +11,13 @@ logo = r"""
   \/_/     \/_____/   \/_/\/_/   \/_/  \/_/
 """
 
+# NOTE TO DEVS
+# If you change a minimum version below, please explicitly set that
+# in our minimum-reqs test in the file
+# ./.github/workflows/pytest-depedency.yml
 REQUIREMENTS = [
     "argparse",
-    "iam-units>=2020.4.12",
+    "iam-units>=2020.4.21",
     "numpy",
     "requests",
     "pandas>=1.1.1",
