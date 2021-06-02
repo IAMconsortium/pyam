@@ -1,5 +1,6 @@
 # Next Release
 
+- [#541](https://github.com/IAMconsortium/pyam/pull/541) Support units in binary operations
 - [#538](https://github.com/IAMconsortium/pyam/pull/538) Add option to set defaults in binary operations
 - [#537](https://github.com/IAMconsortium/pyam/pull/537) Enhance binary ops to support numerical arguments
 - [#533](https://github.com/IAMconsortium/pyam/pull/533) Add an `apply()` function for custom mathematical operations
