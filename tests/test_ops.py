@@ -13,8 +13,6 @@ DF_INDEX = ["scenario", 2005, 2010]
 # dictionary with common IamDataFrame args for all tests operating on variable
 DF_ARGS = dict(model="model_a", region="World")
 
-
-UNIT_EJ = "exajoule / year"
 UNIT_EJ_SQ = "exajoule ** 2 / year ** 2"
 
 
@@ -63,7 +61,7 @@ def test_add_raises(test_df_year):
 def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    unit = UNIT_EJ if ignore_units is False else ignore_units
+    unit = "EJ/yr" if ignore_units is False else ignore_units
     exp = df_func(operator.add, "Sum", unit=unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Sum")
@@ -78,9 +76,7 @@ def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
             with pytest.raises(pint.DimensionalityError):
                 test_df_year.add(*args, fillna=fillna, ignore_units=False)
 
-        assert_iamframe_equal(
-            exp, test_df_year.add(*args, **kwds)
-        )
+        assert_iamframe_equal(exp, test_df_year.add(*args, **kwds))
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -94,7 +90,7 @@ def test_add_scenario(test_df_year, append):
         scenario=v[2],
         region="World",
         variable="Primary Energy",
-        unit=UNIT_EJ,
+        unit="EJ/yr",
     )
 
     if append:
@@ -120,17 +116,22 @@ def test_add_scenario(test_df_year, append):
 def test_subtract_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
     """Verify that in-dataframe subtraction works on the default `variable` axis"""
 
-    unit = UNIT_EJ if ignore_units is False else ignore_units
+    unit = "EJ/yr" if ignore_units is False else ignore_units
     exp = df_func(operator.sub, "Diff", unit=unit, meta=test_df_year.meta)
 
+    args = ("Primary Energy", arg, "Diff")
     kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.subtract("Primary Energy", arg, "Diff", **kwds, append=True)
+        obs.subtract(*args, **kwds, append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        obs = test_df_year.subtract("Primary Energy", arg, "Diff", **kwds)
-        assert_iamframe_equal(exp, obs)
+        # check that incompatible units raise the expected error
+        if ignore_units:
+            with pytest.raises(pint.DimensionalityError):
+                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+
+        assert_iamframe_equal(exp, test_df_year.subtract(*args, **kwds))
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -144,7 +145,7 @@ def test_subtract_scenario(test_df_year, append):
         scenario=v[2],
         region="World",
         variable="Primary Energy",
-        unit=UNIT_EJ,
+        unit="EJ/yr",
     )
 
     if append:
@@ -157,18 +158,23 @@ def test_subtract_scenario(test_df_year, append):
 
 
 @pytest.mark.parametrize(
-    "arg, df_func, fillna, unit, ignore_units",
+    "arg, df_func, fillna, ignore_units",
     (
-        ("Primary Energy|Coal", df_ops_variable, None, UNIT_EJ_SQ, False),
-        # ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, UNIT_EJ),
-        # ("Primary Energy|Coal", df_ops_variable_default, 5, UNIT_EJ),
-        (2, df_ops_variable_number, None, UNIT_EJ, False),
+        ("Primary Energy|Coal", df_ops_variable, None, False),
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
+        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
+        # note that multiplying with pint reformats the unit
+        (2, df_ops_variable_number, None, False),
     ),
 )
 @pytest.mark.parametrize("append", (False, True))
-def test_multiply_variable(test_df_year, arg, df_func, fillna, append, unit, ignore_units):
+def test_multiply_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
+    if ignore_units:
+        unit = ignore_units
+    else:
+        unit = "exajoule / year" if isinstance(arg, int) else UNIT_EJ_SQ
     exp = df_func(operator.mul, "Prod", unit=unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Prod")
@@ -178,6 +184,11 @@ def test_multiply_variable(test_df_year, arg, df_func, fillna, append, unit, ign
         obs.multiply(*args, **kwds, append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
+        # check that incompatible units raise the expected error
+        if ignore_units:
+            with pytest.raises(pint.DimensionalityError):
+                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+
         assert_iamframe_equal(exp, test_df_year.multiply(*args, **kwds))
 
 
@@ -208,8 +219,8 @@ def test_multiply_scenario(test_df_year, append):
     "arg, df_func, fillna, ignore_units",
     (
         ("Primary Energy|Coal", df_ops_variable, None, False),
-        # ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}),
-        # ("Primary Energy|Coal", df_ops_variable_default, 5),
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
+        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
         (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
         (2, df_ops_variable_number, None, False),
     ),
@@ -218,7 +229,11 @@ def test_multiply_scenario(test_df_year, append):
 def test_divide_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    unit = UNIT_EJ if isinstance(arg, int) else ""
+    # note that dividing with pint reformats the unit
+    if ignore_units:
+        unit = ignore_units
+    else:
+        unit = "exajoule / year" if isinstance(arg, int) else ""
     exp = df_func(operator.truediv, "Ratio", unit=unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Ratio")
@@ -228,6 +243,11 @@ def test_divide_variable(test_df_year, arg, df_func, fillna, append, ignore_unit
         obs.divide(*args, **kwds, append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
+        # check that incompatible units raise the expected error
+        if ignore_units:
+            with pytest.raises(pint.DimensionalityError):
+                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+
         assert_iamframe_equal(exp, test_df_year.divide(*args, **kwds))
 
 
@@ -270,7 +290,7 @@ def test_apply_variable(test_df_year, append):
         **DF_ARGS,
         scenario="scen_a",
         variable=v,
-        unit=UNIT_EJ,
+        unit="exajoule / year",  # applying operations with pint reformats the unit
         meta=test_df_year.meta,
     )
 

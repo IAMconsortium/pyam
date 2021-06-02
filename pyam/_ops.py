@@ -78,6 +78,21 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
             df, axis, value, cols, key
         )
 
+    # fast-pass on units: override pint for some methods if all kwds have same the unit
+    if (
+        method in [add, subtract, divide]
+        and ignore_units is False
+        and fillna is None
+        and len(_unit_kwds["a"]) == 1
+        and len(_unit_kwds["b"]) == 1
+    ):
+        # check if all args and kwds have the same unique unit
+        if registry.Unit(_unit_kwds["a"][0]) == registry.Unit(_unit_kwds["b"][0]):
+            ignore_units = _unit_kwds["a"][0] if method in [add, subtract] else ""
+            # downcast `pint.Quantity` to numerical value
+            kwds["a"], kwds["b"] = _to_value(kwds["a"]), _to_value(kwds["b"])
+
+    # cast args and kwds to pd.Series of pint.Quantity
     if ignore_units is False:
         for i, is_data in enumerate(_data_args):
             if is_data:
@@ -149,15 +164,23 @@ def _get_values(df, axis, value, cols, name):
 
     Returns
     -------
-    Either filtered timeseries from `df` or `value`
+    Tuple of the following:
+     - Either `df.data` downselected by `{axis: value}` or `value`
+     - List of units of the timeseries data or `value`
+     - Bool whether first item was derived from `df.data`
 
     """
+    # try selecting from `df.data`
     try:
         if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
             _df = df.filter(**{axis: value})
             return _df._data.groupby(cols).sum().rename(index=name), _df.unit, True
     except:
         pass
+    # else, check if `value` is a `pint.Quantity` and return unit specifically
+    if isinstance(value, Quantity):
+        return value, [value.units], False
+    # else, return value
     return value, [], False
 
 
@@ -171,3 +194,10 @@ def _to_quantity(data):
         index=data.reset_index("unit", drop=True).index,
         name=data.name,
     )
+
+
+def _to_value(x):
+    """Return the value of a pint.Quantity"""
+    if isinstance(x, Quantity):
+        return x.magnitude
+    return x
