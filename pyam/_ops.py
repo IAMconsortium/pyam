@@ -8,23 +8,19 @@ from pint import Quantity
 
 # these functions have to be defined explicitly to allow calling them with keyword args
 def add(a, b):
-    a, b = _make_series(a, b)
-    return operator.add(a, b)
+    return operator.add(*_make_series(a, b))
 
 
 def subtract(a, b):
-    a, b = _make_series(a, b)
-    return operator.sub(a, b)
+    return operator.sub(*_make_series(a, b))
 
 
 def multiply(a, b):
-    a, b = _make_series(a, b)
-    return operator.mul(a, b)
+    return operator.mul(*_make_series(a, b))
 
 
 def divide(a, b):
-    a, b = _make_series(a, b)
-    return operator.truediv(a, b)
+    return operator.truediv(*_make_series(a, b))
 
 
 def _make_series(a, b):
@@ -85,21 +81,19 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
         and fillna is None
         and len(_unit_kwds["a"]) == 1
         and len(_unit_kwds["b"]) == 1
+        and registry.Unit(_unit_kwds["a"][0]) == registry.Unit(_unit_kwds["b"][0])
     ):
-        # check if all args and kwds have the same unique unit
-        if registry.Unit(_unit_kwds["a"][0]) == registry.Unit(_unit_kwds["b"][0]):
-            ignore_units = _unit_kwds["a"][0] if method in [add, subtract] else ""
-            # downcast `pint.Quantity` to numerical value
-            kwds["a"], kwds["b"] = _to_value(kwds["a"]), _to_value(kwds["b"])
+        # activate ignore-units feature
+        ignore_units = _unit_kwds["a"][0] if method in [add, subtract] else ""
+        # downcast `pint.Quantity` to numerical value
+        kwds["a"], kwds["b"] = _to_value(kwds["a"]), _to_value(kwds["b"])
 
     # cast args and kwds to pd.Series of pint.Quantity
     if ignore_units is False:
         for i, is_data in enumerate(_data_args):
-            if is_data:
-                _args[i] = _to_quantity(_args[i])
-        for key in kwds:
-            if _data_kwds[key]:
-                kwds[key] = _to_quantity(kwds[key])
+            _args[i] = _to_quantity(_args[i]) if is_data else _args[i]
+        for key, value in kwds.items():
+            kwds[key] = _to_quantity(value) if _data_kwds[key] else value
 
     # merge all args and kwds that are based on `df._data` to apply fillna
     if fillna:
