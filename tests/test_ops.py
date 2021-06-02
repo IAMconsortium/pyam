@@ -110,16 +110,18 @@ def test_add_scenario(test_df_year, append):
     "arg, df_func, fillna, ignore_units",
     (
         ("Primary Energy|Coal", df_ops_variable, None, False),
-        # ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}),
-        # ("Primary Energy|Coal", df_ops_variable_default, 5),
-        # (2, df_ops_variable_number, None),
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
+        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
+        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
+        (2, df_ops_variable_number, None, "foo"),
     ),
 )
 @pytest.mark.parametrize("append", (False, True))
 def test_subtract_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
     """Verify that in-dataframe subtraction works on the default `variable` axis"""
 
-    exp = df_func(operator.sub, "Diff", unit=UNIT_EJ, meta=test_df_year.meta)
+    unit = UNIT_EJ if ignore_units is False else ignore_units
+    exp = df_func(operator.sub, "Diff", unit=unit, meta=test_df_year.meta)
 
     kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
@@ -160,7 +162,7 @@ def test_subtract_scenario(test_df_year, append):
         ("Primary Energy|Coal", df_ops_variable, None, UNIT_EJ_SQ, False),
         # ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, UNIT_EJ),
         # ("Primary Energy|Coal", df_ops_variable_default, 5, UNIT_EJ),
-        # (2, df_ops_variable_number, None, UNIT_EJ),
+        (2, df_ops_variable_number, None, UNIT_EJ, False),
     ),
 )
 @pytest.mark.parametrize("append", (False, True))
@@ -208,14 +210,16 @@ def test_multiply_scenario(test_df_year, append):
         ("Primary Energy|Coal", df_ops_variable, None, False),
         # ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}),
         # ("Primary Energy|Coal", df_ops_variable_default, 5),
-        # (2, df_ops_variable_number, None),
+        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
+        (2, df_ops_variable_number, None, False),
     ),
 )
 @pytest.mark.parametrize("append", (False, True))
 def test_divide_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    exp = df_func(operator.truediv, "Ratio", unit="", meta=test_df_year.meta)
+    unit = UNIT_EJ if isinstance(arg, int) else ""
+    exp = df_func(operator.truediv, "Ratio", unit=unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Ratio")
     kwds = dict(ignore_units=ignore_units, fillna=fillna)
