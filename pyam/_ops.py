@@ -170,16 +170,13 @@ def _get_values(df, axis, value, cols, name):
      - Bool whether first item was derived from `df.data`
 
     """
-    # try selecting from `df.data`
-    try:
-        if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
-            _df = df.filter(**{axis: value})
-            return _df._data.groupby(cols).sum().rename(index=name), _df.unit, True
-    except:
-        pass
-    # else, check if `value` is a `pint.Quantity` and return unit specifically
+    # check if `value` is a `pint.Quantity` and return unit specifically
     if isinstance(value, Quantity):
         return value, [value.units], False
+    # try selecting from `df.data`
+    if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
+        _df = df.filter(**{axis: value})
+        return _df._data.groupby(cols).sum().rename(index=name), _df.unit, True
     # else, return value
     return value, [], False
 
