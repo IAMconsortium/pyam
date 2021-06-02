@@ -3,23 +3,41 @@ import pandas as pd
 from pyam.index import append_index_level, get_index_levels
 from pyam.utils import to_list
 from iam_units import registry
+from pint import Quantity
 
 
 # these functions have to be defined explicitly to allow calling them with keyword args
 def add(a, b):
+    a, b = _make_series(a, b)
     return operator.add(a, b)
 
 
 def subtract(a, b):
+    a, b = _make_series(a, b)
     return operator.sub(a, b)
 
 
 def multiply(a, b):
+    a, b = _make_series(a, b)
     return operator.mul(a, b)
 
 
 def divide(a, b):
+    a, b = _make_series(a, b)
     return operator.truediv(a, b)
+
+
+def _make_series(a, b):
+    """Cast instances of a pint.Quantity to a pd.Series
+
+    Calling an operation on a pd.Series and a pint.Quantity removes the units,
+    therefore a pint.Quantity is transformed to a pd.Series of quantities.
+    """
+    if isinstance(a, Quantity):
+        return pd.Series([a] * len(b), index=b.index), b
+    if isinstance(b, Quantity):
+        return a, pd.Series([b] * len(a), index=a.index)
+    return a, b
 
 
 KNOWN_OPS = {
@@ -30,7 +48,7 @@ KNOWN_OPS = {
 }
 
 
-def _op_data(df, name, method, axis, fillna=None, args=(), **kwds):
+def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, **kwds):
     """Internal implementation of numerical operations on timeseries"""
 
     if axis not in df._data.index.names:
@@ -47,13 +65,26 @@ def _op_data(df, name, method, axis, fillna=None, args=(), **kwds):
 
     # replace args and and kwds with values of `df._data` if applicable
     # _data_args and _data_kwds track if an argument was replaced by `df._data` values
-    _args, _data_args = [None] * len(args), [False] * len(args)
+    n = len(args)
+    _args, _data_args, _units_args = [None] * n, [False] * n, [None] * n
     for i, value in enumerate(args):
-        _args[i], _data_args[i] = _get_values(df, axis, value, cols, f"_arg{i}")
+        _args[i], _units_args[i], _data_args[i] = _get_values(
+            df, axis, value, cols, f"_arg{i}"
+        )
 
-    _data_kwds = {}
+    _data_kwds, _unit_kwds = {}, {}
     for i, (key, value) in enumerate(kwds.items()):
-        kwds[key], _data_kwds[key] = _get_values(df, axis, value, cols, key)
+        kwds[key], _unit_kwds[key], _data_kwds[key] = _get_values(
+            df, axis, value, cols, key
+        )
+
+    if ignore_units is False:
+        for i, is_data in enumerate(_data_args):
+            if is_data:
+                _args[i] = _to_quantity(_args[i])
+        for key in kwds:
+            if _data_kwds[key]:
+                kwds[key] = _to_quantity(kwds[key])
 
     # merge all args and kwds that are based on `df._data` to apply fillna
     if fillna:
@@ -76,14 +107,28 @@ def _op_data(df, name, method, axis, fillna=None, args=(), **kwds):
         msg = f"Value returned by `{method.__name__}` cannot be cast to an IamDataFrame"
         raise ValueError(f"{msg}: {result}")
 
-    rename_args = ("dimensionless", "")
-    _value = pd.DataFrame(
-        [[i.magnitude, str(i.units).replace(*rename_args)] for i in result.values],
-        columns=["value", "unit"],
-        # append the `name` to the index on the `axis`
-        index=append_index_level(result.index, codes=0, level=name, name=axis),
-    )
-    return _value.set_index("unit", append=True)
+    # separate pint quantities into numerical value and unit (as index)
+    if ignore_units is False:
+        rename_args = ("dimensionless", "")
+        _value = pd.DataFrame(
+            [[i.magnitude, str(i.units).replace(*rename_args)] for i in result.values],
+            columns=["value", "unit"],
+            index=result.index,
+        ).set_index("unit", append=True)
+
+    # otherwise, set unit (as index) to "unknown" or the value given by "ignore_units"
+    else:
+        index = append_index_level(
+            result.reset_index("unit", drop=True).index,
+            codes=0,
+            level="unknown" if ignore_units is True else ignore_units,
+            name="unit",
+        )
+        _value = pd.Series(result.values, index=index, name="value")
+
+    # append the `name` to the index on the `axis`
+    _value.index = append_index_level(_value.index, codes=0, level=name, name=axis)
+    return _value
 
 
 def _get_values(df, axis, value, cols, name):
@@ -107,15 +152,22 @@ def _get_values(df, axis, value, cols, name):
     Either filtered timeseries from `df` or `value`
 
     """
-    if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
-        _data = df.filter(**{axis: value})._data.groupby(cols).sum()
-        _data = pd.Series(
-            [
-                registry.Quantity(v, u)
-                for v, u in zip(_data.values, _data.index.get_level_values("unit"))
-            ],
-            index=_data.reset_index("unit", drop=True).index,
-        )
-        return _data.rename(index=name), True
-    else:
-        return value, False
+    try:
+        if any(v in get_index_levels(df._data, axis) for v in to_list(value)):
+            _df = df.filter(**{axis: value})
+            return _df._data.groupby(cols).sum().rename(index=name), _df.unit, True
+    except:
+        pass
+    return value, [], False
+
+
+def _to_quantity(data):
+    """Convert the values of an indexed pd.Series into pint.Quantity instances"""
+    return pd.Series(
+        [
+            registry.Quantity(v, u)
+            for v, u in zip(data.values, data.index.get_level_values("unit"))
+        ],
+        index=data.reset_index("unit", drop=True).index,
+        name=data.name,
+    )
