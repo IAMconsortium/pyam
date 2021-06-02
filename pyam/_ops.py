@@ -119,7 +119,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
     # separate pint quantities into numerical value and unit (as index)
     if ignore_units is False:
         _value = pd.DataFrame(
-            [[i.magnitude, '{:~}'.format(i.units)] for i in result.values],
+            [[i.magnitude, "{:~}".format(i.units)] for i in result.values],
             columns=["value", "unit"],
             index=result.index,
         ).set_index("unit", append=True)
