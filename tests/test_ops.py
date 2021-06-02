@@ -13,8 +13,6 @@ DF_INDEX = ["scenario", 2005, 2010]
 # dictionary with common IamDataFrame args for all tests operating on variable
 DF_ARGS = dict(model="model_a", region="World")
 
-UNIT_EJ_SQ = "exajoule ** 2 / year ** 2"
-
 
 def df_ops_variable(func, variable, unit, meta):
     """Return IamDataFrame when performing operation on test_df without default"""
@@ -174,7 +172,7 @@ def test_multiply_variable(test_df_year, arg, df_func, fillna, ignore_units, app
     if ignore_units:
         unit = ignore_units
     else:
-        unit = "exajoule / year" if isinstance(arg, int) else UNIT_EJ_SQ
+        unit = "EJ / a" if isinstance(arg, int) else "EJ ** 2 / a ** 2"
     exp = df_func(operator.mul, "Prod", unit=unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Prod")
@@ -203,7 +201,7 @@ def test_multiply_scenario(test_df_year, append):
         scenario=v[2],
         region="World",
         variable="Primary Energy",
-        unit=UNIT_EJ_SQ,
+        unit="EJ ** 2 / a ** 2",
     )
 
     if append:
@@ -233,7 +231,7 @@ def test_divide_variable(test_df_year, arg, df_func, fillna, append, ignore_unit
     if ignore_units:
         unit = ignore_units
     else:
-        unit = "exajoule / year" if isinstance(arg, int) else ""
+        unit = "EJ / a" if isinstance(arg, int) else ""
     exp = df_func(operator.truediv, "Ratio", unit=unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Ratio")
@@ -290,7 +288,7 @@ def test_apply_variable(test_df_year, append):
         **DF_ARGS,
         scenario="scen_a",
         variable=v,
-        unit="exajoule / year",  # applying operations with pint reformats the unit
+        unit="EJ / a",  # applying operations with pint reformats the unit
         meta=test_df_year.meta,
     )
 

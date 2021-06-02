@@ -1,6 +1,6 @@
 import operator
 import pandas as pd
-from pyam.index import append_index_level, get_index_levels
+from pyam.index import append_index_level, get_index_levels, replace_index_values
 from pyam.utils import to_list
 from iam_units import registry
 from pint import Quantity
@@ -118,12 +118,12 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
 
     # separate pint quantities into numerical value and unit (as index)
     if ignore_units is False:
-        rename_args = ("dimensionless", "")
         _value = pd.DataFrame(
-            [[i.magnitude, str(i.units).replace(*rename_args)] for i in result.values],
+            [[i.magnitude, '{:~}'.format(i.units)] for i in result.values],
             columns=["value", "unit"],
             index=result.index,
         ).set_index("unit", append=True)
+        _value.index = replace_index_values(_value, "unit", {"dimensionless": ""})
 
     # otherwise, set unit (as index) to "unknown" or the value given by "ignore_units"
     else:
