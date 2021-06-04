@@ -74,7 +74,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
             df, axis, value, cols, key
         )
 
-    # fast-pass on units: override pint for some methods if all kwds have same the unit
+    # fast-pass on units: override pint for some methods if all kwds have the same unit
     if (
         method in [add, subtract, divide]
         and ignore_units is False
