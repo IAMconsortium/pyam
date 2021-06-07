@@ -1233,6 +1233,11 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Aggregated timeseries data or None if `append=True`.
 
+        See Also
+        --------
+        add : Add timeseries data items along an `axis`.
+        aggregate_region : Aggregate timeseries data along the `region` dimension.
+
         Notes
         -----
         The aggregation function interprets any missing values (:any:`numpy.nan`)
@@ -1351,6 +1356,16 @@ class IamDataFrame(object):
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Aggregated timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        add : Add timeseries data items `a` and `b` along an `axis`
+        aggregate : Aggregate timeseries data along the `variable` hierarchy.
         """
         _df = _aggregate_region(
             self,
@@ -1781,7 +1796,7 @@ class IamDataFrame(object):
     def add(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
     ):
-        """Compute the addition of timeseries data between `a` and `b` along an `axis`
+        """Add timeseries data items `a` and `b` along an `axis`
 
         This function computes `a + b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
@@ -1810,6 +1825,13 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
 
+        See Also
+        --------
+        subtract, multiply, divide
+        apply : Apply a custom function on the timeseries data along any axis.
+        aggregate : Aggregate timeseries data along the `variable` hierarchy.
+        aggregate_region : Aggregate timeseries data along the `region` dimension.
+
         Notes
         -----
         This function uses the :mod:`pint` package and the :mod:`iam-units` registry
@@ -1832,7 +1854,7 @@ class IamDataFrame(object):
     def subtract(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
     ):
-        """Compute the difference of timeseries data between `a` and `b` along an `axis`
+        """Compute the difference of timeseries data items `a` and `b` along an `axis`
 
         This function computes `a - b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
@@ -1861,6 +1883,11 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
 
+        See Also
+        --------
+        add, multiply, divide
+        apply : Apply a custom function on the timeseries data along any axis.
+
         Notes
         -----
         This function uses the :mod:`pint` package and the :mod:`iam-units` registry
@@ -1883,7 +1910,7 @@ class IamDataFrame(object):
     def multiply(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
     ):
-        """Compute the product of timeseries data between `a` and `b` along an `axis`
+        """Multiply timeseries data items `a` and `b` along an `axis`
 
         This function computes `a * b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
@@ -1912,6 +1939,11 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
 
+        See Also
+        --------
+        add, subtract, divide
+        apply : Apply a custom function on the timeseries data along any axis.
+
         Notes
         -----
         This function uses the :mod:`pint` package and the :mod:`iam-units` registry
@@ -1934,7 +1966,7 @@ class IamDataFrame(object):
     def divide(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
     ):
-        """Compute the division of timeseries data between `a` and `b` along an `axis`
+        """Divide the timeseries data items `a` and `b` along an `axis`
 
         This function computes `a / b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
@@ -1962,6 +1994,11 @@ class IamDataFrame(object):
         -------
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        add, subtract, multiply
+        apply : Apply a custom function on the timeseries data along any axis.
 
         Notes
         -----
