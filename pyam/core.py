@@ -1233,6 +1233,11 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Aggregated timeseries data or None if `append=True`.
 
+        See Also
+        --------
+        add : Add timeseries data items along an `axis`.
+        aggregate_region : Aggregate timeseries data along the `region` dimension.
+
         Notes
         -----
         The aggregation function interprets any missing values (:any:`numpy.nan`)
@@ -1351,6 +1356,16 @@ class IamDataFrame(object):
         append : bool, default False
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Aggregated timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        add : Add timeseries data items `a` and `b` along an `axis`
+        aggregate : Aggregate timeseries data along the `variable` hierarchy.
         """
         _df = _aggregate_region(
             self,
@@ -1778,8 +1793,10 @@ class IamDataFrame(object):
         else:
             self.meta[col] = self.meta[col].apply(func, *args, **kwargs)
 
-    def add(self, a, b, name, axis="variable", fillna=None, append=False):
-        """Compute the addition of timeseries data between `a` and `b` along an `axis`
+    def add(
+        self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
+    ):
+        """Add timeseries data items `a` and `b` along an `axis`
 
         This function computes `a + b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
@@ -1797,6 +1814,9 @@ class IamDataFrame(object):
         fillna : dict or scalar, optional
             Value to fill holes when rows are not defined for either `a` or `b`.
             Can be a scalar or a dictionary of the form :code:`{arg: default}`.
+        ignore_units : bool or str, optional
+            Perform operation on values without considering units. Set units of returned
+            data to `unknown` (if True) or the value of `ignore_units` (if str).
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1804,15 +1824,37 @@ class IamDataFrame(object):
         -------
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        subtract, multiply, divide
+        apply : Apply a custom function on the timeseries data along any axis.
+        aggregate : Aggregate timeseries data along the `variable` hierarchy.
+        aggregate_region : Aggregate timeseries data along the `region` dimension.
+
+        Notes
+        -----
+        This function uses the :mod:`pint` package and the :mod:`iam-units` registry
+        (`read the docs <https://github.com/IAMconsortium/units>`_) to handle units.
+        :mod:`pyam` will keep notation consistent with the input format (if possible)
+        and otherwise uses abbreviated units :code:`'{:~}'.format(u)` (see
+        `here <https://pint.readthedocs.io/en/stable/tutorial.html#string-formatting>`_
+        for more information).
+
+        As a result, the notation of returned units may differ from the input format.
+        For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
-        _value = _op_data(self, name, "add", axis=axis, fillna=fillna, a=a, b=b)
+        kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
+        _value = _op_data(self, name, "add", **kwds, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def subtract(self, a, b, name, axis="variable", fillna=None, append=False):
-        """Compute the difference of timeseries data between `a` and `b` along an `axis`
+    def subtract(
+        self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
+    ):
+        """Compute the difference of timeseries data items `a` and `b` along an `axis`
 
         This function computes `a - b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
@@ -1830,6 +1872,9 @@ class IamDataFrame(object):
         fillna : dict or scalar, optional
             Value to fill holes when rows are not defined for either `a` or `b`.
             Can be a scalar or a dictionary of the form :code:`{arg: default}`.
+        ignore_units : bool or str, optional
+            Perform operation on values without considering units. Set units of returned
+            data to `unknown` (if True) or the value of `ignore_units` (if str).
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1837,15 +1882,35 @@ class IamDataFrame(object):
         -------
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        add, multiply, divide
+        apply : Apply a custom function on the timeseries data along any axis.
+
+        Notes
+        -----
+        This function uses the :mod:`pint` package and the :mod:`iam-units` registry
+        (`read the docs <https://github.com/IAMconsortium/units>`_) to handle units.
+        :mod:`pyam` will keep notation consistent with the input format (if possible)
+        and otherwise uses abbreviated units :code:`'{:~}'.format(u)` (see
+        `here <https://pint.readthedocs.io/en/stable/tutorial.html#string-formatting>`_
+        for more information).
+
+        As a result, the notation of returned units may differ from the input format.
+        For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
-        _value = _op_data(self, name, "subtract", axis=axis, fillna=fillna, a=a, b=b)
+        kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
+        _value = _op_data(self, name, "subtract", **kwds, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def multiply(self, a, b, name, axis="variable", fillna=None, append=False):
-        """Compute the product of timeseries data between `a` and `b` along an `axis`
+    def multiply(
+        self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
+    ):
+        """Multiply timeseries data items `a` and `b` along an `axis`
 
         This function computes `a * b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
@@ -1863,6 +1928,9 @@ class IamDataFrame(object):
         fillna : dict or scalar, optional
             Value to fill holes when rows are not defined for either `a` or `b`.
             Can be a scalar or a dictionary of the form :code:`{arg: default}`.
+        ignore_units : bool or str, optional
+            Perform operation on values without considering units. Set units of returned
+            data to `unknown` (if True) or the value of `ignore_units` (if str).
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1870,15 +1938,35 @@ class IamDataFrame(object):
         -------
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        add, subtract, divide
+        apply : Apply a custom function on the timeseries data along any axis.
+
+        Notes
+        -----
+        This function uses the :mod:`pint` package and the :mod:`iam-units` registry
+        (`read the docs <https://github.com/IAMconsortium/units>`_) to handle units.
+        :mod:`pyam` will keep notation consistent with the input format (if possible)
+        and otherwise uses abbreviated units :code:`'{:~}'.format(u)` (see
+        `here <https://pint.readthedocs.io/en/stable/tutorial.html#string-formatting>`_
+        for more information).
+
+        As a result, the notation of returned units may differ from the input format.
+        For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
-        _value = _op_data(self, name, "multiply", axis=axis, fillna=fillna, a=a, b=b)
+        kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
+        _value = _op_data(self, name, "multiply", **kwds, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def divide(self, a, b, name, axis="variable", fillna=None, append=False):
-        """Compute the division of timeseries data between `a` and `b` along an `axis`
+    def divide(
+        self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
+    ):
+        """Divide the timeseries data items `a` and `b` along an `axis`
 
         This function computes `a / b`. If `a` or `b` are lists, the method applies
         :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
@@ -1896,6 +1984,9 @@ class IamDataFrame(object):
         fillna : dict or scalar, optional
             Value to fill holes when rows are not defined for either `a` or `b`.
             Can be a scalar or a dictionary of the form :code:`{arg: default}`.
+        ignore_units : bool or str, optional
+            Perform operation on values without considering units. Set units of returned
+            data to `unknown` (if True) or the value of `ignore_units` (if str).
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1903,8 +1994,26 @@ class IamDataFrame(object):
         -------
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        add, subtract, multiply
+        apply : Apply a custom function on the timeseries data along any axis.
+
+        Notes
+        -----
+        This function uses the :mod:`pint` package and the :mod:`iam-units` registry
+        (`read the docs <https://github.com/IAMconsortium/units>`_) to handle units.
+        :mod:`pyam` will keep notation consistent with the input format (if possible)
+        and otherwise uses abbreviated units :code:`'{:~}'.format(u)` (see
+        `here <https://pint.readthedocs.io/en/stable/tutorial.html#string-formatting>`_
+        for more information).
+
+        As a result, the notation of returned units may differ from the input format.
+        For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
-        _value = _op_data(self, name, "divide", axis=axis, fillna=fillna, a=a, b=b)
+        kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
+        _value = _op_data(self, name, "divide", **kwds, a=a, b=b)
         if append:
             self.append(_value, inplace=True)
         else:
@@ -1944,6 +2053,17 @@ class IamDataFrame(object):
         -------
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
+
+        Notes
+        -----
+        This function uses the :mod:`pint` package and the :mod:`iam-units` registry
+        (`read the docs <https://github.com/IAMconsortium/units>`_) to handle units.
+        :mod:`pyam` uses abbreviated units :code:`'{:~}'.format(u)` (see
+        `here <https://pint.readthedocs.io/en/stable/tutorial.html#string-formatting>`_
+        for more information).
+
+        As a result, the notation of returned units may differ from the input format.
+        For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
         _value = _op_data(self, name, func, axis=axis, fillna=fillna, args=args, **kwds)
         if append:
