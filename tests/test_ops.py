@@ -59,6 +59,14 @@ def test_add_raises(test_df_year):
 def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
+    # change one unit to make ignore-units strictly necessary
+    if ignore_units:
+        test_df_year.rename(
+            variable={"Primary Energy": "Primary Energy"},
+            unit={"EJ/yr": "custom_unit"},
+            inplace=True,
+        )
+
     unit = "EJ/yr" if ignore_units is False else ignore_units
     exp = df_func(operator.add, "Sum", unit=unit, meta=test_df_year.meta)
 
@@ -71,7 +79,7 @@ def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
     else:
         # check that incompatible units raise the expected error
         if ignore_units:
-            with pytest.raises(pint.DimensionalityError):
+            with pytest.raises(pint.UndefinedUnitError):
                 test_df_year.add(*args, fillna=fillna, ignore_units=False)
 
         assert_iamframe_equal(exp, test_df_year.add(*args, **kwds))
@@ -114,6 +122,14 @@ def test_add_scenario(test_df_year, append):
 def test_subtract_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
     """Verify that in-dataframe subtraction works on the default `variable` axis"""
 
+    # change one unit to make ignore-units strictly necessary
+    if ignore_units:
+        test_df_year.rename(
+            variable={"Primary Energy": "Primary Energy"},
+            unit={"EJ/yr": "custom_unit"},
+            inplace=True,
+        )
+
     unit = "EJ/yr" if ignore_units is False else ignore_units
     exp = df_func(operator.sub, "Diff", unit=unit, meta=test_df_year.meta)
 
@@ -126,7 +142,7 @@ def test_subtract_variable(test_df_year, arg, df_func, fillna, append, ignore_un
     else:
         # check that incompatible units raise the expected error
         if ignore_units:
-            with pytest.raises(pint.DimensionalityError):
+            with pytest.raises(pint.UndefinedUnitError):
                 test_df_year.add(*args, fillna=fillna, ignore_units=False)
 
         assert_iamframe_equal(exp, test_df_year.subtract(*args, **kwds))
@@ -170,6 +186,12 @@ def test_multiply_variable(test_df_year, arg, df_func, fillna, ignore_units, app
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
     if ignore_units:
+        # change one unit to make ignore-units strictly necessary
+        test_df_year.rename(
+            variable={"Primary Energy": "Primary Energy"},
+            unit={"EJ/yr": "custom_unit"},
+            inplace=True,
+        )
         unit = ignore_units
     else:
         unit = "EJ / a" if isinstance(arg, int) else "EJ ** 2 / a ** 2"
@@ -184,7 +206,7 @@ def test_multiply_variable(test_df_year, arg, df_func, fillna, ignore_units, app
     else:
         # check that incompatible units raise the expected error
         if ignore_units:
-            with pytest.raises(pint.DimensionalityError):
+            with pytest.raises(pint.UndefinedUnitError):
                 test_df_year.add(*args, fillna=fillna, ignore_units=False)
 
         assert_iamframe_equal(exp, test_df_year.multiply(*args, **kwds))
@@ -229,6 +251,12 @@ def test_divide_variable(test_df_year, arg, df_func, fillna, append, ignore_unit
 
     # note that dividing with pint reformats the unit
     if ignore_units:
+        # change one unit to make ignore-units strictly necessary
+        test_df_year.rename(
+            variable={"Primary Energy": "Primary Energy"},
+            unit={"EJ/yr": "custom_unit"},
+            inplace=True,
+        )
         unit = ignore_units
     else:
         unit = "EJ / a" if isinstance(arg, int) else ""
@@ -243,7 +271,7 @@ def test_divide_variable(test_df_year, arg, df_func, fillna, append, ignore_unit
     else:
         # check that incompatible units raise the expected error
         if ignore_units:
-            with pytest.raises(pint.DimensionalityError):
+            with pytest.raises(pint.UndefinedUnitError):
                 test_df_year.add(*args, fillna=fillna, ignore_units=False)
 
         assert_iamframe_equal(exp, test_df_year.divide(*args, **kwds))
