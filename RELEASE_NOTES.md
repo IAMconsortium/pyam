@@ -1,5 +1,6 @@
 # Next Release
 
+- [#543](https://github.com/IAMconsortium/pyam/pull/543) Add a tutorial for working with algebraic operations
 - [#541](https://github.com/IAMconsortium/pyam/pull/541) Support units in binary operations
 - [#538](https://github.com/IAMconsortium/pyam/pull/538) Add option to set defaults in binary operations
 - [#537](https://github.com/IAMconsortium/pyam/pull/537) Enhance binary ops to support numerical arguments

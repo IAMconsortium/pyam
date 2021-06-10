@@ -94,6 +94,14 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
             _args[i] = _to_quantity(_args[i]) if is_data else _args[i]
         for key, value in kwds.items():
             kwds[key] = _to_quantity(value) if _data_kwds[key] else value
+    # else remove units from pd.Series
+    else:
+        for i, is_data in enumerate(_data_args):
+            _args[i] = _args[i].reset_index("unit", drop=True) if is_data else _args[i]
+        for key, value in kwds.items():
+            kwds[key] = (
+                value.reset_index("unit", drop=True) if _data_kwds[key] else value
+            )
 
     # merge all args and kwds that are based on `df._data` to apply fillna
     if fillna:
@@ -128,7 +136,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
     # otherwise, set unit (as index) to "unknown" or the value given by "ignore_units"
     else:
         index = append_index_level(
-            result.reset_index("unit", drop=True).index,
+            result.index,
             codes=0,
             level="unknown" if ignore_units is True else ignore_units,
             name="unit",

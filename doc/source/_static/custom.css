@@ -1,1 +1,14 @@
 div.body h1 {font-size: 200%}
+
+div.admonition p.admonition-title {
+    font-size: 17px;
+    font-weight: bold;
+}
+
+div.admonition code.xref:hover {
+    background-color: #AAA;
+}
+
+dl.py {
+    margin: 20px 0 0 0;
+}
