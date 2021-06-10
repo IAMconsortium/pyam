@@ -58,6 +58,7 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
+from pyam._compare import _compare
 from pyam._aggregate import (
     _aggregate,
     _aggregate_region,
@@ -686,7 +687,7 @@ class IamDataFrame(object):
 
         # assign data and other attributes
         ret._LONG_IDX = _index
-        ret._data = _data.set_index(ret._LONG_IDX)
+        ret._data = _data.set_index(ret._LONG_IDX).value
         ret.time_col = "year"
         ret._set_attributes()
         delattr(ret, "time")
@@ -2516,17 +2517,7 @@ def compare(
     kwargs : arguments for comparison of values
         passed to :func:`numpy.isclose`
     """
-    ret = pd.concat(
-        {
-            right_label: right.data.set_index(right._LONG_IDX),
-            left_label: left.data.set_index(left._LONG_IDX),
-        },
-        axis=1,
-    )
-    ret.columns = ret.columns.droplevel(1)
-    if drop_close:
-        ret = ret[~np.isclose(ret[left_label], ret[right_label], **kwargs)]
-    return ret[[right_label, left_label]]
+    return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
 
 
 def concat(dfs, ignore_meta_conflict=False, **kwargs):

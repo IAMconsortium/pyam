@@ -42,17 +42,6 @@ PRICE_MAX_DF = pd.DataFrame(
     columns=LONG_IDX + ["value"],
 )
 
-RECURSIVE_DF = pd.DataFrame(
-    [
-        ["Secondary Energy|Electricity", "EJ/yr", 5, 19.0],
-        ["Secondary Energy|Electricity|Wind", "EJ/yr", 5, 17],
-        ["Secondary Energy|Electricity|Wind|Offshore", "EJ/yr", 1, 5],
-        ["Secondary Energy|Electricity|Wind|Onshore", "EJ/yr", 4, 12],
-        ["Secondary Energy|Electricity|Solar", "EJ/yr", np.nan, 2],
-    ],
-    columns=["variable", "unit"] + TEST_YEARS,
-)
-
 
 @pytest.mark.parametrize(
     "variable,data",
@@ -133,54 +122,43 @@ def test_aggregate_by_list_with_components_raises(simple_df):
     pytest.raises(ValueError, simple_df.aggregate, v, components=components)
 
 
-@pytest.mark.parametrize("time_col", (("year"), ("time")))
-def test_aggregate_recursive(time_col):
+def test_aggregate_recursive(recursive_df):
     # use the feature `recursive=True`
-    data = (
-        RECURSIVE_DF
-        if time_col == "year"
-        else RECURSIVE_DF.rename(DTS_MAPPING, axis="columns")
-    )
-    df = IamDataFrame(data, model="model_a", scenario="scen_a", region="World")
-    df2 = df.rename(scenario={"scen_a": "scen_b"})
-    df2._data *= 2
-    df.append(df2, inplace=True)
 
     # create object without variables to be aggregated
     v = "Secondary Energy|Electricity"
     agg_vars = [f"{v}{i}" for i in ["", "|Wind"]]
-    df_minimal = df.filter(variable=agg_vars, keep=False)
+    df_minimal = recursive_df.filter(variable=agg_vars, keep=False)
 
     # return recursively aggregated data as new object
     obs = df_minimal.aggregate(variable=v, recursive=True)
-    assert_iamframe_equal(obs, df.filter(variable=agg_vars))
+    assert_iamframe_equal(obs, recursive_df.filter(variable=agg_vars))
 
     # append to `self`
     df_minimal.aggregate(variable=v, recursive=True, append=True)
-    assert_iamframe_equal(df_minimal, df)
+    assert_iamframe_equal(df_minimal, recursive_df)
 
 
-@pytest.mark.parametrize("time_col", (("year"), ("time")))
-def test_aggregate_skip_intermediate(time_col):
-    # use the feature `recursive=skip-validate`
-    data = (
-        RECURSIVE_DF
-        if time_col == "year"
-        else RECURSIVE_DF.rename(DTS_MAPPING, axis="columns")
-    )
-    df = IamDataFrame(data, model="model_a", scenario="scen_a", region="World")
-    df2 = df.rename(scenario={"scen_a": "scen_b"})
-    df2._data *= 2
-    df.append(df2, inplace=True)
+def test_aggregate_skip_intermediate(recursive_df):
+    # make the data inconsistent, check (and then skip) validation
+
+    recursive_df._data.iloc[0] = recursive_df._data.iloc[0] + 2
+    recursive_df._data.iloc[3] = recursive_df._data.iloc[3] + 2
 
     # create object without variables to be aggregated, but with intermediate variables
     v = "Secondary Energy|Electricity"
-    agg_vars = [f"{v}{i}" for i in [""]]
-    df_minimal = df.filter(variable=agg_vars, scenario="scen_a", keep=False)
+    df_minimal = recursive_df.filter(variable=v, scenario="scen_a", keep=False)
+    agg_vars = [f"{v}{i}" for i in ["", "|Wind"]]
+    df_minimal.filter(variable=agg_vars, scenario="scen_b", keep=False, inplace=True)
 
-    # append to `self`
+    # simply calling recursive aggregation raises an error
+    match = "Aggregated values are inconsistent with existing data:"
+    with pytest.raises(ValueError, match=match):
+        df_minimal.aggregate(variable=v, recursive=True, append=True)
+
+    # append to `self` with skipping validation
     df_minimal.aggregate(variable=v, recursive="skip-validate", append=True)
-    assert_iamframe_equal(df_minimal, df)
+    assert_iamframe_equal(df_minimal, recursive_df)
 
 
 @pytest.mark.parametrize(

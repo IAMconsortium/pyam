@@ -13,6 +13,8 @@ from pyam.utils import (
     KNOWN_FUNCS,
     to_list,
 )
+from pyam._compare import _compare
+
 
 logger = logging.getLogger(__name__)
 
@@ -70,23 +72,24 @@ def _aggregate_recursive(df, variable, recursive):
         components = compress(_df.variable, find_depth(_df.variable, level=d + 1))
         var_list = set([reduce_hierarchy(v, -1) for v in components])
 
-        # collect already existing variables
-        intermediate_var = var_list.intersection(set(_df.variable))
-
         # a temporary dataframe allows to distinguish between full data and new data
-        temp_df = _df.aggregate(variable=var_list)
-        # if intermediate variables exist, delete already existing entries in _data
-        if intermediate_var:
-            # index which doesn't exist in _df-index yet
-            _index = temp_df._data.index.difference(_df._data.index)
-            temp_df._data = temp_df._data[_index]
-        _df.append(temp_df, inplace=True)
-        # check consistency of intermediate variable
-        if not recursive == "skip-validate":
-            if intermediate_var:
-                if _df.check_aggregate(intermediate_var):
-                    raise ValueError("Aggregated data is inconsistent.")
-        data_list.append(temp_df._data)
+        _data_agg = _aggregate(_df, variable=var_list)
+
+        # check if data for intermediate variables already exists
+        _data_self = _df.filter(variable=var_list)._data
+        _overlap = _data_agg.index.intersection(_data_self.index)
+        _new = _data_agg.index.difference(_data_self.index)
+
+        # assert that aggregated values are consistent with existing data (optional)
+        if recursive != "skip-validate" and not _overlap.empty:
+            conflict = _compare(_data_self, _data_agg[_overlap], "self", "aggregate")
+            if not conflict.empty:
+                msg = "Aggregated values are inconsistent with existing data:"
+                raise ValueError(f"{msg}\n{conflict}")
+
+        # append aggregated values that are not already in data
+        _df.append(_data_agg[_new], inplace=True)
+        data_list.append(_data_agg[_new])
 
     return pd.concat(data_list)
 
