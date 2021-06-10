@@ -36,7 +36,7 @@ def convert_unit(
     # Make versions without -equiv
     _current, _to = [i.replace("-equiv", "") for i in [current, to]]
     # Pair of (magnitude, unit)
-    qty = [ret.data.loc[where, "value"].values, _current]
+    qty = [ret._data.loc[where].values, _current]
 
     try:
         # Create a vector pint.Quantity and convert it ordinarily
