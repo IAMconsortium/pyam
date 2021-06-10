@@ -58,6 +58,7 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
+from pyam._compare import _compare
 from pyam._aggregate import (
     _aggregate,
     _aggregate_region,
@@ -686,7 +687,7 @@ class IamDataFrame(object):
 
         # assign data and other attributes
         ret._LONG_IDX = _index
-        ret._data = _data.set_index(ret._LONG_IDX)
+        ret._data = _data.set_index(ret._LONG_IDX).value
         ret.time_col = "year"
         ret._set_attributes()
         delattr(ret, "time")
@@ -1211,7 +1212,12 @@ class IamDataFrame(object):
             return ret
 
     def aggregate(
-        self, variable, components=None, method="sum", recursive=False, append=False
+        self,
+        variable,
+        components=None,
+        method="sum",
+        recursive=False,
+        append=False,
     ):
         """Aggregate timeseries by components or subcategories within each region
 
@@ -1223,8 +1229,11 @@ class IamDataFrame(object):
             Components to be aggregate, defaults to all subcategories of `variable`.
         method : func or str, optional
             Aggregation method, e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-        recursive : bool, optional
+        recursive : bool or str, optional
             Iterate recursively (bottom-up) over all subcategories of `variable`.
+            If there are existing intermediate variables, it validates the aggregated
+            value.
+            If recursive='skip-validate', it skips the validation.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1244,7 +1253,7 @@ class IamDataFrame(object):
         for individual components as 0.
         """
 
-        if recursive is True:
+        if recursive:
             if components is not None:
                 raise ValueError("Recursive aggregation cannot take `components`!")
             if method != "sum":
@@ -1252,7 +1261,9 @@ class IamDataFrame(object):
                     "Recursive aggregation only supported with `method='sum'`!"
                 )
 
-            _df = IamDataFrame(_aggregate_recursive(self, variable), meta=self.meta)
+            _df = IamDataFrame(
+                _aggregate_recursive(self, variable, recursive), meta=self.meta
+            )
         else:
             _df = _aggregate(self, variable, components=components, method=method)
 
@@ -2643,17 +2654,7 @@ def compare(
     kwargs : arguments for comparison of values
         passed to :func:`numpy.isclose`
     """
-    ret = pd.concat(
-        {
-            left_label: left.data.set_index(left._LONG_IDX),
-            right_label: right.data.set_index(right._LONG_IDX),
-        },
-        axis=1,
-    )
-    ret.columns = ret.columns.droplevel(1)
-    if drop_close:
-        ret = ret[~np.isclose(ret[left_label], ret[right_label], **kwargs)]
-    return ret
+    return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
 
 
 def concat(dfs, ignore_meta_conflict=False, **kwargs):

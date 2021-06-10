@@ -13,6 +13,8 @@ from pyam.utils import (
     KNOWN_FUNCS,
     to_list,
 )
+from pyam._compare import _compare
+
 
 logger = logging.getLogger(__name__)
 
@@ -57,11 +59,12 @@ def _aggregate(df, variable, components=None, method=np.sum):
     return _group_and_agg(_df, [], method)
 
 
-def _aggregate_recursive(df, variable):
+def _aggregate_recursive(df, variable, recursive):
     """Recursive aggregation along the variable tree"""
 
     # downselect to components of `variable`, initialize list for aggregated (new) data
-    _df = df.filter(variable=f"{variable}|*")
+    # keep variable at highest level if it exists
+    _df = df.filter(variable=[variable, f"{variable}|*"])
     data_list = []
 
     # iterate over variables (bottom-up) and aggregate all components up to `variable`
@@ -70,9 +73,23 @@ def _aggregate_recursive(df, variable):
         var_list = set([reduce_hierarchy(v, -1) for v in components])
 
         # a temporary dataframe allows to distinguish between full data and new data
-        temp_df = _df.aggregate(variable=var_list)
-        _df.append(temp_df, inplace=True)
-        data_list.append(temp_df._data)
+        _data_agg = _aggregate(_df, variable=var_list)
+
+        # check if data for intermediate variables already exists
+        _data_self = _df.filter(variable=var_list)._data
+        _overlap = _data_agg.index.intersection(_data_self.index)
+        _new = _data_agg.index.difference(_data_self.index)
+
+        # assert that aggregated values are consistent with existing data (optional)
+        if recursive != "skip-validate" and not _overlap.empty:
+            conflict = _compare(_data_self, _data_agg[_overlap], "self", "aggregate")
+            if not conflict.empty:
+                msg = "Aggregated values are inconsistent with existing data:"
+                raise ValueError(f"{msg}\n{conflict}")
+
+        # append aggregated values that are not already in data
+        _df.append(_data_agg[_new], inplace=True)
+        data_list.append(_data_agg[_new])
 
     return pd.concat(data_list)
 
