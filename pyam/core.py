@@ -1346,12 +1346,14 @@ class IamDataFrame(object):
         method : func or str, optional
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-        weight : str, default None
+        weight : str, optional
             variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
-        append : bool, default False
+        append : bool, optional
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
+        drop_negative_weights : bool, optional
+            removes any aggregated values that are computed using negative weights
         """
         _df = _aggregate_region(
             self,
