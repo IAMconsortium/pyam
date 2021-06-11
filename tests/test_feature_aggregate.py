@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 from pyam import check_aggregate, IamDataFrame, IAMC_IDX
 from pyam.testing import assert_iamframe_equal
-
 from conftest import TEST_YEARS, DTS_MAPPING
 
 LONG_IDX = IAMC_IDX + ["year"]
@@ -51,6 +50,20 @@ RECURSIVE_DF = pd.DataFrame(
         ["Secondary Energy|Electricity|Solar", "EJ/yr", np.nan, 2],
     ],
     columns=["variable", "unit"] + TEST_YEARS,
+)
+
+NEG_WEIGHTS_DF = pd.DataFrame(
+    [
+        ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2005, -4.0],
+        ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2010, 5.0],
+        ["model_a", "scen_a", "reg_b", "Emissions|CO2", "EJ/yr", 2005, 2.0],
+        ["model_a", "scen_a", "reg_b", "Emissions|CO2", "EJ/yr", 2010, 3.0],
+        ["model_a", "scen_a", "reg_a", "Price|Carbon", "USD/tCO2", 2005, 6.0],
+        ["model_a", "scen_a", "reg_a", "Price|Carbon", "USD/tCO2", 2010, 6.0],
+        ["model_a", "scen_a", "reg_b", "Price|Carbon", "USD/tCO2", 2005, 3.0],
+        ["model_a", "scen_a", "reg_b", "Price|Carbon", "USD/tCO2", 2010, 4.0],
+    ],
+    columns=LONG_IDX + ["value"],
 )
 
 
@@ -297,6 +310,34 @@ def test_aggregate_region_with_components(simple_df):
     # rename emissions of bunker to test setting components as list
     _df = simple_df.rename(variable={"Emissions|CO2|Bunkers": "foo"})
     assert _df.check_aggregate_region(v, components=["foo"]) is None
+
+
+def test_agg_weight():
+    variable = "Price|Carbon"
+    weight = "Emissions|CO2"
+    # negative weights should be dropped on default
+    obs_1 = IamDataFrame(NEG_WEIGHTS_DF).aggregate_region(variable, weight=weight)._data
+    exp_1 = np.array([5.25])
+    np.testing.assert_array_equal(obs_1.values, exp_1)
+
+    # negative weights shouldn't be dropped if drop_negative_weights=False
+    obs_2 = (
+        IamDataFrame(NEG_WEIGHTS_DF)
+        .aggregate_region(variable, weight=weight, drop_negative_weights=False)
+        ._data
+    )
+    exp_2 = np.array([9, 5.25])
+    np.testing.assert_array_equal(obs_2.values, exp_2)
+
+
+def test_aggregate_region_with_no_weights_drop_negative_weights_raises(simple_df):
+    # dropping negative weights can only be used with weight
+    pytest.raises(
+        ValueError,
+        simple_df.aggregate_region,
+        "Price|Carbon",
+        drop_negative_weights=False,
+    )
 
 
 def test_aggregate_region_with_weights(simple_df):
