@@ -41,17 +41,6 @@ PRICE_MAX_DF = pd.DataFrame(
     columns=LONG_IDX + ["value"],
 )
 
-RECURSIVE_DF = pd.DataFrame(
-    [
-        ["Secondary Energy|Electricity", "EJ/yr", 5, 19.0],
-        ["Secondary Energy|Electricity|Wind", "EJ/yr", 5, 17],
-        ["Secondary Energy|Electricity|Wind|Offshore", "EJ/yr", 1, 5],
-        ["Secondary Energy|Electricity|Wind|Onshore", "EJ/yr", 4, 12],
-        ["Secondary Energy|Electricity|Solar", "EJ/yr", np.nan, 2],
-    ],
-    columns=["variable", "unit"] + TEST_YEARS,
-)
-
 NEG_WEIGHTS_DF = pd.DataFrame(
     [
         ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2005, -4.0],
