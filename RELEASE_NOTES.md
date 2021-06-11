@@ -1,11 +1,29 @@
-# Next Release
+# Release v0.12.0
+
+## Highlights
+
+- Add algebraic operations working directly on the timeseries data
+  including automatic handling of units.
+- Drop negative weights when performing weighted regional aggregation by default.
+- Allow recursive aggregation when (some) intermediate variables exist
+  and perform validation of the existing intermediate variables.
+
+## API changes
+
+PR [#534](https://github.com/IAMconsortium/pyam/pull/534) changed the behavior
+of the `aggregate_region()` method when performing weighted region aggregation.
+By default, if any weights are negative, the corresponding aggregated values
+are dropped from the resulting IamDataFrame.
+The previous behavior can be achieved by setting `drop_negative_weights=False`.
+
+## Individual updates
 
 - [#543](https://github.com/IAMconsortium/pyam/pull/543) Add a tutorial for working with algebraic operations
 - [#541](https://github.com/IAMconsortium/pyam/pull/541) Support units in binary operations
 - [#538](https://github.com/IAMconsortium/pyam/pull/538) Add option to set defaults in binary operations
 - [#537](https://github.com/IAMconsortium/pyam/pull/537) Enhance binary ops to support numerical arguments
 - [#534](https://github.com/IAMconsortium/pyam/pull/534) Add feature to drop negative weights
-- [#532](https://github.com/IAMconsortium/pyam/pull/532) Add an option to skip existing intermediate variables when aggregating recursivly
+- [#532](https://github.com/IAMconsortium/pyam/pull/532) Add an option to skip existing intermediate variables when aggregating recursively
 - [#533](https://github.com/IAMconsortium/pyam/pull/533) Add an `apply()` function for custom mathematical operations
 - [#527](https://github.com/IAMconsortium/pyam/pull/527) Add an in-dataframe basic mathematical operations `subtract`, `add`, `multiply`, `divide`
 - [#523](https://github.com/IAMconsortium/pyam/pull/523) Add feature to compute weights for de-biasing using count
