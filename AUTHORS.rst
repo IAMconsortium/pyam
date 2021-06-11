@@ -19,3 +19,4 @@ The following persons contributed to the development of the |pyam| framework:
 - Michael Pimmer `@fonfon <https://github.com/fonfon>`_
 - Patrick Jürgens `@pjuergens <https://github.com/pjuergens>`_
 - Florian Maczek `@macflo8 <https://github.com/macflo8>`_
+- Laura Wienpahl `@LauWien <https://github.com/LauWien>`_

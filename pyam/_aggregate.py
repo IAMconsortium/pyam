@@ -95,7 +95,14 @@ def _aggregate_recursive(df, variable, recursive):
 
 
 def _aggregate_region(
-    df, variable, region, subregions=None, components=False, method="sum", weight=None
+    df,
+    variable,
+    region,
+    subregions=None,
+    components=False,
+    method="sum",
+    weight=None,
+    drop_negative_weights=True,
 ):
     """Internal implementation for aggregating data over subregions"""
     if not isstr(variable) and components is not False:
@@ -120,11 +127,20 @@ def _aggregate_region(
     subregion_df = df.filter(region=subregions)
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
+
+        if drop_negative_weights is False:
+            raise ValueError(
+                "Dropping negative weights can only be used with `weights`!"
+            )
+
         _data = _group_and_agg(subregion_df._data[rows], "region", method=method)
     else:
         weight_rows = subregion_df._apply_filters(variable=weight)
         _data = _agg_weight(
-            subregion_df._data[rows], subregion_df._data[weight_rows], method
+            subregion_df._data[rows],
+            subregion_df._data[weight_rows],
+            method,
+            drop_negative_weights,
         )
 
     # if not `components=False`, add components at the `region` level
@@ -186,7 +202,7 @@ def _group_and_agg(df, by, method=np.sum):
     return df.groupby(cols).agg(_get_method_func(method))
 
 
-def _agg_weight(data, weight, method):
+def _agg_weight(data, weight, method, drop_negative_weights):
     """Aggregate `data` by regions with weights, return indexed `pd.Series`"""
 
     # only summation allowed with weights
@@ -198,9 +214,22 @@ def _agg_weight(data, weight, method):
     if not data.droplevel(["variable", "unit"]).index.equals(weight.index):
         raise ValueError("Inconsistent index between variable and weight!")
 
+    if drop_negative_weights is True:
+        if any(weight < 0):
+            logger.warning(
+                "Some of the weights are negative. "
+                "All data weighted by negative values will be dropped. "
+                "To apply both positive and negative weights to the data, "
+                "please use the keyword argument `drop_negative_weights=False`."
+            )
+            # Drop negative weights
+            weight[weight < 0] = None
+
     col1 = data.index.names.difference(["region"])
     col2 = data.index.names.difference(["region", "variable", "unit"])
-    return (data * weight).groupby(col1).sum() / weight.groupby(col2).sum()
+    return (data * weight).groupby(col1).apply(
+        pd.Series.sum, skipna=False
+    ) / weight.groupby(col2).sum()
 
 
 def _get_method_func(method):

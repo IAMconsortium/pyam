@@ -1339,6 +1339,7 @@ class IamDataFrame(object):
         method="sum",
         weight=None,
         append=False,
+        drop_negative_weights=True,
     ):
         """Aggregate a timeseries over a number of subregions
 
@@ -1349,9 +1350,9 @@ class IamDataFrame(object):
         ----------
         variable : str or list of str
             variable(s) to be aggregated
-        region : str, default 'World'
+        region : str, optional
             region to which data will be aggregated
-        subregions : list of str
+        subregions : list of str, optional
             list of subregions, defaults to all regions other than `region`
         components : bool or list of str, optional
             variables at the `region` level to be included in the aggregation
@@ -1361,12 +1362,14 @@ class IamDataFrame(object):
         method : func or str, optional
             method to use for aggregation,
             e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
-        weight : str, default None
+        weight : str, optional
             variable to use as weight for the aggregation
             (currently only supported with `method='sum'`)
-        append : bool, default False
+        append : bool, optional
             append the aggregate timeseries to `self` and return None,
             else return aggregate timeseries as new :class:`IamDataFrame`
+        drop_negative_weights : bool, optional
+            removes any aggregated values that are computed using negative weights
 
         Returns
         -------
@@ -1377,6 +1380,7 @@ class IamDataFrame(object):
         --------
         add : Add timeseries data items `a` and `b` along an `axis`
         aggregate : Aggregate timeseries data along the `variable` hierarchy.
+
         """
         _df = _aggregate_region(
             self,
@@ -1386,6 +1390,7 @@ class IamDataFrame(object):
             components=components,
             method=method,
             weight=weight,
+            drop_negative_weights=drop_negative_weights,
         )
 
         # else, append to `self` or return as `IamDataFrame`
@@ -1405,6 +1410,7 @@ class IamDataFrame(object):
         method="sum",
         weight=None,
         exclude_on_fail=False,
+        drop_negative_weights=True,
         **kwargs,
     ):
         """Check whether a timeseries matches the aggregation across subregions
@@ -1413,11 +1419,11 @@ class IamDataFrame(object):
         ----------
         variable : str or list of str
             variable(s) to be checked for matching aggregation of subregions
-        region : str, default 'World'
+        region : str, optional
             region to be checked for matching aggregation of subregions
-        subregions : list of str
+        subregions : list of str, optional
             list of subregions, defaults to all regions other than `region`
-        components : bool or list of str, default False
+        components : bool or list of str, optional
             variables at the `region` level to be included in the aggregation
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
@@ -1430,12 +1436,21 @@ class IamDataFrame(object):
             (currently only supported with `method='sum'`)
         exclude_on_fail : boolean, optional
             flag scenarios failing validation as `exclude: True`
+        drop_negative_weights : bool, optional
+            removes any aggregated values that are computed using negative weights
         kwargs : arguments for comparison of values
             passed to :func:`numpy.isclose`
         """
         # compute aggregate from subregions, return None if no subregions
         df_subregions = _aggregate_region(
-            self, variable, region, subregions, components, method, weight
+            self,
+            variable,
+            region,
+            subregions,
+            components,
+            method,
+            weight,
+            drop_negative_weights,
         )
 
         if df_subregions is None:

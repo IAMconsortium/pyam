@@ -4,6 +4,7 @@
 - [#541](https://github.com/IAMconsortium/pyam/pull/541) Support units in binary operations
 - [#538](https://github.com/IAMconsortium/pyam/pull/538) Add option to set defaults in binary operations
 - [#537](https://github.com/IAMconsortium/pyam/pull/537) Enhance binary ops to support numerical arguments
+- [#534](https://github.com/IAMconsortium/pyam/pull/534) Add feature to drop negative weights
 - [#532](https://github.com/IAMconsortium/pyam/pull/532) Add an option to skip existing intermediate variables when aggregating recursivly
 - [#533](https://github.com/IAMconsortium/pyam/pull/533) Add an `apply()` function for custom mathematical operations
 - [#527](https://github.com/IAMconsortium/pyam/pull/527) Add an in-dataframe basic mathematical operations `subtract`, `add`, `multiply`, `divide`
