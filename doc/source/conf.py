@@ -147,6 +147,11 @@ html_theme_options = {
     "github_button": True,
     "github_user": "iamconsortium",
     "github_repo": "pyam",
+    "code_bg": "#EEE",
+    "note_bg": "#EEE",
+    "seealso_bg": "#EEE",
+    "admonition_xref_bg": "#EEE",
+    "admonition_xref_border": "#444",
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

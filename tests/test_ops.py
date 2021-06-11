@@ -1,32 +1,88 @@
 import pandas as pd
 import pytest
+import operator
+import pint
+from iam_units import registry
 
 from pyam import IamDataFrame
 from pyam.testing import assert_iamframe_equal
 from pyam._ops import _op_data
 
 
+DF_INDEX = ["scenario", 2005, 2010]
+# dictionary with common IamDataFrame args for all tests operating on variable
+DF_ARGS = dict(model="model_a", region="World")
+
+
+def df_ops_variable(func, variable, unit, meta):
+    """Return IamDataFrame when performing operation on test_df without default"""
+    _data = pd.DataFrame(["scen_a", func(1, 0.5), func(6, 3)], index=DF_INDEX)
+    return IamDataFrame(_data.T, **DF_ARGS, variable=variable, unit=unit, meta=meta)
+
+
+def df_ops_variable_default(func, variable, unit, meta):
+    """Return IamDataFrame when performing operation on test_df with default (5)"""
+    _data = pd.DataFrame(
+        [["scen_a", "scen_b"], [func(1, 0.5), func(2, 5)], [func(6, 3), func(7, 5)]],
+        index=DF_INDEX,
+    )
+    return IamDataFrame(_data.T, **DF_ARGS, variable=variable, unit=unit, meta=meta)
+
+
+def df_ops_variable_number(func, variable, unit, meta):
+    """Return IamDataFrame when performing operation on test_df with a number (2)"""
+    _data = pd.DataFrame(
+        [["scen_a", "scen_b"], [func(1, 2), func(2, 2)], [func(6, 2), func(7, 2)]],
+        index=DF_INDEX,
+    )
+    return IamDataFrame(_data.T, **DF_ARGS, variable=variable, unit=unit, meta=meta)
+
+
+def test_add_raises(test_df_year):
+    """Calling an operation with args that don't return an IamDataFrame raises"""
+    match = "Value returned by `add` cannot be cast to an IamDataFrame: 5"
+    with pytest.raises(ValueError, match=match):
+        test_df_year.add(2, 3, "foo")
+
+
+@pytest.mark.parametrize(
+    "arg, df_func, fillna, ignore_units",
+    (
+        ("Primary Energy|Coal", df_ops_variable, None, False),
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
+        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
+        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
+        (2, df_ops_variable_number, None, "foo"),
+    ),
+)
 @pytest.mark.parametrize("append", (False, True))
-def test_add_variable(test_df_year, append):
+def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    v = ("Primary Energy", "Primary Energy|Coal", "Sum")
-    exp = IamDataFrame(
-        pd.DataFrame([1 + 0.5, 6 + 3], index=[2005, 2010]).T,
-        model="model_a",
-        scenario="scen_a",
-        region="World",
-        variable=v[2],
-        unit="EJ/yr",
-        meta=test_df_year.meta,
-    )
+    # change one unit to make ignore-units strictly necessary
+    if ignore_units:
+        test_df_year.rename(
+            variable={"Primary Energy": "Primary Energy"},
+            unit={"EJ/yr": "custom_unit"},
+            inplace=True,
+        )
 
+    unit = "EJ/yr" if ignore_units is False else ignore_units
+    exp = df_func(operator.add, "Sum", unit=unit, meta=test_df_year.meta)
+
+    args = ("Primary Energy", arg, "Sum")
+    kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.add(*v, append=True)
+        obs.add(*args, **kwds, append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        assert_iamframe_equal(exp, test_df_year.add(*v))
+        # check that incompatible units raise the expected error
+        if ignore_units:
+            with pytest.raises(pint.UndefinedUnitError):
+                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+
+        assert_iamframe_equal(exp, test_df_year.add(*args, **kwds))
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -52,28 +108,44 @@ def test_add_scenario(test_df_year, append):
         assert_iamframe_equal(exp, obs)
 
 
+@pytest.mark.parametrize(
+    "arg, df_func, fillna, ignore_units",
+    (
+        ("Primary Energy|Coal", df_ops_variable, None, False),
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
+        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
+        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
+        (2, df_ops_variable_number, None, "foo"),
+    ),
+)
 @pytest.mark.parametrize("append", (False, True))
-def test_subtract_variable(test_df_year, append):
+def test_subtract_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
     """Verify that in-dataframe subtraction works on the default `variable` axis"""
 
-    v = ("Primary Energy", "Primary Energy|Coal", "Primary Energy|Other")
-    exp = IamDataFrame(
-        pd.DataFrame([1 - 0.5, 6 - 3], index=[2005, 2010]).T,
-        model="model_a",
-        scenario="scen_a",
-        region="World",
-        variable=v[2],
-        unit="EJ/yr",
-        meta=test_df_year.meta,
-    )
+    # change one unit to make ignore-units strictly necessary
+    if ignore_units:
+        test_df_year.rename(
+            variable={"Primary Energy": "Primary Energy"},
+            unit={"EJ/yr": "custom_unit"},
+            inplace=True,
+        )
 
+    unit = "EJ/yr" if ignore_units is False else ignore_units
+    exp = df_func(operator.sub, "Diff", unit=unit, meta=test_df_year.meta)
+
+    args = ("Primary Energy", arg, "Diff")
+    kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.subtract(*v, append=True)
+        obs.subtract(*args, **kwds, append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        obs = test_df_year.subtract(*v)
-        assert_iamframe_equal(exp, obs)
+        # check that incompatible units raise the expected error
+        if ignore_units:
+            with pytest.raises(pint.UndefinedUnitError):
+                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+
+        assert_iamframe_equal(exp, test_df_year.subtract(*args, **kwds))
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -99,27 +171,45 @@ def test_subtract_scenario(test_df_year, append):
         assert_iamframe_equal(exp, obs)
 
 
+@pytest.mark.parametrize(
+    "arg, df_func, fillna, ignore_units",
+    (
+        ("Primary Energy|Coal", df_ops_variable, None, False),
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
+        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
+        # note that multiplying with pint reformats the unit
+        (2, df_ops_variable_number, None, False),
+    ),
+)
 @pytest.mark.parametrize("append", (False, True))
-def test_multiply_variable(test_df_year, append):
+def test_multiply_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    v = ("Primary Energy", "Primary Energy|Coal", "Product")
-    exp = IamDataFrame(
-        pd.DataFrame([1 * 0.5, 6 * 3], index=[2005, 2010]).T,
-        model="model_a",
-        scenario="scen_a",
-        region="World",
-        variable=v[2],
-        unit="EJ/yr",
-        meta=test_df_year.meta,
-    )
+    if ignore_units:
+        # change one unit to make ignore-units strictly necessary
+        test_df_year.rename(
+            variable={"Primary Energy": "Primary Energy"},
+            unit={"EJ/yr": "custom_unit"},
+            inplace=True,
+        )
+        unit = ignore_units
+    else:
+        unit = "EJ / a" if isinstance(arg, int) else "EJ ** 2 / a ** 2"
+    exp = df_func(operator.mul, "Prod", unit=unit, meta=test_df_year.meta)
 
+    args = ("Primary Energy", arg, "Prod")
+    kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.multiply(*v, append=True)
+        obs.multiply(*args, **kwds, append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        assert_iamframe_equal(exp, test_df_year.multiply(*v))
+        # check that incompatible units raise the expected error
+        if ignore_units:
+            with pytest.raises(pint.UndefinedUnitError):
+                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+
+        assert_iamframe_equal(exp, test_df_year.multiply(*args, **kwds))
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -133,7 +223,7 @@ def test_multiply_scenario(test_df_year, append):
         scenario=v[2],
         region="World",
         variable="Primary Energy",
-        unit="EJ/yr",
+        unit="EJ ** 2 / a ** 2",
     )
 
     if append:
@@ -145,27 +235,46 @@ def test_multiply_scenario(test_df_year, append):
         assert_iamframe_equal(exp, obs)
 
 
+@pytest.mark.parametrize(
+    "arg, df_func, fillna, ignore_units",
+    (
+        ("Primary Energy|Coal", df_ops_variable, None, False),
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
+        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
+        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
+        (2, df_ops_variable_number, None, False),
+    ),
+)
 @pytest.mark.parametrize("append", (False, True))
-def test_divide_variable(test_df_year, append):
+def test_divide_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
     """Verify that in-dataframe addition works on the default `variable` axis"""
 
-    v = ("Primary Energy", "Primary Energy|Coal", "Ratio")
-    exp = IamDataFrame(
-        pd.DataFrame([1 / 0.5, 6 / 3], index=[2005, 2010]).T,
-        model="model_a",
-        scenario="scen_a",
-        region="World",
-        variable=v[2],
-        unit="EJ/yr",
-        meta=test_df_year.meta,
-    )
+    # note that dividing with pint reformats the unit
+    if ignore_units:
+        # change one unit to make ignore-units strictly necessary
+        test_df_year.rename(
+            variable={"Primary Energy": "Primary Energy"},
+            unit={"EJ/yr": "custom_unit"},
+            inplace=True,
+        )
+        unit = ignore_units
+    else:
+        unit = "EJ / a" if isinstance(arg, int) else ""
+    exp = df_func(operator.truediv, "Ratio", unit=unit, meta=test_df_year.meta)
 
+    args = ("Primary Energy", arg, "Ratio")
+    kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.divide(*v, append=True)
+        obs.divide(*args, **kwds, append=True)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        assert_iamframe_equal(exp, test_df_year.divide(*v))
+        # check that incompatible units raise the expected error
+        if ignore_units:
+            with pytest.raises(pint.UndefinedUnitError):
+                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+
+        assert_iamframe_equal(exp, test_df_year.divide(*args, **kwds))
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -179,7 +288,7 @@ def test_divide_scenario(test_df_year, append):
         scenario=v[2],
         region="World",
         variable="Primary Energy",
-        unit="EJ/yr",
+        unit="",
     )
 
     if append:
@@ -191,13 +300,45 @@ def test_divide_scenario(test_df_year, append):
         assert_iamframe_equal(exp, obs)
 
 
+@pytest.mark.parametrize("append", (False, True))
+def test_apply_variable(test_df_year, append):
+    """Verify that in-dataframe apply works on the default `variable` axis"""
+
+    def custom_func(a, b, c, d):
+        return a * b + c * d
+
+    v = "new variable"
+
+    exp = IamDataFrame(
+        pd.DataFrame(
+            [custom_func(1, 2, 0.5, 3), custom_func(6, 2, 3, 3)], index=[2005, 2010]
+        ).T,
+        **DF_ARGS,
+        scenario="scen_a",
+        variable=v,
+        unit="EJ / a",  # applying operations with pint reformats the unit
+        meta=test_df_year.meta,
+    )
+
+    args = ["Primary Energy", 2]
+    kwds = dict(d=3, c="Primary Energy|Coal")
+
+    if append:
+        obs = test_df_year.copy()
+        obs.apply(custom_func, name="new variable", append=True, args=args, **kwds)
+        assert_iamframe_equal(test_df_year.append(exp), obs)
+    else:
+        obs = test_df_year.apply(custom_func, name=v, args=args, **kwds)
+        assert_iamframe_equal(exp, obs)
+
+
 def test_ops_unknown_axis(test_df_year):
     """Using an unknown axis raises an error"""
     with pytest.raises(ValueError, match="Unknown axis: foo"):
-        _op_data(test_df_year, "_", "_", "_", "foo")
+        _op_data(test_df_year, "_", "_", "foo")
 
 
 def test_ops_unknown_method(test_df_year):
     """Using an unknown method raises an error"""
     with pytest.raises(ValueError, match="Unknown method: foo"):
-        _op_data(test_df_year, "_", "_", "foo", "variable")
+        _op_data(test_df_year, "_", "foo", "variable")

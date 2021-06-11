@@ -264,11 +264,11 @@ def format_data(df, index, **kwargs):
     # check that index and required columns exist
     missing_index = [c for c in index if c not in df.columns]
     if missing_index:
-        raise ValueError(f"Missing index columns `{missing_index}`!")
+        raise ValueError(f"Missing index columns: {missing_index}")
 
     missing_required_col = [c for c in REQUIRED_COLS if c not in df.columns]
     if missing_required_col:
-        raise ValueError(f"Missing required columns `{missing_required_col}`!")
+        raise ValueError(f"Missing required columns: {missing_required_col}")
 
     # check whether data in wide format (IAMC) or long format (`value` column)
     if "value" in df.columns:
@@ -278,8 +278,7 @@ def format_data(df, index, **kwargs):
         elif "time" in df.columns:
             time_col = "time"
         else:
-            msg = "Invalid time format, must have either `year` or `time`!"
-            raise ValueError(msg)
+            raise ValueError("Invalid time format, must have either `year` or `time`!")
         extra_cols = [
             c
             for c in df.columns
@@ -306,8 +305,7 @@ def format_data(df, index, **kwargs):
             time_col = "time"
             melt_cols = time_cols
         else:
-            msg = "invalid column format, must be either years or `datetime`!"
-            raise ValueError(msg)
+            raise ValueError("Invalid time format, must be either years or `datetime`!")
         cols = index + REQUIRED_COLS + extra_cols
         df = pd.melt(
             df,

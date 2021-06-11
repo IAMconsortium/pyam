@@ -23,6 +23,7 @@ The source code is available in the folder
    tutorials/GAMS_to_pyam.ipynb
    tutorials/unit_conversion.ipynb
    tutorials/aggregating_downscaling_consistency.ipynb
+   tutorials/algebraic_operations.ipynb
    tutorials/subannual_time_resolution.ipynb
    tutorials/ipcc_colors.ipynb
    tutorials/legends.ipynb
