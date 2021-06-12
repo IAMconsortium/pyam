@@ -23,8 +23,8 @@ jobs:
         python-version: '3.7'
 
     - name: Install specific out-dated version of dependencies
-      # Update the corresponding package requirements when changing
-      # minimum dependency versions
+      # Update the package requirements when changing minimum dependency versions
+      # Please also add a section "Dependency changes" to the release notes
       run: pip install pandas==1.1.1 matplotlib==3.2.0 iam-units==2020.4.21
 
     - name: Install other dependencies and package
