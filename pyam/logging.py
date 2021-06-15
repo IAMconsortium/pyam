@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 
 @contextmanager
-def adjust_log_level(logger="pyam.core", level="ERROR"):
+def adjust_log_level(logger="pyam", level="ERROR"):
     if isinstance(logger, str):
         logger = logging.getLogger(logger)
     """Context manager to change log level"""
