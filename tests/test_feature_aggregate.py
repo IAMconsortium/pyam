@@ -179,7 +179,7 @@ def test_aggregate_skip_intermediate(recursive_df):
 )
 def test_aggregate_empty(test_df, variable, append, caplog):
     """Check for performing an "empty" aggregation"""
-    caplog.set_level(logging.INFO, logger="pyam._aggregate")
+    caplog.set_level(logging.INFO, logger="pyam.aggregation")
 
     if append:
         # with `append=True`, the instance is unchanged
@@ -373,7 +373,7 @@ def test_aggregate_region_with_components_and_weights_raises(simple_df):
 @pytest.mark.parametrize("variable, append", (("Primary Energy", "foo"), (False, True)))
 def test_aggregate_region_empty(test_df, variable, append, caplog):
     """Check for performing an "empty" aggregation"""
-    caplog.set_level(logging.INFO, logger="pyam._aggregate")
+    caplog.set_level(logging.INFO, logger="pyam.aggregation")
 
     if append:
         # with `append=True`, the instance is unchanged
@@ -385,7 +385,7 @@ def test_aggregate_region_empty(test_df, variable, append, caplog):
         # with `append=False` (default), an empty instance is returned
         assert test_df.aggregate_region(variable).empty
 
-    caplog.set_level(logging.INFO, logger="pyam._aggregate")
+    caplog.set_level(logging.INFO, logger="pyam.aggregation")
     msg = (
         f"Cannot aggregate variable '{variable}' to 'World' "
         "because it does not exist in any subregion!"
