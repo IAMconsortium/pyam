@@ -66,7 +66,6 @@ def _aggregate_recursive(df, variable, recursive):
     # keep variable at highest level if it exists
     _df = df.filter(variable=[variable, f"{variable}|*"])
     data_list = []
-    
 
     # iterate over variables (bottom-up) and aggregate all components up to `variable`
     for d in reversed(range(find_depth(variable), max(find_depth(_df.variable)))):
