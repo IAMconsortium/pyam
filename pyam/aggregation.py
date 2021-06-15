@@ -76,7 +76,8 @@ def _aggregate_recursive(df, variable, recursive):
         _data_agg = _aggregate(_df, variable=var_list)
 
         # check if data for intermediate variables already exists
-        _data_self = _df.filter(variable=var_list)._data
+        with adjust_log_level("pyam.core"):
+            _data_self = _df.filter(variable=var_list)._data
         _overlap = _data_agg.index.intersection(_data_self.index)
         _new = _data_agg.index.difference(_data_self.index)
 
@@ -145,7 +146,7 @@ def _aggregate_region(
 
     # if not `components=False`, add components at the `region` level
     if components:
-        with adjust_log_level(logger):
+        with adjust_log_level("pyam.core"):
             region_df = df.filter(region=region)
 
         # if `True`, auto-detect `components` at the `region` level,

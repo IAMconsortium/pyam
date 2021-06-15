@@ -59,7 +59,7 @@ from pyam.utils import (
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
 from pyam._compare import _compare
-from pyam._aggregate import (
+from pyam.aggregation import (
     _aggregate,
     _aggregate_region,
     _aggregate_time,
