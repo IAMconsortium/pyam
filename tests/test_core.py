@@ -316,6 +316,13 @@ def test_index_attributes_extra_col(test_pd_df):
     assert df.subannual == ["summer", "winter"]
 
 
+def test_unit_mapping(test_pd_df):
+    """assert that the `unit_mapping` returns the expected dictionary"""
+    test_pd_df.loc[2, "unit"] = "foo"  # replace unit of one row of Primary Energy data
+    obs = IamDataFrame(test_pd_df).unit_mapping
+
+    assert obs == {"Primary Energy": ["EJ/yr", "foo"], "Primary Energy|Coal": "EJ/yr"}
+
 def test_model(test_df):
     exp = pd.Series(data=["model_a"], name="model")
     pd.testing.assert_series_equal(test_df.models(), exp)
