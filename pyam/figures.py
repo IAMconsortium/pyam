@@ -1,10 +1,17 @@
+from importlib import import_module
 import logging
 
 import pandas as pd
-import plotly.graph_objects as go
 from pyam.index import get_index_levels
 
 logger = logging.getLogger(__name__)
+
+try:
+    go = getattr(import_module("plotly"), "graph_objects")
+except ImportError as err:
+    msg = "Missing optional dependency 'plotly', use pip or conda to install"
+    logger.exception(msg)
+    raise err from None
 
 
 def sankey(df, mapping):
