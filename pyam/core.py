@@ -369,17 +369,23 @@ class IamDataFrame(object):
     @property
     def unit_mapping(self):
         """Return a dictionary of variable to (list of) correspoding units"""
+
         def list_or_str(x):
             x = list(x.drop_duplicates())
             return x if len(x) > 1 else x[0]
 
-        return pd.DataFrame(
-            zip(
-                self._data.index.get_level_values("variable"),
-                self._data.index.get_level_values("unit"),
-            ),
-            columns=["variable", "unit"],
-        ).groupby("variable").apply(lambda u: list_or_str(u.unit)).to_dict()
+        return (
+            pd.DataFrame(
+                zip(
+                    self._data.index.get_level_values("variable"),
+                    self._data.index.get_level_values("unit"),
+                ),
+                columns=["variable", "unit"],
+            )
+            .groupby("variable")
+            .apply(lambda u: list_or_str(u.unit))
+            .to_dict()
+        )
 
     @property
     def data(self):

@@ -323,6 +323,7 @@ def test_unit_mapping(test_pd_df):
 
     assert obs == {"Primary Energy": ["EJ/yr", "foo"], "Primary Energy|Coal": "EJ/yr"}
 
+
 def test_model(test_df):
     exp = pd.Series(data=["model_a"], name="model")
     pd.testing.assert_series_equal(test_df.models(), exp)
