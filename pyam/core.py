@@ -367,6 +367,27 @@ class IamDataFrame(object):
         return get_index_levels(self._data, "unit")
 
     @property
+    def unit_mapping(self):
+        """Return a dictionary of variables to (list of) correspoding units"""
+
+        def list_or_str(x):
+            x = list(x.drop_duplicates())
+            return x if len(x) > 1 else x[0]
+
+        return (
+            pd.DataFrame(
+                zip(
+                    self._data.index.get_level_values("variable"),
+                    self._data.index.get_level_values("unit"),
+                ),
+                columns=["variable", "unit"],
+            )
+            .groupby("variable")
+            .apply(lambda u: list_or_str(u.unit))
+            .to_dict()
+        )
+
+    @property
     def data(self):
         """Return the timeseries data as a long :class:`pandas.DataFrame`"""
         if self.empty:  # reset_index fails on empty with `datetime` column
@@ -456,6 +477,7 @@ class IamDataFrame(object):
             return pd.Series(get_index_levels(self._data, _var), name=_var)
 
         # else construct dataframe from variable and unit levels
+        deprecation_warning("Use the attribute `unit_mapping` instead.")
         return (
             pd.DataFrame(
                 zip(

@@ -1,4 +1,6 @@
 # Next Release
+
+- [#548](https://github.com/IAMconsortium/pyam/pull/548) Add a `unit_mapping` attribute to show a variable-unit dictionary 
 - [#546](https://github.com/IAMconsortium/pyam/pull/546) Fixed logging for recursive aggregation
 
 # Release v0.12.0

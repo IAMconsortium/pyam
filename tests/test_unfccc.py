@@ -4,7 +4,7 @@ from pyam.testing import assert_iamframe_equal
 
 
 UNFCCC_DF = pd.DataFrame(
-    [[1990, 1738.137558], [1991, 1537.282312], [1992, 1499.067572]],
+    [[1990, 1609.25345], [1991, 1434.21149], [1992, 1398.38269]],
     columns=["year", "value"],
 )
 
