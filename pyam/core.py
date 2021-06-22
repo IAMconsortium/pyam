@@ -368,7 +368,7 @@ class IamDataFrame(object):
 
     @property
     def unit_mapping(self):
-        """Return a dictionary of variable to (list of) correspoding units"""
+        """Return a dictionary of variables to (list of) correspoding units"""
 
         def list_or_str(x):
             x = list(x.drop_duplicates())
@@ -477,6 +477,7 @@ class IamDataFrame(object):
             return pd.Series(get_index_levels(self._data, _var), name=_var)
 
         # else construct dataframe from variable and unit levels
+        deprecation_warning("Use the attribute `unit_mapping` instead.")
         return (
             pd.DataFrame(
                 zip(
