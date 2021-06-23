@@ -40,7 +40,7 @@ jobs:
     - name: Install dependencies and package
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[tests,deploy,optional-io-formats,tutorials,docs]
+        pip install -e .[tests,deploy,optional-plotting,optional-io-formats,tutorials,docs]
 
     - name: Test with pytest (including Matplotlib)
       run: |

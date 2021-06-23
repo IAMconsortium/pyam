@@ -4,4 +4,4 @@ python:
   install:
   - method: pip
     path: .
-    extra_requirements: [docs,tutorials]
+    extra_requirements: [docs,tutorials,optional-plotting]

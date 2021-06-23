@@ -1,10 +1,17 @@
 import logging
 
 import pandas as pd
-import plotly.graph_objects as go
 from pyam.index import get_index_levels
 
 logger = logging.getLogger(__name__)
+
+try:
+    import plotly.graph_objects as go
+
+    HAS_PLOTLY = True
+except ImportError:  # pragma: no cover
+    go = None
+    HAS_PLOTLY = False
 
 
 def sankey(df, mapping):
@@ -29,6 +36,10 @@ def sankey(df, mapping):
         -------
         fig : :class:`plotly.graph_objects.Figure`
     """
+    if not HAS_PLOTLY:  # pragma: no cover
+        raise ImportError(
+            "Missing optional dependency `plotly`, use pip or conda to install"
+        )
     # Check for duplicates
     for col in [name for name in df._data.index.names if name != "variable"]:
         levels = get_index_levels(df._data, col)
