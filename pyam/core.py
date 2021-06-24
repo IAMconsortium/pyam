@@ -4,6 +4,7 @@ import itertools
 import logging
 import os
 import sys
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -1111,24 +1112,33 @@ class IamDataFrame(object):
         # check if duplicates exist in the new timeseries data index
         duplicate_rows = _data_index.duplicated()
         has_duplicates = any(duplicate_rows)
+
+        # keeping previous behaviour where naming conflicts within the renamed parts
+        # do not raise an error if there is overlap in the renamed data
+        # TODO: deprecated, always raise an error on duplicates for release >=1.0
         if has_duplicates and check_duplicates:
-            _raise_data_error(
-                "Duplicated data rows after renaming"
-                "(use `check_duplicates=False` to sum)",
-                _data_index[duplicate_rows].to_frame(index=False),
-            )
+            _full_index = _data_index.to_frame(index=False)
+            _conflict = _full_index[~rows].append(_full_index[rows].drop_duplicates())
+            if any(_conflict.duplicated()):
+                _raise_data_error(
+                    "Conflicting data rows between renamed and not-renamed data, "
+                    "use `aggregate()` or `check_duplicates=False` instead",
+                    _data_index[duplicate_rows].to_frame(index=False),
+                )
+
+            # TODO: raise this as data error for release >=1.0
+            else:
+                deprecation_warning(
+                    "Use `aggregate()` or `check_duplicates=False` instead.",
+                    "Overlapping data rows after renaming. This feature",
+                )
 
         ret._data.index = _data_index
         ret._set_attributes()
 
         # merge using `groupby().sum()` only if duplicates exist
         if has_duplicates:
-            ret._data = (
-                ret._data.reset_index()
-                .groupby(ret._LONG_IDX)
-                .sum()
-                .value
-            )
+            ret._data = ret._data.reset_index().groupby(ret._LONG_IDX).sum().value
 
         if not inplace:
             return ret
