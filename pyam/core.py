@@ -1058,7 +1058,7 @@ class IamDataFrame(object):
         append : bool, optional
             Whether to append aggregated timeseries data to this instance
             (if `inplace=True`) or to a returned new instance (if `inplace=False`).
-        check_duplicates: bool, optional
+        check_duplicates : bool, optional
             Check whether conflicts exist after renaming of timeseries data coordinates.
             If True, raise a ValueError; if False, rename and merge
             with :meth:`groupby().sum() <pandas.core.groupby.GroupBy.sum>`.
