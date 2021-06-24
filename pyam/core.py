@@ -1113,7 +1113,8 @@ class IamDataFrame(object):
         has_duplicates = any(duplicate_rows)
         if has_duplicates and check_duplicates:
             _raise_data_error(
-                "Duplicated data after renaming (use `check_duplicates=False` to sum)",
+                "Duplicated data rows after renaming"
+                "(use `check_duplicates=False` to sum)",
                 _data_index[duplicate_rows].to_frame(index=False),
             )
 
@@ -1122,7 +1123,12 @@ class IamDataFrame(object):
 
         # merge using `groupby().sum()` only if duplicates exist
         if has_duplicates:
-            ret._data = ret._data.groupby(ret._LONG_IDX).sum()
+            ret._data = (
+                ret._data.reset_index()
+                .groupby(ret._LONG_IDX)
+                .sum()
+                .value
+            )
 
         if not inplace:
             return ret
