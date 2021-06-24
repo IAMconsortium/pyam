@@ -73,6 +73,7 @@ from pyam.index import (
     get_index_levels_codes,
     get_keep_col,
     verify_index_integrity,
+    replace_index_values,
 )
 from pyam.logging import deprecation_warning
 
@@ -1091,14 +1092,11 @@ class IamDataFrame(object):
 
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(**filters)
-        idx = ret.meta.index.isin(_make_index(ret.data[rows]))
+        idx = ret.meta.index.isin(_make_index(ret._data[rows]))
 
-        # if `check_duplicates`, do the rename on a copy until after the check
-        # _data = ret.data.copy() if check_duplicates else ret.data
-        # TODO reactivate this avoidance of creating a copy
-        _data = ret.data
+        # apply renaming changes (for `data` only on the index)
+        _data_index = ret._data.index
 
-        # apply renaming changes
         for col, _mapping in mapping.items():
             if col in META_IDX:
                 _index = pd.DataFrame(index=ret.meta.index).reset_index()
@@ -1108,26 +1106,23 @@ class IamDataFrame(object):
                 ret.meta.index = _index.set_index(META_IDX).index
             elif col not in data_cols:
                 raise ValueError(f"Renaming by {col} not supported!")
-            _data.loc[rows, col] = _data.loc[rows, col].replace(_mapping)
+            _data_index = replace_index_values(_data_index, col, _mapping, rows)
 
-        # check if duplicates exist between the renamed and not-renamed data
-        if check_duplicates:
-            merged = (
-                _data.loc[rows, self._LONG_IDX]
-                .drop_duplicates()
-                .append(_data.loc[~rows, self._LONG_IDX].drop_duplicates())
+        # check if duplicates exist in the new timeseries data index
+        duplicate_rows = _data_index.duplicated()
+        has_duplicates = any(duplicate_rows)
+        if has_duplicates and check_duplicates:
+            _raise_data_error(
+                "Duplicated data after renaming (use `check_duplicates=False` to sum)",
+                _data_index[duplicate_rows].to_frame(index=False),
             )
-            if any(merged.duplicated()):
-                msg = "Duplicated rows between original and renamed data!\n{}"
-                conflict_rows = merged.loc[merged.duplicated(), self._LONG_IDX]
-                raise ValueError(msg.format(conflict_rows.drop_duplicates()))
+
+        ret._data.index = _data_index
+        ret._set_attributes()
 
         # merge using `groupby().sum()` only if duplicates exist
-        if _data[ret._LONG_IDX].duplicated().any():
-            _data = _data.groupby(ret._LONG_IDX).sum().reset_index()
-
-        # overwrite _data
-        ret._data = format_time_col(_data, ret.time_col).set_index(ret._LONG_IDX).value
+        if has_duplicates:
+            ret._data = ret._data.groupby(ret._LONG_IDX).sum()
 
         if not inplace:
             return ret
