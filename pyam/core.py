@@ -1033,14 +1033,14 @@ class IamDataFrame(object):
     def rename(
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs
     ):
-        """Rename and aggregate columns using `groupby().sum()` on values
+        """Rename any index dimension or data coordinate.
 
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
 
         Renaming is only applied to any data row that matches for all
         columns given in `mapping`. Renaming can only be applied to the `model`
-        and `scenario` columns, or to other data columns simultaneously.
+        and `scenario` columns, or to other data coordinates simultaneously.
 
         Parameters
         ----------
@@ -1053,15 +1053,20 @@ class IamDataFrame(object):
                                     <current_name_2>: <target_name_2>})
 
             or kwargs as `column_name={<current_name_1>: <target_name_1>, ...}`
-        inplace : bool, default False
-            if True, do operation inplace and return None
-        append : bool, default False
-            append renamed timeseries to `self` and return None;
-            else return new `IamDataFrame`
-        check_duplicates: bool, default True
-            check whether conflict between existing and renamed data exists.
-            If True, raise ValueError; if False, rename and merge
+        inplace : bool, optional
+            Do operation inplace and return None.
+        append : bool, optional
+            Whether to append aggregated timeseries data to this instance
+            (if `inplace=True`) or to a returned new instance (if `inplace=False`).
+        check_duplicates: bool, optional
+            Check whether conflicts exist after renaming of timeseries data coordinates.
+            If True, raise a ValueError; if False, rename and merge
             with :meth:`groupby().sum() <pandas.core.groupby.GroupBy.sum>`.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Aggregated timeseries data as new object or None if `inplace=True`.
         """
         # combine `mapping` arg and mapping kwargs, ensure no rename conflicts
         mapping = mapping or {}
