@@ -49,8 +49,10 @@ def replace_index_values(df, level, mapping, rows=None):
     # if replacing level values with a filter (by rows)
     if rows is not None and not all(rows):
         _levels = pd.Series(index.get_level_values(n))
-        _levels[rows] = _levels[rows].replace(mapping)
+        renamed_index = replace_index_values(index[rows], level, mapping)
+        _levels[rows] = list(renamed_index.get_level_values(n))
         _unique_levels = pd.Index(_levels.unique())
+
         return append_index_level(
             index=index.droplevel(n),
             codes=_unique_levels.get_indexer(_levels),
