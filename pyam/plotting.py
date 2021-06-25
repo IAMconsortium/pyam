@@ -261,6 +261,14 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     return df
 
 
+def time_col_or_year(df):
+    """Return the time-col (if `df` is an IamDataFrame) or 'year'"""
+    try:
+        return df.time_col
+    except AttributeError:
+        return "year"
+
+
 def pie(
     df,
     value="value",
@@ -296,6 +304,7 @@ def pie(
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
     if not isinstance(df, pd.DataFrame):
@@ -345,7 +354,7 @@ def pie(
 
 def stack(
     df,
-    x="year",
+    x=None,
     y="value",
     stack="variable",
     order=None,
@@ -363,9 +372,10 @@ def stack(
     df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
         Data to be plotted
     x : string, optional
-        The column to use for x-axis values
+        The coordinates or column of the data points for the horizontal axis;
+        defaults to the time domain (if `df` is IamDataFrame) or 'year'.
     y : string, optional
-        The column to use for y-axis values
+        The coordinates or column of the data points for the vertical axis.
     stack : string, optional
         The column to use for stack groupings
     order : list, optional
@@ -392,6 +402,10 @@ def stack(
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+
+    # default x-axis to time-col attribute from an IamDataFrame, else use "year"
+    x = x or time_col_or_year(df)
+
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
     if not isinstance(df, pd.DataFrame):
@@ -510,7 +524,7 @@ def stack(
 
 def bar(
     df,
-    x="year",
+    x=None,
     y="value",
     bars="variable",
     order=None,
@@ -529,9 +543,10 @@ def bar(
     df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
         Data to be plotted
     x : string, optional
-        The column to use for x-axis values
+        The coordinates or column of the data points for the horizontal axis;
+        defaults to the time domain (if `df` is IamDataFrame) or 'year'.
     y : string, optional
-        The column to use for y-axis values
+        The coordinates or column of the data points for the vertical axis.
     bars : string, optional
         The column to use for bar groupings
     order, bars_order : list, optional
@@ -556,6 +571,10 @@ def bar(
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+
+    # default x-axis to time-col attribute from an IamDataFrame, else use "year"
+    x = x or time_col_or_year(df)
+
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
     if not isinstance(df, pd.DataFrame):
@@ -622,7 +641,7 @@ def bar(
     return ax
 
 
-def box(df, y="value", x="year", by=None, legend=True, title=None, ax=None, **kwargs):
+def box(df, y="value", x=None, by=None, legend=True, title=None, ax=None, **kwargs):
     """Plot boxplot of data using seaborn.boxplot
 
     Parameters
@@ -633,8 +652,8 @@ def box(df, y="value", x="year", by=None, legend=True, title=None, ax=None, **kw
         The column to use for y-axis values representing the distribution
         within the boxplot
     x : string, optional
-        The column to use for x-axis points, i.e. the number of boxes the plot
-        will have
+        The coordinates or column of the data points for the horizontal axis;
+        defaults to the time domain (if `df` is IamDataFrame) or 'year'.
     by : string, optional
         The column for grouping y-axis values at each x-axis point,
         i.e. a 3rd dimension. Data should be categorical, not a contiuous
@@ -652,6 +671,10 @@ def box(df, y="value", x="year", by=None, legend=True, title=None, ax=None, **kw
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+
+    # default x-axis to time-col attribute from an IamDataFrame, else use "year"
+    x = x or time_col_or_year(df)
+
     # cast to DataFrame if necessary
     # TODO: select only relevant meta columns
     if not isinstance(df, pd.DataFrame):
@@ -745,9 +768,9 @@ def scatter(
     df : class:`pyam.IamDataFrame`
         Data to be plotted
     x : str
-        column to be plotted on the x-axis
+        The coordinates or columns of the data points for the horizontal axis.
     y : str
-        column to be plotted on the y-axis
+        The coordinates or columns of the data points for the vertical axis.
     legend : bool, optional
         Include a legend. By default, show legend only if less than 13 entries.
         If a dictionary is provided, it will be used as keyword arguments
@@ -779,6 +802,7 @@ def scatter(
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+
     # process the data
     xisvar = x in df.variable
     yisvar = y in df.variable
@@ -877,7 +901,7 @@ def scatter(
 
 def line(
     df,
-    x="year",
+    x=None,
     y="value",
     order=None,
     legend=None,
@@ -899,9 +923,10 @@ def line(
     df : :class:`pyam.IamDataFrame`, :class:`pandas.DataFrame`
         Data to be plotted
     x : string, optional
-        The column to use for x-axis values
+        The coordinates or column of the data points for the horizontal axis;
+        defaults to the time domain (if `df` is IamDataFrame) or 'year'.
     y : string, optional
-        The column to use for y-axis values
+        The column to use as y-axis
     order : dict or list, optional
          The order of lines and the legend as :code:`{<column>: [<order>]}` or
          a list of columns where ordering should be applied. If not specified,
@@ -946,6 +971,9 @@ def line(
     ax : :class:`matplotlib.axes.Axes`
         Modified `ax` or new instance
     """
+
+    # default x-axis to time-col attribute from an IamDataFrame, else use "year"
+    x = x or time_col_or_year(df)
 
     # cast to DataFrame if necessary
     if not isinstance(df, pd.DataFrame):
