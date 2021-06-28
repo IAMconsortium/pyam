@@ -139,7 +139,7 @@ Published to mark the first major release of the |pyam| package.
     Lara Welder, Erik Francisco Álvarez Quispe, and Christopher J. Smith.
   | *pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
   | **Open Research Europe**, 2021.
-    doi: `10.12688/openreseacheurope/… <https://doi.org/10.12688/openreseacheurope/…>`_
+    doi: `10.12688/openreseacheurope/... <https://doi.org/10.12688/openreseacheurope/...>`_
 
 Release v0.1.2 (November 2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

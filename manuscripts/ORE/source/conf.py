@@ -56,4 +56,4 @@ html_static_path = ["_static"]
 
 # -- Options for bibtex files ------------------------------------------------
 
-bibtex_bibfiles = ['_bib/main.bib']
+bibtex_bibfiles = ["_bib/main.bib"]

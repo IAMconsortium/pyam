@@ -111,7 +111,7 @@ Maarten Brinkerink, Maik Budzinski, Florian Maczek, Sebastian Zwickl-Bernhard,
 Lara Welder, Erik Francisco Álvarez Quispe, and Christopher J. Smith.
 *pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
 **Open Research Europe**, 2021.
-doi: [10.12688/openreseacheurope/…](https://doi.org/10.12688/openreseacheurope/…)
+doi: [10.12688/openreseacheurope/...](https://doi.org/10.12688/openreseacheurope/...)
 
 ### Release v0.1.2 (November 2018)
 
