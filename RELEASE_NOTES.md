@@ -2,7 +2,7 @@
 
 This is the first major release of the pyam package.
 It coincides with the publication of a manuscript in **Open Research Europe**
-(doi: [10.12688/openreseacheurope/...](https://doi.org/10.12688/openreseacheurope/...)).
+(doi: [10.12688/openreseurope.13633.1](http://doi.org/10.12688/openreseurope.13633.1)).
 
 ## Notes on prior releases
 

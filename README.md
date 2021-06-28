@@ -14,7 +14,7 @@ pyam: analysis & visualization <br /> of integrated-assessment and macro-energy 
 [![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
 
 [![doi](https://zenodo.org/badge/113359260.svg)](https://zenodo.org/badge/latestdoi/113359260)
-[![ORE](https://img.shields.io/badge/ORE-openreseacheurope.12345.0-success)](https://doi.org/10.12688/openreseacheurope/...)
+[![ORE](https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.1-blue)](https://doi.org/10.12688/openreseurope.13633.1)
 [![groups.io](https://img.shields.io/badge/groups.io-pyam-blue)](https://pyam.groups.io/g/forum)
 [![slack](https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack)](https://pyam-iamc.slack.com)
 
@@ -111,7 +111,7 @@ Maarten Brinkerink, Maik Budzinski, Florian Maczek, Sebastian Zwickl-Bernhard,
 Lara Welder, Erik Francisco Alvarez Quispe, and Christopher J. Smith.
 *pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
 **Open Research Europe**, 2021.
-doi: [10.12688/openreseacheurope/...](https://doi.org/10.12688/openreseacheurope/...)
+doi: [10.12688/openreseurope.13633.1](https://doi.org/10.12688/openreseurope.13633.1)
 
 ### Release v0.1.2 (November 2018)
 
