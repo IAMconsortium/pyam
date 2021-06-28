@@ -1,6 +1,7 @@
 # Next Release
 
 - [#551](https://github.com/IAMconsortium/pyam/pull/551) Default to IamDataFrame-time-col on the x-axis of plots
+- [#550](https://github.com/IAMconsortium/pyam/pull/550) Refactor the `rename()` method for performance improvement
 - [#549](https://github.com/IAMconsortium/pyam/pull/549) Make `plotly` an optional dependency
 - [#548](https://github.com/IAMconsortium/pyam/pull/548) Add a `unit_mapping` attribute to show a variable-unit dictionary 
 - [#546](https://github.com/IAMconsortium/pyam/pull/546) Fixed logging for recursive aggregation

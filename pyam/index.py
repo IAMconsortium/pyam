@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from .utils import _raise_data_error
+from .utils import _raise_data_error, isstr
 
 
 def get_index_levels(index, level):
@@ -40,18 +40,33 @@ def get_keep_col(codes, matches):
     return np.isin(codes, matches)
 
 
-def replace_index_values(df, level, mapping):
-    """Replace one or several category-values at a specific level"""
+def replace_index_values(df, level, mapping, rows=None):
+    """Replace one or several category-values at a specific level (for specific rows)"""
     index = df if isinstance(df, pd.Index) else df.index
 
     n = index._get_level_number(level)
 
-    # replace the levels
+    # if replacing level values with a filter (by rows)
+    if rows is not None and not all(rows):
+        _levels = pd.Series(index.get_level_values(n))
+        renamed_index = replace_index_values(index[rows], level, mapping)
+        _levels[rows] = list(renamed_index.get_level_values(n))
+        _unique_levels = pd.Index(_levels.unique())
+
+        return append_index_level(
+            index=index.droplevel(n),
+            codes=_unique_levels.get_indexer(_levels),
+            level=_unique_levels,
+            name=level,
+            order=index.names,
+        )
+
+    # else, replace the level values for the entire index dimension
     _levels = index.levels[n].map(lambda l: mapping.get(l, l))
     _unique_levels = _levels.unique()
 
     # if no duplicate levels exist after replace, set new levels and return
-    if len(_levels) == len(_unique_levels):
+    if len(index.levels[n]) == len(_unique_levels):
         return index.set_levels(_levels, n)
 
     # if duplicate levels exist, re-map the codes
@@ -62,9 +77,13 @@ def replace_index_values(df, level, mapping):
 
 def append_index_level(index, codes, level, name, order=False):
     """Append a level to a pd.MultiIndex"""
+    if isstr(level):
+        level = [level]
+        codes = [codes] * len(index.codes[0])
+
     new_index = pd.MultiIndex(
-        codes=index.codes + [[codes] * len(index.codes[0])],
-        levels=index.levels + [[level]],
+        codes=index.codes + [codes],
+        levels=index.levels + [level],
         names=index.names + [name],
     )
     if order:

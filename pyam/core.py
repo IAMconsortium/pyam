@@ -73,6 +73,7 @@ from pyam.index import (
     get_index_levels_codes,
     get_keep_col,
     verify_index_integrity,
+    replace_index_values,
 )
 from pyam.logging import deprecation_warning
 
@@ -1032,14 +1033,14 @@ class IamDataFrame(object):
     def rename(
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs
     ):
-        """Rename and aggregate columns using `groupby().sum()` on values
+        """Rename any index dimension or data coordinate.
 
         When renaming models or scenarios, the uniqueness of the index must be
         maintained, and the function will raise an error otherwise.
 
         Renaming is only applied to any data row that matches for all
         columns given in `mapping`. Renaming can only be applied to the `model`
-        and `scenario` columns, or to other data columns simultaneously.
+        and `scenario` columns, or to other data coordinates simultaneously.
 
         Parameters
         ----------
@@ -1052,15 +1053,20 @@ class IamDataFrame(object):
                                     <current_name_2>: <target_name_2>})
 
             or kwargs as `column_name={<current_name_1>: <target_name_1>, ...}`
-        inplace : bool, default False
-            if True, do operation inplace and return None
-        append : bool, default False
-            append renamed timeseries to `self` and return None;
-            else return new `IamDataFrame`
-        check_duplicates: bool, default True
-            check whether conflict between existing and renamed data exists.
-            If True, raise ValueError; if False, rename and merge
+        inplace : bool, optional
+            Do operation inplace and return None.
+        append : bool, optional
+            Whether to append aggregated timeseries data to this instance
+            (if `inplace=True`) or to a returned new instance (if `inplace=False`).
+        check_duplicates : bool, optional
+            Check whether conflicts exist after renaming of timeseries data coordinates.
+            If True, raise a ValueError; if False, rename and merge
             with :meth:`groupby().sum() <pandas.core.groupby.GroupBy.sum>`.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Aggregated timeseries data as new object or None if `inplace=True`.
         """
         # combine `mapping` arg and mapping kwargs, ensure no rename conflicts
         mapping = mapping or {}
@@ -1091,14 +1097,11 @@ class IamDataFrame(object):
 
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(**filters)
-        idx = ret.meta.index.isin(_make_index(ret.data[rows]))
+        idx = ret.meta.index.isin(_make_index(ret._data[rows]))
 
-        # if `check_duplicates`, do the rename on a copy until after the check
-        # _data = ret.data.copy() if check_duplicates else ret.data
-        # TODO reactivate this avoidance of creating a copy
-        _data = ret.data
+        # apply renaming changes (for `data` only on the index)
+        _data_index = ret._data.index
 
-        # apply renaming changes
         for col, _mapping in mapping.items():
             if col in META_IDX:
                 _index = pd.DataFrame(index=ret.meta.index).reset_index()
@@ -1108,26 +1111,38 @@ class IamDataFrame(object):
                 ret.meta.index = _index.set_index(META_IDX).index
             elif col not in data_cols:
                 raise ValueError(f"Renaming by {col} not supported!")
-            _data.loc[rows, col] = _data.loc[rows, col].replace(_mapping)
+            _data_index = replace_index_values(_data_index, col, _mapping, rows)
 
-        # check if duplicates exist between the renamed and not-renamed data
-        if check_duplicates:
-            merged = (
-                _data.loc[rows, self._LONG_IDX]
-                .drop_duplicates()
-                .append(_data.loc[~rows, self._LONG_IDX].drop_duplicates())
-            )
-            if any(merged.duplicated()):
-                msg = "Duplicated rows between original and renamed data!\n{}"
-                conflict_rows = merged.loc[merged.duplicated(), self._LONG_IDX]
-                raise ValueError(msg.format(conflict_rows.drop_duplicates()))
+        # check if duplicates exist in the new timeseries data index
+        duplicate_rows = _data_index.duplicated()
+        has_duplicates = any(duplicate_rows)
+
+        # keeping previous behaviour where naming conflicts within the renamed parts
+        # do not raise an error if there is overlap in the renamed data
+        # TODO: deprecated, always raise an error on duplicates for release >=1.0
+        if has_duplicates and check_duplicates:
+            _full_index = _data_index.to_frame(index=False)
+            _conflict = _full_index[~rows].append(_full_index[rows].drop_duplicates())
+            if any(_conflict.duplicated()):
+                _raise_data_error(
+                    "Conflicting data rows between renamed and not-renamed data, "
+                    "use `aggregate()` or `check_duplicates=False` instead",
+                    _data_index[duplicate_rows].to_frame(index=False),
+                )
+
+            # TODO: raise this as data error for release >=1.0
+            else:
+                deprecation_warning(
+                    "Use `aggregate()` or `check_duplicates=False` instead.",
+                    "Overlapping data rows after renaming. This feature",
+                )
+
+        ret._data.index = _data_index
+        ret._set_attributes()
 
         # merge using `groupby().sum()` only if duplicates exist
-        if _data[ret._LONG_IDX].duplicated().any():
-            _data = _data.groupby(ret._LONG_IDX).sum().reset_index()
-
-        # overwrite _data
-        ret._data = format_time_col(_data, ret.time_col).set_index(ret._LONG_IDX).value
+        if has_duplicates:
+            ret._data = ret._data.reset_index().groupby(ret._LONG_IDX).sum().value
 
         if not inplace:
             return ret

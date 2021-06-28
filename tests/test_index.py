@@ -26,16 +26,15 @@ def test_get_index_levels_raises(test_df_index):
         # this test ensures that no transitive replacing occurs
     ],
 )
-def test_replace_index_level(test_pd_df, test_df_index, exp_scen, mapping):
+@pytest.mark.parametrize("rows", (None, [False, True, True]))
+def test_replace_index_level(test_pd_df, test_df_index, exp_scen, mapping, rows):
     """Assert that replace_index_value works as expected"""
-    pd_df = test_pd_df.copy()
-    pd_df["scenario"] = exp_scen
-    exp = pd_df.set_index(IAMC_IDX)
 
-    obs = test_df_index.copy()
-    obs.index = replace_index_values(obs, "scenario", mapping)
+    test_pd_df["scenario"] = exp_scen if rows is None else ["scen_a"] + exp_scen[1:]
+    exp = test_pd_df.set_index(IAMC_IDX)
 
-    pdt.assert_frame_equal(exp, obs)
+    test_df_index.index = replace_index_values(test_df_index, "scenario", mapping, rows)
+    pdt.assert_frame_equal(exp, test_df_index)
 
 
 def test_replace_index_level_raises(test_df_index):
