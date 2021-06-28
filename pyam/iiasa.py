@@ -73,8 +73,10 @@ def _get_token(creds, base_url):
             logger.error(f"Could not read credentials from `{creds}`")
         creds = _creds
     else:
-        msg = "Passing credentials as clear-text is not allowed. " \
-              "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
+        msg = (
+            "Passing credentials as clear-text is not allowed. "
+            "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
+        )
         raise DeprecationWarning(msg)
 
     # if (still) no creds, get anonymous auth and return
