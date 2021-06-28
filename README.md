@@ -15,8 +15,9 @@ pyam: analysis & visualization <br /> of integrated-assessment and macro-energy 
 
 [![doi](https://zenodo.org/badge/113359260.svg)](https://zenodo.org/badge/latestdoi/113359260)
 [![ORE](https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.1-blue)](https://doi.org/10.12688/openreseurope.13633.1)
-[![groups.io](https://img.shields.io/badge/groups.io-pyam-blue)](https://pyam.groups.io/g/forum)
-[![slack](https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack)](https://pyam-iamc.slack.com)
+[![joss](https://joss.theoj.org/papers/10.21105/joss.01095/status.svg)](https://joss.theoj.org/papers/10.21105/joss.01095)
+[![groups.io](https://img.shields.io/badge/listserv-groups.io-blue)](https://pyam.groups.io/g/forum)
+[![slack](https://img.shields.io/badge/chat-Slack-orange)](https://pyam-iamc.slack.com)
 
 ****
 

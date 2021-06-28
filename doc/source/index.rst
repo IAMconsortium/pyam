@@ -7,7 +7,7 @@ Release v\ |version|.
 
 |black| |python| |pytest| |rtd| |codecov|
 
-|doi| |ore| |groupsio| |slack|
+|doi| |ore| |joss| |groupsio| |slack|
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-black
    :target: https://github.com/IAMconsortium/pyam/blob/main/LICENSE
@@ -43,10 +43,13 @@ Release v\ |version|.
 .. |ore| image:: https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.1-blue
    :target: https://doi.org/10.12688/openreseurope.13633.1
 
-.. |groupsio| image:: https://img.shields.io/badge/groups.io-pyam-blue
+.. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
+   :target: https://joss.theoj.org/papers/10.21105/joss.01095
+
+.. |groupsio| image:: https://img.shields.io/badge/listserv-groups.io-blue
    :target: https://pyam.groups.io/g/forum
 
-.. |slack| image:: https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack
+.. |slack| image:: https://img.shields.io/badge/chat-Slack-orange.svg
    :target: https://pyam-iamc.slack.com
 
 Overview
