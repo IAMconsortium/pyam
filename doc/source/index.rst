@@ -52,7 +52,7 @@ Release v\ |version|.
 Overview
 --------
 
-The open-source Python package |pyam| :cite:`Huppmann:2021:pyam-v1.0,Gidden:2019:pyam`
+The open-source Python package |pyam| :cite:`Gidden:2019:pyam,Huppmann:2021:pyam-v1.0`
 provides a suite of tools and functions for analyzing and visualizing
 input data (i.e., assumptions/parametrization) 
 and results (model output) of integrated-assessment models,
@@ -139,7 +139,7 @@ Published to mark the first major release of the |pyam| package.
     Lara Welder, Erik Francisco Álvarez Quispe, and Christopher J. Smith.
   | *pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
   | **Open Research Europe**, 2021.
-    doi: `10.12688/openreseacheurope/... <https://doi.org/10.12688/openreseacheurope/...>`_
+    doi: `10.12688/openreseurope.13633.1 <https://doi.org/10.12688/openreseurope.13633.1>`_
 
 Release v0.1.2 (November 2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
