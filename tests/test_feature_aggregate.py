@@ -238,7 +238,6 @@ def test_check_aggregate_region_log(simple_df, caplog):
             variable="Primary Energy", region="World", keep=False
         ).check_aggregate_region("Primary Energy")
     )
-    print(caplog.messages)
     msg = "Variable 'Primary Energy' does not exist in region 'World'!"
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "INFO"

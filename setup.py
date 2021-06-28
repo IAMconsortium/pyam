@@ -13,8 +13,8 @@ logo = r"""
 
 # NOTE TO DEVS
 # If you change a minimum version below, please explicitly set that
-# in our minimum-reqs test in the file
-# ./.github/workflows/pytest-depedency.yml
+# in our minimum-reqs test in the file ./.github/workflows/pytest-depedency.yml
+# Please also add a section "Dependency changes" to the release notes
 REQUIREMENTS = [
     "argparse",
     "iam-units>=2020.4.21",

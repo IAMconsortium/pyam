@@ -90,16 +90,10 @@ def test_conn_creds_dict():
     assert conn.current_connection == TEST_API_NAME
 
 
-def test_conn_bad_creds():
+def test_conn_cleartext_raises():
     # connecting with invalid credentials raises an error
     creds = ("_foo", "_bar")
-    pytest.raises(RuntimeError, iiasa.Connection, TEST_API, creds=creds)
-
-
-def test_conn_creds_dict_raises():
-    # connecting with incomplete credentials as dictionary raises an error
-    creds = {"username": "foo"}
-    pytest.raises(KeyError, iiasa.Connection, TEST_API, creds=creds)
+    pytest.raises(DeprecationWarning, iiasa.Connection, TEST_API, creds=creds)
 
 
 def test_variables(conn):

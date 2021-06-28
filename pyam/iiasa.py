@@ -19,7 +19,6 @@ from pyam.utils import (
     DEFAULT_META_INDEX,
     islistable,
 )
-from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
@@ -64,18 +63,21 @@ def _check_response(r, msg="Trouble with request", error=RuntimeError):
 
 def _get_token(creds, base_url):
     """Parse credentials and get token from IIASA authentication service"""
-    plaintextcreds = True
 
     # try reading default config or parse file
     if creds is None:
         creds = _get_config()
-        plaintextcreds = False
     elif isinstance(creds, Path) or isstr(creds):
         _creds = _get_config(creds)
         if _creds is None:
             logger.error(f"Could not read credentials from `{creds}`")
         creds = _creds
-        plaintextcreds = False
+    else:
+        msg = (
+            "Passing credentials as clear-text is not allowed. "
+            "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
+        )
+        raise DeprecationWarning(msg)
 
     # if (still) no creds, get anonymous auth and return
     if creds is None:
@@ -89,16 +91,6 @@ def _get_token(creds, base_url):
         user, pw = creds["username"], creds["password"]
     else:
         user, pw = creds
-    if plaintextcreds:
-        logger.warning(
-            "You provided credentials in plain text. DO NOT save "
-            "these in a repository or otherwise post them online"
-        )
-        deprecation_warning(
-            "Please use `pyam.iiasa.set_config(<user>, <pwd>)`"
-            " to store your credentials in a file!",
-            "Providing credentials in plain text",
-        )
 
     # get user token
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
@@ -118,7 +110,7 @@ class Connection(object):
         The name of a database API.
         See :attr:`pyam.iiasa.Connection.valid_connections` for a list
         of available APIs.
-    creds : str, :class:`pathlib.Path`, list-like, or dict, optional
+    creds : str or :class:`pathlib.Path`, optional
         By default, the class will search for user credentials which
         were set using :meth:`pyam.iiasa.set_config`.
         Alternatively, you can provide a path to a yaml file
@@ -130,11 +122,6 @@ class Connection(object):
     -----
     Credentials (username & password) are not required to access any public
     Scenario Explorer instances (i.e., with Guest login).
-
-    Providing credentials as an ordered container (tuple, list, etc.)
-    or as a dictionary with keys `user` and `password` is (still) supported
-    for backwards compatibility. However, this option is NOT RECOMMENDED
-    and will be deprecated in future releases of pyam.
     """
 
     def __init__(self, name=None, creds=None, auth_url=_AUTH_URL):

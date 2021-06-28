@@ -14,9 +14,10 @@ pyam: analysis & visualization <br /> of integrated-assessment and macro-energy 
 [![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
 
 [![doi](https://zenodo.org/badge/113359260.svg)](https://zenodo.org/badge/latestdoi/113359260)
+[![ORE](https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.1-blue)](https://doi.org/10.12688/openreseurope.13633.1)
 [![joss](https://joss.theoj.org/papers/10.21105/joss.01095/status.svg)](https://joss.theoj.org/papers/10.21105/joss.01095)
-[![groups.io](https://img.shields.io/badge/groups.io-pyam-blue)](https://pyam.groups.io/g/forum)
-[![slack](https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack)](https://pyam-iamc.slack.com)
+[![groups.io](https://img.shields.io/badge/listserv-groups.io-blue)](https://pyam.groups.io/g/forum)
+[![slack](https://img.shields.io/badge/chat-Slack-orange)](https://pyam-iamc.slack.com)
 
 ****
 
@@ -94,6 +95,35 @@ by Matthew Gidden ([@gidden](https://github.com/gidden))
 and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
 
 See the complete [list of contributors](AUTHORS.rst).
+
+Scientific publications
+-----------------------
+
+The following manuscripts describe the **pyam** package
+at specific stages of development.
+
+### Release v1.0 (June 2021)
+
+Published to mark the first major release of the **pyam** package.
+
+> Daniel Huppmann, Matthew Gidden, Zebedee Nicholls, Jonas Hörsch, Robin Lamboll,
+Paul Natsuo Kishimoto, Thorsten Burandt, Oliver Fricko, Edward Byers, Jarmo Kikstra,
+Maarten Brinkerink, Maik Budzinski, Florian Maczek, Sebastian Zwickl-Bernhard,
+Lara Welder, Erik Francisco Alvarez Quispe, and Christopher J. Smith.
+*pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
+**Open Research Europe**, 2021.
+doi: [10.12688/openreseurope.13633.1](https://doi.org/10.12688/openreseurope.13633.1)
+
+### Release v0.1.2 (November 2018)
+
+Published following the successful application of **pyam**
+in the IPCC SR15 and the Horizon 2020 CRESCENDO project.
+
+> Matthew Gidden and Daniel Huppmann.
+*pyam: a Python package for the analysis and visualization of models of the interaction
+of climate, human, and environmental systems.*
+**Journal of Open Source Software (JOSS)**, 4(33):1095, 2019.
+doi: [10.21105/joss.01095](https://doi.org/10.21105/joss.01095).
 
 License
 -------

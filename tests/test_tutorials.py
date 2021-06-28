@@ -105,6 +105,24 @@ def test_pyam_logo():
     assert errors == []
 
 
+def test_ipcc_colors():
+    fname = os.path.join(tut_path, "ipcc_colors.ipynb")
+    nb, errors = _notebook_run(fname)
+    assert errors == []
+
+
+def test_legends():
+    fname = os.path.join(tut_path, "legends.ipynb")
+    nb, errors = _notebook_run(fname)
+    assert errors == []
+
+
+def test_ops():
+    fname = os.path.join(tut_path, "algebraic_operations.ipynb")
+    nb, errors = _notebook_run(fname)
+    assert errors == []
+
+
 @pytest.mark.skipif(IIASA_UNAVAILABLE, reason="IIASA database API unavailable")
 def test_iiasa_dbs():
     fname = os.path.join(tut_path, "iiasa_dbs.ipynb")

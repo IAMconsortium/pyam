@@ -7,7 +7,7 @@ Release v\ |version|.
 
 |black| |python| |pytest| |rtd| |codecov|
 
-|doi| |joss| |groupsio| |slack|
+|doi| |ore| |joss| |groupsio| |slack|
 
 .. |license| image:: https://img.shields.io/badge/License-Apache%202.0-black
    :target: https://github.com/IAMconsortium/pyam/blob/main/LICENSE
@@ -40,19 +40,22 @@ Release v\ |version|.
 .. |doi| image:: https://zenodo.org/badge/113359260.svg
    :target: https://zenodo.org/badge/latestdoi/113359260
 
+.. |ore| image:: https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.1-blue
+   :target: https://doi.org/10.12688/openreseurope.13633.1
+
 .. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
    :target: https://joss.theoj.org/papers/10.21105/joss.01095
 
-.. |groupsio| image:: https://img.shields.io/badge/groups.io-pyam-blue
+.. |groupsio| image:: https://img.shields.io/badge/listserv-groups.io-blue
    :target: https://pyam.groups.io/g/forum
 
-.. |slack| image:: https://img.shields.io/badge/slack-@pyam-orange.svg?logo=slack
+.. |slack| image:: https://img.shields.io/badge/chat-Slack-orange.svg
    :target: https://pyam-iamc.slack.com
 
 Overview
 --------
 
-The open-source Python package |pyam| :cite:`Gidden:2019:pyam`
+The open-source Python package |pyam| :cite:`Gidden:2019:pyam,Huppmann:2021:pyam-v1.0`
 provides a suite of tools and functions for analyzing and visualizing
 input data (i.e., assumptions/parametrization) 
 and results (model output) of integrated-assessment models,
@@ -120,6 +123,40 @@ Table of Contents
    :maxdepth: 1
 
    references
+
+Scientific publications
+-----------------------
+
+The following manuscripts describe the package at specific stages of development.
+
+Release v1.0 (June 2021)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Published to mark the first major release of the |pyam| package.
+
+.. highlights::
+
+  | Daniel Huppmann, Matthew Gidden, Zebedee Nicholls, Jonas Hörsch, Robin Lamboll,
+    Paul Natsuo Kishimoto, Thorsten Burandt, Oliver Fricko, Edward Byers, Jarmo Kikstra,
+    Maarten Brinkerink, Maik Budzinski, Florian Maczek, Sebastian Zwickl-Bernhard,
+    Lara Welder, Erik Francisco Álvarez Quispe, and Christopher J. Smith.
+  | *pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
+  | **Open Research Europe**, 2021.
+    doi: `10.12688/openreseurope.13633.1 <https://doi.org/10.12688/openreseurope.13633.1>`_
+
+Release v0.1.2 (November 2018)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Published following the successful application of **pyam**
+in the IPCC SR15 and the Horizon 2020 CRESCENDO project.
+
+.. highlights::
+
+  | Matthew Gidden and Daniel Huppmann.
+    *pyam: a Python package for the analysis and visualization of models
+    of the interaction of climate, human, and environmental systems.*
+  | **Journal of Open Source Software (JOSS)**, 4(33):1095, 2019.
+    doi: `10.21105/joss.01095 <https://doi.org/10.21105/joss.01095>`_
 
 Copyright & License
 -------------------

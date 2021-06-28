@@ -17,7 +17,8 @@
       (you can find them by searching the code base for "deprecate")
    1. Update `RELEASE_NOTES.md` (see the examples of previous releases)
 	  - replace "# Next Release" with "# Release v<release version>"
-	  - for this new release, add a "## Highlights" section with the most important updates & changes
+	  - add a "## Highlights" section with the most important updates & changes
+      - if applicable, add/review "## Dependency changes" and "## API changes" sections 
       - add a new heading "## Individual Updates" before the PR listing
   1. Confirm that the PR passes all tests and checks
   1. Tag the release number: `git tag v<release version>`, e.g., `git tag v1.2.0`
@@ -40,7 +41,9 @@
    - copy the release summary from `RELEASE_NOTES.md` into the description box
 1. Update on `conda-forge`
    - a PR should automatically be opened by the bot after the Github release
-   - confirm that any new depedencies are added there
+   - confirm that any new depedencies are included,
+     change the minimum dependency version if necessary
+     (compare to ./.github/workflows/pytest-depedency.yml)
    - merge the PR
    - check that the new version is available at https://anaconda.org/conda-forge/pyam
 1. Confirm that the doc pages are updated on https://pyam-iamc.readthedocs.io/
