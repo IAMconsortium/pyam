@@ -1,4 +1,25 @@
-# Next Release
+# Release v0.13.0
+
+## Highlights
+
+- Add a `unit_mapping` attribute to show a variable-unit dictionary.
+- Support plotting of continuous-time data by automatically using the time domain
+  as x-axis in many plots.
+- Improve the performance of the `rename()` method.
+
+## API changes
+
+PR [#550](https://github.com/IAMconsortium/pyam/pull/550) harmonized the behavior
+of the `rename()` function when the renaming creates overlapping timeseries data.
+Before, this raised an error in case there was a conflict with existing data,
+but automatically performed a groupby-sum when mapping to the same coordinates.
+This was marked as deprecated;  in the future, an error will be raised
+for any overlapping coordinates after the rename operation.
+
+PR [#548](https://github.com/IAMconsortium/pyam/pull/548) added a `unit_mapping` attribute.
+This will replace the `variables(include_units=True)` method.
+
+## Individual updates
 
 - [#551](https://github.com/IAMconsortium/pyam/pull/551) Default to IamDataFrame-time-col on the x-axis of plots
 - [#550](https://github.com/IAMconsortium/pyam/pull/550) Refactor the `rename()` method for performance improvement
