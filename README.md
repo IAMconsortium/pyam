@@ -108,7 +108,7 @@ Published to mark the first major release of the **pyam** package.
 > Daniel Huppmann, Matthew Gidden, Zebedee Nicholls, Jonas Hörsch, Robin Lamboll,
 Paul Natsuo Kishimoto, Thorsten Burandt, Oliver Fricko, Edward Byers, Jarmo Kikstra,
 Maarten Brinkerink, Maik Budzinski, Florian Maczek, Sebastian Zwickl-Bernhard,
-Lara Welder, Erik Francisco Álvarez Quispe, and Christopher J. Smith.
+Lara Welder, Erik Francisco Alvarez Quispe, and Christopher J. Smith.
 *pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
 **Open Research Europe**, 2021.
 doi: [10.12688/openreseacheurope/...](https://doi.org/10.12688/openreseacheurope/...)
