@@ -267,7 +267,7 @@ def test_equals(test_df_year):
 
     # assert that a copy (with changed index-sort) is equal
     df = test_df_year.copy()
-    df.data = df.data.sort_values(by="value")
+    df._data = df._data.sort_values()
     assert test_df_year.equals(df)
 
     # assert that adding a new timeseries is not equal
@@ -324,34 +324,6 @@ def test_unit_mapping(test_pd_df):
     assert obs == {"Primary Energy": ["EJ/yr", "foo"], "Primary Energy|Coal": "EJ/yr"}
 
 
-def test_model(test_df):
-    exp = pd.Series(data=["model_a"], name="model")
-    pd.testing.assert_series_equal(test_df.models(), exp)
-
-
-def test_scenario(test_df):
-    exp = pd.Series(data=["scen_a", "scen_b"], name="scenario")
-    pd.testing.assert_series_equal(test_df.scenarios(), exp)
-
-
-def test_region(test_df):
-    exp = pd.Series(data=["World"], name="region")
-    pd.testing.assert_series_equal(test_df.regions(), exp)
-
-
-def test_variable(test_df):
-    exp = pd.Series(data=["Primary Energy", "Primary Energy|Coal"], name="variable")
-    pd.testing.assert_series_equal(test_df.variables(), exp)
-
-
-def test_variable_unit(test_df):
-    exp = pd.DataFrame(
-        [["Primary Energy", "EJ/yr"], ["Primary Energy|Coal", "EJ/yr"]],
-        columns=["variable", "unit"],
-    )
-    pd.testing.assert_frame_equal(test_df.variables(include_units=True), exp)
-
-
 def test_filter_empty_df():
     # test for issue seen in #254
     df = IamDataFrame(data=df_empty)
@@ -360,18 +332,16 @@ def test_filter_empty_df():
 
 
 def test_filter_variable_and_depth(test_df):
-    obs = list(test_df.filter(variable="*rimary*C*", level=0).variables())
-    exp = ["Primary Energy|Coal"]
-    assert obs == exp
+    obs = test_df.filter(variable="*rimary*C*", level=0).variable
+    assert obs == ["Primary Energy|Coal"]
 
-    obs = list(test_df.filter(variable="*rimary*C*", level=1).variables())
-    assert len(obs) == 0
+    obs = test_df.filter(variable="*rimary*C*", level=1).variable
+    assert obs == []
 
 
 def test_variable_depth_0_keep_false(test_df):
-    obs = list(test_df.filter(level=0, keep=False)["variable"].unique())
-    exp = ["Primary Energy|Coal"]
-    assert obs == exp
+    obs = test_df.filter(level=0, keep=False).variable
+    assert obs == ["Primary Energy|Coal"]
 
 
 def test_variable_depth_raises(test_df):
@@ -734,35 +704,26 @@ def test_interpolate(test_pd_df):
     _df = test_pd_df.copy()
     _df["foo"] = ["bar", "baz", 2]  # add extra_col (check for #351)
     df = IamDataFrame(_df)
-    df.interpolate(2007)
-    obs = df.filter(year=2007).data["value"].reset_index(drop=True)
-    exp = pd.Series([3, 1.5, 4], name="value")
-    print(obs)
-    print(exp)
-    pd.testing.assert_series_equal(obs, exp)
+    obs = df.interpolate(2007).filter(year=2007)._data.values
+    npt.assert_allclose(obs, [3, 1.5, 4])
 
     # redo the interpolation and check that no duplicates are added
     df.interpolate(2007)
-    assert not df.filter().data.duplicated().any()
+    assert not df._data.index.duplicated().any()
 
     # assert that extra_col does not have nan's (check for #351)
-    assert all([True if isstr(i) else ~np.isnan(i) for i in df.data.foo])
+    assert all([True if isstr(i) else ~np.isnan(i) for i in df.foo])
 
 
 def test_interpolate_time_exists(test_df_year):
-    df = test_df_year
-    df.interpolate(2005)
-    obs = df.filter(year=2005).data["value"].reset_index(drop=True)
-    exp = pd.Series([1.0, 0.5, 2.0], name="value")
-    pd.testing.assert_series_equal(obs, exp)
+    obs = test_df_year.interpolate(2005).filter(year=2005)._data.values
+    npt.assert_allclose(obs, [1.0, 0.5, 2.0])
 
 
 def test_interpolate_with_list(test_df_year):
-    df = test_df_year
-    df.interpolate([2007, 2008])
-    obs = df.filter(year=[2007, 2008]).data["value"].reset_index(drop=True)
-    exp = pd.Series([3, 4, 1.5, 2, 4, 5], name="value")
-    pd.testing.assert_series_equal(obs, exp)
+    lst = [2007, 2008]
+    obs = test_df_year.interpolate(lst).filter(year=lst)._data.values
+    npt.assert_allclose(obs, [3, 4, 1.5, 2, 4, 5])
 
 
 def test_interpolate_full_example():
@@ -793,8 +754,7 @@ def test_interpolate_full_example():
             columns=IAMC_IDX + [2000, 2005, 2010, 2012, 2017],
         )
     )
-    obs = df.interpolate([2005, 2012], inplace=False)
-    assert_iamframe_equal(obs, exp)
+    assert_iamframe_equal(df.interpolate([2005, 2012]), exp)
 
 
 def test_interpolate_extra_cols():
@@ -818,15 +778,13 @@ def test_interpolate_extra_cols():
         unit="EJ/yr",
     )
 
-    # create a copy, interpolate
-    df2 = df.copy()
-    df2.interpolate(2007)
+    # create a copy from interpolation
+    df2 = df.interpolate(2007)
 
     # interpolate should work as if extra_cols is in the _data index
     assert_iamframe_equal(df, df2.filter(year=2007, keep=False))
-    obs = df2.filter(year=2007)["value"]
-    exp = pd.Series([2.4, 1.4], name="value")
-    pd.testing.assert_series_equal(obs, exp)
+    obs = df2.filter(year=2007)._data.values
+    npt.assert_allclose(obs, [2.4, 1.4])
 
 
 def test_interpolate_datetimes(test_df):
@@ -835,13 +793,13 @@ def test_interpolate_datetimes(test_df):
     if test_df.time_col == "year":
         pytest.raises(ValueError, test_df.interpolate, time=some_date)
     else:
-        test_df.interpolate(some_date)
+        test_df.interpolate(some_date, inplace=True)
         obs = test_df.filter(time=some_date).data["value"].reset_index(drop=True)
         exp = pd.Series([3, 1.5, 4], name="value")
         pd.testing.assert_series_equal(obs, exp, check_less_precise=True)
         # redo the interpolation and check that no duplicates are added
-        test_df.interpolate(some_date)
-        assert not test_df.filter().data.duplicated().any()
+        test_df.interpolate(some_date, inplace=True)
+        assert not test_df.filter()._data.index.duplicated().any()
 
 
 def test_filter_by_bool(test_df):

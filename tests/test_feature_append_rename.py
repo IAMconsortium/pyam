@@ -166,7 +166,7 @@ def test_rename_data_cols_by_dict():
     mapping = dict(
         variable={"test_1": "test", "test_3": "test"}, region={"region_a": "region_c"}
     )
-    obs = RENAME_DF.rename(mapping).data.reset_index(drop=True)
+    obs = RENAME_DF.rename(mapping, check_duplicates=False).data.reset_index(drop=True)
     pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
@@ -175,7 +175,7 @@ def test_rename_data_cols_by_kwargs():
         "variable": {"test_1": "test", "test_3": "test"},
         "region": {"region_a": "region_c"},
     }
-    obs = RENAME_DF.rename(**args).data.reset_index(drop=True)
+    obs = RENAME_DF.rename(**args, check_duplicates=False).data.reset_index(drop=True)
     pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
@@ -184,7 +184,7 @@ def test_rename_data_cols_by_mixed():
         "mapping": {"variable": {"test_1": "test", "test_3": "test"}},
         "region": {"region_a": "region_c"},
     }
-    obs = RENAME_DF.rename(**args).data.reset_index(drop=True)
+    obs = RENAME_DF.rename(**args, check_duplicates=False).data.reset_index(drop=True)
     pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
