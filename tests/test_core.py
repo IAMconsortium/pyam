@@ -704,11 +704,11 @@ def test_interpolate(test_pd_df):
     _df = test_pd_df.copy()
     _df["foo"] = ["bar", "baz", 2]  # add extra_col (check for #351)
     df = IamDataFrame(_df)
-    obs = df.interpolate(2007).filter(year=2007)._data.values
+    obs = df.interpolate(2007, inplace=False).filter(year=2007)._data.values
     npt.assert_allclose(obs, [3, 1.5, 4])
 
     # redo the interpolation and check that no duplicates are added
-    df.interpolate(2007)
+    df.interpolate(2007, inplace=False)
     assert not df._data.index.duplicated().any()
 
     # assert that extra_col does not have nan's (check for #351)
@@ -716,13 +716,13 @@ def test_interpolate(test_pd_df):
 
 
 def test_interpolate_time_exists(test_df_year):
-    obs = test_df_year.interpolate(2005).filter(year=2005)._data.values
+    obs = test_df_year.interpolate(2005, inplace=False).filter(year=2005)._data.values
     npt.assert_allclose(obs, [1.0, 0.5, 2.0])
 
 
 def test_interpolate_with_list(test_df_year):
     lst = [2007, 2008]
-    obs = test_df_year.interpolate(lst).filter(year=lst)._data.values
+    obs = test_df_year.interpolate(lst, inplace=False).filter(year=lst)._data.values
     npt.assert_allclose(obs, [3, 4, 1.5, 2, 4, 5])
 
 
@@ -754,7 +754,7 @@ def test_interpolate_full_example():
             columns=IAMC_IDX + [2000, 2005, 2010, 2012, 2017],
         )
     )
-    assert_iamframe_equal(df.interpolate([2005, 2012]), exp)
+    assert_iamframe_equal(df.interpolate([2005, 2012], inplace=False), exp)
 
 
 def test_interpolate_extra_cols():
@@ -779,7 +779,7 @@ def test_interpolate_extra_cols():
     )
 
     # create a copy from interpolation
-    df2 = df.interpolate(2007)
+    df2 = df.interpolate(2007, inplace=False)
 
     # interpolate should work as if extra_cols is in the _data index
     assert_iamframe_equal(df, df2.filter(year=2007, keep=False))

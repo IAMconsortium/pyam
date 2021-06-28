@@ -75,7 +75,6 @@ from pyam.index import (
     verify_index_integrity,
     replace_index_values,
 )
-from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -234,16 +233,6 @@ class IamDataFrame(object):
         else:
             return self.data.__getitem__(key)
 
-    def __setitem__(self, key, value):
-        deprecation_warning("Please use `set_meta` or `rename`.", "Item assignment")
-        _key_check = [key] if isstr(key) else key
-        if set(_key_check).issubset(self.meta.columns):
-            self.meta.__setitem__(key, value)
-        else:
-            df = self.data
-            df.__setitem__(key, value)
-            self.data = df
-
     def __len__(self):
         return len(self._data)
 
@@ -395,16 +384,6 @@ class IamDataFrame(object):
             return pd.DataFrame([], columns=self._LONG_IDX + ["value"])
         return self._data.reset_index()
 
-    @data.setter
-    def data(self, df):
-        """Set the timeseries data from a long :class:`pandas.DataFrame`"""
-        logger.warning(
-            "Setting `data` via the setter can cause "
-            "inconsistencies with `meta` and other attributes."
-        )
-        deprecation_warning("Please use `IamDataFrame(<data>)` instead!")
-        self._data = format_time_col(df, self.time_col).set_index(self._LONG_IDX).value
-
     def copy(self):
         """Make a deepcopy of this object
 
@@ -445,52 +424,6 @@ class IamDataFrame(object):
             return True
         else:
             return False
-
-    def models(self):
-        """Get a list of models"""
-        # TODO: deprecated, remove for release >=1.0
-        deprecation_warning("Use the attribute `model` instead.")
-        return pd.Series(self.meta.index.levels[0])
-
-    def scenarios(self):
-        """Get a list of scenarios"""
-        # TODO: deprecated, remove for release >=1.0
-        deprecation_warning("Use the attribute `scenario` instead.")
-        return pd.Series(self.meta.index.levels[1])
-
-    def regions(self):
-        """Get a list of regions"""
-        # TODO: deprecated, remove for release >=1.0
-        deprecation_warning("Use the attribute `region` instead.")
-        return pd.Series(get_index_levels(self._data, "region"), name="region")
-
-    def variables(self, include_units=False):
-        """Get a list of variables
-
-        Parameters
-        ----------
-        include_units : boolean, default False
-            include the units
-        """
-        if not include_units:
-            _var = "variable"
-            deprecation_warning("Use the attribute `variable` instead.")
-            return pd.Series(get_index_levels(self._data, _var), name=_var)
-
-        # else construct dataframe from variable and unit levels
-        deprecation_warning("Use the attribute `unit_mapping` instead.")
-        return (
-            pd.DataFrame(
-                zip(
-                    self._data.index.get_level_values("variable"),
-                    self._data.index.get_level_values("unit"),
-                ),
-                columns=["variable", "unit"],
-            )
-            .drop_duplicates()
-            .sort_values("variable")
-            .reset_index(drop=True)
-        )
 
     def append(
         self,
@@ -619,7 +552,7 @@ class IamDataFrame(object):
         df = df.unstack(level=columns, fill_value=fill_value)
         return df
 
-    def interpolate(self, time, inplace=None, **kwargs):
+    def interpolate(self, time, inplace=False, **kwargs):
         """Interpolate missing values in the timeseries data
 
         This method uses :meth:`pandas.DataFrame.interpolate`,
@@ -635,18 +568,6 @@ class IamDataFrame(object):
         kwargs
             passed to :meth:`pandas.DataFrame.interpolate`
         """
-        # TODO deprecate and add kwarg inplace=False in release >= 1.0
-        if inplace is None:
-            deprecation_warning(
-                "Behavior of `interpolate` will change to `inplace=False` "
-                "as default in a future release. Set the kwarg explicitly "
-                "to avoid this warning. Use `inplace=True` to keep current "
-                "behavior."
-            )
-            inplace = True
-        ##
-
-        # setup
         ret = self.copy() if not inplace else self
         interp_kwargs = dict(method="slinear", axis=1)
         interp_kwargs.update(kwargs)
@@ -1117,25 +1038,12 @@ class IamDataFrame(object):
         duplicate_rows = _data_index.duplicated()
         has_duplicates = any(duplicate_rows)
 
-        # keeping previous behaviour where naming conflicts within the renamed parts
-        # do not raise an error if there is overlap in the renamed data
-        # TODO: deprecated, always raise an error on duplicates for release >=1.0
         if has_duplicates and check_duplicates:
-            _full_index = _data_index.to_frame(index=False)
-            _conflict = _full_index[~rows].append(_full_index[rows].drop_duplicates())
-            if any(_conflict.duplicated()):
-                _raise_data_error(
-                    "Conflicting data rows between renamed and not-renamed data, "
-                    "use `aggregate()` or `check_duplicates=False` instead",
-                    _data_index[duplicate_rows].to_frame(index=False),
-                )
-
-            # TODO: raise this as data error for release >=1.0
-            else:
-                deprecation_warning(
-                    "Use `aggregate()` or `check_duplicates=False` instead.",
-                    "Overlapping data rows after renaming. This feature",
-                )
+            _raise_data_error(
+                "Conflicting data rows after renaming "
+                "(use `aggregate()` or `check_duplicates=False` instead)",
+                _data_index[duplicate_rows].to_frame(index=False),
+            )
 
         ret._data.index = _data_index
         ret._set_attributes()
@@ -1215,12 +1123,10 @@ class IamDataFrame(object):
         pint.DimensionalityError
             without *factor*, when *current* and *to* are not compatible units.
         """
-        # Handle user input
-        # Check that (only) either factor or registry/context is provided
+        # check that (only) either factor or registry/context is provided
         if factor and any([registry, context]):
             raise ValueError("Use either `factor` or `registry`!")
 
-        # new standard method, remove this comment when deprecating above
         return convert_unit(self, current, to, factor, registry, context, inplace)
 
     def normalize(self, inplace=False, **kwargs):
@@ -1244,7 +1150,9 @@ class IamDataFrame(object):
         value = kwargs[self.time_col]
         x = df.set_index(IAMC_IDX)
         x["value"] /= x[x[cols] == value]["value"]
-        ret.data = x.reset_index()
+        x = x.reset_index()
+        ret._data = format_time_col(x, self.time_col).set_index(self._LONG_IDX).value
+
         if not inplace:
             return ret
 
@@ -1681,7 +1589,7 @@ class IamDataFrame(object):
             subregions
         """
         lst = []
-        for variable in self.variables():
+        for variable in self.variable:
             diff_agg = self.check_aggregate(variable, **kwargs)
             if diff_agg is not None:
                 lst.append(diff_agg)
@@ -2309,42 +2217,6 @@ class IamDataFrame(object):
         # merge imported meta indicators
         self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
 
-    def line_plot(self, *args, **kwargs):
-        """Deprecated, please use `IamDataFrame.plot()`"""
-        # TODO: deprecated, remove for release >=1.0
-        deprecation_warning("Please use `IamDataFrame.plot()`.")
-        return self.plot(*args, **kwargs)
-
-    def stack_plot(self, *args, **kwargs):
-        """Deprecated, please use `IamDataFrame.plot.stack()`"""
-        # TODO: deprecated, remove for release >=1.0
-        deprecation_warning("Please use `IamDataFrame.plot.stack()`.")
-        return self.plot.stack(*args, **kwargs)
-
-    def bar_plot(self, *args, **kwargs):
-        # TODO: deprecated, remove for release >=1.0
-        """Deprecated, please use `IamDataFrame.plot.bar()`"""
-        deprecation_warning("Please use `plot.bar()`.")
-        return self.plot.bar(*args, **kwargs)
-
-    def boxplot(self, *args, **kwargs):
-        # TODO: deprecated, remove for release >=1.0
-        """Deprecated, please use `IamDataFrame.plot.box()`"""
-        deprecation_warning("Please use `IamDataFrame.plot.box()`.")
-        return self.plot.box(**kwargs)
-
-    def pie_plot(self, *args, **kwargs):
-        # TODO: deprecated, remove for release >=1.0
-        """Deprecated, please use `IamDataFrame.plot.pie()`"""
-        deprecation_warning("Please use `IamDataFrame.plot.pie()`.")
-        return self.plot.pie(*args, **kwargs)
-
-    def scatter(self, *args, **kwargs):
-        # TODO: deprecated, remove for release >=1.0
-        """Deprecated, please use `IamDataFrame.plot.scatter()`"""
-        deprecation_warning("Please use `IamDataFrame.plot.scatter()`.")
-        return self.plot.scatter(*args, **kwargs)
-
     def map_regions(
         self,
         map_col,
@@ -2438,11 +2310,13 @@ class IamDataFrame(object):
         if agg == "sum":
             df = df.groupby(self._LONG_IDX).sum().reset_index()
 
-        ret.data = (
+        df = (
             df.reindex(columns=columns_orderd)
             .sort_values(SORT_IDX)
             .reset_index(drop=True)
         )
+        ret._data = format_time_col(df, self.time_col).set_index(self._LONG_IDX).value
+
         if not inplace:
             return ret
 
