@@ -18,7 +18,7 @@ logo = r"""
 REQUIREMENTS = [
     "argparse",
     "iam-units>=2020.4.21",
-    "numpy",
+    "numpy>=1.19.0",
     "requests",
     "pandas>=1.1.1",
     "pint",
