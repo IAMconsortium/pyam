@@ -1,3 +1,5 @@
+import pandas as pd
+from pyam.index import get_index_levels, append_index_col
 from pyam.utils import _raise_data_error
 
 
@@ -8,19 +10,22 @@ def swap_time_for_year(df, inplace):
 
     ret = df.copy() if not inplace else df
 
-    _data = ret.data
-    _data["year"] = _data["time"].apply(lambda x: x.year)
-    _data = _data.drop("time", axis="columns")
-    _index = [v if v != "time" else "year" for v in ret._LONG_IDX]
+    index = ret._data.index
 
-    rows = _data[_index].duplicated()
+    time = pd.Series(index.get_level_values("time"))
+    order = [v if v != "time" else "year" for v in index.names]
+
+    index = index.droplevel("time")
+    index = append_index_col(index, time.apply(lambda x: x.year), "year", order=order)
+
+    rows = index.duplicated()
     if any(rows):
         error_msg = "Swapping time for year causes duplicates in `data`"
-        _raise_data_error(error_msg, _data[_index])
+        _raise_data_error(error_msg, index.to_frame().reset_index(drop=True))
 
     # assign data and other attributes
-    ret._LONG_IDX = _index
-    ret._data = _data.set_index(ret._LONG_IDX).value
+    ret._LONG_IDX = index.names
+    ret._data.index = index
     ret.time_col = "year"
     ret._set_attributes()
     delattr(ret, "time")
