@@ -602,20 +602,25 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def swap_time_for_year(self, inplace=False):
+    def swap_time_for_year(self, subannual=False, inplace=False):
         """Convert the `time` column to `year`.
 
         Parameters
         ----------
-        inplace : bool, default False
-            if True, do operation inplace and return None
+        subannual : bool, str or func, optional
+            Merge non-year components of the "time" domain as new column "subannual".
+            Apply `strftime()` on the values of the "time" domain using `subannual`
+            as format (if a string) or using "%m-%d %H:%M%z" (if True).
+            If it is a function, apply the function on the values of the "time" domain.
+        inplace : bool, optional
+            If True, do operation inplace and return None.
 
         Raises
         ------
         ValueError
             "time" is not a column of `self.data`
         """
-        return swap_time_for_year(self, inplace=inplace)
+        return swap_time_for_year(self, subannual=subannual, inplace=inplace)
 
     def as_pandas(self, meta_cols=True):
         """Return object as a pandas.DataFrame
