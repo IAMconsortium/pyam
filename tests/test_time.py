@@ -32,7 +32,7 @@ def test_swap_time_to_year(test_df, inplace):
     """Swap time column for year (int) dropping subannual time resolution (default)"""
 
     if test_df.time_col == "year":
-        return  # IamDataFrame with time domain `year` not relevant for this test
+        pytest.skip("IamDataFrame with time domain `year` not relevant for this test.")
 
     exp = test_df.data
     exp["year"] = exp["time"].apply(lambda x: x.year)
@@ -83,11 +83,11 @@ def test_swap_time_to_year_errors(test_df):
         match = "Time domain must be datetime to use this method"
         with pytest.raises(ValueError, match=match):
             test_df.swap_time_for_year()
-        return
 
-    # set time column to same year so that dropping month/day leads to duplicates
-    tdf = test_df.data
-    tdf["time"] = tdf["time"].apply(lambda x: datetime(2005, x.month, x.day))
+    else:
+        # set time column to same year so that dropping month/day leads to duplicates
+        tdf = test_df.data
+        tdf["time"] = tdf["time"].apply(lambda x: datetime(2005, x.month, x.day))
 
-    with pytest.raises(ValueError, match="Swapping time for year causes duplicates in"):
-        IamDataFrame(tdf).swap_time_for_year()
+        with pytest.raises(ValueError, match="Swapping time for year causes duplicate"):
+            IamDataFrame(tdf).swap_time_for_year()
