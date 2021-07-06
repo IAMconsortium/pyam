@@ -1,5 +1,5 @@
 import pandas as pd
-from pyam.index import get_index_levels, append_index_col
+from pyam.index import append_index_col
 from pyam.utils import _raise_data_error
 
 
