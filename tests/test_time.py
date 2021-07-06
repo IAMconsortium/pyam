@@ -5,10 +5,10 @@ from pyam import IamDataFrame, compare
 
 @pytest.mark.parametrize("inplace", [True, False])
 def test_swap_time_to_year(test_df, inplace):
-    if "year" in test_df.data:
+    if test_df.time_col == "year":
         return  # year df not relevant for this test
 
-    exp = test_df.data.copy()
+    exp = test_df.data
     exp["year"] = exp["time"].apply(lambda x: x.year)
     exp = exp.drop("time", axis="columns")
     exp = IamDataFrame(exp)
@@ -27,12 +27,12 @@ def test_swap_time_to_year(test_df, inplace):
 
 @pytest.mark.parametrize("inplace", [True, False])
 def test_swap_time_to_year_errors(test_df, inplace):
-    if "year" in test_df.data:
+    if test_df.time_col == "year":
         with pytest.raises(ValueError):
             test_df.swap_time_for_year(inplace=inplace)
         return
 
-    tdf = test_df.data.copy()
+    tdf = test_df.data
     tdf["time"] = tdf["time"].apply(lambda x: datetime(2005, x.month, x.day))
 
     with pytest.raises(ValueError):
