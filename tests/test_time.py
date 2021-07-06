@@ -5,13 +5,14 @@ from pyam import IamDataFrame, compare
 
 @pytest.mark.parametrize("inplace", [True, False])
 def test_swap_time_to_year(test_df, inplace):
+    """Swap time column for year (int) using the default"""
     if test_df.time_col == "year":
-        return  # year df not relevant for this test
+        return  # IamDataFrame with time domain `year` not relevant for this test
 
     exp = test_df.data
     exp["year"] = exp["time"].apply(lambda x: x.year)
     exp = exp.drop("time", axis="columns")
-    exp = IamDataFrame(exp)
+    exp = IamDataFrame(exp, meta=test_df.meta)
 
     obs = test_df.swap_time_for_year(inplace=inplace)
 
@@ -19,8 +20,7 @@ def test_swap_time_to_year(test_df, inplace):
         assert obs is None
         obs = test_df
 
-    assert compare(obs, exp).empty
-    assert obs.year == [2005, 2010]
+    assert_iamframe_equal(obs, exp)
     with pytest.raises(AttributeError):
         obs.time
 
