@@ -47,7 +47,7 @@ KNOWN_OPS = {
 def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, **kwds):
     """Internal implementation of numerical operations on timeseries"""
 
-    if axis not in df._data.index.names:
+    if axis not in df.dimensions:
         raise ValueError(f"Unknown axis: {axis}")
 
     if method in KNOWN_OPS:
@@ -57,7 +57,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
     else:
         raise ValueError(f"Unknown method: {method}")
 
-    cols = df._data.index.names.difference([axis])
+    cols = [d for d in df.dimensions if d != axis]
 
     # replace args and and kwds with values of `df._data` if applicable
     # _data_args and _data_kwds track if an argument was replaced by `df._data` values

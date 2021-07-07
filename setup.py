@@ -12,7 +12,7 @@ logo = r"""
 """
 
 # NOTE TO DEVS
-# If you change a minimum version below, please explicitly set that
+# If you change a minimum version below, please explicitly implement the change
 # in our minimum-reqs test in the file ./.github/workflows/pytest-depedency.yml
 # Please also add a section "Dependency changes" to the release notes
 REQUIREMENTS = [

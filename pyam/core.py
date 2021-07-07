@@ -30,7 +30,6 @@ try:
 except (ImportError, AttributeError):
     has_ix = False
 
-from pyam import plotting
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -76,6 +75,7 @@ from pyam.index import (
     verify_index_integrity,
     replace_index_values,
 )
+from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +183,6 @@ class IamDataFrame(object):
                 raise ValueError(msg)
 
         self._data, index, self.time_col, self.extra_cols = _data
-        self._LONG_IDX = self._data.index.names
 
         # define `meta` dataframe for categorization & quantitative indicators
         self.meta = pd.DataFrame(index=_make_index(self._data, cols=index))
@@ -251,8 +250,8 @@ class IamDataFrame(object):
             The maximum number of meta indicators printed
         """
         # concatenate list of index dimensions and levels
-        info = f"{type(self)}\nIndex dimensions:\n"
-        c1 = max([len(i) for i in self._data.index.names]) + 1
+        info = f"{type(self)}\nIndex:\n"
+        c1 = max([len(i) for i in self.dimensions]) + 1
         c2 = n - c1 - 5
         info += "\n".join(
             [
@@ -261,12 +260,12 @@ class IamDataFrame(object):
             ]
         )
 
-        # concatenate list of index of _data (not in META_IDX)
+        # concatenate list of index of _data (not in index.names)
         info += "\nTimeseries data coordinates:\n"
         info += "\n".join(
             [
                 f"   {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}"
-                for i in self._data.index.names
+                for i in self.dimensions
                 if i not in self.index.names
             ]
         )
@@ -382,8 +381,20 @@ class IamDataFrame(object):
     def data(self):
         """Return the timeseries data as a long :class:`pandas.DataFrame`"""
         if self.empty:  # reset_index fails on empty with `datetime` column
-            return pd.DataFrame([], columns=self._LONG_IDX + ["value"])
+            return pd.DataFrame([], columns=self.dimensions + ["value"])
         return self._data.reset_index()
+
+    @property
+    def dimensions(self):
+        """Return the list of `data` columns (index names & data coordinates)"""
+        return list(self._data.index.names)
+
+    @property
+    def _LONG_IDX(self):
+        """DEPRECATED - please use `IamDataFrame.dimensions`"""
+        # TODO: deprecated, remove for release >= 1.2
+        deprecation_warning("Use the attribute `dimensions` instead. This attribute")
+        return self.dimensions
 
     def copy(self):
         """Make a deepcopy of this object
@@ -477,7 +488,7 @@ class IamDataFrame(object):
         if self.time_col != other.time_col:
             raise ValueError("Incompatible time format (`year` vs. `time`)")
 
-        if self._data.index.names != other._data.index.names:
+        if self.dimensions != other.dimensions:
             raise ValueError("Incompatible timeseries data index dimensions")
 
         if other.empty:
@@ -493,9 +504,8 @@ class IamDataFrame(object):
         if verify_integrity:
             verify_index_integrity(_data)
 
-        # merge extra columns in `data` and set `self._LONG_IDX`
+        # merge extra columns in `data`
         ret.extra_cols += [i for i in other.extra_cols if i not in ret.extra_cols]
-        ret._LONG_IDX = IAMC_IDX + [ret.time_col] + ret.extra_cols
         ret._data = _data.sort_index()
         ret._set_attributes()
 
@@ -693,7 +703,7 @@ class IamDataFrame(object):
         if (name or (hasattr(meta, "name") and meta.name)) in [None, False]:
             raise ValueError("Must pass a name or use a named pd.Series")
         name = name or meta.name
-        if name in self._data.index.names:
+        if name in self.dimensions:
             raise ValueError(f"Column {name} already exists in `data`!")
         if name in ILLEGAL_COLS:
             raise ValueError(f"Name {name} is illegal for meta indicators!")
@@ -980,7 +990,7 @@ class IamDataFrame(object):
         mapping.update(kwargs)
 
         # determine columns that are not `model` or `scenario`
-        data_cols = set(self._LONG_IDX) - set(META_IDX)
+        data_cols = set(self.dimensions) - set(META_IDX)
 
         # changing index and data columns can cause model-scenario mismatch
         if any(i in mapping for i in META_IDX) and any(i in mapping for i in data_cols):
@@ -1033,7 +1043,7 @@ class IamDataFrame(object):
 
         # merge using `groupby().sum()` only if duplicates exist
         if has_duplicates:
-            ret._data = ret._data.reset_index().groupby(ret._LONG_IDX).sum().value
+            ret._data = ret._data.reset_index().groupby(ret.dimensions).sum().value
 
         if not inplace:
             return ret
@@ -1134,7 +1144,7 @@ class IamDataFrame(object):
         x = df.set_index(IAMC_IDX)
         x["value"] /= x[x[cols] == value]["value"]
         x = x.reset_index()
-        ret._data = format_time_col(x, self.time_col).set_index(self._LONG_IDX).value
+        ret._data = format_time_col(x, self.time_col).set_index(self.dimensions).value
 
         if not inplace:
             return ret
@@ -1200,7 +1210,7 @@ class IamDataFrame(object):
             self.append(_df, inplace=True)
         else:
             if _df is None or _df.empty:
-                return _empty_iamframe(self._LONG_IDX + ["value"])
+                return _empty_iamframe(self.dimensions + ["value"])
             return IamDataFrame(_df, meta=self.meta)
 
     def check_aggregate(
@@ -1326,7 +1336,7 @@ class IamDataFrame(object):
             self.append(_df, region=region, inplace=True)
         else:
             if _df is None or _df.empty:
-                return _empty_iamframe(self._LONG_IDX + ["value"])
+                return _empty_iamframe(self.dimensions + ["value"])
             return IamDataFrame(_df, region=region, meta=self.meta)
 
     def check_aggregate_region(
@@ -1416,7 +1426,7 @@ class IamDataFrame(object):
                 keys=[region],
                 names=["region"],
             )
-            _df.index = _df.index.reorder_levels(self._LONG_IDX)
+            _df.index = _df.index.reorder_levels(self.dimensions)
             return _df
 
     def aggregate_time(
@@ -1703,7 +1713,7 @@ class IamDataFrame(object):
             elif col == "time" and self.time_col == "time":
                 keep_col = datetime_match(self.data[col], values)
 
-            elif col in self._data.index.names:
+            elif col in self.dimensions:
                 lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
 
                 codes = pattern_match(
@@ -2291,14 +2301,14 @@ class IamDataFrame(object):
 
         # perform aggregations
         if agg == "sum":
-            df = df.groupby(self._LONG_IDX).sum().reset_index()
+            df = df.groupby(self.dimensions).sum().reset_index()
 
         df = (
             df.reindex(columns=columns_orderd)
             .sort_values(SORT_IDX)
             .reset_index(drop=True)
         )
-        ret._data = format_time_col(df, self.time_col).set_index(self._LONG_IDX).value
+        ret._data = format_time_col(df, self.time_col).set_index(self.dimensions).value
 
         if not inplace:
             return ret
@@ -2608,7 +2618,7 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
 
     df = as_iamdataframe(dfs[0])
     ret_data, ret_meta = [df._data], df.meta
-    index, time_col = df._data.index.names, df.time_col
+    index, time_col = df.dimensions, df.time_col
 
     for df in dfs[1:]:
         # skip merging meta if element is a pd.DataFrame
@@ -2618,10 +2628,8 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
         if df.time_col != time_col:
             raise ValueError("Items have incompatible time format ('year' vs. 'time')!")
 
-        if df._data.index.names != index:
-            raise ValueError(
-                "Items have incompatible timeseries data index dimensions!"
-            )
+        if df.dimensions != index:
+            raise ValueError("Items have incompatible timeseries data dimensions!")
 
         ret_data.append(df._data)
         if _meta_merge:

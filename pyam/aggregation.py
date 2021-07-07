@@ -177,7 +177,7 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
     # compute aggregate over time
     filter_args = dict(variable=variable)
     filter_args[column] = components
-    index = df._data.index.names.difference([column])
+    index = [d for d in df.dimensions if d != column]
 
     _data = pd.concat(
         [
@@ -191,7 +191,7 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
     )
 
     # reset index-level order to original IamDataFrame
-    _data.index = _data.index.reorder_levels(df._LONG_IDX)
+    _data.index = _data.index.reorder_levels(df.dimensions)
 
     return _data
 

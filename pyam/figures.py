@@ -41,7 +41,7 @@ def sankey(df, mapping):
             "Missing optional dependency `plotly`, use pip or conda to install"
         )
     # Check for duplicates
-    for col in [name for name in df._data.index.names if name != "variable"]:
+    for col in [name for name in df.dimensions if name != "variable"]:
         levels = get_index_levels(df._data, col)
         if len(levels) > 1:
             raise ValueError(f"Non-unique values in column {col}: {levels}")
