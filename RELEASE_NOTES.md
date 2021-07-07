@@ -1,6 +1,7 @@
 # Next Release
 
- - [#556](https://github.com/IAMconsortium/pyam/pull/556) Set explicit minimum numpy version (1.19.0)
+- [#557](https://github.com/IAMconsortium/pyam/pull/557) Swap time for year keeping subannual resolution
+- [#556](https://github.com/IAMconsortium/pyam/pull/556) Set explicit minimum numpy version (1.19.0)
 
 # Release v1.0.0
 

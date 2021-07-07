@@ -12,6 +12,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from pyam._debiasing import _compute_bias
+from pyam.time import swap_time_for_year
 
 try:
     from datapackage import Package
@@ -601,43 +602,25 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def swap_time_for_year(self, inplace=False):
+    def swap_time_for_year(self, subannual=False, inplace=False):
         """Convert the `time` column to `year`.
 
         Parameters
         ----------
-        inplace : bool, default False
-            if True, do operation inplace and return None
+        subannual : bool, str or func, optional
+            Merge non-year components of the "time" domain as new column "subannual".
+            Apply `strftime()` on the values of the "time" domain using `subannual`
+            as format (if a string) or using "%m-%d %H:%M%z" (if True).
+            If it is a function, apply the function on the values of the "time" domain.
+        inplace : bool, optional
+            If True, do operation inplace and return None.
 
         Raises
         ------
         ValueError
             "time" is not a column of `self.data`
         """
-        if not self.time_col == "time":
-            raise ValueError("Time domain must be datetime to use this method")
-
-        ret = self.copy() if not inplace else self
-
-        _data = ret.data
-        _data["year"] = _data["time"].apply(lambda x: x.year)
-        _data = _data.drop("time", axis="columns")
-        _index = [v if v != "time" else "year" for v in ret._LONG_IDX]
-
-        rows = _data[_index].duplicated()
-        if any(rows):
-            error_msg = "Swapping time for year causes duplicates in `data`"
-            _raise_data_error(error_msg, _data[_index])
-
-        # assign data and other attributes
-        ret._LONG_IDX = _index
-        ret._data = _data.set_index(ret._LONG_IDX).value
-        ret.time_col = "year"
-        ret._set_attributes()
-        delattr(ret, "time")
-
-        if not inplace:
-            return ret
+        return swap_time_for_year(self, subannual=subannual, inplace=inplace)
 
     def as_pandas(self, meta_cols=True):
         """Return object as a pandas.DataFrame

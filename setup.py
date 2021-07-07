@@ -20,7 +20,7 @@ REQUIREMENTS = [
     "iam-units>=2020.4.21",
     "numpy>=1.19.0",
     "requests",
-    "pandas>=1.1.1",
+    "pandas>=1.1.1,<1.3.0",
     "pint",
     "PyYAML",
     "matplotlib>=3.2.0",
