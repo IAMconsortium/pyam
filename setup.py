@@ -12,7 +12,7 @@ logo = r"""
 """
 
 # NOTE TO DEVS
-# If you change a minimum version below, please explicitly set that
+# If you change a minimum version below, please explicitly implement the change
 # in our minimum-reqs test in the file ./.github/workflows/pytest-depedency.yml
 # Please also add a section "Dependency changes" to the release notes
 REQUIREMENTS = [
@@ -20,7 +20,7 @@ REQUIREMENTS = [
     "iam-units>=2020.4.21",
     "numpy>=1.19.0",
     "requests",
-    "pandas>=1.1.1,<1.3.0",
+    "pandas>=1.1.1",
     "pint",
     "PyYAML",
     "matplotlib>=3.2.0",

@@ -122,14 +122,12 @@ def test_append_extra_col(test_df, shuffle_cols):
     other_data = base_data[base_data["variable"] == "Primary Energy"].copy()
     other_data["variable"] = "Primary Energy|Gas"
     other_df = IamDataFrame(other_data)
-    # cast from FrozenList to list for test
-    other_df._LONG_IDX = list(other_df._LONG_IDX)
 
     if shuffle_cols:
-        c1_idx = other_df._LONG_IDX.index("col_1")
-        c2_idx = other_df._LONG_IDX.index("col_2")
-        other_df._LONG_IDX[c1_idx] = "col_2"
-        other_df._LONG_IDX[c2_idx] = "col_1"
+        c1_idx = other_df.dimensions.index("col_1")
+        c2_idx = other_df.dimensions.index("col_2")
+        other_df.dimensions[c1_idx] = "col_2"
+        other_df.dimensions[c2_idx] = "col_1"
 
     res = base_df.append(other_df)
 

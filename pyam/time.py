@@ -35,7 +35,6 @@ def swap_time_for_year(df, inplace, subannual=False):
         _raise_data_error(error_msg, index[rows].to_frame().reset_index(drop=True))
 
     # assign data and other attributes
-    ret._LONG_IDX = index.names
     ret._data.index = index
     ret.time_col = "year"
     ret._set_attributes()

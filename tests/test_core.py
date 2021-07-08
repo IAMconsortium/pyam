@@ -192,7 +192,7 @@ def test_print(test_df_year):
     exp = "\n".join(
         [
             "<class 'pyam.core.IamDataFrame'>",
-            "Index dimensions:",
+            "Index:",
             " * model    : model_a (1)",
             " * scenario : scen_a, scen_b (2)",
             "Timeseries data coordinates:",
@@ -215,7 +215,7 @@ def test_print_empty(test_df_year):
     exp = "\n".join(
         [
             "<class 'pyam.core.IamDataFrame'>",
-            "Index dimensions:",
+            "Index:",
             " * model    : (0)",
             " * scenario : (0)",
             "Timeseries data coordinates:",
@@ -322,6 +322,12 @@ def test_unit_mapping(test_pd_df):
     obs = IamDataFrame(test_pd_df).unit_mapping
 
     assert obs == {"Primary Energy": ["EJ/yr", "foo"], "Primary Energy|Coal": "EJ/yr"}
+
+
+def test_dimensions(test_df):
+    """Assert that the dimensions attribute works as expected"""
+    assert test_df.dimensions == IAMC_IDX + [test_df.time_col]
+    assert test_df._LONG_IDX == IAMC_IDX + [test_df.time_col]
 
 
 def test_filter_empty_df():
@@ -818,7 +824,7 @@ def _r5_regions_exp(df):
     df = df.filter(region="World", keep=False)
     data = df.data
     data["region"] = "R5MAF"
-    return sort_data(data, df._LONG_IDX)
+    return sort_data(data, df.dimensions)
 
 
 def test_map_regions_r5(reg_df):
@@ -904,7 +910,7 @@ def test_48b():
         )
     )
     obs = df.map_regions("iso", region_col="r5_region").data
-    obs = sort_data(obs[obs.region.isin(["SSD", "SDN"])], df._LONG_IDX)
+    obs = sort_data(obs[obs.region.isin(["SSD", "SDN"])], df.dimensions)
 
     pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
 
@@ -1021,7 +1027,7 @@ def test_concat_incompatible_cols(test_pd_df):
     test_pd_df["extra_col"] = "foo"
     df2 = IamDataFrame(test_pd_df)
 
-    match = "Items have incompatible timeseries data index dimensions!"
+    match = "Items have incompatible timeseries data dimensions!"
     with pytest.raises(ValueError, match=match):
         concat([df1, df2])
 
