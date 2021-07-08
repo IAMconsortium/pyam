@@ -10,6 +10,7 @@ from pyam.run_control import *
 from pyam.iiasa import read_iiasa
 from pyam.datareader import read_worldbank
 from pyam.unfccc import read_unfccc
+from pyam.testing import assert_iamframe_equal
 
 from pyam.logging import defer_logging_config
 

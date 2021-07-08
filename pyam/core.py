@@ -11,9 +11,6 @@ import pandas as pd
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from pyam._debiasing import _compute_bias
-from pyam.time import swap_time_for_year
-
 try:
     from datapackage import Package
 
@@ -24,7 +21,6 @@ except ImportError:
 
 try:
     import ixmp
-
     ixmp.TimeSeries
     has_ix = True
 except (ImportError, AttributeError):
@@ -57,7 +53,7 @@ from pyam.utils import (
     _raise_data_error,
 )
 from pyam.read_ixmp import read_ix
-from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
+from pyam.plotting import PlotAccessor
 from pyam._compare import _compare
 from pyam.aggregation import (
     _aggregate,
@@ -75,6 +71,8 @@ from pyam.index import (
     verify_index_integrity,
     replace_index_values,
 )
+from pyam.time import swap_time_for_year
+from pyam._debiasing import _compute_bias
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
