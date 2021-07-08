@@ -71,7 +71,7 @@ from pyam.index import (
     verify_index_integrity,
     replace_index_values,
 )
-from pyam.time import swap_time_for_year
+from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam._debiasing import _compute_bias
 from pyam.logging import deprecation_warning
 
@@ -611,7 +611,7 @@ class IamDataFrame(object):
             return ret
 
     def swap_time_for_year(self, subannual=False, inplace=False):
-        """Convert the `time` column to `year`.
+        """Convert the `time` column to `year` (as integer).
 
         Parameters
         ----------
@@ -623,12 +623,37 @@ class IamDataFrame(object):
         inplace : bool, optional
             If True, do operation inplace and return None.
 
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Object with altered time domain or None if `inplace=True`.
+
         Raises
         ------
         ValueError
             "time" is not a column of `self.data`
         """
         return swap_time_for_year(self, subannual=subannual, inplace=inplace)
+
+    def swap_year_for_time(self, inplace=False):
+        """Convert the `year` and `subannual` dimensions to `time` (as datetime).
+
+        Parameters
+        ----------
+        inplace : bool, optional
+            If True, do operation inplace and return None.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Object with altered time domain or None if `inplace=True`.
+
+        Raises
+        ------
+        ValueError
+            "year" or "subannual" are not a column of `self.data`
+        """
+        return swap_year_for_time(self, inplace=inplace)
 
     def as_pandas(self, meta_cols=True):
         """Return object as a pandas.DataFrame
