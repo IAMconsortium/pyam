@@ -21,6 +21,7 @@ except ImportError:
 
 try:
     import ixmp
+
     ixmp.TimeSeries
     has_ix = True
 except (ImportError, AttributeError):
