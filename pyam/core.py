@@ -393,7 +393,7 @@ class IamDataFrame(object):
     def _LONG_IDX(self):
         """DEPRECATED - please use `IamDataFrame.dimensions`"""
         # TODO: deprecated, remove for release >= 1.2
-        deprecation_warning("Use the attribute `dimensions` instead. This attribute")
+        deprecation_warning("Use the attribute `dimensions` instead.", "This attribute")
         return self.dimensions
 
     def copy(self):
