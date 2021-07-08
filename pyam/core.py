@@ -632,6 +632,10 @@ class IamDataFrame(object):
         ------
         ValueError
             "time" is not a column of `self.data`
+
+        See Also
+        --------
+        swap_year_for_time
         """
         return swap_time_for_year(self, subannual=subannual, inplace=inplace)
 
@@ -652,6 +656,10 @@ class IamDataFrame(object):
         ------
         ValueError
             "year" or "subannual" are not a column of `self.data`
+
+        See Also
+        --------
+        swap_time_for_year
         """
         return swap_year_for_time(self, inplace=inplace)
 
