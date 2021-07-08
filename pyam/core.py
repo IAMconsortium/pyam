@@ -611,14 +611,14 @@ class IamDataFrame(object):
             return ret
 
     def swap_time_for_year(self, subannual=False, inplace=False):
-        """Convert the `time` column to `year` (as integer).
+        """Convert the `time` dimension to `year` (as integer).
 
         Parameters
         ----------
         subannual : bool, str or func, optional
             Merge non-year components of the "time" domain as new column "subannual".
-            Apply `strftime()` on the values of the "time" domain using `subannual`
-            as format (if a string) or using "%m-%d %H:%M%z" (if True).
+            Apply :meth:`strftime() <datetime.date.strftime>` on the values of the
+            "time" domain using `subannual` (if a string) or "%m-%d %H:%M%z" (if True).
             If it is a function, apply the function on the values of the "time" domain.
         inplace : bool, optional
             If True, do operation inplace and return None.
