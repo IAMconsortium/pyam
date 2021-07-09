@@ -637,11 +637,19 @@ class IamDataFrame(object):
         See Also
         --------
         swap_year_for_time
+
         """
         return swap_time_for_year(self, subannual=subannual, inplace=inplace)
 
     def swap_year_for_time(self, inplace=False):
         """Convert the `year` and `subannual` dimensions to `time` (as datetime).
+
+        The method applies :meth:`dateutil.parser.parse` on the combined columns
+        `year` and `subannual`:
+
+        .. code-block:: python
+
+            dateutil.parser.parse([f"{y}-{s}" for y, s in zip(year, subannual)])
 
         Parameters
         ----------
@@ -661,6 +669,7 @@ class IamDataFrame(object):
         See Also
         --------
         swap_time_for_year
+
         """
         return swap_year_for_time(self, inplace=inplace)
 
