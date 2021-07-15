@@ -69,10 +69,20 @@ def test_swap_time_to_year_subannual(test_pd_df, columns, subannual, dates, inpl
     """Swap time column for year (int) keeping subannual resolution as extra-column"""
 
     test_pd_df.rename({2005: columns[0], 2010: columns[1]}, axis=1, inplace=True)
-    obs = IamDataFrame(test_pd_df).swap_time_for_year(subannual=subannual)
+
+    # check swapping time for year
+    df = IamDataFrame(test_pd_df)
+    obs = df.swap_time_for_year(subannual=subannual, inplace=inplace)
+
+    if inplace:
+        assert obs is None
+        obs = df
 
     exp = get_subannual_df(dates[0], dates[1])
     assert_iamframe_equal(obs, exp)
+
+    # check that reverting using `swap_year_for_time` yields the original data
+    assert_iamframe_equal(obs.swap_year_for_time(), IamDataFrame(test_pd_df))
 
 
 def test_swap_time_to_year_errors(test_df):

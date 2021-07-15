@@ -11,9 +11,6 @@ import pandas as pd
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from pyam._debiasing import _compute_bias
-from pyam.time import swap_time_for_year
-
 try:
     from datapackage import Package
 
@@ -57,7 +54,7 @@ from pyam.utils import (
     _raise_data_error,
 )
 from pyam.read_ixmp import read_ix
-from pyam.plotting import PlotAccessor, mpl_args_to_meta_cols
+from pyam.plotting import PlotAccessor
 from pyam._compare import _compare
 from pyam.aggregation import (
     _aggregate,
@@ -75,6 +72,8 @@ from pyam.index import (
     verify_index_integrity,
     replace_index_values,
 )
+from pyam.time import swap_time_for_year, swap_year_for_time
+from pyam._debiasing import _compute_bias
 from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
@@ -613,24 +612,66 @@ class IamDataFrame(object):
             return ret
 
     def swap_time_for_year(self, subannual=False, inplace=False):
-        """Convert the `time` column to `year`.
+        """Convert the `time` dimension to `year` (as integer).
 
         Parameters
         ----------
         subannual : bool, str or func, optional
             Merge non-year components of the "time" domain as new column "subannual".
-            Apply `strftime()` on the values of the "time" domain using `subannual`
-            as format (if a string) or using "%m-%d %H:%M%z" (if True).
+            Apply :meth:`strftime() <datetime.date.strftime>` on the values of the
+            "time" domain using `subannual` (if a string) or "%m-%d %H:%M%z" (if True).
             If it is a function, apply the function on the values of the "time" domain.
         inplace : bool, optional
             If True, do operation inplace and return None.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Object with altered time domain or None if `inplace=True`.
 
         Raises
         ------
         ValueError
             "time" is not a column of `self.data`
+
+        See Also
+        --------
+        swap_year_for_time
+
         """
         return swap_time_for_year(self, subannual=subannual, inplace=inplace)
+
+    def swap_year_for_time(self, inplace=False):
+        """Convert the `year` and `subannual` dimensions to `time` (as datetime).
+
+        The method applies :meth:`dateutil.parser.parse` on the combined columns
+        `year` and `subannual`:
+
+        .. code-block:: python
+
+            dateutil.parser.parse([f"{y}-{s}" for y, s in zip(year, subannual)])
+
+        Parameters
+        ----------
+        inplace : bool, optional
+            If True, do operation inplace and return None.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Object with altered time domain or None if `inplace=True`.
+
+        Raises
+        ------
+        ValueError
+            "year" or "subannual" are not a column of `self.data`
+
+        See Also
+        --------
+        swap_time_for_year
+
+        """
+        return swap_year_for_time(self, inplace=inplace)
 
     def as_pandas(self, meta_cols=True):
         """Return object as a pandas.DataFrame
