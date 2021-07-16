@@ -1737,16 +1737,15 @@ class IamDataFrame(object):
                 cat_idx = self.meta[matches].index
                 keep_col = _make_index(self._data, unique=False).isin(cat_idx)
             elif col == "year":
-                _data = (
-                    self.data[col]
-                    if self.time_col != "time"
-                    else self.data["time"].apply(lambda x: x.year)
-                )
+                if self.time_col == "year":
+                    _data = self.get_data_column(col)
+                else:
+                    _data = self.get_data_column("time").apply(lambda x: x.year)
                 keep_col = years_match(_data, values)
 
             elif col == "month" and self.time_col == "time":
                 keep_col = month_match(
-                    self.data["time"].apply(lambda x: x.month), values
+                    self.get_data_column("time").apply(lambda x: x.month), values
                 )
 
             elif col == "day" and self.time_col == "time":
@@ -1758,17 +1757,19 @@ class IamDataFrame(object):
                     wday = False
 
                 if wday:
-                    days = self.data["time"].apply(lambda x: x.weekday())
+                    days = self.get_data_column("time").apply(lambda x: x.weekday())
                 else:  # ints or list of ints
-                    days = self.data["time"].apply(lambda x: x.day)
+                    days = self.get_data_column("time").apply(lambda x: x.day)
 
                 keep_col = day_match(days, values)
 
             elif col == "hour" and self.time_col == "time":
-                keep_col = hour_match(self.data["time"].apply(lambda x: x.hour), values)
+                keep_col = hour_match(
+                    self.get_data_column("time").apply(lambda x: x.hour), values
+                )
 
             elif col == "time" and self.time_col == "time":
-                keep_col = datetime_match(self.data[col], values)
+                keep_col = datetime_match(self.get_data_column("time"), values)
 
             elif col in self.dimensions:
                 lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
