@@ -136,13 +136,18 @@ TEST_STACKPLOT_DF["scenario"] = "a_scen"
 
 # minimal IamDataFrame with four different time formats
 @pytest.fixture(
-    scope="function", params=[TEST_YEARS, TEST_DTS, TEST_TIME_STR, TEST_TIME_STR_HR]
+    scope="function",
+    params=[
+        # standard IAMC format
+        {},
+        # testing several versions of datetime format
+        dict([(i, j) for i, j in zip(TEST_YEARS, TEST_DTS)]),
+        dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_STR)]),
+        dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_STR_HR)]),
+    ],
 )
 def test_df(request):
-    tdf = TEST_DF.rename(
-        {2005: request.param[0], 2010: request.param[1]}, axis="columns"
-    )
-    df = IamDataFrame(data=tdf)
+    df = IamDataFrame(data=TEST_DF.rename(request.param, axis="columns"))
     for i in META_COLS:
         df.set_meta(META_DF[i])
     yield df
