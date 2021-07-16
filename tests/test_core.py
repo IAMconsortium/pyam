@@ -330,6 +330,16 @@ def test_dimensions(test_df):
     assert test_df._LONG_IDX == IAMC_IDX + [test_df.time_col]
 
 
+def test_get_data_column(test_df):
+    """Assert that getting a column from the `data` dataframe works"""
+
+    obs = test_df.get_data_column("model")
+    pdt.assert_series_equal(obs, pd.Series(["model_a"] * 6, name="model"))
+
+    obs = test_df.get_data_column(test_df.time_col)
+    pdt.assert_series_equal(obs, test_df.data[test_df.time_col])
+
+
 def test_filter_empty_df():
     # test for issue seen in #254
     df = IamDataFrame(data=df_empty)

@@ -383,6 +383,22 @@ class IamDataFrame(object):
             return pd.DataFrame([], columns=self.dimensions + ["value"])
         return self._data.reset_index()
 
+    def get_data_column(self, column):
+        """Return a `column` from the timeseries data in long format
+
+        Equivalent to `self.data[column]`.
+
+        Parameters
+        ----------
+        column : str
+            The column name.
+
+        Returns
+        -------
+        pd.Series
+        """
+        return pd.Series(self._data.index.get_level_values(column), name=column)
+
     @property
     def dimensions(self):
         """Return the list of `data` columns (index names & data coordinates)"""
