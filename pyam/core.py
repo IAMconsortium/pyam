@@ -1030,11 +1030,12 @@ class IamDataFrame(object):
             raise ValueError(f"Conflicting rename args for columns {duplicate}")
         mapping.update(kwargs)
 
-        # determine columns that are not `model` or `scenario`
-        data_cols = set(self.dimensions) - set(META_IDX)
+        # determine columns that are not in the meta index
+        meta_idx = self.meta.index.names
+        data_cols = set(self.dimensions) - set(meta_idx)
 
         # changing index and data columns can cause model-scenario mismatch
-        if any(i in mapping for i in META_IDX) and any(i in mapping for i in data_cols):
+        if any(i in mapping for i in meta_idx) and any(i in mapping for i in data_cols):
             msg = "Renaming index and data columns simultaneously not supported!"
             raise ValueError(msg)
 
@@ -1052,18 +1053,18 @@ class IamDataFrame(object):
 
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(**filters)
-        idx = ret.meta.index.isin(_make_index(ret._data[rows]))
+        idx = ret.meta.index.isin(_make_index(ret._data[rows], cols=meta_idx))
 
         # apply renaming changes (for `data` only on the index)
         _data_index = ret._data.index
 
         for col, _mapping in mapping.items():
-            if col in META_IDX:
+            if col in meta_idx:
                 _index = pd.DataFrame(index=ret.meta.index).reset_index()
                 _index.loc[idx, col] = _index.loc[idx, col].replace(_mapping)
                 if _index.duplicated().any():
                     raise ValueError(f"Renaming to non-unique {col} index!")
-                ret.meta.index = _index.set_index(META_IDX).index
+                ret.meta.index = _index.set_index(meta_idx).index
             elif col not in data_cols:
                 raise ValueError(f"Renaming by {col} not supported!")
             _data_index = replace_index_values(_data_index, col, _mapping, rows)
