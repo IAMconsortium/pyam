@@ -386,7 +386,7 @@ class IamDataFrame(object):
     def get_data_column(self, column):
         """Return a `column` from the timeseries data in long format
 
-        Equivalent to `self.data[column]`.
+        Equivalent to :meth:`IamDataFrame.data[column] <IamDataFrame.data>`.
 
         Parameters
         ----------
