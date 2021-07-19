@@ -365,10 +365,7 @@ class IamDataFrame(object):
 
         return (
             pd.DataFrame(
-                zip(
-                    self._data.index.get_level_values("variable"),
-                    self._data.index.get_level_values("unit"),
-                ),
+                zip(self.get_data_column("variable"), self.get_data_column("unit")),
                 columns=["variable", "unit"],
             )
             .groupby("variable")
