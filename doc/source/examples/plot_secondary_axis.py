@@ -27,7 +27,7 @@ df
 # Create a composed figure from several plot types
 # ************************************************
 #
-# To create a composed chart, we import the **matplotlib** package directly
+# To create a composed chart, we directly use the **matplotlib** package
 # and start with a subplot consisting of a figure canvas and
 # an :class:`Axes <matplotlib.axes.Axes>` object, which contains the figure elements.
 #
@@ -58,4 +58,5 @@ data_temperature.plot(ax=ax2, legend=False, title=None, **format_args)
 
 ax.legend(loc=4)
 ax2.legend(loc=1)
+ax2.set_ylim(0, 2)
 ax.set_title("Primary energy mix and temperature")
