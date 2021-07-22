@@ -31,7 +31,8 @@ df
 # First, we generate a simple stacked bar chart
 # of all components of primary energy supply for one scenario.
 #
-# Using :code:`plt.tight_layout()` ensures that the plot is nice and tidy.
+# Calling :func:`tight_layout() <matplotlib.pyplot.tight_layout>` ensures
+# that the final plot looks nice and tidy.
 
 args = dict(model="WITCH-GLOBIOM 4.4", scenario="CD-LINKS_NPi2020_1000")
 data = df.filter(**args, variable="Primary Energy|*", region="World")
