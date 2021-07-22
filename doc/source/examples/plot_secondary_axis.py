@@ -38,7 +38,6 @@ df
 # Then, we create a second axes using :meth:`Axes.twinx() <matplotlib.axes.Axes.twinx>`
 # and place a second plot on this other axes.
 
-import matplotlib.pyplot as plt
 fig, ax = plt.subplots()
 
 args = dict(
@@ -46,6 +45,7 @@ args = dict(
     scenario="CD-LINKS_NPi2020_1000",
     region="World",
 )
+
 data_energy = df.filter(**args, variable="Primary Energy|*", )
 data_energy.plot.stack(ax=ax, title=None, legend=False)
 
