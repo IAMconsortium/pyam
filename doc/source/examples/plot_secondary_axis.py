@@ -52,12 +52,10 @@ temperature = "AR5 climate diagnostics|Temperature|Global Mean|MAGICC6|MED"
 data_temperature = df.filter(**args, variable=temperature)
 data_temperature.plot(ax=ax, title=None, legend=False)
 
-ax2 = ax.twinx()
-data_temperature_fahrenheit = data_temperature.convert_unit('°C', to='°F', factor=1.8)
-data_temperature_fahrenheit.plot(ax=ax2, title=None, legend=False)
+ax2 = ax.secondary_yaxis('right', functions=(lambda x: x * 1.8, lambda x: x / 1.8))
+ax2.set_ylabel("°F")
 
-ax.legend(loc=4)
-ax.set_title("Temperature")
+ax.set_title("Temperature change relative to pre-industrial")
 
 plt.tight_layout()
 plt.show()
