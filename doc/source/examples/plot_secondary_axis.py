@@ -35,11 +35,9 @@ df
 # for one scenario and multiple models.
 # We now tell **pyam** to specifically use the :code:`ax` instance for the plot.
 #
-# Then we use the **pyam** function [convert_unit()](https://pyam-iamc.readthedocs.io/en/stable/api/iamdataframe.html#pyam.IamDataFrame.convert_unit)
-# to convert temperature increase in °C to temperature increase in °F.
-#
-# Finally, we create a second axes using :meth:`Axes.twinx() <matplotlib.axes.Axes.twinx>`
-# and place a second plot on this other axes with °F as unit.
+# Then we create a second axis :code:`ax2` using :meth:`Axes.secondary_yaxis() <matplotlib.axes.Axes.secondary_yaxis>`
+# while converting temperature increase in °C from the original axis :code:`ax`
+# to temperature increase in °F and add it to the plot.
 
 fig, ax = plt.subplots()
 
