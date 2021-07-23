@@ -46,7 +46,7 @@ args = dict(
     region="World",
 )
 
-data_energy = df.filter(**args, variable="Primary Energy|*", )
+data_energy = df.filter(**args, variable="Primary Energy|*")
 data_energy.plot.stack(ax=ax, title=None, legend=False)
 
 temperature = "AR5 climate diagnostics|Temperature|Global Mean|MAGICC6|MED"
