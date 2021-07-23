@@ -60,3 +60,6 @@ ax.legend(loc=4)
 ax2.legend(loc=1)
 ax2.set_ylim(0, 2)
 ax.set_title("Primary energy mix and temperature")
+
+plt.tight_layout()
+plt.show()
