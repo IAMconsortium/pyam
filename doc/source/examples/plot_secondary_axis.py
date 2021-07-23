@@ -24,10 +24,49 @@ df = pyam.IamDataFrame("tutorial_data.csv")
 df
 
 ###############################
+# Create a figure with different units on axes
+# ************************************************
+#
+# To create a chart with multiple axes, we directly use the **matplotlib** package
+# and start with a subplot consisting of a figure canvas and
+# an :class:`Axes <matplotlib.axes.Axes>` object, which contains the figure elements.
+#
+# First, we generate a simple line chart with temperature increase in °C
+# for one scenario and multiple models.
+# We now tell **pyam** to specifically use the :code:`ax` instance for the plot.
+#
+# Then we use the **pyam** function [convert_unit()](https://pyam-iamc.readthedocs.io/en/stable/api/iamdataframe.html#pyam.IamDataFrame.convert_unit)
+# to convert temperature increase in °C to temperature increase in °F.
+#
+# Finally, we create a second axes using :meth:`Axes.twinx() <matplotlib.axes.Axes.twinx>`
+# and place a second plot on this other axes with °F as unit.
+
+fig, ax = plt.subplots()
+
+args = dict(
+    scenario="CD-LINKS_NPi2020_1000",
+    region="World",
+)
+
+temperature = "AR5 climate diagnostics|Temperature|Global Mean|MAGICC6|MED"
+data_temperature = df.filter(**args, variable=temperature)
+data_temperature.plot(ax=ax, title=None, legend=False)
+
+ax2 = ax.twinx()
+data_temperature_fahrenheit = data_temperature.convert_unit('°C', to='°F', factor=1.8)
+data_temperature_fahrenheit.plot(ax=ax2, title=None, legend=False)
+
+ax.legend(loc=4)
+ax.set_title("Temperature")
+
+plt.tight_layout()
+plt.show()
+
+###############################
 # Create a composed figure from several plot types
 # ************************************************
 #
-# To create a composed chart, we directly use the **matplotlib** package
+# To create a composed chart, we again use the **matplotlib** package
 # and start with a subplot consisting of a figure canvas and
 # an :class:`Axes <matplotlib.axes.Axes>` object, which contains the figure elements.
 #
