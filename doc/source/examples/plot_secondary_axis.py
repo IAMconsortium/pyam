@@ -4,6 +4,7 @@ Composing plots with a secondary axis
 =====================================
 
 """
+# sphinx_gallery_thumbnail_number = 2
 
 ###############################
 # Read in tutorial data and show a summary
@@ -24,8 +25,8 @@ df = pyam.IamDataFrame("tutorial_data.csv")
 df
 
 ###############################
-# Create a figure with different units on axes
-# ************************************************
+# Create a figure with different units on secondary axis
+# ******************************************************
 #
 # To create a chart with multiple axes, we directly use the **matplotlib** package
 # and start with a subplot consisting of a figure canvas and
@@ -35,9 +36,10 @@ df
 # for one scenario and multiple models.
 # We now tell **pyam** to specifically use the :code:`ax` instance for the plot.
 #
-# Then we create a second axis :code:`ax2` using :meth:`Axes.secondary_yaxis() <matplotlib.axes.Axes.secondary_yaxis>`
-# while converting temperature increase in °C from the original axis :code:`ax`
-# to temperature increase in °F and add it to the plot.
+# Then, we create a second axis :code:`ax2` using
+# :meth:`Axes.secondary_yaxis() <matplotlib.axes.Axes.secondary_yaxis>`
+# showing temperature increase in °C from the original axis :code:`ax`
+# to temperature increase in °F.
 
 fig, ax = plt.subplots()
 
@@ -47,13 +49,13 @@ args = dict(
 )
 
 temperature = "AR5 climate diagnostics|Temperature|Global Mean|MAGICC6|MED"
+title = "Temperature change relative to pre-industrial levels"
+
 data_temperature = df.filter(**args, variable=temperature)
-data_temperature.plot(ax=ax, title=None, legend=False)
+data_temperature.plot(ax=ax, title=title, legend=False)
 
 ax2 = ax.secondary_yaxis('right', functions=(lambda x: x * 1.8, lambda x: x / 1.8))
 ax2.set_ylabel("°F")
-
-ax.set_title("Temperature change relative to pre-industrial")
 
 plt.tight_layout()
 plt.show()
