@@ -54,7 +54,7 @@ title = "Temperature change relative to pre-industrial levels"
 data_temperature = df.filter(**args, variable=temperature)
 data_temperature.plot(ax=ax, title=title, legend=False)
 
-ax2 = ax.secondary_yaxis('right', functions=(lambda x: x * 1.8, lambda x: x / 1.8))
+ax2 = ax.secondary_yaxis("right", functions=(lambda x: x * 1.8, lambda x: x / 1.8))
 ax2.set_ylabel("°F")
 
 plt.tight_layout()
