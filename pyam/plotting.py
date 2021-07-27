@@ -45,7 +45,9 @@ OUTSIDE_LEGEND = {
 }
 
 PYAM_COLORS = {
-    # AR6 colours from https://github.com/IPCC-WG1/colormaps
+    # AR6 colours originally from https://github.com/IPCC-WG1/colormaps
+    # Final values are used as communicated from the TSU and documented
+    # in: 
     # where each file is processed to generate hex values, e.g.:
     # with open('rcp_cat.txt') as f:
     #   for l in f.readlines():
@@ -56,19 +58,19 @@ PYAM_COLORS = {
     "AR6-SSP3": "#f11111",
     "AR6-SSP4": "#e78731",
     "AR6-SSP5": "#8036a7",
-    "AR6-SSP1-1.9": "#00acce",
-    "AR6-SSP1-2.6": "#173c66",
+    "AR6-SSP1-1.9": "#00a9cf",
+    "AR6-SSP1-2.6": "#003466",
     "AR6-SSP2-4.5": "#f69320",
-    "AR6-SSP3-7.0": "#e61d25",
+    "AR6-SSP3-7.0": "#df0000",
     "AR6-SSP3-LowNTCF": "#e61d25",
-    "AR6-SSP4-3.4": "#63bce4",
-    "AR6-SSP4-6.0": "#e78731",
-    "AR6-SSP5-3.4-OS": "#996dc8",
-    "AR6-SSP5-8.5": "#941b1e",
-    "AR6-RCP-2.6": "#980002",
-    "AR6-RCP-4.5": "#c37900",
-    "AR6-RCP-6.0": "#709fcc",
-    "AR6-RCP-8.5": "#003466",
+    "AR6-SSP4-3.4": "#2274ae",
+    "AR6-SSP4-6.0": "#b0724e",
+    "AR6-SSP5-3.4-OS": "#92397a",
+    "AR6-SSP5-8.5": "#980002",
+   "AR6-RCP-2.6": "#003466",
+    "AR6-RCP-4.5": "#709fcc",
+    "AR6-RCP-6.0": "#c37900",
+    "AR6-RCP-8.5": "#980002",
     # AR5 colours from
     # https://tdaviesbarnard.co.uk/1202/ipcc-official-colors-rcp/
     "AR5-RCP-2.6": "#0000FF",
