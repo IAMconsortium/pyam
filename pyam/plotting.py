@@ -47,7 +47,7 @@ OUTSIDE_LEGEND = {
 PYAM_COLORS = {
     # AR6 colours originally from https://github.com/IPCC-WG1/colormaps
     # Final values are used as communicated from the TSU and documented
-    # in: 
+    # in: https://github.com/IAMconsortium/pyam/pull/566
     # where each file is processed to generate hex values, e.g.:
     # with open('rcp_cat.txt') as f:
     #   for l in f.readlines():
@@ -67,7 +67,7 @@ PYAM_COLORS = {
     "AR6-SSP4-6.0": "#b0724e",
     "AR6-SSP5-3.4-OS": "#92397a",
     "AR6-SSP5-8.5": "#980002",
-   "AR6-RCP-2.6": "#003466",
+    "AR6-RCP-2.6": "#003466",
     "AR6-RCP-4.5": "#709fcc",
     "AR6-RCP-6.0": "#c37900",
     "AR6-RCP-8.5": "#980002",
