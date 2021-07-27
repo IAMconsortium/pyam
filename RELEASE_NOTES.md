@@ -7,6 +7,8 @@ the attribute `_LONG_IDX` as deprecated. Please use `dimensions` instead.
 
 ## Individual updates
 
+- [#566](https://github.com/IAMconsortium/pyam/pull/566) Updated AR6 default color pallet to final version
+used by WG1 
 - [#564](https://github.com/IAMconsortium/pyam/pull/564) Add an example with a secondary axis to the plotting gallery 
 - [#560](https://github.com/IAMconsortium/pyam/pull/560) Add a feature to `swap_year_for_time()`
 - [#559](https://github.com/IAMconsortium/pyam/pull/559) Add attribute `dimensions`, fix compatibility with pandas v1.3
