@@ -274,7 +274,7 @@ def pie(
     value="value",
     category="variable",
     legend=False,
-    title=True,
+    title=False,
     ax=None,
     cmap=None,
     **kwargs,
@@ -313,8 +313,7 @@ def pie(
     for col in set(SORT_IDX) - set([category]):
         if len(df[col].unique()) > 1:
             msg = (
-                "Can not plot multiple {}s in a pie plot with value={},"
-                + " category={}"
+                "Can not plot multiple {}s in a pie plot with value={} and category={}"
             )
             raise ValueError(msg.format(col, value, category))
 
@@ -332,19 +331,25 @@ def pie(
         "color"
     ]
     rc = run_control()
-    color = []
-    for key, c in zip(_df.index, defaults):
-        if "color" in rc and category in rc["color"] and key in rc["color"][category]:
-            c = rc["color"][category][key]
-        color.append(c)
+
+    if "colors" in kwargs:
+        colors = kwargs.pop("colors")
+    else:
+        colors = []
+        for key, c in zip(_df.index, defaults):
+            if category in rc["color"] and key in rc["color"][category]:
+                c = rc["color"][category][key]
+            colors.append(c)
 
     # plot data
-    _df.plot(kind="pie", colors=color, ax=ax, explode=explode, **kwargs)
+    _df.plot(kind="pie", colors=colors, ax=ax, explode=explode, **kwargs)
 
-    # add legend
+    # add legend and title
     ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), labels=_df.index)
     if not legend:
         ax.legend_.remove()
+    if title:
+        ax.set_title(title)
 
     # remove label
     ax.set_ylabel("")
@@ -1081,7 +1086,7 @@ def line(
             .T.interpolate(method="index")
             .T  # interpolate
         )
-        mins = pd.concat([allmins, intermins]).min(level=0)
+        mins = pd.concat([allmins, intermins]).groupby(level=0).min()
         allmaxs = data.groupby(color).max()
         intermaxs = (
             data.dropna(axis=1)
@@ -1091,7 +1096,7 @@ def line(
             .T.interpolate(method="index")
             .T  # interpolate
         )
-        maxs = pd.concat([allmaxs, intermaxs]).max(level=0)
+        maxs = pd.concat([allmaxs, intermaxs]).groupby(level=0).max()
         # do the fill
         for idx in mins.index:
             ymin = mins.loc[idx]
