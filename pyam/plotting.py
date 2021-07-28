@@ -274,7 +274,7 @@ def pie(
     value="value",
     category="variable",
     legend=False,
-    title=False,
+    title=None,
     ax=None,
     cmap=None,
     **kwargs,
@@ -291,8 +291,8 @@ def pie(
         The column to use for labels
     legend : bool, optional
         Include a legend.
-    title : bool or string, optional
-        Display a default or custom title.
+    title : string, optional
+        Text to use for the title.
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
@@ -395,7 +395,7 @@ def stack(
     legend : bool, optional
         Include a legend.
     title : bool or string, optional
-        Display a default or custom title.
+        Text to use for the title, display a default if True.
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
@@ -564,7 +564,7 @@ def bar(
     legend : bool, optional
         Include a legend.
     title : bool or string, optional
-        Display a default or custom title.
+        Text to use for the title, display a default if True.
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
@@ -666,7 +666,7 @@ def box(df, y="value", x=None, by=None, legend=True, title=None, ax=None, **kwar
     legend : bool, optional
         Include a legend.
     title : bool or string, optional
-        Display a default or custom title.
+        Text to use for the title, display a default if True.
     ax : :class:`matplotlib.axes.Axes`, optional
     kwargs
         Additional arguments passed to :meth:`pandas.DataFrame.plot`.
@@ -781,7 +781,7 @@ def scatter(
         If a dictionary is provided, it will be used as keyword arguments
         in creating the legend.
     title : bool or string, optional
-        Display a custom title.
+        Text to use for the title, display a default if True.
     color : string, optional
         A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
@@ -942,7 +942,7 @@ def line(
         If a dictionary is provided, it will be used as keyword arguments
         in creating the legend.
     title : bool or string, optional
-        Display a default or custom title.
+        Text to use for the title, display a default if True.
     color : string, optional
         A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
