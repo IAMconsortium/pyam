@@ -413,12 +413,9 @@ def test_pie_plot_legend(plot_df):
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_pie_plot_colors(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
-    with update_run_control(RC_TEST_DICT):
-        (
-            plot_df.filter(
-                variable="Primary Energy", model="test_model", year=2010
-            ).plot.pie(ax=ax, category="scenario", colors=["red", "blue"], title="foo")
-        )
+    plot_df.filter(
+        variable="Primary Energy", model="test_model", year=2010
+    ).plot.pie(ax=ax, category="scenario", colors=["green", "yellow"], title="foo")
     return fig
 
 
