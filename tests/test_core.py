@@ -286,7 +286,9 @@ def test_equals_raises(test_pd_df):
 
 
 def test_get_item(test_df):
-    assert test_df["model"].unique() == ["model_a"]
+    """Assert that getting a column from `data` via the direct getter works"""
+    pdt.assert_series_equal(test_df["model"], test_df.data["model"])
+    pdt.assert_series_equal(test_df["variable"], test_df.data["variable"])
 
 
 def test_index(test_df_year):

@@ -230,7 +230,7 @@ class IamDataFrame(object):
         if set(_key_check).issubset(self.meta.columns):
             return self.meta.__getitem__(key)
         else:
-            return self.data.__getitem__(key)
+            return self.get_data_column(key)
 
     def __len__(self):
         return len(self._data)
