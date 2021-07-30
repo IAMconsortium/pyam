@@ -274,7 +274,7 @@ def pie(
     value="value",
     category="variable",
     legend=False,
-    title=True,
+    title=None,
     ax=None,
     cmap=None,
     **kwargs,
@@ -291,8 +291,8 @@ def pie(
         The column to use for labels
     legend : bool, optional
         Include a legend.
-    title : bool or string, optional
-        Display a default or custom title.
+    title : string, optional
+        Text to use for the title.
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
@@ -313,8 +313,7 @@ def pie(
     for col in set(SORT_IDX) - set([category]):
         if len(df[col].unique()) > 1:
             msg = (
-                "Can not plot multiple {}s in a pie plot with value={},"
-                + " category={}"
+                "Can not plot multiple {}s in a pie plot with value={} and category={}"
             )
             raise ValueError(msg.format(col, value, category))
 
@@ -332,19 +331,25 @@ def pie(
         "color"
     ]
     rc = run_control()
-    color = []
-    for key, c in zip(_df.index, defaults):
-        if "color" in rc and category in rc["color"] and key in rc["color"][category]:
-            c = rc["color"][category][key]
-        color.append(c)
+
+    if "colors" in kwargs:
+        colors = kwargs.pop("colors")
+    else:
+        colors = []
+        for key, c in zip(_df.index, defaults):
+            if category in rc["color"] and key in rc["color"][category]:
+                c = rc["color"][category][key]
+            colors.append(c)
 
     # plot data
-    _df.plot(kind="pie", colors=color, ax=ax, explode=explode, **kwargs)
+    _df.plot(kind="pie", colors=colors, ax=ax, explode=explode, **kwargs)
 
-    # add legend
+    # add legend and title
     ax.legend(loc="center left", bbox_to_anchor=(1.0, 0.5), labels=_df.index)
     if not legend:
         ax.legend_.remove()
+    if title:
+        ax.set_title(title)
 
     # remove label
     ax.set_ylabel("")
@@ -390,7 +395,7 @@ def stack(
     legend : bool, optional
         Include a legend.
     title : bool or string, optional
-        Display a default or custom title.
+        Text to use for the title, display a default if True.
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
@@ -559,7 +564,7 @@ def bar(
     legend : bool, optional
         Include a legend.
     title : bool or string, optional
-        Display a default or custom title.
+        Text to use for the title, display a default if True.
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
@@ -661,7 +666,7 @@ def box(df, y="value", x=None, by=None, legend=True, title=None, ax=None, **kwar
     legend : bool, optional
         Include a legend.
     title : bool or string, optional
-        Display a default or custom title.
+        Text to use for the title, display a default if True.
     ax : :class:`matplotlib.axes.Axes`, optional
     kwargs
         Additional arguments passed to :meth:`pandas.DataFrame.plot`.
@@ -776,7 +781,7 @@ def scatter(
         If a dictionary is provided, it will be used as keyword arguments
         in creating the legend.
     title : bool or string, optional
-        Display a custom title.
+        Text to use for the title, display a default if True.
     color : string, optional
         A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
@@ -937,7 +942,7 @@ def line(
         If a dictionary is provided, it will be used as keyword arguments
         in creating the legend.
     title : bool or string, optional
-        Display a default or custom title.
+        Text to use for the title, display a default if True.
     color : string, optional
         A valid matplotlib color or column name. If a column name, common
         values will be provided the same color.
@@ -1081,7 +1086,7 @@ def line(
             .T.interpolate(method="index")
             .T  # interpolate
         )
-        mins = pd.concat([allmins, intermins]).min(level=0)
+        mins = pd.concat([allmins, intermins]).groupby(level=0).min()
         allmaxs = data.groupby(color).max()
         intermaxs = (
             data.dropna(axis=1)
@@ -1091,7 +1096,7 @@ def line(
             .T.interpolate(method="index")
             .T  # interpolate
         )
-        maxs = pd.concat([allmaxs, intermaxs]).max(level=0)
+        maxs = pd.concat([allmaxs, intermaxs]).groupby(level=0).max()
         # do the fill
         for idx in mins.index:
             ymin = mins.loc[idx]
