@@ -9,6 +9,7 @@ the attribute `_LONG_IDX` as deprecated. Please use `dimensions` instead.
 
 - [#564](https://github.com/IAMconsortium/pyam/pull/564) Add an example with a secondary axis to the plotting gallery 
 - [#563](https://github.com/IAMconsortium/pyam/pull/563) Enable `colors` keyword argument as list in `plot.pie()` 
+- [#562](https://github.com/IAMconsortium/pyam/pull/562) Add `get_data_column()`, refactor filtering by the time domain
 - [#560](https://github.com/IAMconsortium/pyam/pull/560) Add a feature to `swap_year_for_time()`
 - [#559](https://github.com/IAMconsortium/pyam/pull/559) Add attribute `dimensions`, fix compatibility with pandas v1.3
 - [#557](https://github.com/IAMconsortium/pyam/pull/557) Swap time for year keeping subannual resolution

@@ -286,7 +286,9 @@ def test_equals_raises(test_pd_df):
 
 
 def test_get_item(test_df):
-    assert test_df["model"].unique() == ["model_a"]
+    """Assert that getting a column from `data` via the direct getter works"""
+    pdt.assert_series_equal(test_df["model"], test_df.data["model"])
+    pdt.assert_series_equal(test_df["variable"], test_df.data["variable"])
 
 
 def test_index(test_df_year):
@@ -328,6 +330,16 @@ def test_dimensions(test_df):
     """Assert that the dimensions attribute works as expected"""
     assert test_df.dimensions == IAMC_IDX + [test_df.time_col]
     assert test_df._LONG_IDX == IAMC_IDX + [test_df.time_col]
+
+
+def test_get_data_column(test_df):
+    """Assert that getting a column from the `data` dataframe works"""
+
+    obs = test_df.get_data_column("model")
+    pdt.assert_series_equal(obs, pd.Series(["model_a"] * 6, name="model"))
+
+    obs = test_df.get_data_column(test_df.time_col)
+    pdt.assert_series_equal(obs, test_df.data[test_df.time_col])
 
 
 def test_filter_empty_df():
