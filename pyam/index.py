@@ -72,7 +72,7 @@ def replace_index_values(df, level, mapping, rows=None):
     # if duplicate levels exist, re-map the codes
     level_mapping = _unique_levels.get_indexer(_levels)
     _codes = np.where(index.codes[n] != -1, level_mapping[index.codes[n]], -1)
-    return index.set_codes(_codes, n).set_levels(_unique_levels, n)
+    return index.set_codes(_codes, level=n).set_levels(_unique_levels, level=n)
 
 
 def append_index_col(index, values, name, order=False):

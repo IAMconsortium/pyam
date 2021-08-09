@@ -1,4 +1,10 @@
-# Next Release
+# Release v1.1.0
+
+## Highlights
+
+- Update pyam-colors to be consistent with IPCC AR6 palette
+- Enable `colors` keyword argument as list in `plot.pie()`
+- Fix compatibility with pandas v1.3
 
 ## API changes
 
@@ -7,8 +13,7 @@ the attribute `_LONG_IDX` as deprecated. Please use `dimensions` instead.
 
 ## Individual updates
 
-- [#566](https://github.com/IAMconsortium/pyam/pull/566) Updated AR6 default color pallet to final version
-used by WG1 
+- [#566](https://github.com/IAMconsortium/pyam/pull/566) Updated AR6 default color pallet to final version used by WG1
 - [#564](https://github.com/IAMconsortium/pyam/pull/564) Add an example with a secondary axis to the plotting gallery 
 - [#563](https://github.com/IAMconsortium/pyam/pull/563) Enable `colors` keyword argument as list in `plot.pie()` 
 - [#562](https://github.com/IAMconsortium/pyam/pull/562) Add `get_data_column()`, refactor filtering by the time domain
