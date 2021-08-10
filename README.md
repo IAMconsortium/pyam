@@ -63,9 +63,10 @@ The package also supports timeseries data with a *sub-annual time resolution*:
  - "Representative timeslices" (e.g., "winter-night", "summer-day")
    using the pyam *extra-columns* feature 
    
+
 [Read the docs](https://pyam-iamc.readthedocs.io/en/stable/data.html)
 for more information about the pyam data model
-or look at the [data-table tutorial](pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.ipynb)
+or look at the [data-table tutorial](https://pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.html)
 to see how to cast from a variety of timeseries formats to a **pyam.IamDataFrame**.
 
 Tutorials
