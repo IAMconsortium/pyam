@@ -106,7 +106,7 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
 
     file = tmpdir / "na_unit.xlsx"
     df.to_excel(file)
-    df_excel = pd.read_excel(file)
+    df_excel = pd.read_excel(file, engine="openpyxl")
     assert np.isnan(df_excel.loc[1, "Unit"])
     IamDataFrame(file)  # reading from file as IamDataFrame works
 

@@ -138,7 +138,14 @@ def read_pandas(path, sheet_name="data*", *args, **kwargs):
     if isinstance(path, Path) and path.suffix == ".csv":
         return pd.read_csv(path, *args, **kwargs)
     else:
-        xl = pd.ExcelFile(path)
+        if isinstance(path, pd.ExcelFile):
+            xl = path
+        else:
+            xl = pd.ExcelFile(
+                path,
+                engine="xlrd" if path.suffix == ".xls" else "openpyxl"
+            )
+
         sheet_names = pd.Series(xl.sheet_names)
 
         # reading multiple sheets
@@ -153,7 +160,7 @@ def read_pandas(path, sheet_name="data*", *args, **kwargs):
 
         # read single sheet (if only one exists in file) ignoring sheet name
         else:
-            df = pd.read_excel(path, *args, **kwargs)
+            df = pd.read_excel(xl, *args, **kwargs)
 
         # remove unnamed and empty columns, and rows were all values are nan
         def is_empty(name, s):
