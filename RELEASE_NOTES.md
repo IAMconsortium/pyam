@@ -1,3 +1,7 @@
+## Individual updates
+
+PR [#572](https://github.com/IAMconsortium/pyam/pull/572) unpinned the requirements for xlrd and added openpyxl as a requirement to ensure ongoing support of both `.xlsx` and `.xls` files out of the box
+
 # Release v1.1.0
 
 ## Highlights
