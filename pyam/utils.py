@@ -142,8 +142,7 @@ def read_pandas(path, sheet_name="data*", *args, **kwargs):
             xl = path
         else:
             xl = pd.ExcelFile(
-                path,
-                engine="xlrd" if path.suffix == ".xls" else "openpyxl"
+                path, engine="xlrd" if path.suffix == ".xls" else "openpyxl"
             )
 
         sheet_names = pd.Series(xl.sheet_names)
