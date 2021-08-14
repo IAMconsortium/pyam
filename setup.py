@@ -45,7 +45,6 @@ EXTRA_REQUIREMENTS = {
         "sphinxcontrib-bibtex<2.0",
         "sphinxcontrib-programoutput",
         "numpydoc",
-        "openpyxl",
         "kaleido",
     ]  # docs requires 'tutorials'
     # GitHub Actions requires pandoc explicitly to build the docs
