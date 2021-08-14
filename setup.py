@@ -13,20 +13,21 @@ logo = r"""
 
 # NOTE TO DEVS
 # If you change a minimum version below, please explicitly implement the change
-# in our minimum-reqs test in the file ./.github/workflows/pytest-depedency.yml
+# in our minimum-reqs test in the file ./.github/workflows/pytest-dependency.yml
 # Please also add a section "Dependency changes" to the release notes
 REQUIREMENTS = [
     "argparse",
     "iam-units>=2020.4.21",
     "numpy>=1.19.0",
     "requests",
+    "openpyxl",
     "pandas>=1.1.1",
     "pint",
     "PyYAML",
     "matplotlib>=3.2.0",
     "seaborn",
     "six",
-    "xlrd<2.0",
+    "xlrd>=2.0",
 ]
 
 EXTRA_REQUIREMENTS = {
