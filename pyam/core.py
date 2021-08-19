@@ -1010,6 +1010,11 @@ class IamDataFrame(object):
         columns given in `mapping`. Renaming can only be applied to the `model`
         and `scenario` columns, or to other data coordinates simultaneously.
 
+        This function can also be used to compute region aggregations. This is
+        done by renaming several constituent regions to the same name of a
+        common aggregation region and then applying groupby and sum(). Note that
+        for this use case check_duplicates **must be** set to False.
+
         Parameters
         ----------
         mapping : dict or kwargs
