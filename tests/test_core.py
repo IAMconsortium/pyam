@@ -285,10 +285,10 @@ def test_equals_raises(test_pd_df):
     pytest.raises(ValueError, df.equals, test_pd_df)
 
 
-def test_get_item(test_df):
+@pytest.mark.parametrize("column", ["model", "variable"])
+def test_get_item(test_df, column):
     """Assert that getting a column from `data` via the direct getter works"""
-    pdt.assert_series_equal(test_df["model"], test_df.data["model"])
-    pdt.assert_series_equal(test_df["variable"], test_df.data["variable"])
+    pdt.assert_series_equal(test_df[column], test_df.data[column])
 
 
 def test_index(test_df_year):
