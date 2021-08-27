@@ -227,7 +227,9 @@ class IamDataFrame(object):
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
-        if set(_key_check).issubset(self.meta.columns):
+        if key == "value":
+            return pd.Series(self._data.values, name="value")
+        elif set(_key_check).issubset(self.meta.columns):
             return self.meta.__getitem__(key)
         else:
             return self.get_data_column(key)
