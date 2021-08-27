@@ -67,7 +67,7 @@ def replace_index_values(df, level, mapping, rows=None):
 
     # if no duplicate levels exist after replace, set new levels and return
     if len(index.levels[n]) == len(_unique_levels):
-        return index.set_levels(_levels, n)
+        return index.set_levels(_levels, level=n)
 
     # if duplicate levels exist, re-map the codes
     level_mapping = _unique_levels.get_indexer(_levels)
