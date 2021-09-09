@@ -342,8 +342,8 @@ def format_data(df, index, **kwargs):
     if df.empty:
         logger.warning("Formatted data is empty!")
 
-    df = format_time_col(sort_data(df, idx_cols), time_col)
-    return df.set_index(idx_cols).value, index, time_col, extra_cols
+    df = format_time_col(df, time_col)
+    return df.set_index(idx_cols).sort_index().value, index, time_col, extra_cols
 
 
 def format_time_col(data, time_col):
