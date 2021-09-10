@@ -80,7 +80,7 @@ def test_init_df_with_float_cols_raises(test_pd_df):
 def test_init_df_with_duplicates_raises(test_df):
     _df = test_df.timeseries()
     _df = _df.append(_df.iloc[0]).reset_index()
-    match = "3  model_a   scen_a  World  Primary Energy  EJ/yr"
+    match = "0  model_a   scen_a  World  Primary Energy  EJ/yr"
     with pytest.raises(ValueError, match=match):
         IamDataFrame(_df)
 
