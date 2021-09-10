@@ -331,19 +331,25 @@ def format_data(df, index, **kwargs):
     # verify that there are no nan's left (in columns)
     null_rows = df.isnull().values
     if null_rows.any():
-        _raise_data_error("empty cells in `data`", df.loc[null_rows])
+        _raise_data_error("Empty cells in `data`", df.loc[null_rows])
 
-    # check for duplicates and empty data
+    # format the time-column
+    df = format_time_col(df, time_col)
+
+    # cast to pd.Series, check for duplicates
     idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
-    rows = df[idx_cols].duplicated()
+    df = df.set_index(idx_cols).value
+
+    rows = df.index.duplicated()
     if any(rows):
-        _raise_data_error("duplicate rows in `data`", df.loc[rows, idx_cols])
+        _raise_data_error(
+            "Duplicate rows in `data`", df[rows].index.to_frame(index=False)
+        )
 
     if df.empty:
         logger.warning("Formatted data is empty!")
 
-    df = format_time_col(df, time_col)
-    return df.set_index(idx_cols).sort_index().value, index, time_col, extra_cols
+    return df.sort_index(), index, time_col, extra_cols
 
 
 def format_time_col(data, time_col):
