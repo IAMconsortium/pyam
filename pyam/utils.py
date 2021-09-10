@@ -329,9 +329,10 @@ def format_data(df, index, **kwargs):
     df.loc[df.unit.isnull(), "unit"] = ""
 
     # verify that there are no nan's left (in columns)
-    null_rows = df.isnull().values
+    null_rows = df.isnull().T.any()
     if null_rows.any():
         _raise_data_error("Empty cells in `data`", df.loc[null_rows])
+    del null_rows
 
     # format the time-column
     df = format_time_col(df, time_col)
