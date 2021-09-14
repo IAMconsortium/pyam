@@ -6,6 +6,7 @@ The dependencies were updated to require `xlrd>=2.0` (previously `<2.0`) and `op
 
 ## Individual updates
 
+- [#579](https://github.com/IAMconsortium/pyam/pull/579) Increase performance of IamDataFrame initialization
 - [#572](https://github.com/IAMconsortium/pyam/pull/572) Unpinned the requirements for xlrd and added openpyxl as a requirement to ensure ongoing support of both `.xlsx` and `.xls` files out of the box
 
 # Release v1.1.0
