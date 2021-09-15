@@ -8,6 +8,7 @@ import datetime
 import dateutil
 import time
 
+from pyam.logging import raise_data_error
 import numpy as np
 import pandas as pd
 from collections.abc import Iterable
@@ -348,13 +349,13 @@ def format_data(df, index, **kwargs):
     data_index = df.index.to_frame(index=False)
     null_rows = data_index.isnull().T.any()
     if null_rows.any():
-        _raise_data_error("Empty cells in `data`", data_index.loc[null_rows])
+        raise_data_error("Empty cells in `data`", data_index.loc[null_rows])
     del data_index, null_rows
 
     # check for duplicates
     rows = df.index.duplicated()
     if any(rows):
-        _raise_data_error(
+        raise_data_error(
             "Duplicate rows in `data`", df[rows].index.to_frame(index=False)
         )
     del rows
@@ -371,14 +372,6 @@ def format_time_col(data, time_col):
     elif time_col == "time":
         data["time"] = pd.to_datetime(data["time"])
     return data
-
-
-def _raise_data_error(msg, data):
-    """Utils function to format error message from data formatting"""
-    data = data.drop_duplicates()
-    msg = f"{msg}:\n{data.head()}" + ("\n..." if len(data) > 5 else "")
-    logger.error(msg)
-    raise ValueError(msg)
 
 
 def sort_data(data, cols):

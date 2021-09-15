@@ -51,7 +51,6 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS,
-    _raise_data_error,
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
@@ -74,7 +73,7 @@ from pyam.index import (
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam._debiasing import _compute_bias
-from pyam.logging import deprecation_warning
+from pyam.logging import deprecation_warning, raise_data_error
 
 logger = logging.getLogger(__name__)
 
@@ -1089,7 +1088,7 @@ class IamDataFrame(object):
         has_duplicates = any(duplicate_rows)
 
         if has_duplicates and check_duplicates:
-            _raise_data_error(
+            raise_data_error(
                 "Conflicting data rows after renaming "
                 "(use `aggregate()` or `check_duplicates=False` instead)",
                 _data_index[duplicate_rows].to_frame(index=False),

@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from .utils import _raise_data_error, isstr
-
+from pyam.logging import raise_data_error
 
 def get_index_levels(index, level):
     """Return the category-values for a specific level"""
@@ -85,7 +84,7 @@ def append_index_col(index, values, name, order=False):
 
 def append_index_level(index, codes, level, name, order=False):
     """Append a level to a pd.MultiIndex"""
-    if isstr(level):
+    if isinstance(level, str):
         level = [level]
         codes = [codes] * len(index.codes[0])
 
@@ -114,6 +113,6 @@ def verify_index_integrity(df):
     if not index.is_unique:
         overlap = index[index.duplicated()].unique()
 
-        _raise_data_error(
+        raise_data_error(
             "Timeseries data has overlapping values", overlap.to_frame(index=False)
         )

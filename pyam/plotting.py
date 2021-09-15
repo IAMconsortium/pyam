@@ -20,8 +20,8 @@ from pyam.utils import (
     YEAR_IDX,
     isstr,
     to_list,
-    _raise_data_error,
 )
+from pyam.logging import raise_data_error
 from pyam.index import get_index_levels
 
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
@@ -235,7 +235,7 @@ def reshape_mpl(df, x, y, idx_cols, **kwargs):
     # check for duplicates
     rows = df[idx_cols].duplicated()
     if any(rows):
-        _raise_data_error("Duplicates in plot data", df.loc[rows, idx_cols])
+        raise_data_error("Duplicates in plot data", df.loc[rows, idx_cols])
 
     # reshape the data
     df = df.set_index(idx_cols)[y].unstack(x).T
