@@ -9,6 +9,8 @@ import dateutil
 import time
 
 from pyam.logging import raise_data_error
+from pyam.index import append_index_col
+
 import numpy as np
 import pandas as pd
 from collections.abc import Iterable
@@ -334,11 +336,9 @@ def format_data(df, index, **kwargs):
             ignore_index=False,
         )
         df = format_time_col(df, time_col)
-        df.set_index([time_col], append=True, inplace=True)
+        order = index + REQUIRED_COLS + [time_col] + extra_cols
+        df.index = append_index_col(df.index, df[time_col], time_col, order=order)
         df = df.value
-        df.index = df.index.reorder_levels(
-            index + REQUIRED_COLS + [time_col] + extra_cols
-        )
 
     # drop nan and cast value column to numeric
     df.dropna(inplace=True)
