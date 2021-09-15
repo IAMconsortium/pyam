@@ -276,8 +276,12 @@ def format_data(df, index, **kwargs):
     if missing_required_col:
         raise ValueError(f"Missing required columns: {missing_required_col}")
 
+    # replace missing units by an empty string for user-friendly filtering
+    df.loc[df.unit.isnull(), "unit"] = ""
+
     # check whether data in wide format (IAMC) or long format (`value` column)
     if "value" in df.columns:
+
         # check if time column is given as `year` (int) or `time` (datetime)
         if "year" in df.columns:
             time_col = "year"
@@ -290,6 +294,12 @@ def format_data(df, index, **kwargs):
             for c in df.columns
             if c not in index + REQUIRED_COLS + [time_col, "value"]
         ]
+
+        # cast to indexed pd.Series
+        df = format_time_col(df, time_col)
+        df.set_index(index + REQUIRED_COLS + [time_col] + extra_cols, inplace=True)
+        df = df.value
+
     else:
         # if in wide format, check if columns are years (int) or datetime
         cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
@@ -312,35 +322,36 @@ def format_data(df, index, **kwargs):
             melt_cols = time_cols
         else:
             raise ValueError("Invalid time format, must be either years or `datetime`!")
-        cols = index + REQUIRED_COLS + extra_cols
+
+        # cast to long format and indexed pd.Series
+        df.set_index(index + REQUIRED_COLS + extra_cols, inplace=True)
         df = pd.melt(
             df,
-            id_vars=cols,
             var_name=time_col,
             value_vars=sorted(melt_cols),
             value_name="value",
+            ignore_index=False,
+        )
+        df = format_time_col(df, time_col)
+        df.set_index([time_col], append=True, inplace=True)
+        df = df.value
+        df.index = df.index.reorder_levels(
+            index + REQUIRED_COLS + [time_col] + extra_cols
         )
 
-    # cast value column to numeric and drop nan
-    df["value"] = df["value"].astype("float64")
-    df.dropna(inplace=True, subset=["value"])
+    # drop nan and cast value column to numeric
+    df.dropna(inplace=True)
+    if df.dtype != "float64":
+        df = df.astype("float64")
 
-    # replace missing units by an empty string for user-friendly filtering
-    df.loc[df.unit.isnull(), "unit"] = ""
-
-    # verify that there are no nan's left (in columns)
-    null_rows = df.isnull().T.any()
+    # verify that there are no nan's left in the index
+    data_index = df.index.to_frame(index=False)
+    null_rows = data_index.isnull().T.any()
     if null_rows.any():
-        _raise_data_error("Empty cells in `data`", df.loc[null_rows])
-    del null_rows
+        _raise_data_error("Empty cells in `data`", data_index.loc[null_rows])
+    del data_index, null_rows
 
-    # format the time-column
-    df = format_time_col(df, time_col)
-
-    # cast to pd.Series, check for duplicates
-    idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
-    df = df.set_index(idx_cols).value
-
+    # check for duplicates
     rows = df.index.duplicated()
     if any(rows):
         _raise_data_error(
