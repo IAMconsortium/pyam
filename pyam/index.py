@@ -3,6 +3,7 @@ import numpy as np
 
 from pyam.logging import raise_data_error
 
+
 def get_index_levels(index, level):
     """Return the category-values for a specific level"""
 
