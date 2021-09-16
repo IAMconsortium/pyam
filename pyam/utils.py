@@ -227,9 +227,7 @@ def format_data(df, index, **kwargs):
     # otherwise, rename columns or concat to IAMC-style or do a fill-by-value
     for col, value in kwargs.items():
         if col in df:
-            raise ValueError(
-                "conflict of kwarg with column `{}` in dataframe!".format(col)
-            )
+            raise ValueError(f"Conflict of kwarg with column `{col}` in dataframe!")
 
         if isstr(value) and value in df:
             df.rename(columns={value: col}, inplace=True)
@@ -239,7 +237,7 @@ def format_data(df, index, **kwargs):
         elif isstr(value):
             df[col] = value
         else:
-            raise ValueError("invalid argument for casting `{}: {}`".format(col, value))
+            raise ValueError(f"Invalid argument for casting `{col}: {value}`")
 
     # all lower case
     str_cols = [c for c in df.columns if isstr(c)]
