@@ -296,7 +296,7 @@ def format_data(df, index, **kwargs):
             if c not in index + REQUIRED_COLS + [time_col, "value"]
         ]
 
-        # cast to indexed pd.Series
+        # cast to indexed pd.Series  (set index inplace to save memory)
         df = format_time_col(df, time_col)
         df.set_index(index + REQUIRED_COLS + [time_col] + extra_cols, inplace=True)
         df = df.value
@@ -324,7 +324,7 @@ def format_data(df, index, **kwargs):
         else:
             raise ValueError("Invalid time format, must be either years or `datetime`!")
 
-        # cast to long format and indexed pd.Series
+        # cast to long format and indexed pd.Series (set index inplace to save memory)
         df.set_index(index + REQUIRED_COLS + extra_cols, inplace=True)
         df = pd.melt(
             df,
@@ -335,6 +335,7 @@ def format_data(df, index, **kwargs):
         )
         df = format_time_col(df, time_col)
         order = index + REQUIRED_COLS + [time_col] + extra_cols
+        # observed huge memory usage when using `set_index(append=True)`
         df.index = append_index_col(df.index, df[time_col], time_col, order=order)
         df = df.value
 
@@ -348,7 +349,7 @@ def format_data(df, index, **kwargs):
     null_rows = data_index.isnull().T.any()
     if null_rows.any():
         raise_data_error("Empty cells in `data`", data_index.loc[null_rows])
-    del data_index, null_rows
+    del data_index, null_rows  # save memory when processing large files
 
     # check for duplicates
     rows = df.index.duplicated()
@@ -356,7 +357,7 @@ def format_data(df, index, **kwargs):
         raise_data_error(
             "Duplicate rows in `data`", df[rows].index.to_frame(index=False)
         )
-    del rows
+    del rows   # save memory when processing large files
     if df.empty:
         logger.warning("Formatted data is empty!")
 
