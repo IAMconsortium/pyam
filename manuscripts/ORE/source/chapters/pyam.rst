@@ -11,14 +11,20 @@ The central paradigm for implementing this aim is to leverage the structure of t
 model (see the following section) for common operations such as unit conversion
 or aggregation along sectoral, regional and temporal dimensions.
 
-We see this package as serving two distinct groups:
-*experienced Python users* requiring a versatile and powerful solution,
-whose natural tendency would be to reimplement
+We see this package as serving several groups:
+*experienced Python users*, whose natural tendency would be to reimplement
 any data processing step directly in a general-purpose data analysis package like
 pandas or numpy; and users with *domain expertise but limited Python knowledge*,
-who appreciate a simple and intuitive interface.
-To make matters even more complicated, it is important to remain aware that users
-will always have requirements that cannot be realistically met by any single package.
+who appreciate a package enabling a wide range of data processing actions and
+providing simple commands to perform common tasks.
+
+The package should be equally suitable for modellers generating scenario results with
+their own modelling frameworks, as well as researchers or analysts working
+with scenario ensemble data compiled by other research groups or institutions.
+Also, it is important to remain aware that users will always have requirements that
+cannot be realistically met by any single package.
+Therefore, the implementation should support a modular approach and efficient
+integration of the pyam package with other tools for data processing and analysis.
 
 To reconcile these competing interests, we decided to follow the design of the pandas
 package as closely as possible.
@@ -34,7 +40,7 @@ and then continue with pyam functions.
 
 To further accommodate the alternative user groups, we implemented several tools
 for community engagement: experienced users will find it most convenient to interact
-via the GitHub repository;
+via the `GitHub repository <https://github.com/iamconsortium/pyam>`_;
 for users with limited experience in collaborative (scientific) software development,
 an email list hosted by `groups.io <https://pyam.groups.io/>`_ and a Slack channel
 provide a less daunting avenue to ask questions or suggest new features.
@@ -65,18 +71,41 @@ that define a storyline or pathway;
 it can also refer to the implementation of a scenario protocol
 in a specific numerical modelling framework, which is then called a "scenario run".
 
+For example, in the `CD-LINKS`_ project (started in 2015), researchers agreed on a
+protocol for a "NPi2020-1000" scenario, assuming that each region or country maintains
+implemented policies until 2020 and then follows a pathway limiting cumulative global
+greenhouse gas emissions until the end of the century to 1000 Gt CO2-equivalent.
+This protocol was then implemented in six numerical modelling frameworks
+(MESSAGEix-GLOBIOM, REMIND-MAgPIE, etc.).
+Therefore, in the `IAMC 1.5°C scenario explorer`_, there are six alternative
+implementations (i.e., runs) of the "NPi2020-1000" scenario protocol.
+
+The IamDataFrame class
+^^^^^^^^^^^^^^^^^^^^^^
+
+The pyam data model follows the structure of the IAMC format introduced in the previous
+section, but it generalises its design to support a broader range of use cases.
 An **IamDataFrame** is a structured collection of numerical implementations of
 *scenarios* (i.e., scenario runs).
+
 Each scenario is identified by an *index*; the standard index dimensions are
-'model' (the modelling framework) and 'scenario' (i.e., the scenario protocol).
-Thus, by design, it is setup to facilitate model/scenario comparison and analysis.
+'model' and 'scenario', where the scenario identifier is understood
+as a scenario protocol (as explained above) or another descriptive name.
+The model identifier usually refers to one of the following types:
+
+ - an integrated assessment, macro-energy or energy systems model
+ - a (simple) climate model
+ - a reference data source, e.g., IEA Statistics for historical data
+ - a descriptor of the way multiple models were aggregated to make this timeseries
+   (e.g. multi-model mean)
 
 Timeseries data
 ^^^^^^^^^^^^^^^
 
 Each timeseries data point is identified by the index dimensions of the IamDataFrame,
 the *coordinate* columns 'region', 'variable', 'unit', and a temporal coordinate.
-The time domain can be yearly data ('year') or a continuous date-time format ('time').
+The time domain can be yearly data ('year') or a continuous date-time format ('time')
+to work with sub-annual data, e.g., scenarios with hourly resolution.
 It is also possible to add *extra-columns* when more fine-grained indexing is required.
 This feature can be used to describe "representative timeslices"
 (e.g., *summer-day*, *peak-hour*),
@@ -120,6 +149,36 @@ Operation and features
 
 The features of the pyam package can by broadly categorized into three groups:
 scenario processing, validation, and visualization.
+But before discussing these features, we briefly illustrate how to start working
+with the package.
+
+Getting started
+^^^^^^^^^^^^^^^
+
+The pyam package can be used with any kind of scenario results or reference data
+that has a sectoral, temporal and regional dimension.
+Even if the dimension only has a unique value (e.g., a global model without regional
+disaggregation), it often makes sense to specify this information explicitly -
+in pyam, this would be done by setting the region dimension to "World".
+This will simplify expanding the level of details later on.
+
+An IamDataFrame can be initialized directly from a pandas DataFrame or an xlsx/csv file.
+The data must be given in a structure compatible with the pyam data model,
+but the package will accept numerous implementations and cast it to a valid format.
+For example, it works with data in *wide* or *long* format (see the previous section),
+and it will takes columns headers that are capitalized ("Model") or not ("model").
+It is also possible to pass missing timeseries data columns as keyword arguments,
+e.g., :code:`region="World"`.
+The `tutorial on data table formats`_ illustrates the various table structures that
+can be used to initialize an IamDataFrame.
+There is also a tutorial to `read results from a GAMS gdx file`_ for further processing.
+
+.. _`tutorial on data table formats` : https://pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.html
+
+.. _`read results from a GAMS gdx file` : https://pyam-iamc.readthedocs.io/en/stable/tutorials/GAMS_to_pyam.html
+
+In addition to xslx and csv file types, the pyam package also supports reading from and
+writing to the `frictionless datapackage <https://frictionlessdata.io>`_ format.
 
 Scenario processing
 ^^^^^^^^^^^^^^^^^^^
@@ -201,8 +260,10 @@ For example, the simplest possible function call is :code:`df.plot()`
 (without any arguments), which draws a line plot using the time domain as the x-axis -
 this is arguable the most common use case for scenario data.
 
-The plotting library also supports specifying styles (colors, markers, etc.)
-for categories, which can then be used directly as arguments in the plotting methods.
+The plotting library supports all common plot types including (stacked) line, bar and
+pie charts, boxplots, scatter plots and sankey diagrams.
+It also supports specifying styles (colors, markers, etc.) grouped by data coordinates
+or meta indicators, which can then be used directly as arguments in the plotting methods.
 :numref:`figwarming` from the `first-steps tutorial`_
 illustrates this feature, where warming categories and respective colors
 have been defined as part of the script.
@@ -223,12 +284,13 @@ have been defined as part of the script.
 
 The pyam package has implementations of several plot types, with a behavior and
 function signatures following the underlying pandas, matplotlib or seaborn methods.
-Visit the `gallery`_ and read the comprehensive `plotting documentation`_
-for an up-to-date overview!
+Comprehensive documentation of the plotting functions can be found in
+the `gallery section`_ of the documentation.
 
 Last, but not least: by being based on the standard Python plotting libraries
 matplotlib and seaborn, the pyam plotting functions can be used directly
 in any more elaborate figure drawn with these packages.
+This is illustrated in the following code block.
 
 .. code-block:: python
 
@@ -246,23 +308,9 @@ in any more elaborate figure drawn with these packages.
 
 .. _`first-steps tutorial` : https://pyam-iamc.readthedocs.io/en/stable/tutorials/pyam_first_steps.html
 
-.. _`gallery` : https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html
+.. _`gallery section` : https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html
 
 .. _`plotting documentation` : https://pyam-iamc.readthedocs.io/en/stable/api/plotting.html
-
-Supported file formats and data types
--------------------------------------
-
-At the current stage, pyam supports reading from and writing to xlsx and csv files
-as well as the `frictionless datapackage <https://frictionlessdata.io>`_ format.
-An IamDataFrame can also be initialized from a pandas.DataFrame,
-so any pandas-compatible format is also implicitly supported by pyam.
-When initializing an IamDataFrame from a pandas DataFrame or reading from file,
-pyam will automatically try to cast wide and long table layouts to the expected format.
-It is also possible to pass missing columns as keyword arguments;
-see the `tutorial on data table formats`_ for details.
-
-.. _`tutorial on data table formats` : https://pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.html
 
 Integration with data resources
 -------------------------------

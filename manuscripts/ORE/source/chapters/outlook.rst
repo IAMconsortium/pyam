@@ -49,11 +49,18 @@ respond to bug reports.
 At the same time, there is an important role for (non-expert) users:
 suggesting new features to improve the usefulness of the package,
 contributing to the development of tutorials,
-and answering questions from new users via the community Slack channel and mailing list.
+and answering questions from new users via the community
+`Slack channel <https://pyam-iamc.slack.com>`_ and
+`mailing list <https://pyam.groups.io>`_.
 
-By virtue of being applied in several ongoing Horizon 2020 projects and the IPCC AR6 process,
+The just-starting Horizon 2020 project *European Climate and Energy Modelling Forum*
+(`ECEMF <https://ecemf.eu>`_) will develop model linkages and tools
+based on or compatible with the pyam package.
+By virtue of being applied in this and several other ongoing Horizon 2020 projects
+as well as the IPCC AR6 process,
 we are confident that the package will attract new users and continuously evolve
 to meet changing requirements for scenario analysis and data visualization.
+
 At the same time, the solid foundation of continuous-integration workflows,
 comprehensive test coverage and detailed documentation minimize the risk
 of inadvertently breaking existing scripts and causing frustration amongst
