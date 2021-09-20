@@ -13,7 +13,7 @@ pyam: analysis & visualization <br /> of integrated-assessment and macro-energy 
 [![ReadTheDocs](https://readthedocs.org/projects/pyam-iamc/badge/?version=latest)](https://pyam-iamc.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
 
-[![doi](https://zenodo.org/badge/113359260.svg)](https://zenodo.org/badge/latestdoi/113359260)
+[![doi](https://zenodo.org/badge/113359260.svg)](https://doi.org/10.5281/zenodo.1470400)
 [![ORE](https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.1-blue)](https://doi.org/10.12688/openreseurope.13633.1)
 [![joss](https://joss.theoj.org/papers/10.21105/joss.01095/status.svg)](https://joss.theoj.org/papers/10.21105/joss.01095)
 [![groups.io](https://img.shields.io/badge/listserv-groups.io-blue)](https://pyam.groups.io/g/forum)

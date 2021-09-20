@@ -38,7 +38,7 @@ Release v\ |version|.
    :target: https://codecov.io/gh/IAMconsortium/pyam
 
 .. |doi| image:: https://zenodo.org/badge/113359260.svg
-   :target: https://zenodo.org/badge/latestdoi/113359260
+   :target: https://doi.org/10.5281/zenodo.1470400
 
 .. |ore| image:: https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.1-blue
    :target: https://doi.org/10.12688/openreseurope.13633.1
