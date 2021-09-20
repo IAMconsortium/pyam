@@ -40,8 +40,8 @@ Release v\ |version|.
 .. |doi| image:: https://zenodo.org/badge/113359260.svg
    :target: https://doi.org/10.5281/zenodo.1470400
 
-.. |ore| image:: https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.1-blue
-   :target: https://doi.org/10.12688/openreseurope.13633.1
+.. |ore| image:: https://img.shields.io/badge/ORE-10.12688/openreseurope.13633.2-blue
+   :target: https://doi.org/10.12688/openreseurope.13633.2
 
 .. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
    :target: https://joss.theoj.org/papers/10.21105/joss.01095
@@ -142,7 +142,7 @@ Published to mark the first major release of the |pyam| package.
     Lara Welder, Erik Francisco Álvarez Quispe, and Christopher J. Smith.
   | *pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
   | **Open Research Europe**, 2021.
-    doi: `10.12688/openreseurope.13633.1 <https://doi.org/10.12688/openreseurope.13633.1>`_
+    doi: `10.12688/openreseurope.13633.2 <https://doi.org/10.12688/openreseurope.13633.2>`_
 
 Release v0.1.2 (November 2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
