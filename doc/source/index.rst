@@ -129,6 +129,10 @@ Scientific publications
 
 The following manuscripts describe the package at specific stages of development.
 
+The source documents are available in the manuscripts_ folder of the GitHub repository.
+
+.. _manuscripts: https://github.com/IAMconsortium/pyam/tree/main/manuscripts
+
 Release v1.0 (June 2021)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -147,7 +151,7 @@ Published to mark the first major release of the |pyam| package.
 Release v0.1.2 (November 2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Published following the successful application of **pyam**
+Published following the successful application of |pyam|
 in the IPCC SR15 and the Horizon 2020 CRESCENDO project.
 
 .. highlights::

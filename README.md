@@ -103,6 +103,10 @@ Scientific publications
 The following manuscripts describe the **pyam** package
 at specific stages of development.
 
+The source documents are available in
+the [manuscripts](https://github.com/IAMconsortium/pyam/tree/main/manuscripts) folder
+of the GitHub repository.
+
 ### Release v1.0 (June 2021)
 
 Published to mark the first major release of the **pyam** package.
