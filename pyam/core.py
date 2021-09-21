@@ -607,7 +607,7 @@ class IamDataFrame(object):
             raise ValueError(f"The `time` argument {time} contains non-integers")
 
         old_cols = list(ret[ret.time_col].unique())
-        columns = np.sort(np.unique(old_cols + time))
+        columns = np.unique(np.concatenate([old_cols, time]))
 
         # calculate a separate dataframe with full interpolation
         df = ret.timeseries()
