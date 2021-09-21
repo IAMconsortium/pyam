@@ -42,6 +42,7 @@ from pyam.utils import (
     hour_match,
     day_match,
     datetime_match,
+    to_list,
     isstr,
     islistable,
     print_list,
@@ -596,12 +597,12 @@ class IamDataFrame(object):
         ret = self.copy() if not inplace else self
         interp_kwargs = dict(method="slinear", axis=1)
         interp_kwargs.update(kwargs)
-        time = list(time) if islistable(time) else [time]
+        time = to_list(time)
         # TODO - have to explicitly cast to numpy datetime to sort later,
         # could enforce as we do for year below
         if self.time_col == "time":
             time = list(map(np.datetime64, time))
-        elif not all(isinstance(x, int) for x in time):
+        elif not all(isinstance(x, (int, np.integer)) for x in time):
             raise ValueError(f"The `time` argument {time} contains non-integers")
 
         old_cols = list(ret[ret.time_col].unique())

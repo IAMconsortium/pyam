@@ -518,9 +518,8 @@ def _escape_regexp(s):
 
 def years_match(data, years):
     """Return rows where data matches year"""
-    years = [years] if (isinstance(years, (int, np.int64))) else years
-    dt = (datetime.datetime, np.datetime64)
-    if isinstance(years, dt) or isinstance(years[0], dt):
+    years = to_list(years)
+    if isinstance(years[0], (datetime.datetime, np.datetime64)):
         error_msg = "Filter by `year` requires integers!"
         raise TypeError(error_msg)
     return np.isin(data, years)
@@ -538,7 +537,7 @@ def day_match(data, days):
 
 def hour_match(data, hours):
     """Return rows where data matches hours"""
-    hours = [hours] if isinstance(hours, int) else hours
+    hours = to_list(hours)
     return np.isin(data, hours)
 
 
@@ -561,7 +560,7 @@ def time_match(data, times, conv_codes, strptime_attr, name):
         except NameError:
             raise ValueError("Could not convert {} to integer".format(name))
 
-    times = [times] if isinstance(times, (int, str)) else times
+    times = to_list(times)
     if isinstance(times[0], str):
         to_delete = []
         to_append = []
@@ -590,8 +589,8 @@ def time_match(data, times, conv_codes, strptime_attr, name):
 
 def datetime_match(data, dts):
     """Matching of datetimes in time columns for data filtering"""
-    dts = dts if islistable(dts) else [dts]
-    if any([not (isinstance(i, (datetime.datetime, np.datetime64))) for i in dts]):
+    dts = to_list(dts)
+    if not all(isinstance(i, (datetime.datetime, np.datetime64)) for i in dts):
         error_msg = "`time` can only be filtered by datetimes and datetime64s"
         raise TypeError(error_msg)
     return data.isin(dts).values
