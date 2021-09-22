@@ -1,3 +1,4 @@
+import pytest
 from pyam import IamDataFrame, IAMC_IDX
 import pandas as pd
 
@@ -12,5 +13,6 @@ TEST_DF = pd.DataFrame(
 )
 
 
-def test_init():
-    IamDataFrame(TEST_DF)
+@pytest.mark.parametrize("data", [TEST_DF])
+def test_init(data):
+    IamDataFrame(data)
