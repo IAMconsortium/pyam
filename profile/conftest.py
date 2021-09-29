@@ -18,6 +18,7 @@ TEST_FRAMES = [TEST_DF] + [
     pd.read_excel(f, sheet_name="data") for f in DATA_PATH.glob("*.xlsx")
 ]
 
+
 @pytest.fixture(scope="function", params=TEST_FRAMES)
 def data(request):
     return request.param
