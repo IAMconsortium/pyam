@@ -357,7 +357,7 @@ def format_data(df, index, **kwargs):
         raise_data_error(
             "Duplicate rows in `data`", df[rows].index.to_frame(index=False)
         )
-    del rows   # save memory when processing large files
+    del rows  # save memory when processing large files
     if df.empty:
         logger.warning("Formatted data is empty!")
 
