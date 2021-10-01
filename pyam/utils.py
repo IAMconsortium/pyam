@@ -8,6 +8,7 @@ import datetime
 import dateutil
 import time
 
+from pyam.logging import raise_data_error
 import numpy as np
 import pandas as pd
 from collections.abc import Iterable
@@ -224,9 +225,7 @@ def format_data(df, index, **kwargs):
     # otherwise, rename columns or concat to IAMC-style or do a fill-by-value
     for col, value in kwargs.items():
         if col in df:
-            raise ValueError(
-                "conflict of kwarg with column `{}` in dataframe!".format(col)
-            )
+            raise ValueError(f"Conflict of kwarg with column `{col}` in dataframe!")
 
         if isstr(value) and value in df:
             df.rename(columns={value: col}, inplace=True)
@@ -236,7 +235,7 @@ def format_data(df, index, **kwargs):
         elif isstr(value):
             df[col] = value
         else:
-            raise ValueError("invalid argument for casting `{}: {}`".format(col, value))
+            raise ValueError(f"Invalid argument for casting `{col}: {value}`")
 
     # all lower case
     str_cols = [c for c in df.columns if isstr(c)]
@@ -360,14 +359,6 @@ def format_time_col(data, time_col):
     elif time_col == "time":
         data["time"] = pd.to_datetime(data["time"])
     return data
-
-
-def _raise_data_error(msg, data):
-    """Utils function to format error message from data formatting"""
-    data = data.drop_duplicates()
-    msg = f"{msg}:\n{data.head()}" + ("\n..." if len(data) > 5 else "")
-    logger.error(msg)
-    raise ValueError(msg)
 
 
 def sort_data(data, cols):
