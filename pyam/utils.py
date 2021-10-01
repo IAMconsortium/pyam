@@ -330,7 +330,7 @@ def format_data(df, index, **kwargs):
     # verify that there are no nan's left (in columns)
     null_rows = df.isnull().T.any()
     if null_rows.any():
-        _raise_data_error("Empty cells in `data`", df.loc[null_rows])
+        raise_data_error("Empty cells in `data`", df.loc[null_rows])
     del null_rows
 
     # format the time-column
@@ -342,7 +342,7 @@ def format_data(df, index, **kwargs):
 
     rows = df.index.duplicated()
     if any(rows):
-        _raise_data_error(
+        raise_data_error(
             "Duplicate rows in `data`", df[rows].index.to_frame(index=False)
         )
     del rows
