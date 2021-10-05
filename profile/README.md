@@ -4,8 +4,7 @@ This module provides utility code to run benchmarking on features of pyam.
 
 ## Dependencies and usage
 
-The profiling module uses [pytest-monitor](https://pytest-monitor.readthedocs.io)
-package.
+This module uses the [pytest-monitor](https://pytest-monitor.readthedocs.io) package.
 
 ### Installation
 
@@ -19,7 +18,7 @@ pip install pytest-monitor
 ### Usage
 
 The **pytest-monitor** package is executed automatically (if installed) when
-running **pytest**, writing metrics for each test to an SQLite database (``.pymon``).
+running **pytest**, writing metrics for each test to a SQLite database (``.pymon``).
 To use the profiling module, navigate to the `profile` folder and run pytest.
 Then, ``profile_report.py`` prints metrics of the latest session to the command line.
 
