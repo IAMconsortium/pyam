@@ -2,6 +2,19 @@
 
 This module provides utility code to run benchmarking on features of pyam.
 
+### *Work in progress!*
+
+This module is in an experimental stage.
+We are currently investigating additional/alternative packages for benchmarking
+and profiling, and the preferred solution may change at any time.
+
+**To-do** 
+
+Required steps to make this module a full part of the pyam package:
+
+- Include module dependencies as extra-requirements of the installation
+- Migrate gitignore from this folder to the main gitignore file
+
 ## Dependencies and usage
 
 This module uses the [pytest-monitor](https://pytest-monitor.readthedocs.io) package.
