@@ -1,7 +1,7 @@
 import dateutil
 import pandas as pd
 from pyam.index import append_index_col
-from pyam.utils import _raise_data_error
+from pyam.logging import raise_data_error
 
 
 def swap_time_for_year(df, inplace, subannual=False):
@@ -34,7 +34,7 @@ def swap_time_for_year(df, inplace, subannual=False):
     rows = index.duplicated()
     if any(rows):
         error_msg = "Swapping time for year causes duplicates in `data`"
-        _raise_data_error(error_msg, index[rows].to_frame().reset_index(drop=True))
+        raise_data_error(error_msg, index[rows].to_frame().reset_index(drop=True))
 
     # assign data and other attributes
     ret._data.index = index
