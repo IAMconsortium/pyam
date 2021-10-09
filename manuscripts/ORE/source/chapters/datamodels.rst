@@ -1,11 +1,21 @@
 Data models and formats used by the energy & climate modelling communities
 ==========================================================================
 
+When researchers in the domain of energy modelling and climate science hear the term
+"model", they usually think of numerical tools to compute results from given inputs.
+This section is about a different type of model.
+
 A "data model" is an abstract description of the structure of information.
-Numerous concepts are in use in the domain of integrated assessment,
-energy systems modelling and climate science.
-This section describes several commonly used concepts in the integrated-assessment
-community as well as energy systems, macro-energy and climate modelling.
+It can refer to timeseries data, static characteristics of technologies or resources,
+or any other numerical information. In its essence, a table with clear rules
+on the kind of values in each column is already a data model.
+
+Numerous concepts are in use in the domain of energy systems modelling and
+climate science to store reference data, facilitate exchange of data between models,
+or make results available to other users.
+This section describes commonly used data models and related formats in the
+integrated-assessment community as well as the domain of energy systems,
+macro-energy, and climate modelling.
 
 The IAMC format
 ---------------
@@ -128,6 +138,9 @@ lazy data handling.
 It should be noted that the ESMValTool supports programming languages other than Python,
 with the aim of being as open as possible.
 
+Bridging the gap between integrated assessment and climate science
+------------------------------------------------------------------
+
 Beyond the CMIP archive, there are a myriad of other data formats and conventions
 within the climate literature.
 Of these, the most relevant to the integrated-assessment community is
@@ -142,3 +155,8 @@ the assessment by Working Group 3 of the IPCC.
 To extract data from the CMIP archive into the scmdata format,
 the package `netCDF-SCM <https://gitlab.com/netcdf-scm/netcdf-scm>`_ was developed
 :cite:`Nicholls:2021:CMIPdata`.
+
+The pyam package was initiated based on the IAMC format and the work done to foster the
+link between the integrated-assessment community and the climate sciences.
+The following section describes the design principles of the package and
+the generalized data model for which it can be applied.
