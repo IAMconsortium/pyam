@@ -857,7 +857,7 @@ class IamDataFrame(object):
                 run_control().update({kind: {name: {value: arg}}})
         # find all data that matches categorization
         rows = _apply_criteria(self._data, criteria, in_range=True, return_test="all")
-        idx = _make_index(rows)
+        idx = _make_index(rows, cols=self.index.names)
 
         if len(idx) == 0:
             logger.info("No scenarios satisfy the criteria")
@@ -1661,7 +1661,11 @@ class IamDataFrame(object):
 
     def _exclude_on_fail(self, df):
         """Assign a selection of scenarios as `exclude: True` in meta"""
-        idx = df if isinstance(df, pd.MultiIndex) else _make_index(df)
+        idx = (
+            df
+            if isinstance(df, pd.MultiIndex)
+            else _make_index(df, cols=self.index.names)
+        )
         self.meta.loc[idx, "exclude"] = True
         logger.info(
             "{} non-valid scenario{} will be excluded".format(
@@ -1702,7 +1706,7 @@ class IamDataFrame(object):
         ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
 
-        idx = _make_index(ret._data)
+        idx = _make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
             logger.warning("Filtered IamDataFrame is empty!")
         ret.meta = ret.meta.loc[idx]
@@ -1734,7 +1738,9 @@ class IamDataFrame(object):
                     self.meta[col], values, regexp=regexp, has_nan=True
                 )
                 cat_idx = self.meta[matches].index
-                keep_col = _make_index(self._data, unique=False).isin(cat_idx)
+                keep_col = _make_index(
+                    self._data, cols=self.index.names, unique=False
+                ).isin(cat_idx)
             elif col == "year":
                 if self.time_col == "year":
                     _data = self.get_data_column(col)
