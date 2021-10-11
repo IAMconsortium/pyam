@@ -2,9 +2,12 @@ name: Publish
 
 on:
   push:
-    branches: [ main ]
+    # build the package on any push to a release-candidate branch
+    branches: [ "release/rc_v*" ]
+    # deploy to test-pypi on any push of a version tag
     tags: [ "v*" ]
   release:
+    # deploy to pypi when publishing a new release
     types: [ published ]
 
 jobs:
