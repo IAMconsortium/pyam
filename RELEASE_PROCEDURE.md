@@ -1,4 +1,3 @@
-
 # Release procedure
 
 ## Required accounts and admin privileges
@@ -9,11 +8,11 @@
 
 ## Steps for publishing a new release
 
-1. Make a release candidate branch (e.g., `release/rc_v<release version>`)
+1. Make a release candidate branch named `release/rc_v<release version>`
    and pull request it into `main` with the following updates:
    1. If it's the first release in a new year,
       search for `Copyright 2017` and bump the year
-   1. Deprecate any stated portion of the API
+   1. Deprecate any portion of the API marked for deprecation in this release
       (you can find them by searching the code base for "deprecate")
    1. Update `RELEASE_NOTES.md` (see the examples of previous releases)
 	  - replace "# Next Release" with "# Release v<release version>"
@@ -21,24 +20,27 @@
       - if applicable, add/review "## Dependency changes" and "## API changes" sections 
       - add a new heading "## Individual Updates" before the PR listing
   1. Confirm that the PR passes all tests and checks
-  1. Tag the release number: `git tag v<release version>`, e.g., `git tag v1.2.0`
-     - **THIS IS NOT THE TAGGED COMMIT WE WILL DISTRIBUTE, IT IS ONLY FOR TESTING**
-	 - **DO NOT PUSH THIS TAG TO UPSTREAM**
-  1. Run `make publish-on-testpypi`
-     - this should "just work" - if it does not, fix any issues,
-       retag (`git tag -d` then `git tag`), and try again
-  1. Once successful, delete the tag, and merge the candidate PR into `main` on Github
+  1. Tag the release candidate: `git tag v<release version>rc<n>`,
+     e.g., `git tag v1.2.0rc1`
+  1. Confirm that the "test-publish" workflow passed 
+     https://github.com/IAMconsortium/units/actions/workflows/test-publish.yml
+  1. Confirm that the release is published on https://test.pypi.org/project/pyam-iamc/
+     1. The package can be downloaded, installed and run
+     1. The README is rendered correctly
+  1. If there are any problems, fix the issues and repeat the step
+     "tagging the release candidate", bumping the release candidate number  
+  1. If successful, merge the candidate PR into `main` and then delete the branch
 1. Switch to the now-updated main branch: `git checkout main` and `git pull upstream main`
 1. Tag the release number: `git tag v<release version>`, e.g., `git tag v1.2.0`
    - `versioneer` automatically updates the version number based on the tag
    - this is now the official tagged commit
 1. Push the tag upstream: `git push upstream --tags`
-1. Run `make publish-on-pypi`
-   - this will make wheels that allow `pyam` to be installed via `pip install`
-   - check that the new version is available at https://pypi.org/project/pyam-iamc/
 1. Make a new release on Github
    - make sure that you choose the tag name defined above
    - copy the release summary from `RELEASE_NOTES.md` into the description box
+1. Confirm that the "publish" workflow passed 
+   https://github.com/IAMconsortium/units/actions/workflows/publish.yml
+1. Confirm that the release is published on https://www.pypi.org/project/pyam-iamc/
 1. Update on `conda-forge`
    - a PR should automatically be opened by the bot after the Github release
    - confirm that any new depedencies are included,
@@ -50,7 +52,7 @@
    - both the **latest** and the **stable** versions point to the new release
    - the new release has been added to the list of available versions
 1. Add a new line "# Next Release" at the top of `RELEASE_NOTES.md` and commit to `main`
-1. Announce it on our mailing list: https://groups.io/g/pyam
+1. Announce it on our mailing list https://pyam.groups.io & social media (`#pyam_iamc`)
    - again, copy the rendered HTML from the Github release directly in the email
 
 And that's it! Whew...
