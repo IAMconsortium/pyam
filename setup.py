@@ -1,6 +1,5 @@
-import versioneer
-from setuptools import setup, Command
-from subprocess import call
+from setuptools import setup
+
 
 # Thanks to http://patorjk.com/software/taag/
 logo = r"""
@@ -59,29 +58,6 @@ except FileNotFoundError:
     LONG_DESCRIPTION = ""
 
 
-# thank you https://stormpath.com/blog/building-simple-cli-interfaces-in-python
-class RunTests(Command):
-    """Run all tests."""
-
-    description = "run tests"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        """Run all tests!"""
-        errno = call(["py.test", "--cov=skele", "--cov-report=term-missing"])
-        raise SystemExit(errno)
-
-
-CMDCLASS = versioneer.get_cmdclass()
-CMDCLASS.update({"test": RunTests})
-
-
 def main():
     print(logo)
     description = "Analysis & visualization of integrated-assessment scenarios"
@@ -106,8 +82,6 @@ def main():
     extra_requirements = EXTRA_REQUIREMENTS
     setup_kwargs = dict(
         name="pyam-iamc",
-        version=versioneer.get_version(),
-        cmdclass=CMDCLASS,
         description=description,
         classifiers=classifiers,
         license="Apache License 2.0",
@@ -123,7 +97,7 @@ def main():
         install_requires=install_requirements,
         extras_require=extra_requirements,
     )
-    setup(**setup_kwargs)
+    setup(**setup_kwargs, use_scm_version=True)
 
 
 if __name__ == "__main__":
