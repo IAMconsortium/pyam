@@ -1,4 +1,6 @@
 import logging
+from pathlib import Path
+from setuptools_scm import get_version
 
 from pyam.core import *
 from pyam.utils import *
@@ -15,6 +17,9 @@ from pyam.testing import assert_iamframe_equal
 from pyam.logging import defer_logging_config
 
 logger = logging.getLogger(__name__)
+
+# get version number
+__version__ = get_version(Path(__file__).parent.parent)
 
 # in Jupyter notebooks: disable autoscroll and set-up logging
 try:
