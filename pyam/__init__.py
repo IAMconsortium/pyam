@@ -1,7 +1,13 @@
 import logging
 from pathlib import Path
 from setuptools_scm import get_version
-from importlib.metadata import version
+
+# use standard library for Python >=3.8
+try:
+    from importlib.metadata import version
+# use dedicated package for Python 3.7
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 from pyam.core import *
 from pyam.utils import *
