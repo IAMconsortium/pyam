@@ -77,7 +77,7 @@ virtual-environment: $(VENV_DIR)  ## make virtual environment for development
 
 $(VENV_DIR):
 	$(VENV_DIR)/bin/pip install --upgrade pip
-	$(VENV_DIR)/bin/pip install -e .[tests,optional-io-formats]
+	$(VENV_DIR)/bin/pip install -e .[tests,optional_io_formats]
 	$(CONDA_EXE) env update --name $(CONDA_DEFAULT_ENV) --file $(DOC_ENVIRONMENT_CONDA_FILE)
 
 	touch $(VENV_DIR)
