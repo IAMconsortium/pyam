@@ -4,10 +4,10 @@ from setuptools_scm import get_version
 
 # use standard library for Python >=3.8
 try:
-    from importlib.metadata import version
+    from importlib.metadata import version, PackageNotFoundError
 # use dedicated package for Python 3.7
 except ModuleNotFoundError:
-    from importlib_metadata import version
+    from importlib_metadata import version, PackageNotFoundError
 
 from pyam.core import *
 from pyam.utils import *
@@ -31,7 +31,8 @@ try:
 except LookupError:
     try:
         __version__ = version("pyam-iamc")
-    except:  # the package is distributed under different names on pypi and conda
+    # the pyam package is distributed under different names on pypi and conda
+    except PackageNotFoundError:
         __version__ = version("pyam")
 
 # in Jupyter notebooks: disable autoscroll and set-up logging
