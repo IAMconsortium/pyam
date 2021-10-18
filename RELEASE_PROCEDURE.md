@@ -23,7 +23,7 @@
   1. Tag the release candidate `git tag v<release version>rc<n>`,
      e.g., `git tag v1.2.0rc1`, and push to the upstream repository
   1. Confirm that the "publish" workflow passes 
-     https://github.com/IAMconsortium/units/actions/workflows/publish.yml
+     https://github.com/IAMconsortium/pyam/actions/workflows/publish.yml
   1. Confirm that the release is published on https://test.pypi.org/project/pyam-iamc/
      1. The package can be downloaded, installed and run
      1. The README is rendered correctly
@@ -37,7 +37,7 @@
    - make sure that you choose the tag name defined above
    - copy the release summary from `RELEASE_NOTES.md` into the description box
 1. Confirm that the "publish" workflow passes 
-   https://github.com/IAMconsortium/units/actions/workflows/publish.yml
+   https://github.com/IAMconsortium/pyam/actions/workflows/publish.yml
 1. Confirm that the release is published on https://www.pypi.org/project/pyam-iamc/
 1. Update on `conda-forge`
    - a PR should automatically be opened by the bot after the Github release
