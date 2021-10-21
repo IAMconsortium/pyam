@@ -46,7 +46,7 @@ Release v\ |version|.
 .. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01095/status.svg
    :target: https://joss.theoj.org/papers/10.21105/joss.01095
 
-.. |groupsio| image:: https://img.shields.io/badge/listserv-groups.io-blue
+.. |groupsio| image:: https://img.shields.io/badge/mail-groups.io-blue
    :target: https://pyam.groups.io/g/forum
 
 .. |slack| image:: https://img.shields.io/badge/chat-Slack-orange.svg

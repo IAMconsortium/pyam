@@ -1,8 +1,16 @@
-# Next Release
+# Release v1.2.0
+
+## Highlights
+
+- Update the source code of the manuscript in *Open Research Europe* to reflect changes
+  based on reviewer comments
+- Increase the performance of the IamDataFrame initialization
+- Add an experimental "profiler" module for performance benchmarking
 
 ## Dependency changes
 
-The dependencies were updated to require `xlrd>=2.0` (previously `<2.0`) and `openpyxl` was added as a dependency.
+The dependencies were updated to require `xlrd>=2.0` (previously `<2.0`) and `openpyxl`
+was added as a dependency.
 
 ## Individual updates
 

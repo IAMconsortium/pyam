@@ -1,4 +1,13 @@
 import logging
+from pathlib import Path
+from setuptools_scm import get_version
+
+# use standard library for Python >=3.8
+try:
+    from importlib.metadata import version, PackageNotFoundError
+# use dedicated package for Python 3.7
+except ModuleNotFoundError:
+    from importlib_metadata import version, PackageNotFoundError
 
 from pyam.core import *
 from pyam.utils import *
@@ -15,6 +24,16 @@ from pyam.testing import assert_iamframe_equal
 from pyam.logging import defer_logging_config
 
 logger = logging.getLogger(__name__)
+
+# get version number either from git (preferred) or metadata
+try:
+    __version__ = get_version(Path(__file__).parent.parent)
+except LookupError:
+    try:
+        __version__ = version("pyam-iamc")
+    # the pyam package is distributed under different names on pypi and conda
+    except PackageNotFoundError:
+        __version__ = version("pyam")
 
 # in Jupyter notebooks: disable autoscroll and set-up logging
 try:
@@ -40,8 +59,3 @@ try:
 
 except Exception:
     pass
-
-from ._version import get_versions
-
-__version__ = get_versions()["version"]
-del get_versions

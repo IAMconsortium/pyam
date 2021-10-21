@@ -20,6 +20,7 @@ Pip
 
     pip install pyam-iamc
 
+.. warning::  The pyam package is distributed as "pyam-iamc" on pypi.
 
 Installing From Source
 ----------------------
@@ -34,10 +35,8 @@ Dependencies
 ------------
 
 Like any software project, we stand on the shoulders of giants. Our particular
-giants include **numpy** :cite:`numpy`, **matplotlib**
-:cite:`matplotlib`, and **pandas** :cite:`pandas`. Explicit requirements are
-fully enumerated below.
+giants include **pandas** :cite:`pandas`, **matplotlib** :cite:`matplotlib`,
+and **numpy** :cite:`numpy`.
+See the `setup-configuration`_ for more information.
 
-The required depedencies for |pyam| are:
-
-  .. program-output:: python -c 'import sys; sys.path.insert(0, "../.."); from setup import REQUIREMENTS; print("\n".join([r for r in REQUIREMENTS]))'
+.. _`setup-configuration`: https://github.com/IAMconsortium/pyam/blob/main/setup.cfg
