@@ -1,7 +1,6 @@
 from contextlib import contextmanager
 import logging
 import warnings
-import pandas as pd
 
 logger = logging.getLogger(__name__)
 

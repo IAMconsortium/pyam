@@ -4,6 +4,7 @@ import re
 import datetime
 
 import numpy as np
+import pandas as pd
 from numpy import testing as npt
 from pandas import testing as pdt
 
