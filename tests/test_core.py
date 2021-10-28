@@ -84,7 +84,7 @@ def test_init_df_with_duplicates_raises(test_df):
         IamDataFrame(_df)
 
 
-@pytest.mark.parametrize("illegal_value", [" ", "illegal value"])
+@pytest.mark.parametrize("illegal_value", [" ", "x0.5"])
 def test_init_df_with_illegal_values_raises(test_pd_df, illegal_value):
     # values that cannot be cast to float should raise a value error and be specified by
     # index for user
