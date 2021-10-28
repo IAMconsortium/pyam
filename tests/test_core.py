@@ -4,7 +4,6 @@ import re
 import datetime
 
 import numpy as np
-import pandas as pd
 from numpy import testing as npt
 from pandas import testing as pdt
 
@@ -12,8 +11,6 @@ from pyam import IamDataFrame, filter_by_meta, META_IDX, IAMC_IDX, sort_data, co
 from pyam.core import _meta_idx, concat
 from pyam.utils import isstr
 from pyam.testing import assert_iamframe_equal
-
-from conftest import TEST_DATA_DIR
 
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
