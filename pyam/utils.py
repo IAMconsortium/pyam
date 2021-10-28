@@ -329,7 +329,7 @@ def format_data(df, index, **kwargs):
         row_nr = int(row_nr_regex.search(str(e)).group())
         short_error_regex = re.compile(r".*(?= at position \d*)")
         short_error = short_error_regex.search(str(e)).group()
-        raise_data_error(f"{short_error} in `data`:\n", df.iloc[[row_nr]])
+        raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
 
     df.dropna(inplace=True, subset=["value"])
 
