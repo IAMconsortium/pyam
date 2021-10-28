@@ -327,7 +327,9 @@ def format_data(df, index, **kwargs):
         # get the row number where the error happened
         row_nr_regex = re.compile(r"(?<=at position )\d+")
         row_nr = int(row_nr_regex.search(str(e)).group())
-        raise_data_error(f"{str(e)}\nLocated at", df.iloc[[row_nr]])
+        short_error_regex = re.compile(r".*(?= at position \d*)")
+        short_error = short_error_regex.search(str(e)).group()
+        raise_data_error(f"{short_error} in `data`:\n", df.iloc[[row_nr]])
 
     df.dropna(inplace=True, subset=["value"])
 
