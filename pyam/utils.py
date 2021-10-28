@@ -321,7 +321,16 @@ def format_data(df, index, **kwargs):
         )
 
     # cast value column to numeric and drop nan
-    df["value"] = df["value"].astype("float64")
+    try:
+        df["value"] = pd.to_numeric(df["value"])
+    except ValueError as e:
+        # get the row number where the error happened
+        row_nr_regex = re.compile(r"(?<=at position )\d+")
+        row_nr = int(row_nr_regex.search(str(e)).group())
+        short_error_regex = re.compile(r".*(?= at position \d*)")
+        short_error = short_error_regex.search(str(e)).group()
+        raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
+
     df.dropna(inplace=True, subset=["value"])
 
     # replace missing units by an empty string for user-friendly filtering

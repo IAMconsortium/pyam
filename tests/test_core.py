@@ -13,7 +13,6 @@ from pyam.core import _meta_idx, concat
 from pyam.utils import isstr
 from pyam.testing import assert_iamframe_equal
 
-
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
         ["model_a", "scen_a", "region_1", 1],
@@ -83,6 +82,20 @@ def test_init_df_with_duplicates_raises(test_df):
     match = "0  model_a   scen_a  World  Primary Energy  EJ/yr"
     with pytest.raises(ValueError, match=match):
         IamDataFrame(_df)
+
+
+@pytest.mark.parametrize("illegal_value", [" ", "x0.5"])
+def test_init_df_with_illegal_values_raises(test_pd_df, illegal_value):
+    # values that cannot be cast to float should raise a value error and be specified by
+    # index for user
+    test_pd_df.loc[0, 2005] = illegal_value
+    msg = (
+        f'.*string "{illegal_value}" in `data`:'
+        r"(\n.*){2}model_a.*scen_a.*World.*Primary Energy.*EJ/yr.*2005"
+    )
+
+    with pytest.raises(ValueError, match=msg):
+        IamDataFrame(test_pd_df)
 
 
 def test_init_df_with_na_scenario(test_pd_df):
