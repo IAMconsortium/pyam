@@ -92,8 +92,8 @@ def test_init_df_with_illegal_values_raises(test_pd_df):
     illegal_value = " "
     test_pd_df.loc[0, 2005] = illegal_value
     msg = (
-        rf'.*string "{illegal_value}" at position 0\n.*\n.*model_a\n.*scen_a\n.'
-        r"*World\n.*Primary Energy\n.*EJ/yr\n.*"
+        f'.*string "{illegal_value}" at position 0'
+        r"(\n.*){3}model_a.*scen_a.*World.*Primary Energy.*EJ/yr.*2005"
     )
 
     with pytest.raises(ValueError, match=msg):
