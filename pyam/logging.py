@@ -28,9 +28,7 @@ def deprecation_warning(msg, type="This method", stacklevel=3):
 def raise_data_error(msg, data):
     """Utils function to format error message from data formatting"""
     data = data.drop_duplicates()
-    msg = f"{msg}:\n{data.head()}" + (
-        "\n..." if len(data) > 5 and isinstance(data, pd.DataFrame) else ""
-    )
+    msg = f"{msg}:\n{data.head()}" + ("\n..." if len(data) > 5 else "")
     logger.error(msg)
     raise ValueError(msg)
 
