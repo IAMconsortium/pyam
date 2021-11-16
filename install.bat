@@ -1,7 +1,7 @@
 
 python setup.py install
 
-py.test tests
+pytest tests
 
 pause
 exit

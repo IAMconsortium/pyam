@@ -16,11 +16,11 @@ to be the same version.
 ## Creating Baseline Images
 
 ```
-py.test --mpl-generate-path=expected_figs test_plotting.py
+pytest --mpl-generate-path=expected_figs test_plotting.py
 ```
 
 ## Running tests
 
 ```
-py.test --mpl
+pytest --mpl
 ```
