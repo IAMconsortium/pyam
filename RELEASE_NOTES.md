@@ -1,5 +1,8 @@
 # Next release
 
+- [#590](https://github.com/IAMconsortium/pyam/pull/590) Update expected figures of plotting tests to use matplotlib 3.5
+- [#586](https://github.com/IAMconsortium/pyam/pull/586) Improve error reporting for non-numeric data in any value column
+
 # Release v1.2.0
 
 ## Highlights
@@ -16,7 +19,6 @@ was added as a dependency.
 
 ## Individual updates
 
-- [#586](https://github.com/IAMconsortium/pyam/pull/586) Improve error reporting for non-numeric data in any value column
 - [#585](https://github.com/IAMconsortium/pyam/pull/585) Include revisions to the ORE manuscript source code following acceptance/publication 
 - [#583](https://github.com/IAMconsortium/pyam/pull/583) Add profiler module for performance benchmarking
 - [#579](https://github.com/IAMconsortium/pyam/pull/579) Increase performance of IamDataFrame initialization
