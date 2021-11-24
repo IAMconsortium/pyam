@@ -437,7 +437,7 @@ def stack(
 
     def as_series(index, name):
         _idx = [i[0] for i in index]
-        return pd.Series([0] * len(index), index=_idx, name=name)
+        return pd.Series([0] * len(index), index=_idx, name=name, dtype="int")
 
     # determine all time-indices where a timeseries crosses 0 and add to data
     _rows = pd.concat(
