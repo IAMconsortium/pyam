@@ -35,19 +35,15 @@ except LookupError:
     except PackageNotFoundError:
         __version__ = version("pyam")
 
-# in Jupyter notebooks: disable autoscroll and set-up logging
+# special handling in Jupyter notebooks
 try:
     from ipykernel.zmqshell import ZMQInteractiveShell
     from IPython import get_ipython
 
     shell = get_ipython()
     if isinstance(shell, ZMQInteractiveShell):
-        shell.run_cell_magic(
-            u"javascript",
-            u"",
-            u"IPython.OutputArea.prototype._should_scroll = "
-            u"function(lines) { return false; }",
-        )
+
+        # set up basic logging if running in a notebook
         log_msg = "Running in a notebook, setting up a basic logging at level INFO"
 
         defer_logging_config(
@@ -55,6 +51,15 @@ try:
             log_msg,
             level="INFO",
             format="%(name)s - %(levelname)s: %(message)s",
+        )
+
+        # deactivate in-cell scrolling in a Jupyter notebook
+        shell.run_cell_magic(
+            "javascript",
+            "",
+            "if (typeof IPython !== 'undefined') "
+            "{ IPython.OutputArea.prototype._should_scroll = function(lines)"
+            "{ return false; }}",
         )
 
 except Exception:
