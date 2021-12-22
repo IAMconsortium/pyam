@@ -2,6 +2,8 @@ import pytest
 import pandas as pd
 import numpy as np
 from pandas import testing as pdt
+from pandas import Timestamp
+from datetime import datetime
 
 from pyam import utils, META_IDX
 
@@ -247,3 +249,21 @@ def test_get_variable_components_joinTRUE():
 
 def test_get_variable_components_joinstr():
     assert utils.get_variable_components("foo|bar|baz", [2, 1], join="_") == "baz_bar"
+
+
+@pytest.mark.parametrize(
+    "x, exp",
+    [
+        ("2", 2),
+        ("2010-07-10", Timestamp("2010-07-10 00:00")),
+        (datetime(2010, 7, 10), Timestamp("2010-07-10 00:00")),
+    ],
+)
+def test_to_time(x, exp):
+    assert utils.to_time(x) == exp
+
+
+@pytest.mark.parametrize("x", [2.5, "2010-07-10 foo"])
+def test_to_time_raises(x):
+    with pytest.raises(ValueError, match=f"Invalid time domain: {x}"):
+        utils.to_time(x)

@@ -646,6 +646,29 @@ def print_list(x, n):
     return lst + count
 
 
+def to_time(x):
+    """Cast a value to either year (int) or datetime"""
+
+    # if the column name can be cast to integer, assume it's a year column
+    try:
+        j = int(x)
+        is_year = True
+
+    # otherwise, try casting to Timestamp (pandas-equivalent of datetime)
+    except (ValueError, TypeError):
+        try:
+            j = pd.Timestamp(x)
+            is_year = False
+        except ValueError:
+            raise ValueError(f"Invalid time domain: {x}")
+
+    # This is to guard against "years" with decimals (e.g., '2010.5')
+    if is_year and float(x) != j:
+        raise ValueError(f"Invalid time domain: {x}")
+
+    return j
+
+
 def to_int(x, index=False):
     """Formatting series or timeseries columns to int and checking validity
 
