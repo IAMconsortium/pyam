@@ -40,16 +40,16 @@ def get_keep_col(codes, matches):
     return np.isin(codes, matches)
 
 
-def replace_index_values(df, level, mapping, rows=None):
+def replace_index_values(df, name, mapping, rows=None):
     """Replace one or several category-values at a specific level (for specific rows)"""
     index = df if isinstance(df, pd.Index) else df.index
 
-    n = index._get_level_number(level)
+    n = index._get_level_number(name)
 
     # if replacing level values with a filter (by rows)
     if rows is not None and not all(rows):
         _levels = pd.Series(index.get_level_values(n))
-        renamed_index = replace_index_values(index[rows], level, mapping)
+        renamed_index = replace_index_values(index[rows], name, mapping)
         _levels[rows] = list(renamed_index.get_level_values(n))
         _unique_levels = pd.Index(_levels.unique())
 
@@ -57,7 +57,7 @@ def replace_index_values(df, level, mapping, rows=None):
             index=index.droplevel(n),
             codes=_unique_levels.get_indexer(_levels),
             level=_unique_levels,
-            name=level,
+            name=name,
             order=index.names,
         )
 
