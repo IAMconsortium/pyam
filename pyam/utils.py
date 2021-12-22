@@ -8,6 +8,7 @@ import datetime
 import dateutil
 import time
 
+from pyam.index import get_index_levels, replace_index_labels
 from pyam.logging import raise_data_error
 import numpy as np
 import pandas as pd
@@ -349,12 +350,13 @@ def format_data(df, index, **kwargs):
         raise_data_error("Empty cells in `data`", df.loc[null_rows])
     del null_rows
 
-    # format the time-column
-    df = format_time_col(df, time_col)
-
     # cast to pd.Series, check for duplicates
     idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
     df = df.set_index(idx_cols).value
+
+    # format the time-column
+    _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
+    df.index = replace_index_labels(df.index, time_col, _time)
 
     rows = df.index.duplicated()
     if any(rows):
