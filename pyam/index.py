@@ -5,7 +5,7 @@ from pyam.logging import raise_data_error
 
 
 def get_index_levels(index, level):
-    """Return the category-values for a specific level"""
+    """Return the labels for a specific level"""
 
     if not isinstance(index, pd.Index):
         index = index.index  # assume that the arg `index` is a pd.DataFrame
@@ -21,8 +21,8 @@ def get_index_levels(index, level):
 
 def get_index_levels_codes(df, level):
     """Return the category-values and codes for a specific level"""
-    level = df.index._get_level_number(level)
-    return df.index.levels[level], df.index.codes[level]
+    n = df.index._get_level_number(level)
+    return df.index.levels[n], df.index.codes[n]
 
 
 def get_keep_col(codes, matches):
