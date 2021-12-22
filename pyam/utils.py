@@ -311,18 +311,19 @@ def format_data(df, index, **kwargs):
 
         if year_cols and not time_cols:
             time_col = "year"
-            melt_cols = year_cols
-        elif not year_cols and time_cols:
-            time_col = "time"
-            melt_cols = time_cols
+            melt_cols = sorted(year_cols)
         else:
-            raise ValueError("Invalid time format, must be either years or `datetime`!")
-        cols = index + REQUIRED_COLS + extra_cols
+            time_col = "time"
+            melt_cols = sorted(year_cols) + sorted(time_cols)
+        if not melt_cols:
+            raise ValueError("Missing time domain")
+
+        # melt the dataframe
         df = pd.melt(
             df,
-            id_vars=cols,
+            id_vars=index + REQUIRED_COLS + extra_cols,
             var_name=time_col,
-            value_vars=sorted(melt_cols),
+            value_vars=melt_cols,
             value_name="value",
         )
 
