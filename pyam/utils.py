@@ -278,12 +278,12 @@ def format_data(df, index, **kwargs):
     # check whether data in wide format (IAMC) or long format (`value` column)
     if "value" in df.columns:
         # check if time column is given as `year` (int) or `time` (datetime)
-        if "year" in df.columns:
+        if "year" in df.columns and "time" not in df.columns:
             time_col = "year"
-        elif "time" in df.columns:
+        elif "time" in df.columns and "year" not in df.columns:
             time_col = "time"
         else:
-            raise ValueError("Invalid time format, must have either `year` or `time`!")
+            raise ValueError("Invalid time domain, must have either `year` or `time`!")
         extra_cols = [
             c
             for c in df.columns
