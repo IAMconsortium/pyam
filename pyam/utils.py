@@ -679,7 +679,7 @@ def to_int(x, index=False):
     cols = list(map(int, _x))
     error = _x[cols != _x]
     if not error.empty:
-        raise ValueError("invalid values `{}`".format(list(error)))
+        raise ValueError(f"Invalid values: {error}")
     if index:
         x.index = cols
         return x
