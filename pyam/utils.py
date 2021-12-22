@@ -294,15 +294,21 @@ def format_data(df, index, **kwargs):
         cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
         year_cols, time_cols, extra_cols = [], [], []
         for i in cols:
+            # if the column name can be cast to integer, assume it's a year column
             try:
-                int(i)  # this is a year
+                int(i)
                 year_cols.append(i)
+
+            # otherwise, try casting to datetime
             except (ValueError, TypeError):
                 try:
-                    dateutil.parser.parse(str(i))  # this is datetime
+                    dateutil.parser.parse(str(i))
                     time_cols.append(i)
+
+                # neither year nor datetime, so it is an extra-column
                 except ValueError:
-                    extra_cols.append(i)  # some other string
+                    extra_cols.append(i)
+
         if year_cols and not time_cols:
             time_col = "year"
             melt_cols = year_cols
