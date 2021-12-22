@@ -75,6 +75,16 @@ def replace_index_values(df, name, mapping, rows=None):
     return index.set_codes(_codes, level=n).set_levels(_unique_levels, level=n)
 
 
+def replace_index_labels(index, name, labels):
+    """Replace the levels for a specific level"""
+
+    order = index.names
+    n = index._get_level_number(name)
+    codes = index.codes[n]
+
+    return append_index_level(index.droplevel(n), codes, labels, name, order)
+
+
 def append_index_col(index, values, name, order=False):
     """Append a list of `values` as a new column (level) to an `index`"""
     levels = pd.Index(values).unique()
