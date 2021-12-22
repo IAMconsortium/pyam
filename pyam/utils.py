@@ -370,15 +370,6 @@ def format_data(df, index, **kwargs):
     return df.sort_index(), index, time_col, extra_cols
 
 
-def format_time_col(data, time_col):
-    """Format time_col to int (year) or datetime"""
-    if time_col == "year":
-        data["year"] = to_int(pd.to_numeric(data["year"]))
-    elif time_col == "time":
-        data["time"] = pd.to_datetime(data["time"])
-    return data
-
-
 def sort_data(data, cols):
     """Sort data rows and order columns by cols"""
     return data.sort_values(cols)[cols + ["value"]].reset_index(drop=True)
