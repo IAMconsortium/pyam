@@ -214,6 +214,9 @@ class IamDataFrame(object):
         else:
             setattr(self, "time", pd.Index(get_index_levels(self._data, "time")))
 
+        # reset internal time_domain attribute
+        setattr(self, "_time_domain", None)
+
         # set non-standard index columns as attributes
         for c in self.meta.index.names:
             if c not in META_IDX:
@@ -400,6 +403,19 @@ class IamDataFrame(object):
     def dimensions(self):
         """Return the list of `data` columns (index names & data coordinates)"""
         return list(self._data.index.names)
+
+    @property
+    def time_domain(self):
+        """Indicator of the time domain: 'year', 'datetime', or 'mixed'"""
+        if self._time_domain is None:
+            if self.time_col == "year":
+                self._time_domain = "year"
+            else:
+                self._time_domain = (
+                    "datetime" if isinstance(self.time, pd.DatetimeIndex) else "mixed"
+                )
+
+        return self._time_domain
 
     @property
     def _LONG_IDX(self):
