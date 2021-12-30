@@ -2,7 +2,12 @@ import pytest
 import pandas as pd
 import pandas.testing as pdt
 
-from pyam.index import get_index_levels, replace_index_values, append_index_level
+from pyam.index import (
+    get_index_levels,
+    replace_index_values,
+    replace_index_labels,
+    append_index_level,
+)
 from pyam import IAMC_IDX
 
 
@@ -58,5 +63,24 @@ def test_append_index():
         codes=[[0, 0], [0, 1]],
         levels=[["World"], ["scen_a", "scen_b"]],
         names=["region", "scenario"],
+    )
+    pdt.assert_index_equal(obs, exp)
+
+
+def test_replace_index_labels():
+    """Assert that replacing and re-ordering to an index works as expected"""
+
+    index = pd.MultiIndex(
+        codes=[[0, 0], [0, 1], [0, 0]],
+        levels=[["World"], ["scen_a", "scen_b"], ["foo"]],
+        names=["region", "scenario", "variable"],
+    )
+
+    obs = replace_index_labels(index, "scenario", ["A", "B"])
+
+    exp = pd.MultiIndex(
+        codes=[[0, 0], [0, 1], [0, 0]],
+        levels=[["World"], ["A", "B"], ["foo"]],
+        names=["region", "scenario", "variable"],
     )
     pdt.assert_index_equal(obs, exp)

@@ -33,7 +33,6 @@ from pyam.utils import (
     read_file,
     read_pandas,
     format_data,
-    format_time_col,
     merge_meta,
     find_depth,
     pattern_match,
@@ -1199,8 +1198,9 @@ class IamDataFrame(object):
         value = kwargs[self.time_col]
         x = df.set_index(IAMC_IDX)
         x["value"] /= x[x[cols] == value]["value"]
+
         x = x.reset_index()
-        ret._data = format_time_col(x, self.time_col).set_index(self.dimensions).value
+        ret._data = x.set_index(self.dimensions).value
 
         if not inplace:
             return ret
@@ -2371,7 +2371,7 @@ class IamDataFrame(object):
             .sort_values(SORT_IDX)
             .reset_index(drop=True)
         )
-        ret._data = format_time_col(df, self.time_col).set_index(self.dimensions).value
+        ret._data = df.set_index(self.dimensions).value
 
         if not inplace:
             return ret
