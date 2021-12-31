@@ -206,15 +206,16 @@ class IamDataFrame(object):
         self.plot = PlotAccessor(self)
 
     def _set_attributes(self):
-        """Utility function to set attributes"""
+        """Utility function to set attributes, called on __init__/filter/append/..."""
 
-        # add time domain as attributes
+        # add/reset internal time-index attribute (set when first using `time`)
+        setattr(self, "_time", None)
+
+        # add/reset year attribute (only if time domain is year, i.e., all integer)
         if self.time_col == "year":
             setattr(self, "year", get_index_levels(self._data, "year"))
-        else:
-            setattr(self, "time", pd.Index(get_index_levels(self._data, "time")))
 
-        # reset internal time_domain attribute
+        #  add/reset internal time domain attribute (set when first using `time_domain`)
         setattr(self, "_time_domain", None)
 
         # set non-standard index columns as attributes
@@ -377,6 +378,20 @@ class IamDataFrame(object):
         )
 
     @property
+    def time(self):
+        """The time index, i.e., axis labels related to the time domain.
+
+        The returned type is
+        - :class:`pandas.Int64Index` if the time_domain is 'year'
+        - :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
+        - :class:`pandas.Index` if the time domain is 'mixed'
+        """
+        if self._time is None:
+            self._time = pd.Index(get_index_levels(self._data, self.time_col))
+
+        return self._time
+
+    @property
     def data(self):
         """Return the timeseries data as a long :class:`pandas.DataFrame`"""
         if self.empty:  # reset_index fails on empty with `datetime` column
@@ -410,10 +425,10 @@ class IamDataFrame(object):
         if self._time_domain is None:
             if self.time_col == "year":
                 self._time_domain = "year"
+            elif isinstance(self.time, pd.DatetimeIndex):
+                self._time_domain = "datetime"
             else:
-                self._time_domain = (
-                    "datetime" if isinstance(self.time, pd.DatetimeIndex) else "mixed"
-                )
+                self._time_domain = "mixed"
 
         return self._time_domain
 
