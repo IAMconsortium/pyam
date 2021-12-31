@@ -352,7 +352,10 @@ def test_index_attributes(test_df):
     if test_df.time_col == "year":
         assert test_df.year == [2005, 2010]
     else:
-        assert test_df.time.equals(pd.Index(test_df.data.time.unique()))
+        match = "'IamDataFrame' object has no attribute 'year'"
+        with pytest.raises(AttributeError, match=match):
+            test_df.year
+    assert test_df.time.equals(pd.Index(test_df.data[test_df.time_col].unique()))
 
 
 def test_index_attributes_extra_col(test_pd_df):
@@ -644,11 +647,11 @@ def test_filter_time_not_datetime_range_error(test_df):
 
 
 def test_filter_year_with_time_col(test_pd_df):
-    test_pd_df["time"] = ["summer", "summer", "winter"]
+    test_pd_df["subannual"] = ["summer", "summer", "winter"]
     df = IamDataFrame(test_pd_df)
-    obs = df.filter(time="summer").timeseries()
+    obs = df.filter(subannual="summer").timeseries()
 
-    exp = test_pd_df.set_index(IAMC_IDX + ["time"])
+    exp = test_pd_df.set_index(IAMC_IDX + ["subannual"])
     exp.columns = list(map(int, exp.columns))
     pd.testing.assert_frame_equal(obs, exp[0:2])
 

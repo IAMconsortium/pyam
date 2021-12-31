@@ -1,5 +1,6 @@
 import pytest
 import pandas as pd
+import pandas.testing as pdt
 from datetime import datetime
 from pyam import IamDataFrame
 from pyam.testing import assert_iamframe_equal
@@ -46,9 +47,7 @@ def test_swap_time_to_year(test_df, inplace):
         obs = test_df
 
     assert_iamframe_equal(obs, exp)
-    match = "'IamDataFrame' object has no attribute 'time'"
-    with pytest.raises(AttributeError, match=match):
-        obs.time
+    pdt.assert_index_equal(obs.time, pd.Index([2005, 2010]))
 
 
 @pytest.mark.parametrize(
