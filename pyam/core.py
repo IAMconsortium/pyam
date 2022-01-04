@@ -1729,6 +1729,14 @@ class IamDataFrame(object):
         ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
 
+        # swap time for year if downselected to years-only
+        if ret.time_col == "time":
+            time_values = get_index_levels(ret._data, "time")
+            if time_values and all([pd.api.types.is_integer(y) for y in time_values]):
+                ret.swap_time_for_year(inplace=True)
+                msg = "Only yearly data after filtering, change time_domain to 'year'."
+                logger.info(msg)
+
         # downselect `meta` dataframe
         idx = _make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
