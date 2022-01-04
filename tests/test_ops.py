@@ -344,9 +344,10 @@ def test_ops_unknown_method(test_df_year):
         _op_data(test_df_year, "_", "foo", "variable")
 
 
+@pytest.mark.parametrize("periods, year", (({}, 2010), ({"periods": -1}, 2005)))
 @pytest.mark.parametrize("append", (False, True))
-def test_diff(test_df_year, append):
-    """Test `diff` method"""
+def test_diff(test_df_year, periods, year, append):
+    """Test `diff` method including non-default periods argument"""
 
     exp = IamDataFrame(
         pd.DataFrame(
@@ -355,17 +356,20 @@ def test_diff(test_df_year, append):
                 ["model_a", "scen_a", "World", "bar", "EJ/yr", 2.5],
                 ["model_a", "scen_b", "World", "foo", "EJ/yr", 5],
             ],
-            columns=IAMC_IDX + [2010],
+            columns=IAMC_IDX + [year],
         ),
         meta=test_df_year.meta,
     )
+    # values are negative if computing diff in a negative direction
+    if year == 2005:
+        exp._data = - exp._data
 
     mapping = {"Primary Energy": "foo", "Primary Energy|Coal": "bar"}
 
     if append:
         obs = test_df_year.copy()
-        obs.diff(mapping=mapping, append=True)
+        obs.diff(mapping=mapping, append=True, **periods)
         assert_iamframe_equal(test_df_year.append(exp), obs)
     else:
-        obs = test_df_year.diff(mapping=mapping)
+        obs = test_df_year.diff(mapping=mapping, **periods)
         assert_iamframe_equal(exp, obs)
