@@ -8,10 +8,19 @@ import pandas as pd
 from numpy import testing as npt
 from pandas import testing as pdt
 
-from pyam import IamDataFrame, filter_by_meta, META_IDX, IAMC_IDX, sort_data, compare
+from pyam import IamDataFrame, filter_by_meta, META_IDX, IAMC_IDX, sort_data
 from pyam.core import _meta_idx, concat
 from pyam.utils import isstr
 from pyam.testing import assert_iamframe_equal
+
+from conftest import (
+    TEST_YEARS,
+    TEST_DTS,
+    TEST_TIME_STR,
+    TEST_TIME_STR_HR,
+    TEST_TIME_MIXED,
+)
+
 
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
@@ -304,6 +313,27 @@ def test_get_item(test_df, column):
     pdt.assert_series_equal(test_df[column], test_df.data[column])
 
 
+# TODO implement this parametrization as part of `conftest.py:test_df`
+@pytest.mark.parametrize(
+    "time, domain, index",
+    [
+        (TEST_YEARS, "year", pd.Int64Index([2005, 2010])),
+        (TEST_DTS, "datetime", pd.DatetimeIndex(TEST_DTS)),
+        (TEST_TIME_STR, "datetime", pd.DatetimeIndex(TEST_DTS)),
+        (TEST_TIME_STR_HR, "datetime", pd.DatetimeIndex(TEST_TIME_STR_HR)),
+        (TEST_TIME_MIXED, "mixed", pd.Index(TEST_TIME_MIXED)),
+    ],
+)
+def test_time_domain(test_pd_df, time, domain, index):
+    # assert that the time-domain and time-index attributes are set correctly
+    mapping = dict([(i, j) for i, j in zip(TEST_YEARS, time)])
+    df = IamDataFrame(data=test_pd_df.rename(mapping, axis="columns"))
+
+    assert df.time_col == "year" if domain == "year" else "time"
+    assert df.time_domain == domain
+    pdt.assert_index_equal(df.time, index)
+
+
 def test_index(test_df_year):
     # assert that the correct index is shown for the IamDataFrame
     exp = pd.MultiIndex.from_arrays(
@@ -322,7 +352,10 @@ def test_index_attributes(test_df):
     if test_df.time_col == "year":
         assert test_df.year == [2005, 2010]
     else:
-        assert test_df.time.equals(pd.Index(test_df.data.time.unique()))
+        match = "'IamDataFrame' object has no attribute 'year'"
+        with pytest.raises(AttributeError, match=match):
+            test_df.year
+    assert test_df.time.equals(pd.Index(test_df.data[test_df.time_col].unique()))
 
 
 def test_index_attributes_extra_col(test_pd_df):
@@ -614,11 +647,11 @@ def test_filter_time_not_datetime_range_error(test_df):
 
 
 def test_filter_year_with_time_col(test_pd_df):
-    test_pd_df["time"] = ["summer", "summer", "winter"]
+    test_pd_df["subannual"] = ["summer", "summer", "winter"]
     df = IamDataFrame(test_pd_df)
-    obs = df.filter(time="summer").timeseries()
+    obs = df.filter(subannual="summer").timeseries()
 
-    exp = test_pd_df.set_index(IAMC_IDX + ["time"])
+    exp = test_pd_df.set_index(IAMC_IDX + ["subannual"])
     exp.columns = list(map(int, exp.columns))
     pd.testing.assert_frame_equal(obs, exp[0:2])
 
