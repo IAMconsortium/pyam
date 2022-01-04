@@ -4,7 +4,7 @@ import operator
 import pint
 from iam_units import registry
 
-from pyam import IamDataFrame
+from pyam import IamDataFrame, IAMC_IDX
 from pyam.testing import assert_iamframe_equal
 from pyam._ops import _op_data
 
@@ -342,3 +342,30 @@ def test_ops_unknown_method(test_df_year):
     """Using an unknown method raises an error"""
     with pytest.raises(ValueError, match="Unknown method: foo"):
         _op_data(test_df_year, "_", "foo", "variable")
+
+
+@pytest.mark.parametrize("append", (False, True))
+def test_diff(test_df_year, append):
+    """Test `diff` method"""
+
+    exp = IamDataFrame(
+        pd.DataFrame(
+            [
+                ["model_a", "scen_a", "World", "foo", "EJ/yr", 5],
+                ["model_a", "scen_a", "World", "bar", "EJ/yr", 2.5],
+                ["model_a", "scen_b", "World", "foo", "EJ/yr", 5],
+            ],
+            columns=IAMC_IDX + [2010],
+        ),
+        meta=test_df_year.meta,
+    )
+
+    mapping = {"Primary Energy": "foo", "Primary Energy|Coal": "bar"}
+
+    if append:
+        obs = test_df_year.copy()
+        obs.diff(mapping=mapping, append=True)
+        assert_iamframe_equal(test_df_year.append(exp), obs)
+    else:
+        obs = test_df_year.diff(mapping=mapping)
+        assert_iamframe_equal(exp, obs)
