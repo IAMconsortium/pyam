@@ -1765,12 +1765,14 @@ class IamDataFrame(object):
                 keep_col = _make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(cat_idx)
+
             elif col == "year":
-                if self.time_col == "year":
-                    _data = self.get_data_column(col)
-                else:
-                    _data = self.get_data_column("time").apply(lambda x: x.year)
-                keep_col = years_match(_data, values)
+                levels, codes = get_index_levels_codes(self._data, self.time_col)
+                if self.time_col == "time":
+                    levels = [l.year if isinstance(l, pd.Timestamp) else l for l in levels]
+
+                matches = years_match(levels, values)
+                keep_col = get_keep_col(codes, matches)
 
             elif col == "month" and self.time_col == "time":
                 keep_col = month_match(

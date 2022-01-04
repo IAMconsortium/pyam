@@ -522,14 +522,12 @@ def _escape_regexp(s):
     )
 
 
-def years_match(data, years):
+def years_match(levels, years):
     """Return rows where data matches year"""
-    years = [years] if (isinstance(years, (int, np.int64))) else years
-    dt = (datetime.datetime, np.datetime64)
-    if isinstance(years, dt) or isinstance(years[0], dt):
-        error_msg = "Filter by `year` requires integers!"
-        raise TypeError(error_msg)
-    return np.isin(data, years)
+    years = to_list(years)
+    if not all([pd.api.types.is_integer(y) for y in years]):
+        raise TypeError("Filter by `year` requires integers!")
+    return np.isin(levels, years)
 
 
 def month_match(data, months):
