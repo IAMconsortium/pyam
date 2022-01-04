@@ -2112,7 +2112,13 @@ class IamDataFrame(object):
         Parameters
         ----------
         mapping : dict
-            Mapping of *variable* item(s) to the name(s) of the diff-ed timeseries data.
+            Mapping of *variable* item(s) to the name(s) of the diff-ed timeseries data,
+            e.g.,
+
+            .. code-block:: python
+
+               {"current variable": "name of the diff-ed variable", ...}
+
         periods : int, optional
             Periods to shift for calculating difference, accepts negative values;
             passed to :meth:`pandas.DataFrame.diff`.
@@ -2130,8 +2136,8 @@ class IamDataFrame(object):
 
         Notes
         -----
-        This method behaves as if applying :meth:`pandas.DataFrame.diff` by row in wide
-        data format, so the difference is computed on the previous existing value.
+        This method behaves as if applying :meth:`pandas.DataFrame.diff` by row in a
+        wide data format, so the difference is computed on the previous existing value.
         This can lead to unexpected results if the data has inconsistent period lengths.
 
         Use the following to ensure that no missing values exist prior to computing
@@ -2139,7 +2145,7 @@ class IamDataFrame(object):
 
         .. code-block:: python
 
-            df.interpolate(df.year)
+            df.interpolate(time=df.year)
 
         """
         cols = [d for d in self.dimensions if d != self.time_col]
