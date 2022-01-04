@@ -358,7 +358,7 @@ class IamDataFrame(object):
 
     @property
     def unit_mapping(self):
-        """Return a dictionary of variables to (list of) correspoding units"""
+        """Return a dictionary of variables to (list of) corresponding units"""
 
         def list_or_str(x):
             x = list(x.drop_duplicates())
