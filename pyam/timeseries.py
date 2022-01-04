@@ -50,7 +50,7 @@ def cumulative(x, first_year, last_year):
     # if the timeseries does not cover the range `[first_year, last_year]`,
     # return nan to avoid erroneous aggregation
     if min(x.index) > first_year:
-        logger.warning(f"Start of period {last_year} outside of range.")
+        logger.warning(f"Start of period {first_year} outside of range.")
         return np.nan
     if max(x.index) < last_year:
         logger.warning(f"End of period {last_year} outside of range.")
