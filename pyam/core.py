@@ -2106,8 +2106,8 @@ class IamDataFrame(object):
     def diff(self, mapping, periods=1, append=False):
         """Compute the difference of timeseries data along the time dimension
 
-        This methods applies :meth:`pandas.DataFrame.diff` on the time dimension
-        of the timeseries data.
+        This methods behaves as if applying :meth:`pandas.DataFrame.diff` on the
+        timeseries data in wide format.
 
         Parameters
         ----------
@@ -2132,7 +2132,7 @@ class IamDataFrame(object):
 
         See Also
         --------
-        divide, apply, interpolate
+        subtract, apply, interpolate
 
         Notes
         -----
