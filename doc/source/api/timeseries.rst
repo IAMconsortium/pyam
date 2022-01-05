@@ -16,4 +16,5 @@ the time dimension as index.
 .. _`Slack channel, mailing list or GitHub issues`: ../contributing.html
 
 .. automodule:: pyam.timeseries
+   :autosummary:
    :members:
