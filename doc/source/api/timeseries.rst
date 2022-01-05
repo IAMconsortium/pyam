@@ -15,8 +15,5 @@ the time dimension as index.
 
 .. _`Slack channel, mailing list or GitHub issues`: ../contributing.html
 
-.. autofunction:: cumulative
-
-.. autofunction:: fill_series
-
-.. autofunction:: cross_threshold
+.. automodule:: pyam.timeseries
+   :members:

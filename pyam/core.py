@@ -2163,6 +2163,8 @@ class IamDataFrame(object):
     def compute_learning_rate(self, name, cost, base, append=False):
         """Compute the implicit learning rate from timeseries data
 
+        Refer to :func:`pyam.timeseries.compute_learning_rate` for more information.
+
         Parameters
         ----------
         name : str
