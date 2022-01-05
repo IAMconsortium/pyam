@@ -130,16 +130,27 @@ def cross_threshold(
     return years
 
 
-def compute_learning_rate(x, cost, base):
+def compute_learning_rate(x, performance, experience):
     """Compute the implicit learning rate from timeseries data
+
+    Experience curves are based on the concept that a technology's performance improves
+    as experience with this technology grows.
+
+    The "learning rate" indicates the performance improvement (e.g., cost reduction) for
+    each doubling of the accumulated experience (e.g., cumulative installed capacity).
+
+    The experience curve parameter *b* is equivalent to the (linear) slope when plotting
+    performance and experience timeseries on double-logarithmic scales.
+    The learning rate can be computed from the experience curve paramters as
+    :math:`1 - 2^{b}`.
 
     Parameters
     ----------
     x : :class:`pandas.Series`
         Timeseries data indexed over years (as integers).
-    cost : str
-        Variable of the "learned" timeseries (e.g., specific investment costs).
-    base : str
+    performance : str
+        Variable of the "performance" timeseries (e.g., specific investment costs).
+    experience : str
         Variable of the "experience" timeseries (e.g., cumulative installed capacity).
 
     Returns
@@ -155,7 +166,9 @@ def compute_learning_rate(x, cost, base):
     x = x[x > 0].apply(math.log10)
 
     # compute the "experience parameter" (slope of experience curve on double-log scale)
-    b = (x[cost] - x[cost].shift()) / (x[base] - x[base].shift())
+    b = (x[performance] - x[performance].shift()) / (
+        x[experience] - x[experience].shift()
+    )
 
     # translate to "learning rate" (e.g., cost reduction per doubling of capacity)
     return b.apply(lambda y: 1 - math.pow(2, y))

@@ -2160,7 +2160,7 @@ class IamDataFrame(object):
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def compute_learning_rate(self, name, cost, base, append=False):
+    def compute_learning_rate(self, name, performance, experience, append=False):
         """Compute the implicit learning rate from timeseries data
 
         Refer to :func:`pyam.timeseries.compute_learning_rate` for more information.
@@ -2169,10 +2169,10 @@ class IamDataFrame(object):
         ----------
         name : str
             Variable name of the computed timeseries data.
-        cost : str
-            Variable of the "learned" timeseries (e.g., specific investment costs).
-        base : str
-            Variable of the "experience" timeseries (e.g., cumulative capacity).
+        performance : str
+            Variable of the "performance" timeseries (e.g., specific investment costs).
+        experience : str
+            Variable of the "experience" timeseries (e.g., installed capacity).
         append : bool, optional
             Whether to append computed timeseries data to this instance.
 
@@ -2186,7 +2186,7 @@ class IamDataFrame(object):
                 [i for i in self.dimensions if i not in ["variable", "year", "unit"]]
             )
         )
-        _value = _data.apply(compute_learning_rate, cost, base)
+        _value = _data.apply(compute_learning_rate, performance, experience)
 
         if append:
             self.append(_value, variable=name, unit="", inplace=True)
