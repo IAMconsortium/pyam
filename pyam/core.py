@@ -2182,7 +2182,7 @@ class IamDataFrame(object):
             Computed timeseries data or None if `append=True`.
         """
         _data = (
-            self.filter(variable=[cost, base])._data.groupby(
+            self.filter(variable=[performance, experience])._data.groupby(
                 [i for i in self.dimensions if i not in ["variable", "year", "unit"]]
             )
         )
