@@ -72,6 +72,7 @@ from pyam.index import (
     replace_index_values,
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
+from pyam.timeseries import compute_learning_rate
 from pyam._debiasing import _compute_bias
 from pyam.logging import deprecation_warning, raise_data_error
 
@@ -2158,6 +2159,37 @@ class IamDataFrame(object):
             self.append(_value, inplace=True)
         else:
             return IamDataFrame(_value, meta=self.meta)
+
+    def compute_learning_rate(self, name, cost, base, append=False):
+        """Compute the implicit learning rate from timeseries data
+
+        Parameters
+        ----------
+        name : str
+            Variable name of the computed timeseries data.
+        cost : str
+            Variable of the "learned" timeseries (e.g., specific investment costs).
+        base : str
+            Variable of the "experience" timeseries (e.g., cumulative capacity).
+        append : bool, optional
+            Whether to append computed timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+        """
+        _data = (
+            self.filter(variable=[cost, base])._data.groupby(
+                [i for i in self.dimensions if i not in ["variable", "year", "unit"]]
+            )
+        )
+        _value = _data.apply(compute_learning_rate, cost, base)
+
+        if append:
+            self.append(_value, variable=name, unit="", inplace=True)
+        else:
+            return IamDataFrame(_value, meta=self.meta, variable=name, unit="")
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""

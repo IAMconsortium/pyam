@@ -1,4 +1,5 @@
 import logging
+import math
 import numpy as np
 from pyam.utils import isstr, to_int
 
@@ -127,3 +128,34 @@ def cross_threshold(
     if return_type == int:
         return [y + 1 for y in map(int, years)]
     return years
+
+
+def compute_learning_rate(x, cost, base):
+    """Compute the implicit learning rate from timeseries data
+
+    Parameters
+    ----------
+    x : :class:`pandas.Series`
+        Timeseries data indexed over years (as integers).
+    cost : str
+        Variable of the "learned" timeseries (e.g., specific investment costs).
+    base : str
+        Variable of the "experience" timeseries (e.g., cumulative installed capacity).
+
+    Returns
+    -------
+    Indexed :class:`pandas.Series` of implicit learning rates
+    """
+    # drop all index dimensions other than "variable" and "year"
+    x.index = x.index.droplevel(
+        [i for i in x.index.names if i not in ["variable", "year"]]
+    )
+
+    # apply log, dropping all values that are zero or negative
+    x = x[x > 0].apply(math.log10)
+
+    # compute the "experience parameter" (slope of experience curve on double-log scale)
+    b = (x[cost] - x[cost].shift()) / (x[base] - x[base].shift())
+
+    # translate to "learning rate" (e.g., cost reduction per doubling of capacity)
+    return b.apply(lambda y: 1 - math.pow(2, y))
