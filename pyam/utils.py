@@ -530,10 +530,9 @@ def years_match(levels, years):
     return np.isin(levels, years)
 
 
-def month_match(data, months):
-    """Return rows where data matches months"""
-    return time_match(data, months, ["%b", "%B"], "tm_mon", "months")
-
+FILTER_DATETIME_ATTRS = {
+    "month": (["%b", "%B"], "tm_mon", "months"),
+}
 
 def day_match(data, days):
     """Return rows where data matches days"""
@@ -563,7 +562,7 @@ def time_match(data, times, conv_codes, strptime_attr, name):
         try:
             return res
         except NameError:
-            raise ValueError("Could not convert {} to integer".format(name))
+            raise ValueError(f"Could not convert {name} to integer: {times}")
 
     times = [times] if isinstance(times, (int, str)) else times
     if isinstance(times[0], str):

@@ -37,8 +37,6 @@ from pyam.utils import (
     find_depth,
     pattern_match,
     years_match,
-    month_match,
-    hour_match,
     day_match,
     datetime_match,
     isstr,
@@ -49,7 +47,7 @@ from pyam.utils import (
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
-    ILLEGAL_COLS,
+    ILLEGAL_COLS, time_match, FILTER_DATETIME_ATTRS,
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
@@ -1734,7 +1732,7 @@ class IamDataFrame(object):
             time_values = get_index_levels(ret._data, "time")
             if time_values and all([pd.api.types.is_integer(y) for y in time_values]):
                 ret.swap_time_for_year(inplace=True)
-                msg = "Only yearly data after filtering, change time_domain to 'year'."
+                msg = "Only yearly data after filtering, time_domain changed to 'year'."
                 logger.info(msg)
 
         # downselect `meta` dataframe
@@ -1777,15 +1775,25 @@ class IamDataFrame(object):
             elif col == "year":
                 levels, codes = get_index_levels_codes(self._data, self.time_col)
                 if self.time_col == "time":
-                    levels = [l.year if isinstance(l, pd.Timestamp) else l for l in levels]
-
+                    levels = [
+                        l.year if isinstance(l, pd.Timestamp) else l for l in levels
+                    ]
                 matches = years_match(levels, values)
                 keep_col = get_keep_col(codes, matches)
 
-            elif col == "month" and self.time_col == "time":
-                keep_col = month_match(
-                    self.get_data_column("time").apply(lambda x: x.month), values
-                )
+            elif col in ["month", "hour"]:
+                if self.time_col != "time":
+                    logger.warning(f"Filter by '{col}' not supported with yearly data.")
+                    return np.zeros(len(self), dtype=bool)
+
+                def time_col(x, col):
+                    return getattr(x, col) if isinstance(x, pd.Timestamp) else None
+
+                data = self.get_data_column("time").apply(lambda x: time_col(x, col))
+                if col in FILTER_DATETIME_ATTRS:
+                    keep_col = time_match(data, values, *FILTER_DATETIME_ATTRS[col])
+                else:
+                    keep_col = np.isin(data, values)
 
             elif col == "day" and self.time_col == "time":
                 if isinstance(values, str):
@@ -1801,11 +1809,6 @@ class IamDataFrame(object):
                     days = self.get_data_column("time").apply(lambda x: x.day)
 
                 keep_col = day_match(days, values)
-
-            elif col == "hour" and self.time_col == "time":
-                keep_col = hour_match(
-                    self.get_data_column("time").apply(lambda x: x.hour), values
-                )
 
             elif col == "time" and self.time_col == "time":
                 keep_col = datetime_match(self.get_data_column("time"), values)

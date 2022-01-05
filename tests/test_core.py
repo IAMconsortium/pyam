@@ -424,7 +424,7 @@ def test_filter_error_keep(test_df):
 
 def test_filter_year(test_df):
     obs = test_df.filter(year=2005)
-    if "year" in test_df.data.columns:
+    if test_df.time_col == "year":
         npt.assert_equal(obs["year"].unique(), 2005)
     else:
         expected = np.array(
@@ -457,10 +457,9 @@ def test_filter_year_mixed_time_domain(test_pd_df):
 
 @pytest.mark.parametrize("test_month", [6, "June", "Jun", "jun", ["Jun", "jun"]])
 def test_filter_month(test_df, test_month):
-    if "year" in test_df.data.columns:
-        error_msg = re.escape("Filter by `month` not supported!")
-        with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(month=test_month)
+    if test_df.time_col == "year":
+        # Filtering data with yearly time domain returns empty
+        assert test_df.filter(month=test_month).empty
     else:
         obs = test_df.filter(month=test_month)
         expected = np.array(
@@ -473,10 +472,9 @@ def test_filter_month(test_df, test_month):
 
 @pytest.mark.parametrize("test_month", [6, "Jun", "jun", ["Jun", "jun"]])
 def test_filter_year_month(test_df, test_month):
-    if "year" in test_df.data.columns:
-        error_msg = re.escape("Filter by `month` not supported!")
-        with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(year=2005, month=test_month)
+    if test_df.time_col == "year":
+        # Filtering data with yearly time domain returns empty
+        assert test_df.filter(year=2005, month=test_month).empty
     else:
         obs = test_df.filter(year=2005, month=test_month)
         expected = np.array(
@@ -489,7 +487,7 @@ def test_filter_year_month(test_df, test_month):
 
 @pytest.mark.parametrize("test_day", [17, "Fri", "Friday", "friday", ["Fri", "fri"]])
 def test_filter_day(test_df, test_day):
-    if "year" in test_df.data.columns:
+    if test_df.time_col == "year":
         error_msg = re.escape("Filter by `day` not supported!")
         with pytest.raises(ValueError, match=error_msg):
             obs = test_df.filter(day=test_day)
@@ -514,10 +512,9 @@ def test_filter_with_numpy_64_date_vals(test_df):
 
 @pytest.mark.parametrize("test_hour", [0, 12, [12, 13]])
 def test_filter_hour(test_df, test_hour):
-    if "year" in test_df.data.columns:
-        error_msg = re.escape("Filter by `hour` not supported!")
-        with pytest.raises(ValueError, match=error_msg):
-            test_df.filter(hour=test_hour)
+    if test_df.time_col == "year":
+        # Filtering data with yearly time domain returns empty
+        assert test_df.filter(hour=test_hour).empty
     else:
         obs = test_df.filter(hour=test_hour)
         test_hour = [test_hour] if isinstance(test_hour, int) else test_hour
@@ -529,7 +526,7 @@ def test_filter_hour(test_df, test_hour):
 
 
 def test_filter_time_exact_match(test_df):
-    if "year" in test_df.data.columns:
+    if test_df.time_col == "year":
         error_msg = re.escape("Filter by `year` requires integers!")
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(year=datetime.datetime(2005, 6, 17))
@@ -554,7 +551,7 @@ def test_filter_time_range(test_df):
 def test_filter_time_range_year(test_df):
     obs = test_df.filter(year=range(2000, 2008))
 
-    if "year" in test_df.data.columns:
+    if test_df.time_col == "year":
         unique_time = obs["year"].unique()
         expected = np.array([2005])
     else:
@@ -569,10 +566,9 @@ def test_filter_time_range_year(test_df):
 
 @pytest.mark.parametrize("month_range", [range(1, 7), "Mar-Jun"])
 def test_filter_time_range_month(test_df, month_range):
-    if "year" in test_df.data.columns:
-        error_msg = re.escape("Filter by `month` not supported!")
-        with pytest.raises(ValueError, match=error_msg):
-            obs = test_df.filter(month=month_range)
+    if test_df.time_col == "year":
+        # Filtering data with yearly time domain returns empty
+        assert test_df.filter(hour=month_range).empty
     else:
         obs = test_df.filter(month=month_range)
         expected = np.array(
@@ -586,10 +582,9 @@ def test_filter_time_range_month(test_df, month_range):
 
 @pytest.mark.parametrize("month_range", [["Mar-Jun", "Nov-Feb"]])
 def test_filter_time_range_round_the_clock_error(test_df, month_range):
-    if "year" in test_df.data.columns:
-        error_msg = re.escape("Filter by `month` not supported!")
-        with pytest.raises(ValueError, match=error_msg):
-            test_df.filter(month=month_range)
+    if test_df.time_col == "year":
+        # Filtering data with yearly time domain returns empty
+        assert test_df.filter(month=month_range).empty
     else:
         error_msg = re.escape(
             "string ranges must lead to increasing integer ranges, "
@@ -601,7 +596,8 @@ def test_filter_time_range_round_the_clock_error(test_df, month_range):
 
 @pytest.mark.parametrize("day_range", [range(14, 20), "Thu-Sat"])
 def test_filter_time_range_day(test_df, day_range):
-    if "year" in test_df.data.columns:
+    if test_df.time_col == "year":
+
         error_msg = re.escape("Filter by `day` not supported!")
         with pytest.raises(ValueError, match=error_msg):
             test_df.filter(day=day_range)
@@ -617,10 +613,9 @@ def test_filter_time_range_day(test_df, day_range):
 
 @pytest.mark.parametrize("hour_range", [range(10, 14)])
 def test_filter_time_range_hour(test_df, hour_range):
-    if "year" in test_df.data.columns:
-        error_msg = re.escape("Filter by `hour` not supported!")
-        with pytest.raises(ValueError, match=error_msg):
-            test_df.filter(hour=hour_range)
+    if test_df.time_col == "year":
+        # Filtering data with yearly time domain returns empty
+        assert test_df.filter(hour=hour_range).empty
     else:
         obs = test_df.filter(hour=hour_range)
 
@@ -632,7 +627,7 @@ def test_filter_time_range_hour(test_df, hour_range):
 
 
 def test_filter_time_no_match(test_df):
-    if "year" in test_df.data.columns:
+    if test_df.time_col == "year":
         error_msg = re.escape("Filter by `year` requires integers!")
         with pytest.raises(TypeError, match=error_msg):
             test_df.filter(year=datetime.datetime(2004, 6, 18))
@@ -642,7 +637,7 @@ def test_filter_time_no_match(test_df):
 
 
 def test_filter_time_not_datetime_error(test_df):
-    if "year" in test_df.data.columns:
+    if test_df.time_col == "year":
         with pytest.raises(ValueError, match=re.escape("`time`")):
             test_df.filter(time=datetime.datetime(2004, 6, 18))
     else:
@@ -654,7 +649,7 @@ def test_filter_time_not_datetime_error(test_df):
 
 
 def test_filter_time_not_datetime_range_error(test_df):
-    if "year" in test_df.data.columns:
+    if test_df.time_col == "year":
         with pytest.raises(ValueError, match=re.escape("`time`")):
             test_df.filter(time=range(2000, 2008))
     else:
