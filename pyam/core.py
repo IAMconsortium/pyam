@@ -1828,7 +1828,7 @@ class IamDataFrame(object):
                 keep_col = get_keep_col(codes, matches)
 
             else:
-                _raise_filter_error(col)
+                raise ValueError(f"Filter by `{col}` not supported!")
 
             keep = np.logical_and(keep, keep_col)
 
@@ -2470,11 +2470,6 @@ class IamDataFrame(object):
 def _meta_idx(data):
     """Return the 'META_IDX' from data by index"""
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
-
-
-def _raise_filter_error(col):
-    """Raise an error if not possible to filter by col"""
-    raise ValueError(f"Filter by `{col}` not supported!")
 
 
 def _check_rows(rows, check, in_range=True, return_test="any"):
