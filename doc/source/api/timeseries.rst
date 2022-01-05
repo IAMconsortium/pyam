@@ -1,6 +1,6 @@
 .. currentmodule:: pyam
 
-Timeseries utilities
+Timeseries functions
 ====================
 
 The |pyam| package includes several utility functions for working
@@ -10,10 +10,10 @@ the time dimension as index.
 .. warning::
 
     Not all **pyam** functions currently support continuous-time formats.
-    Please reach out via our `mailing list or GitHub issues`_
+    Please reach out via our `Slack channel, mailing list or GitHub issues`_
     if you are not sure whether your use case is supported.
 
-.. _`mailing list or GitHub issues`: ../contributing.html
+.. _`Slack channel, mailing list or GitHub issues`: ../contributing.html
 
 .. autofunction:: cumulative
 
