@@ -147,7 +147,8 @@ def compute_learning_rate(x, performance, experience):
     Parameters
     ----------
     x : :class:`pandas.Series`
-        Timeseries data indexed over years (as integers).
+        Timeseries data of the *performance* and *experience* variables
+        indexed over the time domain.
     performance : str
         Variable of the "performance" timeseries (e.g., specific investment costs).
     experience : str
