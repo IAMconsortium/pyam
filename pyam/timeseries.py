@@ -141,7 +141,7 @@ def compute_learning_rate(x, performance, experience):
 
     The experience curve parameter *b* is equivalent to the (linear) slope when plotting
     performance and experience timeseries on double-logarithmic scales.
-    The learning rate can be computed from the experience curve paramters as
+    The learning rate can be computed from the experience curve parameter as
     :math:`1 - 2^{b}`.
 
     Parameters
