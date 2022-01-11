@@ -362,7 +362,7 @@ def test_diff(test_df_year, periods, year, append):
     )
     # values are negative if computing diff in a negative direction
     if year == 2005:
-        exp._data = - exp._data
+        exp._data = -exp._data
 
     mapping = {"Primary Energy": "foo", "Primary Energy|Coal": "bar"}
 
