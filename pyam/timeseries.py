@@ -1,7 +1,8 @@
 import logging
 import math
 import numpy as np
-from pyam.utils import isstr, to_int
+import pandas as pd
+from pyam.utils import isstr, to_int, remove_from_list
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +166,15 @@ def compute_learning_rate(x, performance, experience):
 
     # apply log, dropping all values that are zero or negative
     x = x[x > 0].apply(math.log10)
+
+    # return empty pd.Series if not all relevant variables exist
+    if not all([v in x.index for v in [performance, experience]]):
+        names = remove_from_list(x.index.names, "variable")
+        empty_list = [[]] * len(names)
+        return pd.Series(
+            index=pd.MultiIndex(levels=empty_list, codes=empty_list, names=names),
+            dtype="float64",
+        )
 
     # compute the "experience parameter" (slope of experience curve on double-log scale)
     b = (x[performance] - x[performance].shift()) / (

@@ -47,3 +47,16 @@ def test_learning_rate(append):
     else:
         obs = TEST_DF.compute_learning_rate("Learning Rate", "Cost", "Cap")
         assert_iamframe_equal(EXP_DF, obs)
+
+
+@pytest.mark.parametrize("append", (False, True))
+def test_learning_rate_empty(append):
+    """Assert that computing the learning rate with invalid variables returns empty"""
+
+    if append:
+        obs = TEST_DF.copy()
+        obs.compute_learning_rate("Learning Rate", "foo", "Cap", append=True)
+        assert_iamframe_equal(TEST_DF, obs)  # assert that no data was added
+    else:
+        obs = TEST_DF.compute_learning_rate("Learning Rate", "foo", "Cap")
+        assert obs.empty
