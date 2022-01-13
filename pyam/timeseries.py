@@ -145,6 +145,9 @@ def compute_learning_rate(x, performance, experience):
     The learning rate can be computed from the experience curve parameter as
     :math:`1 - 2^{b}`.
 
+    The learning rate parameter in period *t* is computed based on the changes
+    from period *t-1* to period *t*.
+
     Parameters
     ----------
     x : :class:`pandas.Series`

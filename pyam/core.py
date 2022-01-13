@@ -2112,6 +2112,7 @@ class IamDataFrame(object):
 
         This methods behaves as if applying :meth:`pandas.DataFrame.diff` on the
         timeseries data in wide format.
+        By default, the diff-value in period *t* is computed as *x[t] - x[t-1]*.
 
         Parameters
         ----------
@@ -2121,7 +2122,7 @@ class IamDataFrame(object):
 
             .. code-block:: python
 
-               {"current variable": "name of the diff-ed variable", ...}
+               {"current variable": "name of diff-ed variable", ...}
 
         periods : int, optional
             Periods to shift for calculating difference, accepts negative values;
