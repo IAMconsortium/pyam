@@ -1692,12 +1692,11 @@ class IamDataFrame(object):
              - 'level': the maximum "depth" of IAM variables (number of '|')
                (excluding the strings given in the 'variable' argument)
              - 'year': takes an integer (int/np.int64), a list of integers or
-                a range. Note that the last year of a range is not included,
+               a range. Note that the last year of a range is not included,
                so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
              - arguments for filtering by `datetime.datetime` or np.datetime64
                ('month', 'hour', 'time')
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
-
         """
         if not isinstance(keep, bool):
             raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")
