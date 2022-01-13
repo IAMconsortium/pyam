@@ -2181,9 +2181,9 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _data = self.filter(variable=[performance, experience])._data.groupby(
-            [i for i in self.dimensions if i not in ["variable", "year", "unit"]]
-        )
+        _data = self._data[
+            self._apply_filters(variable=[performance, experience])
+        ].groupby([i for i in self.dimensions if i not in ["variable", "year", "unit"]])
         _value = _data.apply(compute_learning_rate, performance, experience)
 
         if append:
