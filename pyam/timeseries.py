@@ -50,16 +50,10 @@ def cumulative(x, first_year, last_year):
     # if the timeseries does not cover the range `[first_year, last_year]`,
     # return nan to avoid erroneous aggregation
     if min(x.index) > first_year:
-        logger.warning(
-            "the timeseries `{}` does not start by {}".format(x.name or x, first_year)
-        )
+        logger.warning(f"Start of period {first_year} outside of range.")
         return np.nan
     if max(x.index) < last_year:
-        logger.warning(
-            "the timeseries `{}` does not extend until {}".format(
-                x.name or x, last_year
-            )
-        )
+        logger.warning(f"End of period {last_year} outside of range.")
         return np.nan
 
     # make sure we're using integers
@@ -108,7 +102,7 @@ def cross_threshold(
     """
     direction = [direction] if isstr(direction) else list(direction)
     if not set(direction).issubset(set(["from above", "from below"])):
-        raise ValueError("invalid direction `{}`".format(direction))
+        raise ValueError(f"Invalid direction: {direction}")
 
     # get the values and time-domain index
     x = x.dropna()

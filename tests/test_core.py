@@ -313,7 +313,7 @@ def test_index(test_df_year):
 
 
 def test_index_attributes(test_df):
-    # assert that the index and data column attributes are set correcty
+    # assert that the index and data column attributes are set correctly
     assert test_df.model == ["model_a"]
     assert test_df.scenario == ["scen_a", "scen_b"]
     assert test_df.region == ["World"]

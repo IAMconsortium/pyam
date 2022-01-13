@@ -358,7 +358,7 @@ class IamDataFrame(object):
 
     @property
     def unit_mapping(self):
-        """Return a dictionary of variables to (list of) correspoding units"""
+        """Return a dictionary of variables to (list of) corresponding units"""
 
         def list_or_str(x):
             x = list(x.drop_duplicates())
@@ -1700,12 +1700,14 @@ class IamDataFrame(object):
         if not isinstance(keep, bool):
             raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")
 
+        # downselect `data` rows and clean up index
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = self.copy() if not inplace else self
         ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
 
+        # downselect `meta` dataframe
         idx = _make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
             logger.warning("Filtered IamDataFrame is empty!")
@@ -1777,10 +1779,10 @@ class IamDataFrame(object):
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
             elif col in self.dimensions:
-                lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
+                levels, codes = get_index_levels_codes(self._data, col)
 
-                codes = pattern_match(
-                    lvl_index,
+                matches = pattern_match(
+                    levels,
                     values,
                     regexp=regexp,
                     level=level if col == "variable" else None,
@@ -1788,7 +1790,7 @@ class IamDataFrame(object):
                     return_codes=True,
                 )
 
-                keep_col = get_keep_col(lvl_codes, codes)
+                keep_col = get_keep_col(codes, matches)
 
             else:
                 _raise_filter_error(col)
