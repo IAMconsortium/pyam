@@ -373,3 +373,19 @@ def test_diff(test_df_year, periods, year, append):
     else:
         obs = test_df_year.diff(mapping=mapping, **periods)
         assert_iamframe_equal(exp, obs)
+
+
+@pytest.mark.parametrize("append", (False, True))
+def test_diff_empty(test_df_year, append):
+    """Assert that `diff` with only one time period returns empty"""
+
+    df = test_df_year.filter(year=2005)
+    mapping = {"Primary Energy": "foo", "Primary Energy|Coal": "bar"}
+
+    if append:
+        obs = df.copy()
+        obs.diff(mapping=mapping, append=True)
+        assert_iamframe_equal(df, obs)  # assert that no data was added
+    else:
+        obs = df.diff(mapping=mapping)
+        assert obs.empty
