@@ -51,6 +51,7 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS,
+    remove_from_list,
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
@@ -2183,7 +2184,7 @@ class IamDataFrame(object):
         """
         _data = self._data[
             self._apply_filters(variable=[performance, experience])
-        ].groupby([i for i in self.dimensions if i not in ["variable", "year", "unit"]])
+        ].groupby(remove_from_list(self.dimensions, ["variable", "year", "unit"]))
         _value = _data.apply(compute_learning_rate, performance, experience)
 
         if append:
