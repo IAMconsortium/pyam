@@ -1914,7 +1914,8 @@ class IamDataFrame(object):
 
         See Also
         --------
-        add, multiply, divide, diff
+        add, multiply, divide
+        diff : Compute the difference of timeseries data along the time dimension.
         apply : Apply a custom function on the timeseries data along any axis.
 
         Notes
@@ -2083,6 +2084,10 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
 
+        See Also
+        --------
+        add, subtract, multiply, divide, diff
+
         Notes
         -----
         This function uses the :mod:`pint` package and the :mod:`iam-units` registry
@@ -2095,6 +2100,60 @@ class IamDataFrame(object):
         For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
         _value = _op_data(self, name, func, axis=axis, fillna=fillna, args=args, **kwds)
+        if append:
+            self.append(_value, inplace=True)
+        else:
+            return IamDataFrame(_value, meta=self.meta)
+
+    def diff(self, mapping, periods=1, append=False):
+        """Compute the difference of timeseries data along the time dimension
+
+        This methods behaves as if applying :meth:`pandas.DataFrame.diff` on the
+        timeseries data in wide format.
+
+        Parameters
+        ----------
+        mapping : dict
+            Mapping of *variable* item(s) to the name(s) of the diff-ed timeseries data,
+            e.g.,
+
+            .. code-block:: python
+
+               {"current variable": "name of the diff-ed variable", ...}
+
+        periods : int, optional
+            Periods to shift for calculating difference, accepts negative values;
+            passed to :meth:`pandas.DataFrame.diff`.
+        append : bool, optional
+            Whether to append aggregated timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        subtract, apply, interpolate
+
+        Notes
+        -----
+        This method behaves as if applying :meth:`pandas.DataFrame.diff` by row in a
+        wide data format, so the difference is computed on the previous existing value.
+        This can lead to unexpected results if the data has inconsistent period lengths.
+
+        Use the following to ensure that no missing values exist prior to computing
+        the difference:
+
+        .. code-block:: python
+
+            df.interpolate(time=df.year)
+
+        """
+        cols = [d for d in self.dimensions if d != self.time_col]
+        _value = self.filter(variable=mapping)._data.groupby(cols).diff(periods=periods)
+        _value.index = replace_index_values(_value.index, "variable", mapping)
+
         if append:
             self.append(_value, inplace=True)
         else:

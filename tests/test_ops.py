@@ -4,7 +4,7 @@ import operator
 import pint
 from iam_units import registry
 
-from pyam import IamDataFrame
+from pyam import IamDataFrame, IAMC_IDX
 from pyam.testing import assert_iamframe_equal
 from pyam._ops import _op_data
 
@@ -342,3 +342,50 @@ def test_ops_unknown_method(test_df_year):
     """Using an unknown method raises an error"""
     with pytest.raises(ValueError, match="Unknown method: foo"):
         _op_data(test_df_year, "_", "foo", "variable")
+
+
+@pytest.mark.parametrize("periods, year", (({}, 2010), ({"periods": -1}, 2005)))
+@pytest.mark.parametrize("append", (False, True))
+def test_diff(test_df_year, periods, year, append):
+    """Test `diff` method including non-default periods argument"""
+
+    exp = IamDataFrame(
+        pd.DataFrame(
+            [
+                ["model_a", "scen_a", "World", "foo", "EJ/yr", 5],
+                ["model_a", "scen_a", "World", "bar", "EJ/yr", 2.5],
+                ["model_a", "scen_b", "World", "foo", "EJ/yr", 5],
+            ],
+            columns=IAMC_IDX + [year],
+        ),
+        meta=test_df_year.meta,
+    )
+    # values are negative if computing diff in a negative direction
+    if year == 2005:
+        exp._data = -exp._data
+
+    mapping = {"Primary Energy": "foo", "Primary Energy|Coal": "bar"}
+
+    if append:
+        obs = test_df_year.copy()
+        obs.diff(mapping=mapping, append=True, **periods)
+        assert_iamframe_equal(test_df_year.append(exp), obs)
+    else:
+        obs = test_df_year.diff(mapping=mapping, **periods)
+        assert_iamframe_equal(exp, obs)
+
+
+@pytest.mark.parametrize("append", (False, True))
+def test_diff_empty(test_df_year, append):
+    """Assert that `diff` with only one time period returns empty"""
+
+    df = test_df_year.filter(year=2005)
+    mapping = {"Primary Energy": "foo", "Primary Energy|Coal": "bar"}
+
+    if append:
+        obs = df.copy()
+        obs.diff(mapping=mapping, append=True)
+        assert_iamframe_equal(df, obs)  # assert that no data was added
+    else:
+        obs = df.diff(mapping=mapping)
+        assert obs.empty
