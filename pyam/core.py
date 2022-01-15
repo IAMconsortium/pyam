@@ -2460,6 +2460,7 @@ class IamComputeAccessor:
 
         IamDataFrame.compute.<method>(*args, **kwargs)
     """
+
     def __init__(self, df):
         self._df = df
 
