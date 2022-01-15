@@ -42,10 +42,10 @@ def test_learning_rate(append):
 
     if append:
         obs = TEST_DF.copy()
-        obs.compute_learning_rate("Learning Rate", "Cost", "Cap", append=True)
+        obs.compute.learning_rate("Learning Rate", "Cost", "Cap", append=True)
         assert_iamframe_equal(TEST_DF.append(EXP_DF), obs)
     else:
-        obs = TEST_DF.compute_learning_rate("Learning Rate", "Cost", "Cap")
+        obs = TEST_DF.compute.learning_rate("Learning Rate", "Cost", "Cap")
         assert_iamframe_equal(EXP_DF, obs)
 
 
@@ -55,8 +55,8 @@ def test_learning_rate_empty(append):
 
     if append:
         obs = TEST_DF.copy()
-        obs.compute_learning_rate("Learning Rate", "foo", "Cap", append=True)
+        obs.compute.learning_rate("Learning Rate", "foo", "Cap", append=True)
         assert_iamframe_equal(TEST_DF, obs)  # assert that no data was added
     else:
-        obs = TEST_DF.compute_learning_rate("Learning Rate", "foo", "Cap")
+        obs = TEST_DF.compute.learning_rate("Learning Rate", "foo", "Cap")
         assert obs.empty

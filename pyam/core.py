@@ -205,8 +205,9 @@ class IamDataFrame(object):
         if "exec" in run_control():
             self._execute_run_control()
 
-        # add the `plot` handler
+        # add the `plot` and `compute` handlers
         self.plot = PlotAccessor(self)
+        self._compute = None
 
     def _set_attributes(self):
         """Utility function to set attributes"""
@@ -240,6 +241,13 @@ class IamDataFrame(object):
 
     def __repr__(self):
         return self.info()
+
+    @property
+    def compute(self):
+        """Access to advanced computation methods, see :class:`IamComputeAccessor`"""
+        if self._compute is None:
+            self._compute = IamComputeAccessor(self)
+        return self._compute
 
     def info(self, n=80, meta_rows=5, memory_usage=False):
         """Print a summary of the object index dimensions and meta indicators
@@ -2161,37 +2169,6 @@ class IamDataFrame(object):
         else:
             return IamDataFrame(_value, meta=self.meta)
 
-    def compute_learning_rate(self, name, performance, experience, append=False):
-        """Compute the implicit learning rate from timeseries data
-
-        Refer to :func:`pyam.timeseries.compute_learning_rate` for more information.
-
-        Parameters
-        ----------
-        name : str
-            Variable name of the computed timeseries data.
-        performance : str
-            Variable of the "performance" timeseries (e.g., specific investment costs).
-        experience : str
-            Variable of the "experience" timeseries (e.g., installed capacity).
-        append : bool, optional
-            Whether to append computed timeseries data to this instance.
-
-        Returns
-        -------
-        :class:`IamDataFrame` or **None**
-            Computed timeseries data or None if `append=True`.
-        """
-        _data = self._data[
-            self._apply_filters(variable=[performance, experience])
-        ].groupby(remove_from_list(self.dimensions, ["variable", "year", "unit"]))
-        _value = _data.apply(compute_learning_rate, performance, experience)
-
-        if append:
-            self.append(_value, variable=name, unit="", inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta, variable=name, unit="")
-
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
         df = self.timeseries(iamc_index=iamc_index).reset_index()
@@ -2469,6 +2446,53 @@ class IamDataFrame(object):
 
         if not inplace:
             return ret
+
+
+class IamComputeAccessor:
+    """Perform computations on the timeseries data of an IamDataFrame
+
+    An :class:`IamDataFrame` has a module for computation of (advanced) indicators
+    from the timeseries data.
+
+    The methods in this module can be accessed via
+
+    .. code-block:: python
+
+        IamDataFrame.compute.<method>(*args, **kwargs)
+    """
+    def __init__(self, df):
+        self._df = df
+
+    def learning_rate(self, name, performance, experience, append=False):
+        """Compute the implicit learning rate from timeseries data
+
+        Refer to :func:`pyam.timeseries.compute_learning_rate` for more information.
+
+        Parameters
+        ----------
+        name : str
+            Variable name of the computed timeseries data.
+        performance : str
+            Variable of the "performance" timeseries (e.g., specific investment costs).
+        experience : str
+            Variable of the "experience" timeseries (e.g., installed capacity).
+        append : bool, optional
+            Whether to append computed timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+        """
+        _data = self._df._data[
+            self._df._apply_filters(variable=[performance, experience])
+        ].groupby(remove_from_list(self._df.dimensions, ["variable", "year", "unit"]))
+        _value = _data.apply(compute_learning_rate, performance, experience)
+
+        if append:
+            self._df.append(_value, variable=name, unit="", inplace=True)
+        else:
+            return IamDataFrame(_value, meta=self._df.meta, variable=name, unit="")
 
 
 def _meta_idx(data):

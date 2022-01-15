@@ -16,6 +16,7 @@ and methods.
    api/filtering
    api/plotting
    api/iiasa
+   api/compute
    api/statistics
    api/timeseries
    api/variables
