@@ -19,13 +19,6 @@ class IamComputeAccessor:
     def __init__(self, df):
         self._df = df
 
-    def _finalize(self, data, append, **args):
-        """Return a new IamDataFrame instance or append to self"""
-        if append:
-            self._df.append(data, **args, inplace=True)
-        else:
-            return self._df.__class__(data, meta=self._df.meta, **args)
-
     def learning_rate(self, name, performance, experience, append=False):
         """Compute the implicit learning rate from timeseries data
 
@@ -59,12 +52,15 @@ class IamComputeAccessor:
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
         """
-        _data = self._df._data[
-            self._df._apply_filters(variable=[performance, experience])
-        ].groupby(remove_from_list(self._df.dimensions, ["variable", "year", "unit"]))
-        _value = _data.apply(_compute_learning_rate, performance, experience)
+        value = (
+            self._df._data[self._df._apply_filters(variable=[performance, experience])]
+            .groupby(
+                remove_from_list(self._df.dimensions, ["variable", "year", "unit"])
+            )
+            .apply(_compute_learning_rate, performance, experience)
+        )
 
-        return self._finalize(_value, append=append, variable=name, unit="")
+        return self._df._finalize(value, append=append, variable=name, unit="")
 
 
 def _compute_learning_rate(x, performance, experience):

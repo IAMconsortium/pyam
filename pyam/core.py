@@ -226,6 +226,13 @@ class IamDataFrame(object):
         for c in self.extra_cols:
             setattr(self, c, get_index_levels(self._data, c))
 
+    def _finalize(self, data, append, **args):
+        """Append `data` to `self` or return as new IamDataFrame with copy of `meta`"""
+        if append:
+            self.append(data, **args, inplace=True)
+        else:
+            return IamDataFrame(data, meta=self.meta, **args)
+
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
         if key == "value":
