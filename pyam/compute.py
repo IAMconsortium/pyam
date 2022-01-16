@@ -125,12 +125,7 @@ def _compute_learning_rate(x, performance, experience):
 
     # return empty pd.Series if not all relevant variables exist
     if not all([v in x.index for v in [performance, experience]]):
-        names = remove_from_list(x.index.names, "variable")
-        empty_list = [[]] * len(names)
-        return pd.Series(
-            index=pd.MultiIndex(levels=empty_list, codes=empty_list, names=names),
-            dtype="float64",
-        )
+        return empty_series(remove_from_list(x.index.names, "variable"))
 
     # compute the "experience parameter" (slope of experience curve on double-log scale)
     b = (x[performance] - x[performance].shift(periods=-1)) / (
@@ -139,3 +134,12 @@ def _compute_learning_rate(x, performance, experience):
 
     # translate to "learning rate" (e.g., cost reduction per doubling of capacity)
     return b.apply(lambda y: 1 - math.pow(2, y))
+
+
+def empty_series(names):
+    """Return an empty pd.Series with correct index names"""
+    empty_list = [[]] * len(names)
+    return pd.Series(
+        index=pd.MultiIndex(levels=empty_list, codes=empty_list, names=names),
+        dtype="float64",
+    )
