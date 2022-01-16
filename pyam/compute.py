@@ -50,9 +50,15 @@ class IamComputeAccessor:
             .groupby(remove_from_list(self._df.dimensions, ["year"]), group_keys=False)
             .apply(growth_rate)
         )
-        value.index = replace_index_values(value.index, "variable", mapping)
+        if value.empty:
+            value = empty_series(remove_from_list(self._df.dimensions, "unit"))
+        else:
+            # drop level "unit" and reinsert below, replace "variable"
+            value.index = (
+                replace_index_values(value.index.droplevel("unit"), "variable", mapping)
+            )
 
-        return self._finalize(value, append=append)
+        return self._finalize(value, append=append, unit="")
 
     def learning_rate(self, name, performance, experience, append=False):
         """Compute the implicit learning rate from timeseries data
