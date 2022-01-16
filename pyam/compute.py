@@ -1,5 +1,7 @@
 import math
 import pandas as pd
+from pyam.index import replace_index_values
+from pyam.timeseries import growth_rate
 from pyam.utils import remove_from_list
 
 
@@ -18,6 +20,39 @@ class IamComputeAccessor:
 
     def __init__(self, df):
         self._df = df
+
+    def growth_rate(self, mapping, append=False):
+        """Compute the annualized growth rate of a timeseries along the time dimension
+
+        The growth rate parameter in period *t* is computed based on the changes
+        to the subsequent period, i.e., from period *t* to period *t+1*.
+
+        Parameters
+        ----------
+        mapping : dict
+            Mapping of *variable* item(s) to the name(s) of the computed data,
+            e.g.,
+
+            .. code-block:: python
+
+               {"current variable": "name of growth-rate variable", ...}
+
+        append : bool, optional
+            Whether to append computed timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+        """
+        value = (
+            self._df._data[self._df._apply_filters(variable=mapping)]
+            .groupby(remove_from_list(self._df.dimensions, ["year"]), group_keys=False)
+            .apply(growth_rate)
+        )
+        value.index = replace_index_values(value.index, "variable", mapping)
+
+        return self._finalize(value, append=append)
 
     def learning_rate(self, name, performance, experience, append=False):
         """Compute the implicit learning rate from timeseries data

@@ -2141,7 +2141,7 @@ class IamDataFrame(object):
             Periods to shift for calculating difference, accepts negative values;
             passed to :meth:`pandas.DataFrame.diff`.
         append : bool, optional
-            Whether to append aggregated timeseries data to this instance.
+            Whether to append computed timeseries data to this instance.
 
         Returns
         -------
