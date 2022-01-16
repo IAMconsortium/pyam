@@ -146,7 +146,7 @@ def compute_learning_rate(x, performance, experience):
     :math:`1 - 2^{b}`.
 
     The learning rate parameter in period *t* is computed based on the changes
-    from period *t-1* to period *t*.
+    to the subsequent period, i.e., from period *t* to period *t+1*.
 
     Parameters
     ----------
@@ -180,8 +180,8 @@ def compute_learning_rate(x, performance, experience):
         )
 
     # compute the "experience parameter" (slope of experience curve on double-log scale)
-    b = (x[performance] - x[performance].shift()) / (
-        x[experience] - x[experience].shift()
+    b = (x[performance] - x[performance].shift(periods=-1)) / (
+        x[experience] - x[experience].shift(periods=-1)
     )
 
     # translate to "learning rate" (e.g., cost reduction per doubling of capacity)

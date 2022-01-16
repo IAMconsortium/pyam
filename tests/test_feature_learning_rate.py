@@ -31,7 +31,7 @@ EXP_DF = IamDataFrame(
             ["model_a", "scen_d", "World", "Learning Rate", "", 0.25],
             ["model_a", "scen_e", "World", "Learning Rate", "", 0.75],
         ],
-        columns=IAMC_IDX + [2010],
+        columns=IAMC_IDX + [2005],
     )
 )
 
