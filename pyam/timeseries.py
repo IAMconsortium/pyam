@@ -1,8 +1,6 @@
 import logging
-import math
 import numpy as np
-import pandas as pd
-from pyam.utils import isstr, to_int, remove_from_list
+from pyam.utils import isstr, to_int
 
 logger = logging.getLogger(__name__)
 
