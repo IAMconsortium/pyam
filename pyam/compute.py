@@ -58,7 +58,7 @@ class IamComputeAccessor:
                 replace_index_values(value.index.droplevel("unit"), "variable", mapping)
             )
 
-        return self._finalize(value, append=append, unit="")
+        return self._df._finalize(value, append=append, unit="")
 
     def learning_rate(self, name, performance, experience, append=False):
         """Compute the implicit learning rate from timeseries data
