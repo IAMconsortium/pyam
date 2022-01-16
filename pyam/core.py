@@ -73,7 +73,6 @@ from pyam.index import (
     replace_index_values,
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
-from pyam.timeseries import compute_learning_rate
 from pyam._debiasing import _compute_bias
 from pyam.logging import deprecation_warning, raise_data_error
 

@@ -1,5 +1,6 @@
+import math
+import pandas as pd
 from pyam.utils import remove_from_list
-from pyam.timeseries import compute_learning_rate
 
 
 class IamComputeAccessor:
@@ -18,10 +19,29 @@ class IamComputeAccessor:
     def __init__(self, df):
         self._df = df
 
+    def _finalize(self, data, append, **args):
+        """Return a new IamDataFrame instance or append to self"""
+        if append:
+            self._df.append(data, **args, inplace=True)
+        else:
+            return self._df.__class__(data, meta=self._df.meta, **args)
+
     def learning_rate(self, name, performance, experience, append=False):
         """Compute the implicit learning rate from timeseries data
 
-        Refer to :func:`pyam.timeseries.compute_learning_rate` for more information.
+        Experience curves are based on the concept that a technology's performance
+        improves as experience with this technology grows.
+
+        The "learning rate" indicates the performance improvement (e.g., cost reduction)
+        for each doubling of the accumulated experience (e.g., cumulative capacity).
+
+        The experience curve parameter *b* is equivalent to the (linear) slope when
+        plotting performance and experience timeseries on double-logarithmic scales.
+        The learning rate can be computed from the experience curve parameter as
+        :math:`1 - 2^{b}`.
+
+        The learning rate parameter in period *t* is computed based on the changes
+        to the subsequent period, i.e., from period *t* to period *t+1*.
 
         Parameters
         ----------
