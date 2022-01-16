@@ -62,10 +62,49 @@ class IamComputeAccessor:
         _data = self._df._data[
             self._df._apply_filters(variable=[performance, experience])
         ].groupby(remove_from_list(self._df.dimensions, ["variable", "year", "unit"]))
-        _value = _data.apply(compute_learning_rate, performance, experience)
+        _value = _data.apply(_compute_learning_rate, performance, experience)
 
-        args = dict(variable=name, unit="")
-        if append:
-            self._df.append(_value, **args, inplace=True)
-        else:
-            return self._df.__class__(_value, meta=self._df.meta, **args)
+        return self._finalize(_value, append=append, variable=name, unit="")
+
+
+def _compute_learning_rate(x, performance, experience):
+    """Internal implementation for computing implicit learning rate from timeseries data
+
+    Parameters
+    ----------
+    x : :class:`pandas.Series`
+        Timeseries data of the *performance* and *experience* variables
+        indexed over the time domain.
+    performance : str
+        Variable of the "performance" timeseries (e.g., specific investment costs).
+    experience : str
+        Variable of the "experience" timeseries (e.g., cumulative installed capacity).
+
+    Returns
+    -------
+    Indexed :class:`pandas.Series` of implicit learning rates
+    """
+    # drop all index dimensions other than "variable" and "year"
+    x.index = x.index.droplevel(
+        [i for i in x.index.names if i not in ["variable", "year"]]
+    )
+
+    # apply log, dropping all values that are zero or negative
+    x = x[x > 0].apply(math.log10)
+
+    # return empty pd.Series if not all relevant variables exist
+    if not all([v in x.index for v in [performance, experience]]):
+        names = remove_from_list(x.index.names, "variable")
+        empty_list = [[]] * len(names)
+        return pd.Series(
+            index=pd.MultiIndex(levels=empty_list, codes=empty_list, names=names),
+            dtype="float64",
+        )
+
+    # compute the "experience parameter" (slope of experience curve on double-log scale)
+    b = (x[performance] - x[performance].shift(periods=-1)) / (
+        x[experience] - x[experience].shift(periods=-1)
+    )
+
+    # translate to "learning rate" (e.g., cost reduction per doubling of capacity)
+    return b.apply(lambda y: 1 - math.pow(2, y))
