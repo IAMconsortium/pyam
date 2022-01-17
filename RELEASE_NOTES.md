@@ -1,5 +1,6 @@
 # Next release
 
+- [#604](https://github.com/IAMconsortium/pyam/pull/604) Add an annualized-growth-rate method
 - [#602](https://github.com/IAMconsortium/pyam/pull/602) Add a `compute` module/accessor and a learning-rate method 
 - [#600](https://github.com/IAMconsortium/pyam/pull/600) Add a `diff()` method
 - [#592](https://github.com/IAMconsortium/pyam/pull/592) Fix for running in jupyter-lab notebooks
