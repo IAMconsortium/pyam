@@ -134,8 +134,8 @@ def cross_threshold(
 def growth_rate(x):
     """Compute the annualized growth rate from timeseries data
 
-    The annualized growth rate parameter in period *t* is computed based on the changes
-    from period *t* to period *t+1*.
+    The annualized growth rate parameter in period *t* is computed assuming exponential
+    growth based on the changes from period *t* to period *t+1*.
 
     Parameters
     ----------
