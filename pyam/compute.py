@@ -44,6 +44,11 @@ class IamComputeAccessor:
         -------
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
+
+        Raises
+        ------
+        ValueError
+            Math domain error when timeseries crosses 0.
         """
         value = (
             self._df._data[self._df._apply_filters(variable=mapping)]

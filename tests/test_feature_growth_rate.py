@@ -1,6 +1,9 @@
+import math
 import pandas as pd
+import pandas.testing as pdt
 from pyam import IamDataFrame, IAMC_IDX
 from pyam.testing import assert_iamframe_equal
+from pyam.timeseries import growth_rate
 import pytest
 
 from conftest import META_DF
@@ -19,7 +22,7 @@ EXP_DF = IamDataFrame(
 
 
 @pytest.mark.parametrize("append", (False, True))
-def test_learning_rate(test_df_year, append):
+def test_growth_rate(test_df_year, append):
     """Check computing the growth rate from an IamDataFrame"""
 
     if append:
@@ -32,7 +35,7 @@ def test_learning_rate(test_df_year, append):
 
 
 @pytest.mark.parametrize("append", (False, True))
-def test_learning_rate_empty(test_df_year, append):
+def test_growth_rate_empty(test_df_year, append):
     """Assert that computing the growth rate with invalid variables returns empty"""
 
     if append:
@@ -42,3 +45,17 @@ def test_learning_rate_empty(test_df_year, append):
     else:
         obs = test_df_year.compute.growth_rate({"foo": "bar"})
         assert obs.empty
+
+
+@pytest.mark.parametrize("x2010", (1, 27, -3))
+@pytest.mark.parametrize("rates", ([0.05, 1.25], [0.5, -0.5]))
+def test_growth_rate_timeseries(x2010, rates):
+    """Check several combinations of growth rates directly on the timeseries"""
+
+    x2013 = x2010 * math.pow(1 + rates[0], 3)  # 3 years: 2010 - 2013
+    x2017 = x2013 * math.pow(1 + rates[1], 4)  # 4 years: 2013 - 2017
+
+    pdt.assert_series_equal(
+        growth_rate(pd.Series([x2010, x2013, x2017], index=[2010, 2013, 2017])),
+        pd.Series(rates, index=[2010, 2013]),
+    )

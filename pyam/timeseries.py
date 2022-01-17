@@ -2,7 +2,7 @@ import logging
 import math
 import numpy as np
 import pandas as pd
-from pyam.utils import isstr, to_int
+from pyam.utils import isstr, to_int, raise_data_error
 
 logger = logging.getLogger(__name__)
 
@@ -145,21 +145,26 @@ def growth_rate(x):
     Returns
     -------
     Indexed :class:`pandas.Series` of annualized growth rates
+
+    Raises
+    ------
+    ValueError
+        Math domain error when timeseries crosses 0.
     """
 
+    if not (all([v > 0 for v in x.values]) or all([v < 0 for v in x.values])):
+        raise_data_error("Cannot compute growth rate when timeseries crosses 0", x)
+
     x = x.sort_index()
-    growth_rate = (-x.diff(periods=-1) / x).values
+    growth_rate = (-x.diff(periods=-1) / x).values[:-1]  # diff on latest period is nan
 
     if isinstance(x.index, pd.MultiIndex):
         periods = x.index.get_level_values("year")
     else:
         periods = x.index
-    period_length = -pd.Series(periods).diff(periods=-1).values
+    period_length = -pd.Series(periods).diff(periods=-1).values[:-1]
 
     return pd.Series(
-        [
-            math.copysign(math.pow(1 + abs(v), 1 / d) - 1, v)
-            for v, d in zip(growth_rate[:-1], period_length[:-1])
-        ],
+        [math.pow(1 + v, 1 / d) - 1 for v, d in zip(growth_rate, period_length)],
         index=x.index[:-1],
     )
