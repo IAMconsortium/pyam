@@ -59,8 +59,8 @@ class IamComputeAccessor:
             value = empty_series(remove_from_list(self._df.dimensions, "unit"))
         else:
             # drop level "unit" and reinsert below, replace "variable"
-            value.index = (
-                replace_index_values(value.index.droplevel("unit"), "variable", mapping)
+            value.index = replace_index_values(
+                value.index.droplevel("unit"), "variable", mapping
             )
 
         return self._df._finalize(value, append=append, unit="")
