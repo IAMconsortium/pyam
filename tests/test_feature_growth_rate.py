@@ -59,3 +59,11 @@ def test_growth_rate_timeseries(x2010, rates):
         growth_rate(pd.Series([x2010, x2013, x2017], index=[2010, 2013, 2017])),
         pd.Series(rates, index=[2010, 2013]),
     )
+
+
+@pytest.mark.parametrize("value", (0, -1))
+def test_growth_rate_timeseries_fails(value):
+    """Check that a timeseries reaching/crossing 0 raises"""
+
+    with pytest.raises(ValueError, match="Cannot compute growth rate when*."):
+        growth_rate(pd.Series([1., value]))
