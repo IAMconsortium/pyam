@@ -1,5 +1,6 @@
 # Next release
 
+- [#602](https://github.com/IAMconsortium/pyam/pull/602) Add a `compute` module/accessor and a learning-rate method 
 - [#600](https://github.com/IAMconsortium/pyam/pull/600) Add a `diff()` method
 - [#592](https://github.com/IAMconsortium/pyam/pull/592) Fix for running in jupyter-lab notebooks
 - [#590](https://github.com/IAMconsortium/pyam/pull/590) Update expected figures of plotting tests to use matplotlib 3.5

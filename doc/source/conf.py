@@ -32,7 +32,6 @@ from plotly.io._sg_scraper import plotly_sg_scraper
 extensions = [
     "numpydoc",
     "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
@@ -44,6 +43,7 @@ extensions = [
     "nbsphinx",
     "sphinx_gallery.gen_gallery",
     "cloud_sptheme.ext.table_styling",
+    "autodocsumm",
 ]
 
 autosummary_generate = True

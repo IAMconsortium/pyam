@@ -54,6 +54,7 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
+from pyam.compute import IamComputeAccessor
 from pyam._compare import _compare
 from pyam.aggregation import (
     _aggregate,
@@ -203,8 +204,9 @@ class IamDataFrame(object):
         if "exec" in run_control():
             self._execute_run_control()
 
-        # add the `plot` handler
+        # add the `plot` and `compute` handlers
         self.plot = PlotAccessor(self)
+        self._compute = None
 
     def _set_attributes(self):
         """Utility function to set attributes"""
@@ -224,6 +226,13 @@ class IamDataFrame(object):
         for c in self.extra_cols:
             setattr(self, c, get_index_levels(self._data, c))
 
+    def _finalize(self, data, append, **args):
+        """Append `data` to `self` or return as new IamDataFrame with copy of `meta`"""
+        if append:
+            self.append(data, **args, inplace=True)
+        else:
+            return IamDataFrame(data, meta=self.meta, **args)
+
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
         if key == "value":
@@ -238,6 +247,13 @@ class IamDataFrame(object):
 
     def __repr__(self):
         return self.info()
+
+    @property
+    def compute(self):
+        """Access to advanced computation methods, see :class:`IamComputeAccessor`"""
+        if self._compute is None:
+            self._compute = IamComputeAccessor(self)
+        return self._compute
 
     def info(self, n=80, meta_rows=5, memory_usage=False):
         """Print a summary of the object index dimensions and meta indicators
@@ -1690,12 +1706,11 @@ class IamDataFrame(object):
              - 'level': the maximum "depth" of IAM variables (number of '|')
                (excluding the strings given in the 'variable' argument)
              - 'year': takes an integer (int/np.int64), a list of integers or
-                a range. Note that the last year of a range is not included,
+               a range. Note that the last year of a range is not included,
                so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
              - arguments for filtering by `datetime.datetime` or np.datetime64
                ('month', 'hour', 'time')
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
-
         """
         if not isinstance(keep, bool):
             raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")
@@ -2110,6 +2125,7 @@ class IamDataFrame(object):
 
         This methods behaves as if applying :meth:`pandas.DataFrame.diff` on the
         timeseries data in wide format.
+        By default, the diff-value in period *t* is computed as *x[t] - x[t-1]*.
 
         Parameters
         ----------
@@ -2119,7 +2135,7 @@ class IamDataFrame(object):
 
             .. code-block:: python
 
-               {"current variable": "name of the diff-ed variable", ...}
+               {"current variable": "name of diff-ed variable", ...}
 
         periods : int, optional
             Periods to shift for calculating difference, accepts negative values;
