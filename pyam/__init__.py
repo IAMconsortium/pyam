@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 # get version number either from git (preferred) or metadata
 try:
-    __version__ = get_version(Path(__file__).parent.parent)
+    __version__ = get_version(root=Path(__file__).parents[1])
 except LookupError:
     try:
         __version__ = version("pyam-iamc")
