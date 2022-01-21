@@ -10,7 +10,7 @@ def assert_iamframe_equal(left, right, **kwargs):
     left, right : :class:`IamDataFrame`
         Two IamDataFrame instances to be compared.
     kwargs
-        Passed to :meth:`pyam.IamDataFrame.compare`, comparing the `data` objects.
+        Passed to :meth:`IamDataFrame.compare`, comparing the `data` objects.
 
     Raises
     ------
@@ -26,7 +26,10 @@ def assert_iamframe_equal(left, right, **kwargs):
         raise AssertionError(msg.format(diff.head()))
 
     pdt.assert_frame_equal(
-        _drop_nan_col(left.meta), _drop_nan_col(right.meta), check_dtype=False, check_like=True
+        _drop_nan_col(left.meta),
+        _drop_nan_col(right.meta),
+        check_dtype=False,
+        check_like=True,
     )
 
 

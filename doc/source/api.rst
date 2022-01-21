@@ -18,6 +18,7 @@ and methods.
    api/iiasa
    api/compute
    api/statistics
+   api/testing
    api/timeseries
    api/variables
 
