@@ -14,9 +14,9 @@ and methods.
    api/iamdataframe
    api/database
    api/filtering
+   api/compute
    api/plotting
    api/iiasa
-   api/compute
    api/statistics
    api/timeseries
    api/variables

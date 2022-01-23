@@ -1,5 +1,7 @@
 import math
 import pandas as pd
+from pyam.index import replace_index_values
+from pyam.timeseries import growth_rate
 from pyam.utils import remove_from_list
 
 
@@ -18,6 +20,55 @@ class IamComputeAccessor:
 
     def __init__(self, df):
         self._df = df
+
+    def growth_rate(self, mapping, append=False):
+        """Compute the annualized growth rate of a timeseries along the time dimension
+
+        The growth rate parameter in period *t* is computed based on the changes
+        to the subsequent period, i.e., from period *t* to period *t+1*.
+
+        Parameters
+        ----------
+        mapping : dict
+            Mapping of *variable* item(s) to the name(s) of the computed data,
+            e.g.,
+
+            .. code-block:: python
+
+               {"variable": "name of growth-rate variable", ...}
+
+        append : bool, optional
+            Whether to append computed timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+
+        Raises
+        ------
+        ValueError
+            Math domain error when timeseries crosses 0.
+
+        See Also
+        --------
+        pyam.timeseries.growth_rate
+
+        """
+        value = (
+            self._df._data[self._df._apply_filters(variable=mapping)]
+            .groupby(remove_from_list(self._df.dimensions, ["year"]), group_keys=False)
+            .apply(growth_rate)
+        )
+        if value.empty:
+            value = empty_series(remove_from_list(self._df.dimensions, "unit"))
+        else:
+            # drop level "unit" and reinsert below, replace "variable"
+            value.index = replace_index_values(
+                value.index.droplevel("unit"), "variable", mapping
+            )
+
+        return self._df._finalize(value, append=append, unit="")
 
     def learning_rate(self, name, performance, experience, append=False):
         """Compute the implicit learning rate from timeseries data
@@ -90,12 +141,7 @@ def _compute_learning_rate(x, performance, experience):
 
     # return empty pd.Series if not all relevant variables exist
     if not all([v in x.index for v in [performance, experience]]):
-        names = remove_from_list(x.index.names, "variable")
-        empty_list = [[]] * len(names)
-        return pd.Series(
-            index=pd.MultiIndex(levels=empty_list, codes=empty_list, names=names),
-            dtype="float64",
-        )
+        return empty_series(remove_from_list(x.index.names, "variable"))
 
     # compute the "experience parameter" (slope of experience curve on double-log scale)
     b = (x[performance] - x[performance].shift(periods=-1)) / (
@@ -104,3 +150,12 @@ def _compute_learning_rate(x, performance, experience):
 
     # translate to "learning rate" (e.g., cost reduction per doubling of capacity)
     return b.apply(lambda y: 1 - math.pow(2, y))
+
+
+def empty_series(names):
+    """Return an empty pd.Series with correct index names"""
+    empty_list = [[]] * len(names)
+    return pd.Series(
+        index=pd.MultiIndex(levels=empty_list, codes=empty_list, names=names),
+        dtype="float64",
+    )
