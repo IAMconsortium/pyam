@@ -1,7 +1,7 @@
 .. currentmodule:: pyam
 
-Advanced timeseries indicators
-==============================
+Derived timeseries data
+=======================
 
 .. autoclass:: IamComputeAccessor
    :members:

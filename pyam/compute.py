@@ -35,7 +35,7 @@ class IamComputeAccessor:
 
             .. code-block:: python
 
-               {"current variable": "name of growth-rate variable", ...}
+               {"variable": "name of growth-rate variable", ...}
 
         append : bool, optional
             Whether to append computed timeseries data to this instance.
