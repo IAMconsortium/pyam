@@ -49,6 +49,11 @@ class IamComputeAccessor:
         ------
         ValueError
             Math domain error when timeseries crosses 0.
+
+        See Also
+        --------
+        pyam.timeseries.growth_rate
+
         """
         value = (
             self._df._data[self._df._apply_filters(variable=mapping)]

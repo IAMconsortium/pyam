@@ -150,6 +150,11 @@ def growth_rate(x):
     ------
     ValueError
         Math domain error when timeseries crosses 0.
+
+    See Also
+    --------
+    pyam.IamComputeAccessor.growth_rate
+
     """
 
     if not (all([v > 0 for v in x.values]) or all([v < 0 for v in x.values])):
