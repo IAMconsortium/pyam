@@ -18,6 +18,7 @@ and methods.
    api/plotting
    api/iiasa
    api/statistics
+   api/testing
    api/timeseries
    api/variables
 
