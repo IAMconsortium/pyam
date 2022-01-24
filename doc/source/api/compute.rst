@@ -1,7 +1,7 @@
 .. currentmodule:: pyam
 
-Computing indicators
-====================
+Derived timeseries data
+=======================
 
 .. autoclass:: IamComputeAccessor
    :members:

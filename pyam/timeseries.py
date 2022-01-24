@@ -1,6 +1,8 @@
 import logging
+import math
 import numpy as np
-from pyam.utils import isstr, to_int
+import pandas as pd
+from pyam.utils import isstr, to_int, raise_data_error
 
 logger = logging.getLogger(__name__)
 
@@ -127,3 +129,47 @@ def cross_threshold(
     if return_type == int:
         return [y + 1 for y in map(int, years)]
     return years
+
+
+def growth_rate(x):
+    """Compute the annualized growth rate from timeseries data
+
+    The annualized growth rate parameter in period *t* is computed assuming exponential
+    growth based on the changes from period *t* to period *t+1*.
+
+    Parameters
+    ----------
+    x : :class:`pandas.Series`
+        Timeseries data indexed over the time domain.
+
+    Returns
+    -------
+    Indexed :class:`pandas.Series` of annualized growth rates
+
+    Raises
+    ------
+    ValueError
+        Math domain error when timeseries crosses 0.
+
+    See Also
+    --------
+    pyam.IamComputeAccessor.growth_rate
+
+    """
+
+    if not (all([v > 0 for v in x.values]) or all([v < 0 for v in x.values])):
+        raise_data_error("Cannot compute growth rate when timeseries crosses 0", x)
+
+    x = x.sort_index()
+    growth_rate = (-x.diff(periods=-1) / x).values[:-1]  # diff on latest period is nan
+
+    if isinstance(x.index, pd.MultiIndex):
+        periods = x.index.get_level_values("year")
+    else:
+        periods = x.index
+    period_length = -pd.Series(periods).diff(periods=-1).values[:-1]
+
+    return pd.Series(
+        [math.pow(1 + v, 1 / d) - 1 for v, d in zip(growth_rate, period_length)],
+        index=x.index[:-1],
+    )
