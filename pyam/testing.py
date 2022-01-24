@@ -26,12 +26,8 @@ def assert_iamframe_equal(left, right, **kwargs):
         raise AssertionError(msg.format(diff.head()))
 
     pdt.assert_frame_equal(
-        _drop_nan_col(left.meta),
-        _drop_nan_col(right.meta),
+        left.meta.dropna(axis="columns", how="all"),
+        right.meta.dropna(axis="columns", how="all"),
         check_dtype=False,
         check_like=True,
     )
-
-
-def _drop_nan_col(df):
-    return df.dropna(axis="columns", how="all")
