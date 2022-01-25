@@ -1588,7 +1588,6 @@ class IamDataFrame(object):
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_data, append=append)
 
-
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
         rows = self._apply_filters(variable=variable)
@@ -1870,7 +1869,6 @@ class IamDataFrame(object):
 
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
-
 
     def subtract(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
