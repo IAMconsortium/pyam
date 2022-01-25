@@ -104,17 +104,8 @@ def extract_species(expr):
     return SPECIES_ALIAS.get(species, species), units
 
 
-def convert_gwp(context, qty, to):
+def convert_gwp(metric, qty, to):
     """Helper for :meth:`convert_unit` to perform GWP conversions."""
-    # Remove a leading 'gwp_' to produce the metric name
-    if context is not None and context.startswith("gwp_"):
-        context = context[len("gwp_") :]
-        deprecation_warning(
-            f"Use context='{context}' instead",
-            type='Prefixing a context with "gwp_"',
-            stacklevel=5,
-        )
-    metric = context
 
     # Extract the species from *qty* and *to*, allowing supported aliases
     species_from, units_from = extract_species(qty[1])

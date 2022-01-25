@@ -342,7 +342,6 @@ def test_unit_mapping(test_pd_df):
 def test_dimensions(test_df):
     """Assert that the dimensions attribute works as expected"""
     assert test_df.dimensions == IAMC_IDX + [test_df.time_col]
-    assert test_df._LONG_IDX == IAMC_IDX + [test_df.time_col]
 
 
 def test_get_data_column(test_df):

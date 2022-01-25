@@ -1,4 +1,12 @@
-# Next release
+# Release v1.2.0
+
+## Highlights
+
+- Implement a `compute` module for derived timeseries indicators.
+- Add a `diff()` method similar to the corresponding `pandas.DataFrame.diff()`
+- Improve error reporting on IamDataFrame initialization
+
+## Individual updates
 
 - [#608](https://github.com/IAMconsortium/pyam/pull/608) The method `assert_iamframe_equals()` passes if an all-nan-col is present
 - [#604](https://github.com/IAMconsortium/pyam/pull/604) Add an annualized-growth-rate method

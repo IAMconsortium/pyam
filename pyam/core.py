@@ -418,13 +418,6 @@ class IamDataFrame(object):
         """Return the list of `data` columns (index names & data coordinates)"""
         return list(self._data.index.names)
 
-    @property
-    def _LONG_IDX(self):
-        """DEPRECATED - please use `IamDataFrame.dimensions`"""
-        # TODO: deprecated, remove for release >= 1.2
-        deprecation_warning("Use the attribute `dimensions` instead.", "This attribute")
-        return self.dimensions
-
     def copy(self):
         """Make a deepcopy of this object
 
