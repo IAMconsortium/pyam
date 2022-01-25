@@ -28,7 +28,7 @@ jobs:
       run: pip install pandas==1.1.1 numpy==1.19.0 matplotlib==3.5.0 iam-units==2020.4.21 xlrd==2.0
 
     - name: Install other dependencies and package
-      run: pip install -e .[tests,deploy,optional_plotting,optional_io_formats,tutorials]
+      run: pip install -e .[tests,optional_plotting,optional_io_formats,tutorials]
 
     - name: Test with pytest
       run: pytest tests --mpl
