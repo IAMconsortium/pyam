@@ -1,4 +1,6 @@
-# Release v1.2.0
+# Next Release
+
+# Release v1.3.0
 
 ## Highlights
 
