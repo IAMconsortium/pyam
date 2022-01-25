@@ -231,6 +231,8 @@ class IamDataFrame(object):
         if append:
             self.append(data, **args, inplace=True)
         else:
+            if data is None or data.empty:
+                return _empty_iamframe(self.dimensions + ["value"])
             return IamDataFrame(data, meta=self.meta, **args)
 
     def __getitem__(self, key):
@@ -1270,13 +1272,8 @@ class IamDataFrame(object):
         else:
             _df = _aggregate(self, variable, components=components, method=method)
 
-        # else, append to `self` or return as `IamDataFrame`
-        if append:
-            self.append(_df, inplace=True)
-        else:
-            if _df is None or _df.empty:
-                return _empty_iamframe(self.dimensions + ["value"])
-            return IamDataFrame(_df, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_df, append=append)
 
     def check_aggregate(
         self,
@@ -1396,13 +1393,8 @@ class IamDataFrame(object):
             drop_negative_weights=drop_negative_weights,
         )
 
-        # else, append to `self` or return as `IamDataFrame`
-        if append:
-            self.append(_df, region=region, inplace=True)
-        else:
-            if _df is None or _df.empty:
-                return _empty_iamframe(self.dimensions + ["value"])
-            return IamDataFrame(_df, region=region, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_df, append=append, region=region)
 
     def check_aggregate_region(
         self,
@@ -1532,15 +1524,8 @@ class IamDataFrame(object):
             method=method,
         )
 
-        # return None if there is nothing to aggregate
-        if _df is None:
-            return None
-
-        # else, append to `self` or return as `IamDataFrame`
-        if append is True:
-            self.append(_df, inplace=True)
-        else:
-            return IamDataFrame(_df, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_df, append=append)
 
     def downscale_region(
         self,
@@ -1600,10 +1585,9 @@ class IamDataFrame(object):
         _total = _proxy.groupby(self.time_col).sum()
         _data = _value * _proxy / _total
 
-        if append is True:
-            self.append(_data, inplace=True)
-        else:
-            return IamDataFrame(_data, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_data, append=append)
+
 
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
@@ -1883,10 +1867,10 @@ class IamDataFrame(object):
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
         _value = _op_data(self, name, "add", **kwds, a=a, b=b)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
+
 
     def subtract(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
@@ -1940,10 +1924,9 @@ class IamDataFrame(object):
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
         _value = _op_data(self, name, "subtract", **kwds, a=a, b=b)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def multiply(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
@@ -1996,10 +1979,9 @@ class IamDataFrame(object):
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
         _value = _op_data(self, name, "multiply", **kwds, a=a, b=b)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def divide(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
@@ -2052,10 +2034,9 @@ class IamDataFrame(object):
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
         _value = _op_data(self, name, "divide", **kwds, a=a, b=b)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def apply(
         self, func, name, axis="variable", fillna=None, append=False, args=(), **kwds
@@ -2108,10 +2089,9 @@ class IamDataFrame(object):
         For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
         _value = _op_data(self, name, func, axis=axis, fillna=fillna, args=args, **kwds)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def diff(self, mapping, periods=1, append=False):
         """Compute the difference of timeseries data along the time dimension
@@ -2163,10 +2143,8 @@ class IamDataFrame(object):
         _value = self.filter(variable=mapping)._data.groupby(cols).diff(periods=periods)
         _value.index = replace_index_values(_value.index, "variable", mapping)
 
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
