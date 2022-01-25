@@ -1224,7 +1224,7 @@ class IamDataFrame(object):
         recursive=False,
         append=False,
     ):
-        """Aggregate timeseries by components or subcategories within each region
+        """Aggregate timeseries data by components or subcategories within each region
 
         Parameters
         ----------
@@ -1284,7 +1284,7 @@ class IamDataFrame(object):
         multiplier=1,
         **kwargs,
     ):
-        """Check whether a timeseries matches the aggregation of its components
+        """Check whether timeseries data matches the aggregation by its components
 
         Parameters
         ----------
@@ -1341,7 +1341,7 @@ class IamDataFrame(object):
         append=False,
         drop_negative_weights=True,
     ):
-        """Aggregate a timeseries over a number of subregions
+        """Aggregate timeseries data by a number of subregions
 
         This function allows to add variable sub-categories that are only
         defined at the `region` level by setting `components=True`
@@ -1408,7 +1408,7 @@ class IamDataFrame(object):
         drop_negative_weights=True,
         **kwargs,
     ):
-        """Check whether a timeseries matches the aggregation across subregions
+        """Check whether timeseries data matches the aggregation across subregions
 
         Parameters
         ----------
@@ -1495,7 +1495,7 @@ class IamDataFrame(object):
         method="sum",
         append=False,
     ):
-        """Aggregate a timeseries over a subannual time resolution
+        """Aggregate timeseries data by subannual time resolution
 
         Parameters
         ----------
@@ -1536,7 +1536,7 @@ class IamDataFrame(object):
         weight=None,
         append=False,
     ):
-        """Downscale a timeseries to a number of subregions
+        """Downscale timeseries data to a number of subregions
 
         Parameters
         ----------
