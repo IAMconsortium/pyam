@@ -100,6 +100,12 @@ def to_list(x):
     return x if islistable(x) else [x]
 
 
+def remove_from_list(x, items):
+    """Remove `items` from list `x`"""
+    items = to_list(items)
+    return [i for i in x if i not in items]
+
+
 def write_sheet(writer, name, df, index=False):
     """Write a pandas.DataFrame to an ExcelWriter
 

@@ -53,6 +53,7 @@ from pyam.utils import (
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
+from pyam.compute import IamComputeAccessor
 from pyam._compare import _compare
 from pyam.aggregation import (
     _aggregate,
@@ -202,8 +203,9 @@ class IamDataFrame(object):
         if "exec" in run_control():
             self._execute_run_control()
 
-        # add the `plot` handler
+        # add the `plot` and `compute` handlers
         self.plot = PlotAccessor(self)
+        self._compute = None
 
     def _set_attributes(self):
         """Utility function to set attributes, called on __init__/filter/append/..."""
@@ -227,6 +229,15 @@ class IamDataFrame(object):
         for c in self.extra_cols:
             setattr(self, c, get_index_levels(self._data, c))
 
+    def _finalize(self, data, append, **args):
+        """Append `data` to `self` or return as new IamDataFrame with copy of `meta`"""
+        if append:
+            self.append(data, **args, inplace=True)
+        else:
+            if data is None or data.empty:
+                return _empty_iamframe(self.dimensions + ["value"])
+            return IamDataFrame(data, meta=self.meta, **args)
+
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
         if key == "value":
@@ -241,6 +252,13 @@ class IamDataFrame(object):
 
     def __repr__(self):
         return self.info()
+
+    @property
+    def compute(self):
+        """Access to advanced computation methods, see :class:`IamComputeAccessor`"""
+        if self._compute is None:
+            self._compute = IamComputeAccessor(self)
+        return self._compute
 
     def info(self, n=80, meta_rows=5, memory_usage=False):
         """Print a summary of the object index dimensions and meta indicators
@@ -361,7 +379,7 @@ class IamDataFrame(object):
 
     @property
     def unit_mapping(self):
-        """Return a dictionary of variables to (list of) correspoding units"""
+        """Return a dictionary of variables to (list of) corresponding units"""
 
         def list_or_str(x):
             x = list(x.drop_duplicates())
@@ -431,13 +449,6 @@ class IamDataFrame(object):
                 self._time_domain = "mixed"
 
         return self._time_domain
-
-    @property
-    def _LONG_IDX(self):
-        """DEPRECATED - please use `IamDataFrame.dimensions`"""
-        # TODO: deprecated, remove for release >= 1.2
-        deprecation_warning("Use the attribute `dimensions` instead.", "This attribute")
-        return self.dimensions
 
     def copy(self):
         """Make a deepcopy of this object
@@ -1244,7 +1255,7 @@ class IamDataFrame(object):
         recursive=False,
         append=False,
     ):
-        """Aggregate timeseries by components or subcategories within each region
+        """Aggregate timeseries data by components or subcategories within each region
 
         Parameters
         ----------
@@ -1292,13 +1303,8 @@ class IamDataFrame(object):
         else:
             _df = _aggregate(self, variable, components=components, method=method)
 
-        # else, append to `self` or return as `IamDataFrame`
-        if append:
-            self.append(_df, inplace=True)
-        else:
-            if _df is None or _df.empty:
-                return _empty_iamframe(self.dimensions + ["value"])
-            return IamDataFrame(_df, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_df, append=append)
 
     def check_aggregate(
         self,
@@ -1309,7 +1315,7 @@ class IamDataFrame(object):
         multiplier=1,
         **kwargs,
     ):
-        """Check whether a timeseries matches the aggregation of its components
+        """Check whether timeseries data matches the aggregation by its components
 
         Parameters
         ----------
@@ -1366,7 +1372,7 @@ class IamDataFrame(object):
         append=False,
         drop_negative_weights=True,
     ):
-        """Aggregate a timeseries over a number of subregions
+        """Aggregate timeseries data by a number of subregions
 
         This function allows to add variable sub-categories that are only
         defined at the `region` level by setting `components=True`
@@ -1418,13 +1424,8 @@ class IamDataFrame(object):
             drop_negative_weights=drop_negative_weights,
         )
 
-        # else, append to `self` or return as `IamDataFrame`
-        if append:
-            self.append(_df, region=region, inplace=True)
-        else:
-            if _df is None or _df.empty:
-                return _empty_iamframe(self.dimensions + ["value"])
-            return IamDataFrame(_df, region=region, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_df, append=append, region=region)
 
     def check_aggregate_region(
         self,
@@ -1438,7 +1439,7 @@ class IamDataFrame(object):
         drop_negative_weights=True,
         **kwargs,
     ):
-        """Check whether a timeseries matches the aggregation across subregions
+        """Check whether timeseries data matches the aggregation across subregions
 
         Parameters
         ----------
@@ -1525,7 +1526,7 @@ class IamDataFrame(object):
         method="sum",
         append=False,
     ):
-        """Aggregate a timeseries over a subannual time resolution
+        """Aggregate timeseries data by subannual time resolution
 
         Parameters
         ----------
@@ -1554,15 +1555,8 @@ class IamDataFrame(object):
             method=method,
         )
 
-        # return None if there is nothing to aggregate
-        if _df is None:
-            return None
-
-        # else, append to `self` or return as `IamDataFrame`
-        if append is True:
-            self.append(_df, inplace=True)
-        else:
-            return IamDataFrame(_df, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_df, append=append)
 
     def downscale_region(
         self,
@@ -1573,7 +1567,7 @@ class IamDataFrame(object):
         weight=None,
         append=False,
     ):
-        """Downscale a timeseries to a number of subregions
+        """Downscale timeseries data to a number of subregions
 
         Parameters
         ----------
@@ -1622,10 +1616,8 @@ class IamDataFrame(object):
         _total = _proxy.groupby(self.time_col).sum()
         _data = _value * _proxy / _total
 
-        if append is True:
-            self.append(_data, inplace=True)
-        else:
-            return IamDataFrame(_data, meta=self.meta)
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_data, append=append)
 
     def _all_other_regions(self, region, variable=None):
         """Return list of regions other than `region` containing `variable`"""
@@ -1721,22 +1713,23 @@ class IamDataFrame(object):
              - 'level': the maximum "depth" of IAM variables (number of '|')
                (excluding the strings given in the 'variable' argument)
              - 'year': takes an integer (int/np.int64), a list of integers or
-                a range. Note that the last year of a range is not included,
+               a range. Note that the last year of a range is not included,
                so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
              - arguments for filtering by `datetime.datetime` or np.datetime64
                ('month', 'hour', 'time')
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
-
         """
         if not isinstance(keep, bool):
             raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")
 
+        # downselect `data` rows and clean up index
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
         ret = self.copy() if not inplace else self
         ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
 
+        # downselect `meta` dataframe
         idx = _make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
             logger.warning("Filtered IamDataFrame is empty!")
@@ -1808,10 +1801,10 @@ class IamDataFrame(object):
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
             elif col in self.dimensions:
-                lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
+                levels, codes = get_index_levels_codes(self._data, col)
 
-                codes = pattern_match(
-                    lvl_index,
+                matches = pattern_match(
+                    levels,
                     values,
                     regexp=regexp,
                     level=level if col == "variable" else None,
@@ -1819,7 +1812,7 @@ class IamDataFrame(object):
                     return_codes=True,
                 )
 
-                keep_col = get_keep_col(lvl_codes, codes)
+                keep_col = get_keep_col(codes, matches)
 
             else:
                 _raise_filter_error(col)
@@ -1904,10 +1897,9 @@ class IamDataFrame(object):
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
         _value = _op_data(self, name, "add", **kwds, a=a, b=b)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def subtract(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
@@ -1944,6 +1936,7 @@ class IamDataFrame(object):
         See Also
         --------
         add, multiply, divide
+        diff : Compute the difference of timeseries data along the time dimension.
         apply : Apply a custom function on the timeseries data along any axis.
 
         Notes
@@ -1960,10 +1953,9 @@ class IamDataFrame(object):
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
         _value = _op_data(self, name, "subtract", **kwds, a=a, b=b)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def multiply(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
@@ -2016,10 +2008,9 @@ class IamDataFrame(object):
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
         _value = _op_data(self, name, "multiply", **kwds, a=a, b=b)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def divide(
         self, a, b, name, axis="variable", fillna=None, ignore_units=False, append=False
@@ -2072,10 +2063,9 @@ class IamDataFrame(object):
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
         _value = _op_data(self, name, "divide", **kwds, a=a, b=b)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def apply(
         self, func, name, axis="variable", fillna=None, append=False, args=(), **kwds
@@ -2112,6 +2102,10 @@ class IamDataFrame(object):
         :class:`IamDataFrame` or **None**
             Computed timeseries data or None if `append=True`.
 
+        See Also
+        --------
+        add, subtract, multiply, divide, diff
+
         Notes
         -----
         This function uses the :mod:`pint` package and the :mod:`iam-units` registry
@@ -2124,10 +2118,62 @@ class IamDataFrame(object):
         For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
         _value = _op_data(self, name, func, axis=axis, fillna=fillna, args=args, **kwds)
-        if append:
-            self.append(_value, inplace=True)
-        else:
-            return IamDataFrame(_value, meta=self.meta)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
+
+    def diff(self, mapping, periods=1, append=False):
+        """Compute the difference of timeseries data along the time dimension
+
+        This methods behaves as if applying :meth:`pandas.DataFrame.diff` on the
+        timeseries data in wide format.
+        By default, the diff-value in period *t* is computed as *x[t] - x[t-1]*.
+
+        Parameters
+        ----------
+        mapping : dict
+            Mapping of *variable* item(s) to the name(s) of the diff-ed timeseries data,
+            e.g.,
+
+            .. code-block:: python
+
+               {"current variable": "name of diff-ed variable", ...}
+
+        periods : int, optional
+            Periods to shift for calculating difference, accepts negative values;
+            passed to :meth:`pandas.DataFrame.diff`.
+        append : bool, optional
+            Whether to append computed timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+
+        See Also
+        --------
+        subtract, apply, interpolate
+
+        Notes
+        -----
+        This method behaves as if applying :meth:`pandas.DataFrame.diff` by row in a
+        wide data format, so the difference is computed on the previous existing value.
+        This can lead to unexpected results if the data has inconsistent period lengths.
+
+        Use the following to ensure that no missing values exist prior to computing
+        the difference:
+
+        .. code-block:: python
+
+            df.interpolate(time=df.year)
+
+        """
+        cols = [d for d in self.dimensions if d != self.time_col]
+        _value = self.filter(variable=mapping)._data.groupby(cols).diff(periods=periods)
+        _value.index = replace_index_values(_value.index, "variable", mapping)
+
+        # append to `self` or return as `IamDataFrame`
+        return self._finalize(_value, append=append)
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""

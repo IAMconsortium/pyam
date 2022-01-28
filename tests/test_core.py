@@ -343,7 +343,7 @@ def test_index(test_df_year):
 
 
 def test_index_attributes(test_df):
-    # assert that the index and data column attributes are set correcty
+    # assert that the index and data column attributes are set correctly
     assert test_df.model == ["model_a"]
     assert test_df.scenario == ["scen_a", "scen_b"]
     assert test_df.region == ["World"]
@@ -375,7 +375,6 @@ def test_unit_mapping(test_pd_df):
 def test_dimensions(test_df):
     """Assert that the dimensions attribute works as expected"""
     assert test_df.dimensions == IAMC_IDX + [test_df.time_col]
-    assert test_df._LONG_IDX == IAMC_IDX + [test_df.time_col]
 
 
 def test_get_data_column(test_df):

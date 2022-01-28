@@ -21,4 +21,4 @@ TEST_FRAMES = [TEST_DF] + [
 
 @pytest.fixture(scope="function", params=TEST_FRAMES)
 def data(request):
-    return request.param
+    yield request.param
