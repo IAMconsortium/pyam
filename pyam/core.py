@@ -39,6 +39,7 @@ from pyam.utils import (
     years_match,
     day_match,
     datetime_match,
+    time_match,
     isstr,
     islistable,
     print_list,
@@ -47,7 +48,8 @@ from pyam.utils import (
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
-    ILLEGAL_COLS, time_match, FILTER_DATETIME_ATTRS,
+    ILLEGAL_COLS,
+    FILTER_DATETIME_ATTRS,
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
@@ -1783,7 +1785,7 @@ class IamDataFrame(object):
 
             elif col in ["month", "hour"]:
                 if self.time_col != "time":
-                    logger.warning(f"Filter by '{col}' not supported with yearly data.")
+                    logger.warning(f"Filter by `{col}` not supported with yearly data.")
                     return np.zeros(len(self), dtype=bool)
 
                 def time_col(x, col):
