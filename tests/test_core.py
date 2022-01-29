@@ -664,7 +664,7 @@ def test_timeseries_empty_raises(test_df_year):
 
 def test_timeseries_time_iamc_raises(test_df_time):
     """Calling `timeseries(iamc_index=True)` on a continuous-time IamDataFrame raises"""
-    match = "Cannot use IAMC-index with continuous-time data format!"
+    match = "Cannot use IAMC-index with 'datetime' time-domain!"
     with pytest.raises(ValueError, match=match):
         test_df_time.timeseries(iamc_index=True)
 
