@@ -2,6 +2,14 @@
 
 # Release v1.3.0
 
+## API changes
+
+PR [#598](https://github.com/IAMconsortium/pyam/pull/598) added support
+for mixed time-domains.
+As part of the changes, filtering an **IamDataFrame** with yearly data using arguments
+that are only relevant for the datetime-domain (e.g., month, hour, time) returns
+an empty **IamDataFrame**. Previously, this raised an error.
+
 ## Highlights
 
 - Implement a `compute` module for derived timeseries indicators.
