@@ -769,7 +769,7 @@ class IamDataFrame(object):
         if iamc_index:
             if self.time_col == "time":
                 raise ValueError(
-                    "Cannot use IAMC-index with continuous-time data format!"
+                    "Cannot use IAMC-index with 'datetime' time-domain!"
                 )
             s = s.droplevel(self.extra_cols)
 
@@ -1734,7 +1734,7 @@ class IamDataFrame(object):
             time_values = get_index_levels(ret._data, "time")
             if time_values and all([pd.api.types.is_integer(y) for y in time_values]):
                 ret.swap_time_for_year(inplace=True)
-                msg = "Only yearly data after filtering, time_domain changed to 'year'."
+                msg = "Only yearly data after filtering, time-domain changed to 'year'."
                 logger.info(msg)
 
         # downselect `meta` dataframe
@@ -1778,7 +1778,7 @@ class IamDataFrame(object):
                 levels, codes = get_index_levels_codes(self._data, self.time_col)
                 if self.time_col == "time":
                     levels = [
-                        l.year if isinstance(l, pd.Timestamp) else l for l in levels
+                        i.year if isinstance(i, pd.Timestamp) else i for i in levels
                     ]
                 matches = years_match(levels, values)
                 keep_col = get_keep_col(codes, matches)
