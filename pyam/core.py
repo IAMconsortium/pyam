@@ -1785,7 +1785,7 @@ class IamDataFrame(object):
 
             elif col in ["month", "hour"]:
                 if self.time_col != "time":
-                    logger.warning(f"Filter by `{col}` not supported with yearly data.")
+                    logger.error(f"Filter by `{col}` not supported with yearly data.")
                     return np.zeros(len(self), dtype=bool)
 
                 def time_col(x, col):
@@ -1799,7 +1799,7 @@ class IamDataFrame(object):
 
             elif col == "day":
                 if self.time_col != "time":
-                    logger.warning(f"Filter by `{col}` not supported with yearly data.")
+                    logger.error(f"Filter by `{col}` not supported with yearly data.")
                     return np.zeros(len(self), dtype=bool)
 
                 if isinstance(values, str):
@@ -1818,7 +1818,7 @@ class IamDataFrame(object):
 
             elif col == "time":
                 if self.time_col != "time":
-                    logger.warning(f"Filter by `{col}` not supported with yearly data.")
+                    logger.error(f"Filter by `{col}` not supported with yearly data.")
                     return np.zeros(len(self), dtype=bool)
 
                 keep_col = datetime_match(self.get_data_column("time"), values)
