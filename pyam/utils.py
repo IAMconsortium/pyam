@@ -534,6 +534,7 @@ FILTER_DATETIME_ATTRS = {
     "month": (["%b", "%B"], "tm_mon", "months"),
 }
 
+
 def day_match(data, days):
     """Return rows where data matches days"""
     return time_match(data, days, ["%a", "%A"], "tm_wday", "days")

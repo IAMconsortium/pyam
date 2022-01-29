@@ -18,7 +18,7 @@ def swap_time_for_year(df, inplace, subannual=False):
     # reduce "time" index column to "year"
     # TODO use `replace_index_values` instead of `append_index_col`
     index = index.droplevel("time")
-    new_index_col =  time.apply(lambda x: x if isinstance(x, int) else x.year)
+    new_index_col = time.apply(lambda x: x if isinstance(x, int) else x.year)
     index = append_index_col(index, new_index_col, "year", order=order)
 
     # if selected, extract the "subannual" info from the "time" index column
