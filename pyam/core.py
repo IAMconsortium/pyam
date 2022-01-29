@@ -1797,7 +1797,11 @@ class IamDataFrame(object):
                 else:
                     keep_col = np.isin(data, values)
 
-            elif col == "day" and self.time_col == "time":
+            elif col == "day":
+                if self.time_col != "time":
+                    logger.warning(f"Filter by `{col}` not supported with yearly data.")
+                    return np.zeros(len(self), dtype=bool)
+
                 if isinstance(values, str):
                     wday = True
                 elif isinstance(values, list) and isinstance(values[0], str):
@@ -1812,7 +1816,11 @@ class IamDataFrame(object):
 
                 keep_col = day_match(days, values)
 
-            elif col == "time" and self.time_col == "time":
+            elif col == "time":
+                if self.time_col != "time":
+                    logger.warning(f"Filter by `{col}` not supported with yearly data.")
+                    return np.zeros(len(self), dtype=bool)
+
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
             elif col in self.dimensions:
