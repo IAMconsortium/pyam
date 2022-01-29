@@ -440,11 +440,11 @@ def test_filter_year_mixed_time_domain(test_pd_df):
     mapping = dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_MIXED)])
     df = IamDataFrame(data=test_pd_df.rename(mapping, axis="columns"))
 
-    df.time_domain == "mixed"
+    assert df.time_domain == "mixed"
 
     # filtering to datetime-only works as expected
     obs = df.filter(year=2010)
-    df.time_domain == "datetime"
+    assert obs.time_domain == "datetime"
     pdt.assert_index_equal(obs.time, pd.DatetimeIndex(["2010-07-21"]))
 
     # filtering to year-only works as expected including changing of time domain
