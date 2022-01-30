@@ -456,6 +456,13 @@ def test_filter_mixed_time_domain(test_df_mixed, arg_year, arg_time):
     pdt.assert_index_equal(obs.time, pd.Int64Index([2005]))
 
 
+def test_filter_time_domain_raises(test_df_year):
+    """Assert that error is raised for invalid time_domain filter value"""
+
+    with pytest.raises(ValueError, match="Filter by `datetime='mixed'` not supported!"):
+        test_df_year.filter(time_domain="mixed")
+
+
 @pytest.mark.parametrize("test_month", [6, "June", "Jun", "jun", ["Jun", "jun"]])
 def test_filter_month(test_df, test_month):
     if test_df.time_col == "year":
