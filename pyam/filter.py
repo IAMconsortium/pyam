@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from pyam.utils import to_list
+from pyam.index import get_keep_col
 
 
 FILTER_DATETIME_ATTRS = {
@@ -22,6 +23,45 @@ def filter_by_time_domain(values, levels, codes):
         raise ValueError(f"Filter by `datetime='{values}'` not supported!")
 
     return np.isin(codes, matches)
+
+
+def filter_by_year(time_col, values, levels, codes):
+    """Internal implementation to filter by time domain"""
+
+    if time_col == "time":
+        levels = [i.year if isinstance(i, pd.Timestamp) else i for i in levels]
+    return get_keep_col(codes, years_match(levels, values))
+
+
+def filter_by_dt_arg(col, values, data):
+    """Internal implementation to filter by datetime arguments"""
+
+    def time_col(x, col):
+        return getattr(x, col) if isinstance(x, pd.Timestamp) else None
+
+    data = data.apply(lambda x: time_col(x, col))
+    if col in FILTER_DATETIME_ATTRS:
+        return time_match(data, values, *FILTER_DATETIME_ATTRS[col])
+    else:
+        return np.isin(data, values)
+
+
+def filter_by_day(values, data):
+    """Internal implementation to filter by day"""
+
+    if isinstance(values, str):
+        wday = True
+    elif isinstance(values, list) and isinstance(values[0], str):
+        wday = True
+    else:
+        wday = False
+
+    if wday:
+        days = data.apply(lambda x: x.weekday())
+    else:  # ints or list of ints
+        days = data.apply(lambda x: x.day)
+
+    return time_match(data, values, ["%a", "%A"], "tm_wday", "days")
 
 
 def years_match(levels, years):

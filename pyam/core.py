@@ -11,7 +11,8 @@ import pandas as pd
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from pyam.filter import filter_by_time_domain
+from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg, \
+    filter_by_day
 
 try:
     from datapackage import Package
@@ -49,11 +50,7 @@ from pyam.utils import (
     ILLEGAL_COLS,
 )
 from pyam.filter import (
-    years_match,
-    day_match,
     datetime_match,
-    time_match,
-    FILTER_DATETIME_ATTRS,
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
@@ -77,7 +74,7 @@ from pyam.index import (
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam._debiasing import _compute_bias
-from pyam.logging import deprecation_warning, raise_data_error
+from pyam.logging import raise_data_error
 
 logger = logging.getLogger(__name__)
 
@@ -1787,26 +1784,14 @@ class IamDataFrame(object):
 
             elif col == "year":
                 levels, codes = get_index_levels_codes(self._data, self.time_col)
-                if self.time_col == "time":
-                    levels = [
-                        i.year if isinstance(i, pd.Timestamp) else i for i in levels
-                    ]
-                matches = years_match(levels, values)
-                keep_col = get_keep_col(codes, matches)
+                keep_col = filter_by_year(self.time_col, values, levels, codes)
 
             elif col in ["month", "hour"]:
                 if self.time_col != "time":
                     logger.error(f"Filter by `{col}` not supported with yearly data.")
                     return np.zeros(len(self), dtype=bool)
 
-                def time_col(x, col):
-                    return getattr(x, col) if isinstance(x, pd.Timestamp) else None
-
-                data = self.get_data_column("time").apply(lambda x: time_col(x, col))
-                if col in FILTER_DATETIME_ATTRS:
-                    keep_col = time_match(data, values, *FILTER_DATETIME_ATTRS[col])
-                else:
-                    keep_col = np.isin(data, values)
+                keep_col = filter_by_dt_arg(col, values, self.get_data_column("time"))
 
             elif col == "day":
                 if self.time_col != "time":
@@ -1845,7 +1830,6 @@ class IamDataFrame(object):
                     has_nan=True,
                     return_codes=True,
                 )
-
                 keep_col = get_keep_col(codes, matches)
 
             else:
