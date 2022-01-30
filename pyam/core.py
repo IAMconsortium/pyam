@@ -1798,19 +1798,7 @@ class IamDataFrame(object):
                     logger.error(f"Filter by `{col}` not supported with yearly data.")
                     return np.zeros(len(self), dtype=bool)
 
-                if isinstance(values, str):
-                    wday = True
-                elif isinstance(values, list) and isinstance(values[0], str):
-                    wday = True
-                else:
-                    wday = False
-
-                if wday:
-                    days = self.get_data_column("time").apply(lambda x: x.weekday())
-                else:  # ints or list of ints
-                    days = self.get_data_column("time").apply(lambda x: x.day)
-
-                keep_col = day_match(days, values)
+                keep_col = filter_by_day(values, self.get_data_column("time"))
 
             elif col == "time":
                 if self.time_col != "time":

@@ -61,7 +61,7 @@ def filter_by_day(values, data):
     else:  # ints or list of ints
         days = data.apply(lambda x: x.day)
 
-    return time_match(data, values, ["%a", "%A"], "tm_wday", "days")
+    return time_match(days, values, ["%a", "%A"], "tm_wday", "days")
 
 
 def years_match(levels, years):
