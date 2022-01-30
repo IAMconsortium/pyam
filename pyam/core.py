@@ -769,7 +769,7 @@ class IamDataFrame(object):
         if iamc_index:
             if self.time_col == "time":
                 raise ValueError(
-                    "Cannot use IAMC-index with 'datetime' time-domain!"
+                    "Cannot use `iamc_index=True` with 'datetime' time-domain!"
                 )
             s = s.droplevel(self.extra_cols)
 
