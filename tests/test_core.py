@@ -431,24 +431,36 @@ def test_filter_year(test_df):
         pdt.assert_index_equal(obs.time, EXP_DATETIME_INDEX)
 
 
-# TODO: merge with previous test once TEST_TIME_MIXED is part of `conftest.py:test_df`
-def test_filter_year_mixed_time_domain(test_pd_df):
-    mapping = dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_MIXED)])
-    df = IamDataFrame(data=test_pd_df.rename(mapping, axis="columns"))
+@pytest.mark.parametrize(
+    "arg_year, arg_time",
+    [
+        (dict(year=2005), dict(year=2010)),
+        (dict(time_domain="year"), dict(time_domain="datetime")),
+    ],
+)
+def test_filter_mixed_time_domain(test_df_mixed, arg_year, arg_time):
+    """Assert that reassigning attributes works for filtering from mixed time domain"""
 
-    assert df.time_domain == "mixed"
+    assert test_df_mixed.time_domain == "mixed"
 
     # filtering to datetime-only works as expected
-    obs = df.filter(year=2010)
+    obs = test_df_mixed.filter(**arg_time)
     assert obs.time_domain == "datetime"
     pdt.assert_index_equal(obs.time, pd.DatetimeIndex(["2010-07-21"]))
 
     # filtering to year-only works as expected including changing of time domain
-    obs = df.filter(year=2005)
+    obs = test_df_mixed.filter(**arg_year)
     assert obs.time_col == "year"
     assert obs.time_domain == "year"
     assert obs.year == [2005]
     pdt.assert_index_equal(obs.time, pd.Int64Index([2005]))
+
+
+def test_filter_time_domain_raises(test_df_year):
+    """Assert that error is raised for invalid time_domain filter value"""
+
+    with pytest.raises(ValueError, match="Filter by `datetime='mixed'` not supported!"):
+        test_df_year.filter(time_domain="mixed")
 
 
 @pytest.mark.parametrize("test_month", [6, "June", "Jun", "jun", ["Jun", "jun"]])
