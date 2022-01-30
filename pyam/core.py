@@ -773,9 +773,7 @@ class IamDataFrame(object):
                 )
             s = s.droplevel(self.extra_cols)
 
-        df = s.unstack(level=self.time_col).rename_axis(None, axis=1).sort_index(axis=1)
-
-        return df
+        return s.unstack(level=self.time_col).rename_axis(None, axis=1)
 
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to `exclude: False`"""
