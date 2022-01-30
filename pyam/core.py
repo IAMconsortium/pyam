@@ -11,8 +11,7 @@ import pandas as pd
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg, \
-    filter_by_day
+from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
 
 try:
     from datapackage import Package
@@ -1786,19 +1785,12 @@ class IamDataFrame(object):
                 levels, codes = get_index_levels_codes(self._data, self.time_col)
                 keep_col = filter_by_year(self.time_col, values, levels, codes)
 
-            elif col in ["month", "hour"]:
+            elif col in ["month", "hour", "day"]:
                 if self.time_col != "time":
                     logger.error(f"Filter by `{col}` not supported with yearly data.")
                     return np.zeros(len(self), dtype=bool)
 
                 keep_col = filter_by_dt_arg(col, values, self.get_data_column("time"))
-
-            elif col == "day":
-                if self.time_col != "time":
-                    logger.error(f"Filter by `{col}` not supported with yearly data.")
-                    return np.zeros(len(self), dtype=bool)
-
-                keep_col = filter_by_day(values, self.get_data_column("time"))
 
             elif col == "time":
                 if self.time_col != "time":

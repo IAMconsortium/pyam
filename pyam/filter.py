@@ -9,6 +9,7 @@ from pyam.index import get_keep_col
 
 FILTER_DATETIME_ATTRS = {
     "month": (["%b", "%B"], "tm_mon", "months"),
+    "day": (["%a", "%A"], "tm_wday", "days"),
 }
 
 
@@ -39,29 +40,26 @@ def filter_by_dt_arg(col, values, data):
     def time_col(x, col):
         return getattr(x, col) if isinstance(x, pd.Timestamp) else None
 
-    data = data.apply(lambda x: time_col(x, col))
+    if col == "day":
+        if isinstance(values, str):
+            wday = True
+        elif isinstance(values, list) and isinstance(values[0], str):
+            wday = True
+        else:
+            wday = False
+
+        if wday:
+            data = data.apply(lambda x: x.weekday())
+        else:  # ints or list of ints
+            data = data.apply(lambda x: x.day)
+
+    else:
+        data = data.apply(lambda x: time_col(x, col))
+
     if col in FILTER_DATETIME_ATTRS:
         return time_match(data, values, *FILTER_DATETIME_ATTRS[col])
     else:
         return np.isin(data, values)
-
-
-def filter_by_day(values, data):
-    """Internal implementation to filter by day"""
-
-    if isinstance(values, str):
-        wday = True
-    elif isinstance(values, list) and isinstance(values[0], str):
-        wday = True
-    else:
-        wday = False
-
-    if wday:
-        days = data.apply(lambda x: x.weekday())
-    else:  # ints or list of ints
-        days = data.apply(lambda x: x.day)
-
-    return time_match(days, values, ["%a", "%A"], "tm_wday", "days")
 
 
 def years_match(levels, years):
