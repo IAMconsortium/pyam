@@ -11,6 +11,8 @@ import pandas as pd
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from pyam.filter import filter_by_time_domain
+
 try:
     from datapackage import Package
 
@@ -1713,6 +1715,7 @@ class IamDataFrame(object):
              - 'year': takes an integer (int/np.int64), a list of integers or
                a range. Note that the last year of a range is not included,
                so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
+             - 'time_domain': can be "year" or "datetime"
              - arguments for filtering by `datetime.datetime` or np.datetime64
                ('month', 'hour', 'time')
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
@@ -1771,6 +1774,14 @@ class IamDataFrame(object):
                 keep_col = _make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(cat_idx)
+
+            elif col == "time_domain":
+                # fast-pass if `self` already has selected time-domain
+                if self.time_domain == values:
+                    keep_col = np.ones(len(self), dtype=bool)
+                else:
+                    levels, codes = get_index_levels_codes(self._data, self.time_col)
+                    keep_col = filter_by_time_domain(values, levels, codes)
 
             elif col == "year":
                 levels, codes = get_index_levels_codes(self._data, self.time_col)

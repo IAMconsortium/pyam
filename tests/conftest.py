@@ -176,6 +176,16 @@ def test_df_time():
     yield df
 
 
+# minimal IamDataFrame for specifically testing 'mixed'-time-domain features
+@pytest.fixture(scope="function")
+def test_df_mixed():
+    mapping = dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_MIXED)])
+    df = IamDataFrame(data=TEST_DF.rename(mapping, axis="columns"))
+    for i in META_COLS:
+        df.set_meta(META_DF[i])
+    yield df
+
+
 # minimal test data as pandas.DataFrame (only 'year' time format)
 @pytest.fixture(scope="function")
 def test_pd_df():
