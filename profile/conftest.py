@@ -2,7 +2,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from pyam import IAMC_IDX
+from pyam import IamDataFrame, IAMC_IDX
 
 DATA_PATH = Path("data")
 TEST_DF = pd.DataFrame(
@@ -22,3 +22,8 @@ TEST_FRAMES = [TEST_DF] + [
 @pytest.fixture(scope="function", params=TEST_FRAMES)
 def data(request):
     yield request.param
+
+
+@pytest.fixture(scope="function", params=TEST_FRAMES)
+def df(request):
+    yield IamDataFrame(request.param)

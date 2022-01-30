@@ -37,10 +37,9 @@ from pyam.utils import (
     find_depth,
     pattern_match,
     years_match,
-    month_match,
-    hour_match,
     day_match,
     datetime_match,
+    time_match,
     isstr,
     islistable,
     print_list,
@@ -50,6 +49,7 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS,
+    FILTER_DATETIME_ATTRS,
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
@@ -769,13 +769,11 @@ class IamDataFrame(object):
         if iamc_index:
             if self.time_col == "time":
                 raise ValueError(
-                    "Cannot use IAMC-index with continuous-time data format!"
+                    "Cannot use `iamc_index=True` with 'datetime' time-domain!"
                 )
             s = s.droplevel(self.extra_cols)
 
-        df = s.unstack(level=self.time_col).rename_axis(None, axis=1).sort_index(axis=1)
-
-        return df
+        return s.unstack(level=self.time_col).rename_axis(None, axis=1)
 
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to `exclude: False`"""
@@ -1729,6 +1727,14 @@ class IamDataFrame(object):
         ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
 
+        # swap time for year if downselected to years-only
+        if ret.time_col == "time":
+            time_values = get_index_levels(ret._data, "time")
+            if time_values and all([pd.api.types.is_integer(y) for y in time_values]):
+                ret.swap_time_for_year(inplace=True)
+                msg = "Only yearly data after filtering, time-domain changed to 'year'."
+                logger.info(msg)
+
         # downselect `meta` dataframe
         idx = _make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
@@ -1765,19 +1771,35 @@ class IamDataFrame(object):
                 keep_col = _make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(cat_idx)
+
             elif col == "year":
-                if self.time_col == "year":
-                    _data = self.get_data_column(col)
+                levels, codes = get_index_levels_codes(self._data, self.time_col)
+                if self.time_col == "time":
+                    levels = [
+                        i.year if isinstance(i, pd.Timestamp) else i for i in levels
+                    ]
+                matches = years_match(levels, values)
+                keep_col = get_keep_col(codes, matches)
+
+            elif col in ["month", "hour"]:
+                if self.time_col != "time":
+                    logger.error(f"Filter by `{col}` not supported with yearly data.")
+                    return np.zeros(len(self), dtype=bool)
+
+                def time_col(x, col):
+                    return getattr(x, col) if isinstance(x, pd.Timestamp) else None
+
+                data = self.get_data_column("time").apply(lambda x: time_col(x, col))
+                if col in FILTER_DATETIME_ATTRS:
+                    keep_col = time_match(data, values, *FILTER_DATETIME_ATTRS[col])
                 else:
-                    _data = self.get_data_column("time").apply(lambda x: x.year)
-                keep_col = years_match(_data, values)
+                    keep_col = np.isin(data, values)
 
-            elif col == "month" and self.time_col == "time":
-                keep_col = month_match(
-                    self.get_data_column("time").apply(lambda x: x.month), values
-                )
+            elif col == "day":
+                if self.time_col != "time":
+                    logger.error(f"Filter by `{col}` not supported with yearly data.")
+                    return np.zeros(len(self), dtype=bool)
 
-            elif col == "day" and self.time_col == "time":
                 if isinstance(values, str):
                     wday = True
                 elif isinstance(values, list) and isinstance(values[0], str):
@@ -1792,12 +1814,11 @@ class IamDataFrame(object):
 
                 keep_col = day_match(days, values)
 
-            elif col == "hour" and self.time_col == "time":
-                keep_col = hour_match(
-                    self.get_data_column("time").apply(lambda x: x.hour), values
-                )
+            elif col == "time":
+                if self.time_col != "time":
+                    logger.error(f"Filter by `{col}` not supported with yearly data.")
+                    return np.zeros(len(self), dtype=bool)
 
-            elif col == "time" and self.time_col == "time":
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
             elif col in self.dimensions:
@@ -1815,7 +1836,7 @@ class IamDataFrame(object):
                 keep_col = get_keep_col(codes, matches)
 
             else:
-                _raise_filter_error(col)
+                raise ValueError(f"Filter by `{col}` not supported!")
 
             keep = np.logical_and(keep, keep_col)
 
@@ -2457,11 +2478,6 @@ class IamDataFrame(object):
 def _meta_idx(data):
     """Return the 'META_IDX' from data by index"""
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
-
-
-def _raise_filter_error(col):
-    """Raise an error if not possible to filter by col"""
-    raise ValueError(f"Filter by `{col}` not supported!")
 
 
 def _check_rows(rows, check, in_range=True, return_test="any"):

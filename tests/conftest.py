@@ -38,6 +38,8 @@ TEST_TIME_MIXED = [2005, datetime(2010, 7, 21)]
 
 DTS_MAPPING = {2005: TEST_DTS[0], 2010: TEST_DTS[1]}
 
+EXP_DATETIME_INDEX = pd.DatetimeIndex(["2005-06-17T00:00:00"])
+
 
 TEST_DF = pd.DataFrame(
     [
