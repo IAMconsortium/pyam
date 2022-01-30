@@ -69,18 +69,8 @@ def years_match(levels, years):
     years = to_list(years)
     if not all([pd.api.types.is_integer(y) for y in years]):
         raise TypeError("Filter by `year` requires integers!")
+
     return np.isin(levels, years)
-
-
-def day_match(data, days):
-    """Return rows where data matches days"""
-    return time_match(data, days, ["%a", "%A"], "tm_wday", "days")
-
-
-def hour_match(data, hours):
-    """Return rows where data matches hours"""
-    hours = [hours] if isinstance(hours, int) else hours
-    return np.isin(data, hours)
 
 
 def time_match(data, times, conv_codes, strptime_attr, name):
