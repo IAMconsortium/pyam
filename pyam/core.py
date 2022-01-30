@@ -38,10 +38,6 @@ from pyam.utils import (
     merge_meta,
     find_depth,
     pattern_match,
-    years_match,
-    day_match,
-    datetime_match,
-    time_match,
     isstr,
     islistable,
     print_list,
@@ -51,6 +47,12 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS,
+)
+from pyam.filter import (
+    years_match,
+    day_match,
+    datetime_match,
+    time_match,
     FILTER_DATETIME_ATTRS,
 )
 from pyam.read_ixmp import read_ix
