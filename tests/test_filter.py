@@ -249,5 +249,3 @@ def test_filter_keep_false(test_df):
 def test_filter_by_regexp(test_df):
     obs = test_df.filter(scenario="sce._a$", regexp=True)
     assert obs["scenario"].unique() == "scen_a"
-
-
