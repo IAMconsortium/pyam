@@ -461,7 +461,6 @@ def test_filter_month(test_df, test_month):
         pdt.assert_index_equal(obs.time, EXP_DATETIME_INDEX)
 
 
-
 @pytest.mark.parametrize("test_month", [6, "Jun", "jun", ["Jun", "jun"]])
 def test_filter_year_month(test_df, test_month):
     if test_df.time_col == "year":
