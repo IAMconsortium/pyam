@@ -58,7 +58,8 @@ def test_filter_mixed_time_domain(test_df_mixed, arg_year, arg_time):
 def test_filter_time_domain_raises(test_df_year):
     """Assert that error is raised for invalid time_domain filter value"""
 
-    with pytest.raises(ValueError, match="Filter by `datetime='mixed'` not supported!"):
+    match = "Filter by `time_domain='mixed'` not supported!"
+    with pytest.raises(ValueError, match=match):
         test_df_year.filter(time_domain="mixed")
 
 

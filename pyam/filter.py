@@ -21,7 +21,7 @@ def filter_by_time_domain(values, levels, codes):
     elif values == "datetime":
         matches = [i for (i, label) in enumerate(levels) if not isinstance(label, int)]
     else:
-        raise ValueError(f"Filter by `datetime='{values}'` not supported!")
+        raise ValueError(f"Filter by `time_domain='{values}'` not supported!")
 
     return np.isin(codes, matches)
 
