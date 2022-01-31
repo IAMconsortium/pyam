@@ -38,8 +38,9 @@ authors:
     given-names: Sebastian
   - family-names: Welder
     given-names: Lara
-  - family-names: Quispe
-    given-names: Erik Francisco Álvarez
+  - family-names: Alvarez Quispe
+    given-names: Erik Francisco
+    orcid: https://orcid.org/0000-0003-3862-9747
   - family-names: Smith
     given-names: Christopher J.
 keywords:
