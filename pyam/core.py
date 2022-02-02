@@ -45,6 +45,7 @@ from pyam.utils import (
     isstr,
     islistable,
     print_list,
+    to_xarray,
     s,
     DEFAULT_META_INDEX,
     META_IDX,
@@ -2259,6 +2260,8 @@ class IamDataFrame(object):
 
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
+
+    to_xarray = to_xarray
 
     def load_meta(
         self, path, sheet_name="meta", ignore_conflict=False, *args, **kwargs

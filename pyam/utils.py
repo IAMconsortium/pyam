@@ -13,12 +13,14 @@ import numpy as np
 import pandas as pd
 from collections.abc import Iterable
 
-try:
-    import seaborn as sns
-except ImportError:
-    pass
-
 logger = logging.getLogger(__name__)
+
+try:
+    import xarray as xr
+
+    HAS_XARRAY = True
+except ImportError:  # pragma: no cover
+    HAS_XARRAY = False
 
 # common indices
 DEFAULT_META_INDEX = ["model", "scenario"]
@@ -700,3 +702,59 @@ def get_variable_components(x, level, join=False):
 def s(n):
     """Return an s if n!=1 for nicer formatting of log messages"""
     return "s" if n != 1 else ""
+
+
+def pack_dimensions(index, **stacked_dims):
+    packed_labels = {}
+    packed_values = []
+    keep_levels = set(index.names)
+
+    def values(level):
+        return index.get_level_values(level)
+
+    for dim, levels in stacked_dims.items():
+        dim_values = pd.MultiIndex.from_arrays(map(values, levels))
+        packed_labels[dim] = labels = dim_values.unique()
+        packed_values.append(pd.Index(labels.get_indexer(dim_values), name=dim))
+        keep_levels.difference_update(levels)
+
+    return (
+        pd.MultiIndex.from_arrays(
+            itertools.chain(map(values, keep_levels), packed_values)
+        ),
+        packed_labels,
+    )
+
+
+def to_xarray(df, **stacked_dims):
+    """
+    Convert pyam dataframe to xarray
+
+    Arguments
+    ---------
+    **stacked_dims : Tuple
+        Defines which dimensions should be set up as stacked dimensions
+
+    Notes
+    -----
+    Since xarray uses a dense representation of data as a multi-dimensional xarray,
+    it is important to stack sparse dimension sets to not allocate immense amounts
+    of nan entries. By default the `model` and `scenario` dimensions are stacked to
+    a `pathway` multiindex dimension and `variable` and `unit` are stacked as
+    `varunit`.
+
+    TODO instead of using a concrete unit dimension we should consider reusing
+    pint-xarray here.
+    """
+
+    if not HAS_XARRAY:  # pragma: no cover
+        raise ImportError(
+            "Missing optional dependency `xarray`, use pip or conda to install"
+        )
+
+    s = df._data
+    if not stacked_dims:
+        stacked_dims = dict(pathway=("model", "scenario"), varunit=("variable", "unit"))
+
+    index, labels = pack_dimensions(s.index, **stacked_dims)
+    return xr.DataArray.from_series(s.set_axis(index)).assign_coords(labels)
