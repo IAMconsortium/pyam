@@ -6,7 +6,7 @@ from pyam.testing import assert_iamframe_equal
 from pyam.timeseries import growth_rate
 import pytest
 
-from conftest import META_DF
+from .conftest import META_DF
 
 
 EXP_DF = IamDataFrame(

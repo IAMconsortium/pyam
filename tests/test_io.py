@@ -7,7 +7,7 @@ from pyam import IamDataFrame, read_datapackage
 from pyam.utils import META_IDX
 from pyam.testing import assert_iamframe_equal
 
-from conftest import TEST_DATA_DIR, META_DF
+from .conftest import TEST_DATA_DIR, META_DF
 
 FILTER_ARGS = dict(scenario="scen_a")
 

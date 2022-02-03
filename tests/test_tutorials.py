@@ -4,7 +4,7 @@ import subprocess
 import sys
 import pytest
 
-from conftest import here, IIASA_UNAVAILABLE
+from .conftest import here, IIASA_UNAVAILABLE
 
 try:
     import nbformat
