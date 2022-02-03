@@ -4,7 +4,7 @@ from datetime import datetime
 from pyam import IamDataFrame
 from pyam.testing import assert_iamframe_equal
 
-from conftest import TEST_DTS, TEST_TIME_STR, TEST_TIME_STR_HR
+from .conftest import TEST_DTS, TEST_TIME_STR, TEST_TIME_STR_HR
 
 
 def get_subannual_df(date1, date2):

@@ -7,7 +7,7 @@ from numpy import testing as npt
 
 from pyam import IamDataFrame, META_IDX, IAMC_IDX, compare
 
-from conftest import TEST_DTS, META_COLS
+from .conftest import META_COLS
 
 
 RENAME_DF = IamDataFrame(

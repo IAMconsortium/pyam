@@ -237,7 +237,7 @@ class Connection(object):
         _check_response(r)
 
         # cast response to dataframe and return
-        return pd.read_json(r.content, orient="records")
+        return pd.read_json(r.text, orient="records")
 
     @property
     @lru_cache()
@@ -247,7 +247,7 @@ class Connection(object):
         headers = {"Authorization": "Bearer {}".format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
-        return pd.read_json(r.content, orient="records")["name"]
+        return pd.read_json(r.text, orient="records")["name"]
 
     def meta(self, default=True, **kwargs):
         """Return categories and indicators (meta) of scenarios
@@ -311,7 +311,7 @@ class Connection(object):
         headers = {"Authorization": "Bearer {}".format(self._token)}
         r = requests.get(url, headers=headers)
         _check_response(r)
-        df = pd.read_json(r.content, orient="records")
+        df = pd.read_json(r.text, orient="records")
         return pd.Series(df["variable"].unique(), name="variable")
 
     @lru_cache()
@@ -330,7 +330,7 @@ class Connection(object):
         params = {"includeSynonyms": include_synonyms}
         r = requests.get(url, headers=headers, params=params)
         _check_response(r)
-        return self.convert_regions_payload(r.content, include_synonyms)
+        return self.convert_regions_payload(r.text, include_synonyms)
 
     @staticmethod
     def convert_regions_payload(response, include_synonyms):
@@ -485,8 +485,8 @@ class Connection(object):
             value=float,
             version=int,
         )
-        data = pd.read_json(r.content, orient="records", dtype=dtype)
-        logger.debug(f"Response: {len(r.content)} bytes, {len(data)} records")
+        data = pd.read_json(r.text, orient="records", dtype=dtype)
+        logger.debug(f"Response: {len(r.text)} bytes, {len(data)} records")
         cols = IAMC_IDX + ["year", "value", "subannual", "version"]
         # keep only known columns or init empty df
         data = pd.DataFrame(data=data, columns=cols)

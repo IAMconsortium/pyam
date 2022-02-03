@@ -11,7 +11,7 @@ from contextlib import contextmanager
 
 import pyam
 from pyam import plotting, run_control, reset_rc_defaults
-from conftest import IMAGE_BASELINE_DIR
+from .conftest import IMAGE_BASELINE_DIR
 
 
 logger = logging.getLogger(__name__)

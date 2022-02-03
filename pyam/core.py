@@ -1703,6 +1703,7 @@ class IamDataFrame(object):
         if len(idx) == 0:
             logger.warning("Filtered IamDataFrame is empty!")
         ret.meta = ret.meta.loc[idx]
+        ret.meta.index = ret.meta.index.remove_unused_levels()
         ret._set_attributes()
         if not inplace:
             return ret
