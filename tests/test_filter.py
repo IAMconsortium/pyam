@@ -8,7 +8,7 @@ import pytest
 
 from pyam import IamDataFrame, IAMC_IDX
 
-from conftest import EXP_DATETIME_INDEX
+from .conftest import EXP_DATETIME_INDEX
 
 
 def test_filter_error_illegal_column(test_df):
