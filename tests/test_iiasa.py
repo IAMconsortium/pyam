@@ -8,7 +8,8 @@ import pandas.testing as pdt
 
 from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
-from conftest import IIASA_UNAVAILABLE, META_COLS, TEST_API, TEST_API_NAME
+
+from .conftest import IIASA_UNAVAILABLE, META_COLS, TEST_API, TEST_API_NAME
 
 if IIASA_UNAVAILABLE:
     pytest.skip("IIASA database API unavailable", allow_module_level=True)

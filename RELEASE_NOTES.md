@@ -1,5 +1,10 @@
 # Next Release
 
+# Release v1.3.1
+
+This is a patch release to ensure compatibility with
+pandas [v1.4.0](https://pandas.pydata.org/docs/whatsnew/v1.4.0.html).
+
 # Release v1.3.0
 
 ## API changes

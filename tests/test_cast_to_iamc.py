@@ -2,8 +2,6 @@ import pytest
 import pandas as pd
 from pyam import IamDataFrame, compare
 
-from conftest import TEST_DTS
-
 
 # when making any updates to this file,
 # please also update the `data_table_formats` tutorial notebook!

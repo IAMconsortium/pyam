@@ -2,8 +2,8 @@
 to print configuration information of the loaded package(s) to users!"""
 import sys
 
-from test_plotting import MPL_KWARGS
-from conftest import IIASA_UNAVAILABLE
+from .test_plotting import MPL_KWARGS
+from .conftest import IIASA_UNAVAILABLE
 
 
 def test_config(capsys):

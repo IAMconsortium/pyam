@@ -12,12 +12,16 @@ authors:
     orcid: https://orcid.org/0000-0002-7729-7389
   - family-names: Gidden
     given-names: Matthew J.
+    orcid: https://orcid.org/0000-0003-0687-414X
   - family-names: Nicholls
     given-names: Zebedee
+    orcid: https://orcid.org/0000-0002-4767-2723
   - family-names: Hörsch
     given-names: Jonas
+    orcid: https://orcid.org/0000-0001-9438-767X
   - family-names: Lamboll
-    given-names: Robin
+    given-names: Robin D.
+    orcid: https://orcid.org/0000-0002-8410-037X
   - family-names: Kishimoto
     given-names: Paul Natsuo
   - family-names: Burandt
@@ -27,19 +31,22 @@ authors:
   - family-names: Byers
     given-names: Edward
   - family-names: Kikstra
-    given-names: Jarmo
+    given-names: Jarmo S.
+    orcid: https://orcid.org/0000-0001-9405-1228
   - family-names: Brinkerink
     given-names: Maarten
   - family-names: Budzinski
     given-names: Maik
+    orcid: https://orcid.org/0000-0003-2879-1193
   - family-names: Maczek
     given-names: Florian
   - family-names: Zwickl-Bernhard
     given-names: Sebastian
   - family-names: Welder
     given-names: Lara
-  - family-names: Quispe
-    given-names: Erik Francisco Álvarez
+  - family-names: Alvarez Quispe
+    given-names: Erik Francisco
+    orcid: https://orcid.org/0000-0003-3862-9747
   - family-names: Smith
     given-names: Christopher J.
 keywords:
