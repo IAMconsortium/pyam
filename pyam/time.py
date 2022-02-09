@@ -53,23 +53,25 @@ def swap_year_for_time(df, inplace):
 
     if not df.time_col == "year":
         raise ValueError("Time domain must be 'year' to use this method")
-    if "subannual" not in df.extra_cols:
-        raise ValueError("Data must have a dimension 'subannual' to use this method")
 
     ret = df.copy() if not inplace else df
     index = ret._data.index
-    order = [v if v != "year" else "time" for v in index.names].remove("subannual")
 
-    time_cols = ["year", "subannual"]
-    time_values = zip(*[index.get_level_values(c) for c in time_cols])
-    time = list(map(dateutil.parser.parse, [f"{y}-{s}" for y, s in time_values]))
+    order = [v if v != "year" else "time" for v in index.names]
 
-    index = index.droplevel(["year", "subannual"])
+    if "subannual" in df.extra_cols:
+        order = order.remove("subannual")
+        time_values = zip(*[index.get_level_values(c) for c in ["year", "subannual"]])
+        time = list(map(dateutil.parser.parse, [f"{y}-{s}" for y, s in time_values]))
+        index = index.droplevel(["year", "subannual"])
+        ret.extra_cols.remove("subannual")
+    else:
+        time = index.get_level_values("year")
+        index = index.droplevel(["year"])
+
+    # add new index column, assign data and other attributes
     index = append_index_col(index, time, "time", order=order)
-
-    # assign data and other attributes
     ret._data.index = index
-    ret.extra_cols.remove("subannual")
     ret.time_col = "time"
     ret._set_attributes()
     delattr(ret, "year")
