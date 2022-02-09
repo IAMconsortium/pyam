@@ -541,16 +541,19 @@ class IamDataFrame(object):
             other = IamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
 
-        if self.time_col != other.time_col:
-            raise ValueError("Incompatible time format (`year` vs. `time`)")
-
-        if self.dimensions != other.dimensions:
+        if self.extra_cols != other.extra_cols:
             raise ValueError("Incompatible timeseries data index dimensions")
 
         if other.empty:
             return None if inplace else self.copy()
 
         ret = self.copy() if not inplace else self
+
+        if ret.time_col != other.time_col:
+            if ret.time_col == "year":
+                ret.swap_year_for_time(inplace=True)
+            else:
+                other = other.swap_year_for_time(inplace=False)
 
         # merge `meta` tables
         ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
