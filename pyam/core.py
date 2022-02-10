@@ -135,8 +135,9 @@ class IamDataFrame(object):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
-                msg = "Invalid arguments {} for initializing from IamDataFrame"
-                raise ValueError(msg.format(list(kwargs)))
+                raise ValueError(
+                    f"Invalid arguments for initializing from IamDataFrame: {kwargs}"
+                )
             if index != data.index.names:
                 msg = f"Incompatible `index={index}` with {type(data)} "
                 raise ValueError(msg + f"(index={data.index.names})")

@@ -67,7 +67,7 @@ def test_init_from_iamdf(test_df_year):
 
 def test_init_from_iamdf_raises(test_df_year):
     # casting an IamDataFrame instance again with extra args fails
-    match = "Invalid arguments \['model'\] for initializing from IamDataFrame"
+    match = "Invalid arguments for initializing from IamDataFrame: {'model': 'foo'}"
     with pytest.raises(ValueError, match=match):
         IamDataFrame(test_df_year, model="foo")
 
