@@ -1,12 +1,74 @@
 import pytest
 import numpy as np
-import pandas as pd
 from numpy import testing as npt
+import pandas as pd
+import re
 from datetime import datetime
 
-from pyam import IamDataFrame, IAMC_IDX, assert_iamframe_equal
+from pyam import IamDataFrame, IAMC_IDX, assert_iamframe_equal, concat
 
 from .conftest import META_COLS
+
+
+def test_concat_single_item(test_df):
+    """Check that calling concat on a single-item list returns identical object"""
+    obs = concat([test_df])
+    assert_iamframe_equal(obs, test_df)
+
+
+def test_concat_fails_iterable(test_pd_df):
+    """Check that calling concat with a non-iterable raises"""
+    msg = "First argument must be an iterable, you passed an object of type '{}'!"
+
+    for dfs, type_ in [(1, "int"), ("foo", "str"), (test_pd_df, "DataFrame")]:
+        with pytest.raises(TypeError, match=msg.format(type_)):
+            concat(dfs)
+
+
+def test_concat_incompatible_cols(test_pd_df):
+    """Check that calling concat on a single-item list returns identical object"""
+    df1 = IamDataFrame(test_pd_df)
+    test_pd_df["extra_col"] = "foo"
+    df2 = IamDataFrame(test_pd_df)
+
+    match = "Items have incompatible timeseries data dimensions!"
+    with pytest.raises(ValueError, match=match):
+        concat([df1, df2])
+
+
+@pytest.mark.parametrize("inplace", (True, False))
+def test_append_duplicates_raises(test_df_year, inplace):
+    # Merging objects with overlapping values (merge conflict) raises an error
+
+    other = test_df_year.copy()
+    with pytest.raises(ValueError, match="Timeseries data has overlapping values:"):
+        test_df_year.append(other=other, inplace=inplace)
+
+
+@pytest.mark.parametrize("inplace", (True, False))
+def test_append_incompatible_col_raises(test_df_year, test_pd_df, inplace):
+    # Merging objects with different data index dimensions raises an error
+    test_pd_df["foo"] = "baz"
+
+    with pytest.raises(ValueError, match="Incompatible timeseries data index"):
+        test_df_year.append(other=test_pd_df, inplace=inplace)
+
+
+def test_concat(test_df):
+    left = IamDataFrame(test_df.data.copy())
+    right = left.data.copy()
+    right["model"] = "not left"
+    right = IamDataFrame(right)
+
+    result = concat([left, right])
+
+    obs = result.data.reset_index(drop=True)
+    exp = pd.concat([left.data, right.data]).reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, exp)
+
+    obs = result.meta.reset_index(drop=True)
+    exp = pd.concat([left.meta, right.meta]).reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, exp)
 
 
 def test_append_other_scenario(test_df):
@@ -76,6 +138,13 @@ def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
     assert_iamframe_equal(obs, test_df_mixed)
 
 
+def test_concat_incompatible_time(test_df_year, test_df_time):
+    """Check that calling concat with incompatible time formats raises"""
+    match = re.escape("Items have incompatible time format ('year' vs. 'time')!")
+    with pytest.raises(ValueError, match=match):
+        concat([test_df_year, test_df_time])
+
+
 def test_append_reconstructed_time(test_df):
     # check appending dfs with equal time cols created by different methods
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
@@ -143,23 +212,3 @@ def test_append_extra_col(test_df, shuffle_cols):
     # ensure meta merged correctly
     check_meta_is(res, "col_1", "hi")
     check_meta_is(res, "col_2", "bye")
-
-
-@pytest.mark.parametrize("inplace", (True, False))
-def test_append_duplicates_raises(test_df_year, inplace):
-    # Merging objects with overlapping values (merge conflict) raises an error
-
-    other = test_df_year.copy()
-    with pytest.raises(ValueError, match="Timeseries data has overlapping values:"):
-        test_df_year.append(other=other, inplace=inplace)
-
-
-@pytest.mark.parametrize("inplace", (True, False))
-def test_append_incompatible_col_raises(test_pd_df, inplace):
-    # Merging objects with different data index dimensions raises an error
-
-    df = IamDataFrame(test_pd_df)
-    test_pd_df["foo"] = "baz"
-    other = IamDataFrame(test_pd_df)
-    with pytest.raises(ValueError, match="Incompatible timeseries data index"):
-        df.append(other=other, inplace=inplace)
