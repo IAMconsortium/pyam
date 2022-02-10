@@ -27,7 +27,7 @@ def test_concat_single_item(test_df):
 
 
 @pytest.mark.parametrize("arg", (None, []))
-def test_concat_fails_iterable(arg):
+def test_concat_fails_empty(arg):
     """Check that calling concat with empty or none raises"""
     match = "No objects to concatenate"
     with pytest.raises(TypeError, match=match):
