@@ -2743,7 +2743,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
 
     Notes
     -----
-    The *meta* attributes are merged only for those objects of *dfs* that are passed
+    The *meta* attributes are merged only for those objects of *objs* that are passed
     as :class:`IamDataFrame` instances.
 
     """
