@@ -26,16 +26,15 @@ def test_concat_single_item(test_df):
     assert_iamframe_equal(obs, test_df)
 
 
-@pytest.mark.parametrize("arg", (None, []))
-def test_concat_fails_empty(arg):
+def test_concat_fails_empty():
     """Check that calling concat with empty or none raises"""
     match = "No objects to concatenate"
-    with pytest.raises(TypeError, match=match):
-        concat(arg)
+    with pytest.raises(ValueError, match=match):
+        concat([])
 
 
 @pytest.mark.parametrize(
-    "arg, msg", ((1, "int"), ("foo", "str"), (TEST_DF, "DataFrame"))
+    "arg, msg", ((None, "NoneType"), (1, "int"), ("foo", "str"), (TEST_DF, "DataFrame"))
 )
 def test_concat_fails_iterable(arg, msg):
     """Check that calling concat with a non-iterable raises"""
