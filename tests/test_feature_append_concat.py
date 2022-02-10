@@ -2,11 +2,12 @@ import pytest
 import numpy as np
 from numpy import testing as npt
 import pandas as pd
+import pandas.testing as pdt
 from datetime import datetime
 
 from pyam import IamDataFrame, IAMC_IDX, META_IDX, assert_iamframe_equal, concat
 
-from .conftest import TEST_DF, META_COLS
+from .conftest import TEST_DF, META_COLS, META_DF
 
 
 # assert that merging of meta works as expected
@@ -85,9 +86,30 @@ def test_concat(test_df):
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
+    assert other.scenario == ["scen_c"]
 
     # assert that merging of meta works as expected
-    pd.testing.assert_frame_equal(result.meta, EXP_META)
+    pdt.assert_frame_equal(result.meta, EXP_META)
+
+    # assert that appending data works as expected
+    ts = result.timeseries()
+    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+
+
+def test_concat_with_pd_dataframe(test_df):
+    other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
+
+    # merge with only the timeseries `data` DataFrame
+    result = concat([test_df, other.data])
+
+    # check that the original object is not updated
+    assert test_df.scenario == ["scen_a", "scen_b"]
+
+    # assert that merging meta from `other` is ignored
+    exp_meta = META_DF.copy()
+    exp_meta.loc[("model_a", "scen_c"), "number"] = np.nan
+    exp_meta["exclude"] = False
+    pdt.assert_frame_equal(result.meta, exp_meta[["exclude"] + META_COLS])
 
     # assert that appending data works as expected
     ts = result.timeseries()
@@ -109,7 +131,7 @@ def test_append(test_df):
     assert test_df.scenario == ["scen_a", "scen_b"]
 
     # assert that merging of meta works as expected
-    pd.testing.assert_frame_equal(df.meta, EXP_META)
+    pdt.assert_frame_equal(df.meta, EXP_META)
 
     # assert that appending data works as expected
     ts = df.timeseries()
