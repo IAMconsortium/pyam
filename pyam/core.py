@@ -2724,7 +2724,7 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
         A list of objects castable to :class:`IamDataFrame`
     ignore_meta_conflict : bool, default False
         If False, raise an error if any meta columns present in `dfs` are not identical.
-        If True, values in earlier elements of `dfs` take precendence.
+        If True, values in earlier elements of `dfs` take precedence.
     kwargs
         Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
         for any item of `dfs` which isn't already an IamDataFrame.
@@ -2742,7 +2742,7 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
     """
     if not islistable(dfs) or isinstance(dfs, pd.DataFrame):
         raise TypeError(
-            f"First argument must be an iterable, "
+            "First argument must be an iterable, "
             f"you passed an object of type '{dfs.__class__.__name__}'!"
         )
 
