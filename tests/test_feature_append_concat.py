@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 from numpy import testing as npt
 import pandas as pd
-import re
 from datetime import datetime
 
 from pyam import IamDataFrame, IAMC_IDX, META_IDX, assert_iamframe_equal, concat
@@ -27,12 +26,20 @@ def test_concat_single_item(test_df):
     assert_iamframe_equal(obs, test_df)
 
 
+@pytest.mark.parametrize("arg", (None, []))
+def test_concat_fails_iterable(arg):
+    """Check that calling concat with empty or none raises"""
+    match = "No objects to concatenate"
+    with pytest.raises(TypeError, match=match):
+        concat(arg)
+
+
 @pytest.mark.parametrize(
     "arg, msg", ((1, "int"), ("foo", "str"), (TEST_DF, "DataFrame"))
 )
 def test_concat_fails_iterable(arg, msg):
     """Check that calling concat with a non-iterable raises"""
-    match = f"First argument must be an iterable, you passed an object of type '{msg}'!"
+    match = f"'{msg}' object is not iterable"
     with pytest.raises(TypeError, match=match):
         concat(arg)
 
@@ -43,7 +50,7 @@ def test_concat_incompatible_cols(test_pd_df):
     test_pd_df["extra_col"] = "foo"
     df2 = IamDataFrame(test_pd_df)
 
-    match = "Items have incompatible timeseries data dimensions!"
+    match = "Items have incompatible timeseries data dimensions"
     with pytest.raises(ValueError, match=match):
         concat([df1, df2])
 
