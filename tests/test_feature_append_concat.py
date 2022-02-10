@@ -109,6 +109,24 @@ def test_append(test_df):
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
+@pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
+def test_concat_time_domain(test_pd_df, test_df_mixed, time):
+
+    df_year = IamDataFrame(test_pd_df[IAMC_IDX + [2005]], meta=test_df_mixed.meta)
+    df_time = IamDataFrame(
+        test_pd_df[IAMC_IDX + [2010]].rename({2010: time}, axis="columns")
+    )
+
+    # concat `df_time` to `df_year`
+    obs = concat([df_year, df_time])
+
+    # assert that original objects were not modified
+    assert df_year.year == [2005]
+    assert df_time.time == pd.Index([datetime(2010, 7, 21)])
+
+    assert_iamframe_equal(obs, test_df_mixed)
+
+
 @pytest.mark.parametrize("other", ("time", "year"))
 @pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
 @pytest.mark.parametrize("inplace", (True, False))
@@ -140,13 +158,6 @@ def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
             assert df_time.time == pd.Index([datetime(2010, 7, 21)])
 
     assert_iamframe_equal(obs, test_df_mixed)
-
-
-def test_concat_incompatible_time(test_df_year, test_df_time):
-    """Check that calling concat with incompatible time formats raises"""
-    match = re.escape("Items have incompatible time format ('year' vs. 'time')!")
-    with pytest.raises(ValueError, match=match):
-        concat([test_df_year, test_df_time])
 
 
 def test_append_reconstructed_time(test_df):
