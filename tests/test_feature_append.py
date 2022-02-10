@@ -2,8 +2,9 @@ import pytest
 import numpy as np
 import pandas as pd
 from numpy import testing as npt
+from datetime import datetime
 
-from pyam import IamDataFrame
+from pyam import IamDataFrame, IAMC_IDX, assert_iamframe_equal
 
 from .conftest import META_COLS
 
@@ -40,6 +41,39 @@ def test_append_other_scenario(test_df):
     # assert that appending data works as expected
     ts = df.timeseries()
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+
+
+@pytest.mark.parametrize("other", ("time", "year"))
+@pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
+@pytest.mark.parametrize("inplace", (True, False))
+def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
+
+    df_year = IamDataFrame(test_pd_df[IAMC_IDX + [2005]], meta=test_df_mixed.meta)
+    df_time = IamDataFrame(
+        test_pd_df[IAMC_IDX + [2010]].rename({2010: time}, axis="columns")
+    )
+
+    # append `df_time` to `df_year`
+    if other == "time":
+        if inplace:
+            obs = df_year.copy()
+            obs.append(df_time, inplace=True)
+        else:
+            obs = df_year.append(df_time)
+            # assert that original object was not modified
+            assert df_year.year == [2005]
+
+    # append `df_year` to `df_time`
+    else:
+        if inplace:
+            obs = df_time.copy()
+            obs.append(df_year, inplace=True)
+        else:
+            obs = df_time.append(df_year)
+            # assert that original object was not modified
+            assert df_time.time == pd.Index([datetime(2010, 7, 21)])
+
+    assert_iamframe_equal(obs, test_df_mixed)
 
 
 def test_append_reconstructed_time(test_df):
