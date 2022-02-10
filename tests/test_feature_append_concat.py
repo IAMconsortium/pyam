@@ -73,7 +73,8 @@ def test_append_incompatible_col_raises(test_df_year, test_pd_df, inplace):
         test_df_year.append(other=test_pd_df, inplace=inplace)
 
 
-def test_concat(test_df):
+@pytest.mark.parametrize("reverse", (False, True))
+def test_concat(test_df, reverse):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
     test_df.set_meta([0, 1], name="col1")
@@ -82,25 +83,32 @@ def test_concat(test_df):
     other.set_meta(2, name="col1")
     other.set_meta("x", name="col3")
 
-    result = concat([test_df, other])
+    if reverse:
+        result = concat([other, test_df])
+    else:
+        result = concat([test_df, other])
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
     assert other.scenario == ["scen_c"]
 
-    # assert that merging of meta works as expected
-    pdt.assert_frame_equal(result.meta, EXP_META)
+    # assert that merging of meta works as expected (reorder columns)
+    pdt.assert_frame_equal(result.meta[EXP_META.columns], EXP_META)
 
     # assert that appending data works as expected
     ts = result.timeseries()
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
-def test_concat_with_pd_dataframe(test_df):
+@pytest.mark.parametrize("reverse", (False, True))
+def test_concat_with_pd_dataframe(test_df, reverse):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
-    # merge with only the timeseries `data` DataFrame
-    result = concat([test_df, other.data])
+    # merge with only the timeseries `data` DataFrame of `other`
+    if reverse:
+        result = concat([other.data, test_df])
+    else:
+        result = concat([test_df, other.data])
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
@@ -139,7 +147,8 @@ def test_append(test_df):
 
 
 @pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
-def test_concat_time_domain(test_pd_df, test_df_mixed, time):
+@pytest.mark.parametrize("reverse", (False, True))
+def test_concat_time_domain(test_pd_df, test_df_mixed, time, reverse):
 
     df_year = IamDataFrame(test_pd_df[IAMC_IDX + [2005]], meta=test_df_mixed.meta)
     df_time = IamDataFrame(
@@ -147,7 +156,10 @@ def test_concat_time_domain(test_pd_df, test_df_mixed, time):
     )
 
     # concat `df_time` to `df_year`
-    obs = concat([df_year, df_time])
+    if reverse:
+        obs = concat([df_time, df_year])
+    else:
+        obs = concat([df_year, df_time])
 
     # assert that original objects were not modified
     assert df_year.year == [2005]
