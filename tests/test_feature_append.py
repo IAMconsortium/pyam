@@ -43,7 +43,7 @@ def test_append_other_scenario(test_df):
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
-@pytest.mark.parametrize("other", ("time", "time"))
+@pytest.mark.parametrize("other", ("time", "year"))
 @pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
 @pytest.mark.parametrize("inplace", (True, False))
 def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
@@ -53,7 +53,7 @@ def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
         test_pd_df[IAMC_IDX + [2010]].rename({2010: time}, axis="columns")
     )
 
-    # append df_time to df_year
+    # append `df_time` to `df_year`
     if other == "time":
         if inplace:
             obs = df_year.copy()
@@ -63,7 +63,7 @@ def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
             # assert that original object was not modified
             assert df_year.year == [2005]
 
-    # append df_year to df_time
+    # append `df_year` to `df_time`
     else:
         if inplace:
             obs = df_time.copy()
@@ -71,7 +71,7 @@ def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
         else:
             obs = df_time.append(df_year)
             # assert that original object was not modified
-            assert df_time.time == pd.Index(datetime(2010, 7, 21))
+            assert df_time.time == pd.Index([datetime(2010, 7, 21)])
 
     assert_iamframe_equal(obs, test_df_mixed)
 
