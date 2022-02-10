@@ -5,9 +5,20 @@ import pandas as pd
 import re
 from datetime import datetime
 
-from pyam import IamDataFrame, IAMC_IDX, assert_iamframe_equal, concat
+from pyam import IamDataFrame, IAMC_IDX, META_IDX, assert_iamframe_equal, concat
 
 from .conftest import META_COLS
+
+
+# assert that merging of meta works as expected
+EXP_META = pd.DataFrame(
+    [
+        ["model_a", "scen_a", False, 1, "foo", 0, "a", np.nan],
+        ["model_a", "scen_b", False, 2, np.nan, 1, "b", np.nan],
+        ["model_a", "scen_c", False, 2, np.nan, 2, np.nan, "x"],
+    ],
+    columns=META_IDX + ["exclude", "number", "string", "col1", "col2", "col3"],
+).set_index(META_IDX)
 
 
 def test_concat_single_item(test_df):
@@ -55,23 +66,28 @@ def test_append_incompatible_col_raises(test_df_year, test_pd_df, inplace):
 
 
 def test_concat(test_df):
-    left = IamDataFrame(test_df.data.copy())
-    right = left.data.copy()
-    right["model"] = "not left"
-    right = IamDataFrame(right)
+    other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
-    result = concat([left, right])
+    test_df.set_meta([0, 1], name="col1")
+    test_df.set_meta(["a", "b"], name="col2")
 
-    obs = result.data.reset_index(drop=True)
-    exp = pd.concat([left.data, right.data]).reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, exp)
+    other.set_meta(2, name="col1")
+    other.set_meta("x", name="col3")
 
-    obs = result.meta.reset_index(drop=True)
-    exp = pd.concat([left.meta, right.meta]).reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, exp)
+    result = concat([test_df, other])
+
+    # check that the original object is not updated
+    assert test_df.scenario == ["scen_a", "scen_b"]
+
+    # assert that merging of meta works as expected
+    pd.testing.assert_frame_equal(result.meta, EXP_META)
+
+    # assert that appending data works as expected
+    ts = result.timeseries()
+    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
-def test_append_other_scenario(test_df):
+def test_append(test_df):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
     test_df.set_meta([0, 1], name="col1")
@@ -82,23 +98,11 @@ def test_append_other_scenario(test_df):
 
     df = test_df.append(other)
 
-    # check that the original meta dataframe is not updated
-    obs = test_df.meta.index.get_level_values(1)
-    npt.assert_array_equal(obs, ["scen_a", "scen_b"])
+    # check that the original object is not updated
+    assert test_df.scenario == ["scen_a", "scen_b"]
 
     # assert that merging of meta works as expected
-    exp = pd.DataFrame(
-        [
-            ["model_a", "scen_a", False, 0, "a", np.nan],
-            ["model_a", "scen_b", False, 1, "b", np.nan],
-            ["model_a", "scen_c", False, 2, np.nan, "x"],
-        ],
-        columns=["model", "scenario", "exclude", "col1", "col2", "col3"],
-    ).set_index(["model", "scenario"])
-
-    # sort columns for assertion in older pandas versions
-    df.meta = df.meta.reindex(columns=exp.columns)
-    pd.testing.assert_frame_equal(df.meta, exp)
+    pd.testing.assert_frame_equal(df.meta, EXP_META)
 
     # assert that appending data works as expected
     ts = df.timeseries()
