@@ -135,8 +135,9 @@ class IamDataFrame(object):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
-                msg = "Invalid arguments {} for initializing from IamDataFrame"
-                raise ValueError(msg.format(list(kwargs)))
+                raise ValueError(
+                    f"Invalid arguments for initializing from IamDataFrame: {kwargs}"
+                )
             if index != data.index.names:
                 msg = f"Incompatible `index={index}` with {type(data)} "
                 raise ValueError(msg + f"(index={data.index.names})")
@@ -2715,16 +2716,16 @@ def compare(
     return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
 
 
-def concat(dfs, ignore_meta_conflict=False, **kwargs):
+def concat(objs, ignore_meta_conflict=False, **kwargs):
     """Concatenate a series of IamDataFrame-like objects
 
     Parameters
     ----------
-    dfs : iterable of IamDataFrames
+    objs : iterable of IamDataFrames
         A list of objects castable to :class:`IamDataFrame`
-    ignore_meta_conflict : bool, default False
+    ignore_meta_conflict : bool, optional
         If False, raise an error if any meta columns present in `dfs` are not identical.
-        If True, values in earlier elements of `dfs` take precendence.
+        If True, values in earlier elements of `dfs` take precedence.
     kwargs
         Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
         for any item of `dfs` which isn't already an IamDataFrame.
@@ -2739,40 +2740,60 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
         If `dfs` is not a list.
     ValueError
         If time domain or other timeseries data index dimension don't match.
+
+    Notes
+    -----
+    The *meta* attributes are merged only for those objects of *dfs* that are passed
+    as :class:`IamDataFrame` instances.
+
     """
-    if not islistable(dfs) or isinstance(dfs, pd.DataFrame):
-        raise TypeError(
-            f"First argument must be an iterable, "
-            f"you passed an object of type '{dfs.__class__.__name__}'!"
-        )
+    if not islistable(objs) or isinstance(objs, pd.DataFrame):
+        raise TypeError(f"'{objs.__class__.__name__}' object is not iterable")
 
-    dfs = list(dfs)
-
-    if len(dfs) < 1:
+    if len(objs) < 1:
         raise ValueError("No objects to concatenate")
 
-    # cast to IamDataFrame if necessary
     def as_iamdataframe(df):
-        return df if isinstance(df, IamDataFrame) else IamDataFrame(df, **kwargs)
+        if isinstance(df, IamDataFrame):
+            return df, True
+        else:
+            return IamDataFrame(df, **kwargs), False
 
-    df = as_iamdataframe(dfs[0])
-    ret_data, ret_meta = [df._data], df.meta
-    index, time_col = df.dimensions, df.time_col
+    # cast first item to IamDataFrame (if necessary)
+    df, _merge_meta = as_iamdataframe(objs[0])
+    extra_cols, time_col = df.extra_cols, df.time_col
 
-    for df in dfs[1:]:
-        # skip merging meta if element is a pd.DataFrame
-        _meta_merge = not isinstance(df, pd.DataFrame)
-        df = as_iamdataframe(df)
+    consistent_time_domain = True
+    iam_dfs = [(df, _merge_meta)]
 
+    # cast all items to IamDataFrame (if necessary) and check consistency of items
+    for df in objs[1:]:
+        df, _merge_meta = as_iamdataframe(df)
+        if df.extra_cols != extra_cols:
+            raise ValueError("Items have incompatible timeseries data dimensions")
         if df.time_col != time_col:
-            raise ValueError("Items have incompatible time format ('year' vs. 'time')!")
+            consistent_time_domain = False
+        iam_dfs.append((df, _merge_meta))
 
-        if df.dimensions != index:
-            raise ValueError("Items have incompatible timeseries data dimensions!")
+    # cast all instances to "time"
+    if not consistent_time_domain:
+        _iam_dfs = []
+        for (df, _merge_meta) in iam_dfs:
+            if df.time_col == "year":
+                df = df.swap_year_for_time()
+            _iam_dfs.append((df, _merge_meta))
+        iam_dfs = _iam_dfs  # replace list of IamDataFrames with consistent list
 
+    # extract timeseries data and meta attributes
+    ret_data, ret_meta = [], None
+    for (df, _merge_meta) in iam_dfs:
         ret_data.append(df._data)
-        if _meta_merge:
-            ret_meta = merge_meta(ret_meta, df.meta, ignore_meta_conflict)
+        if _merge_meta:
+            ret_meta = (
+                df.meta
+                if ret_meta is None
+                else merge_meta(ret_meta, df.meta, ignore_meta_conflict)
+            )
 
     # return as new IamDataFrame, this will verify integrity as part of `__init__()`
     return IamDataFrame(pd.concat(ret_data, verify_integrity=False), meta=ret_meta)

@@ -2,12 +2,12 @@ import pytest
 import numpy as np
 from numpy import testing as npt
 import pandas as pd
-import re
+import pandas.testing as pdt
 from datetime import datetime
 
 from pyam import IamDataFrame, IAMC_IDX, META_IDX, assert_iamframe_equal, concat
 
-from .conftest import META_COLS
+from .conftest import TEST_DF, META_COLS, META_DF
 
 
 # assert that merging of meta works as expected
@@ -27,13 +27,21 @@ def test_concat_single_item(test_df):
     assert_iamframe_equal(obs, test_df)
 
 
-def test_concat_fails_iterable(test_pd_df):
-    """Check that calling concat with a non-iterable raises"""
-    msg = "First argument must be an iterable, you passed an object of type '{}'!"
+def test_concat_fails_empty():
+    """Check that calling concat with empty or none raises"""
+    match = "No objects to concatenate"
+    with pytest.raises(ValueError, match=match):
+        concat([])
 
-    for dfs, type_ in [(1, "int"), ("foo", "str"), (test_pd_df, "DataFrame")]:
-        with pytest.raises(TypeError, match=msg.format(type_)):
-            concat(dfs)
+
+@pytest.mark.parametrize(
+    "arg, msg", ((None, "NoneType"), (1, "int"), ("foo", "str"), (TEST_DF, "DataFrame"))
+)
+def test_concat_fails_iterable(arg, msg):
+    """Check that calling concat with a non-iterable raises"""
+    match = f"'{msg}' object is not iterable"
+    with pytest.raises(TypeError, match=match):
+        concat(arg)
 
 
 def test_concat_incompatible_cols(test_pd_df):
@@ -42,7 +50,7 @@ def test_concat_incompatible_cols(test_pd_df):
     test_pd_df["extra_col"] = "foo"
     df2 = IamDataFrame(test_pd_df)
 
-    match = "Items have incompatible timeseries data dimensions!"
+    match = "Items have incompatible timeseries data dimensions"
     with pytest.raises(ValueError, match=match):
         concat([df1, df2])
 
@@ -65,7 +73,8 @@ def test_append_incompatible_col_raises(test_df_year, test_pd_df, inplace):
         test_df_year.append(other=test_pd_df, inplace=inplace)
 
 
-def test_concat(test_df):
+@pytest.mark.parametrize("reverse", (False, True))
+def test_concat(test_df, reverse):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
     test_df.set_meta([0, 1], name="col1")
@@ -74,13 +83,41 @@ def test_concat(test_df):
     other.set_meta(2, name="col1")
     other.set_meta("x", name="col3")
 
-    result = concat([test_df, other])
+    if reverse:
+        result = concat([other, test_df])
+    else:
+        result = concat([test_df, other])
+
+    # check that the original object is not updated
+    assert test_df.scenario == ["scen_a", "scen_b"]
+    assert other.scenario == ["scen_c"]
+
+    # assert that merging of meta works as expected (reorder columns)
+    pdt.assert_frame_equal(result.meta[EXP_META.columns], EXP_META)
+
+    # assert that appending data works as expected
+    ts = result.timeseries()
+    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+
+
+@pytest.mark.parametrize("reverse", (False, True))
+def test_concat_with_pd_dataframe(test_df, reverse):
+    other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
+
+    # merge with only the timeseries `data` DataFrame of `other`
+    if reverse:
+        result = concat([other.data, test_df])
+    else:
+        result = concat([test_df, other.data])
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
 
-    # assert that merging of meta works as expected
-    pd.testing.assert_frame_equal(result.meta, EXP_META)
+    # assert that merging meta from `other` is ignored
+    exp_meta = META_DF.copy()
+    exp_meta.loc[("model_a", "scen_c"), "number"] = np.nan
+    exp_meta["exclude"] = False
+    pdt.assert_frame_equal(result.meta, exp_meta[["exclude"] + META_COLS])
 
     # assert that appending data works as expected
     ts = result.timeseries()
@@ -102,11 +139,33 @@ def test_append(test_df):
     assert test_df.scenario == ["scen_a", "scen_b"]
 
     # assert that merging of meta works as expected
-    pd.testing.assert_frame_equal(df.meta, EXP_META)
+    pdt.assert_frame_equal(df.meta, EXP_META)
 
     # assert that appending data works as expected
     ts = df.timeseries()
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+
+
+@pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
+@pytest.mark.parametrize("reverse", (False, True))
+def test_concat_time_domain(test_pd_df, test_df_mixed, time, reverse):
+
+    df_year = IamDataFrame(test_pd_df[IAMC_IDX + [2005]], meta=test_df_mixed.meta)
+    df_time = IamDataFrame(
+        test_pd_df[IAMC_IDX + [2010]].rename({2010: time}, axis="columns")
+    )
+
+    # concat `df_time` to `df_year`
+    if reverse:
+        obs = concat([df_time, df_year])
+    else:
+        obs = concat([df_year, df_time])
+
+    # assert that original objects were not modified
+    assert df_year.year == [2005]
+    assert df_time.time == pd.Index([datetime(2010, 7, 21)])
+
+    assert_iamframe_equal(obs, test_df_mixed)
 
 
 @pytest.mark.parametrize("other", ("time", "year"))
@@ -140,13 +199,6 @@ def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
             assert df_time.time == pd.Index([datetime(2010, 7, 21)])
 
     assert_iamframe_equal(obs, test_df_mixed)
-
-
-def test_concat_incompatible_time(test_df_year, test_df_time):
-    """Check that calling concat with incompatible time formats raises"""
-    match = re.escape("Items have incompatible time format ('year' vs. 'time')!")
-    with pytest.raises(ValueError, match=match):
-        concat([test_df_year, test_df_time])
 
 
 def test_append_reconstructed_time(test_df):
