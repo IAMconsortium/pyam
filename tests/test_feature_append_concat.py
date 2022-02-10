@@ -7,7 +7,7 @@ from datetime import datetime
 
 from pyam import IamDataFrame, IAMC_IDX, META_IDX, assert_iamframe_equal, concat
 
-from .conftest import META_COLS
+from .conftest import TEST_DF, META_COLS
 
 
 # assert that merging of meta works as expected
@@ -27,13 +27,14 @@ def test_concat_single_item(test_df):
     assert_iamframe_equal(obs, test_df)
 
 
-def test_concat_fails_iterable(test_pd_df):
+@pytest.mark.parametrize(
+    "arg, msg", ((1, "int"), ("foo", "str"), (TEST_DF, "DataFrame"))
+)
+def test_concat_fails_iterable(arg, msg):
     """Check that calling concat with a non-iterable raises"""
-    msg = "First argument must be an iterable, you passed an object of type '{}'!"
-
-    for dfs, type_ in [(1, "int"), ("foo", "str"), (test_pd_df, "DataFrame")]:
-        with pytest.raises(TypeError, match=msg.format(type_)):
-            concat(dfs)
+    match = f"First argument must be an iterable, you passed an object of type '{msg}'!"
+    with pytest.raises(TypeError, match=match):
+        concat(arg)
 
 
 def test_concat_incompatible_cols(test_pd_df):
