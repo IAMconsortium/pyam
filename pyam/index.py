@@ -5,7 +5,7 @@ from pyam.logging import raise_data_error
 
 
 def get_index_levels(index, level):
-    """Return the category-values for a specific level"""
+    """Return the labels for a specific level"""
 
     if not isinstance(index, pd.Index):
         index = index.index  # assume that the arg `index` is a pd.DataFrame
@@ -21,8 +21,8 @@ def get_index_levels(index, level):
 
 def get_index_levels_codes(df, level):
     """Return the category-values and codes for a specific level"""
-    level = df.index._get_level_number(level)
-    return df.index.levels[level], df.index.codes[level]
+    n = df.index._get_level_number(level)
+    return df.index.levels[n], df.index.codes[n]
 
 
 def get_keep_col(codes, matches):
@@ -40,16 +40,16 @@ def get_keep_col(codes, matches):
     return np.isin(codes, matches)
 
 
-def replace_index_values(df, level, mapping, rows=None):
+def replace_index_values(df, name, mapping, rows=None):
     """Replace one or several category-values at a specific level (for specific rows)"""
     index = df if isinstance(df, pd.Index) else df.index
 
-    n = index._get_level_number(level)
+    n = index._get_level_number(name)
 
     # if replacing level values with a filter (by rows)
     if rows is not None and not all(rows):
         _levels = pd.Series(index.get_level_values(n))
-        renamed_index = replace_index_values(index[rows], level, mapping)
+        renamed_index = replace_index_values(index[rows], name, mapping)
         _levels[rows] = list(renamed_index.get_level_values(n))
         _unique_levels = pd.Index(_levels.unique())
 
@@ -57,7 +57,7 @@ def replace_index_values(df, level, mapping, rows=None):
             index=index.droplevel(n),
             codes=_unique_levels.get_indexer(_levels),
             level=_unique_levels,
-            name=level,
+            name=name,
             order=index.names,
         )
 
@@ -73,6 +73,16 @@ def replace_index_values(df, level, mapping, rows=None):
     level_mapping = _unique_levels.get_indexer(_levels)
     _codes = np.where(index.codes[n] != -1, level_mapping[index.codes[n]], -1)
     return index.set_codes(_codes, level=n).set_levels(_unique_levels, level=n)
+
+
+def replace_index_labels(index, name, labels):
+    """Replace the levels for a specific level"""
+
+    order = index.names
+    n = index._get_level_number(name)
+    codes = index.codes[n]
+
+    return append_index_level(index.droplevel(n), codes, labels, name, order)
 
 
 def append_index_col(index, values, name, order=False):

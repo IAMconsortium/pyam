@@ -4,10 +4,9 @@ import logging
 import string
 import six
 import re
-import datetime
 import dateutil
-import time
 
+from pyam.index import get_index_levels, replace_index_labels
 from pyam.logging import raise_data_error
 import numpy as np
 import pandas as pd
@@ -284,12 +283,12 @@ def format_data(df, index, **kwargs):
     # check whether data in wide format (IAMC) or long format (`value` column)
     if "value" in df.columns:
         # check if time column is given as `year` (int) or `time` (datetime)
-        if "year" in df.columns:
+        if "year" in df.columns and "time" not in df.columns:
             time_col = "year"
-        elif "time" in df.columns:
+        elif "time" in df.columns and "year" not in df.columns:
             time_col = "time"
         else:
-            raise ValueError("Invalid time format, must have either `year` or `time`!")
+            raise ValueError("Invalid time domain, must have either `year` or `time`!")
         extra_cols = [
             c
             for c in df.columns
@@ -300,29 +299,36 @@ def format_data(df, index, **kwargs):
         cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
         year_cols, time_cols, extra_cols = [], [], []
         for i in cols:
+            # if the column name can be cast to integer, assume it's a year column
             try:
-                int(i)  # this is a year
+                int(i)
                 year_cols.append(i)
+
+            # otherwise, try casting to datetime
             except (ValueError, TypeError):
                 try:
-                    dateutil.parser.parse(str(i))  # this is datetime
+                    dateutil.parser.parse(str(i))
                     time_cols.append(i)
+
+                # neither year nor datetime, so it is an extra-column
                 except ValueError:
-                    extra_cols.append(i)  # some other string
+                    extra_cols.append(i)
+
         if year_cols and not time_cols:
             time_col = "year"
-            melt_cols = year_cols
-        elif not year_cols and time_cols:
-            time_col = "time"
-            melt_cols = time_cols
+            melt_cols = sorted(year_cols)
         else:
-            raise ValueError("Invalid time format, must be either years or `datetime`!")
-        cols = index + REQUIRED_COLS + extra_cols
+            time_col = "time"
+            melt_cols = sorted(year_cols) + sorted(time_cols)
+        if not melt_cols:
+            raise ValueError("Missing time domain")
+
+        # melt the dataframe
         df = pd.melt(
             df,
-            id_vars=cols,
+            id_vars=index + REQUIRED_COLS + extra_cols,
             var_name=time_col,
-            value_vars=sorted(melt_cols),
+            value_vars=melt_cols,
             value_name="value",
         )
 
@@ -348,12 +354,13 @@ def format_data(df, index, **kwargs):
         raise_data_error("Empty cells in `data`", df.loc[null_rows])
     del null_rows
 
-    # format the time-column
-    df = format_time_col(df, time_col)
-
     # cast to pd.Series, check for duplicates
     idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
     df = df.set_index(idx_cols).value
+
+    # format the time-column
+    _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
+    df.index = replace_index_labels(df.index, time_col, _time)
 
     rows = df.index.duplicated()
     if any(rows):
@@ -365,15 +372,6 @@ def format_data(df, index, **kwargs):
         logger.warning("Formatted data is empty!")
 
     return df.sort_index(), index, time_col, extra_cols
-
-
-def format_time_col(data, time_col):
-    """Format time_col to int (year) or datetime"""
-    if time_col == "year":
-        data["year"] = to_int(pd.to_numeric(data["year"]))
-    elif time_col == "time":
-        data["time"] = pd.to_datetime(data["time"])
-    return data
 
 
 def sort_data(data, cols):
@@ -522,87 +520,6 @@ def _escape_regexp(s):
     )
 
 
-def years_match(data, years):
-    """Return rows where data matches year"""
-    years = [years] if (isinstance(years, (int, np.int64))) else years
-    dt = (datetime.datetime, np.datetime64)
-    if isinstance(years, dt) or isinstance(years[0], dt):
-        error_msg = "Filter by `year` requires integers!"
-        raise TypeError(error_msg)
-    return np.isin(data, years)
-
-
-def month_match(data, months):
-    """Return rows where data matches months"""
-    return time_match(data, months, ["%b", "%B"], "tm_mon", "months")
-
-
-def day_match(data, days):
-    """Return rows where data matches days"""
-    return time_match(data, days, ["%a", "%A"], "tm_wday", "days")
-
-
-def hour_match(data, hours):
-    """Return rows where data matches hours"""
-    hours = [hours] if isinstance(hours, int) else hours
-    return np.isin(data, hours)
-
-
-def time_match(data, times, conv_codes, strptime_attr, name):
-    """Return rows where data matches a timestamp"""
-
-    def conv_strs(strs_to_convert, conv_codes, name):
-        for conv_code in conv_codes:
-            try:
-                res = [
-                    getattr(time.strptime(t, conv_code), strptime_attr)
-                    for t in strs_to_convert
-                ]
-                break
-            except ValueError:
-                continue
-
-        try:
-            return res
-        except NameError:
-            raise ValueError("Could not convert {} to integer".format(name))
-
-    times = [times] if isinstance(times, (int, str)) else times
-    if isinstance(times[0], str):
-        to_delete = []
-        to_append = []
-        for i, timeset in enumerate(times):
-            if "-" in timeset:
-                ints = conv_strs(timeset.split("-"), conv_codes, name)
-                if ints[0] > ints[1]:
-                    error_msg = (
-                        "string ranges must lead to increasing integer ranges,"
-                        " {} becomes {}".format(timeset, ints)
-                    )
-                    raise ValueError(error_msg)
-
-                # + 1 to include last month
-                to_append += [j for j in range(ints[0], ints[1] + 1)]
-                to_delete.append(i)
-
-        for i in to_delete:
-            del times[i]
-
-        times = conv_strs(times, conv_codes, name)
-        times += to_append
-
-    return np.isin(data, times)
-
-
-def datetime_match(data, dts):
-    """Matching of datetimes in time columns for data filtering"""
-    dts = dts if islistable(dts) else [dts]
-    if any([not (isinstance(i, (datetime.datetime, np.datetime64))) for i in dts]):
-        error_msg = "`time` can only be filtered by datetimes and datetime64s"
-        raise TypeError(error_msg)
-    return data.isin(dts).values
-
-
 def print_list(x, n):
     """Return a printable string of a list shortened to n characters"""
     # if list is empty, only write count
@@ -645,6 +562,29 @@ def print_list(x, n):
     return lst + count
 
 
+def to_time(x):
+    """Cast a value to either year (int) or datetime"""
+
+    # if the column name can be cast to integer, assume it's a year column
+    try:
+        j = int(x)
+        is_year = True
+
+    # otherwise, try casting to Timestamp (pandas-equivalent of datetime)
+    except (ValueError, TypeError):
+        try:
+            j = pd.Timestamp(x)
+            is_year = False
+        except ValueError:
+            raise ValueError(f"Invalid time domain: {x}")
+
+    # This is to guard against "years" with decimals (e.g., '2010.5')
+    if is_year and float(x) != j:
+        raise ValueError(f"Invalid time domain: {x}")
+
+    return j
+
+
 def to_int(x, index=False):
     """Formatting series or timeseries columns to int and checking validity
 
@@ -655,7 +595,7 @@ def to_int(x, index=False):
     cols = list(map(int, _x))
     error = _x[cols != _x]
     if not error.empty:
-        raise ValueError("invalid values `{}`".format(list(error)))
+        raise ValueError(f"Invalid values: {error}")
     if index:
         x.index = cols
         return x

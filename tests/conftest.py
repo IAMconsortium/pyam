@@ -34,8 +34,11 @@ TEST_YEARS = [2005, 2010]
 TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
 TEST_TIME_STR = ["2005-06-17", "2010-07-21"]
 TEST_TIME_STR_HR = ["2005-06-17 00:00:00", "2010-07-21 12:00:00"]
+TEST_TIME_MIXED = [2005, datetime(2010, 7, 21)]
 
 DTS_MAPPING = {2005: TEST_DTS[0], 2010: TEST_DTS[1]}
+
+EXP_DATETIME_INDEX = pd.DatetimeIndex(["2005-06-17T00:00:00"])
 
 
 TEST_DF = pd.DataFrame(
@@ -168,6 +171,16 @@ def test_df_time():
     df = IamDataFrame(
         data=TEST_DF.rename({2005: TEST_DTS[0], 2010: TEST_DTS[1]}, axis="columns")
     )
+    for i in META_COLS:
+        df.set_meta(META_DF[i])
+    yield df
+
+
+# minimal IamDataFrame for specifically testing 'mixed'-time-domain features
+@pytest.fixture(scope="function")
+def test_df_mixed():
+    mapping = dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_MIXED)])
+    df = IamDataFrame(data=TEST_DF.rename(mapping, axis="columns"))
     for i in META_COLS:
         df.set_meta(META_DF[i])
     yield df

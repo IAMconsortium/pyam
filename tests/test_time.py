@@ -1,10 +1,17 @@
 import pytest
 import pandas as pd
+import pandas.testing as pdt
 from datetime import datetime
 from pyam import IamDataFrame
 from pyam.testing import assert_iamframe_equal
 
-from .conftest import TEST_DTS, TEST_TIME_STR, TEST_TIME_STR_HR
+from .conftest import (
+    TEST_YEARS,
+    TEST_DTS,
+    TEST_TIME_STR,
+    TEST_TIME_STR_HR,
+    TEST_TIME_MIXED,
+)
 
 
 def get_subannual_df(date1, date2):
@@ -27,6 +34,27 @@ OE_DATETIME = ["2005-10-01 23:15+01:00", "2010-10-02 23:15+01:00"]
 OE_SUBANNUAL_FORMAT = lambda x: x.strftime("%m-%d %H:%M%z").replace("+0100", "+01:00")
 
 
+# TODO implement this parametrization as part of `conftest.py:test_df`
+@pytest.mark.parametrize(
+    "time, domain, index",
+    [
+        (TEST_YEARS, "year", pd.Int64Index([2005, 2010])),
+        (TEST_DTS, "datetime", pd.DatetimeIndex(TEST_DTS)),
+        (TEST_TIME_STR, "datetime", pd.DatetimeIndex(TEST_DTS)),
+        (TEST_TIME_STR_HR, "datetime", pd.DatetimeIndex(TEST_TIME_STR_HR)),
+        (TEST_TIME_MIXED, "mixed", pd.Index(TEST_TIME_MIXED)),
+    ],
+)
+def test_time_domain(test_pd_df, time, domain, index):
+    # assert that the time-domain and time-index attributes are set correctly
+    mapping = dict([(i, j) for i, j in zip(TEST_YEARS, time)])
+    df = IamDataFrame(data=test_pd_df.rename(mapping, axis="columns"))
+
+    assert df.time_col == "year" if domain == "year" else "time"
+    assert df.time_domain == domain
+    pdt.assert_index_equal(df.time, index)
+
+
 @pytest.mark.parametrize("inplace", [True, False])
 def test_swap_time_to_year(test_df, inplace):
     """Swap time column for year (int) dropping subannual time resolution (default)"""
@@ -46,9 +74,7 @@ def test_swap_time_to_year(test_df, inplace):
         obs = test_df
 
     assert_iamframe_equal(obs, exp)
-    match = "'IamDataFrame' object has no attribute 'time'"
-    with pytest.raises(AttributeError, match=match):
-        obs.time
+    pdt.assert_index_equal(obs.time, pd.Index([2005, 2010]))
 
 
 @pytest.mark.parametrize(

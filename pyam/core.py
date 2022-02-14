@@ -7,9 +7,12 @@ import sys
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_integer
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
 
 try:
     from datapackage import Package
@@ -33,15 +36,10 @@ from pyam.utils import (
     read_file,
     read_pandas,
     format_data,
-    format_time_col,
     merge_meta,
     find_depth,
     pattern_match,
-    years_match,
-    month_match,
-    hour_match,
-    day_match,
-    datetime_match,
+    to_list,
     isstr,
     islistable,
     print_list,
@@ -51,6 +49,9 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS,
+)
+from pyam.filter import (
+    datetime_match,
 )
 from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
@@ -74,7 +75,7 @@ from pyam.index import (
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam._debiasing import _compute_bias
-from pyam.logging import deprecation_warning, raise_data_error
+from pyam.logging import raise_data_error
 
 logger = logging.getLogger(__name__)
 
@@ -134,8 +135,9 @@ class IamDataFrame(object):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
-                msg = "Invalid arguments {} for initializing from IamDataFrame"
-                raise ValueError(msg.format(list(kwargs)))
+                raise ValueError(
+                    f"Invalid arguments for initializing from IamDataFrame: {kwargs}"
+                )
             if index != data.index.names:
                 msg = f"Incompatible `index={index}` with {type(data)} "
                 raise ValueError(msg + f"(index={data.index.names})")
@@ -209,13 +211,17 @@ class IamDataFrame(object):
         self._compute = None
 
     def _set_attributes(self):
-        """Utility function to set attributes"""
+        """Utility function to set attributes, called on __init__/filter/append/..."""
 
-        # add time domain as attributes
+        # add/reset internal time-index attribute (set when first using `time`)
+        setattr(self, "_time", None)
+
+        # add/reset year attribute (only if time domain is year, i.e., all integer)
         if self.time_col == "year":
             setattr(self, "year", get_index_levels(self._data, "year"))
-        else:
-            setattr(self, "time", pd.Index(get_index_levels(self._data, "time")))
+
+        #  add/reset internal time domain attribute (set when first using `time_domain`)
+        setattr(self, "_time_domain", None)
 
         # set non-standard index columns as attributes
         for c in self.meta.index.names:
@@ -393,6 +399,20 @@ class IamDataFrame(object):
         )
 
     @property
+    def time(self):
+        """The time index, i.e., axis labels related to the time domain.
+
+        The returned type is
+        - :class:`pandas.Int64Index` if the time_domain is 'year'
+        - :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
+        - :class:`pandas.Index` if the time domain is 'mixed'
+        """
+        if self._time is None:
+            self._time = pd.Index(get_index_levels(self._data, self.time_col))
+
+        return self._time
+
+    @property
     def data(self):
         """Return the timeseries data as a long :class:`pandas.DataFrame`"""
         if self.empty:  # reset_index fails on empty with `datetime` column
@@ -419,6 +439,19 @@ class IamDataFrame(object):
     def dimensions(self):
         """Return the list of `data` columns (index names & data coordinates)"""
         return list(self._data.index.names)
+
+    @property
+    def time_domain(self):
+        """Indicator of the time domain: 'year', 'datetime', or 'mixed'"""
+        if self._time_domain is None:
+            if self.time_col == "year":
+                self._time_domain = "year"
+            elif isinstance(self.time, pd.DatetimeIndex):
+                self._time_domain = "datetime"
+            else:
+                self._time_domain = "mixed"
+
+        return self._time_domain
 
     def copy(self):
         """Make a deepcopy of this object
@@ -509,16 +542,19 @@ class IamDataFrame(object):
             other = IamDataFrame(other, **kwargs)
             ignore_meta_conflict = True
 
-        if self.time_col != other.time_col:
-            raise ValueError("Incompatible time format (`year` vs. `time`)")
-
-        if self.dimensions != other.dimensions:
+        if self.extra_cols != other.extra_cols:
             raise ValueError("Incompatible timeseries data index dimensions")
 
         if other.empty:
             return None if inplace else self.copy()
 
         ret = self.copy() if not inplace else self
+
+        if ret.time_col != other.time_col:
+            if ret.time_col == "year":
+                ret.swap_year_for_time(inplace=True)
+            else:
+                other = other.swap_year_for_time(inplace=False)
 
         # merge `meta` tables
         ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
@@ -606,16 +642,16 @@ class IamDataFrame(object):
         ret = self.copy() if not inplace else self
         interp_kwargs = dict(method="slinear", axis=1)
         interp_kwargs.update(kwargs)
-        time = list(time) if islistable(time) else [time]
+        time = to_list(time)
         # TODO - have to explicitly cast to numpy datetime to sort later,
         # could enforce as we do for year below
         if self.time_col == "time":
             time = list(map(np.datetime64, time))
-        elif not all(isinstance(x, int) for x in time):
+        elif not all(is_integer(x) for x in time):
             raise ValueError(f"The `time` argument {time} contains non-integers")
 
         old_cols = list(ret[ret.time_col].unique())
-        columns = np.sort(np.unique(old_cols + time))
+        columns = np.unique(np.concatenate([old_cols, time]))
 
         # calculate a separate dataframe with full interpolation
         df = ret.timeseries()
@@ -739,13 +775,11 @@ class IamDataFrame(object):
         if iamc_index:
             if self.time_col == "time":
                 raise ValueError(
-                    "Cannot use IAMC-index with continuous-time data format!"
+                    "Cannot use `iamc_index=True` with 'datetime' time-domain!"
                 )
             s = s.droplevel(self.extra_cols)
 
-        df = s.unstack(level=self.time_col).rename_axis(None, axis=1).sort_index(axis=1)
-
-        return df
+        return s.unstack(level=self.time_col).rename_axis(None, axis=1)
 
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to `exclude: False`"""
@@ -1210,8 +1244,9 @@ class IamDataFrame(object):
         value = kwargs[self.time_col]
         x = df.set_index(IAMC_IDX)
         x["value"] /= x[x[cols] == value]["value"]
+
         x = x.reset_index()
-        ret._data = format_time_col(x, self.time_col).set_index(self.dimensions).value
+        ret._data = x.set_index(self.dimensions).value
 
         if not inplace:
             return ret
@@ -1684,6 +1719,7 @@ class IamDataFrame(object):
              - 'year': takes an integer (int/np.int64), a list of integers or
                a range. Note that the last year of a range is not included,
                so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
+             - 'time_domain': can be "year" or "datetime"
              - arguments for filtering by `datetime.datetime` or np.datetime64
                ('month', 'hour', 'time')
              - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
@@ -1697,6 +1733,14 @@ class IamDataFrame(object):
         ret = self.copy() if not inplace else self
         ret._data = ret._data[_keep]
         ret._data.index = ret._data.index.remove_unused_levels()
+
+        # swap time for year if downselected to years-only
+        if ret.time_col == "time":
+            time_values = get_index_levels(ret._data, "time")
+            if time_values and all([pd.api.types.is_integer(y) for y in time_values]):
+                ret.swap_time_for_year(inplace=True)
+                msg = "Only yearly data after filtering, time-domain changed to 'year'."
+                logger.info(msg)
 
         # downselect `meta` dataframe
         idx = _make_index(ret._data, cols=self.index.names)
@@ -1735,39 +1779,31 @@ class IamDataFrame(object):
                 keep_col = _make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(cat_idx)
+
+            elif col == "time_domain":
+                # fast-pass if `self` already has selected time-domain
+                if self.time_domain == values:
+                    keep_col = np.ones(len(self), dtype=bool)
+                else:
+                    levels, codes = get_index_levels_codes(self._data, self.time_col)
+                    keep_col = filter_by_time_domain(values, levels, codes)
+
             elif col == "year":
-                if self.time_col == "year":
-                    _data = self.get_data_column(col)
-                else:
-                    _data = self.get_data_column("time").apply(lambda x: x.year)
-                keep_col = years_match(_data, values)
+                levels, codes = get_index_levels_codes(self._data, self.time_col)
+                keep_col = filter_by_year(self.time_col, values, levels, codes)
 
-            elif col == "month" and self.time_col == "time":
-                keep_col = month_match(
-                    self.get_data_column("time").apply(lambda x: x.month), values
-                )
+            elif col in ["month", "hour", "day"]:
+                if self.time_col != "time":
+                    logger.error(f"Filter by `{col}` not supported with yearly data.")
+                    return np.zeros(len(self), dtype=bool)
 
-            elif col == "day" and self.time_col == "time":
-                if isinstance(values, str):
-                    wday = True
-                elif isinstance(values, list) and isinstance(values[0], str):
-                    wday = True
-                else:
-                    wday = False
+                keep_col = filter_by_dt_arg(col, values, self.get_data_column("time"))
 
-                if wday:
-                    days = self.get_data_column("time").apply(lambda x: x.weekday())
-                else:  # ints or list of ints
-                    days = self.get_data_column("time").apply(lambda x: x.day)
+            elif col == "time":
+                if self.time_col != "time":
+                    logger.error(f"Filter by `{col}` not supported with yearly data.")
+                    return np.zeros(len(self), dtype=bool)
 
-                keep_col = day_match(days, values)
-
-            elif col == "hour" and self.time_col == "time":
-                keep_col = hour_match(
-                    self.get_data_column("time").apply(lambda x: x.hour), values
-                )
-
-            elif col == "time" and self.time_col == "time":
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
             elif col in self.dimensions:
@@ -1781,11 +1817,10 @@ class IamDataFrame(object):
                     has_nan=True,
                     return_codes=True,
                 )
-
                 keep_col = get_keep_col(codes, matches)
 
             else:
-                _raise_filter_error(col)
+                raise ValueError(f"Filter by `{col}` not supported!")
 
             keep = np.logical_and(keep, keep_col)
 
@@ -2418,7 +2453,7 @@ class IamDataFrame(object):
             .sort_values(SORT_IDX)
             .reset_index(drop=True)
         )
-        ret._data = format_time_col(df, self.time_col).set_index(self.dimensions).value
+        ret._data = df.set_index(self.dimensions).value
 
         if not inplace:
             return ret
@@ -2427,11 +2462,6 @@ class IamDataFrame(object):
 def _meta_idx(data):
     """Return the 'META_IDX' from data by index"""
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
-
-
-def _raise_filter_error(col):
-    """Raise an error if not possible to filter by col"""
-    raise ValueError(f"Filter by `{col}` not supported!")
 
 
 def _check_rows(rows, check, in_range=True, return_test="any"):
@@ -2686,16 +2716,16 @@ def compare(
     return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
 
 
-def concat(dfs, ignore_meta_conflict=False, **kwargs):
+def concat(objs, ignore_meta_conflict=False, **kwargs):
     """Concatenate a series of IamDataFrame-like objects
 
     Parameters
     ----------
-    dfs : iterable of IamDataFrames
+    objs : iterable of IamDataFrames
         A list of objects castable to :class:`IamDataFrame`
-    ignore_meta_conflict : bool, default False
+    ignore_meta_conflict : bool, optional
         If False, raise an error if any meta columns present in `dfs` are not identical.
-        If True, values in earlier elements of `dfs` take precendence.
+        If True, values in earlier elements of `dfs` take precedence.
     kwargs
         Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
         for any item of `dfs` which isn't already an IamDataFrame.
@@ -2710,40 +2740,60 @@ def concat(dfs, ignore_meta_conflict=False, **kwargs):
         If `dfs` is not a list.
     ValueError
         If time domain or other timeseries data index dimension don't match.
+
+    Notes
+    -----
+    The *meta* attributes are merged only for those objects of *objs* that are passed
+    as :class:`IamDataFrame` instances.
+
     """
-    if not islistable(dfs) or isinstance(dfs, pd.DataFrame):
-        raise TypeError(
-            f"First argument must be an iterable, "
-            f"you passed an object of type '{dfs.__class__.__name__}'!"
-        )
+    if not islistable(objs) or isinstance(objs, pd.DataFrame):
+        raise TypeError(f"'{objs.__class__.__name__}' object is not iterable")
 
-    dfs = list(dfs)
-
-    if len(dfs) < 1:
+    if len(objs) < 1:
         raise ValueError("No objects to concatenate")
 
-    # cast to IamDataFrame if necessary
     def as_iamdataframe(df):
-        return df if isinstance(df, IamDataFrame) else IamDataFrame(df, **kwargs)
+        if isinstance(df, IamDataFrame):
+            return df, True
+        else:
+            return IamDataFrame(df, **kwargs), False
 
-    df = as_iamdataframe(dfs[0])
-    ret_data, ret_meta = [df._data], df.meta
-    index, time_col = df.dimensions, df.time_col
+    # cast first item to IamDataFrame (if necessary)
+    df, _merge_meta = as_iamdataframe(objs[0])
+    extra_cols, time_col = df.extra_cols, df.time_col
 
-    for df in dfs[1:]:
-        # skip merging meta if element is a pd.DataFrame
-        _meta_merge = not isinstance(df, pd.DataFrame)
-        df = as_iamdataframe(df)
+    consistent_time_domain = True
+    iam_dfs = [(df, _merge_meta)]
 
+    # cast all items to IamDataFrame (if necessary) and check consistency of items
+    for df in objs[1:]:
+        df, _merge_meta = as_iamdataframe(df)
+        if df.extra_cols != extra_cols:
+            raise ValueError("Items have incompatible timeseries data dimensions")
         if df.time_col != time_col:
-            raise ValueError("Items have incompatible time format ('year' vs. 'time')!")
+            consistent_time_domain = False
+        iam_dfs.append((df, _merge_meta))
 
-        if df.dimensions != index:
-            raise ValueError("Items have incompatible timeseries data dimensions!")
+    # cast all instances to "time"
+    if not consistent_time_domain:
+        _iam_dfs = []
+        for (df, _merge_meta) in iam_dfs:
+            if df.time_col == "year":
+                df = df.swap_year_for_time()
+            _iam_dfs.append((df, _merge_meta))
+        iam_dfs = _iam_dfs  # replace list of IamDataFrames with consistent list
 
+    # extract timeseries data and meta attributes
+    ret_data, ret_meta = [], None
+    for (df, _merge_meta) in iam_dfs:
         ret_data.append(df._data)
-        if _meta_merge:
-            ret_meta = merge_meta(ret_meta, df.meta, ignore_meta_conflict)
+        if _merge_meta:
+            ret_meta = (
+                df.meta
+                if ret_meta is None
+                else merge_meta(ret_meta, df.meta, ignore_meta_conflict)
+            )
 
     # return as new IamDataFrame, this will verify integrity as part of `__init__()`
     return IamDataFrame(pd.concat(ret_data, verify_integrity=False), meta=ret_meta)

@@ -1,5 +1,17 @@
 # Next Release
 
+## API changes
+
+PR [#598](https://github.com/IAMconsortium/pyam/pull/598) added support for
+mixed time-domains, i.e., where the time column has both `integer` and `datetime` items.
+As part of the changes, filtering an **IamDataFrame** with yearly data using arguments
+that are only relevant for the datetime-domain (e.g., month, hour, time) returns
+an empty **IamDataFrame**. Previously, this raised an error.
+
+## Individual updates
+
+- [#598](https://github.com/IAMconsortium/pyam/pull/598) Support mixed 'year' and 'datetime' domain
+
 # Release v1.3.1
 
 This is a patch release to ensure compatibility with
