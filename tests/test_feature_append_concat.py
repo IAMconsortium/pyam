@@ -74,7 +74,8 @@ def test_append_incompatible_col_raises(test_df_year, test_pd_df, inplace):
 
 
 @pytest.mark.parametrize("reverse", (False, True))
-def test_concat(test_df, reverse):
+@pytest.mark.parametrize("iterable", (False, True))
+def test_concat(test_df, reverse, iterable):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
     test_df.set_meta([0, 1], name="col1")
@@ -83,10 +84,13 @@ def test_concat(test_df, reverse):
     other.set_meta(2, name="col1")
     other.set_meta("x", name="col3")
 
+    dfs = [test_df, other]
     if reverse:
-        result = concat([other, test_df])
-    else:
-        result = concat([test_df, other])
+        dfs = list(reversed(dfs))
+    if iterable:
+        dfs = iter(dfs)
+
+    result = concat(dfs)
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]

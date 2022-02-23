@@ -2750,6 +2750,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     if not islistable(objs) or isinstance(objs, pd.DataFrame):
         raise TypeError(f"'{objs.__class__.__name__}' object is not iterable")
 
+    objs = list(objs)
     if len(objs) < 1:
         raise ValueError("No objects to concatenate")
 
