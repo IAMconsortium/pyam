@@ -113,7 +113,9 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
 
 def test_init_df_with_na_column_raises(test_pd_df, tmpdir):
     # reading from file with a "corrupted" column raises expected error
-    IamDataFrame(TEST_DATA_DIR / "na_column.xlsx")
+    match = "Empty cells in `data` \(columns: 'unnamed: 7'\):"
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(TEST_DATA_DIR / "na_column.xlsx")
 
 
 @pytest.mark.parametrize(
