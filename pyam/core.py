@@ -171,17 +171,18 @@ class IamDataFrame(object):
                     "Initializing from list is not supported, "
                     "use `IamDataFrame.append()` or `pyam.concat()`"
                 )
+
             # read from file
             try:
                 data = Path(data)  # casting str or LocalPath to Path
-                if data.is_file():
-                    logger.info(f"Reading file {data}")
-                    _data = read_file(data, index=index, **kwargs)
-                else:
-                    raise FileNotFoundError(f"File {data} does not exist")
             except TypeError:  # `data` cannot be cast to Path
-                msg = "IamDataFrame constructor not properly called!"
-                raise ValueError(msg)
+                raise ValueError("IamDataFrame constructor not properly called!")
+
+            if not data.is_file():
+                raise FileNotFoundError(f"File {data} does not exist")
+
+            logger.info(f"Reading file {data}")
+            _data = read_file(data, index=index, **kwargs)
 
         self._data, index, self.time_col, self.extra_cols = _data
 
