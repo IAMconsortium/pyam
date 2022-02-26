@@ -111,6 +111,11 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
     IamDataFrame(file)  # reading from file as IamDataFrame works
 
 
+def test_init_df_with_na_column_raises(test_pd_df, tmpdir):
+    # reading from file with a "corrupted" column raises expected error
+    IamDataFrame(TEST_DATA_DIR / "na_column.xlsx")
+
+
 @pytest.mark.parametrize(
     "sheet_name, init_args, rename",
     [
