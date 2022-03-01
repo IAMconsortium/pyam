@@ -10,6 +10,7 @@ import pandas as pd
 from pandas.api.types import is_integer
 
 from pathlib import Path
+from py._path.local import LocalPath
 from tempfile import TemporaryDirectory
 
 from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
@@ -161,28 +162,30 @@ class IamDataFrame(object):
         # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             _data = format_data(data.copy(), index=index, **kwargs)
+
         # read data from ixmp Platform instance
         elif has_ix and isinstance(data, ixmp.TimeSeries):
             # TODO read meta indicators from ixmp
             _data = read_ix(data, **kwargs)
-        else:
-            if islistable(data):
-                raise ValueError(
-                    "Initializing from list is not supported, "
-                    "use `IamDataFrame.append()` or `pyam.concat()`"
-                )
 
-            # read from file
-            try:
-                data = Path(data)  # casting str or LocalPath to Path
-            except TypeError:  # `data` cannot be cast to Path
-                raise ValueError("IamDataFrame constructor not properly called!")
-
+        # read from file
+        elif isstr(data) or isinstance(data, (LocalPath, Path)):
+            data = Path(data)  # casting str or LocalPath to Path
             if not data.is_file():
-                raise FileNotFoundError(f"File {data} does not exist")
-
+                raise FileNotFoundError(f"No such file: '{data}'")
             logger.info(f"Reading file {data}")
             _data = read_file(data, index=index, **kwargs)
+
+        # unsupported `data` args
+        elif islistable(data):
+            raise ValueError(
+                "Initializing from list is not supported, "
+                "use `IamDataFrame.append()` or `pyam.concat()`"
+            )
+        else:
+            raise ValueError("IamDataFrame constructor not properly called!")
+
+
 
         self._data, index, self.time_col, self.extra_cols = _data
 

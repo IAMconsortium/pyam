@@ -28,7 +28,7 @@ def test_unknown_type():
 
 def test_not_a_file():
     # initializing with a file-like that's not a file raises an error
-    match = "File foo.csv does not exist"
+    match = "No such file: 'foo.csv'"
     with pytest.raises(FileNotFoundError, match=match):
         IamDataFrame("foo.csv")
 
