@@ -10,6 +10,7 @@ an empty **IamDataFrame**. Previously, this raised an error.
 
 ## Individual updates
 
+- [#634](https://github.com/IAMconsortium/pyam/pull/634) Better error message when initializing with invisible columns 
 - [#598](https://github.com/IAMconsortium/pyam/pull/598) Support mixed 'year' and 'datetime' domain
 
 # Release v1.3.1
