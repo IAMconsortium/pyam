@@ -173,7 +173,7 @@ def read_pandas(path, sheet_name="data*", *args, **kwargs):
                 try:
                     if len(s) == 0 or all(np.isnan(s)):
                         return True
-                except:
+                except TypeError:
                     pass
             return False
 
@@ -355,7 +355,9 @@ def format_data(df, index, **kwargs):
     null_rows = df.isnull().T.any()
     if null_rows.any():
         cols = ", ".join(df.columns[df.isnull().any().values])
-        raise_data_error(f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows])
+        raise_data_error(
+            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
+        )
     del null_rows
 
     # cast to pd.Series, check for duplicates
