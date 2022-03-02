@@ -185,8 +185,6 @@ class IamDataFrame(object):
         else:
             raise ValueError("IamDataFrame constructor not properly called!")
 
-
-
         self._data, index, self.time_col, self.extra_cols = _data
 
         # define `meta` dataframe for categorization & quantitative indicators
