@@ -169,7 +169,7 @@ class IamDataFrame(object):
             _data = read_ix(data, **kwargs)
 
         # read from file
-        elif isstr(data) or isinstance(data, (LocalPath, Path)):
+        elif isinstance(data, (str, LocalPath, Path)):
             data = Path(data)  # casting str or LocalPath to Path
             if not data.is_file():
                 raise FileNotFoundError(f"No such file: '{data}'")
