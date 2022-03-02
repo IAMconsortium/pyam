@@ -411,7 +411,7 @@ def merge_meta(left, right, ignore_conflict=False):
 
     # join `other.meta` for new scenarios (`diff`)
     if not diff.empty:
-        left = left.append(right.loc[diff, :], sort=False)
+        left = pd.concat([left, right.loc[diff, :]], sort=False)
 
     # remove any columns that are all-nan
     return left.dropna(axis=1, how="all")
