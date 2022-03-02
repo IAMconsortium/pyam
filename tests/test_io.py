@@ -28,7 +28,7 @@ def test_unknown_type():
 
 def test_not_a_file():
     # initializing with a file-like that's not a file raises an error
-    match = "File foo.csv does not exist"
+    match = "No such file: 'foo.csv'"
     with pytest.raises(FileNotFoundError, match=match):
         IamDataFrame("foo.csv")
 
@@ -109,6 +109,13 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
     df_excel = pd.read_excel(file, engine="openpyxl")
     assert np.isnan(df_excel.loc[1, "Unit"])
     IamDataFrame(file)  # reading from file as IamDataFrame works
+
+
+def test_init_df_with_na_column_raises(test_pd_df, tmpdir):
+    # reading from file with a "corrupted" column raises expected error
+    match = "Empty cells in `data` \(columns: 'unnamed: 7'\):"
+    with pytest.raises(ValueError, match=match):
+        IamDataFrame(TEST_DATA_DIR / "na_column.xlsx")
 
 
 @pytest.mark.parametrize(

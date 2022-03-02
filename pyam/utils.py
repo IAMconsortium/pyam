@@ -170,8 +170,11 @@ def read_pandas(path, sheet_name="data*", *args, **kwargs):
         # remove unnamed and empty columns, and rows were all values are nan
         def is_empty(name, s):
             if str(name).startswith("Unnamed: "):
-                if len(s) == 0 or all(np.isnan(s)):
-                    return True
+                try:
+                    if len(s) == 0 or all(np.isnan(s)):
+                        return True
+                except TypeError:
+                    pass
             return False
 
         empty_cols = [c for c in df.columns if is_empty(c, df[c])]
@@ -351,7 +354,10 @@ def format_data(df, index, **kwargs):
     # verify that there are no nan's left (in columns)
     null_rows = df.isnull().T.any()
     if null_rows.any():
-        raise_data_error("Empty cells in `data`", df.loc[null_rows])
+        cols = ", ".join(df.columns[df.isnull().any().values])
+        raise_data_error(
+            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
+        )
     del null_rows
 
     # cast to pd.Series, check for duplicates
