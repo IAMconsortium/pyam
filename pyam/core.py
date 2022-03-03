@@ -10,6 +10,7 @@ import pandas as pd
 from pandas.api.types import is_integer
 
 from pathlib import Path
+
 try:
     from py._path.local import LocalPath
 
