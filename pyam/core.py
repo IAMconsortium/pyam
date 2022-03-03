@@ -12,10 +12,12 @@ from pandas.api.types import is_integer
 from pathlib import Path
 
 try:
+    # used by pytest tmpdir
     from py._path.local import LocalPath
 
     FILE_TYPE = (str, Path, LocalPath)
 except ImportError:
+    LocalPath = None
     FILE_TYPE = (str, Path)
 
 
