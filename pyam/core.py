@@ -112,13 +112,11 @@ class IamSlice(pd.Series):
             return ret
 
         if attr in self.dimensions:
-            ret = self._iamcache[attr] = (
-                self.index[self].unique(level=attr).tolist()
-            )
+            ret = self._iamcache[attr] = self.index[self].unique(level=attr).tolist()
             return ret
 
         return super().__getattr__(attr)
-    
+
     @property
     def dimensions(self):
         return self.index.names
@@ -135,12 +133,15 @@ class IamSlice(pd.Series):
             The maximum line length
         """
         # concatenate list of index dimensions and levels
-        info = f'{type(self)}\nIndex dimensions:\n'
+        info = f"{type(self)}\nIndex dimensions:\n"
         c1 = max([len(i) for i in self.dimensions]) + 1
         c2 = n - c1 - 5
-        info += '\n'.join(
-            [f' * {i:{c1}}: {print_list(getattr(self, i), c2)}'
-             for i in self.dimensions])
+        info += "\n".join(
+            [
+                f" * {i:{c1}}: {print_list(getattr(self, i), c2)}"
+                for i in self.dimensions
+            ]
+        )
 
         return info
 
@@ -1774,8 +1775,12 @@ class IamDataFrame(object):
 
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
-    
-        return IamSlice(_keep.values, self._data.index)
+
+        return (
+            IamSlice(_keep)
+            if isinstance(_keep, pd.Series)
+            else IamSlice(_keep, self._data.index)
+        )
 
     def filter(self, keep=True, inplace=False, **kwargs):
         """Return a (copy of a) filtered (downselected) IamDataFrame
