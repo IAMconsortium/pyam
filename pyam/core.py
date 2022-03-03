@@ -10,7 +10,14 @@ import pandas as pd
 from pandas.api.types import is_integer
 
 from pathlib import Path
-from py._path.local import LocalPath
+try:
+    from py._path.local import LocalPath
+
+    FILE_TYPE = (str, Path, LocalPath)
+except ImportError:
+    FILE_TYPE = (str, Path)
+
+
 from tempfile import TemporaryDirectory
 
 from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
@@ -169,7 +176,7 @@ class IamDataFrame(object):
             _data = read_ix(data, **kwargs)
 
         # read from file
-        elif isinstance(data, (str, LocalPath, Path)):
+        elif isinstance(data, FILE_TYPE):
             data = Path(data)  # casting str or LocalPath to Path
             if not data.is_file():
                 raise FileNotFoundError(f"No such file: '{data}'")
