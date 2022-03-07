@@ -1,5 +1,10 @@
 # Next Release
 
+## Dependency changes
+
+The dependencies were updated to require `pint>=0.18` (previously `<=0.17`) and `iam-units>=2021.11.12` 
+(previously `>=2020.4.21`).
+
 ## API changes
 
 PR [#598](https://github.com/IAMconsortium/pyam/pull/598) added support for
