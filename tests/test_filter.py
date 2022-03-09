@@ -11,19 +11,22 @@ from pyam import IamDataFrame, IAMC_IDX
 from .conftest import EXP_DATETIME_INDEX
 
 
-def test_filter_error_illegal_column(test_df):
+@pytest.mark.parametrize("method", ("filter", "slice"))
+def test_filter_error_illegal_column(test_df, method):
     # filtering by column `foo` is not valid
-    pytest.raises(ValueError, test_df.filter, foo="test")
+    pytest.raises(ValueError, getattr(test_df, method), foo="test")
 
 
-def test_filter_error_keep(test_df):
+@pytest.mark.parametrize("method", ("filter", "slice"))
+def test_filter_error_keep(test_df, method):
     # string or non-starred dict was mis-interpreted as `keep` kwarg, see #253
-    pytest.raises(ValueError, test_df.filter, model="foo", keep=1)
-    pytest.raises(ValueError, test_df.filter, dict(model="foo"))
+    pytest.raises(ValueError, getattr(test_df, method), model="foo", keep=1)
+    pytest.raises(ValueError, getattr(test_df, method), dict(model="foo"))
 
 
-def test_filter_year(test_df):
-    obs = test_df.filter(year=2005)
+@pytest.mark.parametrize("method", ("filter", "slice"))
+def test_filter_year(test_df, method):
+    obs = getattr(test_df, method)(year=2005)
     if test_df.time_col == "year":
         assert obs.year == [2005]
     else:

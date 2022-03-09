@@ -113,7 +113,7 @@ class IamSlice(pd.Series):
 
         if attr in self.dimensions:
             ret = self._iamcache[attr] = self.index[self].unique(level=attr).tolist()
-            return ret
+            return pd.Index(ret) if attr == "time" else ret
 
         return super().__getattr__(attr)
 
