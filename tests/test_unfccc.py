@@ -36,8 +36,6 @@ def _test_unfccc_tier1():
         "Land Use, Land-Use Change and Forestry",
         "Waste",
     ]
-    print([f"Emissions|CH4|{i}" for i in types])
-    print(obs.variable)
     assert obs.variable == [f"Emissions|CH4|{i}" for i in types]
 
     # assert that the unit is merged as expected
