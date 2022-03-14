@@ -11,7 +11,9 @@ UNFCCC_DF = pd.DataFrame(
 INDEX_ARGS = dict(model="UNFCCC", scenario="Data Inventory")
 
 
-def test_unfccc_tier1():
+def _test_unfccc_tier1():
+    # deactivated in response to https://github.com/pik-primap/unfccc_di_api/issues/37
+
     # test that UNFCCC API returns expected data and units
     exp = IamDataFrame(
         UNFCCC_DF,
@@ -35,8 +37,6 @@ def test_unfccc_tier1():
         "Land Use, Land-Use Change and Forestry",
         "Waste",
     ]
-    print([f"Emissions|CH4|{i}" for i in types])
-    print(obs.variable)
     assert obs.variable == [f"Emissions|CH4|{i}" for i in types]
 
     # assert that the unit is merged as expected
