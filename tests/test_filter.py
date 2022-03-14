@@ -48,14 +48,14 @@ def test_filter_mixed_time_domain(test_df_mixed, arg_year, arg_time):
     # filtering to datetime-only works as expected
     obs = test_df_mixed.filter(**arg_time)
     assert obs.time_domain == "datetime"
-    pdt.assert_index_equal(obs.time, pd.DatetimeIndex(["2010-07-21"]))
+    pdt.assert_index_equal(obs.time, pd.DatetimeIndex(["2010-07-21"], name="time"))
 
     # filtering to year-only works as expected including changing of time domain
     obs = test_df_mixed.filter(**arg_year)
     assert obs.time_col == "year"
     assert obs.time_domain == "year"
     assert obs.year == [2005]
-    pdt.assert_index_equal(obs.time, pd.Int64Index([2005]))
+    pdt.assert_index_equal(obs.time, pd.Int64Index([2005], name="time"))
 
 
 def test_filter_time_domain_raises(test_df_year):
