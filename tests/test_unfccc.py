@@ -12,6 +12,7 @@ INDEX_ARGS = dict(model="UNFCCC", scenario="Data Inventory")
 
 
 def _test_unfccc_tier1():
+    # deactivated in response to https://github.com/pik-primap/unfccc_di_api/issues/37
 
     # test that UNFCCC API returns expected data and units
     exp = IamDataFrame(
