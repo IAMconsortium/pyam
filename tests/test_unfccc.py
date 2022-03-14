@@ -11,7 +11,8 @@ UNFCCC_DF = pd.DataFrame(
 INDEX_ARGS = dict(model="UNFCCC", scenario="Data Inventory")
 
 
-def test_unfccc_tier1():
+def _test_unfccc_tier1():
+
     # test that UNFCCC API returns expected data and units
     exp = IamDataFrame(
         UNFCCC_DF,
