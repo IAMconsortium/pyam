@@ -262,18 +262,15 @@ class Connection(object):
         df = self._query_index(default, meta=True)
         cols = ["version"] if default else ["version", "is_default"]
         if kwargs:
-            if kwargs.pop("run_id", False):
-                cols += ["run_id"]
-        index = DEFAULT_META_INDEX + ([] if default else ["version"])
+            if kwargs.get("run_id", False):
+                cols.append("run_id")
 
-        def extract(row):
-            return (
-                pd.concat([row[META_IDX + cols], pd.Series(row.metadata)])
-                .to_frame()
-                .T.set_index(index)
-            )
+        meta = df[META_IDX + cols]
+        if df.metadata.any():
+            extra_meta = pd.DataFrame.from_records(df.metadata)
+            meta = pd.concat([meta, extra_meta], axis=1)
 
-        return pd.concat([extract(row) for i, row in df.iterrows()], sort=False)
+        return meta.set_index(DEFAULT_META_INDEX + ([] if default else ["version"]))
 
     def properties(self, default=True):
         """Return the audit properties of scenarios

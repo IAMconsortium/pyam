@@ -634,7 +634,7 @@ class IamDataFrame(object):
         ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
-        _data = ret._data.append(other._data)
+        _data = pd.concat([ret._data, other._data])
         if verify_integrity:
             verify_index_integrity(_data)
 

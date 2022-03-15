@@ -445,7 +445,7 @@ def stack(
         axis=1,
     )
     _df = (
-        _df.append(_rows.loc[_rows.index.difference(_df.index)])
+        pd.concat([_df, _rows.loc[_rows.index.difference(_df.index)]])
         .sort_index()
         .interpolate(method="index")
     )
