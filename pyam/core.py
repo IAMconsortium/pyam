@@ -117,6 +117,9 @@ class IamSlice(pd.Series):
 
         return super().__getattr__(attr)
 
+    def __len__(self):
+        return self.sum()
+
     @property
     def dimensions(self):
         return self.index.names
