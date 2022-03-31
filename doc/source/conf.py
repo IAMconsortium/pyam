@@ -42,7 +42,6 @@ extensions = [
     "sphinxcontrib.programoutput",
     "nbsphinx",
     "sphinx_gallery.gen_gallery",
-    "cloud_sptheme.ext.table_styling",
     "autodocsumm",
 ]
 
