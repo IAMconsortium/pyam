@@ -328,7 +328,7 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
     "pint": ("https://pint.readthedocs.io/en/stable", None),
     "ixmp": ("https://docs.messageix.org/projects/ixmp/en/stable/", None),
-    "matplotlib": ("https://matplotlib.org", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
     "plotly": ("https://plotly.com/python-api-reference/", None),
     "pandas_datareader": ("https://pandas-datareader.readthedocs.io/en/stable", None),
     "unfccc_di_api": ("https://unfccc-di-api.readthedocs.io/en/stable", None),
