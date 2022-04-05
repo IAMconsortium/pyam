@@ -237,7 +237,7 @@ class Connection(object):
         _check_response(r)
 
         # cast response to dataframe and return
-        return pd.read_json(r.text, orient="records")
+        return pd.DataFrame(r.json())
 
     @property
     @lru_cache()
