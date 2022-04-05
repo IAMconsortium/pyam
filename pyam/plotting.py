@@ -85,6 +85,13 @@ PYAM_COLORS = {
     "AR6-C6": "#FAC182",
     "AR6-C7": "#F18872",
     "AR6-C8": "#BD7161",
+    "AR6-IMP-LD": "#DAA25A",
+    "AR6-IMP-Ren": "#EED2AE",
+    "AR6-IMP-SP": "#F7E7D7",
+    "AR6-IMP-Neg": "#B8BDAA",
+    "AR6-IMP-GS": "#B5B7CA",
+    "AR6-IP-ModAct": "#DDB6AB",
+    "AR6-IP-CurPol": "#F9C8B7",
 }
 
 
