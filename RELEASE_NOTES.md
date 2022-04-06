@@ -17,6 +17,7 @@ an empty **IamDataFrame**. Previously, this raised an error.
 
 ## Individual updates
 
+- [#651](https://github.com/IAMconsortium/pyam/pull/651) Pin `pint<=0.18` as a quickfix for a regression in the latest release
 - [#647](https://github.com/IAMconsortium/pyam/pull/647) Pin `unfccc-di-api` to latest release
 - [#634](https://github.com/IAMconsortium/pyam/pull/634) Better error message when initializing with invisible columns 
 - [#598](https://github.com/IAMconsortium/pyam/pull/598) Support mixed 'year' and 'datetime' domain
