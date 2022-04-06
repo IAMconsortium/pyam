@@ -77,22 +77,24 @@ PYAM_COLORS = {
     "AR5-RCP-4.5": "#79BCFF",
     "AR5-RCP-6.0": "#FF822D",
     "AR5-RCP-8.5": "#FF0000",
-    # AR6 WG III values below
-    "AR6-C1": "#97CEE4",  # AR6 category C1, scenarios that limit warming to 1.5°C (>50%) with no or limited overshoot
-    "AR6-C2": "#778663",  # AR6 category C2, scenarios that return warming to 1.5°C (>50%) after a high overshoot
-    "AR6-C3": "#6F7899",  # AR6 category C3, scenarios that limit warming to 2°C (>67%)
-    "AR6-C4": "#A7C682",  # AR6 category C4, scenarios that limit warming to 2°C (>50%)
-    "AR6-C5": "#8CA7D0",  # AR6 category C5, scenarios that limit warming to 2.5°C (>50%)
-    "AR6-C6": "#FAC182",  # AR6 category C6, scenarios that limit warming to 3°C (>50%)
-    "AR6-C7": "#F18872",  # AR6 category C7, scenarios that limit warming to 4°C (>50%)
-    "AR6-C8": "#BD7161",  # AR6 category C8, scenarios that exceed 4°C warming (≥50%)
-    "AR6-IMP-LD": "#DAA25A", # AR6 Illustrative Mitigation Pathway with a greater emphasis on a low demand for resources
-    "AR6-IMP-Ren": "#EED2AE", # AR6 Illustrative Mitigation Pathway with a greater emphasis on renewables resources
-    "AR6-IMP-SP": "#F7E7D7", # AR6 Illustrative Mitigation Pathway with a greater emphasis on sustainable development
-    "AR6-IMP-Neg": "#B8BDAA", # AR6 Illustrative Mitigation Pathway with a greater emphasis on deployment of carbon dioxide removal
-    "AR6-IMP-GS": "#B5B7CA", # AR6 Illustrative Mitigation Pathway with less rapid near-term mitigation followed by a gradual strengthening
-    "AR6-IP-ModAct": "#DDB6AB", # AR6 Illustrative Pathway with moderate climate action
-    "AR6-IP-CurPol": "#F9C8B7", # AR6 Illustrative Pathway modelling current policies
+    # AR6 WG III scenario categorization (C)
+    "AR6-C1": "#97CEE4",  # C1: scenarios that limit warming to 1.5°C (>50%) with no or limited overshoot
+    "AR6-C2": "#778663",  # C2: scenarios that return warming to 1.5°C (>50%) after a high overshoot
+    "AR6-C3": "#6F7899",  # C3: scenarios that limit warming to 2°C (>67%)
+    "AR6-C4": "#A7C682",  # C4: scenarios that limit warming to 2°C (>50%)
+    "AR6-C5": "#8CA7D0",  # C5: scenarios that limit warming to 2.5°C (>50%)
+    "AR6-C6": "#FAC182",  # C6: scenarios that limit warming to 3°C (>50%)
+    "AR6-C7": "#F18872",  # C7: scenarios that limit warming to 4°C (>50%)
+    "AR6-C8": "#BD7161",  # C8: scenarios that exceed 4°C warming (≥50%)
+    # AR6 Illustrative Mitigation Pathway (IMP)
+    "AR6-IMP-LD": "#DAA25A",  # LD: emphasis on a low demand for resources
+    "AR6-IMP-Ren": "#EED2AE",  # Ren: emphasis on renewables resources
+    "AR6-IMP-SP": "#F7E7D7",  # SP: emphasis on sustainable development
+    "AR6-IMP-Neg": "#B8BDAA",  # Neg: emphasis on deployment of carbon dioxide removal
+    "AR6-IMP-GS": "#B5B7CA",  # GS: less rapid near-term mitigation followed by a gradual strengthening
+    # AR6 Illustrative Pathway (IP)
+    "AR6-IP-ModAct": "#DDB6AB",  # pathway with moderate climate action
+    "AR6-IP-CurPol": "#F9C8B7",  # pathway modelling current policies
 }
 
 
