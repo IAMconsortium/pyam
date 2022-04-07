@@ -1,4 +1,10 @@
-# Next Release
+# Release v1.4.0
+
+## Highlights
+
+- Add colors used for IPCC AR6 WGIII scenario analysis
+- Support scenario data with mixed 'year' and 'datetime' domain (beta) 
+- Add explicit support for Python 3.10
 
 ## Dependency changes
 
