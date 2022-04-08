@@ -38,7 +38,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies and package
-      run: pip install -e .[tests,optional_plotting,optional_io_formats,tutorials]
+      run: pip install .[tests,optional_plotting,optional_io_formats,tutorials]
 
     - name: Test with pytest
       if: ${{ matrix.python-version != '3.9' }}
