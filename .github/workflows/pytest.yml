@@ -37,9 +37,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install numpy explicitly
-      run: pip install numpy
-
     - name: Install dependencies and package
       run: pip install .[tests,optional_plotting,optional_io_formats,tutorials]
 
