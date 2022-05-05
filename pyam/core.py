@@ -1775,6 +1775,38 @@ class IamDataFrame(object):
         )
 
     def slice(self, keep=True, **kwargs):
+        """Return a (filtered) slice object of the IamDataFrame timeseries data index
+
+        Parameters
+        ----------
+        keep : bool, optional
+            Keep all scenarios satisfying the filters (if *True*) or the inverse.
+        **kwargs
+            Arguments for filtering. See the "Notes".
+
+        Returns
+        -------
+        :class:`IamSlice`
+
+        Notes
+        -----
+        The following arguments are available for filtering:
+
+         - 'meta' columns: filter by string value of that column
+         - 'model', 'scenario', 'region', 'variable', 'unit':
+           string or list of strings, where `*` can be used as a wildcard
+         - 'level': the "depth" of entries in the variable column (number of '|')
+           (excluding the strings given in the 'variable' argument)
+         - 'year': takes an integer (int/np.int64), a list of integers or
+           a range. Note that the last year of a range is not included,
+           so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
+         - 'time_domain': can be "year" or "datetime"
+         - arguments for filtering by `datetime.datetime` or np.datetime64
+           ('month', 'hour', 'time')
+         - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
+
+        """
+
         if not isinstance(keep, bool):
             raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")
 
@@ -1793,23 +1825,11 @@ class IamDataFrame(object):
         Parameters
         ----------
         keep : bool, optional
-            keep all scenarios satisfying the filters (if True) or the inverse
+            Keep all scenarios satisfying the filters (if *True*) or the inverse.
         inplace : bool, optional
-            if True, do operation inplace and return None
-        filters by kwargs:
-            The following columns are available for filtering:
-             - 'meta' columns: filter by string value of that column
-             - 'model', 'scenario', 'region', 'variable', 'unit':
-               string or list of strings, where `*` can be used as a wildcard
-             - 'level': the maximum "depth" of IAM variables (number of '|')
-               (excluding the strings given in the 'variable' argument)
-             - 'year': takes an integer (int/np.int64), a list of integers or
-               a range. Note that the last year of a range is not included,
-               so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
-             - 'time_domain': can be "year" or "datetime"
-             - arguments for filtering by `datetime.datetime` or np.datetime64
-               ('month', 'hour', 'time')
-             - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
+            If *True*, do operation inplace and return *None*.
+        **kwargs
+            Passed to :meth:`slice`.
         """
         # downselect `data` rows and clean up index
         _keep = self.slice(keep=keep, **kwargs)
