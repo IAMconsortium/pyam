@@ -57,7 +57,7 @@ class IamSlice(pd.Series):
         return self._time
 
     def __repr__(self):
-        return self.info() + "\n\n" + super().__repr__()
+        return self.info()
 
     def info(self, n=80):
         """Print a summary of the represented index dimensions and data coordinates
