@@ -13,6 +13,8 @@ class IamSlice(pd.Series):
     def __init__(self, data=None, index=None, **kwargs):
         super().__init__(data, index, **kwargs)
         self._iamcache = dict()
+        self.time_col = "year" if "year" in self.index.names else "time"
+        self._time = None
 
     def __dir__(self):
         return self.dimensions + super().__dir__()
@@ -34,6 +36,22 @@ class IamSlice(pd.Series):
     @property
     def dimensions(self):
         return self.index.names
+
+    @property
+    def time(self):
+        """The time index, i.e., axis labels related to the time domain.
+
+        The returned type is
+        - :class:`pandas.Int64Index` if the time_domain is 'year'
+        - :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
+        - :class:`pandas.Index` if the time domain is 'mixed'
+        """
+        if self._time is None:
+            self._time = pd.Index(
+                self._data.index.unique(level=self.time_col).values, name="time"
+            )
+
+        return self._time
 
     def __repr__(self):
         return self.info() + "\n\n" + super().__repr__()
