@@ -38,11 +38,11 @@ OE_SUBANNUAL_FORMAT = lambda x: x.strftime("%m-%d %H:%M%z").replace("+0100", "+0
 @pytest.mark.parametrize(
     "time, domain, index",
     [
-        (TEST_YEARS, "year", pd.Int64Index([2005, 2010])),
-        (TEST_DTS, "datetime", pd.DatetimeIndex(TEST_DTS)),
-        (TEST_TIME_STR, "datetime", pd.DatetimeIndex(TEST_DTS)),
-        (TEST_TIME_STR_HR, "datetime", pd.DatetimeIndex(TEST_TIME_STR_HR)),
-        (TEST_TIME_MIXED, "mixed", pd.Index(TEST_TIME_MIXED)),
+        (TEST_YEARS, "year", pd.Int64Index([2005, 2010], name="time")),
+        (TEST_DTS, "datetime", pd.DatetimeIndex(TEST_DTS, name="time")),
+        (TEST_TIME_STR, "datetime", pd.DatetimeIndex(TEST_DTS, name="time")),
+        (TEST_TIME_STR_HR, "datetime", pd.DatetimeIndex(TEST_TIME_STR_HR, name="time")),
+        (TEST_TIME_MIXED, "mixed", pd.Index(TEST_TIME_MIXED, name="time")),
     ],
 )
 def test_time_domain(test_pd_df, time, domain, index):
@@ -74,7 +74,7 @@ def test_swap_time_to_year(test_df, inplace):
         obs = test_df
 
     assert_iamframe_equal(obs, exp)
-    pdt.assert_index_equal(obs.time, pd.Index([2005, 2010]))
+    pdt.assert_index_equal(obs.time, pd.Index([2005, 2010], name="time"))
 
 
 @pytest.mark.parametrize(
