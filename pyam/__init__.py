@@ -10,6 +10,7 @@ except ModuleNotFoundError:
     from importlib_metadata import version, PackageNotFoundError
 
 from pyam.core import *
+from pyam.slice import IamSlice
 from pyam.utils import *
 from pyam.statistics import *
 from pyam.timeseries import *
