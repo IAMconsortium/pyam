@@ -417,10 +417,11 @@ class IamDataFrame(object):
     def time(self):
         """The time index, i.e., axis labels related to the time domain.
 
-        The returned type is
-        - :class:`pandas.Int64Index` if the time_domain is 'year'
-        - :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
-        - :class:`pandas.Index` if the time domain is 'mixed'
+        Returns
+        -------
+        - A :class:`pandas.Int64Index` if the time_domain is 'year'
+        - A :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
+        - A :class:`pandas.Index` if the time domain is 'mixed'
         """
         if self._time is None:
             self._time = pd.Index(
