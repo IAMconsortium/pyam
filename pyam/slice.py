@@ -1,4 +1,5 @@
 import pandas as pd
+from pyam.utils import print_list
 
 
 class IamSlice(pd.Series):
@@ -67,12 +68,12 @@ class IamSlice(pd.Series):
             The maximum line length
         """
         # concatenate list of index dimensions and levels
-        info = f"{type(self)}\nIndex dimensions:\n"
+        info = f"{type(self)}\nIndex dimensions and data coordinates:\n"
         c1 = max([len(i) for i in self.dimensions]) + 1
         c2 = n - c1 - 5
         info += "\n".join(
             [
-                f" * {i:{c1}}: {print_list(getattr(self, i), c2)}"
+                f"   {i:{c1}}: {print_list(getattr(self, i), c2)}"
                 for i in self.dimensions
             ]
         )

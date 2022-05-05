@@ -31,3 +31,21 @@ def test_filtered_slice_index_attributes(test_df_year):
 
     s = test_df_year.slice(scenario="scen_b")
     assert s.scenario == ["scen_b"]
+
+
+def test_print(test_df_year):
+    """Assert that `print(IamSlice)` (and `info()`) returns as expected"""
+    exp = "\n".join(
+        [
+            "<class 'pyam.slice.IamSlice'>",
+            "Index dimensions and data coordinates:",
+            "   model    : model_a (1)",
+            "   scenario : scen_a, scen_b (2)",
+            "   region   : World (1)",
+            "   variable : Primary Energy, Primary Energy|Coal (2)",
+            "   unit     : EJ/yr (1)",
+            "   year     : 2005, 2010 (2)",
+        ]
+    )
+    obs = test_df_year.slice().info()
+    assert obs == exp
