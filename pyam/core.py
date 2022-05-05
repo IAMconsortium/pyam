@@ -1808,7 +1808,7 @@ class IamDataFrame(object):
         """
 
         if not isinstance(keep, bool):
-            raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")
+            raise ValueError(f"Value of `keep` must be a boolean, found: {keep}")
 
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
@@ -1831,11 +1831,10 @@ class IamDataFrame(object):
         **kwargs
             Passed to :meth:`slice`.
         """
-        # downselect `data` rows and clean up index
-        _keep = self.slice(keep=keep, **kwargs)
 
+        # downselect `data` rows and clean up index
         ret = self.copy() if not inplace else self
-        ret._data = ret._data[_keep]
+        ret._data = ret._data[self.slice(keep=keep, **kwargs)]
         ret._data.index = ret._data.index.remove_unused_levels()
 
         # swap time for year if downselected to years-only
