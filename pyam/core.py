@@ -294,7 +294,7 @@ class IamDataFrame(object):
         c2 = n - c1 - 5
         info += "\n".join(
             [
-                f" * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}"
+                f" * {i:{c1}}: {print_list(getattr(self, i), c2)}"
                 for i in self.index.names
             ]
         )
@@ -303,7 +303,7 @@ class IamDataFrame(object):
         info += "\nTimeseries data coordinates:\n"
         info += "\n".join(
             [
-                f"   {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}"
+                f"   {i:{c1}}: {print_list(getattr(self, i), c2)}"
                 for i in self.dimensions
                 if i not in self.index.names
             ]

@@ -4,4 +4,4 @@ The **IamSlice** class
 ======================
 
 .. autoclass:: IamSlice
-   :members: dimensions, time
+   :members: dimensions, time, info

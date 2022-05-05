@@ -60,7 +60,7 @@ class IamSlice(pd.Series):
         return self.info() + "\n\n" + super().__repr__()
 
     def info(self, n=80):
-        """Print a summary of the represented index dimensions
+        """Print a summary of the represented index dimensions and data coordinates
 
         Parameters
         ----------
