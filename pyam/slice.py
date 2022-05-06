@@ -4,6 +4,7 @@ from pyam.utils import print_list
 
 class IamSlice(pd.Series):
     """A slice object of the IamDataFrame timeseries data index"""
+
     @property
     def _constructor(self):
         return IamSlice
@@ -15,7 +16,6 @@ class IamSlice(pd.Series):
         super().__init__(data, index, **kwargs)
         self._iamcache = dict()
         self.time_col = "year" if "year" in self.index.names else "time"
-        self._time = None
 
     def __dir__(self):
         return self.dimensions + super().__dir__()
@@ -23,11 +23,11 @@ class IamSlice(pd.Series):
     def __getattr__(self, attr):
         ret = object.__getattribute__(self, "_iamcache").get(attr)
         if ret is not None:
-            return ret.tolist() if attr != "time" else ret
+            return ret.tolist()
 
         if attr in self.dimensions:
             ret = self._iamcache[attr] = self.index[self].unique(level=attr)
-            return ret.tolist() if attr != "time" else ret
+            return ret.tolist()
 
         return super().__getattr__(attr)
 
@@ -49,12 +49,12 @@ class IamSlice(pd.Series):
         - A :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
         - A :class:`pandas.Index` if the time domain is 'mixed'
         """
-        if self._time is None:
-            self._time = pd.Index(
-                self._data.index.unique(level=self.time_col).values, name="time"
+        ret = self._iamcache.get("time")
+        if ret is None:
+            ret = self._iamcache["time"] = pd.Index(
+                self.index[self].unique(level=self.time_col).values, name="time"
             )
-
-        return self._time
+        return ret
 
     def __repr__(self):
         return self.info()
