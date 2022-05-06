@@ -1,3 +1,7 @@
+# Next release
+
+- [#657](https://github.com/IAMconsortium/pyam/pull/657) Add an `IamSlice` class
+
 # Release v1.4.0
 
 ## Highlights
