@@ -45,9 +45,9 @@ class IamSlice(pd.Series):
 
         Returns
         -------
-        - A :class:`pandas.Int64Index` if the time_domain is 'year'
-        - A :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
-        - A :class:`pandas.Index` if the time domain is 'mixed'
+        - A :class:`pandas.Int64Index` if the time-domain is 'year'
+        - A :class:`pandas.DatetimeIndex` if the time-domain is 'datetime'
+        - A :class:`pandas.Index` if the time-domain is 'mixed'
         """
         ret = self._iamcache.get("time")
         if ret is None:

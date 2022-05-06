@@ -419,9 +419,9 @@ class IamDataFrame(object):
 
         Returns
         -------
-        - A :class:`pandas.Int64Index` if the time_domain is 'year'
-        - A :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
-        - A :class:`pandas.Index` if the time domain is 'mixed'
+        - A :class:`pandas.Int64Index` if the :attr:`time_domain` is 'year'
+        - A :class:`pandas.DatetimeIndex` if the :attr:`time_domain` is 'datetime'
+        - A :class:`pandas.Index` if the :attr:`time_domain` is 'mixed'
         """
         if self._time is None:
             self._time = pd.Index(
