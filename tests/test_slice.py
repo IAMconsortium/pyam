@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 
+
 def test_slice_len(test_df_year):
     """Check the length of a slice"""
 
