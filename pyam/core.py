@@ -23,6 +23,7 @@ except ImportError:
 
 from tempfile import TemporaryDirectory
 
+from pyam.slice import IamSlice
 from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
 
 try:
@@ -255,7 +256,9 @@ class IamDataFrame(object):
 
     def __getitem__(self, key):
         _key_check = [key] if isstr(key) else key
-        if key == "value":
+        if isinstance(key, IamSlice):
+            return IamDataFrame(self._data.loc[key])
+        elif key == "value":
             return pd.Series(self._data.values, name="value")
         elif set(_key_check).issubset(self.meta.columns):
             return self.meta.__getitem__(key)
@@ -291,7 +294,7 @@ class IamDataFrame(object):
         c2 = n - c1 - 5
         info += "\n".join(
             [
-                f" * {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}"
+                f" * {i:{c1}}: {print_list(getattr(self, i), c2)}"
                 for i in self.index.names
             ]
         )
@@ -300,7 +303,7 @@ class IamDataFrame(object):
         info += "\nTimeseries data coordinates:\n"
         info += "\n".join(
             [
-                f"   {i:{c1}}: {print_list(get_index_levels(self._data, i), c2)}"
+                f"   {i:{c1}}: {print_list(getattr(self, i), c2)}"
                 for i in self.dimensions
                 if i not in self.index.names
             ]
@@ -414,13 +417,16 @@ class IamDataFrame(object):
     def time(self):
         """The time index, i.e., axis labels related to the time domain.
 
-        The returned type is
-        - :class:`pandas.Int64Index` if the time_domain is 'year'
-        - :class:`pandas.DatetimeIndex` if the time domain is 'datetime'
-        - :class:`pandas.Index` if the time domain is 'mixed'
+        Returns
+        -------
+        - A :class:`pandas.Int64Index` if the :attr:`time_domain` is 'year'
+        - A :class:`pandas.DatetimeIndex` if the :attr:`time_domain` is 'datetime'
+        - A :class:`pandas.Index` if the :attr:`time_domain` is 'mixed'
         """
         if self._time is None:
-            self._time = pd.Index(get_index_levels(self._data, self.time_col))
+            self._time = pd.Index(
+                self._data.index.unique(level=self.time_col).values, name="time"
+            )
 
         return self._time
 
@@ -1712,38 +1718,67 @@ class IamDataFrame(object):
             )
         )
 
+    def slice(self, keep=True, **kwargs):
+        """Return a (filtered) slice object of the IamDataFrame timeseries data index
+
+        Parameters
+        ----------
+        keep : bool, optional
+            Keep all scenarios satisfying the filters (if *True*) or the inverse.
+        **kwargs
+            Arguments for filtering. See the "Notes".
+
+        Returns
+        -------
+        :class:`IamSlice`
+
+        Notes
+        -----
+        The following arguments are available for filtering:
+
+         - 'meta' columns: filter by string value of that column
+         - 'model', 'scenario', 'region', 'variable', 'unit':
+           string or list of strings, where `*` can be used as a wildcard
+         - 'level': the "depth" of entries in the variable column (number of '|')
+           (excluding the strings given in the 'variable' argument)
+         - 'year': takes an integer (int/np.int64), a list of integers or
+           a range. Note that the last year of a range is not included,
+           so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
+         - 'time_domain': can be "year" or "datetime"
+         - arguments for filtering by `datetime.datetime` or np.datetime64
+           ('month', 'hour', 'time')
+         - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
+
+        """
+
+        if not isinstance(keep, bool):
+            raise ValueError(f"Value of `keep` must be a boolean, found: {keep}")
+
+        _keep = self._apply_filters(**kwargs)
+        _keep = _keep if keep else ~_keep
+
+        return (
+            IamSlice(_keep)
+            if isinstance(_keep, pd.Series)
+            else IamSlice(_keep, self._data.index)
+        )
+
     def filter(self, keep=True, inplace=False, **kwargs):
         """Return a (copy of a) filtered (downselected) IamDataFrame
 
         Parameters
         ----------
         keep : bool, optional
-            keep all scenarios satisfying the filters (if True) or the inverse
+            Keep all scenarios satisfying the filters (if *True*) or the inverse.
         inplace : bool, optional
-            if True, do operation inplace and return None
-        filters by kwargs:
-            The following columns are available for filtering:
-             - 'meta' columns: filter by string value of that column
-             - 'model', 'scenario', 'region', 'variable', 'unit':
-               string or list of strings, where `*` can be used as a wildcard
-             - 'level': the maximum "depth" of IAM variables (number of '|')
-               (excluding the strings given in the 'variable' argument)
-             - 'year': takes an integer (int/np.int64), a list of integers or
-               a range. Note that the last year of a range is not included,
-               so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
-             - 'time_domain': can be "year" or "datetime"
-             - arguments for filtering by `datetime.datetime` or np.datetime64
-               ('month', 'hour', 'time')
-             - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
+            If *True*, do operation inplace and return *None*.
+        **kwargs
+            Passed to :meth:`slice`.
         """
-        if not isinstance(keep, bool):
-            raise ValueError(f"Cannot filter by `keep={keep}`, must be a boolean!")
 
         # downselect `data` rows and clean up index
-        _keep = self._apply_filters(**kwargs)
-        _keep = _keep if keep else ~_keep
         ret = self.copy() if not inplace else self
-        ret._data = ret._data[_keep]
+        ret._data = ret._data[self.slice(keep=keep, **kwargs)]
         ret._data.index = ret._data.index.remove_unused_levels()
 
         # swap time for year if downselected to years-only

@@ -10,16 +10,17 @@ except ModuleNotFoundError:
     from importlib_metadata import version, PackageNotFoundError
 
 from pyam.core import *
+from pyam.slice import IamSlice  # noqa: F401
 from pyam.utils import *
 from pyam.statistics import *
 from pyam.timeseries import *
 from pyam.read_ixmp import *
 from pyam.logging import *
 from pyam.run_control import *
-from pyam.iiasa import read_iiasa
-from pyam.datareader import read_worldbank
-from pyam.unfccc import read_unfccc
-from pyam.testing import assert_iamframe_equal
+from pyam.iiasa import read_iiasa  # noqa: F401
+from pyam.datareader import read_worldbank  # noqa: F401
+from pyam.unfccc import read_unfccc  # noqa: F401
+from pyam.testing import assert_iamframe_equal  # noqa: F401
 
 from pyam.logging import defer_logging_config
 
