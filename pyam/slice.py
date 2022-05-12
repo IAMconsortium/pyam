@@ -15,21 +15,24 @@ class IamSlice(pd.Series):
     def __init__(self, data=None, index=None, **kwargs):
         super().__init__(data, index, **kwargs)
         self._iamcache = dict()
-        self.time_col = "year" if "year" in self.index.names else "time"
 
     def __dir__(self):
         return self.dimensions + super().__dir__()
 
     def __getattr__(self, attr):
-        ret = object.__getattribute__(self, "_iamcache").get(attr)
-        if ret is not None:
-            return ret.tolist()
+        try:
+            return super().__getattr__(attr)
+        except AttributeError:
+            cache = object.__getattribute__(self, "_iamcache")
+            ret = cache.get(attr)
+            if ret is not None:
+                return ret.tolist()
 
-        if attr in self.dimensions:
-            ret = self._iamcache[attr] = self.index[self].unique(level=attr)
-            return ret.tolist()
+            if attr in self.dimensions:
+                ret = cache[attr] = self.index[self].unique(level=attr)
+                return ret.tolist()
 
-        return super().__getattr__(attr)
+            raise
 
     def __len__(self):
         return self.sum()
@@ -51,10 +54,14 @@ class IamSlice(pd.Series):
         """
         ret = self._iamcache.get("time")
         if ret is None:
-            ret = self._iamcache["time"] = pd.Index(
-                self.index[self].unique(level=self.time_col).values, name="time"
+            ret = self._iamcache["time"] = (
+                self.index[self].unique(level=self.time_col).rename("time")
             )
         return ret
+
+    @property
+    def time_col(self):
+        return "year" if "year" in self.dimensions else "time"
 
     def __repr__(self):
         return self.info()
