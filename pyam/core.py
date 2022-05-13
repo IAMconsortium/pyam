@@ -1273,7 +1273,7 @@ class IamDataFrame(object):
         """Compute new data which is offset from a specific data point
 
         For example, offsetting from `year=2005` will provide data
-        *relative* to `year=2005` such that the value in 2005 is 0 and 
+        *relative* to `year=2005` such that the value in 2005 is 0 and
         all other values `value[year] - value[2005]`.
 
         Conceptually this operation performs as:
