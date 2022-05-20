@@ -1288,8 +1288,8 @@ class IamDataFrame(object):
         padding : float, optional
             an additional offset padding
         fill_value : float or None, optional
-            Applied on subtraction. Fills exisiting missing (NaN) values.
-            See https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.subtract.html
+            Applied on subtraction. Fills exisiting missing (NaN) values. See
+            https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.subtract.html
         inplace : bool, optional
             if :obj:`True`, do operation inplace and return None
         kwargs
