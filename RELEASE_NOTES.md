@@ -1,5 +1,6 @@
 # Next release
 
+- [#659](https://github.com/IAMconsortium/pyam/pull/659) Add an `offset` method
 - [#657](https://github.com/IAMconsortium/pyam/pull/657) Add an `IamSlice` class
 
 # Release v1.4.0
