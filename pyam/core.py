@@ -1295,16 +1295,10 @@ class IamDataFrame(object):
         if len(kwargs) > 1 or self.time_col not in kwargs:
             raise ValueError("Only time(year)-based normalization supported")
         ret = self.copy() if not inplace else self
-        df = ret.data
-        # change all below if supporting more in the future
-        cols = self.time_col
+        data = ret._data
         value = kwargs[self.time_col]
-        x = df.set_index(IAMC_IDX)
-        x["value"] -= x[x[cols] == value]["value"]
-        x["value"] += padding
-
-        x = x.reset_index()
-        ret._data = x.set_index(self.dimensions).value
+        base_value = data.loc[data.index.isin([value], level=self.time_col)].droplevel(self.time_col)
+        ret._data = data - base_value + padding
 
         if not inplace:
             return ret
