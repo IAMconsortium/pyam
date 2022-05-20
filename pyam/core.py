@@ -1269,7 +1269,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def offset(self, padding=0, inplace=False, **kwargs):
+    def offset(self, padding=0, fill_value=None, inplace=False, **kwargs):
         """Compute new data which is offset from a specific data point
 
         For example, offsetting from `year=2005` will provide data
@@ -1287,6 +1287,9 @@ class IamDataFrame(object):
         ----------
         padding : float, optional
             an additional offset padding
+        fill_value : float or None, optional
+            Applied on subtraction. Fills exisiting missing (NaN) values.
+            See https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.subtract.html
         inplace : bool, optional
             if :obj:`True`, do operation inplace and return None
         kwargs
@@ -1297,8 +1300,10 @@ class IamDataFrame(object):
         ret = self.copy() if not inplace else self
         data = ret._data
         value = kwargs[self.time_col]
-        base_value = data.loc[data.index.isin([value], level=self.time_col)].droplevel(self.time_col)
-        ret._data = data - base_value + padding
+        base_value = data.loc[data.index.isin([value], level=self.time_col)].droplevel(
+            self.time_col
+        )
+        ret._data = data.subtract(base_value, fill_value=fill_value) + padding
 
         if not inplace:
             return ret
