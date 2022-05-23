@@ -2793,6 +2793,8 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     The *meta* attributes are merged only for those objects of *objs* that are passed
     as :class:`IamDataFrame` instances.
 
+    The index dimension of the return value is carried over from index of the *meta*
+    indicators.
     """
     if not islistable(objs) or isinstance(objs, pd.DataFrame):
         raise TypeError(f"'{objs.__class__.__name__}' object is not iterable")
