@@ -2844,7 +2844,11 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
             )
 
     # return as new IamDataFrame, this will verify integrity as part of `__init__()`
-    return IamDataFrame(pd.concat(ret_data, verify_integrity=False), meta=ret_meta)
+    return IamDataFrame(
+        pd.concat(ret_data, verify_integrity=False),
+        meta=ret_meta,
+        index=ret_meta.index.names,
+    )
 
 
 def read_datapackage(path, data="data", meta="meta"):
