@@ -104,6 +104,38 @@ def test_concat(test_df, reverse, iterable):
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
+def test_concat_non_default_index():
+    # Test that merging two IamDataFrames with identical, non-standard index dimensions
+    # preserves the index.
+
+    df1 = IamDataFrame(
+        pd.DataFrame(
+            [["model_a", "scenario_a", "region_a", "variable_a", "unit", 1, 1]],
+            columns=IAMC_IDX + ["version", 2005],
+        ),
+        index=META_IDX + ["version"],
+    )
+    df2 = IamDataFrame(
+        pd.DataFrame(
+            [["model_a", "scenario_a", "region_a", "variable_a", "unit", 2, 2]],
+            columns=IAMC_IDX + ["version", 2005],
+        ),
+        index=META_IDX + ["version"],
+    )
+    exp = IamDataFrame(
+        pd.DataFrame(
+            [
+                ["model_a", "scenario_a", "region_a", "variable_a", "unit", 1, 1],
+                ["model_a", "scenario_a", "region_a", "variable_a", "unit", 2, 2],
+            ],
+            columns=IAMC_IDX + ["version", 2005],
+        ),
+        index=META_IDX + ["version"],
+    )
+
+    assert_iamframe_equal(exp, concat([df1, df2]))
+
+
 @pytest.mark.parametrize("reverse", (False, True))
 def test_concat_with_pd_dataframe(test_df, reverse):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})

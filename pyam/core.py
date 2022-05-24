@@ -2793,6 +2793,8 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     The *meta* attributes are merged only for those objects of *objs* that are passed
     as :class:`IamDataFrame` instances.
 
+    The :attr:`dimensions` and :attr:`index` names of all elements of *dfs* must be
+    identical. The returned IamDataFrame inherits the dimensions and index names.
     """
     if not islistable(objs) or isinstance(objs, pd.DataFrame):
         raise TypeError(f"'{objs.__class__.__name__}' object is not iterable")
@@ -2844,7 +2846,11 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
             )
 
     # return as new IamDataFrame, this will verify integrity as part of `__init__()`
-    return IamDataFrame(pd.concat(ret_data, verify_integrity=False), meta=ret_meta)
+    return IamDataFrame(
+        pd.concat(ret_data, verify_integrity=False),
+        meta=ret_meta,
+        index=ret_meta.index.names,
+    )
 
 
 def read_datapackage(path, data="data", meta="meta"):
