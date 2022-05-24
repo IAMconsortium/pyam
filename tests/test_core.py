@@ -789,3 +789,24 @@ def test_normalize(test_df):
 def test_normalize_not_time(test_df):
     pytest.raises(ValueError, test_df.normalize, variable="foo")
     pytest.raises(ValueError, test_df.normalize, year=2015, variable="foo")
+
+
+@pytest.mark.parametrize("padding", [0, 2])
+def test_offset(test_df, padding):
+    exp = test_df.data.copy().reset_index(drop=True)
+    exp.loc[1::2, "value"] -= exp["value"][::2].values - padding
+    exp.loc[::2, "value"] -= exp["value"][::2].values - padding
+    # only call with kwarg if padding != 0 (the default)
+    kwargs = {"padding": padding} if padding else {}
+    if "year" in test_df.data:
+        obs = test_df.offset(year=2005, **kwargs).data.reset_index(drop=True)
+    else:
+        obs = test_df.offset(
+            time=datetime.datetime(2005, 6, 17), **kwargs
+        ).data.reset_index(drop=True)
+    pd.testing.assert_frame_equal(obs, exp)
+
+
+def test_offset_not_time(test_df):
+    pytest.raises(ValueError, test_df.offset, variable="foo")
+    pytest.raises(ValueError, test_df.offset, year=2015, variable="foo")

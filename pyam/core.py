@@ -1269,6 +1269,45 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
+    def offset(self, padding=0, fill_value=None, inplace=False, **kwargs):
+        """Compute new data which is offset from a specific data point
+
+        For example, offsetting from `year=2005` will provide data
+        *relative* to `year=2005` such that the value in 2005 is 0 and
+        all other values `value[year] - value[2005]`.
+
+        Conceptually this operation performs as:
+        ```
+        df - df.filter(**kwargs) + padding
+        ```
+
+        Note: Currently only supports normalizing to a specific time.
+
+        Parameters
+        ----------
+        padding : float, optional
+            an additional offset padding
+        fill_value : float or None, optional
+            Applied on subtraction. Fills exisiting missing (NaN) values. See
+            https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.subtract.html
+        inplace : bool, optional
+            if :obj:`True`, do operation inplace and return None
+        kwargs
+            the column and value on which to offset (e.g., `year=2005`)
+        """
+        if len(kwargs) > 1 or self.time_col not in kwargs:
+            raise ValueError("Only time(year)-based normalization supported")
+        ret = self.copy() if not inplace else self
+        data = ret._data
+        value = kwargs[self.time_col]
+        base_value = data.loc[data.index.isin([value], level=self.time_col)].droplevel(
+            self.time_col
+        )
+        ret._data = data.subtract(base_value, fill_value=fill_value) + padding
+
+        if not inplace:
+            return ret
+
     def aggregate(
         self,
         variable,
