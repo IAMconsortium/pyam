@@ -104,7 +104,7 @@ def test_concat(test_df, reverse, iterable):
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
-def test_concat_non_standard_index():
+def test_concat_non_default_index():
     # Test that merging two IamDataFrames with identical, non-standard index dimensions
     # preserves the index.
 
