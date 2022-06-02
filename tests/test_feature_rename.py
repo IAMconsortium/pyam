@@ -6,6 +6,7 @@ import pandas as pd
 from numpy import testing as npt
 
 from pyam import IamDataFrame, META_IDX, IAMC_IDX, compare
+from pyam.testing import assert_iamframe_equal
 
 from .conftest import META_COLS
 
@@ -189,6 +190,12 @@ def test_rename_data_cols_by_mixed():
 def test_rename_conflict(test_df):
     mapping = {"scenario": {"scen_a": "scen_b"}}
     pytest.raises(ValueError, test_df.rename, mapping, **mapping)
+
+
+def test_rename_empty(test_df_year):
+    """Check that renaming an empty IamDataFrame does not raise an error"""
+    empty_df = test_df_year.filter(model="foo")
+    assert_iamframe_equal(empty_df, empty_df.rename(model={"model_a": "model_b"}))
 
 
 def test_rename_index_data_fail(test_df):
