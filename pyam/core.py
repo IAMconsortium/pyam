@@ -1107,6 +1107,10 @@ class IamDataFrame(object):
             raise ValueError(f"Conflicting rename args for columns {duplicate}")
         mapping.update(kwargs)
 
+        # return without any changes if self is empty
+        if self.empty:
+            return self if inplace else self.copy()
+
         # determine columns that are not in the meta index
         meta_idx = self.meta.index.names
         data_cols = set(self.dimensions) - set(meta_idx)
