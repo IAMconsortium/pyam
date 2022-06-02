@@ -1,5 +1,14 @@
-# Next release
+# Release v1.5.0
 
+## Highlights
+
+This release introduces an [IamSlice](https://pyam-iamc.readthedocs.io/en/latest/api/slice.html)
+class that allows faster filtering and inspection of an **IamDataFrame**.
+
+## Individual updates
+
+- [#668](https://github.com/IAMconsortium/pyam/pull/668) Allow renaming of empty IamDataFrame objects
+- [#665](https://github.com/IAMconsortium/pyam/pull/665) Provide better support for IamDataFrame objects with non-standard index dimensions
 - [#659](https://github.com/IAMconsortium/pyam/pull/659) Add an `offset` method
 - [#657](https://github.com/IAMconsortium/pyam/pull/657) Add an `IamSlice` class
 
