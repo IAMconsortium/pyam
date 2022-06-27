@@ -1870,6 +1870,14 @@ class IamDataFrame(object):
                     self._data, cols=self.index.names, unique=False
                 ).isin(cat_idx)
 
+            elif col == "index":
+                if not isinstance(values, pd.MultiIndex):
+                    values = pd.MultiIndex.from_tuples(values)
+                index = self._data.index
+                keep_col = index.droplevel(
+                    index.names.difference(["model", "scenario"])
+                ).isin(values)
+
             elif col == "time_domain":
                 # fast-pass if `self` already has selected time-domain
                 if self.time_domain == values:
