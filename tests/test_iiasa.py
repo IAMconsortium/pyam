@@ -8,15 +8,14 @@ import numpy.testing as npt
 from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
 
-from .conftest import META_COLS, IIASA_UNAVAILABLE
+from .conftest import META_COLS, IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
 
-# check if connection to IIASA database API is available, skip tests otherwise
+
 if IIASA_UNAVAILABLE:
     pytest.skip("IIASA database API unavailable", allow_module_level=True)
 
-TEST_API = "integration-test"
-TEST_API_NAME = "IXSE_INTEGRATION_TEST"
 
+# TODO environment variables are currently not set up on GitHub Actions
 TEST_ENV_USER = "IIASA_CONN_TEST_USER"
 TEST_ENV_PW = "IIASA_CONN_TEST_PW"
 CONN_ENV_AVAILABLE = TEST_ENV_USER in os.environ and TEST_ENV_PW in os.environ
