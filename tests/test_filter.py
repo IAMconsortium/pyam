@@ -277,13 +277,23 @@ def test_filter_index_with_custom_index(test_pd_df):
     index = ["source", "scenario", "version"]
     df = IamDataFrame(test_pd_df, index=index)
 
-    obs = df.filter(index=[("model_a", "scen_a", 1), ("model_a", "scen_a", 2)])    
-    assert obs.source == ["model_a"] and obs.scenario == ["scen_a"] and obs.version == [1, 2]
+    obs = df.filter(index=[("model_a", "scen_a", 1), ("model_a", "scen_a", 2)])
+    assert (
+        obs.source == ["model_a"]
+        and obs.scenario == ["scen_a"]
+        and obs.version == [1, 2]
+    )
 
     # a sub-set of levels is also supported
-    index = pd.MultiIndex.from_tuples([("model_a", "scen_a")], names=["source", "scenario"])
+    index = pd.MultiIndex.from_tuples(
+        [("model_a", "scen_a")], names=["source", "scenario"]
+    )
     obs = df.filter(index=index)
-    assert obs.source == ["model_a"] and obs.scenario == ["scen_a"] and obs.version == [1, 2]
+    assert (
+        obs.source == ["model_a"]
+        and obs.scenario == ["scen_a"]
+        and obs.version == [1, 2]
+    )
 
 
 def test_filter_keep_false(test_df):

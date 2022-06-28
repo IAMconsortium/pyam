@@ -1873,7 +1873,7 @@ class IamDataFrame(object):
             elif col == "index":
                 if not isinstance(values, pd.MultiIndex):
                     values = pd.MultiIndex.from_tuples(values, names=self.index.names)
-                elif all(n == None for n in values.names):
+                elif all(n is None for n in values.names):
                     values = values.rename(names=self.index.names)
                 elif not set(values.names).issubset(self.index.names):
                     index_levels = ", ".join(map(str, self.index.names))
