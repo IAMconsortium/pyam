@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
 logging.getLogger("requests").setLevel(logging.WARNING)
 
-_AUTH_URL = "https://api.manager.ece.iiasa.ac.at/legacy/"
+_AUTH_URL = "https://api.manager.ece.iiasa.ac.at/legacy"
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
