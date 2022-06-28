@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
 logging.getLogger("requests").setLevel(logging.WARNING)
 
-_AUTH_URL = "https://db1.ene.iiasa.ac.at/EneAuth/config/v1"
+_AUTH_URL = "https://api.manager.ece.iiasa.ac.at/legacy"
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
@@ -56,9 +56,9 @@ def _get_config(file=None):
             return yaml.safe_load(stream)
 
 
-def _check_response(r, msg="Trouble with request", error=RuntimeError):
+def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
     if not r.ok:
-        raise error("{}: {}".format(msg, str(r.text)))
+        raise error(f"{msg}: {r.text}")
 
 
 def _get_token(creds, base_url):
@@ -184,11 +184,10 @@ class Connection(object):
             )
 
         if name not in valid:
-            msg = """
-            {} not recognized as a valid connection name.
-            Choose from one of the supported connections for your user: {}.
-            """
-            raise ValueError(msg.format(name, self._connection_map.keys()))
+            raise ValueError(
+                f"You do not have access to instance '{name}' or it does not exist. "
+                "Use `Connection.valid_connections` for a list of accessible services."
+            )
 
         url = "/".join([self._auth_url, "applications", name, "config"])
         headers = {"Authorization": "Bearer {}".format(self._token)}

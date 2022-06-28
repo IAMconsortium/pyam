@@ -1,20 +1,21 @@
 import os
 import pytest
 import pandas as pd
-import numpy as np
-
-import numpy.testing as npt
 import pandas.testing as pdt
+import numpy as np
+import numpy.testing as npt
 
 from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
 
-from .conftest import IIASA_UNAVAILABLE, META_COLS, TEST_API, TEST_API_NAME
+from .conftest import META_COLS, IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
+
 
 if IIASA_UNAVAILABLE:
     pytest.skip("IIASA database API unavailable", allow_module_level=True)
 
-# check to see if we can do online testing of db authentication
+
+# TODO environment variables are currently not set up on GitHub Actions
 TEST_ENV_USER = "IIASA_CONN_TEST_USER"
 TEST_ENV_PW = "IIASA_CONN_TEST_PW"
 CONN_ENV_AVAILABLE = TEST_ENV_USER in os.environ and TEST_ENV_PW in os.environ
@@ -58,7 +59,9 @@ NON_DEFAULT_DF = pd.DataFrame(
 
 def test_unknown_conn():
     # connecting to an unknown API raises an error
-    pytest.raises(ValueError, iiasa.Connection, "foo")
+    match = "You do not have access to instance 'foo' or it does not exist."
+    with pytest.raises(ValueError, match=match):
+        iiasa.Connection("foo")
 
 
 def test_valid_connections():
@@ -77,24 +80,11 @@ def test_conn_creds_config():
     assert conn.current_connection == TEST_API_NAME
 
 
-@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
-def test_conn_creds_tuple():
-    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection(TEST_API, creds=(user, pw))
-    assert conn.current_connection == TEST_API_NAME
-
-
-@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
-def test_conn_creds_dict():
-    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection(TEST_API, creds={"username": user, "password": pw})
-    assert conn.current_connection == TEST_API_NAME
-
-
 def test_conn_cleartext_raises():
-    # connecting with invalid credentials raises an error
-    creds = ("_foo", "_bar")
-    pytest.raises(DeprecationWarning, iiasa.Connection, TEST_API, creds=creds)
+    # connecting with clear-text credentials raises an error
+    match = "Passing credentials as clear-text is not allowed."
+    with pytest.raises(DeprecationWarning, match=match):
+        iiasa.Connection(TEST_API, creds=("user", "password"))
 
 
 def test_variables(conn):
