@@ -1873,18 +1873,18 @@ class IamDataFrame(object):
             elif col == "index":
                 if not isinstance(values, pd.MultiIndex):
                     values = pd.MultiIndex.from_tuples(values, names=self.index.names)
-                elif values.names == [None, None, None]:
+                elif all(n == None for n in values.names):
                     values = values.rename(names=self.index.names)
-                elif not set(values.names).subset(self.index.names):
-                    index_levels = ", ".join(self.index.names)
-                    values_levels = ", ".join(values.names)
-                    raise AttributeError(
+                elif not set(values.names).issubset(self.index.names):
+                    index_levels = ", ".join(map(str, self.index.names))
+                    values_levels = ", ".join(map(str, values.names))
+                    raise ValueError(
                         f"Filtering by `index` with a MultiIndex object needs to have "
                         f"the IamDataFrame index levels {index_levels}, "
                         f"but has {values_levels}"
                     )
                 index = self._data.index
-                keep_col = index.droplevel(index.names.difference(index.names)).isin(
+                keep_col = index.droplevel(index.names.difference(values.names)).isin(
                     values
                 )
 
