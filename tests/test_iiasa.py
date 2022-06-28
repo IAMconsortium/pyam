@@ -59,7 +59,9 @@ NON_DEFAULT_DF = pd.DataFrame(
 
 def test_unknown_conn():
     # connecting to an unknown API raises an error
-    pytest.raises(ValueError, iiasa.Connection, "foo")
+    match = "You do not have access to instance 'foo' or it does not exist."
+    with pytest.raises(ValueError, match=match):
+        iiasa.Connection("foo")
 
 
 def test_valid_connections():
@@ -79,9 +81,10 @@ def test_conn_creds_config():
 
 
 def test_conn_cleartext_raises():
-    # connecting with invalid credentials raises an error
-    creds = ("_foo", "_bar")
-    pytest.raises(DeprecationWarning, iiasa.Connection, TEST_API, creds=creds)
+    # connecting with clear-text credentials raises an error
+    match = "Passing credentials as clear-text is not allowed."
+    with pytest.raises(DeprecationWarning, match=match):
+        iiasa.Connection(TEST_API, creds=("user", "password"))
 
 
 def test_variables(conn):

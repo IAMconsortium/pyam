@@ -184,11 +184,10 @@ class Connection(object):
             )
 
         if name not in valid:
-            msg = """
-            {} not recognized as a valid connection name.
-            Choose from one of the supported connections for your user: {}.
-            """
-            raise ValueError(msg.format(name, self._connection_map.keys()))
+            raise ValueError(
+                f"You do not have access to instance '{name}' or it does not exist. "
+                "Use `Connection.valid_connections` for a list of accessible services."
+            )
 
         url = "/".join([self._auth_url, "applications", name, "config"])
         headers = {"Authorization": "Bearer {}".format(self._token)}
