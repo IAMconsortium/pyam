@@ -21,10 +21,6 @@ try:
 except ConnectionError:  # pragma: no cover
     IIASA_UNAVAILABLE = True
 
-TEST_API = "integration-test"
-TEST_API_NAME = "IXSE_INTEGRATION_TEST"
-
-
 here = Path(__file__).parent
 IMAGE_BASELINE_DIR = here / "expected_figs"
 TEST_DATA_DIR = here / "data"
@@ -262,9 +258,3 @@ def recursive_df(request):
 def plot_stackplot_df():
     df = IamDataFrame(TEST_STACKPLOT_DF)
     yield df
-
-
-@pytest.fixture(scope="session")
-def conn():
-    if not IIASA_UNAVAILABLE:
-        return iiasa.Connection(TEST_API)
