@@ -56,9 +56,9 @@ def _get_config(file=None):
             return yaml.safe_load(stream)
 
 
-def _check_response(r, msg="Trouble with request", error=RuntimeError):
+def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
     if not r.ok:
-        raise error("{}: {}".format(msg, str(r.text)))
+        raise error(f"{msg}: {r.text}")
 
 
 def _get_token(creds, base_url):
