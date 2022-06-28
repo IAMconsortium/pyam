@@ -5,8 +5,6 @@ import pandas.testing as pdt
 import numpy as np
 import numpy.testing as npt
 
-from requests.exceptions import ConnectionError
-
 from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
 
@@ -78,20 +76,6 @@ def test_anon_conn(conn):
 def test_conn_creds_config():
     iiasa.set_config(os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW])
     conn = iiasa.Connection(TEST_API)
-    assert conn.current_connection == TEST_API_NAME
-
-
-@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
-def test_conn_creds_tuple():
-    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection(TEST_API, creds=(user, pw))
-    assert conn.current_connection == TEST_API_NAME
-
-
-@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
-def test_conn_creds_dict():
-    user, pw = os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW]
-    conn = iiasa.Connection(TEST_API, creds={"username": user, "password": pw})
     assert conn.current_connection == TEST_API_NAME
 
 
