@@ -41,7 +41,7 @@
 7. Confirm that the release is published on https://www.pypi.org/project/pyam-iamc/
 8. Update on `conda-forge`
    - A PR should automatically be opened by the bot after the Github release
-   - Confirm that any new depedencies are included,
+   - Confirm that any new dependencies are included,
      change the minimum dependency version if necessary
      (compare to ./.github/workflows/pytest-depedency.yml)
    - Merge the PR

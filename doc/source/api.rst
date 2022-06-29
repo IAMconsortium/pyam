@@ -42,7 +42,7 @@ if (and only if):
 **Intersphinx mapping**
 
 To use sphinx.ext.intersphinx_ for generating automatic links from your project
-to the documenation of |pyam| classes and functions, please add the following
+to the documentation of |pyam| classes and functions, please add the following
 to your project's :code:`conf.py`:
 
 .. _sphinx.ext.intersphinx: https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
