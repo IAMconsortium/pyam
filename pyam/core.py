@@ -1782,6 +1782,7 @@ class IamDataFrame(object):
          - 'meta' columns: filter by string value of that column
          - 'model', 'scenario', 'region', 'variable', 'unit':
            string or list of strings, where `*` can be used as a wildcard
+         - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
          - 'level': the "depth" of entries in the variable column (number of '|')
            (excluding the strings given in the 'variable' argument)
          - 'year': takes an integer (int/np.int64), a list of integers or
@@ -1869,6 +1870,24 @@ class IamDataFrame(object):
                 keep_col = _make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(cat_idx)
+
+            elif col == "index":
+                if not isinstance(values, pd.MultiIndex):
+                    values = pd.MultiIndex.from_tuples(values, names=self.index.names)
+                elif all(n is None for n in values.names):
+                    values = values.rename(names=self.index.names)
+                elif not set(values.names).issubset(self.index.names):
+                    index_levels = ", ".join(map(str, self.index.names))
+                    values_levels = ", ".join(map(str, values.names))
+                    raise ValueError(
+                        f"Filtering by `index` with a MultiIndex object needs to have "
+                        f"the IamDataFrame index levels {index_levels}, "
+                        f"but has {values_levels}"
+                    )
+                index = self._data.index
+                keep_col = index.droplevel(index.names.difference(values.names)).isin(
+                    values
+                )
 
             elif col == "time_domain":
                 # fast-pass if `self` already has selected time-domain
