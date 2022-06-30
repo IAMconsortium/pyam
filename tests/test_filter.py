@@ -252,6 +252,50 @@ def test_filter_as_kwarg(test_df):
     assert _df.scenario == ["scen_a"]
 
 
+def test_filter_index(test_df):
+    _df = test_df.filter(index=[("model_a", "scen_a")])
+    assert _df.model == ["model_a"] and _df.scenario == ["scen_a"]
+
+    _df = test_df.filter(index=test_df.index[-1:])
+    assert _df.model == ["model_a"] and _df.scenario == ["scen_b"]
+
+    # If the multi index does not have names for its levels it works as well
+    index = test_df.index[-1:].rename([None, None])
+    _df = test_df.filter(index=index)
+    assert _df.model == ["model_a"] and _df.scenario == ["scen_b"]
+
+    # The wrong names are not accepted
+    index = test_df.index[-2:].rename(["model", "bar"])
+    with pytest.raises(ValueError):
+        _df = test_df.filter(index=index)
+
+
+def test_filter_index_with_custom_index(test_pd_df):
+    # rename 'model' column and add a version column to the dataframe
+    test_pd_df.rename(columns={"model": "source"}, inplace=True)
+    test_pd_df["version"] = [1, 2, 3]
+    index = ["source", "scenario", "version"]
+    df = IamDataFrame(test_pd_df, index=index)
+
+    obs = df.filter(index=[("model_a", "scen_a", 1), ("model_a", "scen_a", 2)])
+    assert (
+        obs.source == ["model_a"]
+        and obs.scenario == ["scen_a"]
+        and obs.version == [1, 2]
+    )
+
+    # a sub-set of levels is also supported
+    index = pd.MultiIndex.from_tuples(
+        [("model_a", "scen_a")], names=["source", "scenario"]
+    )
+    obs = df.filter(index=index)
+    assert (
+        obs.source == ["model_a"]
+        and obs.scenario == ["scen_a"]
+        and obs.version == [1, 2]
+    )
+
+
 def test_filter_keep_false(test_df):
     df = test_df.filter(variable="Primary Energy|Coal", year=2005, keep=False)
     obs = df.data[df.data.scenario == "scen_a"].value

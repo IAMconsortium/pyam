@@ -3,6 +3,7 @@
 ## Individual updates
 
 - [#679](https://github.com/IAMconsortium/pyam/pull/679) `set_meta()` now supports pandas.DataFrame as an argument
+- [#674](https://github.com/IAMconsortium/pyam/pull/674) Support filtering data by model-scenario pairs with the `index` argument to `filter()` and `slice()`
 
 # Release v1.5.0
 
