@@ -1782,7 +1782,7 @@ class IamDataFrame(object):
          - 'meta' columns: filter by string value of that column
          - 'model', 'scenario', 'region', 'variable', 'unit':
            string or list of strings, where `*` can be used as a wildcard
-         - 'index': list of model, scenario 2-tuples
+         - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
          - 'level': the "depth" of entries in the variable column (number of '|')
            (excluding the strings given in the 'variable' argument)
          - 'year': takes an integer (int/np.int64), a list of integers or
