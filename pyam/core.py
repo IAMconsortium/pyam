@@ -204,8 +204,7 @@ class IamDataFrame(object):
 
         # if given explicitly, merge meta dataframe after downselecting
         if meta is not None:
-            meta = meta.loc[self.meta.index.intersection(meta.index)]
-            self.meta = merge_meta(meta, self.meta, ignore_conflict=True)
+            self.set_meta(meta)
 
         # if initializing from xlsx, try to load `meta` table from file
         if meta_sheet and isinstance(data, Path) and data.suffix == ".xlsx":
@@ -808,7 +807,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        meta : pandas.Series, list, int, float or str
+        meta : pandas.DataFrame, pandas.Series, list, int, float or str
             column to be added to 'meta'
             (by `['model', 'scenario']` index if possible)
         name : str, optional
@@ -817,6 +816,11 @@ class IamDataFrame(object):
         index : IamDataFrame, pandas.DataFrame or pandas.MultiIndex, optional
             index to be used for setting meta column (`['model', 'scenario']`)
         """
+        if isinstance(meta, pd.DataFrame):
+            meta = meta.loc[self.meta.index.intersection(meta.index)]
+            self.meta = merge_meta(meta, self.meta, ignore_conflict=True)
+            return
+
         # check that name is valid and doesn't conflict with data columns
         if (name or (hasattr(meta, "name") and meta.name)) in [None, False]:
             raise ValueError("Must pass a name or use a named pd.Series")
