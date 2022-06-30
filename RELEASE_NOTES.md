@@ -1,5 +1,9 @@
 # Next Release
 
+## Individual updates
+
+- [#679](https://github.com/IAMconsortium/pyam/pull/679) `set_meta()` now supports pandas.DataFrame as an argument
+
 # Release v1.5.0
 
 ## Highlights
