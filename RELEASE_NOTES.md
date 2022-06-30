@@ -1,5 +1,7 @@
 # Next Release
 
+- [#674](https://github.com/IAMconsortium/pyam/pull/674) Support filtering data by model-scenario pairs with the `index` argument to `filter()` and `slice()`
+
 # Release v1.5.0
 
 ## Highlights
