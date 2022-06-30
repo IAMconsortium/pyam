@@ -133,7 +133,8 @@ def test_aggregate_by_list_with_components_raises(simple_df):
     # using list of variables and components raises an error
     v = ["Primary Energy", "Emissions|CO2"]
     components = ["Primary Energy|Coal", "Primary Energy|Wind"]
-    pytest.raises(ValueError, simple_df.aggregate, v, components=components)
+    with pytest.raises(NotImplementedError, match="Aggregating by list of variables"):
+        simple_df.aggregate(v, components=components)
 
 
 def test_aggregate_recursive(recursive_df):
@@ -199,6 +200,12 @@ def test_aggregate_empty(test_df, variable, append, caplog):
 def test_aggregate_unknown_method(simple_df):
     """Check that using unknown string as method raises an error"""
     pytest.raises(ValueError, simple_df.aggregate, "Primary Energy", method="foo")
+
+
+def test_aggregate_components_as_dict(simple_df):
+    """Check that using a dictionary as `componenents` raises an error"""
+    with pytest.raises(ValueError, match="Value for `components` must be a list"):
+        simple_df.aggregate("Primary Energy", components={"Primary Energy|Coal": "foo"})
 
 
 @pytest.mark.parametrize(
