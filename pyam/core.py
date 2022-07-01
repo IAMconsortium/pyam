@@ -160,14 +160,14 @@ class IamDataFrame(object):
 
     def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Process data and set attributes for new instance"""
+
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop("meta_sheet_name", "meta")
 
         # if meta is given explicitly, verify that index matches
         if meta is not None and not meta.index.names == index:
             raise ValueError(
-                f"Incompatible `index={index}` with `meta` "
-                f"(index={meta.index.names})!"
+                f"Incompatible `index={index}` with `meta` (index={meta.index.names})!"
             )
 
         # cast data from pandas
