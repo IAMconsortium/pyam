@@ -2443,7 +2443,32 @@ class IamDataFrame(object):
                 f"missing required index columns {missing_cols}!"
             )
 
-        self.set_meta(df)
+        # set index, filter to relevant scenarios from imported file
+        n = len(df)
+        df.set_index(self.index.names, inplace=True)
+        df = df.loc[self.meta.index.intersection(df.index)]
+
+        # skip import of meta indicators if np
+        if not n:
+            logger.info(f"No scenarios found in sheet {sheet_name}")
+            return
+
+        msg = "Reading meta indicators"
+        # indicate if not all scenarios are included in the meta file
+        if len(df) < len(self.meta):
+            i = len(self.meta)
+            msg += f" for {len(df)} out of {i} scenario{s(i)}"
+
+        # indicate if more scenarios exist in meta file than in self
+        invalid = n - len(df)
+        if invalid:
+            msg += f", ignoring {invalid} scenario{s(invalid)} from file"
+            logger.warning(msg)
+        else:
+            logger.info(msg)
+
+        # merge imported meta indicators
+        self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
 
     def map_regions(
         self,
