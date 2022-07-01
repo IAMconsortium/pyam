@@ -76,7 +76,7 @@ def replace_index_values(df, name, mapping, rows=None):
 
 
 def replace_index_labels(index, name, labels):
-    """Replace the levels for a specific level"""
+    """Replace the labels for a specific level"""
 
     order = index.names
     n = index._get_level_number(name)
