@@ -819,11 +819,9 @@ class IamDataFrame(object):
         if isinstance(meta, pd.DataFrame):
             if meta.index.names != self.meta.index.names:
                 # catch Model, Scenario instead of model, scenario
-                meta = (
-                    meta
-                    .rename(columns={i.capitalize(): i for i in META_IDX})
-                    .set_index(self.meta.index.names)
-                )
+                meta = meta.rename(
+                    columns={i.capitalize(): i for i in META_IDX}
+                ).set_index(self.meta.index.names)
             meta = meta.loc[self.meta.index.intersection(meta.index)]
             self.meta = merge_meta(meta, self.meta, ignore_conflict=True)
             return
