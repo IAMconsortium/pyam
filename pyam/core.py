@@ -160,14 +160,14 @@ class IamDataFrame(object):
 
     def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Process data and set attributes for new instance"""
+
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop("meta_sheet_name", "meta")
 
         # if meta is given explicitly, verify that index matches
         if meta is not None and not meta.index.names == index:
             raise ValueError(
-                f"Incompatible `index={index}` with `meta` "
-                f"(index={meta.index.names})!"
+                f"Incompatible `index={index}` with `meta` (index={meta.index.names})!"
             )
 
         # cast data from pandas
@@ -1320,7 +1320,7 @@ class IamDataFrame(object):
         recursive=False,
         append=False,
     ):
-        """Aggregate timeseries data by components or subcategories within each region
+        """Aggregate timeseries data by components or subcategories within each region.
 
         Parameters
         ----------
@@ -1329,12 +1329,11 @@ class IamDataFrame(object):
         components : list of str, optional
             Components to be aggregate, defaults to all subcategories of `variable`.
         method : func or str, optional
-            Aggregation method, e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+            Aggregation method, e.g. :any:`numpy.mean`, :any:`numpy.sum`, 'min', 'max'.
         recursive : bool or str, optional
             Iterate recursively (bottom-up) over all subcategories of `variable`.
             If there are existing intermediate variables, it validates the aggregated
-            value.
-            If recursive='skip-validate', it skips the validation.
+            value. If recursive='skip-validate', it skips the validation.
         append : bool, optional
             Whether to append aggregated timeseries data to this instance.
 
@@ -1352,6 +1351,7 @@ class IamDataFrame(object):
         -----
         The aggregation function interprets any missing values (:any:`numpy.nan`)
         for individual components as 0.
+
         """
 
         if recursive:
@@ -1380,23 +1380,29 @@ class IamDataFrame(object):
         multiplier=1,
         **kwargs,
     ):
-        """Check whether timeseries data matches the aggregation by its components
+        """Check whether timeseries data matches the aggregation by its components.
 
         Parameters
         ----------
         variable : str or list of str
-            variable(s) checked for matching aggregation of sub-categories
+            Variable(s) checked for matching aggregation of sub-categories.
         components : list of str, default None
-            list of variables, defaults to all sub-categories of `variable`
+            List of variables to aggregate, defaults to sub-categories of `variable`.
         method : func or str, optional
-            method to use for aggregation,
-            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+            Method to use for aggregation,
+            e.g. :any:`numpy.mean`, :aby:`numpy.sum`, 'min', 'max'.
         exclude_on_fail : bool, optional
-            flag scenarios failing validation as `exclude: True`
+            Flag scenarios failing validation as `exclude: True`.
         multiplier : number, optional
-            factor when comparing variable and sum of components
-        kwargs : arguments for comparison of values
-            passed to :func:`numpy.isclose`
+            Multiplicative factor when comparing variable and sum of components.
+        kwargs : Tolerance arguments for comparison of values
+            Passed to :func:`numpy.isclose`.
+
+        Returns
+        -------
+        :class:`pandas.DataFrame` or None
+            Data where variables and aggregate does not match.
+
         """
         # compute aggregate from components, return None if no components
         df_components = _aggregate(self, variable, components, method)
@@ -1437,7 +1443,7 @@ class IamDataFrame(object):
         append=False,
         drop_negative_weights=True,
     ):
-        """Aggregate timeseries data by a number of subregions
+        """Aggregate timeseries data by subregions.
 
         This function allows to add variable sub-categories that are only
         defined at the `region` level by setting `components=True`
@@ -1445,27 +1451,27 @@ class IamDataFrame(object):
         Parameters
         ----------
         variable : str or list of str
-            variable(s) to be aggregated
+            Variable(s) to be aggregated.
         region : str, optional
-            region to which data will be aggregated
+            Region to which data will be aggregated
         subregions : list of str, optional
-            list of subregions, defaults to all regions other than `region`
+            List of subregions, defaults to all regions other than `region`.
         components : bool or list of str, optional
-            variables at the `region` level to be included in the aggregation
+            Variables at the `region` level to be included in the aggregation
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
-            or explicit list of variables
+            or explicit list of variables.
         method : func or str, optional
-            method to use for aggregation,
-            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+            Method to use for aggregation,
+            e.g. :any:`numpy.mean`, :any:`numpy.sum`, 'min', 'max'.
         weight : str, optional
-            variable to use as weight for the aggregation
-            (currently only supported with `method='sum'`)
+            Variable to use as weight for the aggregation
+            (currently only supported with `method='sum'`).
         append : bool, optional
-            append the aggregate timeseries to `self` and return None,
-            else return aggregate timeseries as new :class:`IamDataFrame`
+            Append the aggregate timeseries to `self` and return None,
+            else return aggregate timeseries as new :class:`IamDataFrame`.
         drop_negative_weights : bool, optional
-            removes any aggregated values that are computed using negative weights
+            Removes any aggregated values that are computed using negative weights.
 
         Returns
         -------
@@ -1504,33 +1510,39 @@ class IamDataFrame(object):
         drop_negative_weights=True,
         **kwargs,
     ):
-        """Check whether timeseries data matches the aggregation across subregions
+        """Check whether timeseries data matches the aggregation across subregions.
 
         Parameters
         ----------
         variable : str or list of str
-            variable(s) to be checked for matching aggregation of subregions
+            Variable(s) to be checked for matching aggregation of subregions.
         region : str, optional
-            region to be checked for matching aggregation of subregions
+            Region to be checked for matching aggregation of subregions.
         subregions : list of str, optional
-            list of subregions, defaults to all regions other than `region`
+            List of subregions, defaults to all regions other than `region`.
         components : bool or list of str, optional
-            variables at the `region` level to be included in the aggregation
+            Variables at the `region` level to be included in the aggregation
             (ignored if False); if `True`, use all sub-categories of `variable`
             included in `region` but not in any of the `subregions`;
-            or explicit list of variables
+            or explicit list of variables.
         method : func or str, optional
-            method to use for aggregation,
-            e.g. :func:`numpy.mean`, :func:`numpy.sum`, 'min', 'max'
+            Method to use for aggregation,
+            e.g. :any:`numpy.mean`, :any:`numpy.sum`, 'min', 'max'.
         weight : str, optional
-            variable to use as weight for the aggregation
-            (currently only supported with `method='sum'`)
+            Variable to use as weight for the aggregation
+            (currently only supported with `method='sum'`).
         exclude_on_fail : boolean, optional
-            flag scenarios failing validation as `exclude: True`
+            Flag scenarios failing validation as `exclude: True`.
         drop_negative_weights : bool, optional
-            removes any aggregated values that are computed using negative weights
-        kwargs : arguments for comparison of values
-            passed to :func:`numpy.isclose`
+            Removes any aggregated values that are computed using negative weights
+        kwargs : Tolerance arguments for comparison of values
+            Passed to :func:`numpy.isclose`.
+
+        Returns
+        -------
+        :class:`pandas.DataFrame` or None
+            Data where variables and region-aggregate does not match.
+
         """
         # compute aggregate from subregions, return None if no subregions
         df_subregions = _aggregate_region(

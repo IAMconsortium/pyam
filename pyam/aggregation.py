@@ -22,11 +22,18 @@ logger = logging.getLogger(__name__)
 def _aggregate(df, variable, components=None, method=np.sum):
     """Internal implementation of the `aggregate` function"""
 
-    # list of variables require default components (no manual list)
-    if islistable(variable) and components is not None:
-        raise ValueError(
-            "Aggregating by list of variables does not support `components`!"
-        )
+    if components is not None:
+        # ensure that components is a proper list (not a dictionary)
+        if not islistable(components) or isinstance(components, dict):
+            raise ValueError(
+                f"Value for `components` must be a list, found: {components}"
+            )
+
+        # list of variables require default components (no manual list)
+        if islistable(variable):
+            raise NotImplementedError(
+                "Aggregating by list of variables does not support `components`."
+            )
 
     mapping = {}
     msg = "Cannot aggregate variable '{}' because it has no components!"
