@@ -821,7 +821,7 @@ class IamDataFrame(object):
                 # catch Model, Scenario instead of model, scenario
                 meta = (
                     meta
-                    .rename(columns={i.capitalize(): i for i in META_IDX}) 
+                    .rename(columns={i.capitalize(): i for i in META_IDX})
                     .set_index(self.meta.index.names)
                 )
             meta = meta.loc[self.meta.index.intersection(meta.index)]
