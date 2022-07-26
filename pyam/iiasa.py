@@ -138,11 +138,14 @@ class Connection(object):
             logger.info("You are connected as an anonymous user")
 
     @property
+    def _headers(self):
+        return {"Authorization": f"Bearer {self._token}"}
+
+    @property
     @lru_cache()
     def _connection_map(self):
         url = "/".join([self._auth_url, "applications"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=self._headers)
         _check_response(r, "Could not get valid connection list")
         aliases = set()
         conn_map = {}
@@ -189,8 +192,7 @@ class Connection(object):
             )
 
         url = "/".join([self._auth_url, "applications", name, "config"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=self._headers)
         _check_response(r, "Could not get application information")
         response = r.json()
         idxs = {x["path"]: i for i, x in enumerate(response)}
@@ -230,8 +232,7 @@ class Connection(object):
         _meta = "true" if meta else "false"
         add_url = f"runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}"
         url = "/".join([self._auth_url, add_url])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=self._headers)
         _check_response(r)
 
         # cast response to dataframe and return
@@ -242,8 +243,7 @@ class Connection(object):
     def meta_columns(self):
         """Return the list of meta indicators in the connected resource"""
         url = "/".join([self._auth_url, "metadata/types"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=self._headers)
         _check_response(r)
         return pd.read_json(r.text, orient="records")["name"]
 
@@ -303,8 +303,7 @@ class Connection(object):
     def variables(self):
         """List all variables in the connected resource"""
         url = "/".join([self._auth_url, "ts"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=self._headers)
         _check_response(r)
         df = pd.read_json(r.text, orient="records")
         return pd.Series(df["variable"].unique(), name="variable")
@@ -321,9 +320,8 @@ class Connection(object):
             regions with more than one synonym)
         """
         url = "/".join([self._auth_url, "nodes?hierarchy=%2A"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
         params = {"includeSynonyms": include_synonyms}
-        r = requests.get(url, headers=headers, params=params)
+        r = requests.get(url, headers=self._headers, params=params)
         _check_response(r)
         return self.convert_regions_payload(r.text, include_synonyms)
 
@@ -447,10 +445,8 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
-        headers = {
-            "Authorization": "Bearer {}".format(self._token),
-            "Content-Type": "application/json",
-        }
+        headers = self._headers.copy()
+        headers["Content-Type"] = "application/json"
 
         # retrieve meta (with run ids) or only index
         if meta:
