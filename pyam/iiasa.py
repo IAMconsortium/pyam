@@ -42,7 +42,7 @@ def set_config(user, password, file=None):
 
     with open(file, mode="w") as f:
         logger.info(f"Setting IIASA-connection configuration file: {file}")
-        yaml.dump(dict(username=user, password=password), f)
+        yaml.dump(dict(username=user, password=password), f, sort_keys=False)
 
 
 def _get_config(file=None):
