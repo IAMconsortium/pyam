@@ -116,7 +116,9 @@ class Connection(object):
     """
 
     def __init__(self, name=None, creds=None, auth_url=_AUTH_URL):
-        self._auth_url = auth_url
+        self._auth_url = auth_url  # scenario services manager API
+        self._base_url = None  # database connection API
+
         self._token, self._user = _get_token(creds, auth_url=self._auth_url)
 
         # connect if provided a name
@@ -189,7 +191,7 @@ class Connection(object):
         response = r.json()
         idxs = {x["path"]: i for i, x in enumerate(response)}
 
-        self._auth_url = response[idxs["baseUrl"]]["value"]
+        self._base_url = response[idxs["baseUrl"]]["value"]
         # TODO: proper citation (as metadata) instead of link to the about page
         if "uiUrl" in idxs:
             about = "/".join([response[idxs["uiUrl"]]["value"], "#", "about"])
@@ -223,7 +225,7 @@ class Connection(object):
         _default = "true" if default else "false"
         _meta = "true" if meta else "false"
         add_url = f"runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}"
-        url = "/".join([self._auth_url, add_url])
+        url = "/".join([self._base_url, add_url])
         r = requests.get(url, headers=self._headers)
         _check_response(r)
 
@@ -234,7 +236,7 @@ class Connection(object):
     @lru_cache()
     def meta_columns(self):
         """Return the list of meta indicators in the connected resource"""
-        url = "/".join([self._auth_url, "metadata/types"])
+        url = "/".join([self._base_url, "metadata/types"])
         r = requests.get(url, headers=self._headers)
         _check_response(r)
         return pd.read_json(r.text, orient="records")["name"]
@@ -294,7 +296,7 @@ class Connection(object):
     @lru_cache()
     def variables(self):
         """List all variables in the connected resource"""
-        url = "/".join([self._auth_url, "ts"])
+        url = "/".join([self._base_url, "ts"])
         r = requests.get(url, headers=self._headers)
         _check_response(r)
         df = pd.read_json(r.text, orient="records")
@@ -311,7 +313,7 @@ class Connection(object):
             (possibly leading to duplicate region names for
             regions with more than one synonym)
         """
-        url = "/".join([self._auth_url, "nodes?hierarchy=%2A"])
+        url = "/".join([self._base_url, "nodes?hierarchy=%2A"])
         params = {"includeSynonyms": include_synonyms}
         r = requests.get(url, headers=self._headers, params=params)
         _check_response(r)
@@ -453,7 +455,7 @@ class Connection(object):
 
         # retrieve data
         _args = json.dumps(self._query_post(_meta, default=default, **kwargs))
-        url = "/".join([self._auth_url, "runs/bulk/ts"])
+        url = "/".join([self._base_url, "runs/bulk/ts"])
         logger.debug(f"Query timeseries data from {url} with data {_args}")
         r = requests.post(url, headers=headers, data=_args)
         _check_response(r)
