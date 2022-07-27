@@ -83,18 +83,12 @@ def _get_token(creds, base_url):
         _check_response(r, "Could not get anonymous token")
         return r.json(), None
 
-    # parse creds, write warning
-    if isinstance(creds, Mapping):
-        user, pw = creds["username"], creds["password"]
-    else:
-        user, pw = creds
-
     # get user token
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
-    data = {"username": user, "password": pw}
     url = "/".join([base_url, "login"])
-    r = requests.post(url, headers=headers, data=json.dumps(data))
-    _check_response(r, "Login failed for user: {}".format(user))
+    r = requests.post(url, headers=headers, data=json.dumps(creds))
+    user = creds["username"]
+    _check_response(r, f"Login failed for user {user}")
     return r.json(), user
 
 
