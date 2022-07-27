@@ -58,7 +58,7 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
         raise error(f"{msg}: {r.text}")
 
 
-def _get_token(creds, base_url):
+def _get_token(creds, auth_url):
     """Parse credentials and get token from IIASA authentication service"""
 
     # try reading default config or parse file
@@ -78,14 +78,14 @@ def _get_token(creds, base_url):
 
     # if (still) no creds, get anonymous auth and return
     if creds is None:
-        url = "/".join([base_url, "anonym"])
+        url = "/".join([auth_url, "anonym"])
         r = requests.get(url)
         _check_response(r, "Could not get anonymous token")
         return r.json(), None
 
     # get user token
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
-    url = "/".join([base_url, "login"])
+    url = "/".join([auth_url, "login"])
     r = requests.post(url, headers=headers, data=json.dumps(creds))
     user = creds["username"]
     _check_response(r, f"Login failed for user {user}")
@@ -106,7 +106,7 @@ class Connection(object):
         were set using :meth:`pyam.iiasa.set_config`.
         Alternatively, you can provide a path to a yaml file
         with entries of 'username' and 'password'.
-    base_url : str, optional
+    auth_url : str, optional
         custom authentication server URL
 
     Notes
@@ -117,7 +117,7 @@ class Connection(object):
 
     def __init__(self, name=None, creds=None, auth_url=_AUTH_URL):
         self._auth_url = auth_url
-        self._token, self._user = _get_token(creds, base_url=self._auth_url)
+        self._token, self._user = _get_token(creds, auth_url=self._auth_url)
 
         # connect if provided a name
         self._connected = None
