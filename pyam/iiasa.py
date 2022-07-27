@@ -8,14 +8,12 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
-from collections.abc import Mapping
 from pyam.core import IamDataFrame
 from pyam.utils import (
     META_IDX,
     IAMC_IDX,
     isstr,
     pattern_match,
-    DEFAULT_META_INDEX,
     islistable,
 )
 
@@ -268,7 +266,7 @@ class Connection(object):
             extra_meta = pd.DataFrame.from_records(df.metadata)
             meta = pd.concat([meta, extra_meta], axis=1)
 
-        return meta.set_index(DEFAULT_META_INDEX + ([] if default else ["version"]))
+        return meta.set_index(META_IDX + ([] if default else ["version"]))
 
     def properties(self, default=True):
         """Return the audit properties of scenarios
@@ -457,7 +455,7 @@ class Connection(object):
                 # 'run_id' is required to determine `_args`, dropped later
                 _meta = _meta[set(meta).union(["version", "run_id"])]
         else:
-            _meta = self._query_index(default=default).set_index(DEFAULT_META_INDEX)
+            _meta = self._query_index(default=default).set_index(META_IDX)
 
         # retrieve data
         _args = json.dumps(self._query_post(_meta, default=default, **kwargs))
@@ -490,13 +488,11 @@ class Connection(object):
 
         # define the index for the IamDataFrame
         if default:
-            index = DEFAULT_META_INDEX
+            index = META_IDX
             data.drop(columns="version", inplace=True)
         else:
-            index = DEFAULT_META_INDEX + ["version"]
-            logger.info(
-                "Initializing an `IamDataFrame` " f"with non-default index {index}"
-            )
+            index = META_IDX + ["version"]
+            logger.info(f"Initializing `IamDataFrame` with non-default index {index}")
 
         # merge meta indicators (if requested) and cast to IamDataFrame
         if meta:
