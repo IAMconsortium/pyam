@@ -8,14 +8,12 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
-from collections.abc import Mapping
 from pyam.core import IamDataFrame
 from pyam.utils import (
     META_IDX,
     IAMC_IDX,
     isstr,
     pattern_match,
-    DEFAULT_META_INDEX,
     islistable,
 )
 
@@ -44,7 +42,7 @@ def set_config(user, password, file=None):
 
     with open(file, mode="w") as f:
         logger.info(f"Setting IIASA-connection configuration file: {file}")
-        yaml.dump(dict(username=user, password=password), f)
+        yaml.dump(dict(username=user, password=password), f, sort_keys=False)
 
 
 def _get_config(file=None):
@@ -60,7 +58,7 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
         raise error(f"{msg}: {r.text}")
 
 
-def _get_token(creds, base_url):
+def _get_token(creds, auth_url):
     """Parse credentials and get token from IIASA authentication service"""
 
     # try reading default config or parse file
@@ -80,23 +78,17 @@ def _get_token(creds, base_url):
 
     # if (still) no creds, get anonymous auth and return
     if creds is None:
-        url = "/".join([base_url, "anonym"])
+        url = "/".join([auth_url, "anonym"])
         r = requests.get(url)
         _check_response(r, "Could not get anonymous token")
         return r.json(), None
 
-    # parse creds, write warning
-    if isinstance(creds, Mapping):
-        user, pw = creds["username"], creds["password"]
-    else:
-        user, pw = creds
-
     # get user token
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
-    data = {"username": user, "password": pw}
-    url = "/".join([base_url, "login"])
-    r = requests.post(url, headers=headers, data=json.dumps(data))
-    _check_response(r, "Login failed for user: {}".format(user))
+    url = "/".join([auth_url, "login"])
+    r = requests.post(url, headers=headers, data=json.dumps(creds))
+    user = creds["username"]
+    _check_response(r, f"Login failed for user {user}")
     return r.json(), user
 
 
@@ -114,7 +106,7 @@ class Connection(object):
         were set using :meth:`pyam.iiasa.set_config`.
         Alternatively, you can provide a path to a yaml file
         with entries of 'username' and 'password'.
-    base_url : str, optional
+    auth_url : str, optional
         custom authentication server URL
 
     Notes
@@ -124,8 +116,10 @@ class Connection(object):
     """
 
     def __init__(self, name=None, creds=None, auth_url=_AUTH_URL):
-        self._auth_url = auth_url
-        self._token, self._user = _get_token(creds, base_url=self._auth_url)
+        self._auth_url = auth_url  # scenario services manager API
+        self._base_url = None  # database connection API
+
+        self._token, self._user = _get_token(creds, auth_url=self._auth_url)
 
         # connect if provided a name
         self._connected = None
@@ -138,11 +132,14 @@ class Connection(object):
             logger.info("You are connected as an anonymous user")
 
     @property
+    def _headers(self):
+        return {"Authorization": f"Bearer {self._token}"}
+
+    @property
     @lru_cache()
     def _connection_map(self):
         url = "/".join([self._auth_url, "applications"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=self._headers)
         _check_response(r, "Could not get valid connection list")
         aliases = set()
         conn_map = {}
@@ -189,13 +186,12 @@ class Connection(object):
             )
 
         url = "/".join([self._auth_url, "applications", name, "config"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=self._headers)
         _check_response(r, "Could not get application information")
         response = r.json()
         idxs = {x["path"]: i for i, x in enumerate(response)}
 
-        self._auth_url = response[idxs["baseUrl"]]["value"]
+        self._base_url = response[idxs["baseUrl"]]["value"]
         # TODO: proper citation (as metadata) instead of link to the about page
         if "uiUrl" in idxs:
             about = "/".join([response[idxs["uiUrl"]]["value"], "#", "about"])
@@ -229,9 +225,8 @@ class Connection(object):
         _default = "true" if default else "false"
         _meta = "true" if meta else "false"
         add_url = f"runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}"
-        url = "/".join([self._auth_url, add_url])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        url = "/".join([self._base_url, add_url])
+        r = requests.get(url, headers=self._headers)
         _check_response(r)
 
         # cast response to dataframe and return
@@ -241,9 +236,8 @@ class Connection(object):
     @lru_cache()
     def meta_columns(self):
         """Return the list of meta indicators in the connected resource"""
-        url = "/".join([self._auth_url, "metadata/types"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        url = "/".join([self._base_url, "metadata/types"])
+        r = requests.get(url, headers=self._headers)
         _check_response(r)
         return pd.read_json(r.text, orient="records")["name"]
 
@@ -268,7 +262,7 @@ class Connection(object):
             extra_meta = pd.DataFrame.from_records(df.metadata)
             meta = pd.concat([meta, extra_meta], axis=1)
 
-        return meta.set_index(DEFAULT_META_INDEX + ([] if default else ["version"]))
+        return meta.set_index(META_IDX + ([] if default else ["version"]))
 
     def properties(self, default=True):
         """Return the audit properties of scenarios
@@ -302,9 +296,8 @@ class Connection(object):
     @lru_cache()
     def variables(self):
         """List all variables in the connected resource"""
-        url = "/".join([self._auth_url, "ts"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
-        r = requests.get(url, headers=headers)
+        url = "/".join([self._base_url, "ts"])
+        r = requests.get(url, headers=self._headers)
         _check_response(r)
         df = pd.read_json(r.text, orient="records")
         return pd.Series(df["variable"].unique(), name="variable")
@@ -320,10 +313,9 @@ class Connection(object):
             (possibly leading to duplicate region names for
             regions with more than one synonym)
         """
-        url = "/".join([self._auth_url, "nodes?hierarchy=%2A"])
-        headers = {"Authorization": "Bearer {}".format(self._token)}
+        url = "/".join([self._base_url, "nodes?hierarchy=%2A"])
         params = {"includeSynonyms": include_synonyms}
-        r = requests.get(url, headers=headers, params=params)
+        r = requests.get(url, headers=self._headers, params=params)
         _check_response(r)
         return self.convert_regions_payload(r.text, include_synonyms)
 
@@ -447,10 +439,8 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
-        headers = {
-            "Authorization": "Bearer {}".format(self._token),
-            "Content-Type": "application/json",
-        }
+        headers = self._headers.copy()
+        headers["Content-Type"] = "application/json"
 
         # retrieve meta (with run ids) or only index
         if meta:
@@ -461,11 +451,11 @@ class Connection(object):
                 # 'run_id' is required to determine `_args`, dropped later
                 _meta = _meta[set(meta).union(["version", "run_id"])]
         else:
-            _meta = self._query_index(default=default).set_index(DEFAULT_META_INDEX)
+            _meta = self._query_index(default=default).set_index(META_IDX)
 
         # retrieve data
         _args = json.dumps(self._query_post(_meta, default=default, **kwargs))
-        url = "/".join([self._auth_url, "runs/bulk/ts"])
+        url = "/".join([self._base_url, "runs/bulk/ts"])
         logger.debug(f"Query timeseries data from {url} with data {_args}")
         r = requests.post(url, headers=headers, data=_args)
         _check_response(r)
@@ -494,13 +484,11 @@ class Connection(object):
 
         # define the index for the IamDataFrame
         if default:
-            index = DEFAULT_META_INDEX
+            index = META_IDX
             data.drop(columns="version", inplace=True)
         else:
-            index = DEFAULT_META_INDEX + ["version"]
-            logger.info(
-                "Initializing an `IamDataFrame` " f"with non-default index {index}"
-            )
+            index = META_IDX + ["version"]
+            logger.info(f"Initializing `IamDataFrame` with non-default index {index}")
 
         # merge meta indicators (if requested) and cast to IamDataFrame
         if meta:
