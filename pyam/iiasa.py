@@ -64,7 +64,7 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
 
 
 class SceSeAuth(AuthBase):
-    def __init__(self, creds: str=None, auth_url: str=_AUTH_URL):
+    def __init__(self, creds: str = None, auth_url: str = _AUTH_URL):
         """Connection to the Scenario Services Manager AAC service.
 
         Parameters
