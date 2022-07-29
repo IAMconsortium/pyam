@@ -2,6 +2,11 @@ from pathlib import Path
 import json
 import logging
 import requests
+
+import httpx
+import jwt
+from requests.auth import AuthBase
+
 import yaml
 from functools import lru_cache
 
@@ -58,38 +63,86 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
         raise error(f"{msg}: {r.text}")
 
 
-def _get_token(creds, auth_url):
-    """Parse credentials and get token from IIASA authentication service"""
+class SceSeAuth(AuthBase):
+    def __init__(self, creds: str=None, auth_url: str=_AUTH_URL):
+        """Connection to the Scenario Services Manager AAC service.
 
-    # try reading default config or parse file
-    if creds is None:
-        creds = _get_config()
-    elif isinstance(creds, Path) or isstr(creds):
-        _creds = _get_config(creds)
-        if _creds is None:
-            logger.error(f"Could not read credentials from `{creds}`")
-        creds = _creds
-    else:
-        msg = (
-            "Passing credentials as clear-text is not allowed. "
-            "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
-        )
-        raise DeprecationWarning(msg)
+        Parameters
+        ----------
+        creds : pathlib.Path or str, optional
+            Path to a file with authentication credentials
+        auth_url : str, optionl
+            Url of the authentication service
+        """
+        self.client = httpx.Client(base_url=auth_url, timeout=10.0, http2=True)
+        self.access_token, self.refresh_token = None, None
 
-    # if (still) no creds, get anonymous auth and return
-    if creds is None:
-        url = "/".join([auth_url, "anonym"])
-        r = requests.get(url)
-        _check_response(r, "Could not get anonymous token")
-        return r.json(), None
+        if creds is None:
+            self.creds = _get_config(DEFAULT_IIASA_CREDS)
+        elif isinstance(creds, Path) or isstr(creds):
+            self.creds = _get_config(creds)
+            if self.creds is None:
+                logger.error(f"Could not read credentials from `{creds}`")
+        else:
+            msg = (
+                "Passing credentials as clear-text is not allowed. "
+                "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
+            )
+            raise DeprecationWarning(msg)
 
-    # get user token
-    headers = {"Accept": "application/json", "Content-Type": "application/json"}
-    url = "/".join([auth_url, "login"])
-    r = requests.post(url, headers=headers, data=json.dumps(creds))
-    user = creds["username"]
-    _check_response(r, f"Login failed for user {user}")
-    return r.json(), user
+        # if no creds, get anonymous token
+        if self.creds is None:
+            r = self.client.get("/legacy/anonym/")
+            if not r.is_success:
+                raise RuntimeError("Could not get anonymous token.")
+            self.user = None
+            self.access_token = r.json()
+
+        # else get user-token
+        else:
+            self.user = self.creds["username"]
+            self.obtain_jwt()
+
+    def __call__(self):
+        try:
+            jwt.decode(
+                self.access_token,
+                options={"verify_signature": False, "verify_exp": True},
+            )
+        except jwt.ExpiredSignatureError:
+            self.refresh_or_reobtain_jwt()
+
+        return {"Authorization": "Bearer " + self.access_token}
+
+    def obtain_jwt(self):
+        r = self.client.post("/v1/token/obtain/", json=self.creds)
+        if r.status_code >= 400:
+            if r.status_code == 401:
+                raise ValueError("The provided credentials are not valid.")
+            else:
+                raise ValueError("Unknown API error: " + r.text)
+
+        _json = r.json()
+        self.access_token = _json["access"]
+        self.refresh_token = _json["refresh"]
+
+    def refresh_or_reobtain_jwt(self):
+        try:
+            jwt.decode(
+                self.refresh_token,
+                options={"verify_signature": False, "verify_exp": True},
+            )
+            self.refresh_jwt()
+        except jwt.ExpiredSignatureError:
+            self.obtain_jwt()
+
+    def refresh_jwt(self):
+        r = self.client.post("/v1/token/refresh/", json={"refresh": self.refresh_token})
+
+        if r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
+
+        self.access_token = r.json()["access"]
 
 
 class Connection(object):
@@ -119,15 +172,15 @@ class Connection(object):
         self._auth_url = auth_url  # scenario services manager API
         self._base_url = None  # database connection API
 
-        self._token, self._user = _get_token(creds, auth_url=self._auth_url)
+        self.auth = SceSeAuth(creds=creds, auth_url=self._auth_url)
 
         # connect if provided a name
         self._connected = None
         if name:
             self.connect(name)
 
-        if self._user:
-            logger.info(f"You are connected as user `{self._user}`")
+        if self.auth.user is not None:
+            logger.info(f"You are connected as user `{self.auth.user}`")
         else:
             logger.info("You are connected as an anonymous user")
 
