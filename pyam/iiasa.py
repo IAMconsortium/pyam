@@ -185,14 +185,10 @@ class Connection(object):
             logger.info("You are connected as an anonymous user")
 
     @property
-    def _headers(self):
-        return {"Authorization": f"Bearer {self._token}"}
-
-    @property
     @lru_cache()
     def _connection_map(self):
         url = "/".join([self._auth_url, "legacy", "applications"])
-        r = requests.get(url, headers=self._headers)
+        r = requests.get(url, headers=self.auth())
         _check_response(r, "Could not get valid connection list")
         aliases = set()
         conn_map = {}
@@ -239,7 +235,7 @@ class Connection(object):
             )
 
         url = "/".join([self._auth_url, "legacy", "applications", name, "config"])
-        r = requests.get(url, headers=self._headers)
+        r = requests.get(url, headers=self.auth())
         _check_response(r, "Could not get application information")
         response = r.json()
         idxs = {x["path"]: i for i, x in enumerate(response)}
@@ -279,18 +275,17 @@ class Connection(object):
         _meta = "true" if meta else "false"
         add_url = f"runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}"
         url = "/".join([self._base_url, add_url])
-        r = requests.get(url, headers=self._headers)
+        r = requests.get(url, headers=self.auth())
         _check_response(r)
 
         # cast response to dataframe and return
         return pd.read_json(r.text, orient="records")
 
     @property
-    @lru_cache()
     def meta_columns(self):
         """Return the list of meta indicators in the connected resource"""
         url = "/".join([self._base_url, "metadata/types"])
-        r = requests.get(url, headers=self._headers)
+        r = requests.get(url, headers=self.auth())
         _check_response(r)
         return pd.read_json(r.text, orient="records")["name"]
 
@@ -350,7 +345,7 @@ class Connection(object):
     def variables(self):
         """List all variables in the connected resource"""
         url = "/".join([self._base_url, "ts"])
-        r = requests.get(url, headers=self._headers)
+        r = requests.get(url, headers=self.auth())
         _check_response(r)
         df = pd.read_json(r.text, orient="records")
         return pd.Series(df["variable"].unique(), name="variable")
@@ -368,7 +363,7 @@ class Connection(object):
         """
         url = "/".join([self._base_url, "nodes?hierarchy=%2A"])
         params = {"includeSynonyms": include_synonyms}
-        r = requests.get(url, headers=self._headers, params=params)
+        r = requests.get(url, headers=self.auth(), params=params)
         _check_response(r)
         return self.convert_regions_payload(r.text, include_synonyms)
 
@@ -492,7 +487,7 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
-        headers = self._headers.copy()
+        headers = self.auth().copy()
         headers["Content-Type"] = "application/json"
 
         # retrieve meta (with run ids) or only index
