@@ -38,6 +38,8 @@ You are connected to the {} scenario explorer hosted by IIASA.
 # path to local configuration settings
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
 
+JWT_DECODE_ARGS = {"verify_signature": False, "verify_exp": True}
+
 
 def set_config(user, password, file=None):
     """Save username and password for the IIASA API connection to a file"""
@@ -93,8 +95,8 @@ class SceSeAuth(AuthBase):
         # if no creds, get anonymous token
         if self.creds is None:
             r = self.client.get("/legacy/anonym/")
-            if not r.is_success:
-                raise RuntimeError("Could not get anonymous token.")
+            if r.status_code >= 400:
+                raise ValueError("Unknown API error: " + r.text)
             self.user = None
             self.access_token = r.json()
 
@@ -105,44 +107,37 @@ class SceSeAuth(AuthBase):
 
     def __call__(self):
         try:
-            jwt.decode(
-                self.access_token,
-                options={"verify_signature": False, "verify_exp": True},
-            )
+            # raises jwt.ExpiredSignatureError if token is expired
+            jwt.decode(self.access_token, options=JWT_DECODE_ARGS)
+
         except jwt.ExpiredSignatureError:
-            self.refresh_or_reobtain_jwt()
+            self.refresh_jwt()
 
         return {"Authorization": "Bearer " + self.access_token}
 
     def obtain_jwt(self):
         r = self.client.post("/v1/token/obtain/", json=self.creds)
-        if r.status_code >= 400:
-            if r.status_code == 401:
-                raise ValueError("The provided credentials are not valid.")
-            else:
-                raise ValueError("Unknown API error: " + r.text)
+        if r.status_code == 401:
+            raise ValueError("The provided credentials are not valid.")
+        elif r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
 
         _json = r.json()
         self.access_token = _json["access"]
         self.refresh_token = _json["refresh"]
 
-    def refresh_or_reobtain_jwt(self):
+    def refresh_jwt(self):
         try:
-            jwt.decode(
-                self.refresh_token,
-                options={"verify_signature": False, "verify_exp": True},
+            # raises jwt.ExpiredSignatureError if token is expired
+            jwt.decode(self.refresh_token, options=JWT_DECODE_ARGS)
+            r = self.client.post(
+                "/v1/token/refresh/", json={"refresh": self.refresh_token}
             )
-            self.refresh_jwt()
+            if r.status_code >= 400:
+                raise ValueError("Unknown API error: " + r.text)
+            self.access_token = r.json()["access"]
         except jwt.ExpiredSignatureError:
             self.obtain_jwt()
-
-    def refresh_jwt(self):
-        r = self.client.post("/v1/token/refresh/", json={"refresh": self.refresh_token})
-
-        if r.status_code >= 400:
-            raise ValueError("Unknown API error: " + r.text)
-
-        self.access_token = r.json()["access"]
 
 
 class Connection(object):
