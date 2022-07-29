@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
 logging.getLogger("requests").setLevel(logging.WARNING)
 
-_AUTH_URL = "https://api.manager.ece.iiasa.ac.at/legacy"
+_AUTH_URL = "https://api.manager.ece.iiasa.ac.at"
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
@@ -138,7 +138,7 @@ class Connection(object):
     @property
     @lru_cache()
     def _connection_map(self):
-        url = "/".join([self._auth_url, "applications"])
+        url = "/".join([self._auth_url, "legacy", "applications"])
         r = requests.get(url, headers=self._headers)
         _check_response(r, "Could not get valid connection list")
         aliases = set()
@@ -185,7 +185,7 @@ class Connection(object):
                 "Use `Connection.valid_connections` for a list of accessible services."
             )
 
-        url = "/".join([self._auth_url, "applications", name, "config"])
+        url = "/".join([self._auth_url, "legacy", "applications", name, "config"])
         r = requests.get(url, headers=self._headers)
         _check_response(r, "Could not get application information")
         response = r.json()
