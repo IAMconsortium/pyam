@@ -91,6 +91,7 @@ class SceSeAuth(AuthBase):
             )
 
         # if no creds, get anonymous token
+        # TODO: explicit token for anonymous login will not be necessary for ixmp-server
         if self.creds is None:
             r = self.client.get("/legacy/anonym/")
             if r.status_code >= 400:
@@ -182,6 +183,7 @@ class Connection(object):
     @property
     @lru_cache()
     def _connection_map(self):
+        # TODO: application-list will be reimplemented in conjunction with ixmp-server
         url = "/".join([self._auth_url, "legacy", "applications"])
         r = requests.get(url, headers=self.auth())
         _check_response(r, "Could not get valid connection list")
@@ -224,6 +226,7 @@ class Connection(object):
                 "Use `Connection.valid_connections` for a list of accessible services."
             )
 
+        # TODO: config will be reimplemented in conjunction with ixmp-server
         url = "/".join([self._auth_url, "legacy", "applications", name, "config"])
         r = requests.get(url, headers=self.auth())
         _check_response(r, "Could not get application information")
