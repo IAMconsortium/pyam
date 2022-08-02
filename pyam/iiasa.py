@@ -86,11 +86,10 @@ class SceSeAuth(AuthBase):
             if self.creds is None:
                 logger.error(f"Could not read credentials from `{creds}`")
         else:
-            msg = (
+            raise DeprecationWarning(
                 "Passing credentials as clear-text is not allowed. "
                 "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
             )
-            raise DeprecationWarning(msg)
 
         # if no creds, get anonymous token
         if self.creds is None:
@@ -118,7 +117,9 @@ class SceSeAuth(AuthBase):
     def obtain_jwt(self):
         r = self.client.post("/v1/token/obtain/", json=self.creds)
         if r.status_code == 401:
-            raise ValueError("The provided credentials are not valid.")
+            raise ValueError(
+                "Credentials not valid to connect to https://manager.ece.iiasa.ac.at."
+            )
         elif r.status_code >= 400:
             raise ValueError("Unknown API error: " + r.text)
 
@@ -218,11 +219,6 @@ class Connection(object):
             name = self._connection_map[name]
 
         valid = self._connection_map.values()
-        if len(valid) == 0:
-            raise RuntimeError(
-                "No valid connections found for the provided credentials."
-            )
-
         if name not in valid:
             raise ValueError(
                 f"You do not have access to instance '{name}' or it does not exist. "
