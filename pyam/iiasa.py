@@ -52,12 +52,10 @@ def set_config(user, password, file=None):
         yaml.dump(dict(username=user, password=password), f, sort_keys=False)
 
 
-def _get_config(file=None):
+def _read_config(file):
     """Read username and password for IIASA API connection from file"""
-    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
-    if file.exists():
-        with open(file, "r") as stream:
-            return yaml.safe_load(stream)
+    with open(file, "r") as stream:
+        return yaml.safe_load(stream)
 
 
 def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
@@ -80,11 +78,12 @@ class SceSeAuth(AuthBase):
         self.access_token, self.refresh_token = None, None
 
         if creds is None:
-            self.creds = _get_config(DEFAULT_IIASA_CREDS)
+            if DEFAULT_IIASA_CREDS.exists():
+                self.creds = _read_config(DEFAULT_IIASA_CREDS)
+            else:
+                self.creds = None
         elif isinstance(creds, Path) or isstr(creds):
-            self.creds = _get_config(creds)
-            if self.creds is None:
-                logger.error(f"Could not read credentials from `{creds}`")
+            self.creds = _read_config(creds)
         else:
             raise DeprecationWarning(
                 "Passing credentials as clear-text is not allowed. "
