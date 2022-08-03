@@ -185,8 +185,9 @@ class Connection(object):
     def _connection_map(self):
         # TODO: application-list will be reimplemented in conjunction with ixmp-server
         url = "/".join([self._auth_url, "legacy", "applications"])
-        r = requests.get(url, headers=self.auth())
-        _check_response(r, "Could not get valid connection list")
+        r = self.auth.client.get("legacy/applications", headers=self.auth())
+        if r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
         aliases = set()
         conn_map = {}
         for x in r.json():
@@ -227,9 +228,12 @@ class Connection(object):
             )
 
         # TODO: config will be reimplemented in conjunction with ixmp-server
-        url = "/".join([self._auth_url, "legacy", "applications", name, "config"])
-        r = requests.get(url, headers=self.auth())
-        _check_response(r, "Could not get application information")
+        r = self.auth.client.get(
+            f"legacy/applications/{name}/config", headers=self.auth()
+        )
+        if r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
+
         response = r.json()
         idxs = {x["path"]: i for i, x in enumerate(response)}
 
