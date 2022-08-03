@@ -1,9 +1,11 @@
 import os
+from pathlib import Path
 import pytest
 import pandas as pd
 import pandas.testing as pdt
 import numpy as np
 import numpy.testing as npt
+import yaml
 
 from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
@@ -80,7 +82,28 @@ def test_conn_creds_config():
     assert conn.current_connection == TEST_API_NAME
 
 
-def test_conn_cleartext_raises():
+def test_conn_nonexisting_creds_file():
+    # pointing to non-existing creds file raises
+    with pytest.raises(FileNotFoundError):
+        iiasa.Connection(TEST_API, creds="foo")
+
+
+@pytest.mark.parametrize(
+    "creds, match",
+    [
+        (dict(username="user", password="password"), "Credentials not valid "),
+        (dict(username="user"), "Unknown API error:*."),
+    ],
+)
+def test_conn_invalid_creds_file(creds, match, tmpdir):
+    # invalid credentials raises the expected errors
+    with open(tmpdir / "creds.yaml", mode="w") as f:
+        yaml.dump(creds, f)
+    with pytest.raises(ValueError, match=match):
+        iiasa.Connection(TEST_API, creds=Path(tmpdir) / "creds.yaml")
+
+
+def test_conn_cleartext_creds_raises():
     # connecting with clear-text credentials raises an error
     match = "Passing credentials as clear-text is not allowed."
     with pytest.raises(DeprecationWarning, match=match):

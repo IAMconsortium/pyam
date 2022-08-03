@@ -2,6 +2,11 @@ from pathlib import Path
 import json
 import logging
 import requests
+
+import httpx
+import jwt
+from requests.auth import AuthBase
+
 import yaml
 from functools import lru_cache
 
@@ -21,7 +26,7 @@ logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
 logging.getLogger("requests").setLevel(logging.WARNING)
 
-_AUTH_URL = "https://api.manager.ece.iiasa.ac.at/legacy"
+_AUTH_URL = "https://api.manager.ece.iiasa.ac.at"
 _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
@@ -32,6 +37,8 @@ You are connected to the {} scenario explorer hosted by IIASA.
 
 # path to local configuration settings
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
+
+JWT_DECODE_ARGS = {"verify_signature": False, "verify_exp": True}
 
 
 def set_config(user, password, file=None):
@@ -45,12 +52,10 @@ def set_config(user, password, file=None):
         yaml.dump(dict(username=user, password=password), f, sort_keys=False)
 
 
-def _get_config(file=None):
+def _read_config(file):
     """Read username and password for IIASA API connection from file"""
-    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
-    if file.exists():
-        with open(file, "r") as stream:
-            return yaml.safe_load(stream)
+    with open(file, "r") as stream:
+        return yaml.safe_load(stream)
 
 
 def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
@@ -58,38 +63,82 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
         raise error(f"{msg}: {r.text}")
 
 
-def _get_token(creds, auth_url):
-    """Parse credentials and get token from IIASA authentication service"""
+class SceSeAuth(AuthBase):
+    def __init__(self, creds: str = None, auth_url: str = _AUTH_URL):
+        """Connection to the Scenario Services Manager AAC service.
 
-    # try reading default config or parse file
-    if creds is None:
-        creds = _get_config()
-    elif isinstance(creds, Path) or isstr(creds):
-        _creds = _get_config(creds)
-        if _creds is None:
-            logger.error(f"Could not read credentials from `{creds}`")
-        creds = _creds
-    else:
-        msg = (
-            "Passing credentials as clear-text is not allowed. "
-            "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
-        )
-        raise DeprecationWarning(msg)
+        Parameters
+        ----------
+        creds : pathlib.Path or str, optional
+            Path to a file with authentication credentials
+        auth_url : str, optionl
+            Url of the authentication service
+        """
+        self.client = httpx.Client(base_url=auth_url, timeout=10.0, http2=True)
+        self.access_token, self.refresh_token = None, None
 
-    # if (still) no creds, get anonymous auth and return
-    if creds is None:
-        url = "/".join([auth_url, "anonym"])
-        r = requests.get(url)
-        _check_response(r, "Could not get anonymous token")
-        return r.json(), None
+        if creds is None:
+            if DEFAULT_IIASA_CREDS.exists():
+                self.creds = _read_config(DEFAULT_IIASA_CREDS)
+            else:
+                self.creds = None
+        elif isinstance(creds, Path) or isstr(creds):
+            self.creds = _read_config(creds)
+        else:
+            raise DeprecationWarning(
+                "Passing credentials as clear-text is not allowed. "
+                "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
+            )
 
-    # get user token
-    headers = {"Accept": "application/json", "Content-Type": "application/json"}
-    url = "/".join([auth_url, "login"])
-    r = requests.post(url, headers=headers, data=json.dumps(creds))
-    user = creds["username"]
-    _check_response(r, f"Login failed for user {user}")
-    return r.json(), user
+        # if no creds, get anonymous token
+        # TODO: explicit token for anonymous login will not be necessary for ixmp-server
+        if self.creds is None:
+            r = self.client.get("/legacy/anonym/")
+            if r.status_code >= 400:
+                raise ValueError("Unknown API error: " + r.text)
+            self.user = None
+            self.access_token = r.json()
+
+        # else get user-token
+        else:
+            self.user = self.creds["username"]
+            self.obtain_jwt()
+
+    def __call__(self):
+        try:
+            # raises jwt.ExpiredSignatureError if token is expired
+            jwt.decode(self.access_token, options=JWT_DECODE_ARGS)
+
+        except jwt.ExpiredSignatureError:
+            self.refresh_jwt()
+
+        return {"Authorization": "Bearer " + self.access_token}
+
+    def obtain_jwt(self):
+        r = self.client.post("/v1/token/obtain/", json=self.creds)
+        if r.status_code == 401:
+            raise ValueError(
+                "Credentials not valid to connect to https://manager.ece.iiasa.ac.at."
+            )
+        elif r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
+
+        _json = r.json()
+        self.access_token = _json["access"]
+        self.refresh_token = _json["refresh"]
+
+    def refresh_jwt(self):
+        try:
+            # raises jwt.ExpiredSignatureError if token is expired
+            jwt.decode(self.refresh_token, options=JWT_DECODE_ARGS)
+            r = self.client.post(
+                "/v1/token/refresh/", json={"refresh": self.refresh_token}
+            )
+            if r.status_code >= 400:
+                raise ValueError("Unknown API error: " + r.text)
+            self.access_token = r.json()["access"]
+        except jwt.ExpiredSignatureError:
+            self.obtain_jwt()
 
 
 class Connection(object):
@@ -119,28 +168,26 @@ class Connection(object):
         self._auth_url = auth_url  # scenario services manager API
         self._base_url = None  # database connection API
 
-        self._token, self._user = _get_token(creds, auth_url=self._auth_url)
+        self.auth = SceSeAuth(creds=creds, auth_url=self._auth_url)
 
         # connect if provided a name
         self._connected = None
         if name:
             self.connect(name)
 
-        if self._user:
-            logger.info(f"You are connected as user `{self._user}`")
+        if self.auth.user is not None:
+            logger.info(f"You are connected as user `{self.auth.user}`")
         else:
             logger.info("You are connected as an anonymous user")
 
     @property
-    def _headers(self):
-        return {"Authorization": f"Bearer {self._token}"}
-
-    @property
     @lru_cache()
     def _connection_map(self):
-        url = "/".join([self._auth_url, "applications"])
-        r = requests.get(url, headers=self._headers)
-        _check_response(r, "Could not get valid connection list")
+        # TODO: application-list will be reimplemented in conjunction with ixmp-server
+        r = self.auth.client.get("legacy/applications", headers=self.auth())
+        if r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
+
         aliases = set()
         conn_map = {}
         for x in r.json():
@@ -174,20 +221,19 @@ class Connection(object):
             name = self._connection_map[name]
 
         valid = self._connection_map.values()
-        if len(valid) == 0:
-            raise RuntimeError(
-                "No valid connections found for the provided credentials."
-            )
-
         if name not in valid:
             raise ValueError(
                 f"You do not have access to instance '{name}' or it does not exist. "
                 "Use `Connection.valid_connections` for a list of accessible services."
             )
 
-        url = "/".join([self._auth_url, "applications", name, "config"])
-        r = requests.get(url, headers=self._headers)
-        _check_response(r, "Could not get application information")
+        # TODO: config will be reimplemented in conjunction with ixmp-server
+        r = self.auth.client.get(
+            f"legacy/applications/{name}/config", headers=self.auth()
+        )
+        if r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
+
         response = r.json()
         idxs = {x["path"]: i for i, x in enumerate(response)}
 
@@ -226,18 +272,17 @@ class Connection(object):
         _meta = "true" if meta else "false"
         add_url = f"runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}"
         url = "/".join([self._base_url, add_url])
-        r = requests.get(url, headers=self._headers)
+        r = requests.get(url, headers=self.auth())
         _check_response(r)
 
         # cast response to dataframe and return
         return pd.read_json(r.text, orient="records")
 
     @property
-    @lru_cache()
     def meta_columns(self):
         """Return the list of meta indicators in the connected resource"""
         url = "/".join([self._base_url, "metadata/types"])
-        r = requests.get(url, headers=self._headers)
+        r = requests.get(url, headers=self.auth())
         _check_response(r)
         return pd.read_json(r.text, orient="records")["name"]
 
@@ -297,7 +342,7 @@ class Connection(object):
     def variables(self):
         """List all variables in the connected resource"""
         url = "/".join([self._base_url, "ts"])
-        r = requests.get(url, headers=self._headers)
+        r = requests.get(url, headers=self.auth())
         _check_response(r)
         df = pd.read_json(r.text, orient="records")
         return pd.Series(df["variable"].unique(), name="variable")
@@ -315,7 +360,7 @@ class Connection(object):
         """
         url = "/".join([self._base_url, "nodes?hierarchy=%2A"])
         params = {"includeSynonyms": include_synonyms}
-        r = requests.get(url, headers=self._headers, params=params)
+        r = requests.get(url, headers=self.auth(), params=params)
         _check_response(r)
         return self.convert_regions_payload(r.text, include_synonyms)
 
@@ -439,7 +484,7 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
-        headers = self._headers.copy()
+        headers = self.auth().copy()
         headers["Content-Type"] = "application/json"
 
         # retrieve meta (with run ids) or only index
