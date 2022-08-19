@@ -2,6 +2,7 @@
 
 ## Individual updates
 
+- [#688](https://github.com/IAMconsortium/pyam/pull/688) Remove ixmp as optional dependency
 - [#684](https://github.com/IAMconsortium/pyam/pull/684) Use new IIASA-manager API with token refresh 
 - [#679](https://github.com/IAMconsortium/pyam/pull/679) `set_meta()` now supports pandas.DataFrame as an argument
 - [#674](https://github.com/IAMconsortium/pyam/pull/674) Support filtering data by model-scenario pairs with the `index` argument to `filter()` and `slice()`
