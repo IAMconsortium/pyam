@@ -29,7 +29,7 @@ Installing From Source
 
 .. code-block:: bash
 
-    pip install -e git+https://github.com/IAMconsortium/pyam.git#egg=pyam
+    pip install -e git+https://github.com/IAMconsortium/pyam.git#egg=pyam-iamc
 
 Dependencies
 ------------
