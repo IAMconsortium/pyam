@@ -3,33 +3,34 @@
 Installation
 ============
 
-Via your favourite Python Package Manager
------------------------------------------
-
 Conda
-~~~~~
+-----
+
+https://anaconda.org/conda-forge/pyam
 
 .. code-block:: bash
 
     conda install -c conda-forge pyam
 
-Pip
-~~~
+Pypi
+----
+
+https://pypi.org/project/pyam-iamc/
+
+.. warning::  The pyam package is distributed as "pyam-iamc" on pypi.
 
 .. code-block:: bash
 
     pip install pyam-iamc
 
-.. warning::  The pyam package is distributed as "pyam-iamc" on pypi.
-
-Installing From Source
+Installing from source
 ----------------------
 
 |pyam| can also be installed from source.
 
 .. code-block:: bash
 
-    pip install -e git+https://github.com/IAMconsortium/pyam.git#egg=pyam
+    pip install -e git+https://github.com/IAMconsortium/pyam.git#egg=pyam-iamc
 
 Dependencies
 ------------
