@@ -328,3 +328,9 @@ def test_query_non_default(conn, test_pd_df):
     # test top-level method
     df = read_iiasa(TEST_API, default=False)
     assert_iamframe_equal(df, exp)
+
+
+def test_query_empty_response(conn):
+    """Check that querying with an empty response returns an empty IamDataFrame"""
+    # solves https://github.com/IAMconsortium/pyam/issues/676
+    assert conn.query(model="foo").empty

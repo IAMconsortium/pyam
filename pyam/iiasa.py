@@ -297,15 +297,21 @@ class Connection(object):
             If `False`, return all versions.
         """
         df = self._query_index(default, meta=True)
+
         cols = ["version"] if default else ["version", "is_default"]
         if kwargs:
             if kwargs.get("run_id", False):
                 cols.append("run_id")
 
-        meta = df[META_IDX + cols]
-        if df.metadata.any():
-            extra_meta = pd.DataFrame.from_records(df.metadata)
-            meta = pd.concat([meta, extra_meta], axis=1)
+        # catching an issue where the query above does not yield any scenarios
+        if df.empty:
+            logger.warning("No permission to view model(s) or they do not exist.")
+            meta = pd.DataFrame([], columns=META_IDX + cols)
+        else:
+            meta = df[META_IDX + cols]
+            if df.metadata.any():
+                extra_meta = pd.DataFrame.from_records(df.metadata)
+                meta = pd.concat([meta, extra_meta], axis=1)
 
         return meta.set_index(META_IDX + ([] if default else ["version"]))
 
