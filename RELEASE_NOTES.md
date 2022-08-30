@@ -2,6 +2,7 @@
 
 ## Individual updates
 
+- [#695](https://github.com/IAMconsortium/pyam/pull/695) Remove unused meta levels during initialization
 - [#688](https://github.com/IAMconsortium/pyam/pull/688) Remove ixmp as optional dependency
 - [#684](https://github.com/IAMconsortium/pyam/pull/684) Use new IIASA-manager API with token refresh 
 - [#679](https://github.com/IAMconsortium/pyam/pull/679) `set_meta()` now supports pandas.DataFrame as an argument
