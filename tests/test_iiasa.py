@@ -224,10 +224,12 @@ def test_query_year(conn, test_df_year, kwargs):
 
     # test method via Connection
     df = conn.query(model="model_a", **kwargs)
+    assert df.model == ["model_a"]
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
     # test top-level method
     df = read_iiasa(TEST_API, model="model_a", **kwargs)
+    assert df.model == ["model_a"]
     assert_iamframe_equal(df, exp.filter(**kwargs))
 
 

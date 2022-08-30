@@ -133,10 +133,11 @@ def test_init_df_with_extra_col(test_pd_df):
 
 def test_init_df_with_meta(test_pd_df):
     # pass explicit meta dataframe with a scenario that doesn't exist in data
-    df = IamDataFrame(test_pd_df, meta=META_DF.iloc[[0, 2]][["foo"]])
+    df = IamDataFrame(test_pd_df, meta=META_DF[["foo"]])
 
     # check that scenario not existing in data is removed during initialization
     pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+    assert df.scenario == ["scen_a", "scen_b"]
 
 
 def test_init_df_with_meta_incompatible_index(test_pd_df):

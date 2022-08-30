@@ -806,7 +806,9 @@ class IamDataFrame(object):
                 meta = meta.rename(
                     columns={i.capitalize(): i for i in META_IDX}
                 ).set_index(self.meta.index.names)
+
             meta = meta.loc[self.meta.index.intersection(meta.index)]
+            meta.index = meta.index.remove_unused_levels()
             self.meta = merge_meta(meta, self.meta, ignore_conflict=True)
             return
 
@@ -830,7 +832,7 @@ class IamDataFrame(object):
         # if no valid index is provided, add meta as new column `name` and exit
         if index is None:
             self.meta[name] = list(meta) if islistable(meta) else meta
-            return  # EXIT FUNCTION
+            return
 
         # use meta.index if index arg is an IamDataFrame
         if isinstance(index, IamDataFrame):
@@ -917,7 +919,7 @@ class IamDataFrame(object):
 
         if len(idx) == 0:
             logger.info("No scenarios satisfy the criteria")
-            return  # EXIT FUNCTION
+            return
 
         # update meta dataframe
         self._new_meta_column(name)
