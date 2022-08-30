@@ -34,14 +34,6 @@ except ImportError:
     Package = None
     HAS_DATAPACKAGE = False
 
-try:
-    import ixmp
-
-    ixmp.TimeSeries
-    has_ix = True
-except (ImportError, AttributeError):
-    has_ix = False
-
 from pyam.run_control import run_control
 from pyam.utils import (
     write_sheet,
@@ -65,7 +57,6 @@ from pyam.utils import (
 from pyam.filter import (
     datetime_match,
 )
-from pyam.read_ixmp import read_ix
 from pyam.plotting import PlotAccessor
 from pyam.compute import IamComputeAccessor
 from pyam._compare import _compare
@@ -101,11 +92,9 @@ class IamDataFrame(object):
 
     Parameters
     ----------
-    data : :class:`pandas.DataFrame`, :class:`ixmp.Scenario`,\
-    or file-like object as str or :class:`pathlib.Path`
+    data : :class:`pandas.DataFrame` or file-like object as str or :class:`pathlib.Path`
         Scenario timeseries data following the IAMC data format or
-        a supported variation as pandas object, a path to a file,
-        or a scenario of an ixmp instance.
+        a supported variation as pandas object or a path to a file.
     meta : :class:`pandas.DataFrame`, optional
         A dataframe with suitable 'meta' indicators for the new instance.
         The index will be downselected to scenarios present in `data`.
@@ -173,11 +162,6 @@ class IamDataFrame(object):
         # cast data from pandas
         if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
             _data = format_data(data.copy(), index=index, **kwargs)
-
-        # read data from ixmp Platform instance
-        elif has_ix and isinstance(data, ixmp.TimeSeries):
-            # TODO read meta indicators from ixmp
-            _data = read_ix(data, **kwargs)
 
         # read from file
         elif isinstance(data, FILE_TYPE):
@@ -527,7 +511,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        other : IamDataFrame, ixmp.Scenario, pandas.DataFrame or data file
+        other : IamDataFrame, pandas.DataFrame or data file
             Any object castable as IamDataFrame to be appended
         ignore_meta_conflict : bool, optional
             If False and `other` is an IamDataFrame, raise an error if

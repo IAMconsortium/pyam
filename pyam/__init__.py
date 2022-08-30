@@ -14,7 +14,6 @@ from pyam.slice import IamSlice  # noqa: F401
 from pyam.utils import *
 from pyam.statistics import *
 from pyam.timeseries import *
-from pyam.read_ixmp import *
 from pyam.logging import *
 from pyam.run_control import *
 from pyam.iiasa import read_iiasa  # noqa: F401
