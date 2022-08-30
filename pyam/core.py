@@ -806,9 +806,11 @@ class IamDataFrame(object):
                 meta = meta.rename(
                     columns={i.capitalize(): i for i in META_IDX}
                 ).set_index(self.meta.index.names)
+
             meta = meta.loc[self.meta.index.intersection(meta.index)]
+            meta.index = meta.index.remove_unused_levels()
             self.meta = merge_meta(meta, self.meta, ignore_conflict=True)
-            return
+            return  # EXIT FUNCTION
 
         # check that name is valid and doesn't conflict with data columns
         if (name or (hasattr(meta, "name") and meta.name)) in [None, False]:
