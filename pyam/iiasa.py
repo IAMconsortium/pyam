@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import logging
 import requests
+from fnmatch import fnmatch
 
 import httpx
 import jwt
@@ -260,7 +261,7 @@ class Connection(object):
         return pd.read_json(r.text, orient="records")["name"]
 
     @lru_cache()
-    def _query_index(self, default=True, meta=False):
+    def _query_index(self, default=True, meta=False, **kwargs):
         # TODO: at present this reads in all data for all scenarios,
         #  it could be sped up in the future to try to query a subset
         _default = "true" if default else "false"
@@ -270,10 +271,20 @@ class Connection(object):
         r = requests.get(url, headers=self.auth())
         _check_response(r)
 
-        # cast response to dataframe and return
-        return pd.read_json(r.text, orient="records")
+        # cast response to dataframe, apply filter by kwargs, and return
+        runs = pd.read_json(r.text, orient="records")
+        if kwargs:
+            keep = np.ones(len(runs), dtype=bool)
+            for key, values in kwargs.items():
+                if key not in META_IDX + ["version"]:
+                    raise ValueError(f"Invalid filter: '{key}'")
+                keep_col = pd.Series([fnmatch(v, values) for v in runs[key].values])
+                keep = np.logical_and(keep, keep_col)
+            return runs[keep]
+        else:
+            return runs
 
-    def index(self, default=True):
+    def index(self, default=True, **kwargs):
         """Return the index of models and scenarios in the connected resource
 
         Parameters
@@ -282,11 +293,13 @@ class Connection(object):
             If `True`, return *only* the default version of a model/scenario.
             Any model/scenario without a default version is omitted.
             If `False`, returns all versions.
+         kwargs
+            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
         cols = ["version"] if default else ["version", "is_default"]
-        return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
+        return self._query_index(default, **kwargs)[META_IDX + cols].set_index(META_IDX)
 
-    def meta(self, default=True, **kwargs):
+    def meta(self, default=True, run_id=False, **kwargs):
         """Return categories and indicators (meta) of scenarios
 
         Parameters
@@ -295,13 +308,16 @@ class Connection(object):
             Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If `False`, return all versions.
+        default : bool, optional
+            Include "run id" column
+        kwargs
+            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
-        df = self._query_index(default, meta=True)
+        df = self._query_index(default, meta=True, **kwargs)
 
         cols = ["version"] if default else ["version", "is_default"]
-        if kwargs:
-            if kwargs.get("run_id", False):
-                cols.append("run_id")
+        if run_id:
+            cols.append("run_id")
 
         # catching an issue where the query above does not yield any scenarios
         if df.empty:
@@ -315,7 +331,7 @@ class Connection(object):
 
         return meta.set_index(META_IDX + ([] if default else ["version"]))
 
-    def properties(self, default=True):
+    def properties(self, default=True, **kwargs):
         """Return the audit properties of scenarios
 
         Parameters
@@ -324,8 +340,10 @@ class Connection(object):
             Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
+        kwargs
+            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
-        _df = self._query_index(default, meta=True)
+        _df = self._query_index(default, meta=True, **kwargs)
         audit_cols = ["cre_user", "cre_date", "upd_user", "upd_date"]
         audit_mapping = dict([(i, i.replace("_", "ate_")) for i in audit_cols])
         other_cols = ["version"] if default else ["version", "is_default"]
