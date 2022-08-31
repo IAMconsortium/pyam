@@ -600,7 +600,7 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
 
 
 def lazy_read_iiasa(
-        file, name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
+    file, name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
 ):
     """Check if the file in a given location is an up-to-date version of an IIASA
     database. If so, load it. If not, load  data from IIASA scenario explorer and
