@@ -641,7 +641,7 @@ def lazy_read_iiasa(
         if latest < date_set:
             old_read = IamDataFrame(file)
             if kwargs:
-                old_read = old_read.filter(kwargs)
+                old_read = old_read.filter(**kwargs)
             print("Database read from file")
             return old_read
         else:

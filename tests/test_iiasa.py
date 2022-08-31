@@ -376,12 +376,14 @@ def test_lazy_read(tmpdir):
     writetime = os.path.getmtime(null_file)
     assert df.model == ["model_a"]
     df2 = lazy_read_iiasa(null_file, TEST_API)
-    assert df.equals(df2)
+    assert df.data.equals(df2.data)
+    # If requesting with an inconsistent filter, get nothing back
     df_newfilt = lazy_read_iiasa(null_file, TEST_API, model="model_b")
     assert df_newfilt.empty
     assert writetime == os.path.getmtime(null_file)
+    # Filter correctly applied if the file is deleted
     os.remove(null_file)
     df_newfilt = lazy_read_iiasa(null_file, TEST_API, model="model_b")
-    assert df_newfilt.model == "model_b"
+    assert df_newfilt.model == ["model_b"]
     assert os.path.getmtime(null_file) > writetime
 
