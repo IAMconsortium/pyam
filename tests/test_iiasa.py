@@ -369,6 +369,7 @@ def test_query_empty_response(conn):
     # solves https://github.com/IAMconsortium/pyam/issues/676
     assert conn.query(model="foo").empty
 
+
 def test_lazy_read(tmpdir):
     null_file = str(tmpdir / "test_database.csv")
     df = lazy_read_iiasa(null_file, TEST_API, model="model_a")
@@ -386,4 +387,3 @@ def test_lazy_read(tmpdir):
     df_newfilt = lazy_read_iiasa(null_file, TEST_API, model="model_b")
     assert df_newfilt.model == ["model_b"]
     assert os.path.getmtime(null_file) > writetime
-

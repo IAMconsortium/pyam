@@ -598,6 +598,7 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     """
     return Connection(name, creds, base_url).query(default=default, meta=meta, **kwargs)
 
+
 def lazy_read_iiasa(
         file, name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
 ):
