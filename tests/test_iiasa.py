@@ -7,7 +7,7 @@ import numpy as np
 import numpy.testing as npt
 import yaml
 
-from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
+from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
 
 from .conftest import META_COLS, IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
@@ -368,3 +368,20 @@ def test_query_empty_response(conn):
     """Check that querying with an empty response returns an empty IamDataFrame"""
     # solves https://github.com/IAMconsortium/pyam/issues/676
     assert conn.query(model="foo").empty
+
+def test_lazy_read(tmpdir):
+    null_file = str(tmpdir / "test_database.csv")
+    df = lazy_read_iiasa(null_file, TEST_API, model="model_a")
+    # This is read from the file, so the filter is not applied.
+    writetime = os.path.getmtime(null_file)
+    assert df.model == ["model_a"]
+    df2 = lazy_read_iiasa(null_file, TEST_API)
+    assert df.equals(df2)
+    df_newfilt = lazy_read_iiasa(null_file, TEST_API, model="model_b")
+    assert df_newfilt.empty
+    assert writetime == os.path.getmtime(null_file)
+    os.remove(null_file)
+    df_newfilt = lazy_read_iiasa(null_file, TEST_API, model="model_b")
+    assert df_newfilt.model == "model_b"
+    assert os.path.getmtime(null_file) > writetime
+

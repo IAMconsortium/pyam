@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import logging
+import os.path
 import requests
 from fnmatch import fnmatch
 
@@ -576,7 +577,7 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     ----------
     name : str
         A valid name of an IIASA scenario explorer instance,
-        see :attr:`pyam.iiasa.Connection.valid_connections`
+        see :attr:`pyam.iiasa.Connection().valid_connections`
     default : bool, optional
         Return *only* the default version of each scenario.
         Any (`model`, `scenario`) without a default version is omitted.
@@ -596,3 +597,58 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
         Arguments for :meth:`pyam.iiasa.Connection.query`
     """
     return Connection(name, creds, base_url).query(default=default, meta=meta, **kwargs)
+
+def lazy_read_iiasa(
+        file, name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
+):
+    """Check if the file in a given location is an up-to-date version of an IIASA
+    database. If so, load it. If not, load  data from IIASA scenario explorer and
+    save to that location. Does not check that the previously read version is a complete
+    instance of the database.
+
+    Parameters
+    ----------
+    file : str
+        The location to test for valid data and save the data if not up-to-date.
+    name : str
+        A valid name of an IIASA scenario explorer instance,
+        see :attr:`pyam.iiasa.Connection().valid_connections`
+    default : bool, optional
+        Return *only* the default version of each scenario.
+        Any (`model`, `scenario`) without a default version is omitted.
+        If :obj:`False`, return all versions.
+    meta : bool or list of strings, optional
+        If `True`, include all meta categories & quantitative indicators
+        (or subset if list is given).
+    creds : str, :class:`pathlib.Path`, list-like, or dict, optional
+        | Credentials (username & password) are not required to access
+          any public Scenario Explorer instances (i.e., with Guest login).
+        | See :class:`pyam.iiasa.Connection` for details.
+        | Use :meth:`pyam.iiasa.set_config` to set credentials
+          for accessing private/restricted Scenario Explorer instances.
+    base_url : str
+        Authentication server URL
+    kwargs
+        Arguments for :meth:`pyam.iiasa.Connection.query`
+    """
+    assert file[-4:] == ".csv", "We will only read and write to csv format."
+    if os.path.exists(file):
+        date_set = pd.to_datetime(os.path.getmtime(file), unit="s")
+        version_info = Connection(name, creds, base_url).properties()
+        latest_new = np.nanmax(pd.to_datetime(version_info["create_date"]))
+        latest_update = np.nanmax(pd.to_datetime(version_info["update_date"]))
+        latest = pd.Series([latest_new, latest_update]).max()
+        if latest < date_set:
+            old_read = IamDataFrame(file)
+            if kwargs:
+                old_read = old_read.filter(kwargs)
+            print("Database read from file")
+            return old_read
+        else:
+            print("Database out of date and will be re-downloaded")
+    # If we get here, we need to redownload the database
+    new_read = read_iiasa(
+        name, meta=True, default=default, creds=None, base_url=_AUTH_URL, **kwargs
+    )
+    new_read.to_csv(file)
+    return new_read
