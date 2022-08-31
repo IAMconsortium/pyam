@@ -251,18 +251,13 @@ class Connection(object):
         """Currently connected resource (database API connection)"""
         return self._connected
 
-    def index(self, default=True):
-        """Return the index of models and scenarios in the connected resource
-
-        Parameters
-        ----------
-        default : bool, optional
-            If `True`, return *only* the default version of a model/scenario.
-            Any model/scenario without a default version is omitted.
-            If `False`, returns all versions.
-        """
-        cols = ["version"] if default else ["version", "is_default"]
-        return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
+    @property
+    def meta_columns(self):
+        """Return the list of meta indicators in the connected resource"""
+        url = "/".join([self._base_url, "metadata/types"])
+        r = requests.get(url, headers=self.auth())
+        _check_response(r)
+        return pd.read_json(r.text, orient="records")["name"]
 
     @lru_cache()
     def _query_index(self, default=True, meta=False):
@@ -278,13 +273,18 @@ class Connection(object):
         # cast response to dataframe and return
         return pd.read_json(r.text, orient="records")
 
-    @property
-    def meta_columns(self):
-        """Return the list of meta indicators in the connected resource"""
-        url = "/".join([self._base_url, "metadata/types"])
-        r = requests.get(url, headers=self.auth())
-        _check_response(r)
-        return pd.read_json(r.text, orient="records")["name"]
+    def index(self, default=True):
+        """Return the index of models and scenarios in the connected resource
+
+        Parameters
+        ----------
+        default : bool, optional
+            If `True`, return *only* the default version of a model/scenario.
+            Any model/scenario without a default version is omitted.
+            If `False`, returns all versions.
+        """
+        cols = ["version"] if default else ["version", "is_default"]
+        return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
 
     def meta(self, default=True, **kwargs):
         """Return categories and indicators (meta) of scenarios
