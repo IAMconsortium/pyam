@@ -650,5 +650,6 @@ def lazy_read_iiasa(
     new_read = read_iiasa(
         name, meta=True, default=default, creds=None, base_url=_AUTH_URL, **kwargs
     )
+    Path(file).parent.mkdir(parents=True, exist_ok=True)
     new_read.to_csv(file)
     return new_read
