@@ -167,39 +167,71 @@ def test_meta_columns(conn):
     npt.assert_array_equal(conn.meta_columns, META_COLS)
 
 
+@pytest.mark.parametrize("kwargs", [{}, dict(model="model_a")])
 @pytest.mark.parametrize("default", [True, False])
-def test_index(conn, default):
+def test_index(conn, kwargs, default):
     # test that connection returns the correct index
+    obs = conn.index(default=default, **kwargs)
+
     if default:
         exp = META_DF.loc[META_DF.is_default, ["version"]]
+        if kwargs:
+            exp = exp.iloc[0:2]
     else:
         exp = META_DF[VERSION_COLS]
+        if kwargs:
+            exp = exp.iloc[0:3]
 
-    pdt.assert_frame_equal(conn.index(default=default), exp, check_dtype=False)
+    pdt.assert_frame_equal(obs, exp, check_dtype=False)
 
 
+def test_index_empty(conn):
+    # test that an empty filter does not yield an error
+    # solves https://github.com/IAMconsortium/pyam/issues/676
+    conn.index(model="foo").empty
+
+
+def test_index_illegal_column(conn):
+    # test that filtering by an illegal column raises an error
+    with pytest.raises(ValueError, match="Invalid filter: 'foo'"):
+        conn.index(foo="bar")
+
+
+@pytest.mark.parametrize("kwargs", [{}, dict(model="model_a")])
 @pytest.mark.parametrize("default", [True, False])
-def test_meta(conn, default):
+def test_meta(conn, kwargs, default):
     # test that connection returns the correct meta dataframe
+    obs = conn.meta(default=default, **kwargs)
+
     v = "version"
     if default:
         exp = META_DF.loc[META_DF.is_default, [v] + META_COLS]
+        if kwargs:
+            exp = exp.iloc[0:2]
     else:
         exp = META_DF[VERSION_COLS + META_COLS].set_index(v, append=True)
+        if kwargs:
+            exp = exp.iloc[0:3]
 
-    pdt.assert_frame_equal(conn.meta(default=default), exp, check_dtype=False)
+    pdt.assert_frame_equal(obs, exp, check_dtype=False)
 
 
+@pytest.mark.parametrize("kwargs", [{}, dict(model="model_a")])
 @pytest.mark.parametrize("default", [True, False])
-def test_properties(conn, default):
+def test_properties(conn, kwargs, default):
     # test that connection returns the correct properties dataframe
-    obs = conn.properties(default=default)
+    obs = conn.properties(default, **kwargs)
+
     if default:
         exp_cols = ["version"]
         exp = META_DF.loc[META_DF.is_default, exp_cols]
+        if kwargs:
+            exp = exp.iloc[0:2]
     else:
         exp_cols = VERSION_COLS
         exp = META_DF[exp_cols]
+        if kwargs:
+            exp = exp.iloc[0:3]
 
     # assert that the expected audit columns are included
     for col in ["create_user", "create_date", "update_user", "update_date"]:

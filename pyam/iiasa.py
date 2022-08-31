@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import logging
 import requests
+from fnmatch import fnmatch
 
 import httpx
 import jwt
@@ -251,21 +252,15 @@ class Connection(object):
         """Currently connected resource (database API connection)"""
         return self._connected
 
-    def index(self, default=True):
-        """Return the index of models and scenarios in the connected resource
+    @property
+    def meta_columns(self):
+        """Return the list of meta indicators in the connected resource"""
+        url = "/".join([self._base_url, "metadata/types"])
+        r = requests.get(url, headers=self.auth())
+        _check_response(r)
+        return pd.read_json(r.text, orient="records")["name"]
 
-        Parameters
-        ----------
-        default : bool, optional
-            If `True`, return *only* the default version of a model/scenario.
-            Any model/scenario without a default version is omitted.
-            If `False`, returns all versions.
-        """
-        cols = ["version"] if default else ["version", "is_default"]
-        return self._query_index(default)[META_IDX + cols].set_index(META_IDX)
-
-    @lru_cache()
-    def _query_index(self, default=True, meta=False):
+    def _query_index(self, default=True, meta=False, cols=[], **kwargs):
         # TODO: at present this reads in all data for all scenarios,
         #  it could be sped up in the future to try to query a subset
         _default = "true" if default else "false"
@@ -275,18 +270,39 @@ class Connection(object):
         r = requests.get(url, headers=self.auth())
         _check_response(r)
 
-        # cast response to dataframe and return
-        return pd.read_json(r.text, orient="records")
+        # cast response to dataframe, apply filter by kwargs, and return
+        runs = pd.read_json(r.text, orient="records")
+        if runs.empty:
+            logger.warning("No permission to view model(s) or no scenarios exist.")
+            return pd.DataFrame([], columns=META_IDX + ["version", "run_id"] + cols)
 
-    @property
-    def meta_columns(self):
-        """Return the list of meta indicators in the connected resource"""
-        url = "/".join([self._base_url, "metadata/types"])
-        r = requests.get(url, headers=self.auth())
-        _check_response(r)
-        return pd.read_json(r.text, orient="records")["name"]
+        if kwargs:
+            keep = np.ones(len(runs), dtype=bool)
+            for key, values in kwargs.items():
+                if key not in META_IDX + ["version"]:
+                    raise ValueError(f"Invalid filter: '{key}'")
+                keep_col = pd.Series([fnmatch(v, values) for v in runs[key].values])
+                keep = np.logical_and(keep, keep_col)
+            return runs[keep]
+        else:
+            return runs
 
-    def meta(self, default=True, **kwargs):
+    def index(self, default=True, **kwargs):
+        """Return the index of models and scenarios
+
+        Parameters
+        ----------
+        default : bool, optional
+            If `True`, return *only* the default version of a model/scenario.
+            Any model/scenario without a default version is omitted.
+            If `False`, returns all versions.
+         kwargs
+            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
+        """
+        cols = ["version"] if default else ["version", "is_default"]
+        return self._query_index(default, **kwargs)[META_IDX + cols].set_index(META_IDX)
+
+    def meta(self, default=True, run_id=False, **kwargs):
         """Return categories and indicators (meta) of scenarios
 
         Parameters
@@ -295,27 +311,25 @@ class Connection(object):
             Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If `False`, return all versions.
+        run_id : bool, optional
+            Include "run id" column
+        kwargs
+            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
-        df = self._query_index(default, meta=True)
+        df = self._query_index(default, meta=True, **kwargs)
 
         cols = ["version"] if default else ["version", "is_default"]
-        if kwargs:
-            if kwargs.get("run_id", False):
-                cols.append("run_id")
+        if run_id:
+            cols.append("run_id")
 
-        # catching an issue where the query above does not yield any scenarios
-        if df.empty:
-            logger.warning("No permission to view model(s) or they do not exist.")
-            meta = pd.DataFrame([], columns=META_IDX + cols)
-        else:
-            meta = df[META_IDX + cols]
-            if df.metadata.any():
-                extra_meta = pd.DataFrame.from_records(df.metadata)
-                meta = pd.concat([meta, extra_meta], axis=1)
+        meta = df[META_IDX + cols]
+        if not meta.empty and df.metadata.any():
+            extra_meta = pd.DataFrame.from_records(df.metadata)
+            meta = pd.concat([meta, extra_meta], axis=1)
 
         return meta.set_index(META_IDX + ([] if default else ["version"]))
 
-    def properties(self, default=True):
+    def properties(self, default=True, **kwargs):
         """Return the audit properties of scenarios
 
         Parameters
@@ -324,17 +338,17 @@ class Connection(object):
             Return *only* the default version of each scenario.
             Any (`model`, `scenario`) without a default version is omitted.
             If :obj:`False`, return all versions.
+        kwargs
+            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
-        _df = self._query_index(default, meta=True)
         audit_cols = ["cre_user", "cre_date", "upd_user", "upd_date"]
-        audit_mapping = dict([(i, i.replace("_", "ate_")) for i in audit_cols])
         other_cols = ["version"] if default else ["version", "is_default"]
+        cols = audit_cols + other_cols
 
-        return (
-            _df[META_IDX + other_cols + audit_cols]
-            .set_index(META_IDX)
-            .rename(columns=audit_mapping)
-        )
+        _df = self._query_index(default, meta=True, cols=cols, **kwargs)
+        audit_mapping = dict([(i, i.replace("_", "ate_")) for i in audit_cols])
+
+        return _df.set_index(META_IDX).rename(columns=audit_mapping)
 
     def models(self):
         """List all models in the connected resource"""
@@ -503,6 +517,10 @@ class Connection(object):
                 _meta = _meta[set(meta).union(["version", "run_id"])]
         else:
             _meta = self._query_index(default=default).set_index(META_IDX)
+
+        # return nothing if no data exists at all
+        if _meta.empty:
+            return
 
         # retrieve data
         _args = json.dumps(self._query_post(_meta, default=default, **kwargs))
