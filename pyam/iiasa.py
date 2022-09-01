@@ -610,7 +610,7 @@ def lazy_read_iiasa(
 
     Parameters
     ----------
-    file : str or
+    file : str or :class:`pathlib.Path`
         The location to test for valid data and save the data if not up-to-date. Must be
         either xls, xlsx or csv.
     name : str
