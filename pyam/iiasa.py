@@ -603,10 +603,15 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
 def lazy_read_iiasa(
     file, name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
 ):
-    """Check if the file in a given location is an up-to-date version of an IIASA
-    database. If so, load it. If not, load  data from IIASA scenario explorer and
-    save to that location. Does not check that the previously read version is a complete
-    instance of the database.
+    """
+    Try to load data from a local cache, failing that, loads it from the internet.
+
+    Check if the file in a given location is an up-to-date version of an IIASA
+    database. If so, load it. If not, load  data from the IIASA scenario explorer
+    database API and save to that location. Does not check that the previously read
+    version is a complete instance of the database, so if the initial load applies a
+    filter, you will read only data that passes the same filter as well as any
+    additional filter you apply.
 
     Parameters
     ----------
