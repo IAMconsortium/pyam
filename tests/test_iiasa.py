@@ -371,19 +371,25 @@ def test_query_empty_response(conn):
 
 
 def test_lazy_read(tmpdir):
-    null_file = str(tmpdir / "test_database.csv")
-    df = lazy_read_iiasa(null_file, TEST_API, model="model_a")
-    # This is read from the file, so the filter is not applied.
-    writetime = os.path.getmtime(null_file)
+    tmp_file = tmpdir / "test_database.csv"
+    df = lazy_read_iiasa(tmp_file, TEST_API, model="model_a")
+    writetime = os.path.getmtime(tmp_file)
     assert df.model == ["model_a"]
-    df2 = lazy_read_iiasa(null_file, TEST_API)
+    # This is read from the file, so the filter is not applied.
+    df2 = lazy_read_iiasa(tmp_file, TEST_API)
     assert df.data.equals(df2.data)
-    # If requesting with an inconsistent filter, get nothing back
-    df_newfilt = lazy_read_iiasa(null_file, TEST_API, model="model_b")
+    # If requesting with an inconsistent filter, get nothing back. Strings and filters
+    # work interchangably.
+    tmp_file = str(tmp_file)
+    df_newfilt = lazy_read_iiasa(tmp_file, TEST_API, model="model_b")
     assert df_newfilt.empty
-    assert writetime == os.path.getmtime(null_file)
+    assert writetime == os.path.getmtime(tmp_file)
     # Filter correctly applied if the file is deleted
-    os.remove(null_file)
-    df_newfilt = lazy_read_iiasa(null_file, TEST_API, model="model_b")
+    os.remove(tmp_file)
+    df_newfilt = lazy_read_iiasa(tmp_file, TEST_API, model="model_b")
     assert df_newfilt.model == ["model_b"]
-    assert os.path.getmtime(null_file) > writetime
+    assert os.path.getmtime(tmp_file) > writetime
+    # file can also be xls or xlsx
+    xlsx_file = tmpdir / "test_database.xlsx"
+    df_xlsx = lazy_read_iiasa(xlsx_file, TEST_API, model="model_b")
+    assert df_newfilt.equals(df_xlsx)

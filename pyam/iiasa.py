@@ -577,7 +577,8 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     ----------
     name : str
         A valid name of an IIASA scenario explorer instance,
-        see :attr:`pyam.iiasa.Connection().valid_connections`
+        see :attr:`pyam.iiasa.Connection.valid_connections`. Obtain a list of options
+        via pyam.iiasa.Connection().valid_connections.
     default : bool, optional
         Return *only* the default version of each scenario.
         Any (`model`, `scenario`) without a default version is omitted.
@@ -585,7 +586,7 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
-    creds : str, :class:`pathlib.Path`, list-like, or dict, optional
+    creds : str or :class:`pathlib.Path`, optional
         | Credentials (username & password) are not required to access
           any public Scenario Explorer instances (i.e., with Guest login).
         | See :class:`pyam.iiasa.Connection` for details.
@@ -609,11 +610,13 @@ def lazy_read_iiasa(
 
     Parameters
     ----------
-    file : str
-        The location to test for valid data and save the data if not up-to-date.
+    file : str or
+        The location to test for valid data and save the data if not up-to-date. Must be
+        either xls, xlsx or csv.
     name : str
         A valid name of an IIASA scenario explorer instance,
-        see :attr:`pyam.iiasa.Connection().valid_connections`
+        see :attr:`pyam.iiasa.Connection.valid_connections`. Obtain a list of options
+        via pyam.iiasa.Connection().valid_connections.
     default : bool, optional
         Return *only* the default version of each scenario.
         Any (`model`, `scenario`) without a default version is omitted.
@@ -621,7 +624,7 @@ def lazy_read_iiasa(
     meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
-    creds : str, :class:`pathlib.Path`, list-like, or dict, optional
+    creds : str or :class:`pathlib.Path`, optional
         | Credentials (username & password) are not required to access
           any public Scenario Explorer instances (i.e., with Guest login).
         | See :class:`pyam.iiasa.Connection` for details.
@@ -632,7 +635,13 @@ def lazy_read_iiasa(
     kwargs
         Arguments for :meth:`pyam.iiasa.Connection.query`
     """
-    assert file[-4:] == ".csv", "We will only read and write to csv format."
+
+    file = Path(file)
+    assert file.suffix in [
+        ".csv",
+        ".xlsx",
+        ".xls",
+    ], "We will only read and write to csv, xls and xlsx format."
     if os.path.exists(file):
         date_set = pd.to_datetime(os.path.getmtime(file), unit="s")
         version_info = Connection(name, creds, base_url).properties()
@@ -643,14 +652,17 @@ def lazy_read_iiasa(
             old_read = IamDataFrame(file)
             if kwargs:
                 old_read = old_read.filter(**kwargs)
-            print("Database read from file")
+            logger.info("Database read from file")
             return old_read
         else:
-            print("Database out of date and will be re-downloaded")
+            logger.info("Database out of date and will be re-downloaded")
     # If we get here, we need to redownload the database
     new_read = read_iiasa(
         name, meta=True, default=default, creds=None, base_url=_AUTH_URL, **kwargs
     )
     Path(file).parent.mkdir(parents=True, exist_ok=True)
-    new_read.to_csv(file)
+    if file.suffix == ".csv":
+        new_read.to_csv(file)
+    else:
+        new_read.to_excel(file)
     return new_read
