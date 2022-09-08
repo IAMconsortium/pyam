@@ -2,7 +2,6 @@ from pathlib import Path
 import json
 import logging
 import requests
-from fnmatch import fnmatch
 
 import httpx
 import jwt
@@ -281,7 +280,7 @@ class Connection(object):
             for key, values in kwargs.items():
                 if key not in META_IDX + ["version"]:
                     raise ValueError(f"Invalid filter: '{key}'")
-                keep_col = pd.Series([fnmatch(v, values) for v in runs[key].values])
+                keep_col = pattern_match(pd.Series(runs[key].values), values)
                 keep = np.logical_and(keep, keep_col)
             return runs[keep]
         else:
