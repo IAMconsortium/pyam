@@ -2,6 +2,7 @@
 
 ## Individual updates
 
+- [#699](https://github.com/IAMconsortium/pyam/pull/699) Add filter options to IIASA API `index()`, `meta()` and `properties()` methods
 - [#697](https://github.com/IAMconsortium/pyam/pull/697) Add warning if IIASA API returns empty result
 - [#695](https://github.com/IAMconsortium/pyam/pull/695) Remove unused meta levels during initialization
 - [#688](https://github.com/IAMconsortium/pyam/pull/688) Remove ixmp as optional dependency
