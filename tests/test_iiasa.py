@@ -25,6 +25,9 @@ CONN_ENV_REASON = "Requires env variables defined: {} and {}".format(
     TEST_ENV_USER, TEST_ENV_PW
 )
 
+
+FILTER_ARGS = [{}, dict(model="model_a"), dict(model=["model_a"]), dict(model="m*_a")]
+
 VERSION_COLS = ["version", "is_default"]
 META_DF = pd.DataFrame(
     [
@@ -167,7 +170,7 @@ def test_meta_columns(conn):
     npt.assert_array_equal(conn.meta_columns, META_COLS)
 
 
-@pytest.mark.parametrize("kwargs", [{}, dict(model="model_a")])
+@pytest.mark.parametrize("kwargs", FILTER_ARGS)
 @pytest.mark.parametrize("default", [True, False])
 def test_index(conn, kwargs, default):
     # test that connection returns the correct index
@@ -197,7 +200,7 @@ def test_index_illegal_column(conn):
         conn.index(foo="bar")
 
 
-@pytest.mark.parametrize("kwargs", [{}, dict(model="model_a")])
+@pytest.mark.parametrize("kwargs", FILTER_ARGS)
 @pytest.mark.parametrize("default", [True, False])
 def test_meta(conn, kwargs, default):
     # test that connection returns the correct meta dataframe
@@ -216,7 +219,7 @@ def test_meta(conn, kwargs, default):
     pdt.assert_frame_equal(obs, exp, check_dtype=False)
 
 
-@pytest.mark.parametrize("kwargs", [{}, dict(model="model_a")])
+@pytest.mark.parametrize("kwargs", FILTER_ARGS)
 @pytest.mark.parametrize("default", [True, False])
 def test_properties(conn, kwargs, default):
     # test that connection returns the correct properties dataframe
