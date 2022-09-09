@@ -71,6 +71,7 @@ def test_io_xlsx(test_df, meta_args, tmpdir):
 @pytest.mark.parametrize(
     "sheets, sheetname",
     [
+        [["data1", "Data2"], {}],
         [["data1", "data2"], dict(sheet_name="data*")],
         [["data1", "foo"], dict(sheet_name=["data*", "foo"])],
     ],
