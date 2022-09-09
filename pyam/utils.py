@@ -139,7 +139,7 @@ def write_sheet(writer, name, df, index=False):
             pass
 
 
-def read_pandas(path, sheet_name="data*", *args, **kwargs):
+def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
     if isinstance(path, Path) and path.suffix == ".csv":
         return pd.read_csv(path, *args, **kwargs)
