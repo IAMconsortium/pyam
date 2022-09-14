@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import logging
+import os.path
 import requests
 
 import httpx
@@ -575,7 +576,8 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     ----------
     name : str
         A valid name of an IIASA scenario explorer instance,
-        see :attr:`pyam.iiasa.Connection.valid_connections`
+        see :attr:`pyam.iiasa.Connection.valid_connections`. Obtain a list of options
+        via pyam.iiasa.Connection().valid_connections.
     default : bool, optional
         Return *only* the default version of each scenario.
         Any (`model`, `scenario`) without a default version is omitted.
@@ -583,7 +585,7 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
-    creds : str, :class:`pathlib.Path`, list-like, or dict, optional
+    creds : str or :class:`pathlib.Path`, optional
         | Credentials (username & password) are not required to access
           any public Scenario Explorer instances (i.e., with Guest login).
         | See :class:`pyam.iiasa.Connection` for details.
@@ -595,3 +597,76 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
         Arguments for :meth:`pyam.iiasa.Connection.query`
     """
     return Connection(name, creds, base_url).query(default=default, meta=meta, **kwargs)
+
+
+def lazy_read_iiasa(
+    file, name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
+):
+    """
+    Try to load data from a local cache, failing that, loads it from the internet.
+
+    Check if the file in a given location is an up-to-date version of an IIASA
+    database. If so, load it. If not, load  data from the IIASA scenario explorer
+    database API and save to that location. Does not check that the previously read
+    version is a complete instance of the database, so if the initial load applies a
+    filter, you will read only data that passes the same filter as well as any
+    additional filter you apply.
+
+    Parameters
+    ----------
+    file : str or :class:`pathlib.Path`
+        The location to test for valid data and save the data if not up-to-date. Must be
+        either xls, xlsx or csv.
+    name : str
+        A valid name of an IIASA scenario explorer instance,
+        see :attr:`pyam.iiasa.Connection.valid_connections`. Obtain a list of options
+        via pyam.iiasa.Connection().valid_connections.
+    default : bool, optional
+        Return *only* the default version of each scenario.
+        Any (`model`, `scenario`) without a default version is omitted.
+        If :obj:`False`, return all versions.
+    meta : bool or list of strings, optional
+        If `True`, include all meta categories & quantitative indicators
+        (or subset if list is given).
+    creds : str or :class:`pathlib.Path`, optional
+        | Credentials (username & password) are not required to access
+          any public Scenario Explorer instances (i.e., with Guest login).
+        | See :class:`pyam.iiasa.Connection` for details.
+        | Use :meth:`pyam.iiasa.set_config` to set credentials
+          for accessing private/restricted Scenario Explorer instances.
+    base_url : str
+        Authentication server URL
+    kwargs
+        Arguments for :meth:`pyam.iiasa.Connection.query`
+    """
+
+    file = Path(file)
+    assert file.suffix in [
+        ".csv",
+        ".xlsx",
+        ".xls",
+    ], "We will only read and write to csv, xls and xlsx format."
+    if os.path.exists(file):
+        date_set = pd.to_datetime(os.path.getmtime(file), unit="s")
+        version_info = Connection(name, creds, base_url).properties()
+        latest_new = np.nanmax(pd.to_datetime(version_info["create_date"]))
+        latest_update = np.nanmax(pd.to_datetime(version_info["update_date"]))
+        latest = pd.Series([latest_new, latest_update]).max()
+        if latest < date_set:
+            old_read = IamDataFrame(file)
+            if kwargs:
+                old_read = old_read.filter(**kwargs)
+            logger.info("Database read from file")
+            return old_read
+        else:
+            logger.info("Database out of date and will be re-downloaded")
+    # If we get here, we need to redownload the database
+    new_read = read_iiasa(
+        name, meta=True, default=default, creds=None, base_url=_AUTH_URL, **kwargs
+    )
+    Path(file).parent.mkdir(parents=True, exist_ok=True)
+    if file.suffix == ".csv":
+        new_read.to_csv(file)
+    else:
+        new_read.to_excel(file)
+    return new_read

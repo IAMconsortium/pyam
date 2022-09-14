@@ -11,6 +11,7 @@ dependency for better performance.
 - [#701](https://github.com/IAMconsortium/pyam/pull/701) Add **xlsxwriter** as dependency to improve `to_excel()` performance
 - [#699](https://github.com/IAMconsortium/pyam/pull/699) Add filter options to IIASA API `index()`, `meta()` and `properties()` methods
 - [#697](https://github.com/IAMconsortium/pyam/pull/697) Add warning if IIASA API returns empty result
+- [#696](https://github.com/IAMconsortium/pyam/pull/696) Added ability to load preferentially from a local cache
 - [#695](https://github.com/IAMconsortium/pyam/pull/695) Remove unused meta levels during initialization
 - [#688](https://github.com/IAMconsortium/pyam/pull/688) Remove ixmp as optional dependency
 - [#684](https://github.com/IAMconsortium/pyam/pull/684) Use new IIASA-manager API with token refresh 

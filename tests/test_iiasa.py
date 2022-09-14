@@ -7,7 +7,7 @@ import numpy as np
 import numpy.testing as npt
 import yaml
 
-from pyam import IamDataFrame, iiasa, read_iiasa, META_IDX
+from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
 
 from .conftest import META_COLS, IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
@@ -371,3 +371,31 @@ def test_query_empty_response(conn):
     """Check that querying with an empty response returns an empty IamDataFrame"""
     # solves https://github.com/IAMconsortium/pyam/issues/676
     assert conn.query(model="foo").empty
+
+
+def test_lazy_read(tmpdir):
+    tmp_file = tmpdir / "test_database.csv"
+    df = lazy_read_iiasa(tmp_file, TEST_API, model="model_a")
+    writetime = os.path.getmtime(tmp_file)
+    assert df.model == ["model_a"]
+    # This is read from the file, so the filter is not applied.
+    df2 = lazy_read_iiasa(tmp_file, TEST_API)
+    assert df.data.equals(df2.data)
+    # If requesting with an inconsistent filter, get nothing back. Strings and filters
+    # work interchangably.
+    tmp_file = str(tmp_file)
+    df_newfilt = lazy_read_iiasa(tmp_file, TEST_API, model="model_b")
+    assert df_newfilt.empty
+    assert writetime == os.path.getmtime(tmp_file)
+    # Filter correctly applied if the file is deleted
+    os.remove(tmp_file)
+    df_newfilt = lazy_read_iiasa(tmp_file, TEST_API, model="model_b")
+    assert df_newfilt.model == ["model_b"]
+    assert os.path.getmtime(tmp_file) > writetime
+    # file can also be xls or xlsx
+    xlsx_file = tmpdir / "test_database.xlsx"
+    df_xlsx = lazy_read_iiasa(xlsx_file, TEST_API, model="model_b")
+    assert df_newfilt.equals(df_xlsx)
+    xls_file = tmpdir / "test_database.xls"
+    df_xls = lazy_read_iiasa(xls_file, TEST_API, model="model_b")
+    assert df_xls.equals(df_xlsx)
