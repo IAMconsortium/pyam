@@ -124,7 +124,6 @@ def write_sheet(writer, name, df, index=False):
     if index:
         df = df.reset_index()
     df.to_excel(writer, name, index=False)
-    worksheet = writer.sheets[name]
     for i, col in enumerate(df.columns):
         if df.dtypes[col].name.startswith(("float", "int")):
             width = len(str(col)) + 2
@@ -132,11 +131,7 @@ def write_sheet(writer, name, df, index=False):
             width = (
                 max([df[col].map(lambda x: len(str(x or "None"))).max(), len(col)]) + 2
             )
-        # this line fails if using an xlsx-engine other than openpyxl
-        try:
-            worksheet.column_dimensions[NUMERIC_TO_STR[i]].width = width
-        except AttributeError:
-            pass
+        writer.sheets[name].set_column(i, i, width)  # assumes xlsxwriter as engine
 
 
 def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):

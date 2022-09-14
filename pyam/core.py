@@ -2343,7 +2343,7 @@ class IamDataFrame(object):
         close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
-            excel_writer = pd.ExcelWriter(excel_writer, engine="openpyxl")
+            excel_writer = pd.ExcelWriter(excel_writer, engine="xlsxwriter")
 
         # write data table
         write_sheet(excel_writer, sheet_name, self._to_file_format(iamc_index))
@@ -2374,7 +2374,8 @@ class IamDataFrame(object):
         """
         close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
-            excel_writer, close = pd.ExcelWriter(excel_writer), True
+            excel_writer = pd.ExcelWriter(excel_writer, engine="xlsxwriter")
+            close = True
         write_sheet(excel_writer, sheet_name, self.meta, index=True)
         if close:
             excel_writer.close()
