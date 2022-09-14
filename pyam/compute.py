@@ -2,6 +2,7 @@ import math
 import pandas as pd
 from pyam.index import replace_index_values
 from pyam.timeseries import growth_rate
+from pyam._debiasing import _compute_bias
 from pyam.utils import remove_from_list
 
 
@@ -112,6 +113,52 @@ class IamComputeAccessor:
         )
 
         return self._df._finalize(value, append=append, variable=name, unit="")
+
+    def bias(self, name, method, axis):
+        """Compute the bias weights and add to 'meta'
+
+        Parameters
+        ----------
+        name : str
+           Column name in the 'meta' dataframe
+        method : str
+            Method to compute the bias weights, see the notes
+        axis : str
+            Index dimensions on which to apply the `method`
+
+        Notes
+        -----
+
+        The following methods are implemented:
+
+        - "count": use the inverse of the number of scenarios grouped by `axis` names.
+
+          Using the following method on an IamDataFrame with three scenarios
+
+          .. code-block:: python
+
+              df.compute.bias(name="bias-weight", method="count", axis="scenario")
+
+          results in the following column to be added to *df.meta*:
+
+          .. list-table::
+             :header-rows: 1
+
+             * - model
+               - scenario
+               - bias-weight
+             * - model_a
+               - scen_a
+               - 0.5
+             * - model_a
+               - scen_b
+               - 1
+             * - model_b
+               - scen_a
+               - 0.5
+
+        """
+        _compute_bias(self._df, name, method, axis)
 
 
 def _compute_learning_rate(x, performance, experience):

@@ -77,8 +77,7 @@ from pyam.index import (
     replace_index_values,
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
-from pyam._debiasing import _compute_bias
-from pyam.logging import raise_data_error
+from pyam.logging import raise_data_error, deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -1012,50 +1011,10 @@ class IamDataFrame(object):
             return df.reset_index()
 
     def compute_bias(self, name, method, axis):
-        """Compute the bias weights and add to 'meta'
-
-        Parameters
-        ----------
-        name : str
-           Column name in the 'meta' dataframe
-        method : str
-            Method to compute the bias weights, see the notes
-        axis : str
-            Index dimensions on which to apply the `method`
-
-        Notes
-        -----
-
-        The following methods are implemented:
-
-        - "count": use the inverse of the number of scenarios grouped by `axis` names.
-
-          Using the following method on an IamDataFrame with three scenarios
-
-          .. code-block:: python
-
-              df.compute_bias(name="bias-weight", method="count", axis="scenario")
-
-          results in the following column to be added to *df.meta*:
-
-          .. list-table::
-             :header-rows: 1
-
-             * - model
-               - scenario
-               - bias-weight
-             * - model_a
-               - scen_a
-               - 0.5
-             * - model_a
-               - scen_b
-               - 1
-             * - model_b
-               - scen_a
-               - 0.5
-
-        """
-        _compute_bias(self, name, method, axis)
+        """DEPRECATED - please use :meth:`IamDataFrame.compute.bias()`"""
+        # TODO: deprecated, remove for release >= 1.7
+        deprecation_warning("Use `df.compute.bias()` instead.")
+        self.compute.bias(name, method, axis)
 
     def rename(
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs
