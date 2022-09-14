@@ -1,4 +1,10 @@
-# Next Release
+# Release v1.6.0
+
+## Highlights
+
+- Improved performance for writing data to *xlsx*
+- Support for filtering by model-scenario pairs with an `index` argument
+- Better integration with the IIASA Scenario Explorer database API 
 
 ## Dependency changes
 
