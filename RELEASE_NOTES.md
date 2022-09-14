@@ -7,6 +7,7 @@ dependency for better performance.
 
 ## Individual updates
 
+- [#702](https://github.com/IAMconsortium/pyam/pull/702) Migrate `compute_bias()` to `compute` module
 - [#701](https://github.com/IAMconsortium/pyam/pull/701) Add **xlsxwriter** as dependency to improve `to_excel()` performance
 - [#699](https://github.com/IAMconsortium/pyam/pull/699) Add filter options to IIASA API `index()`, `meta()` and `properties()` methods
 - [#697](https://github.com/IAMconsortium/pyam/pull/697) Add warning if IIASA API returns empty result
