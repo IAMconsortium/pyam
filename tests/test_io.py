@@ -79,7 +79,7 @@ def test_io_xlsx(test_df, meta_args, tmpdir):
 def test_io_xlsx_multiple_data_sheets(test_df, sheets, sheetname, tmpdir):
     # write data to separate sheets in excel file
     file = tmpdir / "testing_io_write_read.xlsx"
-    xl = pd.ExcelWriter(file)
+    xl = pd.ExcelWriter(file, engine="xlsxwriter")
     for i, (model, scenario) in enumerate(test_df.index):
         test_df.filter(scenario=scenario).to_excel(xl, sheet_name=sheets[i])
     test_df.export_meta(xl)
