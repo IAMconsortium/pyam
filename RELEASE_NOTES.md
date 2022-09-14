@@ -1,5 +1,10 @@
 # Next Release
 
+## Dependency changes
+
+PR [#701](https://github.com/IAMconsortium/pyam/pull/701) added `xlsxwriter` as a
+dependency for better performance.
+
 ## Individual updates
 
 - [#701](https://github.com/IAMconsortium/pyam/pull/701) Add **xlsxwriter** as dependency to improve `to_excel()` performance
