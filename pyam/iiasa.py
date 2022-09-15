@@ -296,8 +296,8 @@ class Connection(object):
             If `True`, return *only* the default version of a model/scenario.
             Any model/scenario without a default version is omitted.
             If `False`, returns all versions.
-         kwargs
-            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
+        kwargs
+            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard.
         """
         cols = ["version"] if default else ["version", "is_default"]
         return self._query_index(default, **kwargs)[META_IDX + cols].set_index(META_IDX)
@@ -575,9 +575,8 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     Parameters
     ----------
     name : str
-        A valid name of an IIASA scenario explorer instance,
-        see :attr:`pyam.iiasa.Connection.valid_connections`. Obtain a list of options
-        via pyam.iiasa.Connection().valid_connections.
+        | Name of an IIASA Scenario Explorer database instance.
+        | See :attr:`pyam.iiasa.Connection.valid_connections`.
     default : bool, optional
         Return *only* the default version of each scenario.
         Any (`model`, `scenario`) without a default version is omitted.
@@ -618,9 +617,8 @@ def lazy_read_iiasa(
         The location to test for valid data and save the data if not up-to-date. Must be
         either xls, xlsx or csv.
     name : str
-        A valid name of an IIASA scenario explorer instance,
-        see :attr:`pyam.iiasa.Connection.valid_connections`. Obtain a list of options
-        via pyam.iiasa.Connection().valid_connections.
+        | Name of an IIASA Scenario Explorer database instance.
+        | See :attr:`pyam.iiasa.Connection.valid_connections`.
     default : bool, optional
         Return *only* the default version of each scenario.
         Any (`model`, `scenario`) without a default version is omitted.
@@ -662,7 +660,7 @@ def lazy_read_iiasa(
             logger.info("Database out of date and will be re-downloaded")
     # If we get here, we need to redownload the database
     new_read = read_iiasa(
-        name, meta=True, default=default, creds=None, base_url=_AUTH_URL, **kwargs
+        name, meta=meta, default=default, creds=creds, base_url=base_url, **kwargs
     )
     Path(file).parent.mkdir(parents=True, exist_ok=True)
     if file.suffix == ".csv":

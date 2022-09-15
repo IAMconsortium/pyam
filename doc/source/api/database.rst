@@ -17,6 +17,8 @@ See `this tutorial <../tutorials/iiasa_dbs.html>`_ for more information.
 
 .. autofunction:: read_iiasa
 
+.. autofunction:: lazy_read_iiasa
+
 Reading UNFCCC inventory data
 -----------------------------
 
