@@ -2266,11 +2266,11 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        path : str or path object
-            file path or :class:`pathlib.Path`
-        iamc_index : bool, default False
-            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns
+        path : path-like or file-like
+            File path or :class:`pathlib.Path`.
+        iamc_index : bool, optional
+            If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all 'data' columns.
         """
         self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
@@ -2280,23 +2280,20 @@ class IamDataFrame(object):
         sheet_name="data",
         iamc_index=False,
         include_meta=True,
-        **kwargs,
     ):
         """Write object to an Excel spreadsheet
 
         Parameters
         ----------
-        excel_writer : str, path object or ExcelWriter object
-            any valid string path, :class:`pathlib.Path`
-            or :class:`pandas.ExcelWriter`
+        excel_writer : path-like, file-like, or ExcelWriter object
+            File path, :class:`pathlib.Path`, or existing :class:`pandas.ExcelWriter`.
         sheet_name : string
-            name of sheet which will contain :meth:`timeseries` data
-        iamc_index : bool, default False
-            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns
-        include_meta : boolean or string
-            if True, write 'meta' to an Excel sheet name 'meta' (default);
-            if this is a string, use it as sheet name
+            Name of sheet which will contain :meth:`timeseries` data.
+        iamc_index : bool, optional
+            If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all 'data' columns.
+        include_meta : boolean or string, optional
+            If True, write 'meta' to an Excel sheet name 'meta' (default); if this is a string, use it as sheet name.
         """
         # open a new ExcelWriter instance (if necessary)
         close = False
