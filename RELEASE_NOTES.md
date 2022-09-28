@@ -1,5 +1,9 @@
 # Next Release
 
+## Dependency changes
+
+Remove **xlrd** as a dependency; please install it explicitly for reading `.xls` files.
+
 # Release v1.6.0
 
 ## Highlights
