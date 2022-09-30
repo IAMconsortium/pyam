@@ -9,6 +9,14 @@ from pyam.testing import assert_iamframe_equal
 
 from .conftest import TEST_DATA_DIR, META_DF
 
+try:
+    import xlrd
+
+    has_xlrd = True
+except ModuleNotFoundError:  # pragma: no cover
+    has_xlrd = False
+
+
 FILTER_ARGS = dict(scenario="scen_a")
 
 
@@ -90,6 +98,12 @@ def test_io_xlsx_multiple_data_sheets(test_df, sheets, sheetname, tmpdir):
 
     # assert that IamDataFrame instances are equal
     assert_iamframe_equal(test_df, import_df)
+
+
+@pytest.mark.skipif(not has_xlrd, reason="Package 'xlrd' not installed.")
+def test_read_xls(test_df_year):
+    import_df = IamDataFrame(TEST_DATA_DIR / "test_df.xls")
+    assert_iamframe_equal(test_df_year, import_df)
 
 
 def test_init_df_with_na_unit(test_pd_df, tmpdir):
