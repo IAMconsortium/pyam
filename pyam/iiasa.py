@@ -639,7 +639,10 @@ def lazy_read_iiasa(
     """
 
     file = Path(file)
-    assert file.suffix in [".csv", ".xlsx"], "We will only read and write to csv and xlsx format."
+    assert file.suffix in [
+        ".csv",
+        ".xlsx",
+    ], "We will only read and write to csv and xlsx format."
     if os.path.exists(file):
         date_set = pd.to_datetime(os.path.getmtime(file), unit="s")
         version_info = Connection(name, creds, base_url).properties()

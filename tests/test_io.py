@@ -12,7 +12,7 @@ from .conftest import TEST_DATA_DIR, META_DF
 try:
     import xlrd
 
-    has_xlrd = True
+    has_xlrd = True  # noqa: F401
 except ModuleNotFoundError:  # pragma: no cover
     has_xlrd = False
 
