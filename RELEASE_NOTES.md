@@ -6,7 +6,7 @@ Remove **xlrd** as a dependency; please install it explicitly for reading `.xls`
 
 ## Individual updates
 
-- [#706](https://github.com/IAMconsortium/pyam/pull/706) Remove 'xls' as by-default-supported file format
+- [#708](https://github.com/IAMconsortium/pyam/pull/708) Remove 'xls' as by-default-supported file format
 
 # Release v1.6.0
 
