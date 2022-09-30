@@ -10,9 +10,9 @@ from pyam.testing import assert_iamframe_equal
 from .conftest import TEST_DATA_DIR, META_DF
 
 try:
-    import xlrd
+    import xlrd  # noqa: F401
 
-    has_xlrd = True  # noqa: F401
+    has_xlrd = True
 except ModuleNotFoundError:  # pragma: no cover
     has_xlrd = False
 
