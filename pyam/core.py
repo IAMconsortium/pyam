@@ -2270,7 +2270,7 @@ class IamDataFrame(object):
             File path or :class:`pathlib.Path`.
         iamc_index : bool, optional
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns.
+            else, use all :meth:`dimensions`.
         **kwargs
             Passed to :meth:`pandas.DataFrame.to_csv`
         """
@@ -2294,7 +2294,7 @@ class IamDataFrame(object):
             Name of sheet which will contain :meth:`timeseries` data.
         iamc_index : bool, optional
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns.
+            else, use all :meth:`dimensions`.
         include_meta : boolean or string, optional
             If True, write 'meta' to an Excel sheet name 'meta' (default);
             if this is a string, use it as sheet name.
