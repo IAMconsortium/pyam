@@ -2271,6 +2271,8 @@ class IamDataFrame(object):
         iamc_index : bool, optional
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns.
+        **kwargs
+            Passed to :meth:`pandas.DataFrame.to_csv`
         """
         self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
@@ -2280,6 +2282,7 @@ class IamDataFrame(object):
         sheet_name="data",
         iamc_index=False,
         include_meta=True,
+        **kwargs,
     ):
         """Write object to an Excel spreadsheet
 
@@ -2293,20 +2296,23 @@ class IamDataFrame(object):
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all 'data' columns.
         include_meta : boolean or string, optional
-            If True, write 'meta' to an Excel sheet name 'meta' (default); if this is a string, use it as sheet name.
+            If True, write 'meta' to an Excel sheet name 'meta' (default);
+            if this is a string, use it as sheet name.
+        **kwargs
+            Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
         """
         # open a new ExcelWriter instance (if necessary)
         close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
-            excel_writer = pd.ExcelWriter(excel_writer, engine="xlsxwriter")
+            excel_writer = pd.ExcelWriter(excel_writer, **kwargs)
 
         # write data table
         write_sheet(excel_writer, sheet_name, self._to_file_format(iamc_index))
 
         # write meta table unless `include_meta=False`
         if include_meta:
-            meta_rename = dict([(i, i.capitalize()) for i in META_IDX])
+            meta_rename = dict([(i, i.capitalize()) for i in self.index.names])
             write_sheet(
                 excel_writer,
                 "meta" if include_meta is True else include_meta,
@@ -2317,20 +2323,21 @@ class IamDataFrame(object):
         if close:
             excel_writer.close()
 
-    def export_meta(self, excel_writer, sheet_name="meta"):
-        """Write the 'meta' indicators of this object to an Excel sheet
+    def export_meta(self, excel_writer, sheet_name="meta", **kwargs):
+        """Write the 'meta' indicators of this object to an Excel spreadsheet
 
         Parameters
         ----------
         excel_writer : str, path object or ExcelWriter object
-            any valid string path, :class:`pathlib.Path`
-            or :class:`pandas.ExcelWriter`
+            File path, :class:`pathlib.Path`, or existing :class:`pandas.ExcelWriter`.
         sheet_name : str
-            name of sheet which will contain dataframe of 'meta' indicators
+            Name of sheet which will contain 'meta'.
+        **kwargs
+            Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
         """
         close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
-            excel_writer = pd.ExcelWriter(excel_writer, engine="xlsxwriter")
+            excel_writer = pd.ExcelWriter(excel_writer, **kwargs)
             close = True
         write_sheet(excel_writer, sheet_name, self.meta, index=True)
         if close:
