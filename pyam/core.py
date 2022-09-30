@@ -190,8 +190,8 @@ class IamDataFrame(object):
             self.set_meta(meta)
 
         # if initializing from xlsx, try to load `meta` table from file
-        if meta_sheet and isinstance(data, Path) and data.suffix == ".xlsx":
-            excel_file = pd.ExcelFile(data, engine="openpyxl")
+        if meta_sheet and isinstance(data, Path) and data.suffix in [".xlsx", ".xls"]:
+            excel_file = pd.ExcelFile(data)
             if meta_sheet in excel_file.sheet_names:
                 self.load_meta(excel_file, sheet_name=meta_sheet, ignore_conflict=True)
 
