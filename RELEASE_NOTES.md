@@ -3,6 +3,7 @@
 ## Dependency changes
 
 Remove **xlrd** as a dependency; please install it explicitly for reading `.xls` files.
+Bump minimum version of **pandas** to v1.2.0 to support automatic engine selection.
 
 ## Individual updates
 
