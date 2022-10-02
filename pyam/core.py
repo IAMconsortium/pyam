@@ -1344,7 +1344,7 @@ class IamDataFrame(object):
             List of variables to aggregate, defaults to sub-categories of `variable`.
         method : func or str, optional
             Method to use for aggregation,
-            e.g. :any:`numpy.mean`, :aby:`numpy.sum`, 'min', 'max'.
+            e.g. :any:`numpy.mean`, :any:`numpy.sum`, 'min', 'max'.
         exclude_on_fail : bool, optional
             Flag scenarios failing validation as `exclude: True`.
         multiplier : number, optional
@@ -2262,17 +2262,20 @@ class IamDataFrame(object):
         return df
 
     def to_csv(self, path=None, iamc_index=False, **kwargs):
-        """Write timeseries data of this object to a csv file
+        """Write :meth:`IamDataFrame.timeseries` to a comma-separated values (csv) file
 
         Parameters
         ----------
-        path : path-like or file-like
-            File path or :class:`pathlib.Path`.
+        path : str, path or file-like, optional
+            File path as string or :class:`pathlib.Path`, or file-like object.
+            If *None*, the result is returned as a csv-formatted string.
+            See :meth:`pandas.DataFrame.to_csv` for details.
         iamc_index : bool, optional
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all :meth:`dimensions`.
+            else, use all :attr:`dimensions`.
+            See :meth:`IamDataFrame.timeseries` for details.
         **kwargs
-            Passed to :meth:`pandas.DataFrame.to_csv`
+            Passed to :meth:`pandas.DataFrame.to_csv`.
         """
         return self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
@@ -2289,14 +2292,16 @@ class IamDataFrame(object):
         Parameters
         ----------
         excel_writer : path-like, file-like, or ExcelWriter object
-            File path, :class:`pathlib.Path`, or existing :class:`pandas.ExcelWriter`.
+            File path as string or :class:`pathlib.Path`,
+            or existing :class:`pandas.ExcelWriter`.
         sheet_name : string
-            Name of sheet which will contain :meth:`timeseries` data.
+            Name of sheet which will contain :meth:`IamDataFrame.timeseries` data.
         iamc_index : bool, optional
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all :meth:`dimensions`.
+            else, use all :attr:`dimensions`.
+            See :meth:`IamDataFrame.timeseries` for details.
         include_meta : boolean or string, optional
-            If True, write 'meta' to an Excel sheet name 'meta' (default);
+            If True, write :any:`IamDataFrame.meta` to a sheet 'meta' (default);
             if this is a string, use it as sheet name.
         **kwargs
             Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
