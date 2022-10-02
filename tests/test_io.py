@@ -66,7 +66,11 @@ def test_io_csv_none(test_df_year):
         "model_a,scen_a,World,Primary Energy|Coal,EJ/yr,0.5,3.0\n"
         "model_a,scen_b,World,Primary Energy,EJ/yr,2.0,7.0\n"
     )
-    assert test_df_year.to_csv(lineterminator="\n") == exp
+    try:
+        assert test_df_year.to_csv(lineterminator="\n") == exp
+    # special treatment for Python 3.7 and pandas < 1.5
+    except TypeError:
+        assert test_df_year.to_csv(line_terminator="\n") == exp
 
 
 @pytest.mark.parametrize(
