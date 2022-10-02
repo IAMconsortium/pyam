@@ -48,7 +48,7 @@ def test_io_list():
         IamDataFrame([1, 2])
 
 
-def test_io_csv(test_df, tmpdir):
+def test_io_csv_to_file(test_df, tmpdir):
     # write to csv
     file = tmpdir / "testing_io_write_read.csv"
     test_df.to_csv(file)
@@ -56,6 +56,17 @@ def test_io_csv(test_df, tmpdir):
     # read from csv and assert that `data` tables are equal
     import_df = IamDataFrame(file)
     pd.testing.assert_frame_equal(test_df.data, import_df.data)
+
+
+def test_io_csv_none(test_df_year):
+    # parse data as csv and return as string
+    exp = (
+        "Model,Scenario,Region,Variable,Unit,2005,2010\n"
+        "model_a,scen_a,World,Primary Energy,EJ/yr,1.0,6.0\n"
+        "model_a,scen_a,World,Primary Energy|Coal,EJ/yr,0.5,3.0\n"
+        "model_a,scen_b,World,Primary Energy,EJ/yr,2.0,7.0\n"
+    )
+    assert test_df_year.to_csv() == exp
 
 
 @pytest.mark.parametrize(

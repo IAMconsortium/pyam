@@ -2261,7 +2261,7 @@ class IamDataFrame(object):
         df = df.rename(columns={c: str(c).title() for c in df.columns})
         return df
 
-    def to_csv(self, path, iamc_index=False, **kwargs):
+    def to_csv(self, path=None, iamc_index=False, **kwargs):
         """Write timeseries data of this object to a csv file
 
         Parameters
@@ -2274,7 +2274,7 @@ class IamDataFrame(object):
         **kwargs
             Passed to :meth:`pandas.DataFrame.to_csv`
         """
-        self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
+        return self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
     def to_excel(
         self,
