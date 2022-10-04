@@ -190,8 +190,8 @@ class IamDataFrame(object):
             self.set_meta(meta)
 
         # if initializing from xlsx, try to load `meta` table from file
-        if meta_sheet and isinstance(data, Path) and data.suffix == ".xlsx":
-            excel_file = pd.ExcelFile(data, engine="openpyxl")
+        if meta_sheet and isinstance(data, Path) and data.suffix in [".xlsx", ".xls"]:
+            excel_file = pd.ExcelFile(data)
             if meta_sheet in excel_file.sheet_names:
                 self.load_meta(excel_file, sheet_name=meta_sheet, ignore_conflict=True)
 
@@ -1344,7 +1344,7 @@ class IamDataFrame(object):
             List of variables to aggregate, defaults to sub-categories of `variable`.
         method : func or str, optional
             Method to use for aggregation,
-            e.g. :any:`numpy.mean`, :aby:`numpy.sum`, 'min', 'max'.
+            e.g. :any:`numpy.mean`, :any:`numpy.sum`, 'min', 'max'.
         exclude_on_fail : bool, optional
             Flag scenarios failing validation as `exclude: True`.
         multiplier : number, optional
@@ -2261,18 +2261,23 @@ class IamDataFrame(object):
         df = df.rename(columns={c: str(c).title() for c in df.columns})
         return df
 
-    def to_csv(self, path, iamc_index=False, **kwargs):
-        """Write timeseries data of this object to a csv file
+    def to_csv(self, path=None, iamc_index=False, **kwargs):
+        """Write :meth:`IamDataFrame.timeseries` to a comma-separated values (csv) file
 
         Parameters
         ----------
-        path : str or path object
-            file path or :class:`pathlib.Path`
-        iamc_index : bool, default False
-            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns
+        path : str, path or file-like, optional
+            File path as string or :class:`pathlib.Path`, or file-like object.
+            If *None*, the result is returned as a csv-formatted string.
+            See :meth:`pandas.DataFrame.to_csv` for details.
+        iamc_index : bool, optional
+            If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all :attr:`dimensions`.
+            See :meth:`IamDataFrame.timeseries` for details.
+        **kwargs
+            Passed to :meth:`pandas.DataFrame.to_csv`.
         """
-        self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
+        return self._to_file_format(iamc_index).to_csv(path, index=False, **kwargs)
 
     def to_excel(
         self,
@@ -2286,30 +2291,33 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        excel_writer : str, path object or ExcelWriter object
-            any valid string path, :class:`pathlib.Path`
-            or :class:`pandas.ExcelWriter`
+        excel_writer : path-like, file-like, or ExcelWriter object
+            File path as string or :class:`pathlib.Path`,
+            or existing :class:`pandas.ExcelWriter`.
         sheet_name : string
-            name of sheet which will contain :meth:`timeseries` data
-        iamc_index : bool, default False
-            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns
-        include_meta : boolean or string
-            if True, write 'meta' to an Excel sheet name 'meta' (default);
-            if this is a string, use it as sheet name
+            Name of sheet which will contain :meth:`IamDataFrame.timeseries` data.
+        iamc_index : bool, optional
+            If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all :attr:`dimensions`.
+            See :meth:`IamDataFrame.timeseries` for details.
+        include_meta : boolean or string, optional
+            If True, write :any:`IamDataFrame.meta` to a sheet 'meta' (default);
+            if this is a string, use it as sheet name.
+        **kwargs
+            Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
         """
         # open a new ExcelWriter instance (if necessary)
         close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
             close = True
-            excel_writer = pd.ExcelWriter(excel_writer, engine="xlsxwriter")
+            excel_writer = pd.ExcelWriter(excel_writer, **kwargs)
 
         # write data table
         write_sheet(excel_writer, sheet_name, self._to_file_format(iamc_index))
 
         # write meta table unless `include_meta=False`
         if include_meta:
-            meta_rename = dict([(i, i.capitalize()) for i in META_IDX])
+            meta_rename = dict([(i, i.capitalize()) for i in self.index.names])
             write_sheet(
                 excel_writer,
                 "meta" if include_meta is True else include_meta,
@@ -2320,20 +2328,21 @@ class IamDataFrame(object):
         if close:
             excel_writer.close()
 
-    def export_meta(self, excel_writer, sheet_name="meta"):
-        """Write the 'meta' indicators of this object to an Excel sheet
+    def export_meta(self, excel_writer, sheet_name="meta", **kwargs):
+        """Write the 'meta' indicators of this object to an Excel spreadsheet
 
         Parameters
         ----------
         excel_writer : str, path object or ExcelWriter object
-            any valid string path, :class:`pathlib.Path`
-            or :class:`pandas.ExcelWriter`
+            File path, :class:`pathlib.Path`, or existing :class:`pandas.ExcelWriter`.
         sheet_name : str
-            name of sheet which will contain dataframe of 'meta' indicators
+            Name of sheet which will contain 'meta'.
+        **kwargs
+            Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
         """
         close = False
         if not isinstance(excel_writer, pd.ExcelWriter):
-            excel_writer = pd.ExcelWriter(excel_writer, engine="xlsxwriter")
+            excel_writer = pd.ExcelWriter(excel_writer, **kwargs)
             close = True
         write_sheet(excel_writer, sheet_name, self.meta, index=True)
         if close:

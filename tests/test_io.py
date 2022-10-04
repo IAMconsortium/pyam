@@ -9,6 +9,14 @@ from pyam.testing import assert_iamframe_equal
 
 from .conftest import TEST_DATA_DIR, META_DF
 
+try:
+    import xlrd  # noqa: F401
+
+    has_xlrd = True
+except ModuleNotFoundError:  # pragma: no cover
+    has_xlrd = False
+
+
 FILTER_ARGS = dict(scenario="scen_a")
 
 
@@ -40,7 +48,7 @@ def test_io_list():
         IamDataFrame([1, 2])
 
 
-def test_io_csv(test_df, tmpdir):
+def test_io_csv_to_file(test_df, tmpdir):
     # write to csv
     file = tmpdir / "testing_io_write_read.csv"
     test_df.to_csv(file)
@@ -48,6 +56,21 @@ def test_io_csv(test_df, tmpdir):
     # read from csv and assert that `data` tables are equal
     import_df = IamDataFrame(file)
     pd.testing.assert_frame_equal(test_df.data, import_df.data)
+
+
+def test_io_csv_none(test_df_year):
+    # parse data as csv and return as string
+    exp = (
+        "Model,Scenario,Region,Variable,Unit,2005,2010\n"
+        "model_a,scen_a,World,Primary Energy,EJ/yr,1.0,6.0\n"
+        "model_a,scen_a,World,Primary Energy|Coal,EJ/yr,0.5,3.0\n"
+        "model_a,scen_b,World,Primary Energy,EJ/yr,2.0,7.0\n"
+    )
+    try:
+        assert test_df_year.to_csv(lineterminator="\n") == exp
+    # special treatment for Python 3.7 and pandas < 1.5
+    except TypeError:
+        assert test_df_year.to_csv(line_terminator="\n") == exp
 
 
 @pytest.mark.parametrize(
@@ -90,6 +113,12 @@ def test_io_xlsx_multiple_data_sheets(test_df, sheets, sheetname, tmpdir):
 
     # assert that IamDataFrame instances are equal
     assert_iamframe_equal(test_df, import_df)
+
+
+@pytest.mark.skipif(not has_xlrd, reason="Package 'xlrd' not installed.")
+def test_read_xls(test_df_year):
+    import_df = IamDataFrame(TEST_DATA_DIR / "test_df.xls")
+    assert_iamframe_equal(test_df_year, import_df)
 
 
 def test_init_df_with_na_unit(test_pd_df, tmpdir):

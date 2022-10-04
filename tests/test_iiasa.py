@@ -392,10 +392,7 @@ def test_lazy_read(tmpdir):
     df_newfilt = lazy_read_iiasa(tmp_file, TEST_API, model="model_b")
     assert df_newfilt.model == ["model_b"]
     assert os.path.getmtime(tmp_file) > writetime
-    # file can also be xls or xlsx
+    # file can also xlsx
     xlsx_file = tmpdir / "test_database.xlsx"
     df_xlsx = lazy_read_iiasa(xlsx_file, TEST_API, model="model_b")
     assert df_newfilt.equals(df_xlsx)
-    xls_file = tmpdir / "test_database.xls"
-    df_xls = lazy_read_iiasa(xls_file, TEST_API, model="model_b")
-    assert df_xls.equals(df_xlsx)

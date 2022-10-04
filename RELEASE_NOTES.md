@@ -1,5 +1,14 @@
 # Next Release
 
+## Dependency changes
+
+Remove **xlrd** as a dependency; please install it explicitly for reading `.xls` files.
+Bump minimum version of **pandas** to v1.2.0 to support automatic engine selection.
+
+## Individual updates
+
+- [#708](https://github.com/IAMconsortium/pyam/pull/708) Remove 'xls' as by-default-supported file format
+
 # Release v1.6.0
 
 ## Highlights

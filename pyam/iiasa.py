@@ -615,7 +615,7 @@ def lazy_read_iiasa(
     ----------
     file : str or :class:`pathlib.Path`
         The location to test for valid data and save the data if not up-to-date. Must be
-        either xls, xlsx or csv.
+        either xlsx or csv.
     name : str
         | Name of an IIASA Scenario Explorer database instance.
         | See :attr:`pyam.iiasa.Connection.valid_connections`.
@@ -642,8 +642,7 @@ def lazy_read_iiasa(
     assert file.suffix in [
         ".csv",
         ".xlsx",
-        ".xls",
-    ], "We will only read and write to csv, xls and xlsx format."
+    ], "We will only read and write to csv and xlsx format."
     if os.path.exists(file):
         date_set = pd.to_datetime(os.path.getmtime(file), unit="s")
         version_info = Connection(name, creds, base_url).properties()
