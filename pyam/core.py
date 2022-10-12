@@ -2256,7 +2256,9 @@ class IamDataFrame(object):
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
 
-    def quantiles(self, quantiles, weights=None, level=['model', 'scenario'], append=False):
+    def quantiles(
+        self, quantiles, weights=None, level=["model", "scenario"], append=False
+    ):
         """Compute the optionally weighted quantiles of data grouped by `level`.
 
         For example, the following will provide the interquartile range and median value
@@ -2279,49 +2281,44 @@ class IamDataFrame(object):
         """
         if len(self.variable) > 1:
             raise ValueError(
-                'quantiles() currently supports only 1 variable, and this'
-                f'dataframe has {len(self.variable)}'
+                "quantiles() currently supports only 1 variable, and this"
+                f"dataframe has {len(self.variable)}"
             )
         df = self.timeseries()
-        model = 'unweighted' if weights is None else 'weighted' # can make this a kwarg
-        
+        model = "unweighted" if weights is None else "weighted"  # can make this a kwarg
+
         # get weights aligned with model/scenario in data
         if weights is None:
-            df['weight'] = 1.0
+            df["weight"] = 1.0
         else:
-            df = df.join(weights, how='inner')
-        w = df['weight']
-        df.drop('weight', axis='columns', inplace=True)
-        
+            df = df.join(weights, how="inner")
+        w = df["weight"]
+        df.drop("weight", axis="columns", inplace=True)
+
         # prep data for processing
-        df = (
-            df
-            .reset_index(level=level)
-            .drop(columns=level)
-        )
-        
+        df = df.reset_index(level=level).drop(columns=level)
+
         dfs = []
         # indexed over region, variable, and unit
         idxs = df.index.drop_duplicates()
         for idx, q in itertools.product(idxs, quantiles):
             data = pd.Series(
                 wquantiles.quantile(df.loc[idx].values.T, w.values, q),
-                index=pd.Series(df.columns, name='year'),
-                name='value',
+                index=pd.Series(df.columns, name="year"),
+                name="value",
             )
             kwargs = {idxs.names[i]: idx[i] for i in range(len(idx))}
             dfs.append(
                 IamDataFrame(
                     data,
                     model=model,
-                    scenario=f'quantile_{q}', # can make this a kwarg
-                    **kwargs
+                    scenario=f"quantile_{q}",  # can make this a kwarg
+                    **kwargs,
                 )
             )
-            
+
         # append to `self` or return as `IamDataFrame`
         return self._finalize(concat(dfs), append=append)
-
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
