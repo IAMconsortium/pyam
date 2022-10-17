@@ -7,6 +7,7 @@ Bump minimum version of **pandas** to v1.2.0 to support automatic engine selecti
 
 ## Individual updates
 
+- [#709](https://github.com/IAMconsortium/pyam/pull/709) Hotfix ops to support `fillna=0`
 - [#708](https://github.com/IAMconsortium/pyam/pull/708) Remove 'xls' as by-default-supported file format
 
 # Release v1.6.0
