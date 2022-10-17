@@ -38,6 +38,15 @@ def df_ops_variable_number(func, variable, unit, meta):
     return IamDataFrame(_data.T, **DF_ARGS, variable=variable, unit=unit, meta=meta)
 
 
+def df_ops_fillna_0(func, variable, unit, meta):
+    """Return IamDataFrame when performing operation on test_df with default (5)"""
+    _data = pd.DataFrame(
+        [["scen_a", "scen_b"], [func(1, 0.5), func(2, 0)], [func(6, 3), func(7, 0)]],
+        index=DF_INDEX,
+    )
+    return IamDataFrame(_data.T, **DF_ARGS, variable=variable, unit=unit, meta=meta)
+
+
 def test_add_raises(test_df_year):
     """Calling an operation with args that don't return an IamDataFrame raises"""
     match = "Value returned by `add` cannot be cast to an IamDataFrame: 5"
@@ -49,6 +58,7 @@ def test_add_raises(test_df_year):
     "arg, df_func, fillna, ignore_units",
     (
         ("Primary Energy|Coal", df_ops_variable, None, False),
+        ("Primary Energy|Coal", df_ops_fillna_0, 0, "foo"),
         ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
         ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
         (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
@@ -81,8 +91,8 @@ def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
         if ignore_units:
             with pytest.raises(pint.UndefinedUnitError):
                 test_df_year.add(*args, fillna=fillna, ignore_units=False)
-
-        assert_iamframe_equal(exp, test_df_year.add(*args, **kwds))
+        obs = test_df_year.add(*args, **kwds)
+        assert_iamframe_equal(exp, obs)
 
 
 @pytest.mark.parametrize("append", (False, True))
