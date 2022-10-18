@@ -104,7 +104,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
             )
 
     # merge all args and kwds that are based on `df._data` to apply fillna
-    if fillna is not None:  # can not check only if fillna: as 0s arent caught
+    if fillna is not None:
         _data_cols = [_args[i] for i, is_data in enumerate(_data_args) if is_data]
         _data_cols += [kwds[key] for key, is_data in _data_kwds.items() if is_data]
         _data = pd.merge(*_data_cols, how="outer", left_index=True, right_index=True)
