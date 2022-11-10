@@ -10,17 +10,6 @@ import pandas as pd
 from pandas.api.types import is_integer
 
 from pathlib import Path
-
-try:
-    # used by pytest tmpdir
-    from py._path.local import LocalPath
-
-    FILE_TYPE = (str, Path, LocalPath)
-except ImportError:
-    LocalPath = None
-    FILE_TYPE = (str, Path)
-
-
 from tempfile import TemporaryDirectory
 
 from pyam.slice import IamSlice
@@ -158,17 +147,23 @@ class IamDataFrame(object):
                 f"Incompatible `index={index}` with `meta` (index={meta.index.names})!"
             )
 
-        # cast data from pandas
-        if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _data = format_data(data.copy(), index=index, **kwargs)
+        # try casting to Path if file-like is string or LocalPath or pytest.LocalPath
+        try:
+            data = Path(data)
+        except TypeError:
+            pass
 
         # read from file
-        elif isinstance(data, FILE_TYPE):
+        if isinstance(data, Path):
             data = Path(data)  # casting str or LocalPath to Path
             if not data.is_file():
                 raise FileNotFoundError(f"No such file: '{data}'")
             logger.info(f"Reading file {data}")
             _data = read_file(data, index=index, **kwargs)
+
+        # cast data from pandas
+        elif isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
+            _data = format_data(data.copy(), index=index, **kwargs)
 
         # unsupported `data` args
         elif islistable(data):
