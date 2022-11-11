@@ -1,7 +1,10 @@
 .. _tutorials:
 
 Tutorials
-*********
+=========
+
+Jupyter notebooks
+-----------------
 
 All tutorials currently use the *IAMC template* for yearly data,
 but |pyam| also supports timeseries data with a sub-annual resolution.
@@ -29,3 +32,10 @@ The source code is available in the folder
    tutorials/legends.ipynb
    tutorials/aggregating_variables_and_plotting_with_negative_values.ipynb
    tutorials/pyam_logo.ipynb
+
+Workshops and recordings
+------------------------
+
+The Energy, Climate and Environment program (ECE) at IIASA is regularly holding
+workshops and trainings for the pyam package. You can find recordings of these
+workshops and related material at `https://teaching.ece.iiasa.ac.at/pyam.html`_.
