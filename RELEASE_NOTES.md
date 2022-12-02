@@ -6,6 +6,7 @@ Remove **xlrd** as a dependency; please install it explicitly for reading `.xls`
 Bump minimum version of **pandas** to v1.2.0 to support automatic engine selection.
 
 ## Individual updates
+
 - [#713](https://github.com/IAMconsortium/pyam/pull/713) Informative error when using lists for filter by level. `Level' now a forbidden column. 
 - [#709](https://github.com/IAMconsortium/pyam/pull/709) Hotfix ops to support `fillna=0`
 - [#708](https://github.com/IAMconsortium/pyam/pull/708) Remove 'xls' as by-default-supported file format
