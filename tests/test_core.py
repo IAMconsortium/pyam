@@ -382,6 +382,7 @@ def test_variable_depth_0_keep_false(test_df):
 def test_variable_depth_raises(test_df):
     pytest.raises(ValueError, test_df.filter, level="1/")
 
+
 def test_variable_depth_with_list_raises(test_df):
     pytest.raises(ValueError, test_df.filter, level=["1", "2"])
     pytest.raises(ValueError, test_df.filter, level=[1, 2])
