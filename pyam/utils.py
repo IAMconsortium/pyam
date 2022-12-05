@@ -428,7 +428,7 @@ def find_depth(data, s="", level=None):
         whether depth satisfies the condition (equality if level is int,
         >= if ``.+``,  <= if ``.-``)
     """
-    if type(level) == list:
+    if islistable(level):
         raise ValueError(
             "Level is only run with ints or strings, not lists. Use strings with "
             "integers and + or - to filter by ranges."
