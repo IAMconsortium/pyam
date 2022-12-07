@@ -18,6 +18,29 @@ def test_require_data_pass(test_df_year, kwargs):
     assert test_df_year.require_data(**kwargs) is None
 
 
+@pytest.mark.parametrize(
+    "kwargs",
+    (
+        dict(variable="Primary Energy|Coal"),
+        dict(variable=["Primary Energy"], year=[2005, 2010]),
+    ),
+)
+@pytest.mark.parametrize("exclude_on_fail", (False, True))
+def test_require_data(test_df_year, kwargs, exclude_on_fail):
+    # check different ways of failing when not all required data is present
+
+    test_df_year._data = test_df_year._data[0:5]  # remove value for scen_b & 2010
+
+    obs = test_df_year.require_data(**kwargs, exclude_on_fail=exclude_on_fail)
+    exp = pd.DataFrame([["model_a", "scen_b"]], columns=["model", "scenario"])
+    pdt.assert_frame_equal(obs, exp)
+
+    if exclude_on_fail:
+        list(test_df_year.meta["exclude"]) == [False, True]
+    else:
+        list(test_df_year.meta["exclude"]) == [False, False]
+
+
 def test_require_variable_pass(test_df):
     # checking that the return-type is correct
     obs = test_df.require_variable(variable="Primary Energy", exclude_on_fail=True)
