@@ -14,7 +14,6 @@ from tempfile import TemporaryDirectory
 
 from pyam.slice import IamSlice
 from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
-from pyam.validation import _check_dimensions
 
 try:
     from datapackage import Package
