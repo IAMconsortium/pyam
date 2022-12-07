@@ -1,6 +1,21 @@
 import pandas as pd
 import pandas.testing as pdt
+import pytest
+
 from pyam import IamDataFrame, validate, categorize, require_variable, META_IDX
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    (
+        dict(),
+        dict(variable="Primary Energy"),
+        dict(variable=["Primary Energy"], year=[2005, 2010]),
+    ),
+)
+def test_require_data_pass(test_df_year, kwargs):
+    # check that IamDataFrame with all required data returns None
+    assert test_df_year.require_data(**kwargs) is None
 
 
 def test_require_variable_pass(test_df):
