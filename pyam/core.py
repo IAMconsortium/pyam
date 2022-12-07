@@ -437,7 +437,7 @@ class IamDataFrame(object):
 
     @property
     def coordinates(self):
-        """Return the list of `data` coordinates columns (exclude index names)"""
+        """Return the list of `data` coordinates (columns not including index names)"""
         return [i for i in self._data.index.names if i not in self.index.names]
 
     @property
