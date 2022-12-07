@@ -436,6 +436,11 @@ class IamDataFrame(object):
         return list(self._data.index.names)
 
     @property
+    def coordinates(self):
+        """Return the list of `data` coordinates columns (exclude index names)"""
+        return [i for i in self._data.index.names if i not in self.index.names]
+
+    @property
     def time_domain(self):
         """Indicator of the time domain: 'year', 'datetime', or 'mixed'"""
         if self._time_domain is None:
