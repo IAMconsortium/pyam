@@ -31,7 +31,7 @@ LONG_IDX = IAMC_IDX + ["year"]
 REQUIRED_COLS = ["region", "variable", "unit"]
 
 # illegal terms for data/meta column names to prevent attribute conflicts
-ILLEGAL_COLS = ["data", "meta"]
+ILLEGAL_COLS = ["data", "meta", "level"]
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(
@@ -428,6 +428,11 @@ def find_depth(data, s="", level=None):
         whether depth satisfies the condition (equality if level is int,
         >= if ``.+``,  <= if ``.-``)
     """
+    if islistable(level):
+        raise ValueError(
+            "Level is only run with ints or strings, not lists. Use strings with "
+            "integers and + or - to filter by ranges."
+        )
     if isstr(data):
         return _find_depth([data], s, level)[0]
 

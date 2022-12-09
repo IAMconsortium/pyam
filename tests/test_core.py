@@ -383,6 +383,11 @@ def test_variable_depth_raises(test_df):
     pytest.raises(ValueError, test_df.filter, level="1/")
 
 
+def test_variable_depth_with_list_raises(test_df):
+    pytest.raises(ValueError, test_df.filter, level=["1", "2"])
+    pytest.raises(ValueError, test_df.filter, level=[1, 2])
+
+
 def test_timeseries(test_df):
     dct = {
         "model": ["model_a"] * 2,
