@@ -436,6 +436,11 @@ class IamDataFrame(object):
         return list(self._data.index.names)
 
     @property
+    def coordinates(self):
+        """Return the list of `data` coordinates (columns not including index names)"""
+        return [i for i in self._data.index.names if i not in self.index.names]
+
+    @property
     def time_domain(self):
         """Indicator of the time domain: 'year', 'datetime', or 'mixed'"""
         if self._time_domain is None:
@@ -927,6 +932,78 @@ class IamDataFrame(object):
             raise ValueError(f"Cannot add a meta column {name}")
         if name not in self.meta:
             self.meta[name] = np.nan
+
+    def require_data(
+        self, region=None, variable=None, unit=None, year=None, exclude_on_fail=False
+    ):
+        """Check whether scenarios have values for all combinations of given elements
+
+        Parameters
+        ----------
+        region : str or list of str, optional
+            Required region(s).
+        variable : str or list of str, optional
+            Required variable(s).
+        unit : str or list of str, optional
+            Required unit(s).
+        year : int or list of int, optional
+            Required year(s).
+        exclude_on_fail : bool, optional
+            Set *meta* indicator for scenarios failing validation as `exclude: True`.
+
+        Returns
+        -------
+        pd.DataFrame
+            A dataframe of the *index* of scenarios not satisfying the cr
+        """
+
+        # TODO: option to require values in certain ranges, see `_apply_criteria()`
+
+        # create mapping of required dimensions
+        required = {}
+        n = 1  # expected number of rows per scenario
+        for dim, value in [
+            ("region", region),
+            ("variable", variable),
+            ("unit", unit),
+            ("year", year),
+        ]:
+            if value is not None:
+                required[dim] = value
+                n *= len(to_list(value))
+
+        # fast exit if no arguments values are given
+        if not required:
+            return
+
+        # downselect to relevant rows
+        keep = self._apply_filters(**required)
+        rows = self._data.index[keep]
+
+        # identify scenarios that have none of the required values
+        index_none = self.index.difference(
+            rows.droplevel(level=self.coordinates).drop_duplicates()
+        ).to_frame(index=False)
+
+        # identify scenarios that have some but not all required values
+        columns = [i for i in self.coordinates if i not in required]
+        rows = rows.droplevel(level=columns).drop_duplicates()
+        data = (
+            pd.DataFrame(index=rows)
+            .reset_index(level=list(required))
+            .groupby(self.index.names)
+        )
+
+        index_incomplete = pd.DataFrame(
+            [idx for idx, df in data if len(df) != n], columns=self.index.names
+        )
+
+        # merge all scenarios where not all required data is present
+        index_missing_required = pd.concat([index_none, index_incomplete])
+        if not index_missing_required.empty:
+            if exclude_on_fail:
+                self._exclude_on_fail(index_missing_required)
+            return index_missing_required
 
     def require_variable(self, variable, unit=None, year=None, exclude_on_fail=False):
         """Check whether all scenarios have a required variable
