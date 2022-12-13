@@ -4,7 +4,6 @@ import itertools
 import logging
 import os
 import sys
-import wquantiles
 
 import numpy as np
 import pandas as pd

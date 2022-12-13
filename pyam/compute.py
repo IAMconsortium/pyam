@@ -57,7 +57,10 @@ class IamComputeAccessor:
         ValueError
             If more than one variable provided or if `weight` kwarg is malformed.
         """
-        from pyam.core import IamDataFrame, concat # here because of circular import issue
+        from pyam.core import (
+            IamDataFrame,
+            concat,
+        )  # here because of circular import issue
 
         self_df = self._df
         if len(self_df.variable) > 1:
@@ -65,13 +68,13 @@ class IamComputeAccessor:
                 "quantiles() currently supports only 1 variable, and this"
                 f"dataframe has {len(self_df.variable)}"
             )
-        if weights is not None and weights.name != 'weight':
-            raise ValueError(
-                "weights pd.Series must have name 'weight'"
-            )
+        if weights is not None and weights.name != "weight":
+            raise ValueError("weights pd.Series must have name 'weight'")
 
         df = self_df.timeseries()
-        model = "Quantiles" if weights is None else "Weighted Quantiles"  # can make this a kwarg
+        model = (
+            "Quantiles" if weights is None else "Weighted Quantiles"
+        )  # can make this a kwarg
 
         # get weights aligned with model/scenario in data
         if weights is None:
