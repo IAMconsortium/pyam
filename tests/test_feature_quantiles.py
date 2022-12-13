@@ -32,4 +32,4 @@ def test_qunatile_one_variable(test_pd_df):
 def test_quantile_multiple_variables(test_pd_df):
     df = IamDataFrame(test_pd_df)
     with pytest.raises(ValueError):
-        df.quantiles((0.25, 0.5))
+        df.compute.quantiles((0.25, 0.5))

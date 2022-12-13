@@ -22,6 +22,71 @@ class IamComputeAccessor:
     def __init__(self, df):
         self._df = df
 
+    def quantiles(
+        self, quantiles, weights=None, level=["model", "scenario"], append=False
+    ):
+        """Compute the optionally weighted quantiles of data grouped by `level`.
+
+        For example, the following will provide the interquartile range and median value
+        of CO2 emissions across all models and scenarios in a given dataset:
+
+        .. code-block:: python
+
+            df.filter(variable='Emissions|CO2').quantiles([0.25, 0.5, 0.75])
+
+        Parameters
+        ----------
+        quantiles : collection
+            Group of quantile values to compute
+        weights : pd.Series, optional
+            Series indexed by `level`
+        level : collection, optional
+            The index columns to compute quantiles over
+        append : bool, optional
+            Whether to append computed timeseries data to this instance.
+        """
+        self_df = self._df
+        if len(self_df.variable) > 1:
+            raise ValueError(
+                "quantiles() currently supports only 1 variable, and this"
+                f"dataframe has {len(self_df.variable)}"
+            )
+        df = self_df.timeseries()
+        model = "unweighted" if weights is None else "weighted"  # can make this a kwarg
+
+        # get weights aligned with model/scenario in data
+        if weights is None:
+            df["weight"] = 1.0
+        else:
+            df = df.join(weights, how="inner")
+        w = df["weight"]
+        df.drop("weight", axis="columns", inplace=True)
+
+        # prep data for processing
+        df = df.reset_index(level=level).drop(columns=level)
+
+        dfs = []
+        # indexed over region, variable, and unit
+        idxs = df.index.drop_duplicates()
+        for idx, q in itertools.product(idxs, quantiles):
+            data = pd.Series(
+                wquantiles.quantile(df.loc[idx].values.T, w.values, q),
+                index=pd.Series(df.columns, name="year"),
+                name="value",
+            )
+            kwargs = {idxs.names[i]: idx[i] for i in range(len(idx))}
+            dfs.append(
+                IamDataFrame(
+                    data,
+                    model=model,
+                    scenario=f"quantile_{q}",  # can make this a kwarg
+                    **kwargs,
+                )
+            )
+
+        # append to `self` or return as `IamDataFrame`
+        return self_df._finalize(concat(dfs), append=append)
+
     def growth_rate(self, mapping, append=False):
         """Compute the annualized growth rate of a timeseries along the time dimension
 
