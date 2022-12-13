@@ -12,7 +12,7 @@ def test_qunatile_one_variable(test_pd_df):
     """
     df = IamDataFrame(test_pd_df)
     quantiles = (0.25, 0.5, 0.75)
-    obs = df.filter(variable="Primary Energy").quantiles(quantiles)
+    obs = df.filter(variable="Primary Energy").compute.quantiles(quantiles)
     exp = IamDataFrame(
         pd.DataFrame(
             {
