@@ -1,4 +1,6 @@
+import itertools
 import math
+import wquantiles
 import pandas as pd
 from pyam.index import replace_index_values
 from pyam.timeseries import growth_rate
@@ -32,7 +34,7 @@ class IamComputeAccessor:
 
         .. code-block:: python
 
-            df.filter(variable='Emissions|CO2').quantiles([0.25, 0.5, 0.75])
+            df.filter(variable='Emissions|CO2').compute.quantiles([0.25, 0.5, 0.75])
 
         Parameters
         ----------
@@ -45,6 +47,8 @@ class IamComputeAccessor:
         append : bool, optional
             Whether to append computed timeseries data to this instance.
         """
+        from pyam.core import IamDataFrame, concat # here because of circular import issue
+
         self_df = self._df
         if len(self_df.variable) > 1:
             raise ValueError(
