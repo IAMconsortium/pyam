@@ -46,6 +46,16 @@ class IamComputeAccessor:
             The index columns to compute quantiles over
         append : bool, optional
             Whether to append computed timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed data or None if `append=True`.
+
+        Raises
+        ------
+        ValueError
+            If more than one variable provided or if `weight` kwarg is malformed.
         """
         from pyam.core import IamDataFrame, concat # here because of circular import issue
 
@@ -55,8 +65,13 @@ class IamComputeAccessor:
                 "quantiles() currently supports only 1 variable, and this"
                 f"dataframe has {len(self_df.variable)}"
             )
+        if weights is not None and weights.name != 'weight':
+            raise ValueError(
+                "weights pd.Series must have name 'weight'"
+            )
+
         df = self_df.timeseries()
-        model = "unweighted" if weights is None else "weighted"  # can make this a kwarg
+        model = "Quantiles" if weights is None else "Weighted Quantiles"  # can make this a kwarg
 
         # get weights aligned with model/scenario in data
         if weights is None:
@@ -83,7 +98,7 @@ class IamComputeAccessor:
                 IamDataFrame(
                     data,
                     model=model,
-                    scenario=f"quantile_{q}",  # can make this a kwarg
+                    scenario=str(q),  # can make this a kwarg
                     **kwargs,
                 )
             )
