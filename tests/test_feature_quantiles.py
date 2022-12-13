@@ -16,12 +16,12 @@ def test_qunatile_one_variable(test_pd_df):
     exp = IamDataFrame(
         pd.DataFrame(
             {
-                "scenario": [f"quantile_{q}" for q in quantiles],
+                "scenario": [str(q) for q in quantiles],
                 "2005": [1, (1.0 + 2) / 2, 2],
                 "2010": [6, (6 + 7) / 2, 7],
             }
         ),
-        model="unweighted",
+        model="Quantiles",
         region="World",
         variable="Primary Energy",
         unit="EJ/yr",
