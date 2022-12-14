@@ -29,7 +29,7 @@ def test_quantile_one_variable(test_pd_df):
     assert_iamframe_equal(exp, obs)
 
 
-def test_quantile_multiple_variables(test_pd_df):
+def test_quantile_missing_variable(test_pd_df):
     df = IamDataFrame(test_pd_df)
     with pytest.raises(ValueError):
         df.compute.quantiles((0.25, 0.5))
