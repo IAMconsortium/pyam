@@ -4,7 +4,7 @@ from pyam.testing import assert_iamframe_equal
 import pandas as pd
 
 
-def test_qunatile_one_variable(test_pd_df):
+def test_quantile_one_variable(test_pd_df):
     """Tests interquartile range of standard test df
 
     Because it is only two datapoints, the only 'new' computation
