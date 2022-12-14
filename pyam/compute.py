@@ -55,7 +55,7 @@ class IamComputeAccessor:
         Raises
         ------
         ValueError
-            If more than one variable provided or if `weight` kwarg is malformed.
+            If more than one variable provided or if argument `weights` is malformed.
         """
         from pyam.core import (
             IamDataFrame,
