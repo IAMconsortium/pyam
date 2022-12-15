@@ -8,6 +8,7 @@ Bump minimum version of **pandas** to v1.2.0 to support automatic engine selecti
 ## Individual updates
 
 - [#708](https://github.com/IAMconsortium/pyam/pull/708) Remove 'xls' as by-default-supported file format
+- [#686](https://github.com/IAMconsortium/pyam/pull/686) Add support for (weighted) quantile timeseries as `df.compute.quantiles()` with a [tutorial](https://pyam-iamc.readthedocs.io/en/stable/tutorials/quantiles.html)
 
 # Release v1.6.0
 
