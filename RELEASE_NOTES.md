@@ -11,6 +11,7 @@ Bump minimum version of **pandas** to v1.2.0 to support automatic engine selecti
 - [#713](https://github.com/IAMconsortium/pyam/pull/713) Informative error when using lists for filter by level, `level` now a forbidden column.
 - [#709](https://github.com/IAMconsortium/pyam/pull/709) Hotfix ops to support `fillna=0`
 - [#708](https://github.com/IAMconsortium/pyam/pull/708) Remove 'xls' as by-default-supported file format
+- [#686](https://github.com/IAMconsortium/pyam/pull/686) Add support for (weighted) quantile timeseries as `df.compute.quantiles()` with a [tutorial](https://pyam-iamc.readthedocs.io/en/stable/tutorials/quantiles.html)
 
 # Release v1.6.0
 
