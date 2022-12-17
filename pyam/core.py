@@ -1019,6 +1019,9 @@ class IamDataFrame(object):
         exclude_on_fail : bool, default False
             flag scenarios missing the required variables as `exclude: True`
         """
+        # TODO: deprecated, remove for release >= 2.0
+        deprecation_warning("Use `df.require_data()` instead.")
+
         criteria = {"variable": variable}
         if unit:
             criteria.update({"unit": unit})
