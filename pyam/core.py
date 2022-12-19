@@ -1019,6 +1019,9 @@ class IamDataFrame(object):
         exclude_on_fail : bool, default False
             flag scenarios missing the required variables as `exclude: True`
         """
+        # TODO: deprecated, remove for release >= 2.0
+        deprecation_warning("Use `df.require_data()` instead.")
+
         criteria = {"variable": variable}
         if unit:
             criteria.update({"unit": unit})
@@ -1081,12 +1084,6 @@ class IamDataFrame(object):
             if exclude_on_fail and len(df) > 0:
                 self._exclude_on_fail(df)
             return df.reset_index()
-
-    def compute_bias(self, name, method, axis):
-        """DEPRECATED - please use :meth:`IamDataFrame.compute.bias()`"""
-        # TODO: deprecated, remove for release >= 1.7
-        deprecation_warning("Use `df.compute.bias()` instead.")
-        self.compute.bias(name, method, axis)
 
     def rename(
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs

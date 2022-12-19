@@ -198,6 +198,23 @@ def test_rename_empty(test_df_year):
     assert_iamframe_equal(empty_df, empty_df.rename(model={"model_a": "model_b"}))
 
 
+@pytest.mark.parametrize("append", (False, True))
+@pytest.mark.parametrize("inplace", (False, True))
+def test_rename_no_change(test_df_year, append, inplace):
+    """Check that renaming with an "irrelevant" mapping works as expected"""
+
+    df = test_df_year.copy()
+
+    mapping = dict(variable={"Primary Energy": "Other Variable"}, unit={"foo": "bar"})
+    obs = df.rename(**mapping, append=append, inplace=inplace)
+
+    if inplace:
+        assert obs is None
+        assert_iamframe_equal(df, test_df_year)
+    else:
+        assert_iamframe_equal(obs, test_df_year)
+
+
 def test_rename_index_data_fail(test_df):
     mapping = {
         "scenario": {"scen_a": "scen_c"},
