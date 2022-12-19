@@ -201,7 +201,7 @@ def test_rename_empty(test_df_year):
 @pytest.mark.parametrize("append", (False, True))
 @pytest.mark.parametrize("inplace", (False, True))
 def test_rename_no_change(test_df_year, append, inplace):
-    """Check that renaming with an "irrelevant" mapping works as expected  """
+    """Check that renaming with an "irrelevant" mapping works as expected"""
 
     df = test_df_year.copy()
 
