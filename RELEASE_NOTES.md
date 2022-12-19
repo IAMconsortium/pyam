@@ -1,4 +1,10 @@
-# Next Release
+# Release v1.7.0
+
+## Highlights
+
+- Add a feature to compute (weighted) quantiles for scenario data
+- Implement a `require_data()` method for scenario validation
+- Remove 'xls' as by-default-supported file format to harmonize behavior with **pandas** 
 
 ## Dependency changes
 
