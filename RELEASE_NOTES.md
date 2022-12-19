@@ -6,6 +6,10 @@
 - Implement a `require_data()` method for scenario validation
 - Remove 'xls' as by-default-supported file format to harmonize behavior with **pandas** 
 
+## API changes
+
+The method `compute_bias()` was removed; please use `compute.bias()` instead.
+
 ## Dependency changes
 
 Remove **xlrd** as a dependency; please install it explicitly for reading `.xls` files.

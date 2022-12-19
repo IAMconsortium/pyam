@@ -1085,12 +1085,6 @@ class IamDataFrame(object):
                 self._exclude_on_fail(df)
             return df.reset_index()
 
-    def compute_bias(self, name, method, axis):
-        """DEPRECATED - please use :meth:`IamDataFrame.compute.bias()`"""
-        # TODO: deprecated, remove for release >= 1.7
-        deprecation_warning("Use `df.compute.bias()` instead.")
-        self.compute.bias(name, method, axis)
-
     def rename(
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs
     ):
