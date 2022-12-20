@@ -1,3 +1,5 @@
+# Next Release
+
 # Release v1.7.0
 
 ## Highlights
