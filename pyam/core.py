@@ -782,7 +782,7 @@ class IamDataFrame(object):
         # calling `unstack` on the `s` directly runs into MemoryError for large datasets
         cols = [i for i in s.index.names if i != self.time_col]
         return pd.concat(
-            [_data.unstack(level=self.time_col) for i, _data in s.groupby(level=cols)]
+            [_data.unstack(level=self.time_col) for _, _data in s.groupby(level=cols)]
         ).rename_axis(None, axis=1)
 
     def reset_exclude(self):
