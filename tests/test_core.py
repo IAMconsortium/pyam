@@ -50,14 +50,13 @@ df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 def test_init_df(test_pd_df, index):
     """Casting to IamDataFrame and returning as `timeseries()` yields original frame"""
 
-    # set a value to `nan` to run the test using an asymmetric dataframe
+    # set a value to `nan` to check that timeseries columns are ordered correctly
     test_pd_df.loc[0, test_pd_df.columns[5]] = np.nan
 
     # any number of columns can be set as index
     df = test_pd_df.copy() if index is None else test_pd_df.set_index(index)
-    obs = IamDataFrame(df).timeseries().reset_index()
-
-    pdt.assert_frame_equal(obs, test_pd_df)
+    obs = IamDataFrame(df).timeseries()
+    pdt.assert_frame_equal(obs, test_pd_df.set_index(IAMC_IDX), check_column_type=False)
 
 
 def test_init_from_iamdf(test_df_year):
