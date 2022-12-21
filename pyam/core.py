@@ -402,9 +402,8 @@ class IamDataFrame(object):
         """
         if self._time is None:
             self._time = pd.Index(
-                self._data.index.unique(level=self.time_col).values, name="time"
+                get_index_levels(self._data, self.time_col), name="time"
             )
-
         return self._time
 
     @property
