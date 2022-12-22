@@ -63,7 +63,7 @@ def test_time_domain(test_pd_df, time, domain, index):
 
 @pytest.mark.parametrize("inplace", [True, False])
 def test_swap_time_to_year(test_df, inplace):
-    """Swap time column for year (int) dropping subannual time resolution (default)"""
+    # Swap time column for year (int) dropping subannual time resolution (default)
 
     if test_df.time_col == "year":
         pytest.skip("IamDataFrame with time domain `year` not relevant for this test.")
