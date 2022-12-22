@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import pandas as pd
 import pandas.testing as pdt
 from datetime import datetime
@@ -46,7 +47,12 @@ OE_SUBANNUAL_FORMAT = lambda x: x.strftime("%m-%d %H:%M%z").replace("+0100", "+0
     ],
 )
 def test_time_domain(test_pd_df, time, domain, index):
-    # assert that the time-domain and time-index attributes are set correctly
+    # Check that the time-domain and time-index attributes are set correctly
+
+    # set a value to `nan` to check that time domain is ordered correctly
+    # see https://github.com/IAMconsortium/pyam/issues/722
+    test_pd_df.loc[0, test_pd_df.columns[5]] = np.nan
+
     mapping = dict([(i, j) for i, j in zip(TEST_YEARS, time)])
     df = IamDataFrame(data=test_pd_df.rename(mapping, axis="columns"))
 
