@@ -225,7 +225,8 @@ class Connection(object):
         if name not in valid:
             raise ValueError(
                 f"You do not have access to instance '{name}' or it does not exist. "
-                "Use `Connection.valid_connections` for a list of accessible services."
+                "Use `pyam.iiasa.Connection().valid_connections` for a list "
+                "of accessible services."
             )
 
         # TODO: config will be reimplemented in conjunction with ixmp-server
