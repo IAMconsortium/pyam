@@ -181,8 +181,64 @@ def read_file(path, *args, **kwargs):
     return format_data(read_pandas(path, *args, **kwargs), **format_kwargs)
 
 
-def format_data(df, index, **kwargs):
+def intuit_column_groups(df, index):
+    cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
+    year_cols, time_cols, extra_cols = [], [], []
+    for i in cols:
+        # if the column name can be cast to integer, assume it's a year column
+        try:
+            int(i)
+            year_cols.append(i)
+
+        # otherwise, try casting to datetime
+        except (ValueError, TypeError):
+            try:
+                dateutil.parser.parse(str(i))
+                time_cols.append(i)
+
+            # neither year nor datetime, so it is an extra-column
+            except ValueError:
+                extra_cols.append(i)
+    if year_cols and not time_cols:
+        time_col = "year"
+        melt_cols = sorted(year_cols)
+    else:
+        time_col = "time"
+        melt_cols = sorted(year_cols) + sorted(time_cols)
+    if not melt_cols:
+        raise ValueError("Missing time domain")
+    return extra_cols, time_col, melt_cols
+
+def fast_format_data(df, index=DEFAULT_META_INDEX):
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError('Fast format only works if provided a pd.DataFrame')
+    col_diff = set(IAMC_IDX) - set(df.columns)
+    if col_diff:
+        raise ValueError(f'Missing required columns: {col_diff}')
+
+    if "value" not in df.columns:
+        extra_cols, time_col, melt_cols = intuit_column_groups(df, index)
+        df = pd.melt(
+            df,
+            id_vars=index + REQUIRED_COLS + extra_cols,
+            var_name=time_col,
+            value_vars=melt_cols,
+            value_name="value",
+        )
+
+        # cast to pd.Series, check for duplicates
+        idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
+        df.set_index(idx_cols, inplace=True)
+        df = df.value
+
+    df.sort_index(inplace=True)
+    return df, index, time_col, extra_cols
+
+def format_data(df, index, fast=False, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
+    if fast:
+        return fast_format_data(df, index)
+
     if isinstance(df, pd.Series):
         df.name = df.name or "value"
         df = df.to_frame()

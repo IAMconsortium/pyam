@@ -120,7 +120,7 @@ class IamDataFrame(object):
     for those who are not used to the pandas/Python universe.
     """
 
-    def __init__(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
+    def __init__(self, data, meta=None, index=DEFAULT_META_INDEX, fast=False, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
@@ -133,9 +133,9 @@ class IamDataFrame(object):
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
-            self._init(data, meta, index=index, **kwargs)
+            self._init(data, meta, index=index, fast=fast, **kwargs)
 
-    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
+    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, fast=False, **kwargs):
         """Process data and set attributes for new instance"""
 
         # pop kwarg for meta_sheet_name (prior to reading data from file)
@@ -163,7 +163,8 @@ class IamDataFrame(object):
 
         # cast data from pandas
         elif isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _data = format_data(data.copy(), index=index, **kwargs)
+            _data = data if fast else data.copy()
+            _data = format_data(_data, index=index, fast=fast, **kwargs)
 
         # unsupported `data` args
         elif islistable(data):

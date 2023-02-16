@@ -72,6 +72,10 @@ def test_init_from_iamdf(test_df_year):
     assert df.scenario == ["scen_b", "scen_bar"]
     assert test_df_year.scenario == ["scen_b", "scen_foo"]
 
+def test_init_fast(test_df_year):
+    obs = IamDataFrame(test_df_year, fast=True)
+    exp = IamDataFrame(test_df_year)
+    assert_iamframe_equal(obs, exp)
 
 def test_init_from_iamdf_raises(test_df_year):
     # casting an IamDataFrame instance again with extra args fails
