@@ -225,6 +225,7 @@ def test_load_meta_empty(test_pd_df):
     exp = IamDataFrame(test_pd_df)
     assert_iamframe_equal(obs, exp)
 
+
 @pytest.mark.parametrize("fast", [True, False])
 def test_load_ssp_database_downloaded_file(test_pd_df, fast):
     exp = IamDataFrame(test_pd_df).filter(**FILTER_ARGS).as_pandas()

@@ -211,28 +211,29 @@ def intuit_column_groups(df, index):
         raise ValueError("Missing time domain")
     return extra_cols, time_col, melt_cols
 
+
 def fast_format_data(df, index=DEFAULT_META_INDEX):
     if not isinstance(df, pd.DataFrame):
-        raise TypeError('Fast format only works if provided a pd.DataFrame')
+        raise TypeError("Fast format only works if provided a pd.DataFrame")
 
     # all lower case
     str_cols = [c for c in df.columns if isstr(c)]
     df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
-    
+
     if "notes" in df.columns:  # this came from the database
         logger.info("Ignoring notes column in dataframe")
         df.drop(columns="notes", inplace=True)
         col = df.columns[0]  # first column has database copyright notice
         df = df[~df[col].str.contains("database", case=False)]
-    
+
     col_diff = set(IAMC_IDX) - set(df.columns)
     if col_diff:
-        raise ValueError(f'Missing required columns: {col_diff}')
-    
+        raise ValueError(f"Missing required columns: {col_diff}")
+
     extra_cols, time_col, melt_cols = intuit_column_groups(df, index)
     # build idx in expected order with IAMC_IDX first
-    idx = IAMC_IDX + list(set(index + extra_cols)- set(IAMC_IDX))
-    if "value" not in df.columns:    
+    idx = IAMC_IDX + list(set(index + extra_cols) - set(IAMC_IDX))
+    if "value" not in df.columns:
         df = pd.melt(
             df,
             id_vars=idx,
@@ -247,8 +248,9 @@ def fast_format_data(df, index=DEFAULT_META_INDEX):
     # cast to pd.Series and return
     idx_cols = idx + [time_col]
     df.set_index(idx_cols, inplace=True)
-    df.sort_index(inplace=True) # TODO: not sure this is needed
+    #    df.sort_index(inplace=True) # TODO: not sure this is needed
     return df.value, index, time_col, extra_cols
+
 
 def format_data(df, index, fast=False, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
@@ -440,7 +442,8 @@ def format_data(df, index, fast=False, **kwargs):
     if df.empty:
         logger.warning("Formatted data is empty!")
 
-    return df.sort_index(), index, time_col, extra_cols
+    #    return df.sort_index(), index, time_col, extra_cols
+    return df, index, time_col, extra_cols
 
 
 def sort_data(data, cols):
