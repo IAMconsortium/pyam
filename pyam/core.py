@@ -159,7 +159,7 @@ class IamDataFrame(object):
             if not data.is_file():
                 raise FileNotFoundError(f"No such file: '{data}'")
             logger.info(f"Reading file {data}")
-            _data = read_file(data, index=index, **kwargs)
+            _data = read_file(data, index=index, fast=fast, **kwargs)
 
         # cast data from pandas
         elif isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):

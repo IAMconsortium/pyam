@@ -225,15 +225,16 @@ def test_load_meta_empty(test_pd_df):
     exp = IamDataFrame(test_pd_df)
     assert_iamframe_equal(obs, exp)
 
-
-def test_load_ssp_database_downloaded_file(test_pd_df):
+@pytest.mark.parametrize("fast", [True, False])
+def test_load_ssp_database_downloaded_file(test_pd_df, fast):
     exp = IamDataFrame(test_pd_df).filter(**FILTER_ARGS).as_pandas()
     file = TEST_DATA_DIR / "test_SSP_database_raw_download.xlsx"
-    obs_df = IamDataFrame(file)
+    obs_df = IamDataFrame(file, fast=fast)
     pd.testing.assert_frame_equal(obs_df.as_pandas(), exp)
 
 
 def test_load_rcp_database_downloaded_file(test_pd_df):
+    # RCP data not tested for fast at present because it requires additional processing
     exp = IamDataFrame(test_pd_df).filter(**FILTER_ARGS).as_pandas()
     file = TEST_DATA_DIR / "test_RCP_database_raw_download.xlsx"
     obs_df = IamDataFrame(file)

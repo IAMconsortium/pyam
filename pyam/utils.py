@@ -169,16 +169,18 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
             return False
 
         empty_cols = [c for c in df.columns if is_empty(c, df[c])]
-        return df.drop(columns=empty_cols).dropna(axis=0, how="all")
+        df.drop(columns=empty_cols, inplace=True)
+        df.dropna(axis=0, how="all", inplace=True)
+        return df
 
 
-def read_file(path, *args, **kwargs):
+def read_file(path, fast=False, *args, **kwargs):
     """Read data from a file"""
     # extract kwargs that are intended for `format_data`
     format_kwargs = dict(index=kwargs.pop("index"))
     for c in [i for i in IAMC_IDX + ["year", "time", "value"] if i in kwargs]:
         format_kwargs[c] = kwargs.pop(c)
-    return format_data(read_pandas(path, *args, **kwargs), **format_kwargs)
+    return format_data(read_pandas(path, *args, **kwargs), fast=fast, **format_kwargs)
 
 
 def intuit_column_groups(df, index):
@@ -212,27 +214,41 @@ def intuit_column_groups(df, index):
 def fast_format_data(df, index=DEFAULT_META_INDEX):
     if not isinstance(df, pd.DataFrame):
         raise TypeError('Fast format only works if provided a pd.DataFrame')
+
+    # all lower case
+    str_cols = [c for c in df.columns if isstr(c)]
+    df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
+    
+    if "notes" in df.columns:  # this came from the database
+        logger.info("Ignoring notes column in dataframe")
+        df.drop(columns="notes", inplace=True)
+        col = df.columns[0]  # first column has database copyright notice
+        df = df[~df[col].str.contains("database", case=False)]
+    
     col_diff = set(IAMC_IDX) - set(df.columns)
     if col_diff:
         raise ValueError(f'Missing required columns: {col_diff}')
-
-    if "value" not in df.columns:
-        extra_cols, time_col, melt_cols = intuit_column_groups(df, index)
+    
+    extra_cols, time_col, melt_cols = intuit_column_groups(df, index)
+    # build idx in expected order with IAMC_IDX first
+    idx = IAMC_IDX + list(set(index + extra_cols)- set(IAMC_IDX))
+    if "value" not in df.columns:    
         df = pd.melt(
             df,
-            id_vars=index + REQUIRED_COLS + extra_cols,
+            id_vars=idx,
             var_name=time_col,
             value_vars=melt_cols,
             value_name="value",
         )
 
-        # cast to pd.Series, check for duplicates
-        idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
-        df.set_index(idx_cols, inplace=True)
-        df = df.value
+    df.dropna(inplace=True, subset=["value"])
+    df.loc[df.unit.isnull(), "unit"] = ""
 
-    df.sort_index(inplace=True)
-    return df, index, time_col, extra_cols
+    # cast to pd.Series and return
+    idx_cols = idx + [time_col]
+    df.set_index(idx_cols, inplace=True)
+    df.sort_index(inplace=True) # TODO: not sure this is needed
+    return df.value, index, time_col, extra_cols
 
 def format_data(df, index, fast=False, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
