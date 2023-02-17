@@ -69,10 +69,11 @@ def profile_file(fname):
     return pd.DataFrame.from_dict(data)
 
 def main():
+    # requires downloading AR6 dataset and placing it in the data folder
     import matplotlib.pyplot as plt
     import seaborn as sns
     dfp = profile(max=6)
-    df6 = profile_file(fname=Path('./AR6_Scenarios_Database_World_v1.0.csv'))
+    df6 = profile_file(fname=Path('./data/AR6_Scenarios_Database_World_v1.0.csv'))
     df = pd.concat([dfp, df6]).reset_index()
     df.to_csv('profile_init.csv')
     print(df)
