@@ -248,7 +248,7 @@ def fast_format_data(df, index=DEFAULT_META_INDEX):
     # cast to pd.Series and return
     idx_cols = idx + [time_col]
     df.set_index(idx_cols, inplace=True)
-    #    df.sort_index(inplace=True) # TODO: not sure this is needed
+    df.sort_index(inplace=True) # TODO: not sure this is needed
     return df.value, index, time_col, extra_cols
 
 
@@ -442,8 +442,7 @@ def format_data(df, index, fast=False, **kwargs):
     if df.empty:
         logger.warning("Formatted data is empty!")
 
-    #    return df.sort_index(), index, time_col, extra_cols
-    return df, index, time_col, extra_cols
+    return df.sort_index(), index, time_col, extra_cols
 
 
 def sort_data(data, cols):
