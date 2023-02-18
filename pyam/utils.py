@@ -180,10 +180,32 @@ def read_file(path, fast=False, *args, **kwargs):
     format_kwargs = dict(index=kwargs.pop("index"))
     for c in [i for i in IAMC_IDX + ["year", "time", "value"] if i in kwargs]:
         format_kwargs[c] = kwargs.pop(c)
-    return format_data(read_pandas(path, *args, **kwargs), fast=fast, **format_kwargs)
+    data = read_pandas(path, *args, **kwargs)
+    if fast:
+        # determine non-data columns
+        extra_cols, time_col, data_cols = intuit_column_groups(data)
+        # format columns for fast reading
+        data = data.rename(columns={c: str(c).lower() for c in extra_cols})
+        extra_cols = [str(c).lower() for c in extra_cols]
+        for c in format_kwargs['index']:
+            extra_cols.remove(c)
+        # support databases
+        if 'notes' in data.columns:
+            data = format_from_database(data)
+            extra_cols.remove('notes')
+        # force integer year columns
+        if time_col == 'year':
+           data = data.rename(columns={c: int(c) for c in data_cols})
+        # support file data in long format
+        if 'value' in extra_cols:
+            extra_cols.remove('value')
+        idx = IAMC_IDX + list(set(format_kwargs['index'] + extra_cols) - set(IAMC_IDX))
+        return fast_format_data(data.set_index(idx), **format_kwargs)
+    else:
+        return format_data(data, **format_kwargs)
 
 
-def intuit_column_groups(df, index):
+def intuit_column_groups(df, index=[]):
     cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
     year_cols, time_cols, extra_cols = [], [], []
     for i in cols:
@@ -213,49 +235,56 @@ def intuit_column_groups(df, index):
 
 
 def fast_format_data(df, index=DEFAULT_META_INDEX):
-    if not isinstance(df, pd.DataFrame):
-        raise TypeError("Fast format only works if provided a pd.DataFrame")
+    """A faster formatting funciton with more stringent dataframe requirements
 
-    # all lower case
-    str_cols = [c for c in df.columns if isstr(c)]
-    df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
-
-    if "notes" in df.columns:  # this came from the database
-        logger.info("Ignoring notes column in dataframe")
-        df.drop(columns="notes", inplace=True)
-        col = df.columns[0]  # first column has database copyright notice
-        df = df[~df[col].str.contains("database", case=False)]
-
-    col_diff = set(IAMC_IDX) - set(df.columns)
-    if col_diff:
-        raise ValueError(f"Missing required columns: {col_diff}")
-
-    extra_cols, time_col, melt_cols = intuit_column_groups(df, index)
-    # build idx in expected order with IAMC_IDX first
+    Requirements:
+    1. either a pd.Series or pd.DataFrame with a pyam-compatible MultiIndex
+    2. if a pd.DataFrame, all columns as either integer year or datetime 
+    3. no null values
+    """
+    if not isinstance(df, (pd.DataFrame, pd.Series)):
+        raise TypeError("Fast format only works if provided a pd.DataFrame or pd.Series")
+    if set(IAMC_IDX) - set(df.index.names):
+        raise ValueError(
+            f"Missing required index levels: {set(IAMC_IDX) - set(df.index.names)}"
+            )
+    
+    # index in expected order
+    extra_cols = list(set(df.index.names).difference((set(IAMC_IDX) | set(index))))
+    if len(set(['time', 'year']) - set(extra_cols)) == 0:
+        raise ValueError('Can not have time and year as indicies')
     idx = IAMC_IDX + list(set(index + extra_cols) - set(IAMC_IDX))
-    if "value" not in df.columns:
-        df = pd.melt(
-            df,
-            id_vars=idx,
-            var_name=time_col,
-            value_vars=melt_cols,
-            value_name="value",
+    df = df.reorder_levels(idx)
+
+    # migrate dataframe to series
+    if isinstance(df, pd.DataFrame):
+        _, time_col, _ = intuit_column_groups(df, index=index)
+        df = df.rename_axis(columns=time_col)
+        df = df.stack()
+    else:
+        time_col = list(set(['time', 'year']) & set(extra_cols))[0]
+        extra_cols = list(set(extra_cols) - set(['time', 'year']))
+
+    df.name = 'value'
+
+    return df, index, time_col, extra_cols
+
+def format_from_database(df):
+    logger.info("Ignoring notes column in dataframe")
+    df.drop(columns="notes", inplace=True)
+    col = df.columns[0]  # first column has database copyright notice
+    df = df[~df[col].str.contains("database", case=False)]
+    if "scenario" in df.columns and "model" not in df.columns:
+        # model and scenario are jammed together in RCP data
+        scen = df["scenario"]
+        df.loc[:, "model"] = scen.apply(lambda s: s.split("-")[0].strip())
+        df.loc[:, "scenario"] = scen.apply(
+            lambda s: "-".join(s.split("-")[1:]).strip()
         )
+    return df
 
-    df.dropna(inplace=True, subset=["value"])
-    df.loc[df.unit.isnull(), "unit"] = ""
-
-    # cast to pd.Series and return
-    idx_cols = idx + [time_col]
-    df.set_index(idx_cols, inplace=True)
-    df.sort_index(inplace=True) # TODO: not sure this is needed
-    return df.value, index, time_col, extra_cols
-
-
-def format_data(df, index, fast=False, **kwargs):
+def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
-    if fast:
-        return fast_format_data(df, index)
 
     if isinstance(df, pd.Series):
         df.name = df.name or "value"
@@ -315,17 +344,7 @@ def format_data(df, index, fast=False, **kwargs):
     df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
 
     if "notes" in df.columns:  # this came from the database
-        logger.info("Ignoring notes column in dataframe")
-        df.drop(columns="notes", inplace=True)
-        col = df.columns[0]  # first column has database copyright notice
-        df = df[~df[col].str.contains("database", case=False)]
-        if "scenario" in df.columns and "model" not in df.columns:
-            # model and scenario are jammed together in RCP data
-            scen = df["scenario"]
-            df.loc[:, "model"] = scen.apply(lambda s: s.split("-")[0].strip())
-            df.loc[:, "scenario"] = scen.apply(
-                lambda s: "-".join(s.split("-")[1:]).strip()
-            )
+        df = format_from_database(df)
 
     # reset the index if meaningful entries are included there
     if not list(df.index.names) == [None]:

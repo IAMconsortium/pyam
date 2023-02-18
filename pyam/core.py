@@ -28,6 +28,7 @@ from pyam.utils import (
     write_sheet,
     read_file,
     read_pandas,
+    fast_format_data,
     format_data,
     merge_meta,
     find_depth,
@@ -162,9 +163,11 @@ class IamDataFrame(object):
             _data = read_file(data, index=index, fast=fast, **kwargs)
 
         # cast data from pandas
-        elif isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _data = data if fast else data.copy()
-            _data = format_data(_data, index=index, fast=fast, **kwargs)
+        elif isinstance(data, (pd.DataFrame, pd.Series)):
+            if fast:
+                _data = fast_format_data(data, index=index, **kwargs)
+            else:
+                _data = format_data(data.copy(), index=index, **kwargs)
 
         # unsupported `data` args
         elif islistable(data):
