@@ -187,19 +187,19 @@ def read_file(path, fast=False, *args, **kwargs):
         # format columns for fast reading
         data = data.rename(columns={c: str(c).lower() for c in extra_cols})
         extra_cols = [str(c).lower() for c in extra_cols]
-        for c in format_kwargs['index']:
+        for c in format_kwargs["index"]:
             extra_cols.remove(c)
         # support databases
-        if 'notes' in data.columns:
+        if "notes" in data.columns:
             data = format_from_database(data)
-            extra_cols.remove('notes')
+            extra_cols.remove("notes")
         # force integer year columns
-        if time_col == 'year':
-           data = data.rename(columns={c: int(c) for c in data_cols})
+        if time_col == "year":
+            data = data.rename(columns={c: int(c) for c in data_cols})
         # support file data in long format
-        if 'value' in extra_cols:
-            extra_cols.remove('value')
-        idx = IAMC_IDX + list(set(format_kwargs['index'] + extra_cols) - set(IAMC_IDX))
+        if "value" in extra_cols:
+            extra_cols.remove("value")
+        idx = IAMC_IDX + list(set(format_kwargs["index"] + extra_cols) - set(IAMC_IDX))
         return fast_format_data(data.set_index(idx), **format_kwargs)
     else:
         return format_data(data, **format_kwargs)
@@ -239,20 +239,22 @@ def fast_format_data(df, index=DEFAULT_META_INDEX):
 
     Requirements:
     1. either a pd.Series or pd.DataFrame with a pyam-compatible MultiIndex
-    2. if a pd.DataFrame, all columns as either integer year or datetime 
+    2. if a pd.DataFrame, all columns as either integer year or datetime
     3. no null values
     """
     if not isinstance(df, (pd.DataFrame, pd.Series)):
-        raise TypeError("Fast format only works if provided a pd.DataFrame or pd.Series")
+        raise TypeError(
+            "Fast format only works if provided a pd.DataFrame or pd.Series"
+        )
     if set(IAMC_IDX) - set(df.index.names):
         raise ValueError(
             f"Missing required index levels: {set(IAMC_IDX) - set(df.index.names)}"
-            )
-    
+        )
+
     # index in expected order
     extra_cols = list(set(df.index.names).difference((set(IAMC_IDX) | set(index))))
-    if len(set(['time', 'year']) - set(extra_cols)) == 0:
-        raise ValueError('Can not have time and year as indicies')
+    if len(set(["time", "year"]) - set(extra_cols)) == 0:
+        raise ValueError("Can not have time and year as indicies")
     idx = IAMC_IDX + list(set(index + extra_cols) - set(IAMC_IDX))
     df = df.reorder_levels(idx)
 
@@ -262,12 +264,13 @@ def fast_format_data(df, index=DEFAULT_META_INDEX):
         df = df.rename_axis(columns=time_col)
         df = df.stack()
     else:
-        time_col = list(set(['time', 'year']) & set(extra_cols))[0]
-        extra_cols = list(set(extra_cols) - set(['time', 'year']))
+        time_col = list(set(["time", "year"]) & set(extra_cols))[0]
+        extra_cols = list(set(extra_cols) - set(["time", "year"]))
 
-    df.name = 'value'
+    df.name = "value"
 
     return df, index, time_col, extra_cols
+
 
 def format_from_database(df):
     logger.info("Ignoring notes column in dataframe")
@@ -278,10 +281,9 @@ def format_from_database(df):
         # model and scenario are jammed together in RCP data
         scen = df["scenario"]
         df.loc[:, "model"] = scen.apply(lambda s: s.split("-")[0].strip())
-        df.loc[:, "scenario"] = scen.apply(
-            lambda s: "-".join(s.split("-")[1:]).strip()
-        )
+        df.loc[:, "scenario"] = scen.apply(lambda s: "-".join(s.split("-")[1:]).strip())
     return df
+
 
 def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
