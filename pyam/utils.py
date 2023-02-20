@@ -445,8 +445,6 @@ def format_data(df, index, **kwargs):
         )
 
     # cast value column to numeric and drop nan
-    print('foo', type(df))
-    print(df)
     try:
         df = pd.to_numeric(df)
     except ValueError as e:
