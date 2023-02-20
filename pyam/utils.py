@@ -369,6 +369,9 @@ def format_data(df, index, **kwargs):
     if missing_required_col:
         raise ValueError(f"Missing required columns: {missing_required_col}")
 
+    # replace missing units by an empty string for user-friendly filtering
+    df.loc[df.unit.isnull(), "unit"] = ""
+
     # check whether data in wide format (IAMC) or long format (`value` column)
     if "value" in df.columns:
         # check if time column is given as `year` (int) or `time` (datetime)
@@ -383,6 +386,7 @@ def format_data(df, index, **kwargs):
             for c in df.columns
             if c not in index + REQUIRED_COLS + [time_col, "value"]
         ]
+        wide = False
     else:
         # if in wide format, check if columns are years (int) or datetime
         cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
@@ -411,19 +415,40 @@ def format_data(df, index, **kwargs):
             melt_cols = sorted(year_cols) + sorted(time_cols)
         if not melt_cols:
             raise ValueError("Missing time domain")
+        wide = True
+    
+    # verify that there are no nan's left (in columns), and transform data
+    idx = index + REQUIRED_COLS + extra_cols
+    null_rows = df[idx].isnull().T.any()
+    if null_rows.any():
+        _df = df[idx]
+        cols = ", ".join(_df.columns[_df.isnull().any().values])
+        raise_data_error(
+            f"Empty cells in `data` (columns: '{cols}')", _df.loc[null_rows]
+        )
+    del null_rows
 
-        # melt the dataframe
-        df = pd.melt(
-            df,
-            id_vars=index + REQUIRED_COLS + extra_cols,
-            var_name=time_col,
-            value_vars=melt_cols,
-            value_name="value",
+    if wide:
+        df = (
+            df
+            .set_index(idx)
+            [melt_cols]
+            .rename_axis(columns=time_col)
+            .stack()
+        )
+        df.name = "value"
+    else:
+        df = (
+            df
+            .set_index(idx + [time_col])
+            ['value']
         )
 
     # cast value column to numeric and drop nan
+    print('foo', type(df))
+    print(df)
     try:
-        df["value"] = pd.to_numeric(df["value"])
+        df = pd.to_numeric(df)
     except ValueError as e:
         # get the row number where the error happened
         row_nr_regex = re.compile(r"(?<=at position )\d+")
@@ -432,23 +457,7 @@ def format_data(df, index, **kwargs):
         short_error = short_error_regex.search(str(e)).group()
         raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
 
-    df.dropna(inplace=True, subset=["value"])
-
-    # replace missing units by an empty string for user-friendly filtering
-    df.loc[df.unit.isnull(), "unit"] = ""
-
-    # verify that there are no nan's left (in columns)
-    null_rows = df.isnull().T.any()
-    if null_rows.any():
-        cols = ", ".join(df.columns[df.isnull().any().values])
-        raise_data_error(
-            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
-        )
-    del null_rows
-
-    # cast to pd.Series, check for duplicates
-    idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
-    df = df.set_index(idx_cols).value
+    df = df.dropna()
 
     # format the time-column
     _time = [to_time(i) for i in get_index_levels(df.index, time_col)]

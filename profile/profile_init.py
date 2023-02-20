@@ -48,6 +48,8 @@ def gen_float(N, years=YEARS):
 
 @timeit
 def gen_frame(data, fast):
+    if fast:
+        data = data.set_index(pyam.IAMC_IDX)
     return pyam.IamDataFrame(data, fast=fast)
 
 
@@ -61,8 +63,6 @@ def profile(max=5):
                 fdata = pd.DataFrame(gen_float(N), columns=YEARS)
                 _data = pd.concat([strdata, fdata], axis=1)
                 fast = type == "fast"
-                if fast:
-                    _data = _data.set_index(pyam.IAMC_IDX)
                 time, df = gen_frame(_data, fast=fast)
                 print(N, type, time)
                 data["N"].append(N)
