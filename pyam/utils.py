@@ -293,6 +293,7 @@ def format_data(df, index, **kwargs):
         # cast to pd.Series
         idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
         df = df.set_index(idx_cols).value
+        df.dropna(inplace=True)
 
     else:
 
@@ -334,24 +335,31 @@ def format_data(df, index, **kwargs):
         df.index.names = df.index.names[:-1] + [time_col]
 
     # cast value column to numeric and drop nan
-#    try:
-#        df["value"] = pd.to_numeric(df["value"])
-#    except ValueError as e:
+    try:
+        df = pd.to_numeric(df)
+    except ValueError as e:
         # get the row number where the error happened
-#        row_nr_regex = re.compile(r"(?<=at position )\d+")
-#        row_nr = int(row_nr_regex.search(str(e)).group())
-#        short_error_regex = re.compile(r".*(?= at position \d*)")
-#        short_error = short_error_regex.search(str(e)).group()
-#        raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
+        row_nr_regex = re.compile(r"(?<=at position )\d+")
+        row_nr = int(row_nr_regex.search(str(e)).group())
+        short_error_regex = re.compile(r".*(?= at position \d*)")
+        short_error = short_error_regex.search(str(e)).group()
+        raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
 
-    # verify that there are no nan's left (in columns)
-#    null_rows = df.isnull().T.any()
-#    if null_rows.any():
-#        cols = ", ".join(df.columns[df.isnull().any().values])
-#        raise_data_error(
-#            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
-#        )
-#    del null_rows
+    # verify that there are no nan's in the index
+    null_rows = np.zeros(len(df), dtype=bool)
+    null_cols = []
+    for _name, _codes in zip(df.index.names, df.index.codes):
+        _null_fields = [i == -1 for i in _codes]
+        if any(_null_fields):
+            null_rows = np.logical_or(null_rows, _null_fields)
+            null_cols.append(_name)
+
+    if null_cols:
+        cols = ", ".join(null_cols)
+        raise_data_error(
+            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
+        )
+    del null_rows
 
     # format the time-column
     _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
