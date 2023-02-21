@@ -319,8 +319,12 @@ def _intuit_column_groups(df, index):
 def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
     if isinstance(df, pd.Series):
-        df.name = df.name or "value"
-        df = df.to_frame()
+        if not df.name:
+            df = df.rename("value")
+        df = df.reset_index()
+    elif not list(df.index.names) == [None]:
+        # reset the index if meaningful entries are included there
+        df = df.reset_index()
 
     df = _convert_r_columns(df)
 
@@ -332,10 +336,6 @@ def format_data(df, index, **kwargs):
 
     if "notes" in df.columns:  # this came from the database
         df = _format_from_database(df)
-
-    # reset the index if meaningful entries are included there
-    if not list(df.index.names) == [None]:
-        df.reset_index(inplace=True)
 
     # replace missing units by an empty string for user-friendly filtering
     df = df.assign(unit=df["unit"].fillna(""))
