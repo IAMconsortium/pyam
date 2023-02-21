@@ -6,16 +6,12 @@ import six
 import re
 import dateutil
 
-from pyam.index import get_index_levels, replace_index_labels
+from pyam.index import replace_index_labels
 from pyam.logging import raise_data_error
 import numpy as np
 import pandas as pd
 from collections.abc import Iterable
 
-try:
-    import seaborn as sns
-except ImportError:
-    pass
 
 logger = logging.getLogger(__name__)
 
@@ -174,39 +170,59 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
         return df
 
 
-def read_file(path, fast=False, *args, **kwargs):
+def read_file(path, *args, **kwargs):
     """Read data from a file"""
     # extract kwargs that are intended for `format_data`
     format_kwargs = dict(index=kwargs.pop("index"))
     for c in [i for i in IAMC_IDX + ["year", "time", "value"] if i in kwargs]:
         format_kwargs[c] = kwargs.pop(c)
     data = read_pandas(path, *args, **kwargs)
-    if fast:
-        # determine non-data columns
-        extra_cols, time_col, data_cols = intuit_column_groups(data)
-        # format columns for fast reading
-        data = data.rename(columns={c: str(c).lower() for c in extra_cols})
-        extra_cols = [str(c).lower() for c in extra_cols]
-        for c in format_kwargs["index"]:
-            extra_cols.remove(c)
-        # support databases
-        if "notes" in data.columns:
-            data = format_from_database(data)
-            extra_cols.remove("notes")
-        # force integer year columns
-        if time_col == "year":
-            data = data.rename(columns={c: int(c) for c in data_cols})
-        # support file data in long format
-        if "value" in extra_cols:
-            extra_cols.remove("value")
-        idx = IAMC_IDX + list(set(format_kwargs["index"] + extra_cols) - set(IAMC_IDX))
-        return fast_format_data(data.set_index(idx), **format_kwargs)
-    else:
-        return format_data(data, **format_kwargs)
+    return format_data(data, **format_kwargs)
 
 
 def intuit_column_groups(df, index=[]):
-    cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
+    existing_cols = pd.Index(df.index.names).dropna() # skip unnamed columns
+    if isinstance(df, pd.Series):
+        existing_cols = existing_cols.union(["value"])
+    elif isinstance(df, pd.DataFrame):
+        existing_cols = existing_cols.union(df.columns)
+
+    # check that there is no column in the timeseries data with reserved names
+    conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
+    if conflict_cols:
+        msg = f"Column name {conflict_cols} is illegal for timeseries data.\n"
+        _args = ", ".join([f"{i}_1='{i}'" for i in conflict_cols])
+        msg += f"Use `IamDataFrame(..., {_args})` to rename at initialization."
+        raise ValueError(msg)
+
+    # check that index and required columns exist
+    missing_index = [c for c in index if c not in existing_cols]
+    if missing_index:
+        raise ValueError(f"Missing index columns: {missing_index}")
+
+    missing_required_col = [c for c in REQUIRED_COLS if c not in existing_cols]
+    if missing_required_col:
+        raise ValueError(f"Missing required columns: {missing_required_col}")
+
+    # check whether data in wide format (IAMC) or long format (`value` column)
+    if "value" in existing_cols:
+        # check if time column is given as `year` (int) or `time` (datetime)
+        if "year" in existing_cols and "time" not in existing_cols:
+            time_col = "year"
+        elif "time" in existing_cols and "year" not in existing_cols:
+            time_col = "time"
+        else:
+            raise ValueError("Invalid time domain, must have either `year` or `time`!")
+        extra_cols = [
+            c
+            for c in existing_cols
+            if c not in index + REQUIRED_COLS + [time_col, "value"]
+        ]
+
+        return extra_cols, time_col, []
+
+    # if in wide format, check if columns are years (int) or datetime
+    cols = [c for c in existing_cols if c not in index + REQUIRED_COLS]
     year_cols, time_cols, extra_cols = [], [], []
     for i in cols:
         # if the column name can be cast to integer, assume it's a year column
@@ -223,53 +239,16 @@ def intuit_column_groups(df, index=[]):
             # neither year nor datetime, so it is an extra-column
             except ValueError:
                 extra_cols.append(i)
+
     if year_cols and not time_cols:
         time_col = "year"
-        melt_cols = sorted(year_cols)
+        data_cols = sorted(year_cols)
     else:
         time_col = "time"
-        melt_cols = sorted(year_cols) + sorted(time_cols)
-    if not melt_cols:
+        data_cols = sorted(year_cols) + sorted(time_cols)
+    if not data_cols:
         raise ValueError("Missing time domain")
-    return extra_cols, time_col, melt_cols
-
-
-def fast_format_data(df, index=DEFAULT_META_INDEX):
-    """A faster formatting funciton with more stringent dataframe requirements
-
-    Requirements:
-    1. either a pd.Series or pd.DataFrame with a pyam-compatible MultiIndex
-    2. if a pd.DataFrame, all columns as either integer year or datetime
-    3. no null values
-    """
-    if not isinstance(df, (pd.DataFrame, pd.Series)):
-        raise TypeError(
-            "Fast format only works if provided a pd.DataFrame or pd.Series"
-        )
-    if set(IAMC_IDX) - set(df.index.names):
-        raise ValueError(
-            f"Missing required index levels: {set(IAMC_IDX) - set(df.index.names)}"
-        )
-
-    # index in expected order
-    extra_cols = list(set(df.index.names).difference((set(IAMC_IDX) | set(index))))
-    if len(set(["time", "year"]) - set(extra_cols)) == 0:
-        raise ValueError("Can not have time and year as indicies")
-    idx = IAMC_IDX + list(set(index + extra_cols) - set(IAMC_IDX))
-    df = df.reorder_levels(idx)
-
-    # migrate dataframe to series
-    if isinstance(df, pd.DataFrame):
-        _, time_col, _ = intuit_column_groups(df, index=index)
-        df = df.rename_axis(columns=time_col)
-        df = df.stack()
-    else:
-        time_col = list(set(["time", "year"]) & set(extra_cols))[0]
-        extra_cols = list(set(extra_cols) - set(["time", "year"]))
-
-    df.name = "value"
-
-    return df, index, time_col, extra_cols
+    return extra_cols, time_col, data_cols
 
 
 def format_from_database(df):
@@ -285,15 +264,9 @@ def format_from_database(df):
     return df
 
 
-def format_data(df, index, **kwargs):
-    """Convert a pandas.Dataframe or pandas.Series to the required format"""
-
-    if isinstance(df, pd.Series):
-        df.name = df.name or "value"
-        df = df.to_frame()
-
+def convert_r_columns(df):
     # check for R-style year columns, converting where necessary
-    def convert_r_columns(c):
+    def _convert_r_columns(c):
         try:
             first = c[0]
             second = c[1:]
@@ -309,8 +282,10 @@ def format_data(df, index, **kwargs):
             pass
         return c
 
-    df.columns = df.columns.map(convert_r_columns)
+    return df.set_axis(df.columns.map(_convert_r_columns), axis="columns")
 
+
+def knead_data(df, **kwargs):
     # if `value` is given but not `variable`,
     # melt value columns and use column name as `variable`
     if "value" in kwargs and "variable" not in kwargs:
@@ -340,109 +315,83 @@ def format_data(df, index, **kwargs):
             df[col] = value
         else:
             raise ValueError(f"Invalid argument for casting `{col}: {value}`")
-
-    # all lower case
-    str_cols = [c for c in df.columns if isstr(c)]
-    df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
-
-    if "notes" in df.columns:  # this came from the database
-        df = format_from_database(df)
-
-    # reset the index if meaningful entries are included there
-    if not list(df.index.names) == [None]:
-        df.reset_index(inplace=True)
-
-    # check that there is no column in the timeseries data with reserved names
-    conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
-    if conflict_cols:
-        msg = f"Column name {conflict_cols} is illegal for timeseries data.\n"
-        _args = ", ".join([f"{i}_1='{i}'" for i in conflict_cols])
-        msg += f"Use `IamDataFrame(..., {_args})` to rename at initialization."
-        raise ValueError(msg)
-
-    # check that index and required columns exist
-    missing_index = [c for c in index if c not in df.columns]
-    if missing_index:
-        raise ValueError(f"Missing index columns: {missing_index}")
-
-    missing_required_col = [c for c in REQUIRED_COLS if c not in df.columns]
-    if missing_required_col:
-        raise ValueError(f"Missing required columns: {missing_required_col}")
-
-    # replace missing units by an empty string for user-friendly filtering
-    df.loc[df.unit.isnull(), "unit"] = ""
-
-    # check whether data in wide format (IAMC) or long format (`value` column)
-    if "value" in df.columns:
-        # check if time column is given as `year` (int) or `time` (datetime)
-        if "year" in df.columns and "time" not in df.columns:
-            time_col = "year"
-        elif "time" in df.columns and "year" not in df.columns:
-            time_col = "time"
-        else:
-            raise ValueError("Invalid time domain, must have either `year` or `time`!")
-        extra_cols = [
-            c
-            for c in df.columns
-            if c not in index + REQUIRED_COLS + [time_col, "value"]
-        ]
-        wide = False
-    else:
-        # if in wide format, check if columns are years (int) or datetime
-        cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
-        year_cols, time_cols, extra_cols = [], [], []
-        for i in cols:
-            # if the column name can be cast to integer, assume it's a year column
-            try:
-                int(i)
-                year_cols.append(i)
-
-            # otherwise, try casting to datetime
-            except (ValueError, TypeError):
-                try:
-                    dateutil.parser.parse(str(i))
-                    time_cols.append(i)
-
-                # neither year nor datetime, so it is an extra-column
-                except ValueError:
-                    extra_cols.append(i)
-
-        if year_cols and not time_cols:
-            time_col = "year"
-            melt_cols = sorted(year_cols)
-        else:
-            time_col = "time"
-            melt_cols = sorted(year_cols) + sorted(time_cols)
-        if not melt_cols:
-            raise ValueError("Missing time domain")
-        wide = True
     
+    return df
+
+
+def transform_to_series(df, index):
+    extra_cols, time_col, data_cols = intuit_column_groups(df, index)
+
     # verify that there are no nan's left (in columns), and transform data
     idx = index + REQUIRED_COLS + extra_cols
-    null_rows = df[idx].isnull().T.any()
+    null_rows = df[idx].isnull().any(axis=1)
     if null_rows.any():
         _df = df[idx]
         cols = ", ".join(_df.columns[_df.isnull().any().values])
         raise_data_error(
             f"Empty cells in `data` (columns: '{cols}')", _df.loc[null_rows]
         )
-    del null_rows
 
-    if wide:
+    if data_cols:
         df = (
-            df
-            .set_index(idx)
-            [melt_cols]
+            df.set_index(idx)[data_cols]
             .rename_axis(columns=time_col)
             .stack()
+            .rename("value")
         )
-        df.name = "value"
     else:
-        df = (
-            df
-            .set_index(idx + [time_col])
-            ['value']
+        df = df.set_index(idx + [time_col])["value"]
+
+    return df, extra_cols, time_col
+
+
+def format_data(df, index, **kwargs):
+    """Convert a pandas.Dataframe or pandas.Series to the required format"""
+
+    if set(df.index.names) >= set(index) | set(REQUIRED_COLS) and not kwargs:
+        # Let's try to cut corners here, it's our fast-path
+        extra_cols, time_col, data_cols = intuit_column_groups(df, index=index)
+
+        if isinstance(df, pd.DataFrame):
+            extra_cols_not_in_index = [c for c in extra_cols if c in df.columns]
+            if extra_cols_not_in_index:
+                df = df.set_index(extra_cols_not_in_index, append=True)
+
+            if data_cols:
+                df = df[data_cols]
+                df = df.rename_axis(columns=time_col)
+                df = df.stack()
+                df = df.rename("value")
+            else:
+                df = df["value"]
+
+        df = df.reorder_levels(index + REQUIRED_COLS + extra_cols + [time_col])
+
+    else:
+        # reset the index if meaningful entries are included there
+        if isinstance(df, pd.Series):
+            df = df.rename("value").reset_index()
+        elif not list(df.index.names) == [None]:
+            df = df.reset_index()
+
+        df = convert_r_columns(df)
+
+        if kwargs:
+            df = knead_data(df, **kwargs)
+
+        # all lower case
+        df.rename(
+            columns={c: str(c).lower() for c in df.columns if isstr(c)}, inplace=True
         )
+
+        if "notes" in df.columns:  # this came from the database
+            df = format_from_database(df)
+
+        # replace missing units by an empty string for user-friendly filtering
+        if "unit" in df.columns:
+            df = df.assign(unit=df.unit.fillna(""))
+
+        df, extra_cols, time_col = transform_to_series(df, index)
 
     # cast value column to numeric and drop nan
     try:
@@ -458,15 +407,16 @@ def format_data(df, index, **kwargs):
     df = df.dropna()
 
     # format the time-column
-    _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
-    df.index = replace_index_labels(df.index, time_col, _time)
+    timelevel = df.index.levels[df.index.names.index(time_col)]
+    if timelevel.dtype != int:
+        df.index = replace_index_labels(df.index, time_col, timelevel.map(to_time))
 
+    # TODO this duplication check is also quite expensive: make it optional?
     rows = df.index.duplicated()
     if any(rows):
         raise_data_error(
             "Duplicate rows in `data`", df[rows].index.to_frame(index=False)
         )
-    del rows
     if df.empty:
         logger.warning("Formatted data is empty!")
 
