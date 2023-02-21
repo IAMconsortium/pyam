@@ -31,4 +31,4 @@ jobs:
       run: pip install .[tests,optional_plotting,optional_io_formats,tutorials]
 
     - name: Test with pytest
-      run: pytest tests --mpl
+      run: pytest tests
