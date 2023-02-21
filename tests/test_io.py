@@ -226,11 +226,10 @@ def test_load_meta_empty(test_pd_df):
     assert_iamframe_equal(obs, exp)
 
 
-@pytest.mark.parametrize("fast", [True, False])
-def test_load_ssp_database_downloaded_file(test_pd_df, fast):
+def test_load_ssp_database_downloaded_file(test_pd_df):
     exp = IamDataFrame(test_pd_df).filter(**FILTER_ARGS).as_pandas()
     file = TEST_DATA_DIR / "test_SSP_database_raw_download.xlsx"
-    obs_df = IamDataFrame(file, fast=fast)
+    obs_df = IamDataFrame(file)
     pd.testing.assert_frame_equal(obs_df.as_pandas(), exp)
 
 
