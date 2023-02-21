@@ -28,7 +28,6 @@ from pyam.utils import (
     write_sheet,
     read_file,
     read_pandas,
-    fast_format_data,
     format_data,
     merge_meta,
     find_depth,
@@ -121,7 +120,7 @@ class IamDataFrame(object):
     for those who are not used to the pandas/Python universe.
     """
 
-    def __init__(self, data, meta=None, index=DEFAULT_META_INDEX, fast=False, **kwargs):
+    def __init__(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Initialize an instance of an IamDataFrame"""
         if isinstance(data, IamDataFrame):
             if kwargs:
@@ -134,9 +133,9 @@ class IamDataFrame(object):
             for attr, value in data.__dict__.items():
                 setattr(self, attr, value)
         else:
-            self._init(data, meta, index=index, fast=fast, **kwargs)
+            self._init(data, meta, index=index, **kwargs)
 
-    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, fast=False, **kwargs):
+    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
         """Process data and set attributes for new instance"""
 
         # pop kwarg for meta_sheet_name (prior to reading data from file)
@@ -160,14 +159,11 @@ class IamDataFrame(object):
             if not data.is_file():
                 raise FileNotFoundError(f"No such file: '{data}'")
             logger.info(f"Reading file {data}")
-            _data = read_file(data, index=index, fast=fast, **kwargs)
+            _data = read_file(data, index=index, **kwargs)
 
         # cast data from pandas
         elif isinstance(data, (pd.DataFrame, pd.Series)):
-            if fast:
-                _data = fast_format_data(data, index=index, **kwargs)
-            else:
-                _data = format_data(data.copy(), index=index, **kwargs)
+            _data = format_data(data, index=index, **kwargs)
 
         # unsupported `data` args
         elif islistable(data):
