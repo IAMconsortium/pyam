@@ -181,13 +181,9 @@ def read_file(path, *args, **kwargs):
     return format_data(read_pandas(path, *args, **kwargs), **format_kwargs)
 
 
-def format_data(df, index, **kwargs):
-    """Convert a pandas.Dataframe or pandas.Series to the required format"""
-    if isinstance(df, pd.Series):
-        df.name = df.name or "value"
-        df = df.to_frame()
-
+def _convert_r_columns(df):
     # check for R-style year columns, converting where necessary
+
     def convert_r_columns(c):
         try:
             first = c[0]
@@ -204,8 +200,10 @@ def format_data(df, index, **kwargs):
             pass
         return c
 
-    df.columns = df.columns.map(convert_r_columns)
+    return df.set_axis(df.columns.map(convert_r_columns), axis="columns")
 
+
+def _knead_data(df, **kwargs):
     # if `value` is given but not `variable`,
     # melt value columns and use column name as `variable`
     if "value" in kwargs and "variable" not in kwargs:
@@ -236,27 +234,24 @@ def format_data(df, index, **kwargs):
         else:
             raise ValueError(f"Invalid argument for casting `{col}: {value}`")
 
-    # all lower case
-    str_cols = [c for c in df.columns if isstr(c)]
-    df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
+    return df
 
-    if "notes" in df.columns:  # this came from the database
-        logger.info("Ignoring notes column in dataframe")
-        df.drop(columns="notes", inplace=True)
-        col = df.columns[0]  # first column has database copyright notice
-        df = df[~df[col].str.contains("database", case=False)]
-        if "scenario" in df.columns and "model" not in df.columns:
-            # model and scenario are jammed together in RCP data
-            scen = df["scenario"]
-            df.loc[:, "model"] = scen.apply(lambda s: s.split("-")[0].strip())
-            df.loc[:, "scenario"] = scen.apply(
-                lambda s: "-".join(s.split("-")[1:]).strip()
-            )
 
-    # reset the index if meaningful entries are included there
-    if not list(df.index.names) == [None]:
-        df.reset_index(inplace=True)
+def _format_from_database(df):
+    logger.info("Ignoring notes column in dataframe")
+    df.drop(columns="notes", inplace=True)
+    col = df.columns[0]  # first column has database copyright notice
+    df = df[~df[col].str.contains("database", case=False)]
+    if "scenario" in df.columns and "model" not in df.columns:
+        # model and scenario are jammed together in RCP data
+        scen = df["scenario"]
+        df.loc[:, "model"] = scen.apply(lambda s: s.split("-")[0].strip())
+        df.loc[:, "scenario"] = scen.apply(lambda s: "-".join(s.split("-")[1:]).strip())
 
+    return df
+
+
+def _intuit_column_groups(df, index):
     # check that there is no column in the timeseries data with reserved names
     conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
     if conflict_cols:
@@ -276,7 +271,6 @@ def format_data(df, index, **kwargs):
 
     # check whether data in wide format (standard IAMC) or long format (`value` column)
     if "value" in df.columns:
-
         # check if time column is given as `year` (int) or `time` (datetime)
         if "year" in df.columns and "time" not in df.columns:
             time_col = "year"
@@ -289,19 +283,8 @@ def format_data(df, index, **kwargs):
             for c in df.columns
             if c not in index + REQUIRED_COLS + [time_col, "value"]
         ]
-
-        # replace missing units by an empty string for user-friendly filtering
-        df.loc[df.unit.isnull(), "unit"] = ""
-
-        _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
-
-        # cast to pd.Series
-        idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
-        df = df.set_index(idx_cols).value
-        df.dropna(inplace=True)
-
+        data_cols = []
     else:
-
         # if in wide format, check if columns are years (int) or datetime
         cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
         year_cols, time_cols, extra_cols = [], [], []
@@ -323,23 +306,59 @@ def format_data(df, index, **kwargs):
 
         if year_cols and not time_cols:
             time_col = "year"
-            melt_cols = sorted(year_cols)
+            data_cols = sorted(year_cols)
         else:
             time_col = "time"
-            melt_cols = sorted(year_cols) + sorted(time_cols)
-        if not melt_cols:
+            data_cols = sorted(year_cols) + sorted(time_cols)
+        if not data_cols:
             raise ValueError("Missing time domain")
 
-        # replace missing units by an empty string for user-friendly filtering
-        df.loc[df.unit.isnull(), "unit"] = ""
+    return time_col, extra_cols, data_cols
 
-        _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
 
-        # cast to long format, set
-        df.set_index(index + REQUIRED_COLS + extra_cols, inplace=True)
-        df = df.stack(dropna=True)
-        df.name = "value"
-        df.index.names = df.index.names[:-1] + [time_col]
+def format_data(df, index, **kwargs):
+    """Convert a pandas.Dataframe or pandas.Series to the required format"""
+    if isinstance(df, pd.Series):
+        df.name = df.name or "value"
+        df = df.to_frame()
+
+    df = _convert_r_columns(df)
+
+    if kwargs:
+        df = _knead_data(df, **kwargs)
+
+    # all lower case
+    df.rename(columns={c: str(c).lower() for c in df.columns if isstr(c)}, inplace=True)
+
+    if "notes" in df.columns:  # this came from the database
+        df = _format_from_database(df)
+
+    # reset the index if meaningful entries are included there
+    if not list(df.index.names) == [None]:
+        df.reset_index(inplace=True)
+
+    # replace missing units by an empty string for user-friendly filtering
+    df = df.assign(unit=df["unit"].fillna(""))
+
+    time_col, extra_cols, data_cols = _intuit_column_groups(df, index)
+
+    _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
+
+    idx_order = index + REQUIRED_COLS + [time_col] + extra_cols
+
+    if data_cols:
+        # wide format
+        df = (
+            df
+            .set_index(index + REQUIRED_COLS + extra_cols)
+            .rename_axis(columns=time_col)
+            .stack(dropna=True)
+            .rename("value")
+            .reorder_levels(idx_order)
+        )
+    else:
+        # long format
+        df = df.set_index(idx_order)["value"].dropna()
 
     # cast value column to numeric
     try:
