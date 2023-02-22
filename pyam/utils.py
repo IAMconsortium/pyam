@@ -290,6 +290,11 @@ def format_data(df, index, **kwargs):
             if c not in index + REQUIRED_COLS + [time_col, "value"]
         ]
 
+        # replace missing units by an empty string for user-friendly filtering
+        df.loc[df.unit.isnull(), "unit"] = ""
+
+        _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
+
         # cast to pd.Series
         idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
         df = df.set_index(idx_cols).value
@@ -328,6 +333,8 @@ def format_data(df, index, **kwargs):
         # replace missing units by an empty string for user-friendly filtering
         df.loc[df.unit.isnull(), "unit"] = ""
 
+        _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
+
         # cast to long format, set
         df.set_index(index + REQUIRED_COLS + extra_cols, inplace=True)
         df = df.stack(dropna=True)
@@ -345,22 +352,6 @@ def format_data(df, index, **kwargs):
         short_error = short_error_regex.search(str(e)).group()
         raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
 
-    # verify that there are no nan's in the index
-    null_rows = np.zeros(len(df), dtype=bool)
-    null_cols = []
-    for _name, _codes in zip(df.index.names, df.index.codes):
-        _null_fields = [i == -1 for i in _codes]
-        if any(_null_fields):
-            null_rows = np.logical_or(null_rows, _null_fields)
-            null_cols.append(_name)
-
-    if null_cols:
-        cols = ", ".join(null_cols)
-        raise_data_error(
-            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
-        )
-    del null_rows
-
     # format the time-column
     _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
     df.index = replace_index_labels(df.index, time_col, _time)
@@ -376,6 +367,18 @@ def format_data(df, index, **kwargs):
 
     return df.sort_index(), index, time_col, extra_cols
 
+
+def _validate_complete_index(df):
+    """Validate that there are no nan's in the (index) columns"""
+    null_cells = df.isnull()
+    null_rows = null_cells.T.any()
+    if null_rows.any():
+        null_cols = null_cells.any()
+        cols = ", ".join(null_cols[null_cols].index)
+        raise_data_error(
+            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
+        )
+    del null_rows
 
 def sort_data(data, cols):
     """Sort data rows and order columns by cols"""
