@@ -12,11 +12,6 @@ import numpy as np
 import pandas as pd
 from collections.abc import Iterable
 
-try:
-    import seaborn as sns
-except ImportError:
-    pass
-
 logger = logging.getLogger(__name__)
 
 # common indices
