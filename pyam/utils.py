@@ -316,6 +316,30 @@ def _intuit_column_groups(df, index):
     return time_col, extra_cols, data_cols
 
 
+def _format_data_to_series(df, index):
+    time_col, extra_cols, data_cols = _intuit_column_groups(df, index)
+
+    _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
+
+    idx_order = index + REQUIRED_COLS + [time_col] + extra_cols
+
+    if data_cols:
+        # wide format
+        df = (
+            df
+            .set_index(index + REQUIRED_COLS + extra_cols)
+            .rename_axis(columns=time_col)
+            .stack(dropna=True)
+            .rename("value")
+            .reorder_levels(idx_order)
+        )
+    else:
+        # long format
+        df = df.set_index(idx_order)["value"].dropna()
+
+    return df, time_col, extra_cols
+
+
 def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
     if isinstance(df, pd.Series):
@@ -340,25 +364,7 @@ def format_data(df, index, **kwargs):
     # replace missing units by an empty string for user-friendly filtering
     df = df.assign(unit=df["unit"].fillna(""))
 
-    time_col, extra_cols, data_cols = _intuit_column_groups(df, index)
-
-    _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
-
-    idx_order = index + REQUIRED_COLS + [time_col] + extra_cols
-
-    if data_cols:
-        # wide format
-        df = (
-            df
-            .set_index(index + REQUIRED_COLS + extra_cols)
-            .rename_axis(columns=time_col)
-            .stack(dropna=True)
-            .rename("value")
-            .reorder_levels(idx_order)
-        )
-    else:
-        # long format
-        df = df.set_index(idx_order)["value"].dropna()
+    df, time_col, extra_cols = _format_data_to_series(df, index)
 
     # cast value column to numeric
     try:
