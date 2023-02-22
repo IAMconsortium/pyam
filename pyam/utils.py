@@ -341,7 +341,7 @@ def format_data(df, index, **kwargs):
         df.name = "value"
         df.index.names = df.index.names[:-1] + [time_col]
 
-    # cast value column to numeric and drop nan
+    # cast value column to numeric
     try:
         df = pd.to_numeric(df)
     except ValueError as e:
