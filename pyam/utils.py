@@ -177,7 +177,7 @@ def read_file(path, *args, **kwargs):
 
 
 def _convert_r_columns(df):
-    # check for R-style year columns, converting where necessary
+    """Check and convert R-style year columns"""
 
     def convert_r_columns(c):
         try:
@@ -199,6 +199,8 @@ def _convert_r_columns(df):
 
 
 def _knead_data(df, **kwargs):
+    """Replace, rename and concat according to user arguments"""
+
     # if `value` is given but not `variable`,
     # melt value columns and use column name as `variable`
     if "value" in kwargs and "variable" not in kwargs:
@@ -233,20 +235,23 @@ def _knead_data(df, **kwargs):
 
 
 def _format_from_database(df):
+    """Post-process database results"""
+
     logger.info("Ignoring notes column in dataframe")
     df.drop(columns="notes", inplace=True)
     col = df.columns[0]  # first column has database copyright notice
     df = df[~df[col].str.contains("database", case=False)]
     if "scenario" in df.columns and "model" not in df.columns:
         # model and scenario are jammed together in RCP data
-        scen = df["scenario"]
-        df.loc[:, "model"] = scen.apply(lambda s: s.split("-")[0].strip())
-        df.loc[:, "scenario"] = scen.apply(lambda s: "-".join(s.split("-")[1:]).strip())
+        parts = df["scenario"].str.split("-", n=1, expand=True)
+        df = df.assign(model=parts[0].str.strip(), scenario=parts[1].str.strip())
 
     return df
 
 
 def _intuit_column_groups(df, index):
+    """Check and categorise columns in dataframe"""
+
     # check that there is no column in the timeseries data with reserved names
     conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
     if conflict_cols:
@@ -312,6 +317,8 @@ def _intuit_column_groups(df, index):
 
 
 def _format_data_to_series(df, index):
+    """Convert a long or wide pandas dataframe to a series with the required columns"""
+
     time_col, extra_cols, data_cols = _intuit_column_groups(df, index)
 
     _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
@@ -321,8 +328,7 @@ def _format_data_to_series(df, index):
     if data_cols:
         # wide format
         df = (
-            df
-            .set_index(index + REQUIRED_COLS + extra_cols)
+            df.set_index(index + REQUIRED_COLS + extra_cols)
             .rename_axis(columns=time_col)
             .stack(dropna=True)
             .rename("value")
@@ -337,6 +343,7 @@ def _format_data_to_series(df, index):
 
 def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
+
     if isinstance(df, pd.Series):
         if not df.name:
             df = df.rename("value")
