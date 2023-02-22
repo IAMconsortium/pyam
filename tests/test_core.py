@@ -117,7 +117,6 @@ def test_init_df_with_na_scenario(test_pd_df):
         IamDataFrame(test_pd_df)
 
 
-
 def test_init_df_with_float_cols(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.0, 2010: 2010.0})
     obs = IamDataFrame(_test_df).timeseries().reset_index()
