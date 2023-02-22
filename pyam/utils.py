@@ -371,10 +371,10 @@ def format_data(df, index, **kwargs):
 def _validate_complete_index(df):
     """Validate that there are no nan's in the (index) columns"""
     null_cells = df.isnull()
-    null_rows = null_cells.T.any()
+    null_rows = null_cells.any(axis=1)
     if null_rows.any():
         null_cols = null_cells.any()
-        cols = ", ".join(null_cols[null_cols].index)
+        cols = ", ".join(null_cols.index[null_cols])
         raise_data_error(
             f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
         )
