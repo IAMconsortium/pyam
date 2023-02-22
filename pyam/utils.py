@@ -378,7 +378,6 @@ def _validate_complete_index(df):
         raise_data_error(
             f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
         )
-    del null_rows
 
 
 def sort_data(data, cols):
