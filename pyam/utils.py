@@ -274,8 +274,9 @@ def format_data(df, index, **kwargs):
     if missing_required_col:
         raise ValueError(f"Missing required columns: {missing_required_col}")
 
-    # check whether data in wide format (IAMC) or long format (`value` column)
+    # check whether data in wide format (standard IAMC) or long format (`value` column)
     if "value" in df.columns:
+
         # check if time column is given as `year` (int) or `time` (datetime)
         if "year" in df.columns and "time" not in df.columns:
             time_col = "year"
@@ -288,7 +289,19 @@ def format_data(df, index, **kwargs):
             for c in df.columns
             if c not in index + REQUIRED_COLS + [time_col, "value"]
         ]
+
+        # replace missing units by an empty string for user-friendly filtering
+        df.loc[df.unit.isnull(), "unit"] = ""
+
+        _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
+
+        # cast to pd.Series
+        idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
+        df = df.set_index(idx_cols).value
+        df.dropna(inplace=True)
+
     else:
+
         # if in wide format, check if columns are years (int) or datetime
         cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
         year_cols, time_cols, extra_cols = [], [], []
@@ -317,18 +330,20 @@ def format_data(df, index, **kwargs):
         if not melt_cols:
             raise ValueError("Missing time domain")
 
-        # melt the dataframe
-        df = pd.melt(
-            df,
-            id_vars=index + REQUIRED_COLS + extra_cols,
-            var_name=time_col,
-            value_vars=melt_cols,
-            value_name="value",
-        )
+        # replace missing units by an empty string for user-friendly filtering
+        df.loc[df.unit.isnull(), "unit"] = ""
 
-    # cast value column to numeric and drop nan
+        _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
+
+        # cast to long format, set
+        df.set_index(index + REQUIRED_COLS + extra_cols, inplace=True)
+        df = df.stack(dropna=True)
+        df.name = "value"
+        df.index.names = df.index.names[:-1] + [time_col]
+
+    # cast value column to numeric
     try:
-        df["value"] = pd.to_numeric(df["value"])
+        df = pd.to_numeric(df)
     except ValueError as e:
         # get the row number where the error happened
         row_nr_regex = re.compile(r"(?<=at position )\d+")
@@ -336,24 +351,6 @@ def format_data(df, index, **kwargs):
         short_error_regex = re.compile(r".*(?= at position \d*)")
         short_error = short_error_regex.search(str(e)).group()
         raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
-
-    df.dropna(inplace=True, subset=["value"])
-
-    # replace missing units by an empty string for user-friendly filtering
-    df.loc[df.unit.isnull(), "unit"] = ""
-
-    # verify that there are no nan's left (in columns)
-    null_rows = df.isnull().T.any()
-    if null_rows.any():
-        cols = ", ".join(df.columns[df.isnull().any().values])
-        raise_data_error(
-            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
-        )
-    del null_rows
-
-    # cast to pd.Series, check for duplicates
-    idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
-    df = df.set_index(idx_cols).value
 
     # format the time-column
     _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
@@ -369,6 +366,18 @@ def format_data(df, index, **kwargs):
         logger.warning("Formatted data is empty!")
 
     return df.sort_index(), index, time_col, extra_cols
+
+
+def _validate_complete_index(df):
+    """Validate that there are no nan's in the (index) columns"""
+    null_cells = df.isnull()
+    null_rows = null_cells.any(axis=1)
+    if null_rows.any():
+        null_cols = null_cells.any()
+        cols = ", ".join(null_cols.index[null_cols])
+        raise_data_error(
+            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
+        )
 
 
 def sort_data(data, cols):

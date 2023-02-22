@@ -102,7 +102,6 @@ def test_init_df_with_illegal_values_raises(test_pd_df, illegal_value):
         f'.*string "{illegal_value}" in `data`:'
         r"(\n.*){2}model_a.*scen_a.*World.*Primary Energy.*EJ/yr.*2005"
     )
-
     with pytest.raises(ValueError, match=msg):
         IamDataFrame(test_pd_df)
 
@@ -110,7 +109,12 @@ def test_init_df_with_illegal_values_raises(test_pd_df, illegal_value):
 def test_init_df_with_na_scenario(test_pd_df):
     # missing values in an index dimension raises an error
     test_pd_df.loc[1, "scenario"] = np.nan
-    pytest.raises(ValueError, IamDataFrame, data=test_pd_df)
+    msg = (
+        "Empty cells in `data` \(columns: 'scenario'\):"
+        r"(\n.*){2}model_a.*NaN.*World.*Primary Energy|Coal.*EJ/yr.*2005.*"
+    )
+    with pytest.raises(ValueError, match=msg):
+        IamDataFrame(test_pd_df)
 
 
 def test_init_df_with_float_cols(test_pd_df):
