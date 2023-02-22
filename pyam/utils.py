@@ -367,10 +367,9 @@ def format_data(df, index, **kwargs):
             else:
                 df = df["value"]
 
-        df = df.reorder_levels(index + REQUIRED_COLS + extra_cols + [time_col])
+        df = df.reorder_levels(index + REQUIRED_COLS + [time_col] + extra_cols).dropna()
 
     else:
-    
         if isinstance(df, pd.Series):
             if not df.name:
                 df = df.rename("value")
