@@ -162,8 +162,8 @@ class IamDataFrame(object):
             _data = read_file(data, index=index, **kwargs)
 
         # cast data from pandas
-        elif isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
-            _data = format_data(data.copy(), index=index, **kwargs)
+        elif isinstance(data, (pd.DataFrame, pd.Series)):
+            _data = format_data(data, index=index, **kwargs)
 
         # unsupported `data` args
         elif islistable(data):

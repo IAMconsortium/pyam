@@ -1,5 +1,6 @@
 # Next Release
 
+- [#727](https://github.com/IAMconsortium/pyam/pull/730) Refactor initialization code
 - [#729](https://github.com/IAMconsortium/pyam/pull/729) Improve performance at initialization
 - [#723](https://github.com/IAMconsortium/pyam/pull/723) Ensure correct order of `time` attribute
 
