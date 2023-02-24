@@ -179,7 +179,7 @@ def read_file(path, *args, **kwargs):
 def _convert_r_columns(df):
     """Check and convert R-style year columns"""
 
-    def convert_r_columns(c):
+    def strip_R_integer_prefix(c):
         try:
             first = c[0]
             second = c[1:]
@@ -195,7 +195,7 @@ def _convert_r_columns(df):
             pass
         return c
 
-    return df.set_axis(df.columns.map(convert_r_columns), axis="columns")
+    return df.set_axis(df.columns.map(strip_R_integer_prefix), axis="columns")
 
 
 def _knead_data(df, **kwargs):
@@ -234,10 +234,10 @@ def _knead_data(df, **kwargs):
     return df
 
 
-def _format_from_database(df):
-    """Post-process database results"""
+def _format_from_legacy_database(df):(df):
+    """Process data from legacy databases (SSP and earlier)"""
 
-    logger.info("Ignoring notes column in dataframe")
+    logger.info("Ignoring notes column in `data`")
     df.drop(columns="notes", inplace=True)
     col = df.columns[0]  # first column has database copyright notice
     df = df[~df[col].str.contains("database", case=False)]
@@ -357,11 +357,11 @@ def format_data(df, index, **kwargs):
     if kwargs:
         df = _knead_data(df, **kwargs)
 
-    # all lower case
+    # cast all columns names to lower case
     df.rename(columns={c: str(c).lower() for c in df.columns if isstr(c)}, inplace=True)
 
-    if "notes" in df.columns:  # this came from the database
-        df = _format_from_database(df)
+    if "notes" in df.columns:  # this came from a legacy database (SSP or earlier)
+        df = _format_from_legacy_database(df)
 
     # replace missing units by an empty string for user-friendly filtering
     df = df.assign(unit=df["unit"].fillna(""))
