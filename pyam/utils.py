@@ -234,7 +234,7 @@ def _knead_data(df, **kwargs):
     return df
 
 
-def _format_from_legacy_database(df):(df):
+def _format_from_legacy_database(df):
     """Process data from legacy databases (SSP and earlier)"""
 
     logger.info("Ignoring notes column in `data`")
