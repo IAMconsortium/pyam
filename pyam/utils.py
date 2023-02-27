@@ -360,10 +360,7 @@ def format_data(df, index, **kwargs):
                 df = df.set_index(extra_cols_not_in_index, append=True)
 
             if data_cols:
-                df = df[data_cols]
-                df = df.rename_axis(columns=time_col)
-                df = df.stack()
-                df = df.rename("value")
+                df = df[data_cols].rename_axis(columns=time_col).stack().rename("value")
             else:
                 df = df["value"]
 
