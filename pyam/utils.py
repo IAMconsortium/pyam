@@ -249,10 +249,13 @@ def _format_from_legacy_database(df):
     return df
 
 
-def _intuit_column_groups(df, index):
+def _intuit_column_groups(df, index, include_index=False):
     """Check and categorise columns in dataframe"""
 
-    existing_cols = pd.Index(df.index.names).dropna()  # skip unnamed columns
+    if include_index:
+        existing_cols = pd.Index(df.index.names)
+    else:
+        existing_cols = pd.Index([])
     if isinstance(df, pd.Series):
         existing_cols = existing_cols.union(["value"])
     elif isinstance(df, pd.DataFrame):
@@ -352,7 +355,9 @@ def format_data(df, index, **kwargs):
 
     # Fast-pass if `df` has the index and required columns as a pd.MultiIndex
     if set(df.index.names) >= set(index) | set(REQUIRED_COLS) and not kwargs:
-        time_col, extra_cols, data_cols = _intuit_column_groups(df, index=index)
+        time_col, extra_cols, data_cols = _intuit_column_groups(
+            df, index=index, include_index=True
+        )
 
         if isinstance(df, pd.DataFrame):
             extra_cols_not_in_index = [c for c in extra_cols if c in df.columns]
