@@ -21,3 +21,4 @@ The following persons contributed to the development of the |pyam| framework:
 - Florian Maczek `@macflo8 <https://github.com/macflo8>`_
 - Laura Wienpahl `@LauWien <https://github.com/LauWien>`_
 - Philip Hackstock `@phackstock <https://github.com/phackstock>`_
+- Pietro Monticone `@pitmonticone <https://github.com/pitmonticone>`_
