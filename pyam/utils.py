@@ -350,8 +350,8 @@ def _format_data_to_series(df, index):
 def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
 
+    # Fast-pass if `df` has the index and required columns as a pd.MultiIndex
     if set(df.index.names) >= set(index) | set(REQUIRED_COLS) and not kwargs:
-        # Let's try to cut corners here, it's our fast-path
         time_col, extra_cols, data_cols = _intuit_column_groups(df, index=index)
 
         if isinstance(df, pd.DataFrame):
