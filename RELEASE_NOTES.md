@@ -1,9 +1,9 @@
 # Next Release
 
-- [#727](https://github.com/IAMconsortium/pyam/pull/730) Refactor initialization code
+- [#732](https://github.com/IAMconsortium/pyam/pull/732) Fix a few typos in tutorials
+- [#730](https://github.com/IAMconsortium/pyam/pull/730) Refactor initialization code
 - [#729](https://github.com/IAMconsortium/pyam/pull/729) Improve performance at initialization
 - [#723](https://github.com/IAMconsortium/pyam/pull/723) Ensure correct order of `time` attribute
-- [#732](https://github.com/IAMconsortium/pyam/pull/732) Fix a few typos in tutorials
 
 # Release v1.7.0
 
