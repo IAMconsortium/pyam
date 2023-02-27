@@ -1,5 +1,6 @@
 # Next Release
 
+- [#731](https://github.com/IAMconsortium/pyam/pull/731) Add fast-path to initialization for sufficient multiindex
 - [#732](https://github.com/IAMconsortium/pyam/pull/732) Fix a few typos in tutorials
 - [#730](https://github.com/IAMconsortium/pyam/pull/730) Refactor initialization code
 - [#729](https://github.com/IAMconsortium/pyam/pull/729) Improve performance at initialization
