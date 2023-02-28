@@ -262,7 +262,7 @@ def _intuit_column_groups(df, index, include_index=False):
         existing_cols = existing_cols.union(df.columns)
 
     # check that there is no column in the timeseries data with reserved names
-    if None in df.columns:
+    if None in existing_cols:
         raise ValueError("Unnamed column in `data`: None")
 
     # check that there is no column in the timeseries data with reserved/illegal names
