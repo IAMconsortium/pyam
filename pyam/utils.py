@@ -252,7 +252,10 @@ def _format_from_legacy_database(df):
 def _intuit_column_groups(df, index):
     """Check and categorise columns in dataframe"""
 
-    # check that there is no column in the timeseries data with reserved names
+    if None in df.columns:
+        raise ValueError("Unnamed column in `data`: None")
+
+    # check that there is no column in the timeseries data with reserved/illegal names
     conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
     if conflict_cols:
         _cols = f"'{', '.join(conflict_cols)}'"
