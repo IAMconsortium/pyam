@@ -603,17 +603,18 @@ class Connection(object):
 
 def _new_default_api(kwargs):
     """Change kwargs from `default` to `is_default`"""
+    # TODO: argument `default` is deprecated, remove for release >= 2.0
     v = kwargs.pop("default")
     _arg = "The argument `default`"
     if v is False:
         deprecation_warning("Use `is_default=None` to get all scenarios.")
         return None
-    if v is True:
+    elif v is True:
         deprecation_warning("Use `is_default=True` to get all default scenarios.")
         return True
 
     # Note that the legacy ixmp API does not support querying all non-default versions
-    raise ValueError(f"Illegal value {v} for `default`, please use `is_default`.")
+    raise ValueError(f"Illegal value '{v}' for `default`, please use `is_default`.")
 
 
 def read_iiasa(
