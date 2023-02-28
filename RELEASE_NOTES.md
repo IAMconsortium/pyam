@@ -1,6 +1,18 @@
 # Next Release
 
+## API changes
+
+In anticipation of a change in the **ixmp** API, the argument `default` in the
+IIASA-Connection methods was renamed to `is_default` with the following behavior:
+
+- If `True`, return *only* the default version of a model/scenario.
+- If `False`, return all versions for each model/scenario *except the default* (not yet implemented).
+- If `None`, return all versions (previously `default=False`).
+
+## Individual updates
+
 - [#734](https://github.com/IAMconsortium/pyam/pull/734) Validation for illegal column names in `data`
+- [#733](https://github.com/IAMconsortium/pyam/pull/733) Change IIASA-Connection argument to `is_default`
 - [#731](https://github.com/IAMconsortium/pyam/pull/731) Add fast-path to initialization for sufficient multiindex
 - [#732](https://github.com/IAMconsortium/pyam/pull/732) Fix a few typos in tutorials
 - [#730](https://github.com/IAMconsortium/pyam/pull/730) Refactor initialization code
