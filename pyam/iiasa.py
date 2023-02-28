@@ -605,12 +605,12 @@ def _new_default_api(kwargs):
     """Change kwargs from `default` to `is_default`"""
     # TODO: argument `default` is deprecated, remove for release >= 2.0
     v = kwargs.pop("default")
-    _arg = "The argument `default`"
+    item = "The argument `default`"
     if v is False:
-        deprecation_warning("Use `is_default=None` to get all scenarios.")
+        deprecation_warning("Use `is_default=None` to get all scenarios.", item)
         return None
     elif v is True:
-        deprecation_warning("Use `is_default=True` to get all default scenarios.")
+        deprecation_warning("Use `is_default=True` to get all default scenarios.", item)
         return True
 
     # Note that the legacy ixmp API does not support querying all non-default versions
