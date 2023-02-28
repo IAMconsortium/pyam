@@ -189,18 +189,28 @@ def test_init_empty_message(caplog):
     assert caplog.records[message_idx].levelno == logging.WARNING
 
 
-def test_init_with_column_conflict(test_pd_df):
-    # add a column to the timeseries data with a conflict to the meta attribute
-    test_pd_df["meta"] = "foo"
+def test_init_with_unnamed_column(test_pd_df):
+    # add a column to the timeseries data with an unnamed column
+    test_pd_df[None] = "foo"
 
-    # check that initialising an instance with an extra-column `meta` raises
-    msg = re.compile(r"Column name \['meta'\] is illegal for timeseries data.")
+    # check that initialising an instance with an unnamed column raises
+    with pytest.raises(ValueError, match="Unnamed column in `data`: None"):
+        IamDataFrame(test_pd_df)
+
+
+@pytest.mark.parametrize("illegal", ["meta", ""])
+def test_init_with_illegal_column(test_pd_df, illegal):
+    # add a column to the timeseries data with an illegal column name
+    test_pd_df[illegal] = "foo"
+
+    # check that initialising an instance with an illegal column name raises
+    msg = f"Illegal column for timeseries data: '{illegal}'"
     with pytest.raises(ValueError, match=msg):
         IamDataFrame(test_pd_df)
 
     # check that recommended fix works
-    df = IamDataFrame(test_pd_df, meta_1="meta")
-    assert df.meta_1 == ["foo"]
+    df = IamDataFrame(test_pd_df, valid=illegal)
+    assert df.valid == ["foo"]
 
 
 def test_set_meta_with_column_conflict(test_df_year):
