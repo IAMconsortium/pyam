@@ -223,7 +223,7 @@ def test_meta(conn, kwargs, default):
 @pytest.mark.parametrize("default", [True, False])
 def test_properties(conn, kwargs, default):
     # test that connection returns the correct properties dataframe
-    obs = conn.properties(default, **kwargs)
+    obs = conn.properties(default=default, **kwargs)
 
     if default:
         exp_cols = ["version"]
