@@ -26,7 +26,7 @@ LONG_IDX = IAMC_IDX + ["year"]
 REQUIRED_COLS = ["region", "variable", "unit"]
 
 # illegal terms for data/meta column names to prevent attribute conflicts
-ILLEGAL_COLS = ["data", "meta", "level"]
+ILLEGAL_COLS = ["data", "meta", "level", ""]
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(
@@ -255,10 +255,12 @@ def _intuit_column_groups(df, index):
     # check that there is no column in the timeseries data with reserved names
     conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
     if conflict_cols:
-        msg = f"Column name {conflict_cols} is illegal for timeseries data.\n"
-        _args = ", ".join([f"{i}_1='{i}'" for i in conflict_cols])
-        msg += f"Use `IamDataFrame(..., {_args})` to rename at initialization."
-        raise ValueError(msg)
+        _cols = f"'{', '.join(conflict_cols)}'"
+        _args = ", ".join([f"<alternative_column_name>='{i}'" for i in conflict_cols])
+        raise ValueError(
+            f"Illegal column{s(len(conflict_cols))} for timeseries data: {_cols}\n"
+            f"Use `IamDataFrame(..., {_args})` to rename at initialization."
+        )
 
     # check that index and required columns exist
     missing_index = [c for c in index if c not in df.columns]
