@@ -262,12 +262,11 @@ def _intuit_column_groups(df, index, include_index=False):
         existing_cols = existing_cols.union(df.columns)
 
     # check that there is no column in the timeseries data with reserved names
-    conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
     if None in df.columns:
         raise ValueError("Unnamed column in `data`: None")
 
     # check that there is no column in the timeseries data with reserved/illegal names
-    conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
+    conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
     if conflict_cols:
         _cols = f"'{', '.join(conflict_cols)}'"
         _args = ", ".join([f"<alternative_column_name>='{i}'" for i in conflict_cols])
