@@ -16,12 +16,10 @@ def adjust_log_level(logger="pyam", level="ERROR"):
     logger.setLevel(old_level)
 
 
-def deprecation_warning(msg, type="This method", stacklevel=3):
+def deprecation_warning(msg, item="This method", stacklevel=3):
     """Write deprecation warning to log"""
-    warn = "is deprecated and will be removed in future versions."
-    warnings.warn(
-        "{} {} {}".format(type, warn, msg), DeprecationWarning, stacklevel=stacklevel
-    )
+    message = f"{item} is deprecated and will be removed in future versions. {msg}"
+    warnings.warn(message, DeprecationWarning, stacklevel=stacklevel)
 
 
 def raise_data_error(msg, data):
