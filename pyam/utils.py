@@ -249,9 +249,20 @@ def _format_from_legacy_database(df):
     return df
 
 
-def _intuit_column_groups(df, index):
+def _intuit_column_groups(df, index, include_index=False):
     """Check and categorise columns in dataframe"""
 
+    if include_index:
+        existing_cols = pd.Index(df.index.names)
+    else:
+        existing_cols = pd.Index([])
+    if isinstance(df, pd.Series):
+        existing_cols = existing_cols.union(["value"])
+    elif isinstance(df, pd.DataFrame):
+        existing_cols = existing_cols.union(df.columns)
+
+    # check that there is no column in the timeseries data with reserved names
+    conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
     if None in df.columns:
         raise ValueError("Unnamed column in `data`: None")
 
@@ -266,32 +277,32 @@ def _intuit_column_groups(df, index):
         )
 
     # check that index and required columns exist
-    missing_index = [c for c in index if c not in df.columns]
+    missing_index = [c for c in index if c not in existing_cols]
     if missing_index:
         raise ValueError(f"Missing index columns: {missing_index}")
 
-    missing_required_col = [c for c in REQUIRED_COLS if c not in df.columns]
+    missing_required_col = [c for c in REQUIRED_COLS if c not in existing_cols]
     if missing_required_col:
         raise ValueError(f"Missing required columns: {missing_required_col}")
 
     # check whether data in wide format (standard IAMC) or long format (`value` column)
-    if "value" in df.columns:
+    if "value" in existing_cols:
         # check if time column is given as `year` (int) or `time` (datetime)
-        if "year" in df.columns and "time" not in df.columns:
+        if "year" in existing_cols and "time" not in existing_cols:
             time_col = "year"
-        elif "time" in df.columns and "year" not in df.columns:
+        elif "time" in existing_cols and "year" not in existing_cols:
             time_col = "time"
         else:
             raise ValueError("Invalid time domain, must have either `year` or `time`!")
         extra_cols = [
             c
-            for c in df.columns
+            for c in existing_cols
             if c not in index + REQUIRED_COLS + [time_col, "value"]
         ]
         data_cols = []
     else:
         # if in wide format, check if columns are years (int) or datetime
-        cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
+        cols = [c for c in existing_cols if c not in index + REQUIRED_COLS]
         year_cols, time_cols, extra_cols = [], [], []
         for i in cols:
             # if the column name can be cast to integer, assume it's a year column
@@ -349,29 +360,50 @@ def _format_data_to_series(df, index):
 def format_data(df, index, **kwargs):
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
 
-    if isinstance(df, pd.Series):
-        if not df.name:
-            df = df.rename("value")
-        df = df.reset_index()
-    elif not list(df.index.names) == [None]:
-        # reset the index if meaningful entries are included there
-        df = df.reset_index()
+    # Fast-pass if `df` has the index and required columns as a pd.MultiIndex
+    if set(df.index.names) >= set(index) | set(REQUIRED_COLS) and not kwargs:
+        time_col, extra_cols, data_cols = _intuit_column_groups(
+            df, index=index, include_index=True
+        )
 
-    df = _convert_r_columns(df)
+        if isinstance(df, pd.DataFrame):
+            extra_cols_not_in_index = [c for c in extra_cols if c in df.columns]
+            if extra_cols_not_in_index:
+                df = df.set_index(extra_cols_not_in_index, append=True)
 
-    if kwargs:
-        df = _knead_data(df, **kwargs)
+            if data_cols:
+                df = df[data_cols].rename_axis(columns=time_col).stack().rename("value")
+            else:
+                df = df["value"]
 
-    # cast all columns names to lower case
-    df.rename(columns={c: str(c).lower() for c in df.columns if isstr(c)}, inplace=True)
+        df = df.reorder_levels(index + REQUIRED_COLS + [time_col] + extra_cols).dropna()
 
-    if "notes" in df.columns:  # this came from a legacy database (SSP or earlier)
-        df = _format_from_legacy_database(df)
+    else:
+        if isinstance(df, pd.Series):
+            if not df.name:
+                df = df.rename("value")
+            df = df.reset_index()
+        elif not list(df.index.names) == [None]:
+            # reset the index if meaningful entries are included there
+            df = df.reset_index()
 
-    # replace missing units by an empty string for user-friendly filtering
-    df = df.assign(unit=df["unit"].fillna(""))
+        df = _convert_r_columns(df)
 
-    df, time_col, extra_cols = _format_data_to_series(df, index)
+        if kwargs:
+            df = _knead_data(df, **kwargs)
+
+        # all lower case
+        df.rename(
+            columns={c: str(c).lower() for c in df.columns if isstr(c)}, inplace=True
+        )
+
+        if "notes" in df.columns:  # this came from a legacy database (SSP or earlier)
+            df = _format_from_legacy_database(df)
+
+        # replace missing units by an empty string for user-friendly filtering
+        df = df.assign(unit=df["unit"].fillna(""))
+
+        df, time_col, extra_cols = _format_data_to_series(df, index)
 
     # cast value column to numeric
     try:
