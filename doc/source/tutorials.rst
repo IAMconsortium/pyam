@@ -39,4 +39,4 @@ Workshops and recordings
 
 The Energy, Climate and Environment program (ECE) at IIASA is regularly holding
 workshops and trainings for the pyam package. You can find recordings of these
-workshops and related material at `https://teaching.ece.iiasa.ac.at/pyam.html`_.
+workshops and related material at https://teaching.ece.iiasa.ac.at/pyam.html.
