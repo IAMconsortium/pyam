@@ -355,6 +355,9 @@ nbsphinx_requirejs_path = ""
 # Extend the timeout limit for running notebooks
 nbsphinx_timeout = 120
 
+# Configuration for sphinxcontrib-bibtex
+bibtex_bibfiles = ['_bib/references.bib']
+
 # prolog for all rst files
 rst_prolog = """
 
