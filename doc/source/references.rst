@@ -1,6 +1,6 @@
 Scientific references
 ---------------------
 
-.. bibliography:: _bib/references.bib
+.. bibliography::
    :style: plain
    :all:
