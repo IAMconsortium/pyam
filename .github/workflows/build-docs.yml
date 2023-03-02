@@ -16,7 +16,7 @@ jobs:
         os:
         - ubuntu-latest
         python-version:
-        - '3.9'
+        - '3.10'
 
       fail-fast: false
 
