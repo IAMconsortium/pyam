@@ -268,7 +268,8 @@ def _intuit_column_groups(df, index, include_index=False):
     # check that there is no column in the timeseries data with reserved/illegal names
     conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
     if conflict_cols:
-        _cols = f"'{', '.join(conflict_cols)}'"
+        sep = "', '"
+        _cols = f"'{sep.join(conflict_cols)}'"
         _args = ", ".join([f"<alternative_column_name>='{i}'" for i in conflict_cols])
         raise ValueError(
             f"Illegal column{s(len(conflict_cols))} for timeseries data: {_cols}\n"
