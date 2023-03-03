@@ -14,7 +14,6 @@
 from datetime import datetime
 import pyam
 
-from sphinx_gallery.sorting import ExplicitOrder
 from plotly.io._sg_scraper import plotly_sg_scraper
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -355,7 +354,7 @@ nbsphinx_requirejs_path = ""
 nbsphinx_timeout = 120
 
 # Configuration for sphinxcontrib-bibtex
-bibtex_bibfiles = ['_bib/references.bib']
+bibtex_bibfiles = ["_bib/references.bib"]
 
 # prolog for all rst files
 rst_prolog = """
