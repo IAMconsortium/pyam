@@ -39,4 +39,4 @@ jobs:
       run: pip install -e .[tutorials,optional_plotting,docs]
 
     - name: Build the docs
-      run: make --directory=doc html
+      run: make --directory=docs html
