@@ -94,8 +94,13 @@ Authors & Contributors
 This package was initiated and is currently maintained
 by Matthew Gidden ([@gidden](https://github.com/gidden))
 and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
-
 See the complete [list of contributors](AUTHORS.rst).
+
+The core maintenance of the package is done by 
+the *Scenario Services & Scientific Software* research theme
+at the IIASA Energy, Climate, and Enviroment program.
+Visit https://software.ece.iiasa.ac.at for more information.
+
 
 Scientific publications
 -----------------------
