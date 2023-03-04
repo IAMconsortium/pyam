@@ -1,4 +1,5 @@
 # exclude build folder
+_build
 build
 
 # exclude built gallery folder (built by sphinx-gallery module)
