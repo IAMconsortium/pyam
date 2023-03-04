@@ -111,8 +111,8 @@ Table of Contents
    contributing
    data
    tutorials
-   R_tutorials/pyam_R_tutorial
    gallery/index
+   R_tutorials/pyam_R_tutorial
    api
 
 Scientific publications
