@@ -101,7 +101,6 @@ the *Scenario Services & Scientific Software* research theme
 at the IIASA Energy, Climate, and Enviroment program.
 Visit https://software.ece.iiasa.ac.at for more information.
 
-
 Scientific publications
 -----------------------
 
