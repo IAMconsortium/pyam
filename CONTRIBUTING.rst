@@ -10,7 +10,6 @@ Have a question? Get in touch!
 .. _`email`: mailto:pyam+owner@groups.io?subject=[pyam]%20Please%20add%20me%20to%20the%20Slack%20workspace
 .. _Slack: https://slack.com
 
-
 Interested in contributing? Join the team!
 ------------------------------------------
 
