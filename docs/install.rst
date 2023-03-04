@@ -36,8 +36,8 @@ Dependencies
 ------------
 
 Like any software project, we stand on the shoulders of giants. Our particular
-giants include **pandas** :cite:`pandas`, **matplotlib** :cite:`matplotlib`,
-and **numpy** :cite:`numpy`.
-See the `setup-configuration`_ for more information.
+giants include **pandas** (https://pandas.pydata.org),
+**matplotlib** (https://matplotlib.org), and **numpy** (https://numpy.org).
+See the `setup configuration`_ for more information.
 
-.. _`setup-configuration`: https://github.com/IAMconsortium/pyam/blob/main/setup.cfg
+.. _`setup configuration`: https://github.com/IAMconsortium/pyam/blob/main/setup.cfg

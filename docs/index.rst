@@ -55,13 +55,13 @@ Release v\ |version|.
 Overview
 --------
 
-The open-source Python package |pyam| :cite:`Gidden:2019:pyam,Huppmann:2021:pyam-v1.0`
-provides a suite of tools and functions for analyzing and visualizing
-input data (i.e., assumptions/parametrization) 
+The open-source Python package |pyam| provides a suite of tools and functions
+for analyzing and visualizing input data (i.e., assumptions/parametrization)
 and results (model output) of integrated-assessment models,
 macro-energy scenarios, energy systems analysis, and sectoral studies.
 
 The source code is available on `Github <https://github.com/IAMconsortium/pyam>`_.
+See also the related `Scientific publications`_.
 
 Key features
 ~~~~~~~~~~~~
@@ -111,18 +111,9 @@ Table of Contents
    contributing
    data
    tutorials
+   R_tutorials/pyam_R_tutorial
    gallery/index
    api
-
-.. toctree::
-   :maxdepth: 1
-
-   R_tutorials/pyam_R_tutorial
-
-.. toctree::
-   :maxdepth: 1
-
-   references
 
 Scientific publications
 -----------------------
