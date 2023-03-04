@@ -16,7 +16,7 @@ jobs:
         os:
         - ubuntu-latest
         python-version:
-        - '3.9'
+        - '3.10'
 
       fail-fast: false
 
@@ -39,4 +39,4 @@ jobs:
       run: pip install -e .[tutorials,optional_plotting,docs]
 
     - name: Build the docs
-      run: make --directory=doc html
+      run: make --directory=docs html

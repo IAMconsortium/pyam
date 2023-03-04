@@ -13,7 +13,7 @@ except:
         "Missing Jupyter Notebook and related dependencies", allow_module_level=True
     )
 
-tut_path = os.path.join(here, "..", "doc", "source", "tutorials")
+tut_path = os.path.join(here, "..", "docs", "tutorials")
 
 
 # taken from the excellent example here:

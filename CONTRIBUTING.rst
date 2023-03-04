@@ -1,4 +1,3 @@
-
 Have a question? Get in touch!
 ------------------------------
 
@@ -10,7 +9,6 @@ Have a question? Get in touch!
 .. _`groups.io`: https://groups.io/g/pyam
 .. _`email`: mailto:pyam+owner@groups.io?subject=[pyam]%20Please%20add%20me%20to%20the%20Slack%20workspace
 .. _Slack: https://slack.com
-
 
 Interested in contributing? Join the team!
 ------------------------------------------
