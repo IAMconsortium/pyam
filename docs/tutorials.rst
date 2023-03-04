@@ -11,10 +11,10 @@ but |pyam| also supports timeseries data with a sub-annual resolution.
 Please read the `Data Model <data.html>`_ section for more information.
 
 The source code is available in the folder
-`doc/source/tutorials`_ of the |pyam| GitHub repository.
+`docs/tutorials`_ of the |pyam| GitHub repository.
 
-.. _`doc/source/tutorials`:
-   https://github.com/IAMconsortium/pyam/tree/main/doc/source/tutorials
+.. _`docs/tutorials`:
+   https://github.com/IAMconsortium/pyam/tree/main/docs/tutorials
 
 .. toctree::
    :maxdepth: 1

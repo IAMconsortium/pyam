@@ -12,7 +12,7 @@ To install the **pyam** package and all dependencies, run the following
 (in the top-level directory of this repository).
 
 ```
-pip install --editable .[docs,tutorials]
+pip install --editable .[docs,tutorials,optional_plotting]
 ```
 
 Writing in Restructured Text
@@ -32,4 +32,4 @@ On Windows, from the command line, run::
 
     ./make.bat
 
-The rendered html pages will be located in `doc/build/html/index.html`.
+The rendered html pages will be located in `docs/build/html/index.html`.

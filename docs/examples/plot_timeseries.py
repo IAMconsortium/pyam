@@ -12,7 +12,7 @@ Timeseries data charts
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
 # you can download the file from
-# https://github.com/IAMconsortium/pyam/tree/main/doc/source/tutorials.
+# https://github.com/IAMconsortium/pyam/tree/main/docs/tutorials.
 #
 # Make sure to place the data file in the same folder as this script/notebook.
 

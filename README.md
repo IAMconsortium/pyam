@@ -73,12 +73,12 @@ Tutorials
 ---------
 
 An introduction to the basic functions is shown
-in [the "first-steps" notebook](doc/source/tutorials/pyam_first_steps.ipynb).
+in [the "first-steps" notebook](docs/tutorials/pyam_first_steps.ipynb).
 
 All tutorials are available in rendered format (i.e., with output) as part of
 the [online documentation](https://pyam-iamc.readthedocs.io/en/stable/tutorials.html).
 The source code of the tutorials notebooks is available
-in the folder [doc/source/tutorials](doc/source/tutorials) of this repository.
+in the folder [docs/tutorials](docs/tutorials) of this repository.
 
 Documentation
 -------------
@@ -86,7 +86,7 @@ Documentation
 The comprehensive documentation is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io).
 
 The documentation pages can be built locally,
-refer to the instruction in [doc/README](doc/README.md).
+refer to the instruction in [docs/README](docs/README.md).
 
 Authors & Contributors
 ----------------------
