@@ -1070,7 +1070,7 @@ def line(
     label = kwargs.pop("label", None)
 
     # plot data, keeping track of which legend labels to apply
-    for col, data in df.iteritems():
+    for col, data in df.items():
         # handle case where columns are not strings or only have 1 dimension
         col = list(map(str, to_list(col)))
         pargs = {}

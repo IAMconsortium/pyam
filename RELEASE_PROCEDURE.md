@@ -2,9 +2,11 @@
 
 ## Required accounts and admin privileges
 
-- pip: https://pypi.org/project/pyam-iamc/ and https://test.pypi.org/project/pyam-iamc/
+- pip (automated via GitHub Actions):
+   - https://pypi.org/project/pyam-iamc/ 
+   - https://test.pypi.org/project/pyam-iamc/
 - conda: https://github.com/conda-forge/pyam-feedstock/
-- rtd: https://readthedocs.org/projects/pyam-iamc/
+- ReadTheDocs (automated): https://readthedocs.org/projects/pyam-iamc/
 
 ## Steps for publishing a new release
 

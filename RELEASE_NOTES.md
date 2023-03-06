@@ -1,4 +1,10 @@
-# Next Release
+# Release v1.8.0
+
+## Highlights
+
+- **Performance improvement** at initialization and in internal operations
+- Update the **IIASA-Connection API** in preparation of a new database backend
+- Improve the **tutorials**
 
 ## API changes
 
@@ -9,8 +15,8 @@ IIASA-Connection methods was renamed to `default_only`.
 
 - [#734](https://github.com/IAMconsortium/pyam/pull/734) Validation for illegal column names in `data`
 - [#733](https://github.com/IAMconsortium/pyam/pull/733) Change IIASA-Connection argument to `default_only`
-- [#731](https://github.com/IAMconsortium/pyam/pull/731) Add fast-path to initialization for sufficient multiindex
 - [#732](https://github.com/IAMconsortium/pyam/pull/732) Fix a few typos in tutorials
+- [#731](https://github.com/IAMconsortium/pyam/pull/731) Add fast-path to initialization for sufficient multi-index
 - [#730](https://github.com/IAMconsortium/pyam/pull/730) Refactor initialization code
 - [#729](https://github.com/IAMconsortium/pyam/pull/729) Improve performance at initialization
 - [#723](https://github.com/IAMconsortium/pyam/pull/723) Ensure correct order of `time` attribute
