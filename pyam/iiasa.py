@@ -22,6 +22,7 @@ from pyam.utils import (
     pattern_match,
     islistable,
 )
+from pyam.logging import deprecation_warning
 
 logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
@@ -261,10 +262,10 @@ class Connection(object):
         _check_response(r)
         return pd.read_json(r.text, orient="records")["name"]
 
-    def _query_index(self, default=True, meta=False, cols=[], **kwargs):
+    def _query_index(self, default_only=True, meta=False, cols=[], **kwargs):
         # TODO: at present this reads in all data for all scenarios,
         #  it could be sped up in the future to try to query a subset
-        _default = "true" if default else "false"
+        _default = "true" if default_only else "false"
         _meta = "true" if meta else "false"
         add_url = f"runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}"
         url = "/".join([self._base_url, add_url])
@@ -288,38 +289,44 @@ class Connection(object):
         else:
             return runs
 
-    def index(self, default=True, **kwargs):
+    def index(self, default_only=True, **kwargs):
         """Return the index of models and scenarios
 
         Parameters
         ----------
-        default : bool, optional
+        default_only : bool, optional
             If `True`, return *only* the default version of a model/scenario.
-            Any model/scenario without a default version is omitted.
-            If `False`, returns all versions.
+            If `False`, return all versions.
         kwargs
-            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard.
+            Arguments to filter by *model* and *scenario*, `*` can be used as wildcard.
         """
-        cols = ["version"] if default else ["version", "is_default"]
-        return self._query_index(default, **kwargs)[META_IDX + cols].set_index(META_IDX)
+        if "default" in kwargs:
+            default_only = _new_default_api(kwargs)
 
-    def meta(self, default=True, run_id=False, **kwargs):
+        cols = ["version"] if default_only else ["version", "is_default"]
+        return self._query_index(default_only, **kwargs)[META_IDX + cols].set_index(
+            META_IDX
+        )
+
+    def meta(self, default_only=True, run_id=False, **kwargs):
         """Return categories and indicators (meta) of scenarios
 
         Parameters
         ----------
-        default : bool, optional
-            Return *only* the default version of each scenario.
-            Any (`model`, `scenario`) without a default version is omitted.
+        default_only : bool, optional
+            If `True`, return *only* the default version of a model/scenario.
             If `False`, return all versions.
         run_id : bool, optional
             Include "run id" column
         kwargs
             Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
-        df = self._query_index(default, meta=True, **kwargs)
+        if "default" in kwargs:
+            default_only = _new_default_api(kwargs)
 
-        cols = ["version"] if default else ["version", "is_default"]
+        df = self._query_index(default_only, meta=True, **kwargs)
+
+        cols = ["version"] if default_only else ["version", "is_default"]
         if run_id:
             cols.append("run_id")
 
@@ -328,25 +335,27 @@ class Connection(object):
             extra_meta = pd.DataFrame.from_records(df.metadata)
             meta = pd.concat([meta, extra_meta], axis=1)
 
-        return meta.set_index(META_IDX + ([] if default else ["version"]))
+        return meta.set_index(META_IDX + ([] if default_only else ["version"]))
 
-    def properties(self, default=True, **kwargs):
+    def properties(self, default_only=True, **kwargs):
         """Return the audit properties of scenarios
 
         Parameters
         ----------
-        default : bool, optional
-            Return *only* the default version of each scenario.
-            Any (`model`, `scenario`) without a default version is omitted.
-            If :obj:`False`, return all versions.
+        default_only : bool, optional
+            If `True`, return *only* the default version of a model/scenario.
+            If `False`, return all versions.
         kwargs
             Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
+        if "default" in kwargs:
+            default_only = _new_default_api(kwargs)
+
         audit_cols = ["cre_user", "cre_date", "upd_user", "upd_date"]
-        other_cols = ["version"] if default else ["version", "is_default"]
+        other_cols = ["version"] if default_only else ["version", "is_default"]
         cols = audit_cols + other_cols
 
-        _df = self._query_index(default, meta=True, cols=cols, **kwargs)
+        _df = self._query_index(default_only, meta=True, cols=cols, **kwargs)
         audit_mapping = dict([(i, i.replace("_", "ate_")) for i in audit_cols])
 
         return _df.set_index(META_IDX).rename(columns=audit_mapping)
@@ -406,7 +415,7 @@ class Connection(object):
             return df.rename(columns={"name": "region", "synonyms": "synonym"})
         return pd.Series(df["name"].unique(), name="region")
 
-    def _query_post(self, meta, default=True, **kwargs):
+    def _query_post(self, meta, default_only=True, **kwargs):
         def _get_kwarg(k):
             # TODO refactor API to return all models if model-list is empty
             x = kwargs.pop(k, "*" if k == "model" else [])
@@ -428,7 +437,7 @@ class Connection(object):
             return data[matches].unique()
 
         # drop non-default runs if only default is requested
-        if default and hasattr(meta, "is_default"):
+        if default_only and hasattr(meta, "is_default"):
             meta = meta[meta.is_default]
 
         # determine relevant run id's
@@ -470,15 +479,14 @@ class Connection(object):
         }
         return data
 
-    def query(self, default=True, meta=True, **kwargs):
+    def query(self, default_only=True, meta=True, **kwargs):
         """Query the connected resource for timeseries data (with filters)
 
         Parameters
         ----------
-        default : bool, optional
-            Return *only* the default version of each scenario.
-            Any (`model`, `scenario`) without a default version is omitted.
-            If :obj:`False`, return all versions.
+        default_only : bool, optional
+            If `True`, return *only* the default version of a model/scenario.
+            If `False`, return all versions.
         meta : bool or list, optional
             If :obj:`True`, merge all meta columns indicators
             (or subset if list is given).
@@ -505,26 +513,29 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
+        if "default" in kwargs:
+            default_only = _new_default_api(kwargs)
+
         headers = self.auth().copy()
         headers["Content-Type"] = "application/json"
 
         # retrieve meta (with run ids) or only index
         if meta:
-            _meta = self.meta(default=default, run_id=True)
+            _meta = self.meta(default_only=default_only, run_id=True)
             # downselect to subset of meta columns if given as list
             if islistable(meta):
                 # always merge 'version' (even if not requested explicitly)
                 # 'run_id' is required to determine `_args`, dropped later
                 _meta = _meta[set(meta).union(["version", "run_id"])]
         else:
-            _meta = self._query_index(default=default).set_index(META_IDX)
+            _meta = self._query_index(default_only=default_only).set_index(META_IDX)
 
         # return nothing if no data exists at all
         if _meta.empty:
             return
 
         # retrieve data
-        _args = json.dumps(self._query_post(_meta, default=default, **kwargs))
+        _args = json.dumps(self._query_post(_meta, default_only=default_only, **kwargs))
         url = "/".join([self._base_url, "runs/bulk/ts"])
         logger.debug(f"Query timeseries data from {url} with data {_args}")
         r = requests.post(url, headers=headers, data=_args)
@@ -553,7 +564,7 @@ class Connection(object):
                 data.drop(columns="subannual", inplace=True)
 
         # define the index for the IamDataFrame
-        if default:
+        if default_only:
             index = META_IDX
             data.drop(columns="version", inplace=True)
         else:
@@ -570,7 +581,17 @@ class Connection(object):
             return IamDataFrame(data, index=index)
 
 
-def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs):
+def _new_default_api(kwargs):
+    """Change kwargs from `default` to `default_only`"""
+    # TODO: argument `default` is deprecated, change to  for release >= 2.0
+    v = kwargs.pop("default")
+    deprecation_warning(f"Use `default_only={v}`.", "The argument `default`")
+    return v
+
+
+def read_iiasa(
+    name, default_only=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
+):
     """Query an IIASA Scenario Explorer database API and return as IamDataFrame
 
     Parameters
@@ -578,10 +599,9 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     name : str
         | Name of an IIASA Scenario Explorer database instance.
         | See :attr:`pyam.iiasa.Connection.valid_connections`.
-    default : bool, optional
-        Return *only* the default version of each scenario.
-        Any (`model`, `scenario`) without a default version is omitted.
-        If :obj:`False`, return all versions.
+    default_only : bool, optional
+        If `True`, return *only* the default version of a model/scenario.
+        If `False`, return all versions.
     meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
@@ -596,11 +616,13 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     kwargs
         Arguments for :meth:`pyam.iiasa.Connection.query`
     """
-    return Connection(name, creds, base_url).query(default=default, meta=meta, **kwargs)
+    return Connection(name, creds, base_url).query(
+        default_only=default_only, meta=meta, **kwargs
+    )
 
 
 def lazy_read_iiasa(
-    file, name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
+    file, name, default_only=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
 ):
     """
     Try to load data from a local cache, failing that, loads it from the internet.
@@ -620,10 +642,9 @@ def lazy_read_iiasa(
     name : str
         | Name of an IIASA Scenario Explorer database instance.
         | See :attr:`pyam.iiasa.Connection.valid_connections`.
-    default : bool, optional
-        Return *only* the default version of each scenario.
-        Any (`model`, `scenario`) without a default version is omitted.
-        If :obj:`False`, return all versions.
+    default_only : bool, optional
+        If `True`, return *only* the default version of a model/scenario.
+        If `False`, return all versions.
     meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
@@ -660,7 +681,12 @@ def lazy_read_iiasa(
             logger.info("Database out of date and will be re-downloaded")
     # If we get here, we need to redownload the database
     new_read = read_iiasa(
-        name, meta=meta, default=default, creds=creds, base_url=base_url, **kwargs
+        name,
+        meta=meta,
+        default_only=default_only,
+        creds=creds,
+        base_url=base_url,
+        **kwargs,
     )
     Path(file).parent.mkdir(parents=True, exist_ok=True)
     if file.suffix == ".csv":

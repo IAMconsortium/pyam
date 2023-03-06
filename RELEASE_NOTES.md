@@ -1,6 +1,14 @@
 # Next Release
 
+## API changes
+
+In anticipation of a change in the **ixmp** API, the argument `default` in the
+IIASA-Connection methods was renamed to `default_only`.
+
+## Individual updates
+
 - [#734](https://github.com/IAMconsortium/pyam/pull/734) Validation for illegal column names in `data`
+- [#733](https://github.com/IAMconsortium/pyam/pull/733) Change IIASA-Connection argument to `default_only`
 - [#731](https://github.com/IAMconsortium/pyam/pull/731) Add fast-path to initialization for sufficient multiindex
 - [#732](https://github.com/IAMconsortium/pyam/pull/732) Fix a few typos in tutorials
 - [#730](https://github.com/IAMconsortium/pyam/pull/730) Refactor initialization code
