@@ -1,3 +1,5 @@
+# Next Release
+
 # Release v1.8.0
 
 ## Highlights
