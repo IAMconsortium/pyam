@@ -48,6 +48,6 @@ jobs:
 
     - name: Build the docs
       run: |
-        cd doc
+        cd docs
         make html
         cd ..
