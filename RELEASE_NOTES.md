@@ -1,5 +1,7 @@
 # Next Release
 
+- [#738](https://github.com/IAMconsortium/pyam/pull/738) Ensure compatibility with **pandas v2.0**
+
 # Release v1.8.0
 
 ## Highlights
