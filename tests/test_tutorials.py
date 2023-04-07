@@ -2,12 +2,12 @@ import pytest
 
 try:
     import nbformat
-    import nbconvert
-except:
+    from nbconvert.preprocessors import ExecutePreprocessor
+except ModuleNotFoundError:
     pytest.skip(
         "Missing Jupyter Notebook and related dependencies", allow_module_level=True
     )
-from nbconvert.preprocessors import ExecutePreprocessor
+
 from .conftest import here, IIASA_UNAVAILABLE
 
 nb_path = here.parent / "docs" / "tutorials"
