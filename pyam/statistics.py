@@ -198,7 +198,7 @@ class Statistics(object):
                 else (levels + [[row]], [[0]] * (self.idx_depth + 1))
             )
             _stats_f.index = pd.MultiIndex(levels=lvls, codes=lbls)
-            _stats = _stats_f if _stats is None else _stats.append(_stats_f)
+            _stats = _stats_f if _stats is None else pd.concat([_stats, _stats_f])
 
         # add header
         _stats = pd.concat([_stats], keys=[header], names=[""], axis=1)

@@ -86,8 +86,8 @@ def test_init_df_with_float_cols_raises(test_pd_df):
 
 
 def test_init_df_with_duplicates_raises(test_df):
-    _df = test_df.timeseries()
-    _df = _df.append(_df.iloc[0]).reset_index()
+    _df = test_df.timeseries().reset_index()
+    _df = pd.concat([_df, _df.iloc[0].to_frame().T])
     match = "0  model_a   scen_a  World  Primary Energy  EJ/yr"
     with pytest.raises(ValueError, match=match):
         IamDataFrame(_df)
@@ -604,7 +604,7 @@ def test_interpolate_datetimes(test_df):
         test_df.interpolate(some_date, inplace=True)
         obs = test_df.filter(time=some_date).data["value"].reset_index(drop=True)
         exp = pd.Series([3, 1.5, 4], name="value")
-        pd.testing.assert_series_equal(obs, exp, check_less_precise=True)
+        pd.testing.assert_series_equal(obs, exp, rtol=0.01)
         # redo the interpolation and check that no duplicates are added
         test_df.interpolate(some_date, inplace=True)
         assert not test_df.filter()._data.index.duplicated().any()

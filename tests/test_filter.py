@@ -55,7 +55,8 @@ def test_filter_mixed_time_domain(test_df_mixed, arg_year, arg_time):
     assert obs.time_col == "year"
     assert obs.time_domain == "year"
     assert obs.year == [2005]
-    pdt.assert_index_equal(obs.time, pd.Int64Index([2005], name="time"))
+    pdt.assert_index_equal(obs.time, pd.Index([2005], name="time"))
+    assert obs.time.dtype == int
 
 
 def test_filter_time_domain_raises(test_df_year):
@@ -106,10 +107,12 @@ def test_filter_day(test_df, test_day):
 
 def test_filter_with_numpy_64_date_vals(test_df):
     dates = test_df[test_df.time_col].unique()
-    key = "year" if test_df.time_col == "year" else "time"
-    res_0 = test_df.filter(**{key: dates[0]})
-    res = test_df.filter(**{key: dates})
-    assert np.equal(res_0.data[res_0.time_col].values, dates[0]).all()
+    res_0 = test_df.filter(**{test_df.time_col: dates[0]})
+    res = test_df.filter(**{test_df.time_col: dates})
+    if test_df.time_col == "year":
+        assert res_0.data[res_0.time_col].values[0] == dates[0]
+    else:
+        assert res_0.data[res_0.time_col].values[0] == np.datetime64(dates[0])
     assert res.equals(test_df)
 
 
