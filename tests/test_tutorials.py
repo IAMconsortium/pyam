@@ -15,7 +15,6 @@ nb_path = here.parent / "docs" / "tutorials"
 
 def _run_notebook(file, timeout=30):
     """Execute a notebook file"""
-
     with open(nb_path / f"{file}.ipynb") as f:
         nb = nbformat.read(f, as_version=4)
 
