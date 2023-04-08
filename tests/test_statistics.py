@@ -48,12 +48,12 @@ def test_statistics(plot_df):
     idx = pd.MultiIndex(
         levels=[["category", "scen"], ["b", "a", "test"]],
         codes=[[0, 0, 1], [0, 1, 2]],
-        names=[None, None],
+        names=["", ""],
     )
     cols = pd.MultiIndex(
         levels=[["count", "primary", "coal"], ["", 2005]],
         codes=[[0, 1, 2], [0, 1, 1]],
-        names=[None, None],
+        names=[None, "mean (max, min)"],
     )
     exp = pd.DataFrame(
         data=[
@@ -98,7 +98,7 @@ def test_statistics_by_filter(plot_df):
     cols = pd.MultiIndex(
         levels=[["count", "primary", "coal"], ["", 2005]],
         codes=[[0, 1, 2], [0, 1, 1]],
-        names=[None, None],
+        names=[None, "mean (interquartile range)"],
     )
     exp = pd.DataFrame(
         data=["2", "0.85 (0.93, 0.77)", "0.42 (0.46, 0.39)"], index=cols, columns=idx
@@ -123,7 +123,7 @@ def test_statistics_with_rows(plot_df):
     cols = pd.MultiIndex(
         levels=[["count", "primary", "coal"], ["", 2005]],
         codes=[[0, 1, 2], [0, 1, 1]],
-        names=[None, None],
+        names=[None, "median (max, min)"],
     )
     exp = pd.DataFrame(
         data=[["2", "0.85 (1.00, 0.70)", ""], ["2", "", "0.42 (0.50, 0.35)"]],
