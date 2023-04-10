@@ -55,8 +55,8 @@ def test_filter_mixed_time_domain(test_df_mixed, arg_year, arg_time):
     assert obs.time_col == "year"
     assert obs.time_domain == "year"
     assert obs.year == [2005]
-    pdt.assert_index_equal(obs.time, pd.Index([2005], name="time"))
-    assert obs.time.dtype == int
+    pdt.assert_index_equal(obs.time, pd.Index([2005], name="time")
+    assert obs.time.dtype == "int64"
 
 
 def test_filter_time_domain_raises(test_df_year):
