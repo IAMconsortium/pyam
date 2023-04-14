@@ -526,7 +526,7 @@ class Connection(object):
             if islistable(meta):
                 # always merge 'version' (even if not requested explicitly)
                 # 'run_id' is required to determine `_args`, dropped later
-                _meta = _meta[set(meta).union(["version", "run_id"])]
+                _meta = _meta[list(set(meta).union(["version", "run_id"]))]
         else:
             _meta = self._query_index(default_only=default_only).set_index(META_IDX)
 

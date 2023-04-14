@@ -198,10 +198,11 @@ class Statistics(object):
                 else (levels + [[row]], [[0]] * (self.idx_depth + 1))
             )
             _stats_f.index = pd.MultiIndex(levels=lvls, codes=lbls)
-            _stats = _stats_f if _stats is None else _stats.append(_stats_f)
+            _stats = _stats_f if _stats is None else pd.concat([_stats, _stats_f])
 
         # add header
         _stats = pd.concat([_stats], keys=[header], names=[""], axis=1)
+        _stats.index.names = [None] * len(_stats.index.names)
         subheader = _stats.columns.get_level_values(1).unique()
         self._add_to_header(header, subheader)
 
@@ -272,15 +273,14 @@ def format_rows(
         legend = "{} ({})".format(
             center, "max, min" if fullrange is True else "interquartile range"
         )
-        index = row.index.droplevel(2).drop_duplicates()
-        count_arg = dict(tuples=[("count", "")], names=[None, legend])
-    else:
-        msg = "displaying multiple range formats simultaneously not supported"
-        raise NotImplementedError(msg)
 
-    ret = pd.Series(
-        index=pd.MultiIndex.from_tuples(**count_arg).append(index), dtype=float
-    )
+        row_index = row.index.droplevel(2).drop_duplicates()
+        ret_index = pd.MultiIndex.from_tuples([("count", "")]).append(row_index)
+        ret_index.names = [None, legend]
+    else:
+        raise ValueError("Use either fullrange or interquartile range.")
+
+    ret = pd.Series(index=ret_index, dtype=float)
 
     row = row.sort_index()
     center = "50%" if center == "median" else center
@@ -295,7 +295,7 @@ def format_rows(
     upper, lower = ("max", "min") if fullrange is True else ("75%", "25%")
 
     # format `describe()` columns to string output
-    for i in index:
+    for i in row_index:
         x = row.loc[i]
         _count = x["count"]
         if np.isnan(_count) or _count == 0:

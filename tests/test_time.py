@@ -39,7 +39,7 @@ OE_SUBANNUAL_FORMAT = lambda x: x.strftime("%m-%d %H:%M%z").replace("+0100", "+0
 @pytest.mark.parametrize(
     "time, domain, index",
     [
-        (TEST_YEARS, "year", pd.Int64Index([2005, 2010], name="time")),
+        (TEST_YEARS, "year", pd.Index([2005, 2010], name="time")),
         (TEST_DTS, "datetime", pd.DatetimeIndex(TEST_DTS, name="time")),
         (TEST_TIME_STR, "datetime", pd.DatetimeIndex(TEST_DTS, name="time")),
         (TEST_TIME_STR_HR, "datetime", pd.DatetimeIndex(TEST_TIME_STR_HR, name="time")),

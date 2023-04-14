@@ -401,7 +401,8 @@ def format_data(df, index, **kwargs):
             df = _format_from_legacy_database(df)
 
         # replace missing units by an empty string for user-friendly filtering
-        df = df.assign(unit=df["unit"].fillna(""))
+        if "unit" in df.columns:
+            df = df.assign(unit=df["unit"].fillna(""))
 
         df, time_col, extra_cols = _format_data_to_series(df, index)
 
