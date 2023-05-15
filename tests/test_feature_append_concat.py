@@ -160,6 +160,19 @@ def test_concat_with_pd_dataframe(test_df, reverse):
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
+def test_concat_all_pd_dataframe(test_df):
+    # Try concatenating only pd.DataFrame objects and casting to an IamDataFrame
+
+    other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
+
+    # merge only the timeseries `data` DataFrame of both items
+    result = concat([test_df.data, other.data])
+
+    # assert that appending data works as expected
+    ts = result.timeseries()
+    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+
+
 def test_append(test_df):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
