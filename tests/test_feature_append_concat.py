@@ -146,7 +146,7 @@ def test_concat_inconsistent_index_raises(test_df):
         ),
         index=META_IDX + ["version"],
     )
-    with pytest.raises(ValueError, match="Items have incompatible index dimensions")
+    with pytest.raises(ValueError, match="Items have incompatible index dimensions"):
         concat([test_df, df_version])
 
 

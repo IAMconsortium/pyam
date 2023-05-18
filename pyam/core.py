@@ -2917,7 +2917,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
 
     # cast first item to IamDataFrame (if necessary)
     df, _merge_meta = as_iamdataframe(objs[0])
-    extra_cols, time_col = df.extra_cols, df.time_col
+    index_names, extra_cols, time_col = df.index.names, df.extra_cols, df.time_col
 
     consistent_time_domain = True
     iam_dfs = [(df, _merge_meta)]
@@ -2925,8 +2925,10 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     # cast all items to IamDataFrame (if necessary) and check consistency of items
     for df in objs[1:]:
         df, _merge_meta = as_iamdataframe(df)
+        if df.index.names != index_names:
+            raise ValueError("Items have incompatible index dimensions.")
         if df.extra_cols != extra_cols:
-            raise ValueError("Items have incompatible timeseries data dimensions")
+            raise ValueError("Items have incompatible timeseries data dimensions.")
         if df.time_col != time_col:
             consistent_time_domain = False
         iam_dfs.append((df, _merge_meta))
@@ -2955,7 +2957,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     return IamDataFrame(
         pd.concat(ret_data, verify_integrity=False),
         meta=ret_meta,
-        index=ret_meta.index.names,
+        index=index_names,
     )
 
 
