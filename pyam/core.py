@@ -2652,7 +2652,7 @@ def _check_rows(rows, check, in_range=True, return_test="any"):
     lo_op = rows.values.__ge__ if in_range else rows.values.__lt__
 
     check_idx = []
-    for (bd, op) in [("up", up_op), ("lo", lo_op)]:
+    for bd, op in [("up", up_op), ("lo", lo_op)]:
         if bd in check:
             check_idx.append(set(rows.index[op(check[bd])]))
 
@@ -2936,7 +2936,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     # cast all instances to "time"
     if not consistent_time_domain:
         _iam_dfs = []
-        for (df, _merge_meta) in iam_dfs:
+        for df, _merge_meta in iam_dfs:
             if df.time_col == "year":
                 df = df.swap_year_for_time()
             _iam_dfs.append((df, _merge_meta))
@@ -2944,7 +2944,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
 
     # extract timeseries data and meta attributes
     ret_data, ret_meta = [], None
-    for (df, _merge_meta) in iam_dfs:
+    for df, _merge_meta in iam_dfs:
         ret_data.append(df._data)
         if _merge_meta:
             ret_meta = (

@@ -212,7 +212,6 @@ def test_append(test_df):
 @pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
 @pytest.mark.parametrize("reverse", (False, True))
 def test_concat_time_domain(test_pd_df, test_df_mixed, time, reverse):
-
     df_year = IamDataFrame(test_pd_df[IAMC_IDX + [2005]], meta=test_df_mixed.meta)
     df_time = IamDataFrame(
         test_pd_df[IAMC_IDX + [2010]].rename({2010: time}, axis="columns")
@@ -235,7 +234,6 @@ def test_concat_time_domain(test_pd_df, test_df_mixed, time, reverse):
 @pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
 @pytest.mark.parametrize("inplace", (True, False))
 def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
-
     df_year = IamDataFrame(test_pd_df[IAMC_IDX + [2005]], meta=test_df_mixed.meta)
     df_time = IamDataFrame(
         test_pd_df[IAMC_IDX + [2010]].rename({2010: time}, axis="columns")
