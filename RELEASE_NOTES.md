@@ -1,6 +1,6 @@
 # Next Release
 
-- [#740](https://github.com/IAMconsortium/pyam/pull/740) Fix an issue when concatenating only pd.DataFrame objects 
+- [#742](https://github.com/IAMconsortium/pyam/pull/742) Fix an issue when concatenating only pd.DataFrame objects 
 - [#739](https://github.com/IAMconsortium/pyam/pull/739) Ensure compatibility with **pandas v2.0**
 
 # Release v1.8.0
