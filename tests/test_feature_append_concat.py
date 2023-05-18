@@ -136,6 +136,20 @@ def test_concat_non_default_index():
     assert_iamframe_equal(exp, concat([df1, df2]))
 
 
+def test_concat_inconsistent_index_raises(test_df):
+    # Test that merging two IamDataFrames with inconsistent index raises
+
+    df_version = IamDataFrame(
+        pd.DataFrame(
+            [["model_a", "scenario_a", "region_a", "variable_a", "unit", 1, 1, 2]],
+            columns=IAMC_IDX + ["version", 2005, 2010],
+        ),
+        index=META_IDX + ["version"],
+    )
+    with pytest.raises(ValueError, match="Items have incompatible index dimensions")
+        concat([test_df, df_version])
+
+
 @pytest.mark.parametrize("reverse", (False, True))
 def test_concat_with_pd_dataframe(test_df, reverse):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
