@@ -396,7 +396,7 @@ class IamDataFrame(object):
 
         Returns
         -------
-        - A :class:`pandas.Int64Index` if the :attr:`time_domain` is 'year'
+        - A :class:`pandas.Index` (dtype 'int64') if the :attr:`time_domain` is 'year'
         - A :class:`pandas.DatetimeIndex` if the :attr:`time_domain` is 'datetime'
         - A :class:`pandas.Index` if the :attr:`time_domain` is 'mixed'
         """
