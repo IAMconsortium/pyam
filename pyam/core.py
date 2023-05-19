@@ -2953,7 +2953,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
                 else merge_meta(ret_meta, df.meta, ignore_meta_conflict)
             )
 
-    # return as new IamDataFrame, this will verify integrity as part of `__init__()`
+    # return as new IamDataFrame, integrity of `data` is verified at initialization
     return IamDataFrame(
         pd.concat(ret_data, verify_integrity=False),
         meta=ret_meta,
