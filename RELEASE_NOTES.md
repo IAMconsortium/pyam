@@ -1,6 +1,15 @@
-# Next Release
+# Release v1.9.0
 
-- [#742](https://github.com/IAMconsortium/pyam/pull/742) Fix an issue when concatenating only pd.DataFrame objects 
+## Highlights
+
+- Ensure compatibility with **pandas v2.0**
+- Add **Python 3.11** to supported versions
+- Fix an issue when concatenating a list of **pd.DataFrame** objects 
+
+## Individual updates
+
+- [#745](https://github.com/IAMconsortium/pyam/pull/745) Add Python 3.11 to supported versions
+- [#742](https://github.com/IAMconsortium/pyam/pull/742) Fix an issue when concatenating only pd.DataFrame objects
 - [#739](https://github.com/IAMconsortium/pyam/pull/739) Ensure compatibility with **pandas v2.0**
 
 # Release v1.8.0
