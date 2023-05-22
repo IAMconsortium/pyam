@@ -1,3 +1,4 @@
+from importlib.metadata import version, PackageNotFoundError
 import logging
 from pathlib import Path
 from setuptools_scm import get_version
@@ -18,9 +19,15 @@ from pyam.logging import defer_logging_config
 
 logger = logging.getLogger(__name__)
 
-
-__version__ = get_version(root=Path(__file__).parents[1])
-
+# get version number either from git (preferred) or metadata
+try:
+    __version__ = get_version(root=Path(__file__).parents[1])
+except LookupError:
+    try:
+        __version__ = version("pyam-iamc")
+    # the pyam package is distributed under different names on pypi and conda
+    except PackageNotFoundError:
+        __version__ = version("pyam")
 
 # special handling in Jupyter notebooks
 try:
