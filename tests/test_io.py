@@ -68,7 +68,7 @@ def test_io_csv_none(test_df_year):
     )
     try:
         assert test_df_year.to_csv(lineterminator="\n") == exp
-    # special treatment for Python 3.7 and pandas < 1.5
+    # special treatment for pandas < 1.5 (used in the legacy tests)
     except TypeError:
         assert test_df_year.to_csv(line_terminator="\n") == exp
 
