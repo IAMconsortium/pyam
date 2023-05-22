@@ -2652,7 +2652,7 @@ def _check_rows(rows, check, in_range=True, return_test="any"):
     lo_op = rows.values.__ge__ if in_range else rows.values.__lt__
 
     check_idx = []
-    for (bd, op) in [("up", up_op), ("lo", lo_op)]:
+    for bd, op in [("up", up_op), ("lo", lo_op)]:
         if bd in check:
             check_idx.append(set(rows.index[op(check[bd])]))
 
@@ -2917,7 +2917,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
 
     # cast first item to IamDataFrame (if necessary)
     df, _merge_meta = as_iamdataframe(objs[0])
-    extra_cols, time_col = df.extra_cols, df.time_col
+    index_names, extra_cols, time_col = df.index.names, df.extra_cols, df.time_col
 
     consistent_time_domain = True
     iam_dfs = [(df, _merge_meta)]
@@ -2925,8 +2925,10 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     # cast all items to IamDataFrame (if necessary) and check consistency of items
     for df in objs[1:]:
         df, _merge_meta = as_iamdataframe(df)
+        if df.index.names != index_names:
+            raise ValueError("Items have incompatible index dimensions.")
         if df.extra_cols != extra_cols:
-            raise ValueError("Items have incompatible timeseries data dimensions")
+            raise ValueError("Items have incompatible timeseries data dimensions.")
         if df.time_col != time_col:
             consistent_time_domain = False
         iam_dfs.append((df, _merge_meta))
@@ -2934,7 +2936,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     # cast all instances to "time"
     if not consistent_time_domain:
         _iam_dfs = []
-        for (df, _merge_meta) in iam_dfs:
+        for df, _merge_meta in iam_dfs:
             if df.time_col == "year":
                 df = df.swap_year_for_time()
             _iam_dfs.append((df, _merge_meta))
@@ -2942,7 +2944,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
 
     # extract timeseries data and meta attributes
     ret_data, ret_meta = [], None
-    for (df, _merge_meta) in iam_dfs:
+    for df, _merge_meta in iam_dfs:
         ret_data.append(df._data)
         if _merge_meta:
             ret_meta = (
@@ -2951,11 +2953,11 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
                 else merge_meta(ret_meta, df.meta, ignore_meta_conflict)
             )
 
-    # return as new IamDataFrame, this will verify integrity as part of `__init__()`
+    # return as new IamDataFrame, integrity of `data` is verified at initialization
     return IamDataFrame(
         pd.concat(ret_data, verify_integrity=False),
         meta=ret_meta,
-        index=ret_meta.index.names,
+        index=index_names,
     )
 
 
