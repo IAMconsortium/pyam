@@ -243,7 +243,6 @@ def plot_df():
 # IamDataFrame with two scenarios and structure for recursive aggregation
 @pytest.fixture(scope="function", params=["year", "datetime"])
 def recursive_df(request):
-
     data = (
         RECURSIVE_DF
         if request.param == "year"

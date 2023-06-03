@@ -135,7 +135,6 @@ def _aggregate_region(
     subregion_df = df.filter(region=subregions)
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
-
         if drop_negative_weights is False:
             raise ValueError(
                 "Dropping negative weights can only be used with `weights`!"

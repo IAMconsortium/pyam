@@ -65,7 +65,7 @@ class Statistics(object):
         self._headers, self._subheaders = ([], [])
 
         # assing `filters` settings and check that specifications are valid
-        for (idx, _filter) in self.filters:
+        for idx, _filter in self.filters:
             # check that index in tuple is valid
             if isstr(idx):
                 self._add_to_index(idx)
@@ -181,7 +181,7 @@ class Statistics(object):
             _stats.index.names = [""] * 3 if self.rows else [""] * 2
 
         # describe with filter feature
-        for (idx, _filter) in self.filters:
+        for idx, _filter in self.filters:
             filter_args = dict(data=data, df=self.df)
             filter_args.update(_filter)
             _stats_f = filter_by_meta(**filter_args).describe(

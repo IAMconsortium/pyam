@@ -72,7 +72,7 @@ def cumulative(x, first_year, last_year):
     # loop over years
     if not np.isnan(x[first_year]) and not np.isnan(x[last_year]):
         value = 0
-        for (i, yr) in enumerate(years[:-1]):
+        for i, yr in enumerate(years[:-1]):
             next_yr = years[i + 1]
             # the summation is shifted to include the first year fully in sum,
             # otherwise, would return a weighted average of `yr` and `next_yr`
