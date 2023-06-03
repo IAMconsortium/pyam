@@ -127,7 +127,7 @@ class IamDataFrame(object):
                 raise ValueError(
                     f"Invalid arguments for initializing from IamDataFrame: {kwargs}"
                 )
-            if index!=data.index.names:
+            if index != data.index.names:
                 msg = f"Incompatible `index={index}` with {type(data)} "
                 raise ValueError(msg + f"(index={data.index.names})")
             for attr, value in data.__dict__.items():

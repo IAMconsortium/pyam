@@ -42,7 +42,6 @@ try:
 
     shell = get_ipython()
     if isinstance(shell, ZMQInteractiveShell):
-
         # set up basic logging if running in a notebook
         log_msg = "Running in a notebook, setting up a basic logging at level INFO"
 
