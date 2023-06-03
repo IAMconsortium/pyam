@@ -1,5 +1,7 @@
 # Next Release
 
+- [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7 #747
+
 # Release v1.9.0
 
 ## Highlights

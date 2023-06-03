@@ -1,13 +1,7 @@
+from importlib.metadata import version, PackageNotFoundError
 import logging
 from pathlib import Path
 from setuptools_scm import get_version
-
-# use standard library for Python >=3.8
-try:
-    from importlib.metadata import version, PackageNotFoundError
-# use dedicated package for Python 3.7
-except ModuleNotFoundError:
-    from importlib_metadata import version, PackageNotFoundError
 
 from pyam.core import *
 from pyam.slice import IamSlice  # noqa: F401

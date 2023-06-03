@@ -20,7 +20,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.7.13'
+        python-version: '3.8'
 
     - name: Install specific out-dated version of dependencies
       # Update the package requirements when changing minimum dependency versions
