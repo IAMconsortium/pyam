@@ -339,7 +339,7 @@ def test_aggregate_region_with_weights_raises(simple_df):
 
     # dropping negative weights can only be used with weight
     pytest.raises(
-        ValueError, simple_df.aggregate_region, v, drop_negative_weights=False,
+        ValueError, simple_df.aggregate_region, v, drop_negative_weights=False
     )
 
 
