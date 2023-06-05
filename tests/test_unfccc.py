@@ -1,3 +1,4 @@
+import pytest
 import pandas as pd
 from pyam import IamDataFrame, read_unfccc
 from pyam.testing import assert_iamframe_equal
@@ -11,6 +12,7 @@ UNFCCC_DF = pd.DataFrame(
 INDEX_ARGS = dict(model="UNFCCC", scenario="Data Inventory")
 
 
+@pytest.mark.skip("Skip due to https://github.com/pik-primap/unfccc_di_api/issues/74")
 def test_unfccc_tier1():
     # test that UNFCCC API returns expected data and units
     exp = IamDataFrame(
