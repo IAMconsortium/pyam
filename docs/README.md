@@ -32,4 +32,4 @@ On Windows, from the command line, run::
 
     ./make.bat
 
-The rendered html pages will be located in `docs/build/html/index.html`.
+The rendered html pages will be located in `docs/_build/index.html`.
