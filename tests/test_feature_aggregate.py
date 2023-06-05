@@ -358,6 +358,11 @@ def test_aggregate_region_with_weights(simple_df):
     exp = simple_df.filter(variable=v, region="World")
     assert_iamframe_equal(simple_df.aggregate_region(v, weight=w), exp)
 
+    # repeat test where data-index is a subset of weight-index
+    exp = simple_df.filter(variable=v, region="World", year=2005)
+    _df = simple_df.filter(variable=v, year=2010, keep=False)
+    assert_iamframe_equal(_df.aggregate_region(v, weight=w), exp)
+
 
 def test_aggregate_region_raises(simple_df):
     v = "Price|Carbon"
