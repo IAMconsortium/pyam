@@ -358,6 +358,11 @@ def test_aggregate_region_with_weights(simple_df):
     exp = simple_df.filter(variable=v, region="World")
     assert_iamframe_equal(simple_df.aggregate_region(v, weight=w), exp)
 
+
+def test_aggregate_region_raises(simple_df):
+    v = "Price|Carbon"
+    w = "Emissions|CO2"
+
     # inconsistent index of variable and weight raises an error
     _df = simple_df.filter(variable=w, region="reg_b", keep=False)
     pytest.raises(ValueError, _df.aggregate_region, v, weight=w)
@@ -365,15 +370,9 @@ def test_aggregate_region_with_weights(simple_df):
     # using weight and method other than 'sum' raises an error
     pytest.raises(ValueError, simple_df.aggregate_region, v, method="max", weight="bar")
 
-
-def test_aggregate_region_with_components_and_weights_raises(simple_df):
     # setting both weight and components raises an error
     pytest.raises(
-        ValueError,
-        simple_df.aggregate_region,
-        "Emissions|CO2",
-        components=True,
-        weight="bar",
+        ValueError, simple_df.aggregate_region, v, components=True, weight="bar"
     )
 
 
