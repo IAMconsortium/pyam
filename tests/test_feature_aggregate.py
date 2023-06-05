@@ -97,8 +97,7 @@ def test_check_aggregate_top_level(simple_df):
 
 
 @pytest.mark.parametrize(
-    "variable",
-    (("Primary Energy"), (["Primary Energy", "Emissions|CO2"])),
+    "variable", ("Primary Energy", (["Primary Energy", "Emissions|CO2"]))
 )
 def test_aggregate_append(simple_df, variable):
     # remove `variable`, do aggregate and append, check equality to original
@@ -197,7 +196,7 @@ def test_aggregate_components_as_dict(simple_df):
 @pytest.mark.parametrize(
     "variable",
     (
-        ("Primary Energy"),
+        "Primary Energy",
         (["Primary Energy", "Primary Energy|Coal", "Primary Energy|Wind"]),
     ),
 )
@@ -322,7 +321,7 @@ def test_aggregate_region_with_weights(simple_df):
     assert_iamframe_equal(_df.aggregate_region(v, weight=w), exp)
 
 
-def test_aggregate_region_raises(simple_df):
+def test_aggregate_region_with_weights_raises(simple_df):
     v = "Price|Carbon"
     w = "Emissions|CO2"
 
