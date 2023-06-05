@@ -306,16 +306,6 @@ def test_aggregate_region_with_components(simple_df):
     assert _df.check_aggregate_region(v, components=["foo"]) is None
 
 
-def test_aggregate_region_with_no_weights_drop_negative_weights_raises(simple_df):
-    # dropping negative weights can only be used with weight
-    pytest.raises(
-        ValueError,
-        simple_df.aggregate_region,
-        "Price|Carbon",
-        drop_negative_weights=False,
-    )
-
-
 def test_aggregate_region_with_weights(simple_df):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
@@ -346,6 +336,11 @@ def test_aggregate_region_raises(simple_df):
     # setting both weight and components raises an error
     pytest.raises(
         ValueError, simple_df.aggregate_region, v, components=True, weight="bar"
+    )
+
+    # dropping negative weights can only be used with weight
+    pytest.raises(
+        ValueError, simple_df.aggregate_region, v, drop_negative_weights=False,
     )
 
 
