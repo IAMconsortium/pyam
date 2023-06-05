@@ -218,7 +218,7 @@ def _agg_weight(data, weight, method, drop_negative_weights):
 
     weight = weight.droplevel(["variable", "unit"])
 
-    if not data.droplevel(["variable", "unit"]).index.equals(weight.index):
+    if not all(data.droplevel(["variable", "unit"]).index.isin(weight.index)):
         raise ValueError("Inconsistent index between variable and weight!")
 
     if drop_negative_weights is True:
@@ -234,9 +234,10 @@ def _agg_weight(data, weight, method, drop_negative_weights):
 
     col1 = data.index.names.difference(["region"])
     col2 = data.index.names.difference(["region", "variable", "unit"])
-    return (data * weight).groupby(col1).apply(
+
+    return ((data * weight).groupby(col1).apply(
         pd.Series.sum, skipna=False
-    ) / weight.groupby(col2).sum()
+    ) / weight.groupby(col2).sum()).dropna()
 
 
 def _get_method_func(method):
