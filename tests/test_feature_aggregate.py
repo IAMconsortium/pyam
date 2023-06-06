@@ -244,7 +244,7 @@ def test_check_aggregate_region_log(simple_df, caplog):
     ),
 )
 def test_aggregate_region_append(simple_df, variable):
-    # remove `variable`, do aggregate and append, check equality to original
+    # remove `variable`, aggregate and append, check equality to original
     _df = simple_df.filter(variable=variable, region="World", keep=False)
     _df.aggregate_region(variable, append=True)
     assert_iamframe_equal(_df, simple_df)
@@ -312,13 +312,27 @@ def test_aggregate_region_with_weights(simple_df):
     assert simple_df.check_aggregate_region(v) is not None
     assert simple_df.check_aggregate_region(v, weight=w) is None
 
+    # test the full dataset
     exp = simple_df.filter(variable=v, region="World")
     assert_iamframe_equal(simple_df.aggregate_region(v, weight=w), exp)
 
-    # repeat test where data-index is a subset of weight-index
+    # test that data-index being a subset of weight-index works as expected
     exp = simple_df.filter(variable=v, region="World", year=2005)
     _df = simple_df.filter(variable=v, year=2010, keep=False)
     assert_iamframe_equal(_df.aggregate_region(v, weight=w), exp)
+
+    # test that dropping negative weights works as expected
+    neg_weights_df = simple_df.copy()
+    neg_weights_df._data[18] = -6
+    exp = simple_df.filter(variable=v, region="World", year=2010)
+    assert_iamframe_equal(neg_weights_df.aggregate_region(v, weight=w), exp)
+
+    # test that not dropping negative weights works as expected
+    exp = simple_df.filter(variable=v, region="World")
+    exp._data[0] = -8
+    assert_iamframe_equal(
+        neg_weights_df.aggregate_region(v, weight=w, drop_negative_weights=False), exp
+    )
 
 
 def test_aggregate_region_with_weights_raises(simple_df):
