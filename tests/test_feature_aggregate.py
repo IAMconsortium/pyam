@@ -305,7 +305,7 @@ def test_aggregate_region_with_components(simple_df):
     assert _df.check_aggregate_region(v, components=["foo"]) is None
 
 
-def test_aggregate_region_with_weights(simple_df):
+def test_aggregate_region_with_weights(simple_df, caplog):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
     w = "Emissions|CO2"
@@ -333,6 +333,14 @@ def test_aggregate_region_with_weights(simple_df):
     assert_iamframe_equal(
         neg_weights_df.aggregate_region(v, weight=w, drop_negative_weights=False), exp
     )
+
+    msg = (
+        "Some weights are negative. All data weighted by negative values will "
+        "be dropped. To use both positive and negative weights, "
+        "please use the keyword argument `drop_negative_weights=False`."
+    )
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "WARNING"
 
 
 def test_aggregate_region_with_weights_raises(simple_df):
