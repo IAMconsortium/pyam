@@ -800,7 +800,9 @@ class IamDataFrame(object):
 
     def reset_exclude(self):
         """Reset exclusion assignment for all scenarios to `exclude: False`"""
-        self.meta["exclude"] = False
+        # TODO: deprecated, remove for release >= 2.1
+        deprecation_warning("use `IamDataFrame.exclude = False` instead.")
+        self.exclude = False
 
     def set_meta(self, meta, name=None, index=None):
         """Add meta indicators as pandas.Series, list or value (int/float/str)
