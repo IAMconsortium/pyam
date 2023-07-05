@@ -148,10 +148,6 @@ class IamDataFrame(object):
                 raise ValueError(
                     f"Incompatible `index={index}` with `meta.index={meta.index.names}`"
                 )
-            if illegal_cols := [i for i in meta.columns if i in ILLEGAL_COLS]:
-                raise ValueError(
-                    "Illegal columns in `meta`: '" + "', '".join(illegal_cols) + "'"
-                )
 
         # try casting to Path if file-like is string or LocalPath or pytest.LocalPath
         try:
@@ -825,6 +821,12 @@ class IamDataFrame(object):
             index to be used for setting meta column (`['model', 'scenario']`)
         """
         if isinstance(meta, pd.DataFrame):
+
+            if illegal_cols := [i for i in meta.columns if i in ILLEGAL_COLS]:
+                raise ValueError(
+                    "Illegal columns in `meta`: '" + "', '".join(illegal_cols) + "'"
+                )
+
             if meta.index.names != self.meta.index.names:
                 # catch Model, Scenario instead of model, scenario
                 meta = meta.rename(
@@ -841,9 +843,9 @@ class IamDataFrame(object):
             raise ValueError("Must pass a name or use a named pd.Series")
         name = name or meta.name
         if name in self.dimensions:
-            raise ValueError(f"Column {name} already exists in `data`!")
+            raise ValueError(f"Column '{name}' already exists in `data`.")
         if name in ILLEGAL_COLS:
-            raise ValueError(f"Name {name} is illegal for meta indicators!")
+            raise ValueError(f"Name '{name}' is illegal for meta indicators.")
 
         # check if meta has a valid index and use it for further workflow
         if (

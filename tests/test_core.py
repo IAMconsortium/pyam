@@ -168,7 +168,7 @@ def test_init_df_with_meta_incompatible_index_raises(test_pd_df):
     )
 
     # assert that using an incompatible index for the meta arg raises
-    match = "Incompatible `index=\['model', 'scenario'\]` with `meta` *."
+    match = "Incompatible `index=\['model', 'scenario'\]` with `meta.index=*."
     with pytest.raises(ValueError, match=match):
         IamDataFrame(test_pd_df, meta=meta)
 
@@ -223,11 +223,11 @@ def test_init_with_illegal_column(test_pd_df, illegal):
 
 def test_set_meta_with_column_conflict(test_df_year):
     # check that setting a `meta` column with a name conflict raises
-    msg = "Column model already exists in `data`!"
+    msg = "Column 'model' already exists in `data`."
     with pytest.raises(ValueError, match=msg):
         test_df_year.set_meta(name="model", meta="foo")
 
-    msg = "Name meta is illegal for meta indicators!"
+    msg = "Name 'meta' is illegal for meta indicators."
     with pytest.raises(ValueError, match=msg):
         test_df_year.set_meta(name="meta", meta="foo")
 
