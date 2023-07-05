@@ -1,5 +1,20 @@
 # Next Release
 
+The next release must bump the major version number.
+
+## API changes
+
+The column *exclude* of the `meta` attribute was refacored to a new attribute `exclude`.
+All validation methods are refactored such that the argument `exclude_on_fail` changes
+this new attribute (see PR [#759](https://github.com/IAMconsortium/pyam/pull/759)).
+
+The term "exclude" is now an illegal column name for (timeseries) data and meta tables.
+When importing an xlsx file created with pyam < 2.0, which has an "exclude" column in
+"meta", that column is moved to the new exclude attribute with a log message.
+
+## Individual updates
+
+- [#759](https://github.com/IAMconsortium/pyam/pull/759) Excise "exclude" column from meta and add a own attribute
 - [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7 #747
 
 # Release v1.9.0
