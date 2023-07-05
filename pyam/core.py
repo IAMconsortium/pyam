@@ -1159,8 +1159,9 @@ class IamDataFrame(object):
 
         # changing index and data columns can cause model-scenario mismatch
         if any(i in mapping for i in meta_idx) and any(i in mapping for i in data_cols):
-            msg = "Renaming index and data columns simultaneously not supported!"
-            raise ValueError(msg)
+            raise NotImplementedError(
+                "Renaming index and data columns simultaneously is not supported."
+            )
 
         # translate rename mapping to `filter()` arguments
         filters = {col: _from.keys() for col, _from in mapping.items()}

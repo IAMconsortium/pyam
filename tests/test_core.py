@@ -609,15 +609,15 @@ def test_interpolate_datetimes(test_df):
 
 
 def test_filter_by_bool(test_df):
-    test_df.set_meta([True, False], name="exclude")
-    obs = test_df.filter(exclude=True)
-    assert obs["scenario"].unique() == "scen_a"
+    test_df.set_meta([True, False], name="meta_bool")
+    obs = test_df.filter(meta_bool=True)
+    assert obs.scenario == ["scen_a"]
 
 
 def test_filter_by_int(test_df):
-    test_df.set_meta([1, 2], name="test")
-    obs = test_df.filter(test=[1, 3])
-    assert obs["scenario"].unique() == "scen_a"
+    test_df.set_meta([1, 2], name="meta_int")
+    obs = test_df.filter(meta_int=[1, 3])
+    assert obs.scenario == ["scen_a"]
 
 
 def _r5_regions_exp(df):

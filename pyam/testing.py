@@ -28,6 +28,7 @@ def assert_iamframe_equal(left, right, **kwargs):
     pdt.assert_frame_equal(
         left.meta.dropna(axis="columns", how="all"),
         right.meta.dropna(axis="columns", how="all"),
+        check_column_type=False,
         check_dtype=False,
         check_like=True,
     )

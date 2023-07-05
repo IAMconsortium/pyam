@@ -219,7 +219,7 @@ def test_rename_index_data_fail(test_df):
         "scenario": {"scen_a": "scen_c"},
         "variable": {"Primary Energy|Coal": "Primary Energy|Gas"},
     }
-    pytest.raises(ValueError, test_df.rename, mapping)
+    pytest.raises(NotImplementedError, test_df.rename, mapping)
 
 
 def test_rename_index_fail_duplicates(test_df):
