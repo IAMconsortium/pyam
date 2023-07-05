@@ -13,11 +13,11 @@ from .conftest import TEST_DF, META_COLS, META_DF
 # assert that merging of meta works as expected
 EXP_META = pd.DataFrame(
     [
-        ["model_a", "scen_a", False, 1, "foo", 0, "a", np.nan],
-        ["model_a", "scen_b", False, 2, np.nan, 1, "b", np.nan],
-        ["model_a", "scen_c", False, 2, np.nan, 2, np.nan, "x"],
+        ["model_a", "scen_a", 1, "foo", 0, "a", np.nan],
+        ["model_a", "scen_b", 2, np.nan, 1, "b", np.nan],
+        ["model_a", "scen_c", 2, np.nan, 2, np.nan, "x"],
     ],
-    columns=META_IDX + ["exclude", "number", "string", "col1", "col2", "col3"],
+    columns=META_IDX + ["number", "string", "col1", "col2", "col3"],
 ).set_index(META_IDX)
 
 
@@ -166,8 +166,7 @@ def test_concat_with_pd_dataframe(test_df, reverse):
     # assert that merging meta from `other` is ignored
     exp_meta = META_DF.copy()
     exp_meta.loc[("model_a", "scen_c"), "number"] = np.nan
-    exp_meta["exclude"] = False
-    pdt.assert_frame_equal(result.meta, exp_meta[["exclude"] + META_COLS])
+    pdt.assert_frame_equal(result.meta, exp_meta[META_COLS])
 
     # assert that appending data works as expected
     ts = result.timeseries()
@@ -287,7 +286,7 @@ def test_append_same_scenario(test_df):
     df = test_df.append(other, ignore_meta_conflict=True)
 
     # check that the new meta.index is updated, but not the original one
-    cols = ["exclude"] + META_COLS + ["col1"]
+    cols = META_COLS + ["col1"]
     npt.assert_array_equal(test_df.meta.columns, cols)
 
     # assert that merging of meta works as expected

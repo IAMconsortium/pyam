@@ -35,11 +35,11 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame(
 
 META_DF = pd.DataFrame(
     [
-        ["model_a", "scen_a", 1, False],
-        ["model_a", "scen_b", np.nan, False],
-        ["model_a", "scen_c", 2, False],
+        ["model_a", "scen_a", 1],
+        ["model_a", "scen_b", np.nan],
+        ["model_a", "scen_c", 2],
     ],
-    columns=META_IDX + ["foo", "exclude"],
+    columns=META_IDX + ["foo"],
 ).set_index(META_IDX)
 
 
@@ -238,7 +238,6 @@ def test_print(test_df_year):
             "   unit     : EJ/yr (1)",
             "   year     : 2005, 2010 (2)",
             "Meta indicators:",
-            "   exclude (bool) False (1)",
             "   number (int64) 1, 2 (2)",
             "   string (object) foo, nan (2)",
         ]
@@ -261,7 +260,6 @@ def test_print_empty(test_df_year):
             "   unit     : (0)",
             "   year     : (0)",
             "Meta indicators:",
-            "   exclude (bool) (0)",
             "   number (int64) (0)",
             "   string (object) (0)",
         ]
