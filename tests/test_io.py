@@ -219,6 +219,14 @@ def test_load_meta_empty_rows(test_df_year, tmpdir):
     assert_iamframe_equal(test_df_year, exp)
 
 
+def test_load_meta_exclude(test_pd_df):
+    """Initializing from xlsx where 'meta' has an exclude columns (pyam < 2.0)"""
+    obs = IamDataFrame(TEST_DATA_DIR / "exclude_meta_sheet.xlsx")
+    exp = IamDataFrame(test_pd_df)
+    exp.exclude[0] = True
+    assert_iamframe_equal(obs, exp)
+
+
 def test_load_meta_empty(test_pd_df):
     """Initializing from xlsx where 'meta' has no rows and non-empty invisible header"""
     obs = IamDataFrame(TEST_DATA_DIR / "empty_meta_sheet.xlsx")
