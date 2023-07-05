@@ -2552,6 +2552,10 @@ class IamDataFrame(object):
         # in pyam < 2.0, an "exclude" columns was part of the `meta` attribute
         # this section ensures compatibility with xlsx files created with pyam < 2.0
         if "exclude" in df.columns:
+            logger.info(
+                f"Found column 'exclude' in sheet '{sheet_name}', "
+                "moved to attribute `IamDataFrame.exclude`."
+            )
             self._exclude = merge_exclude(
                 df.exclude, self.exclude, ignore_conflict=ignore_conflict
             )
