@@ -30,6 +30,7 @@ from pyam.utils import (
     read_pandas,
     format_data,
     merge_meta,
+    merge_exclude,
     find_depth,
     pattern_match,
     to_list,
@@ -177,8 +178,9 @@ class IamDataFrame(object):
         self._data, index, self.time_col, self.extra_cols = _data
 
         # define `meta` dataframe for categorization & quantitative indicators
-        self.meta = pd.DataFrame(index=_make_index(self._data, cols=index))
-        self.reset_exclude()
+        _index = _make_index(self._data, cols=index)
+        self.meta = pd.DataFrame(index=_index)
+        self.exclude = False
 
         # if given explicitly, merge meta dataframe after downselecting
         if meta is not None:
@@ -452,6 +454,21 @@ class IamDataFrame(object):
 
         return self._time_domain
 
+    @property
+    def exclude(self):
+        """Indicator for exclusion of scenarios (e.g., failed validation)"""
+        return self._exclude
+
+    @exclude.setter
+    def exclude(self, exclude):
+        """Indicator for scenario exclusion, used to validate with `exclude_on_fail`"""
+        if isinstance(exclude, bool):
+            self._exclude = pd.Series(exclude, index=self.meta.index)
+        else:
+            raise NotImplementedError(
+                f"Setting `exclude` must have a boolean, found: {exclude}"
+            )
+
     def copy(self):
         """Make a deepcopy of this object
 
@@ -557,6 +574,7 @@ class IamDataFrame(object):
 
         # merge `meta` tables
         ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
+        ret._exclude = merge_exclude(ret._exclude, other._exclude, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
         _data = pd.concat([ret._data, other._data])
@@ -1044,8 +1062,7 @@ class IamDataFrame(object):
         )
 
         if exclude_on_fail:
-            self.meta.loc[idx, "exclude"] = True
-            msg += ", marked as `exclude: True` in `meta`"
+            self._exclude_on_fail(idx)
 
         logger.info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
@@ -1168,6 +1185,8 @@ class IamDataFrame(object):
                 if _index.duplicated().any():
                     raise ValueError(f"Renaming to non-unique {col} index!")
                 ret.meta.index = _index.set_index(meta_idx).index
+                ret._exclude.index = ret.meta.index
+
             elif col not in data_cols:
                 raise ValueError(f"Renaming by {col} not supported!")
             _data_index = replace_index_values(_data_index, col, _mapping, rows)
@@ -1782,17 +1801,16 @@ class IamDataFrame(object):
             ]
 
     def _exclude_on_fail(self, df):
-        """Assign a selection of scenarios as `exclude: True` in meta"""
+        """Assign a selection of scenarios as `exclude: True`"""
         idx = (
             df
             if isinstance(df, pd.MultiIndex)
             else _make_index(df, cols=self.index.names)
         )
-        self.meta.loc[idx, "exclude"] = True
+        self.exclude[idx] = True
+        n = len(idx)
         logger.info(
-            "{} non-valid scenario{} will be excluded".format(
-                len(idx), "" if len(idx) == 1 else "s"
-            )
+            f"{n} scenario{s(n)} failed validation and will be set as `exclude=True`."
         )
 
     def slice(self, keep=True, **kwargs):
@@ -1873,6 +1891,8 @@ class IamDataFrame(object):
             logger.warning("Filtered IamDataFrame is empty!")
         ret.meta = ret.meta.loc[idx]
         ret.meta.index = ret.meta.index.remove_unused_levels()
+        ret._exclude = ret._exclude.loc[idx]
+        ret._exclude.index = ret._exclude.index.remove_unused_levels()
         ret._set_attributes()
         if not inplace:
             return ret
@@ -2716,7 +2736,7 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
         vdf = fdf.validate(criteria=criteria, exclude_on_fail=exclude_on_fail)
-        df.meta["exclude"] |= fdf.meta["exclude"]  # update if any excluded
+        df._exclude |= fdf._exclude  # update if any excluded
         return vdf
 
 
@@ -2737,7 +2757,7 @@ def require_variable(
         vdf = fdf.require_variable(
             variable=variable, unit=unit, year=year, exclude_on_fail=exclude_on_fail
         )
-        df.meta["exclude"] |= fdf.meta["exclude"]  # update if any excluded
+        df._exclude |= fdf._exclude  # update if any excluded
         return vdf
 
 
@@ -2792,7 +2812,7 @@ def check_aggregate(
             exclude_on_fail=exclude_on_fail,
             multiplier=multiplier,
         )
-        df.meta["exclude"] |= fdf.meta["exclude"]  # update if any excluded
+        df._exclude |= fdf._exclude  # update if any excluded
         return vdf
 
 

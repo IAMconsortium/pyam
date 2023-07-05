@@ -488,6 +488,26 @@ def merge_meta(left, right, ignore_conflict=False):
     return left.dropna(axis=1, how="all")
 
 
+def merge_exclude(left, right, ignore_conflict=False):
+    """Merge two `exclude` series; raise if values are in conflict (optional)"""
+
+    left = left.copy()  # make a copy to not change the original object
+    diff = right.index.difference(left.index)
+    sect = right.index.intersection(left.index)
+
+    # if not ignored, check that overlapping `meta` columns are equal
+    if not sect.empty:
+        conflict = left[sect][left[sect] != right[sect]].index
+        if not conflict.empty:
+            if ignore_conflict:
+                logger.warning("Ignoring conflict in `exclude` attribute.")
+            else:
+                raise_data_error(
+                    "Conflict in `exclude` for the following scenarios", conflict
+                )
+    return pd.concat([left, right.loc[diff]], sort=False)
+
+
 def find_depth(data, s="", level=None):
     """Return or assert the depth (number of ``|``) of variables
 
