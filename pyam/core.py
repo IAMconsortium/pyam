@@ -2546,6 +2546,14 @@ class IamDataFrame(object):
         else:
             logger.info(msg)
 
+        # in pyam < 2.0, an "exclude" columns was part of the `meta` attribute
+        # this section ensures compatibility with xlsx files created with pyam < 2.0
+        if "exclude" in df.columns:
+            self._exclude = merge_exclude(
+                df.exclude, self.exclude, ignore_conflict=ignore_conflict
+            )
+            df.drop(columns="exclude", inplace=True)
+
         # merge imported meta indicators
         self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
 
