@@ -152,11 +152,19 @@ def test_init_df_with_meta(test_pd_df):
     assert df.scenario == ["scen_a", "scen_b"]
 
 
-def test_init_df_with_meta_incompatible_index(test_pd_df):
+def test_init_df_with_meta_exclude_raises(test_pd_df):
+    # pass explicit meta dataframe with a scenario that
+    meta = META_DF.copy()
+    meta["exclude"] = False
+    with pytest.raises(ValueError, match="Illegal columns in `meta`: 'exclude'"):
+        IamDataFrame(test_pd_df, meta=meta)
+
+
+def test_init_df_with_meta_incompatible_index_raises(test_pd_df):
     # define a meta dataframe with a non-standard index
     index = ["source", "scenario"]
     meta = pd.DataFrame(
-        [False, False, False], columns=["exclude"], index=META_DF.index.rename(index)
+        [False, False, False], columns=["foo"], index=META_DF.index.rename(index)
     )
 
     # assert that using an incompatible index for the meta arg raises

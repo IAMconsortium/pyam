@@ -142,11 +142,16 @@ class IamDataFrame(object):
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop("meta_sheet_name", "meta")
 
-        # if meta is given explicitly, verify that index matches
-        if meta is not None and not meta.index.names == index:
-            raise ValueError(
-                f"Incompatible `index={index}` with `meta` (index={meta.index.names})!"
-            )
+        # if meta is given explicitly, verify that index and column names are valid
+        if meta is not None:
+            if not meta.index.names == index:
+                raise ValueError(
+                    f"Incompatible `index={index}` with `meta.index={meta.index.names}`"
+                )
+            if illegal_cols := [i for i in meta.columns if i in ILLEGAL_COLS]:
+                raise ValueError(
+                    "Illegal columns in `meta`: '" + "', '".join(illegal_cols) + "'"
+                )
 
         # try casting to Path if file-like is string or LocalPath or pytest.LocalPath
         try:
