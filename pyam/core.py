@@ -2428,7 +2428,7 @@ class IamDataFrame(object):
         write_sheet(excel_writer, sheet_name, self._to_file_format(iamc_index))
 
         # write meta table unless `include_meta=False`
-        if include_meta:
+        if include_meta and len(self.meta.columns):
             meta_rename = dict([(i, i.capitalize()) for i in self.index.names])
             write_sheet(
                 excel_writer,
