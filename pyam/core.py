@@ -458,7 +458,13 @@ class IamDataFrame(object):
 
     @property
     def exclude(self):
-        """Indicator for exclusion of scenarios (e.g., failed validation)"""
+        """Indicator for exclusion of scenarios, used by validation methods
+
+        See Also
+        --------
+        validate, require_data, check_aggregate, check_aggregate_region
+
+        """
         return self._exclude
 
     @exclude.setter
@@ -805,9 +811,9 @@ class IamDataFrame(object):
         return s.unstack(level=self.time_col).rename_axis(None, axis=1)
 
     def reset_exclude(self):
-        """Reset exclusion assignment for all scenarios to `exclude: False`"""
+        """Reset exclusion assignment for all scenarios to :attr:`exclude` = *False*"""
         # TODO: deprecated, remove for release >= 2.1
-        deprecation_warning("use `IamDataFrame.exclude = False` instead.")
+        deprecation_warning("Use `IamDataFrame.exclude = False` instead.")
         self.exclude = False
 
     def set_meta(self, meta, name=None, index=None):
@@ -979,12 +985,13 @@ class IamDataFrame(object):
         year : int or list of int, optional
             Required year(s).
         exclude_on_fail : bool, optional
-            Set *meta* indicator for scenarios failing validation as `exclude: True`.
+            If True, set :attr:`exclude` = *True* for all scenarios that do not satisfy
+            the criteria.
 
         Returns
         -------
-        pd.DataFrame
-            A dataframe of the *index* of scenarios not satisfying the cr
+        :class:`pandas.DataFrame` or None
+            A dataframe of the *index* of scenarios not satisfying the criteria.
         """
 
         # TODO: option to require values in certain ranges, see `_apply_criteria()`
@@ -1041,13 +1048,15 @@ class IamDataFrame(object):
         Parameters
         ----------
         variable : str
-            required variable
-        unit : str, default None
-            name of unit (optional)
-        year : int or list, default None
-            check whether the variable exists for ANY of the years (if a list)
-        exclude_on_fail : bool, default False
-            flag scenarios missing the required variables as `exclude: True`
+            Required variable.
+        unit : str, optional
+            Name of unit (optional).
+        year : int or list, optional
+            Check whether the variable exists for ANY of the years (if a list).
+        exclude_on_fail : bool, optional
+            If True, set :attr:`exclude` = True for all scenarios that do not satisfy
+            the criteria.
+
         """
         # TODO: deprecated, remove for release >= 2.0
         deprecation_warning("Use `df.require_data()` instead.")
@@ -1095,14 +1104,13 @@ class IamDataFrame(object):
            dictionary with variable keys and validation mappings
             ('up' and 'lo' for respective bounds, 'year' for years)
         exclude_on_fail : bool, optional
-            flag scenarios failing validation as `exclude: True`
+            If True, set :attr:`exclude` = *True* for all scenarios that do not satisfy
+            the criteria.
 
         Returns
         -------
-        :class:`pandas.DataFrame`
+        :class:`pandas.DataFrame` or None
             All data points that do not satisfy the criteria.
-        None
-            If all scenarios satisfy the criteria.
         """
         df = _apply_criteria(self._data, criteria, in_range=False)
 
@@ -1447,7 +1455,8 @@ class IamDataFrame(object):
             Method to use for aggregation,
             e.g. :any:`numpy.mean`, :any:`numpy.sum`, 'min', 'max'.
         exclude_on_fail : bool, optional
-            Flag scenarios failing validation as `exclude: True`.
+            If True, set :attr:`exclude` = *True* for all scenarios where the aggregate
+            does not match the aggregated components.
         multiplier : number, optional
             Multiplicative factor when comparing variable and sum of components.
         kwargs : Tolerance arguments for comparison of values
@@ -1456,7 +1465,7 @@ class IamDataFrame(object):
         Returns
         -------
         :class:`pandas.DataFrame` or None
-            Data where variables and aggregate does not match.
+            Data where variables and aggregate does not match the aggregated components.
 
         """
         # compute aggregate from components, return None if no components
@@ -1587,7 +1596,8 @@ class IamDataFrame(object):
             Variable to use as weight for the aggregation
             (currently only supported with `method='sum'`).
         exclude_on_fail : boolean, optional
-            Flag scenarios failing validation as `exclude: True`.
+            If True, set :attr:`exclude` = *True* for all scenarios where the aggregate
+            does not match the aggregated components.
         drop_negative_weights : bool, optional
             Removes any aggregated values that are computed using negative weights
         kwargs : Tolerance arguments for comparison of values
@@ -2760,7 +2770,7 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     message or returns None if all scenarios match the criteria.
 
     When called with `exclude_on_fail=True`, scenarios in `df` not satisfying
-    the criteria will be marked as `exclude=True` (object modified in place).
+    the criteria will be marked as :attr:`exclude` = *True*.
 
     Parameters
     ----------
@@ -2800,8 +2810,7 @@ def require_variable(
 def categorize(
     df, name, value, criteria, color=None, marker=None, linestyle=None, **kwargs
 ):
-    """Assign scenarios to a category according to specific criteria
-    or display the category assignment
+    """Assign scenarios to a category according to specific criteria.
 
     Parameters
     ----------
@@ -2830,8 +2839,7 @@ def categorize(
 def check_aggregate(
     df, variable, components=None, exclude_on_fail=False, multiplier=1, **kwargs
 ):
-    """Check whether the timeseries values match the aggregation
-    of sub-categories
+    """Check whether the timeseries values match the aggregation of sub-categories
 
     Parameters
     ----------
