@@ -507,7 +507,11 @@ class IamDataFrame(object):
         if not isinstance(other, IamDataFrame):
             raise ValueError("`other` is not an `IamDataFrame` instance")
 
-        if compare(self, other).empty and self.meta.equals(other.meta):
+        if (
+            compare(self, other).empty
+            and self.meta.equals(other.meta)
+            and self.exclude.equals(other.exclude)
+        ):
             return True
         else:
             return False
@@ -821,7 +825,6 @@ class IamDataFrame(object):
             index to be used for setting meta column (`['model', 'scenario']`)
         """
         if isinstance(meta, pd.DataFrame):
-
             if illegal_cols := [i for i in meta.columns if i in ILLEGAL_COLS]:
                 raise ValueError(
                     "Illegal columns in `meta`: '" + "', '".join(illegal_cols) + "'"

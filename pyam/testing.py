@@ -32,3 +32,8 @@ def assert_iamframe_equal(left, right, **kwargs):
         check_dtype=False,
         check_like=True,
     )
+
+    pdt.assert_series_equal(
+        left.exclude,
+        right.exclude,
+    )
