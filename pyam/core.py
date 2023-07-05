@@ -1919,7 +1919,17 @@ class IamDataFrame(object):
             if values is None:
                 continue
 
-            if col in self.meta.columns:
+            if col == "exclude":
+                if not isinstance(values, bool):
+                    raise ValueError(
+                        f"Filter by `exclude` requires a boolean, found: {values}"
+                    )
+                exclude_index = (self.exclude[self.exclude == values]).index
+                keep_col = _make_index(
+                    self._data, cols=self.index.names, unique=False
+                ).isin(exclude_index)
+
+            elif col in self.meta.columns:
                 matches = pattern_match(
                     self.meta[col], values, regexp=regexp, has_nan=True
                 )

@@ -308,3 +308,25 @@ def test_filter_keep_false(test_df):
 def test_filter_by_regexp(test_df):
     obs = test_df.filter(scenario="sce._a$", regexp=True)
     assert obs["scenario"].unique() == "scen_a"
+
+
+def test_filter_by_exclude(test_df):
+    index = pd.MultiIndex.from_tuples(
+        [("model_a", "scen_a")], names=["model", "scenario"]
+    )
+    test_df.exclude[index] = True
+
+    obs = test_df.filter(exclude=True)
+    assert obs.scenario == ["scen_a"]
+
+    obs = test_df.filter(exclude=False, keep=False)
+    assert obs.scenario == ["scen_a"]
+
+    obs = test_df.filter(exclude=False)
+    assert obs.scenario == ["scen_b"]
+
+
+@pytest.mark.parametrize("value", [[True, False], "any", 3])
+def test_filter_by_exclude_raises(test_df, value):
+    with pytest.raises(ValueError, match="Filter by `exclude` requires a boolean, "):
+        test_df.filter(exclude=value)
