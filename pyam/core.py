@@ -293,18 +293,19 @@ class IamDataFrame(object):
             _lst = print_list(lst, n - len(m) - len(t) - 7)
             return f"   {m} ({t}) {_lst}"
 
-        info += "\nMeta indicators:\n"
-        info += "\n".join(
-            [
-                print_meta_row(m, t, self.meta[m].unique())
-                for m, t in zip(
-                    self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
-                )
-            ]
-        )
-        # print `...` if more than `meta_rows` columns
-        if len(self.meta.columns) > meta_rows:
-            info += "\n   ..."
+        if len(self.meta.columns):
+            info += "\nMeta indicators:\n"
+            info += "\n".join(
+                [
+                    print_meta_row(m, t, self.meta[m].unique())
+                    for m, t in zip(
+                        self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
+                    )
+                ]
+            )
+            # print `...` if more than `meta_rows` columns
+            if len(self.meta.columns) > meta_rows:
+                info += "\n   ..."
 
         # add info on size (optional)
         if memory_usage:
