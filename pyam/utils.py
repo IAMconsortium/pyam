@@ -499,11 +499,13 @@ def merge_exclude(left, right, ignore_conflict=False):
     if not sect.empty:
         conflict = left[sect][left[sect] != right[sect]].index
         if not conflict.empty:
+            n = len(conflict)
             if ignore_conflict:
-                logger.warning("Ignoring conflict in `exclude` attribute.")
+                logger.warning(f"Ignoring conflict{s(n)} in `exclude` attribute.")
             else:
                 raise_data_error(
-                    "Conflict in `exclude` for the following scenarios", conflict
+                    f"Conflict when merging `exclude` for the following scenario{s(n)}",
+                    conflict,
                 )
     return pd.concat([left, right.loc[diff]], sort=False)
 
