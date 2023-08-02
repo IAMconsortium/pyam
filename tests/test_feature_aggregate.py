@@ -107,7 +107,7 @@ def test_check_aggregate_top_level(simple_df):
     np.testing.assert_array_equal(obs.values, exp.values)
 
     # assert that scenario `foo` has correctly been assigned as `exclude=True`
-    np.testing.assert_array_equal(_df.meta.exclude.values, [True, False])
+    np.testing.assert_array_equal(_df.exclude, [True, False])
 
 
 @pytest.mark.parametrize(

@@ -58,11 +58,11 @@ def test_append_other_scenario(test_df):
     # assert that merging of meta works as expected
     exp = pd.DataFrame(
         [
-            ["model_a", "scen_a", False, 0, "a", np.nan],
-            ["model_a", "scen_b", False, 1, "b", np.nan],
-            ["model_a", "scen_c", False, 2, np.nan, "x"],
+            ["model_a", "scen_a", 0, "a", np.nan],
+            ["model_a", "scen_b", 1, "b", np.nan],
+            ["model_a", "scen_c", 2, np.nan, "x"],
         ],
-        columns=["model", "scenario", "exclude", "col1", "col2", "col3"],
+        columns=["model", "scenario", "col1", "col2", "col3"],
     ).set_index(["model", "scenario"])
 
     # sort columns for assertion in older pandas versions
@@ -99,8 +99,7 @@ def test_append_same_scenario(test_df):
     df = test_df.append(other, ignore_meta_conflict=True)
 
     # check that the new meta.index is updated, but not the original one
-    cols = ["exclude"] + META_COLS + ["col1"]
-    npt.assert_array_equal(test_df.meta.columns, cols)
+    npt.assert_array_equal(test_df.meta.columns, META_COLS + ["col1"])
 
     # assert that merging of meta works as expected
     exp = test_df.meta.copy()
@@ -220,7 +219,7 @@ def test_rename_index_data_fail(test_df):
         "scenario": {"scen_a": "scen_c"},
         "variable": {"Primary Energy|Coal": "Primary Energy|Gas"},
     }
-    pytest.raises(ValueError, test_df.rename, mapping)
+    pytest.raises(NotImplementedError, test_df.rename, mapping)
 
 
 def test_rename_index_fail_duplicates(test_df):
@@ -256,10 +255,10 @@ def test_rename_index(test_df):
     # test meta changes
     exp = pd.DataFrame(
         [
-            ["model_b", "scen_c", False, 1, "foo"],
-            ["model_a", "scen_b", False, 2, np.nan],
+            ["model_b", "scen_c", 1, "foo"],
+            ["model_a", "scen_b", 2, np.nan],
         ],
-        columns=["model", "scenario", "exclude"] + META_COLS,
+        columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)
 
@@ -294,11 +293,11 @@ def test_rename_append(test_df):
     # test meta changes
     exp = pd.DataFrame(
         [
-            ["model_a", "scen_a", False, 1, "foo"],
-            ["model_a", "scen_b", False, 2, np.nan],
-            ["model_b", "scen_c", False, 1, "foo"],
+            ["model_a", "scen_a", 1, "foo"],
+            ["model_a", "scen_b", 2, np.nan],
+            ["model_b", "scen_c", 1, "foo"],
         ],
-        columns=["model", "scenario", "exclude"] + META_COLS,
+        columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
     pd.testing.assert_frame_equal(obs.meta, exp)
 

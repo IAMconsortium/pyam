@@ -335,6 +335,10 @@ class Connection(object):
             extra_meta = pd.DataFrame.from_records(df.metadata)
             meta = pd.concat([meta, extra_meta], axis=1)
 
+        # remove "exclude" column when querying from an ixmp (legacy) IIASA database
+        if "exclude" in meta.columns:
+            meta.drop(columns="exclude", inplace=True)
+
         return meta.set_index(META_IDX + ([] if default_only else ["version"]))
 
     def properties(self, default_only=True, **kwargs):

@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 import logging
+import pandas as pd
 import warnings
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +26,10 @@ def deprecation_warning(msg, item="This method", stacklevel=3):
 
 def raise_data_error(msg, data):
     """Utils function to format error message from data formatting"""
+    if isinstance(data, pd.MultiIndex):
+        data = data.to_frame(index=False)
     data = data.drop_duplicates()
     msg = f"{msg}:\n{data.head()}" + ("\n..." if len(data) > 5 else "")
-    logger.error(msg)
     raise ValueError(msg)
 
 

@@ -30,6 +30,7 @@ from pyam.utils import (
     read_pandas,
     format_data,
     merge_meta,
+    merge_exclude,
     find_depth,
     pattern_match,
     to_list,
@@ -141,11 +142,12 @@ class IamDataFrame(object):
         # pop kwarg for meta_sheet_name (prior to reading data from file)
         meta_sheet = kwargs.pop("meta_sheet_name", "meta")
 
-        # if meta is given explicitly, verify that index matches
-        if meta is not None and not meta.index.names == index:
-            raise ValueError(
-                f"Incompatible `index={index}` with `meta` (index={meta.index.names})!"
-            )
+        # if meta is given explicitly, verify that index and column names are valid
+        if meta is not None:
+            if not meta.index.names == index:
+                raise ValueError(
+                    f"Incompatible `index={index}` with `meta.index={meta.index.names}`"
+                )
 
         # try casting to Path if file-like is string or LocalPath or pytest.LocalPath
         try:
@@ -177,8 +179,9 @@ class IamDataFrame(object):
         self._data, index, self.time_col, self.extra_cols = _data
 
         # define `meta` dataframe for categorization & quantitative indicators
-        self.meta = pd.DataFrame(index=_make_index(self._data, cols=index))
-        self.reset_exclude()
+        _index = _make_index(self._data, cols=index)
+        self.meta = pd.DataFrame(index=_index)
+        self.exclude = False
 
         # if given explicitly, merge meta dataframe after downselecting
         if meta is not None:
@@ -291,18 +294,19 @@ class IamDataFrame(object):
             _lst = print_list(lst, n - len(m) - len(t) - 7)
             return f"   {m} ({t}) {_lst}"
 
-        info += "\nMeta indicators:\n"
-        info += "\n".join(
-            [
-                print_meta_row(m, t, self.meta[m].unique())
-                for m, t in zip(
-                    self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
-                )
-            ]
-        )
-        # print `...` if more than `meta_rows` columns
-        if len(self.meta.columns) > meta_rows:
-            info += "\n   ..."
+        if len(self.meta.columns):
+            info += "\nMeta indicators:\n"
+            info += "\n".join(
+                [
+                    print_meta_row(m, t, self.meta[m].unique())
+                    for m, t in zip(
+                        self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
+                    )
+                ]
+            )
+            # print `...` if more than `meta_rows` columns
+            if len(self.meta.columns) > meta_rows:
+                info += "\n   ..."
 
         # add info on size (optional)
         if memory_usage:
@@ -452,6 +456,27 @@ class IamDataFrame(object):
 
         return self._time_domain
 
+    @property
+    def exclude(self):
+        """Indicator for exclusion of scenarios, used by validation methods
+
+        See Also
+        --------
+        validate, require_data, check_aggregate, check_aggregate_region
+
+        """
+        return self._exclude
+
+    @exclude.setter
+    def exclude(self, exclude):
+        """Indicator for scenario exclusion, used to validate with `exclude_on_fail`"""
+        if isinstance(exclude, bool):
+            self._exclude = pd.Series(exclude, index=self.meta.index)
+        else:
+            raise NotImplementedError(
+                f"Setting `exclude` must have a boolean, found: {exclude}"
+            )
+
     def copy(self):
         """Make a deepcopy of this object
 
@@ -488,7 +513,11 @@ class IamDataFrame(object):
         if not isinstance(other, IamDataFrame):
             raise ValueError("`other` is not an `IamDataFrame` instance")
 
-        if compare(self, other).empty and self.meta.equals(other.meta):
+        if (
+            compare(self, other).empty
+            and self.meta.equals(other.meta)
+            and self.exclude.equals(other.exclude)
+        ):
             return True
         else:
             return False
@@ -557,6 +586,7 @@ class IamDataFrame(object):
 
         # merge `meta` tables
         ret.meta = merge_meta(ret.meta, other.meta, ignore_meta_conflict)
+        ret._exclude = merge_exclude(ret._exclude, other._exclude, ignore_meta_conflict)
 
         # append other.data (verify integrity for no duplicates)
         _data = pd.concat([ret._data, other._data])
@@ -781,8 +811,10 @@ class IamDataFrame(object):
         return s.unstack(level=self.time_col).rename_axis(None, axis=1)
 
     def reset_exclude(self):
-        """Reset exclusion assignment for all scenarios to `exclude: False`"""
-        self.meta["exclude"] = False
+        """Reset exclusion assignment for all scenarios to :attr:`exclude` = *False*"""
+        # TODO: deprecated, remove for release >= 2.1
+        deprecation_warning("Use `IamDataFrame.exclude = False` instead.")
+        self.exclude = False
 
     def set_meta(self, meta, name=None, index=None):
         """Add meta indicators as pandas.Series, list or value (int/float/str)
@@ -799,6 +831,11 @@ class IamDataFrame(object):
             index to be used for setting meta column (`['model', 'scenario']`)
         """
         if isinstance(meta, pd.DataFrame):
+            if illegal_cols := [i for i in meta.columns if i in ILLEGAL_COLS]:
+                raise ValueError(
+                    "Illegal columns in `meta`: '" + "', '".join(illegal_cols) + "'"
+                )
+
             if meta.index.names != self.meta.index.names:
                 # catch Model, Scenario instead of model, scenario
                 meta = meta.rename(
@@ -815,9 +852,9 @@ class IamDataFrame(object):
             raise ValueError("Must pass a name or use a named pd.Series")
         name = name or meta.name
         if name in self.dimensions:
-            raise ValueError(f"Column {name} already exists in `data`!")
+            raise ValueError(f"Column '{name}' already exists in `data`.")
         if name in ILLEGAL_COLS:
-            raise ValueError(f"Name {name} is illegal for meta indicators!")
+            raise ValueError(f"Name '{name}' is illegal for meta indicators.")
 
         # check if meta has a valid index and use it for further workflow
         if (
@@ -948,12 +985,13 @@ class IamDataFrame(object):
         year : int or list of int, optional
             Required year(s).
         exclude_on_fail : bool, optional
-            Set *meta* indicator for scenarios failing validation as `exclude: True`.
+            If True, set :attr:`exclude` = *True* for all scenarios that do not satisfy
+            the criteria.
 
         Returns
         -------
-        pd.DataFrame
-            A dataframe of the *index* of scenarios not satisfying the cr
+        :class:`pandas.DataFrame` or None
+            A dataframe of the *index* of scenarios not satisfying the criteria.
         """
 
         # TODO: option to require values in certain ranges, see `_apply_criteria()`
@@ -1010,13 +1048,15 @@ class IamDataFrame(object):
         Parameters
         ----------
         variable : str
-            required variable
-        unit : str, default None
-            name of unit (optional)
-        year : int or list, default None
-            check whether the variable exists for ANY of the years (if a list)
-        exclude_on_fail : bool, default False
-            flag scenarios missing the required variables as `exclude: True`
+            Required variable.
+        unit : str, optional
+            Name of unit (optional).
+        year : int or list, optional
+            Check whether the variable exists for ANY of the years (if a list).
+        exclude_on_fail : bool, optional
+            If True, set :attr:`exclude` = True for all scenarios that do not satisfy
+            the criteria.
+
         """
         # TODO: deprecated, remove for release >= 2.0
         deprecation_warning("Use `df.require_data()` instead.")
@@ -1044,8 +1084,7 @@ class IamDataFrame(object):
         )
 
         if exclude_on_fail:
-            self.meta.loc[idx, "exclude"] = True
-            msg += ", marked as `exclude: True` in `meta`"
+            self._exclude_on_fail(idx)
 
         logger.info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
@@ -1065,14 +1104,13 @@ class IamDataFrame(object):
            dictionary with variable keys and validation mappings
             ('up' and 'lo' for respective bounds, 'year' for years)
         exclude_on_fail : bool, optional
-            flag scenarios failing validation as `exclude: True`
+            If True, set :attr:`exclude` = *True* for all scenarios that do not satisfy
+            the criteria.
 
         Returns
         -------
-        :class:`pandas.DataFrame`
+        :class:`pandas.DataFrame` or None
             All data points that do not satisfy the criteria.
-        None
-            If all scenarios satisfy the criteria.
         """
         df = _apply_criteria(self._data, criteria, in_range=False)
 
@@ -1139,8 +1177,9 @@ class IamDataFrame(object):
 
         # changing index and data columns can cause model-scenario mismatch
         if any(i in mapping for i in meta_idx) and any(i in mapping for i in data_cols):
-            msg = "Renaming index and data columns simultaneously not supported!"
-            raise ValueError(msg)
+            raise NotImplementedError(
+                "Renaming index and data columns simultaneously is not supported."
+            )
 
         # translate rename mapping to `filter()` arguments
         filters = {col: _from.keys() for col, _from in mapping.items()}
@@ -1168,6 +1207,8 @@ class IamDataFrame(object):
                 if _index.duplicated().any():
                     raise ValueError(f"Renaming to non-unique {col} index!")
                 ret.meta.index = _index.set_index(meta_idx).index
+                ret._exclude.index = ret.meta.index
+
             elif col not in data_cols:
                 raise ValueError(f"Renaming by {col} not supported!")
             _data_index = replace_index_values(_data_index, col, _mapping, rows)
@@ -1414,7 +1455,8 @@ class IamDataFrame(object):
             Method to use for aggregation,
             e.g. :any:`numpy.mean`, :any:`numpy.sum`, 'min', 'max'.
         exclude_on_fail : bool, optional
-            Flag scenarios failing validation as `exclude: True`.
+            If True, set :attr:`exclude` = *True* for all scenarios where the aggregate
+            does not match the aggregated components.
         multiplier : number, optional
             Multiplicative factor when comparing variable and sum of components.
         kwargs : Tolerance arguments for comparison of values
@@ -1423,7 +1465,7 @@ class IamDataFrame(object):
         Returns
         -------
         :class:`pandas.DataFrame` or None
-            Data where variables and aggregate does not match.
+            Data where variables and aggregate does not match the aggregated components.
 
         """
         # compute aggregate from components, return None if no components
@@ -1554,7 +1596,8 @@ class IamDataFrame(object):
             Variable to use as weight for the aggregation
             (currently only supported with `method='sum'`).
         exclude_on_fail : boolean, optional
-            Flag scenarios failing validation as `exclude: True`.
+            If True, set :attr:`exclude` = *True* for all scenarios where the aggregate
+            does not match the aggregated components.
         drop_negative_weights : bool, optional
             Removes any aggregated values that are computed using negative weights
         kwargs : Tolerance arguments for comparison of values
@@ -1782,17 +1825,16 @@ class IamDataFrame(object):
             ]
 
     def _exclude_on_fail(self, df):
-        """Assign a selection of scenarios as `exclude: True` in meta"""
+        """Assign a selection of scenarios as `exclude: True`"""
         idx = (
             df
             if isinstance(df, pd.MultiIndex)
             else _make_index(df, cols=self.index.names)
         )
-        self.meta.loc[idx, "exclude"] = True
+        self.exclude[idx] = True
+        n = len(idx)
         logger.info(
-            "{} non-valid scenario{} will be excluded".format(
-                len(idx), "" if len(idx) == 1 else "s"
-            )
+            f"{n} scenario{s(n)} failed validation and will be set as `exclude=True`."
         )
 
     def slice(self, keep=True, **kwargs):
@@ -1873,6 +1915,8 @@ class IamDataFrame(object):
             logger.warning("Filtered IamDataFrame is empty!")
         ret.meta = ret.meta.loc[idx]
         ret.meta.index = ret.meta.index.remove_unused_levels()
+        ret._exclude = ret._exclude.loc[idx]
+        ret._exclude.index = ret._exclude.index.remove_unused_levels()
         ret._set_attributes()
         if not inplace:
             return ret
@@ -1896,7 +1940,17 @@ class IamDataFrame(object):
             if values is None:
                 continue
 
-            if col in self.meta.columns:
+            if col == "exclude":
+                if not isinstance(values, bool):
+                    raise ValueError(
+                        f"Filter by `exclude` requires a boolean, found: {values}"
+                    )
+                exclude_index = (self.exclude[self.exclude == values]).index
+                keep_col = _make_index(
+                    self._data, cols=self.index.names, unique=False
+                ).isin(exclude_index)
+
+            elif col in self.meta.columns:
                 matches = pattern_match(
                     self.meta[col], values, regexp=regexp, has_nan=True
                 )
@@ -2384,7 +2438,7 @@ class IamDataFrame(object):
         write_sheet(excel_writer, sheet_name, self._to_file_format(iamc_index))
 
         # write meta table unless `include_meta=False`
-        if include_meta:
+        if include_meta and len(self.meta.columns):
             meta_rename = dict([(i, i.capitalize()) for i in self.index.names])
             write_sheet(
                 excel_writer,
@@ -2504,6 +2558,18 @@ class IamDataFrame(object):
             logger.warning(msg)
         else:
             logger.info(msg)
+
+        # in pyam < 2.0, an "exclude" columns was part of the `meta` attribute
+        # this section ensures compatibility with xlsx files created with pyam < 2.0
+        if "exclude" in df.columns:
+            logger.info(
+                f"Found column 'exclude' in sheet '{sheet_name}', "
+                "moved to attribute `IamDataFrame.exclude`."
+            )
+            self._exclude = merge_exclude(
+                df.exclude, self.exclude, ignore_conflict=ignore_conflict
+            )
+            df.drop(columns="exclude", inplace=True)
 
         # merge imported meta indicators
         self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
@@ -2704,7 +2770,7 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     message or returns None if all scenarios match the criteria.
 
     When called with `exclude_on_fail=True`, scenarios in `df` not satisfying
-    the criteria will be marked as `exclude=True` (object modified in place).
+    the criteria will be marked as :attr:`exclude` = *True*.
 
     Parameters
     ----------
@@ -2716,7 +2782,7 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
         vdf = fdf.validate(criteria=criteria, exclude_on_fail=exclude_on_fail)
-        df.meta["exclude"] |= fdf.meta["exclude"]  # update if any excluded
+        df._exclude |= fdf._exclude  # update if any excluded
         return vdf
 
 
@@ -2737,15 +2803,14 @@ def require_variable(
         vdf = fdf.require_variable(
             variable=variable, unit=unit, year=year, exclude_on_fail=exclude_on_fail
         )
-        df.meta["exclude"] |= fdf.meta["exclude"]  # update if any excluded
+        df._exclude |= fdf._exclude  # update if any excluded
         return vdf
 
 
 def categorize(
     df, name, value, criteria, color=None, marker=None, linestyle=None, **kwargs
 ):
-    """Assign scenarios to a category according to specific criteria
-    or display the category assignment
+    """Assign scenarios to a category according to specific criteria.
 
     Parameters
     ----------
@@ -2774,8 +2839,7 @@ def categorize(
 def check_aggregate(
     df, variable, components=None, exclude_on_fail=False, multiplier=1, **kwargs
 ):
-    """Check whether the timeseries values match the aggregation
-    of sub-categories
+    """Check whether the timeseries values match the aggregation of sub-categories
 
     Parameters
     ----------
@@ -2792,7 +2856,7 @@ def check_aggregate(
             exclude_on_fail=exclude_on_fail,
             multiplier=multiplier,
         )
-        df.meta["exclude"] |= fdf.meta["exclude"]  # update if any excluded
+        df._exclude |= fdf._exclude  # update if any excluded
         return vdf
 
 

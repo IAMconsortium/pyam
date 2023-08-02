@@ -35,11 +35,11 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame(
 
 META_DF = pd.DataFrame(
     [
-        ["model_a", "scen_a", 1, False],
-        ["model_a", "scen_b", np.nan, False],
-        ["model_a", "scen_c", 2, False],
+        ["model_a", "scen_a", 1],
+        ["model_a", "scen_b", np.nan],
+        ["model_a", "scen_c", 2],
     ],
-    columns=META_IDX + ["foo", "exclude"],
+    columns=META_IDX + ["foo"],
 ).set_index(META_IDX)
 
 
@@ -152,15 +152,23 @@ def test_init_df_with_meta(test_pd_df):
     assert df.scenario == ["scen_a", "scen_b"]
 
 
-def test_init_df_with_meta_incompatible_index(test_pd_df):
+def test_init_df_with_meta_exclude_raises(test_pd_df):
+    # pass explicit meta dataframe with a scenario that
+    meta = META_DF.copy()
+    meta["exclude"] = False
+    with pytest.raises(ValueError, match="Illegal columns in `meta`: 'exclude'"):
+        IamDataFrame(test_pd_df, meta=meta)
+
+
+def test_init_df_with_meta_incompatible_index_raises(test_pd_df):
     # define a meta dataframe with a non-standard index
     index = ["source", "scenario"]
     meta = pd.DataFrame(
-        [False, False, False], columns=["exclude"], index=META_DF.index.rename(index)
+        [False, False, False], columns=["foo"], index=META_DF.index.rename(index)
     )
 
     # assert that using an incompatible index for the meta arg raises
-    match = "Incompatible `index=\['model', 'scenario'\]` with `meta` *."
+    match = "Incompatible `index=\['model', 'scenario'\]` with `meta.index=*."
     with pytest.raises(ValueError, match=match):
         IamDataFrame(test_pd_df, meta=meta)
 
@@ -215,11 +223,11 @@ def test_init_with_illegal_column(test_pd_df, illegal):
 
 def test_set_meta_with_column_conflict(test_df_year):
     # check that setting a `meta` column with a name conflict raises
-    msg = "Column model already exists in `data`!"
+    msg = "Column 'model' already exists in `data`."
     with pytest.raises(ValueError, match=msg):
         test_df_year.set_meta(name="model", meta="foo")
 
-    msg = "Name meta is illegal for meta indicators!"
+    msg = "Name 'meta' is illegal for meta indicators."
     with pytest.raises(ValueError, match=msg):
         test_df_year.set_meta(name="meta", meta="foo")
 
@@ -238,7 +246,6 @@ def test_print(test_df_year):
             "   unit     : EJ/yr (1)",
             "   year     : 2005, 2010 (2)",
             "Meta indicators:",
-            "   exclude (bool) False (1)",
             "   number (int64) 1, 2 (2)",
             "   string (object) foo, nan (2)",
         ]
@@ -261,7 +268,6 @@ def test_print_empty(test_df_year):
             "   unit     : (0)",
             "   year     : (0)",
             "Meta indicators:",
-            "   exclude (bool) (0)",
             "   number (int64) (0)",
             "   string (object) (0)",
         ]
@@ -611,15 +617,15 @@ def test_interpolate_datetimes(test_df):
 
 
 def test_filter_by_bool(test_df):
-    test_df.set_meta([True, False], name="exclude")
-    obs = test_df.filter(exclude=True)
-    assert obs["scenario"].unique() == "scen_a"
+    test_df.set_meta([True, False], name="meta_bool")
+    obs = test_df.filter(meta_bool=True)
+    assert obs.scenario == ["scen_a"]
 
 
 def test_filter_by_int(test_df):
-    test_df.set_meta([1, 2], name="test")
-    obs = test_df.filter(test=[1, 3])
-    assert obs["scenario"].unique() == "scen_a"
+    test_df.set_meta([1, 2], name="meta_int")
+    obs = test_df.filter(meta_int=[1, 3])
+    assert obs.scenario == ["scen_a"]
 
 
 def _r5_regions_exp(df):
