@@ -128,6 +128,17 @@ def test_init_df_from_timeseries(test_df):
     pd.testing.assert_frame_equal(df.timeseries(), test_df.timeseries())
 
 
+def test_init_df_from_timeseries_unused_levels(test_df):
+    # this test guards against regression for the bug
+    # reported in https://github.com/IAMconsortium/pyam/issues/762
+
+    for _, df in test_df.timeseries().groupby(["model", "scenario"]):
+        # we're only interested in the second model-scenario combination
+        pass
+
+    # pandas does not remove unused levels (here: "Primary Energy|Coal") in a groupby
+    assert IamDataFrame(df).variable == ["Primary Energy"]
+
 def test_init_df_with_extra_col(test_pd_df):
     tdf = test_pd_df.copy()
 
