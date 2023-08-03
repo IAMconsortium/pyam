@@ -378,6 +378,9 @@ def format_data(df, index, **kwargs):
 
         df = df.reorder_levels(index + REQUIRED_COLS + [time_col] + extra_cols).dropna()
 
+        # remove unused levels to guard against issue #762
+        df.index = df.index.remove_unused_levels()
+
     else:
         if isinstance(df, pd.Series):
             if not df.name:
@@ -429,9 +432,6 @@ def format_data(df, index, **kwargs):
     del rows
     if df.empty:
         logger.warning("Formatted data is empty!")
-
-    # remove unused levels to guard against issue #762
-    df.index = df.index.remove_unused_levels()
 
     return df.sort_index(), index, time_col, extra_cols
 
