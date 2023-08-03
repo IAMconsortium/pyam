@@ -139,6 +139,7 @@ def test_init_df_from_timeseries_unused_levels(test_df):
     # pandas does not remove unused levels (here: "Primary Energy|Coal") in a groupby
     assert IamDataFrame(df).variable == ["Primary Energy"]
 
+
 def test_init_df_with_extra_col(test_pd_df):
     tdf = test_pd_df.copy()
 
