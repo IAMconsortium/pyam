@@ -378,6 +378,9 @@ def format_data(df, index, **kwargs):
 
         df = df.reorder_levels(index + REQUIRED_COLS + [time_col] + extra_cols).dropna()
 
+        # remove unused levels to guard against issue #762
+        df.index = df.index.remove_unused_levels()
+
     else:
         if isinstance(df, pd.Series):
             if not df.name:
