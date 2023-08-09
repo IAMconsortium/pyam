@@ -3,13 +3,19 @@ import logging
 from pathlib import Path
 from setuptools_scm import get_version
 
-from pyam.core import *
-from pyam.slice import IamSlice  # noqa: F401
-from pyam.utils import *
-from pyam.statistics import *
-from pyam.timeseries import *
+from pyam.core import (
+    IamDataFrame,
+    categorize,
+    check_aggregate,
+    compare,
+    concat,
+    filter_by_meta,
+    require_variable,
+    read_datapackage,
+    validate,
+)
+from pyam.statistics import Statistics
 from pyam.logging import *
-from pyam.run_control import *
 from pyam.iiasa import read_iiasa, lazy_read_iiasa  # noqa: F401
 from pyam.datareader import read_worldbank  # noqa: F401
 from pyam.unfccc import read_unfccc  # noqa: F401
