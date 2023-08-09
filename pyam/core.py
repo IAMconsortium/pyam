@@ -2415,14 +2415,14 @@ class IamDataFrame(object):
         excel_writer : path-like, file-like, or ExcelWriter object
             File path as string or :class:`pathlib.Path`,
             or existing :class:`pandas.ExcelWriter`.
-        sheet_name : string
+        sheet_name : str, optional
             Name of sheet which will contain :meth:`IamDataFrame.timeseries` data.
         iamc_index : bool, optional
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all :attr:`dimensions`.
             See :meth:`IamDataFrame.timeseries` for details.
-        include_meta : boolean or string, optional
-            If True, write :any:`IamDataFrame.meta` to a sheet 'meta' (default);
+        include_meta : bool or str, optional
+            If True, write :attr:`meta` to a sheet 'meta' (default);
             if this is a string, use it as sheet name.
         **kwargs
             Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
