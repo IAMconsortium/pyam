@@ -1848,7 +1848,7 @@ class IamDataFrame(object):
 
         Returns
         -------
-        :class:`IamSlice`
+        :class:`pyam.slice.IamSlice`
 
         Notes
         -----

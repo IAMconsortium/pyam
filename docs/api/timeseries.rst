@@ -1,4 +1,4 @@
-.. currentmodule:: pyam
+.. currentmodule:: pyam.timeseries
 
 Timeseries functions
 ====================

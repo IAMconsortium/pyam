@@ -1,4 +1,4 @@
-.. currentmodule:: pyam
+.. currentmodule:: pyam.utils
 
 Variables utilities
 ===================
