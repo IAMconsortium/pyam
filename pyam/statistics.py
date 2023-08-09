@@ -1,8 +1,9 @@
 from copy import deepcopy
 import numpy as np
 import pandas as pd
-from pyam import filter_by_meta, META_IDX
-from pyam.utils import isstr, islistable
+
+from pyam import filter_by_meta
+from pyam.utils import isstr, islistable, META_IDX
 
 
 class Statistics(object):

@@ -5,8 +5,10 @@ import logging
 
 import numpy as np
 import pandas as pd
-from pyam import fill_series, cumulative, cross_threshold, to_int
 import pytest
+
+from pyam.timeseries import fill_series, cumulative, cross_threshold
+from pyam.utils import to_int
 
 
 def test_fill_series():

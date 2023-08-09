@@ -10,7 +10,8 @@ import pandas as pd
 from contextlib import contextmanager
 
 import pyam
-from pyam import plotting, run_control, reset_rc_defaults
+from pyam import plotting
+from pyam.run_control import run_control, reset_rc_defaults
 from .conftest import IMAGE_BASELINE_DIR
 
 

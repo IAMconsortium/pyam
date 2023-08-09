@@ -1,7 +1,8 @@
 import math
 import pandas as pd
 import pandas.testing as pdt
-from pyam import IamDataFrame, IAMC_IDX
+from pyam import IamDataFrame
+from pyam.utils import IAMC_IDX
 from pyam.testing import assert_iamframe_equal
 from pyam.timeseries import growth_rate
 import pytest

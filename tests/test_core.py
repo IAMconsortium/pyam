@@ -8,9 +8,9 @@ import pandas as pd
 from numpy import testing as npt
 from pandas import testing as pdt
 
-from pyam import IamDataFrame, filter_by_meta, META_IDX, IAMC_IDX, sort_data
+from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
-from pyam.utils import isstr
+from pyam.utils import IAMC_IDX, isstr, META_IDX, sort_data
 from pyam.testing import assert_iamframe_equal
 
 

@@ -8,7 +8,7 @@ from pyam.index import (
     replace_index_labels,
     append_index_level,
 )
-from pyam import IAMC_IDX
+from pyam.utils import IAMC_IDX
 
 
 def test_get_index_levels(test_df_index):

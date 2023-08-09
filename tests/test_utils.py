@@ -5,7 +5,16 @@ from pandas import testing as pdt
 from pandas import Timestamp
 from datetime import datetime
 
-from pyam import utils, META_IDX
+from pyam.utils import (
+    META_IDX,
+    pattern_match,
+    find_depth,
+    concat_with_pipe,
+    reduce_hierarchy,
+    merge_meta,
+    get_variable_components,
+    to_time,
+)
 
 TEST_VARS = ["foo", "foo|bar", "foo|bar|baz"]
 TEST_CONCAT_SERIES = pd.Series(["foo", "bar", "baz"], index=["f", "b", "z"])
@@ -15,7 +24,7 @@ def test_pattern_match_none():
     data = pd.Series(["foo", "bar"])
     values = ["baz"]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [False, False]).all()
 
 
@@ -23,7 +32,7 @@ def test_pattern_match_nan():
     data = pd.Series(["foo", np.nan])
     values = ["baz"]
 
-    obs = utils.pattern_match(data, values, has_nan=True)
+    obs = pattern_match(data, values, has_nan=True)
     assert (obs == [False, False]).all()
 
 
@@ -31,7 +40,7 @@ def test_pattern_match_one():
     data = pd.Series(["foo", "bar"])
     values = ["foo"]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [True, False]).all()
 
 
@@ -39,7 +48,7 @@ def test_pattern_match_str_regex():
     data = pd.Series(["foo", "foo2", "bar"])
     values = ["foo"]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [True, False, False]).all()
 
 
@@ -47,7 +56,7 @@ def test_pattern_match_ast_regex():
     data = pd.Series(["foo", "foo2", "bar"])
     values = ["foo*"]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [True, True, False]).all()
 
 
@@ -55,7 +64,7 @@ def test_pattern_match_ast2_regex():
     data = pd.Series(["foo|bar", "foo", "bar"])
     values = ["*o*b*"]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [True, False, False]).all()
 
 
@@ -63,7 +72,7 @@ def test_pattern_match_plus():
     data = pd.Series(["foo", "foo+", "+bar", "b+az"])
     values = ["*+*"]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [False, True, True, True]).all()
 
 
@@ -71,7 +80,7 @@ def test_pattern_match_dot():
     data = pd.Series(["foo", "fo."])
     values = ["fo."]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [False, True]).all()
 
 
@@ -79,7 +88,7 @@ def test_pattern_match_brackets():
     data = pd.Series(["foo (bar)", "foo bar"])
     values = ["foo (bar)"]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [True, False]).all()
 
 
@@ -87,7 +96,7 @@ def test_pattern_match_dollar():
     data = pd.Series(["foo$bar", "foo"])
     values = ["foo$bar"]
 
-    obs = utils.pattern_match(data, values)
+    obs = pattern_match(data, values)
     assert (obs == [True, False]).all()
 
 
@@ -95,105 +104,105 @@ def test_pattern_regexp():
     data = pd.Series(["foo", "foa", "foo$"])
     values = ["fo.$"]
 
-    obs = utils.pattern_match(data, values, regexp=True)
+    obs = pattern_match(data, values, regexp=True)
     assert (obs == [True, True, False]).all()
 
 
 def test_find_depth_as_list():
-    obs = utils.find_depth(TEST_VARS)
+    obs = find_depth(TEST_VARS)
     assert obs == [0, 1, 2]
 
 
 def test_find_depth_as_str():
-    assert utils.find_depth("foo|bar|baz") == 2
+    assert find_depth("foo|bar|baz") == 2
 
 
 def test_find_depth_with_str():
     data = pd.Series(["foo", "foo|bar|baz", "bar|baz", "bar|baz|foo"])
-    obs = utils.find_depth(data, "bar")
+    obs = find_depth(data, "bar")
     assert obs == [None, None, 1, 2]
 
 
 def test_find_depth_with_str_1():
     data = pd.Series(["foo", "foo|bar|baz", "bar|baz", "bar|baz|foo"])
-    obs = utils.find_depth(data, "bar|", 1)
+    obs = find_depth(data, "bar|", 1)
     assert obs == [False, False, False, True]
 
 
 def test_find_depth_with_str_0():
     data = pd.Series(["foo", "foo|bar|baz", "bar|baz", "bar|baz|foo"])
-    obs = utils.find_depth(data, "*bar|", 0)
+    obs = find_depth(data, "*bar|", 0)
     assert obs == [False, True, True, False]
 
 
 def test_find_depth_0():
-    obs = utils.find_depth(TEST_VARS, level=0)
+    obs = find_depth(TEST_VARS, level=0)
     assert obs == [True, False, False]
 
 
 def test_find_depth_0_minus():
-    obs = utils.find_depth(TEST_VARS, level="0-")
+    obs = find_depth(TEST_VARS, level="0-")
     assert obs == [True, False, False]
 
 
 def test_find_depth_0_plus():
-    obs = utils.find_depth(TEST_VARS, level="0+")
+    obs = find_depth(TEST_VARS, level="0+")
     assert obs == [True, True, True]
 
 
 def test_find_depth_1():
-    obs = utils.find_depth(TEST_VARS, level=1)
+    obs = find_depth(TEST_VARS, level=1)
     assert obs == [False, True, False]
 
 
 def test_find_depth_1_minus():
-    obs = utils.find_depth(TEST_VARS, level="1-")
+    obs = find_depth(TEST_VARS, level="1-")
     assert obs == [True, True, False]
 
 
 def test_find_depth_1_plus():
-    obs = utils.find_depth(TEST_VARS, level="1+")
+    obs = find_depth(TEST_VARS, level="1+")
     assert obs == [False, True, True]
 
 
 def test_concat_with_pipe_all():
-    obs = utils.concat_with_pipe(TEST_CONCAT_SERIES)
+    obs = concat_with_pipe(TEST_CONCAT_SERIES)
     assert obs == "foo|bar|baz"
 
 
 def test_concat_with_pipe_exclude_none():
     s = TEST_CONCAT_SERIES.copy()
     s["b"] = None
-    obs = utils.concat_with_pipe(s)
+    obs = concat_with_pipe(s)
     assert obs == "foo|baz"
 
 
 def test_concat_with_pipe_exclude_nan():
     s = TEST_CONCAT_SERIES.copy()
     s["b"] = np.nan
-    obs = utils.concat_with_pipe(s)
+    obs = concat_with_pipe(s)
     assert obs == "foo|baz"
 
 
 def test_concat_with_pipe_by_name():
-    obs = utils.concat_with_pipe(TEST_CONCAT_SERIES, ["f", "z"])
+    obs = concat_with_pipe(TEST_CONCAT_SERIES, ["f", "z"])
     assert obs == "foo|baz"
 
 
 def test_reduce_hierarchy_0():
-    assert utils.reduce_hierarchy("foo|bar|baz", 0) == "foo"
+    assert reduce_hierarchy("foo|bar|baz", 0) == "foo"
 
 
 def test_reduce_hierarchy_1():
-    assert utils.reduce_hierarchy("foo|bar|baz", 1) == "foo|bar"
+    assert reduce_hierarchy("foo|bar|baz", 1) == "foo|bar"
 
 
 def test_reduce_hierarchy_neg1():
-    assert utils.reduce_hierarchy("foo|bar|baz", -1) == "foo|bar"
+    assert reduce_hierarchy("foo|bar|baz", -1) == "foo|bar"
 
 
 def test_reduce_hierarchy_neg2():
-    assert utils.reduce_hierarchy("foo|bar|baz", -2) == "foo"
+    assert reduce_hierarchy("foo|bar|baz", -2) == "foo"
 
 
 def test_merge_meta():
@@ -214,7 +223,7 @@ def test_merge_meta():
     ).set_index(META_IDX)
 
     # merge conflict raises an error
-    pytest.raises(ValueError, utils.merge_meta, left, right)
+    pytest.raises(ValueError, merge_meta, left, right)
 
     # merge conflict ignoring errors yields expected results
     exp = pd.DataFrame(
@@ -226,29 +235,29 @@ def test_merge_meta():
         columns=META_IDX + ["string", "value", "value2"],
     ).set_index(META_IDX)
 
-    obs = utils.merge_meta(left, right, ignore_conflict=True)
+    obs = merge_meta(left, right, ignore_conflict=True)
     pdt.assert_frame_equal(exp, obs)
 
 
 def test_get_variable_components_int():
-    assert utils.get_variable_components("foo|bar|baz", 1) == "bar"
+    assert get_variable_components("foo|bar|baz", 1) == "bar"
 
 
 def test_get_variable_components_list():
-    assert utils.get_variable_components("foo|bar|baz", [1, 2]) == ["bar", "baz"]
+    assert get_variable_components("foo|bar|baz", [1, 2]) == ["bar", "baz"]
 
 
 def test_get_variable_components_indexError():
     with pytest.raises(IndexError):
-        utils.get_variable_components("foo|bar|baz", 3)
+        get_variable_components("foo|bar|baz", 3)
 
 
 def test_get_variable_components_joinTRUE():
-    assert utils.get_variable_components("foo|bar|baz", [0, 2], join=True) == "foo|baz"
+    assert get_variable_components("foo|bar|baz", [0, 2], join=True) == "foo|baz"
 
 
 def test_get_variable_components_joinstr():
-    assert utils.get_variable_components("foo|bar|baz", [2, 1], join="_") == "baz_bar"
+    assert get_variable_components("foo|bar|baz", [2, 1], join="_") == "baz_bar"
 
 
 @pytest.mark.parametrize(
@@ -260,10 +269,10 @@ def test_get_variable_components_joinstr():
     ],
 )
 def test_to_time(x, exp):
-    assert utils.to_time(x) == exp
+    assert to_time(x) == exp
 
 
 @pytest.mark.parametrize("x", [2.5, "2010-07-10 foo"])
 def test_to_time_raises(x):
     with pytest.raises(ValueError, match=f"Invalid time domain: {x}"):
-        utils.to_time(x)
+        to_time(x)

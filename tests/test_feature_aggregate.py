@@ -3,7 +3,8 @@ import logging
 
 import numpy as np
 import pandas as pd
-from pyam import check_aggregate, IamDataFrame, IAMC_IDX
+from pyam import check_aggregate, IamDataFrame
+from pyam.utils import IAMC_IDX
 from pyam.testing import assert_iamframe_equal
 
 from .conftest import DTS_MAPPING

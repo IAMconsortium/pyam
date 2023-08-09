@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 from numpy import testing as npt
 
-from pyam import IamDataFrame, META_IDX, IAMC_IDX, compare
+from pyam import IamDataFrame, compare
+from pyam.utils import IAMC_IDX, META_IDX
 from pyam.testing import assert_iamframe_equal
 
 from .conftest import META_COLS

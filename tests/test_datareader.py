@@ -3,7 +3,8 @@ import pytest
 import logging
 import pandas as pd
 
-from pyam import IamDataFrame, IAMC_IDX, read_worldbank
+from pyam import IamDataFrame, read_worldbank
+from pyam.utils import IAMC_IDX
 from pyam.testing import assert_iamframe_equal
 from pandas_datareader import wb
 

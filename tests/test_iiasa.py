@@ -7,7 +7,8 @@ import numpy as np
 import numpy.testing as npt
 import yaml
 
-from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa, META_IDX
+from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa
+from pyam.utils import META_IDX
 from pyam.testing import assert_iamframe_equal
 
 from .conftest import META_COLS, IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
