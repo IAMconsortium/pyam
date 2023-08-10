@@ -28,7 +28,7 @@ of any scenario data provided in this format.
 .. figure:: _static/iamc_template.png
 
    Illustrative example of IAMC-format timeseries data |br|
-   via the `IAMC 1.5°C Scenario Explorer`_ (:cite:`Huppmann:2019:scenario-data`)
+   via the `IAMC 1.5°C Scenario Explorer`_
 
 .. _`IAMC 1.5°C Scenario Explorer`: https://data.ece.iiasa.ac.at/iamc-1.5c-explorer
 
