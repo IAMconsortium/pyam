@@ -20,6 +20,7 @@ def adjust_log_level(logger="pyam", level="ERROR"):
 
 def deprecation_warning(msg, item="This method", stacklevel=3):
     """Write deprecation warning to log"""
+    warnings.simplefilter("always", DeprecationWarning)
     message = f"{item} is deprecated and will be removed in future versions. {msg}"
     warnings.warn(message, DeprecationWarning, stacklevel=stacklevel)
 
