@@ -18,15 +18,6 @@ if IIASA_UNAVAILABLE:
     pytest.skip("IIASA database API unavailable", allow_module_level=True)
 
 
-# TODO environment variables are currently not set up on GitHub Actions
-TEST_ENV_USER = "IIASA_CONN_TEST_USER"
-TEST_ENV_PW = "IIASA_CONN_TEST_PW"
-CONN_ENV_AVAILABLE = TEST_ENV_USER in os.environ and TEST_ENV_PW in os.environ
-CONN_ENV_REASON = "Requires env variables defined: {} and {}".format(
-    TEST_ENV_USER, TEST_ENV_PW
-)
-
-
 FILTER_ARGS = [{}, dict(model="model_a"), dict(model=["model_a"]), dict(model="m*_a")]
 
 VERSION_COLS = ["version", "is_default"]
@@ -76,13 +67,6 @@ def test_valid_connections():
 
 
 def test_anon_conn(conn):
-    assert conn.current_connection == TEST_API_NAME
-
-
-@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
-def test_conn_creds_config():
-    iiasa.set_config(os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW])
-    conn = iiasa.Connection(TEST_API)
     assert conn.current_connection == TEST_API_NAME
 
 
