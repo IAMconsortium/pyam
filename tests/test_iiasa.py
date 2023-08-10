@@ -6,6 +6,7 @@ import pandas.testing as pdt
 import numpy as np
 import numpy.testing as npt
 import yaml
+from ixmp4.core.exceptions import InvalidCredentials
 
 from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa, META_IDX
 from pyam.testing import assert_iamframe_equal
@@ -92,17 +93,17 @@ def test_conn_nonexisting_creds_file():
 
 
 @pytest.mark.parametrize(
-    "creds, match",
+    "creds, error, match",
     [
-        (dict(username="user", password="password"), "Credentials not valid "),
-        (dict(username="user"), "Unknown API error:*."),
+        (dict(username="foo", password="bar"), InvalidCredentials, " rejected "),
+        (dict(username="user"), TypeError, "missing 1 required .* 'password'"),
     ],
 )
-def test_conn_invalid_creds_file(creds, match, tmpdir):
+def test_conn_invalid_creds_file(creds, error, match, tmpdir):
     # invalid credentials raises the expected errors
     with open(tmpdir / "creds.yaml", mode="w") as f:
         yaml.dump(creds, f)
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(error, match=match):
         iiasa.Connection(TEST_API, creds=Path(tmpdir) / "creds.yaml")
 
 
