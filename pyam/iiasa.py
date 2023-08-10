@@ -24,6 +24,9 @@ from pyam.utils import (
 )
 from pyam.logging import deprecation_warning
 import ixmp4
+from ixmp4.conf import settings
+from ixmp4.conf.auth import ManagerAuth
+
 
 logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
@@ -37,6 +40,7 @@ You are connected to the {} scenario explorer hosted by IIASA.
 """.replace(
     "\n", ""
 )
+IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 
 # path to local configuration settings
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
@@ -56,7 +60,9 @@ def set_config(user, password, file=None):
 def _read_config(file):
     """Read username and password for IIASA API connection from file"""
     with open(file, "r") as stream:
-        return yaml.safe_load(stream)
+        creds = yaml.safe_load(stream)
+
+    return ManagerAuth(**creds, url=settings.manager_url)
 
 
 def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
@@ -76,7 +82,23 @@ class SceSeAuth(AuthBase):
             Url of the authentication service
         """
         self.client = httpx.Client(base_url=auth_url, timeout=10.0, http2=True)
-        self.auth = ixmp4.conf.settings.default_auth
+
+        if creds is None:
+            if DEFAULT_IIASA_CREDS.exists():
+                deprecation_warning(
+                    f"{IXMP4_LOGIN} and manually delete the file '{DEFAULT_IIASA_CREDS}'.",
+                    "Using a pyam-credentials file",
+                )
+                self.auth = _read_config(DEFAULT_IIASA_CREDS)
+            else:
+                self.auth = ixmp4.conf.settings.default_auth
+        elif isinstance(creds, Path) or isstr(creds):
+            self.auth = _read_config(creds)
+        else:
+            raise DeprecationWarning(
+                "Passing credentials as clear-text is not allowed. "
+                f"{IXMP4_LOGIN} instead."
+            )
 
         # explicit token for anonymous login is not necessary for ixmp4 platforms
         # but is required for legacy Scenario Explorer databases
