@@ -103,15 +103,17 @@ class SceSeAuth(AuthBase):
         # explicit token for anonymous login is not necessary for ixmp4 platforms
         # but is required for legacy Scenario Explorer databases
         if self.auth.user.username == "@anonymous":
-            r = self.client.get("/legacy/anonym/")
-            if r.status_code >= 400:
-                raise ValueError("Unknown API error: " + r.text)
-            self.user = None
-            self.access_token = r.json()
+            self._get_anonymous_token()
 
         else:
             self.user = self.auth.user.username
             self.access_token = self.auth.access_token
+
+    def _get_anonymous_token(self):
+        r = self.client.get("/legacy/anonym/")
+        if r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
+        self.user, self.access_token = None, r.json()
 
     def __call__(self):
         try:
@@ -120,10 +122,12 @@ class SceSeAuth(AuthBase):
                 self.access_token,
                 options={"verify_signature": False, "verify_exp": True},
             )
-
         except jwt.ExpiredSignatureError:
-            self.auth.refresh_or_reobtain_jwt()
-            self.access_token = self.auth.access_token
+            if self.auth.user.username == "@anonymous":
+                self._get_anonymous_token()
+            else:
+                self.auth.refresh_or_reobtain_jwt()
+                self.access_token = self.auth.access_token
 
         return {"Authorization": "Bearer " + self.access_token}
 
