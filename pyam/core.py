@@ -768,7 +768,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        meta_cols : list, default None
+        meta_cols : list, optional
             join `data` with all `meta` columns if True (default)
             or only with columns in list, or return copy of `data` if False
         """
