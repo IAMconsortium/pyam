@@ -86,7 +86,7 @@ a timeseries format for *yearly data* developed and used by the
    Illustrative example of IAMC-format timeseries data |br|
    via the `IAMC 1.5°C Scenario Explorer`_
 
-.. _`IAMC 1.5°C Scenario Explorer`: https://data.ene.iiasa.ac.at/iamc-1.5c-explorer
+.. _`IAMC 1.5°C Scenario Explorer`: https://data.ece.iiasa.ac.at/iamc-1.5c-explorer
 
 Subannual time resolution
 ^^^^^^^^^^^^^^^^^^^^^^^^^
