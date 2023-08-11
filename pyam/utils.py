@@ -4,14 +4,13 @@ import logging
 import string
 import re
 import dateutil
-from pandas.api.types import is_list_like
+import numpy as np
+import pandas as pd
+from pandas.api.types import is_list_like, is_float
 
 from pyam.index import get_index_levels, replace_index_labels
 from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
 from pyam.logging import raise_data_error, deprecation_warning
-import numpy as np
-import pandas as pd
-from collections.abc import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -81,8 +80,11 @@ def isstr(x):
 
 
 def isscalar(x):
-    """Returns True if x is a scalar"""
-    return not isinstance(x, Iterable) or isstr(x)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning(
+        "Please use `pandas.api.types.is_float()`.", "The function `isscalar()`"
+    )
+    return is_float(x)
 
 
 def islistable(x):
