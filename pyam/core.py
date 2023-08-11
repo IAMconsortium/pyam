@@ -615,18 +615,17 @@ class IamDataFrame(object):
         Parameters
         ----------
         index : str or list of str
-            rows for Pivot table
+            Rows for Pivot table
         columns : str or list of str
-            columns for Pivot table
-        values : str, default 'value'
-            dataframe column to aggregate or count
-        aggfunc : str or function, default 'count'
-            function used for aggregation,
-            accepts 'count', 'mean', and 'sum'
-        fill_value : scalar, default None
-            value to replace missing values with
-        style : str, default None
-            output style for pivot table formatting
+            Columns for Pivot table
+        values : str, optional
+            Dataframe column to aggregate or count
+        aggfunc : str or function, optional
+            Function used for aggregation, accepts 'count', 'mean', and 'sum'
+        fill_value : scalar, optional
+            Value to replace missing values
+        style : str, optional
+            Output style for pivot table formatting,
             accepts 'highlight_not_max', 'heatmap'
         """
         index = [index] if isstr(index) else index
@@ -768,7 +767,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        meta_cols : list, default None
+        meta_cols : list, optional
             join `data` with all `meta` columns if True (default)
             or only with columns in list, or return copy of `data` if False
         """
@@ -1449,7 +1448,7 @@ class IamDataFrame(object):
         ----------
         variable : str or list of str
             Variable(s) checked for matching aggregation of sub-categories.
-        components : list of str, default None
+        components : list of str, optional
             List of variables to aggregate, defaults to sub-categories of `variable`.
         method : func or str, optional
             Method to use for aggregation,
@@ -2865,15 +2864,15 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
 
     Parameters
     ----------
-    data : pandas.DataFrame
-        :class:`pandas.DataFrame` to which meta columns are to be joined,
+    data : :class:`pandas.DataFrame`
+        Data to which meta columns are to be joined,
         index or columns must include `['model', 'scenario']`
-    df : IamDataFrame
+    df : :class:`IamDataFrame`
         IamDataFrame from which meta columns are filtered and joined (optional)
-    join_meta : bool, default False
+    join_meta : bool, optional
         join selected columns from `df.meta` on `data`
     kwargs
-        meta columns to be filtered/joined, where `col=...` applies filters
+        Meta columns to be filtered/joined, where `col=...` applies filters
         with the given arguments (using :meth:`utils.pattern_match`).
         Using `col=None` joins the column without filtering (setting col
         to nan if `(model, scenario)` not in `df.meta.index`)
@@ -2923,7 +2922,7 @@ def compare(
     ----------
     left, right : IamDataFrames
         two :class:`IamDataFrame` instances to be compared
-    left_label, right_label : str, default `left`, `right`
+    left_label, right_label : str, optional
         column names of the returned :class:`pandas.DataFrame`
     drop_close : bool, optional
         remove all data where `left` and `right` are close

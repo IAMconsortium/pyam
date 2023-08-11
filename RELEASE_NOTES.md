@@ -16,7 +16,7 @@ When importing an xlsx file created with pyam < 2.0, which has an "exclude" colu
 
 - [#763](https://github.com/IAMconsortium/pyam/pull/763) Implement a fix against carrying over unused levels when initializing from an indexed pandas object
 - [#759](https://github.com/IAMconsortium/pyam/pull/759) Excise "exclude" column from meta and add a own attribute
-- [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7 #747
+- [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7
 
 # Release v1.9.0
 

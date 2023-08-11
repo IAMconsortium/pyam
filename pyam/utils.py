@@ -522,8 +522,8 @@ def find_depth(data, s="", level=None):
         IAMC-style variables
     s : str, default ''
         remove leading `s` from any variable in `data`
-    level : int or str, default None
-        if None, return depth (number of ``|``); else, return list of booleans
+    level : int or str, optional
+        If None, return depth (number of ``|``); else, return list of booleans
         whether depth satisfies the condition (equality if level is int,
         >= if ``.+``,  <= if ``.-``)
     """
