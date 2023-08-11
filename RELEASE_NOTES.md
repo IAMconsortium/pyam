@@ -2,6 +2,11 @@
 
 The next release must bump the major version number.
 
+## Dependency changes
+
+PR [#766](https://github.com/IAMconsortium/pyam/pull/766) added the **ixmp4** package
+for better integration with the IIASA scenario database infrastructure.
+
 ## API changes
 
 The column *exclude* of the `meta` attribute was refacored to a new attribute `exclude`.
@@ -14,6 +19,7 @@ When importing an xlsx file created with pyam < 2.0, which has an "exclude" colu
 
 ## Individual updates
 
+- [#766](https://github.com/IAMconsortium/pyam/pull/766) Use **ixmp4** for credentials to access a Scenario Explorer database
 - [#763](https://github.com/IAMconsortium/pyam/pull/763) Implement a fix against carrying over unused levels when initializing from an indexed pandas object
 - [#759](https://github.com/IAMconsortium/pyam/pull/759) Excise "exclude" column from meta and add a own attribute
 - [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7 #747
