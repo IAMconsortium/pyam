@@ -47,14 +47,7 @@ DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
 
 
 def set_config(user, password, file=None):
-    """Save username and password for the IIASA API connection to a file"""
-    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
-    if not file.parent.exists():
-        file.parent.mkdir(parents=True)
-
-    with open(file, mode="w") as f:
-        logger.info(f"Setting IIASA-connection configuration file: {file}")
-        yaml.dump(dict(username=user, password=password), f, sort_keys=False)
+    raise DeprecationWarning(f"This method is deprecated. {IXMP4_LOGIN}.")
 
 
 def _read_config(file):
