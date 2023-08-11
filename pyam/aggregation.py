@@ -5,14 +5,8 @@ from itertools import compress
 
 from pyam.index import replace_index_values
 from pyam.logging import adjust_log_level
-from pyam.utils import (
-    islistable,
-    isstr,
-    find_depth,
-    reduce_hierarchy,
-    KNOWN_FUNCS,
-    to_list,
-)
+from pyam.str import find_depth, reduce_hierarchy
+from pyam.utils import KNOWN_FUNCS, islistable, isstr, to_list
 from pyam._compare import _compare
 
 

@@ -24,6 +24,7 @@ except ImportError:
     HAS_DATAPACKAGE = False
 
 from pyam.run_control import run_control
+from pyam.str import find_depth
 from pyam.utils import (
     write_sheet,
     read_file,
@@ -31,7 +32,6 @@ from pyam.utils import (
     format_data,
     merge_meta,
     merge_exclude,
-    find_depth,
     pattern_match,
     to_list,
     isstr,

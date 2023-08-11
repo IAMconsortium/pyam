@@ -5,14 +5,16 @@ from pandas import testing as pdt
 from pandas import Timestamp
 from datetime import datetime
 
+from pyam.str import (
+    find_depth,
+    get_variable_components,
+    reduce_hierarchy,
+    concat_with_pipe,
+)
 from pyam.utils import (
     META_IDX,
     pattern_match,
-    find_depth,
-    concat_with_pipe,
-    reduce_hierarchy,
     merge_meta,
-    get_variable_components,
     to_time,
 )
 
@@ -252,11 +254,11 @@ def test_get_variable_components_indexError():
         get_variable_components("foo|bar|baz", 3)
 
 
-def test_get_variable_components_joinTRUE():
+def test_get_variable_components_join_true():
     assert get_variable_components("foo|bar|baz", [0, 2], join=True) == "foo|baz"
 
 
-def test_get_variable_components_joinstr():
+def test_get_variable_components_join_str():
     assert get_variable_components("foo|bar|baz", [2, 1], join="_") == "baz_bar"
 
 

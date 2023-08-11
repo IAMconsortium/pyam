@@ -7,6 +7,7 @@ import re
 import dateutil
 
 from pyam.index import get_index_levels, replace_index_labels
+from pyam.str import concat_with_pipe, escape_regexp, find_depth
 from pyam.logging import raise_data_error
 import numpy as np
 import pandas as pd
@@ -513,62 +514,6 @@ def merge_exclude(left, right, ignore_conflict=False):
     return pd.concat([left, right.loc[diff]], sort=False)
 
 
-def find_depth(data, s="", level=None):
-    """Return or assert the depth (number of ``|``) of variables
-
-    Parameters
-    ----------
-    data : str or list of strings
-        IAMC-style variables
-    s : str, default ''
-        remove leading `s` from any variable in `data`
-    level : int or str, optional
-        If None, return depth (number of ``|``); else, return list of booleans
-        whether depth satisfies the condition (equality if level is int,
-        >= if ``.+``,  <= if ``.-``)
-    """
-    if islistable(level):
-        raise ValueError(
-            "Level is only run with ints or strings, not lists. Use strings with "
-            "integers and + or - to filter by ranges."
-        )
-    if isstr(data):
-        return _find_depth([data], s, level)[0]
-
-    return _find_depth(data, s, level)
-
-
-def _find_depth(data, s="", level=None):
-    """Internal implementation of `find_depth()´"""
-    # remove wildcard as last character from string, escape regex characters
-    _s = re.compile("^" + _escape_regexp(s.rstrip("*")))
-    _p = re.compile("\\|")
-
-    # find depth
-    def _count_pipes(val):
-        return len(_p.findall(re.sub(_s, "", val))) if _s.match(val) else None
-
-    n_pipes = map(_count_pipes, to_list(data))
-
-    # if no level test is specified, return the depth as (list of) int
-    if level is None:
-        return list(n_pipes)
-
-    # if `level` is given, set function for finding depth level =, >=, <= |s
-    if not isstr(level):
-        test = lambda x: level == x if x is not None else False
-    elif level[-1] == "-":
-        level = int(level[:-1])
-        test = lambda x: level >= x if x is not None else False
-    elif level[-1] == "+":
-        level = int(level[:-1])
-        test = lambda x: level <= x if x is not None else False
-    else:
-        raise ValueError("Unknown level type: `{}`".format(level))
-
-    return list(map(test, n_pipes))
-
-
 def pattern_match(
     data, values, level=None, regexp=False, has_nan=False, return_codes=False
 ):
@@ -594,7 +539,7 @@ def pattern_match(
                 pass
 
         if isstr(s):
-            pattern = re.compile(_escape_regexp(s) + "$" if not regexp else s)
+            pattern = re.compile(escape_regexp(s) + "$" if not regexp else s)
             depth = True if level is None else find_depth(_data, s, level)
             matches |= data.str.match(pattern) & depth
         else:
@@ -605,20 +550,6 @@ def pattern_match(
         return codes
 
     return matches
-
-
-def _escape_regexp(s):
-    """Escape characters with specific regexp use"""
-    return (
-        str(s)
-        .replace("|", "\\|")
-        .replace(".", "\.")  # `.` has to be replaced before `*`
-        .replace("*", ".*")
-        .replace("+", "\+")
-        .replace("(", "\(")
-        .replace(")", "\)")
-        .replace("$", "\\$")
-    )
 
 
 def print_list(x, n):
@@ -702,40 +633,6 @@ def to_int(x, index=False):
         return x
     else:
         return _x
-
-
-def concat_with_pipe(x, cols=None):
-    """Concatenate a pandas.Series x using ``|``, drop None or numpy.nan"""
-    cols = cols or x.index
-    return "|".join([x[i] for i in cols if x[i] not in [None, np.nan]])
-
-
-def reduce_hierarchy(x, depth):
-    """Reduce the hierarchy (indicated by ``|``) of x to the specified depth"""
-    _x = x.split("|")
-    depth = len(_x) + depth - 1 if depth < 0 else depth
-    return "|".join(_x[0 : (depth + 1)])
-
-
-def get_variable_components(x, level, join=False):
-    """Return components for requested level in a list or join these in a str.
-
-    Parameters
-    ----------
-    x : str
-        Uses ``|`` to separate the components of the variable.
-    level : int or list of int
-        Position of the component.
-    join : bool or str, optional
-        If True, IAMC-style (``|``) is used as separator for joined components.
-    """
-    _x = x.split("|")
-    if join is False:
-        return [_x[i] for i in level] if islistable(level) else _x[level]
-    else:
-        level = [level] if type(level) == int else level
-        join = "|" if join is True else join
-        return join.join([_x[i] for i in level])
 
 
 def s(n):
