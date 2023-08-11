@@ -357,13 +357,18 @@ rst_prolog = """
 
 .. |pyam| replace:: :class:`pyam`
 
+.. |ixmp4| raw:: html
+
+   <a href="https://docs.ece.iiasa.ac.at/ixmp4/">
+   <code class="xref py py-class docutils literal notranslate"><span class="pre">
+   ixmp4</span></code></a> 
+
 .. |br| raw:: html
 
-    <br>
+   <br>
 
 .. |datapackage.Package.docs| raw:: html
 
-   <a href="https://github.com/frictionlessdata/datapackage-py#package">read
-   the docs</a>
+   <a href="https://github.com/frictionlessdata/datapackage-py#package">read the docs</a>
 
 """
