@@ -9,6 +9,10 @@ for better integration with the IIASA scenario database infrastructure.
 
 ## API changes
 
+Credentials to access the IIASA scenario database infrastructure should now be managed
+using the **ixmp4** package
+(see [here](https://pyam-iamc.readthedocs.io/en/stable/api/iiasa.html)).
+
 The column *exclude* of the `meta` attribute was refacored to a new attribute `exclude`.
 All validation methods are refactored such that the argument `exclude_on_fail` changes
 this new attribute (see PR [#759](https://github.com/IAMconsortium/pyam/pull/759)).
