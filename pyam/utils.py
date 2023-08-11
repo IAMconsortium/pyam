@@ -2,13 +2,13 @@ from pathlib import Path
 import itertools
 import logging
 import string
-import six
 import re
 import dateutil
+from pandas.api.types import is_list_like
 
 from pyam.index import get_index_levels, replace_index_labels
-from pyam.str import concat_with_pipe, escape_regexp, find_depth
-from pyam.logging import raise_data_error
+from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
+from pyam.logging import raise_data_error, deprecation_warning
 import numpy as np
 import pandas as pd
 from collections.abc import Iterable
@@ -75,8 +75,9 @@ def requires_package(pkg, msg, error_type=ImportError):
 
 
 def isstr(x):
-    """Returns True if x is a string"""
-    return isinstance(x, six.string_types)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning("Please use `pyam.str.is_str()`.", "The function `isstr()`")
+    return is_str(x)
 
 
 def isscalar(x):
@@ -85,13 +86,16 @@ def isscalar(x):
 
 
 def islistable(x):
-    """Returns True if x is a list but not a string"""
-    return isinstance(x, Iterable) and not isstr(x)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning(
+        "Please use `pyam.utils.is_list_like()`.", "The function `islistable()`"
+    )
+    return is_list_like(x)
 
 
 def to_list(x):
     """Return x as a list"""
-    return x if islistable(x) else [x]
+    return x if is_list_like(x) else [x]
 
 
 def remove_from_list(x, items):
@@ -206,7 +210,7 @@ def _knead_data(df, **kwargs):
     # melt value columns and use column name as `variable`
     if "value" in kwargs and "variable" not in kwargs:
         value = kwargs.pop("value")
-        value = value if islistable(value) else [value]
+        value = value if is_list_like(value) else [value]
         _df = df.set_index(list(set(df.columns) - set(value)))
         dfs = []
         for v in value:
@@ -224,7 +228,7 @@ def _knead_data(df, **kwargs):
 
         if isstr(value) and value in df:
             df.rename(columns={value: col}, inplace=True)
-        elif islistable(value) and all([c in df.columns for c in value]):
+        elif is_list_like(value) and all([c in df.columns for c in value]):
             df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
             df.drop(value, axis=1, inplace=True)
         elif isstr(value):
@@ -525,7 +529,7 @@ def pattern_match(
     """
     codes = []
     matches = np.zeros(len(data), dtype=bool)
-    values = values if islistable(values) else [values]
+    values = values if is_list_like(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.fillna("") if has_nan else data

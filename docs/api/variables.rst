@@ -18,3 +18,5 @@ The package provides several functions to work with such strings.
 .. autofunction:: get_variable_components
 
 .. autofunction:: reduce_hierarchy
+
+.. autofunction:: is_str

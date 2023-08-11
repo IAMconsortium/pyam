@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from pandas.api.types import is_list_like
 import numpy as np
 import six
 import re
@@ -24,12 +24,12 @@ def find_depth(data, s="", level=None):
         whether depth satisfies the condition (equality if level is int,
         >= if ``.+``,  <= if ``.-``)
     """
-    if islistable(level):
+    if is_list_like(level):
         raise ValueError(
             "Level is only run with ints or strings, not lists. Use strings with "
             "integers and + or - to filter by ranges."
         )
-    if isstr(data):
+    if is_str(data):
         return _find_depth([data], s, level)[0]
 
     return _find_depth(data, s, level)
@@ -45,14 +45,14 @@ def _find_depth(data, s="", level=None):
     def _count_pipes(val):
         return len(_p.findall(re.sub(_s, "", val))) if _s.match(val) else None
 
-    n_pipes = map(_count_pipes, to_list(data))
+    n_pipes = map(_count_pipes, data if is_list_like(data) else list(data))
 
     # if no level test is specified, return the depth as (list of) int
     if level is None:
         return list(n_pipes)
 
     # if `level` is given, set function for finding depth level =, >=, <= |s
-    if not isstr(level):
+    if not is_str(level):
         test = lambda x: level == x if x is not None else False
     elif level[-1] == "-":
         level = int(level[:-1])
@@ -84,7 +84,7 @@ def get_variable_components(x, level, join=False):
     """
     _x = x.split("|")
     if join is False:
-        return [_x[i] for i in level] if islistable(level) else _x[level]
+        return [_x[i] for i in level] if is_list_like(level) else _x[level]
     else:
         level = [level] if type(level) == int else level
         join = "|" if join is True else join
@@ -107,7 +107,6 @@ def reduce_hierarchy(x, depth):
     return "|".join(_x[0 : (depth + 1)])
 
 
-
 def escape_regexp(s):
     """Escape characters with specific regexp use"""
     return (
@@ -122,16 +121,6 @@ def escape_regexp(s):
     )
 
 
-def islistable(x):
-    """Returns True if x is a list but not a string"""
-    return isinstance(x, Iterable) and not isinstance(x, six.string_types)
-
-
-def isstr(x):
+def is_str(x):
     """Returns True if x is a string"""
     return isinstance(x, six.string_types)
-
-
-def to_list(x):
-    """Return x as a list"""
-    return x if islistable(x) else [x]
