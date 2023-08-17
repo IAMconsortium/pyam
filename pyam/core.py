@@ -30,6 +30,7 @@ from pyam.utils import (
     read_file,
     read_pandas,
     format_data,
+    make_index,
     merge_meta,
     merge_exclude,
     pattern_match,
@@ -178,7 +179,7 @@ class IamDataFrame(object):
         self._data, index, self.time_col, self.extra_cols = _data
 
         # define `meta` dataframe for categorization & quantitative indicators
-        _index = _make_index(self._data, cols=index)
+        _index = make_index(self._data, cols=index)
         self.meta = pd.DataFrame(index=_index)
         self.exclude = False
 
@@ -948,7 +949,7 @@ class IamDataFrame(object):
                 run_control().update({kind: {name: {value: arg}}})
         # find all data that matches categorization
         rows = _apply_criteria(self._data, criteria, in_range=True, return_test="all")
-        idx = _make_index(rows, cols=self.index.names)
+        idx = make_index(rows, cols=self.index.names)
 
         if len(idx) == 0:
             logger.info("No scenarios satisfy the criteria")
@@ -1193,7 +1194,7 @@ class IamDataFrame(object):
 
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(**filters)
-        idx = ret.meta.index.isin(_make_index(ret._data[rows], cols=meta_idx))
+        idx = ret.meta.index.isin(make_index(ret._data[rows], cols=meta_idx))
 
         # apply renaming changes (for `data` only on the index)
         _data_index = ret._data.index
@@ -1822,19 +1823,6 @@ class IamDataFrame(object):
                 ]
             ]
 
-    def _exclude_on_fail(self, df):
-        """Assign a selection of scenarios as `exclude: True`"""
-        idx = (
-            df
-            if isinstance(df, pd.MultiIndex)
-            else _make_index(df, cols=self.index.names)
-        )
-        self.exclude[idx] = True
-        n = len(idx)
-        logger.info(
-            f"{n} scenario{s(n)} failed validation and will be set as `exclude=True`."
-        )
-
     def slice(self, keep=True, **kwargs):
         """Return a (filtered) slice object of the IamDataFrame timeseries data index
 
@@ -1908,7 +1896,7 @@ class IamDataFrame(object):
                 logger.info(msg)
 
         # downselect `meta` dataframe
-        idx = _make_index(ret._data, cols=self.index.names)
+        idx = make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
             logger.warning("Filtered IamDataFrame is empty!")
         ret.meta = ret.meta.loc[idx]
@@ -1944,7 +1932,7 @@ class IamDataFrame(object):
                         f"Filter by `exclude` requires a boolean, found: {values}"
                     )
                 exclude_index = (self.exclude[self.exclude == values]).index
-                keep_col = _make_index(
+                keep_col = make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(exclude_index)
 
@@ -1953,7 +1941,7 @@ class IamDataFrame(object):
                     self.meta[col], values, regexp=regexp, has_nan=True
                 )
                 cat_idx = self.meta[matches].index
-                keep_col = _make_index(
+                keep_col = make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(cat_idx)
 
@@ -2739,21 +2727,6 @@ def _apply_criteria(df, criteria, **kwargs):
             idxs.append(grp_idxs)
     df = df.loc[itertools.chain(*idxs)]
     return df
-
-
-def _make_index(df, cols=META_IDX, unique=True):
-    """Create an index from the columns/index of a dataframe or series"""
-
-    def _get_col(c):
-        try:
-            return df.index.get_level_values(c)
-        except KeyError:
-            return df[c]
-
-    index = list(zip(*[_get_col(col) for col in cols]))
-    if unique:
-        index = pd.unique(index)
-    return pd.MultiIndex.from_tuples(index, names=tuple(cols))
 
 
 def _empty_iamframe(index):
