@@ -68,6 +68,7 @@ from pyam.index import (
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam.logging import raise_data_error, deprecation_warning
+from pyam.validation import on_failed_validation
 
 logger = logging.getLogger(__name__)
 
@@ -1038,7 +1039,7 @@ class IamDataFrame(object):
         index_missing_required = pd.concat([index_none, index_incomplete])
         if not index_missing_required.empty:
             if exclude_on_fail:
-                self._exclude_on_fail(index_missing_required)
+                on_failed_validation(self, index_missing_required)
             return index_missing_required
 
     def require_variable(self, variable, unit=None, year=None, exclude_on_fail=False):
@@ -1083,7 +1084,7 @@ class IamDataFrame(object):
         )
 
         if exclude_on_fail:
-            self._exclude_on_fail(idx)
+            on_failed_validation(self, idx)
 
         logger.info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
@@ -1118,7 +1119,7 @@ class IamDataFrame(object):
             logger.info(msg.format(len(df), len(self.data)))
 
             if exclude_on_fail and len(df) > 0:
-                self._exclude_on_fail(df)
+                on_failed_validation(self, df)
             return df.reset_index()
 
     def rename(
@@ -1487,7 +1488,7 @@ class IamDataFrame(object):
             logger.info(msg.format(variable, sum(rows), len(df_var)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(_meta_idx(df_var[rows].reset_index()))
+                on_failed_validation(self, _meta_idx(df_var[rows].reset_index()))
 
             return pd.concat(
                 [df_var[rows], df_components[rows]],
@@ -1642,7 +1643,7 @@ class IamDataFrame(object):
             logger.info(msg.format(variable, sum(rows), len(df_region)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(_meta_idx(df_region[rows].reset_index()))
+                on_failed_validation(self, _meta_idx(df_region[rows].reset_index()))
 
             _df = pd.concat(
                 [
