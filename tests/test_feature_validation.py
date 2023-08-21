@@ -51,7 +51,15 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
     df = test_df_year.append(IamDataFrame(DATA_GAS))
 
     obs = df.require_data(**kwargs, exclude_on_fail=exclude_on_fail)
+
     exp = pd.DataFrame([["model_a", "scen_b"]], columns=["model", "scenario"])
+    # add parametrization-dependent columns to expected output
+    if kwargs["variable"] == "Primary Energy|Coal":
+        exp["variable"] = ["Primary Energy|Coal"]
+    else:
+        exp["variable"] = ["Primary Energy"]
+        exp["year"] = [2010]
+
     pdt.assert_frame_equal(obs, exp)
 
     if exclude_on_fail:
