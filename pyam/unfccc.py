@@ -10,7 +10,8 @@ except ImportError:  # pragma: no cover
     HAS_UNFCCC = False
 
 from pyam import IamDataFrame
-from pyam.utils import pattern_match, isstr, to_list
+from pyam.str import is_str
+from pyam.utils import pattern_match, to_list
 
 # columns from UNFCCC data that can be used for variable names
 NAME_COLS = ["category", "classification", "measure", "gas"]
@@ -128,7 +129,7 @@ def read_unfccc(
 
     # drop unspecified rows and columns, rename value column
     cols = ["party", "variable", "unit", "year", "gas", "numberValue"]
-    data = data.loc[[isstr(i) for i in data.variable], cols]
+    data = data.loc[[is_str(i) for i in data.variable], cols]
     data.rename(columns={"numberValue": "value"}, inplace=True)
 
     # append `gas` to unit, drop `gas` column

@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 
 from pyam import filter_by_meta
-from pyam.utils import isstr, islistable, META_IDX
+from pyam.str import is_str
+from pyam.utils import is_list_like, META_IDX
 
 
 class Statistics(object):
@@ -36,7 +37,7 @@ class Statistics(object):
         # assing `groupby` settings and check that specifications are valid
         self.col = None
         self.groupby = None
-        if isstr(groupby):
+        if is_str(groupby):
             self.col = groupby
             self.groupby = {groupby: None}
         elif isinstance(groupby, dict) and len(groupby) == 1:
@@ -68,14 +69,14 @@ class Statistics(object):
         # assing `filters` settings and check that specifications are valid
         for idx, _filter in self.filters:
             # check that index in tuple is valid
-            if isstr(idx):
+            if is_str(idx):
                 self._add_to_index(idx)
             else:
                 if not (
                     isinstance(idx, tuple)
                     and len(idx) == 2
-                    and isstr(idx[0])
-                    or not isstr(idx[1])
+                    and is_str(idx[0])
+                    or not is_str(idx[1])
                 ):
                     raise ValueError("`{}` is not a valid index".format(idx))
                 self._add_to_index(idx[0], idx[1])
@@ -124,7 +125,7 @@ class Statistics(object):
     def _add_to_header(self, header, subheader):
         if header not in self._headers:
             self._headers.append(header)
-        if islistable(subheader):
+        if is_list_like(subheader):
             for s in subheader:
                 if s not in self._subheaders:
                     self._subheaders.append(s)

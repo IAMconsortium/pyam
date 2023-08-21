@@ -228,12 +228,12 @@ def _knead_data(df, **kwargs):
         if col in df:
             raise ValueError(f"Conflict of kwarg with column `{col}` in dataframe!")
 
-        if isstr(value) and value in df:
+        if is_str(value) and value in df:
             df.rename(columns={value: col}, inplace=True)
         elif is_list_like(value) and all([c in df.columns for c in value]):
             df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
             df.drop(value, axis=1, inplace=True)
-        elif isstr(value):
+        elif is_str(value):
             df[col] = value
         else:
             raise ValueError(f"Invalid argument for casting `{col}: {value}`")
@@ -404,7 +404,7 @@ def format_data(df, index, **kwargs):
 
         # all lower case
         df.rename(
-            columns={c: str(c).lower() for c in df.columns if isstr(c)}, inplace=True
+            columns={c: str(c).lower() for c in df.columns if is_str(c)}, inplace=True
         )
 
         if "notes" in df.columns:  # this came from a legacy database (SSP or earlier)
@@ -544,7 +544,7 @@ def pattern_match(
             except KeyError:
                 pass
 
-        if isstr(s):
+        if is_str(s):
             pattern = re.compile(escape_regexp(s) + "$" if not regexp else s)
             depth = True if level is None else find_depth(_data, s, level)
             matches |= data.str.match(pattern) & depth
