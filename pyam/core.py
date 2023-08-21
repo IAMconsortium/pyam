@@ -2422,7 +2422,7 @@ class IamDataFrame(object):
             else, use all :attr:`dimensions`.
             See :meth:`IamDataFrame.timeseries` for details.
         include_meta : boolean or string, optional
-            If True, write :any:`IamDataFrame.meta` to a sheet 'meta' (default);
+            If True, write :attr:`IamDataFrame.meta` to a sheet 'meta' (default);
             if this is a string, use it as sheet name.
         **kwargs
             Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
