@@ -57,7 +57,7 @@ co2 = (
 )
 
 df.set_meta(
-    meta=co2.apply(pyam.cumulative, first_year=2020, last_year=2100, axis=1),
+    meta=co2.apply(pyam.timeseries.cumulative, first_year=2020, last_year=2100, axis=1),
     name="cumulative_co2",
 )
 

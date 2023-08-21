@@ -24,6 +24,7 @@ except ImportError:
     HAS_DATAPACKAGE = False
 
 from pyam.run_control import run_control
+from pyam.str import find_depth, is_str
 from pyam.utils import (
     write_sheet,
     read_file,
@@ -31,11 +32,9 @@ from pyam.utils import (
     format_data,
     merge_meta,
     merge_exclude,
-    find_depth,
     pattern_match,
     to_list,
-    isstr,
-    islistable,
+    is_list_like,
     print_list,
     s,
     DEFAULT_META_INDEX,
@@ -168,7 +167,7 @@ class IamDataFrame(object):
             _data = format_data(data, index=index, **kwargs)
 
         # unsupported `data` args
-        elif islistable(data):
+        elif is_list_like(data):
             raise ValueError(
                 "Initializing from list is not supported, "
                 "use `IamDataFrame.append()` or `pyam.concat()`"
@@ -235,7 +234,7 @@ class IamDataFrame(object):
             return IamDataFrame(data, meta=self.meta, **args)
 
     def __getitem__(self, key):
-        _key_check = [key] if isstr(key) else key
+        _key_check = [key] if is_str(key) else key
         if isinstance(key, IamSlice):
             return IamDataFrame(self._data.loc[key])
         elif key == "value":
@@ -628,8 +627,8 @@ class IamDataFrame(object):
             Output style for pivot table formatting,
             accepts 'highlight_not_max', 'heatmap'
         """
-        index = [index] if isstr(index) else index
-        columns = [columns] if isstr(columns) else columns
+        index = [index] if is_str(index) else index
+        columns = [columns] if is_str(columns) else columns
 
         if values != "value":
             raise ValueError("This method only supports `values='value'`!")
@@ -637,7 +636,7 @@ class IamDataFrame(object):
         df = self._data
 
         # allow 'aggfunc' to be passed as string for easier user interface
-        if isstr(aggfunc):
+        if is_str(aggfunc):
             if aggfunc == "count":
                 df = self._data.groupby(index + columns).count()
                 fill_value = 0
@@ -865,7 +864,7 @@ class IamDataFrame(object):
 
         # if no valid index is provided, add meta as new column `name` and exit
         if index is None:
-            self.meta[name] = list(meta) if islistable(meta) else meta
+            self.meta[name] = list(meta) if is_list_like(meta) else meta
             return
 
         # use meta.index if index arg is an IamDataFrame
@@ -1848,7 +1847,7 @@ class IamDataFrame(object):
 
         Returns
         -------
-        :class:`IamSlice`
+        :class:`pyam.slice.IamSlice`
 
         Notes
         -----
@@ -2415,14 +2414,14 @@ class IamDataFrame(object):
         excel_writer : path-like, file-like, or ExcelWriter object
             File path as string or :class:`pathlib.Path`,
             or existing :class:`pandas.ExcelWriter`.
-        sheet_name : string
+        sheet_name : str, optional
             Name of sheet which will contain :meth:`IamDataFrame.timeseries` data.
         iamc_index : bool, optional
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all :attr:`dimensions`.
             See :meth:`IamDataFrame.timeseries` for details.
-        include_meta : boolean or string, optional
-            If True, write :attr:`IamDataFrame.meta` to a sheet 'meta' (default);
+        include_meta : bool or str, optional
+            If True, write :attr:`meta` to a sheet 'meta' (default);
             if this is a string, use it as sheet name.
         **kwargs
             Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
@@ -2965,7 +2964,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     The :attr:`dimensions` and :attr:`index` names of all elements of *dfs* must be
     identical. The returned IamDataFrame inherits the dimensions and index names.
     """
-    if not islistable(objs) or isinstance(objs, pd.DataFrame):
+    if not is_list_like(objs) or isinstance(objs, pd.DataFrame):
         raise TypeError(f"'{objs.__class__.__name__}' object is not iterable")
 
     objs = list(objs)

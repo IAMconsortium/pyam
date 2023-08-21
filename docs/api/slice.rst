@@ -1,4 +1,4 @@
-.. currentmodule:: pyam
+.. currentmodule:: pyam.slice
 
 The **IamSlice** class
 ======================

@@ -2,7 +2,8 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 
-from pyam import IamDataFrame, validate, categorize, require_variable, META_IDX
+from pyam import IamDataFrame, validate, categorize, require_variable
+from pyam.utils import META_IDX
 
 
 @pytest.mark.parametrize(

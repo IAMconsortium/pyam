@@ -5,7 +5,9 @@ import pandas as pd
 import pandas.testing as pdt
 from datetime import datetime
 
-from pyam import IamDataFrame, IAMC_IDX, META_IDX, assert_iamframe_equal, concat
+from pyam import IamDataFrame, concat
+from pyam.testing import assert_iamframe_equal
+from pyam.utils import IAMC_IDX, META_IDX
 
 from .conftest import TEST_DF, META_COLS, META_DF
 

@@ -5,14 +5,8 @@ from itertools import compress
 
 from pyam.index import replace_index_values
 from pyam.logging import adjust_log_level
-from pyam.utils import (
-    islistable,
-    isstr,
-    find_depth,
-    reduce_hierarchy,
-    KNOWN_FUNCS,
-    to_list,
-)
+from pyam.str import find_depth, is_str, reduce_hierarchy
+from pyam.utils import KNOWN_FUNCS, is_list_like, to_list
 from pyam._compare import _compare
 
 
@@ -24,13 +18,13 @@ def _aggregate(df, variable, components=None, method=np.sum):
 
     if components is not None:
         # ensure that components is a proper list (not a dictionary)
-        if not islistable(components) or isinstance(components, dict):
+        if not is_list_like(components) or isinstance(components, dict):
             raise ValueError(
                 f"Value for `components` must be a list, found: {components}"
             )
 
         # list of variables require default components (no manual list)
-        if islistable(variable):
+        if is_list_like(variable):
             raise NotImplementedError(
                 "Aggregating by list of variables does not support `components`."
             )
@@ -38,7 +32,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
     mapping = {}
     msg = "Cannot aggregate variable '{}' because it has no components!"
     # if single variable
-    if isstr(variable):
+    if is_str(variable):
         # default components to all variables one level below `variable`
         components = components or df._variable_components(variable)
 
@@ -51,7 +45,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
 
     # else, use all variables one level below `variable` as components
     else:
-        for v in variable if islistable(variable) else [variable]:
+        for v in variable if is_list_like(variable) else [variable]:
             _components = df._variable_components(v)
             if not len(_components):
                 logger.info(msg.format(v))
@@ -113,7 +107,7 @@ def _aggregate_region(
     drop_negative_weights=True,
 ):
     """Internal implementation for aggregating data over subregions"""
-    if not isstr(variable) and components is not False:
+    if not is_str(variable) and components is not False:
         raise ValueError(
             "Aggregating by list of variables with components is not supported!"
         )
@@ -241,7 +235,7 @@ def _agg_weight(data, weight, method, drop_negative_weights):
 
 def _get_method_func(method):
     """Translate a string to a known method"""
-    if not isstr(method):
+    if not is_str(method):
         return method
 
     if method in KNOWN_FUNCS:

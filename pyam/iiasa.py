@@ -15,12 +15,12 @@ import numpy as np
 import pandas as pd
 
 from pyam.core import IamDataFrame
+from pyam.str import is_str
 from pyam.utils import (
     META_IDX,
     IAMC_IDX,
-    isstr,
     pattern_match,
-    islistable,
+    is_list_like,
 )
 from pyam.logging import deprecation_warning
 
@@ -84,7 +84,7 @@ class SceSeAuth(AuthBase):
                 self.creds = _read_config(DEFAULT_IIASA_CREDS)
             else:
                 self.creds = None
-        elif isinstance(creds, Path) or isstr(creds):
+        elif isinstance(creds, Path) or is_str(creds):
             self.creds = _read_config(creds)
         else:
             raise DeprecationWarning(
@@ -423,7 +423,7 @@ class Connection(object):
         def _get_kwarg(k):
             # TODO refactor API to return all models if model-list is empty
             x = kwargs.pop(k, "*" if k == "model" else [])
-            return [x] if isstr(x) else x
+            return [x] if is_str(x) else x
 
         m_pattern = _get_kwarg("model")
         s_pattern = _get_kwarg("scenario")
@@ -527,7 +527,7 @@ class Connection(object):
         if meta:
             _meta = self.meta(default_only=default_only, run_id=True)
             # downselect to subset of meta columns if given as list
-            if islistable(meta):
+            if is_list_like(meta):
                 # always merge 'version' (even if not requested explicitly)
                 # 'run_id' is required to determine `_args`, dropped later
                 _meta = _meta[list(set(meta).union(["version", "run_id"]))]
@@ -578,7 +578,7 @@ class Connection(object):
         # merge meta indicators (if requested) and cast to IamDataFrame
         if meta:
             # 'run_id' is necessary to retrieve data, not returned by default
-            if not (islistable(meta) and "run_id" in meta):
+            if not (is_list_like(meta) and "run_id" in meta):
                 _meta.drop(columns="run_id", inplace=True)
             return IamDataFrame(data, meta=_meta, index=index)
         else:

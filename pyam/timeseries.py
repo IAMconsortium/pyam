@@ -2,7 +2,8 @@ import logging
 import math
 import numpy as np
 import pandas as pd
-from pyam.utils import isstr, to_int, raise_data_error
+from pyam.str import is_str
+from pyam.utils import to_int, raise_data_error
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +103,7 @@ def cross_threshold(
     return_type : type, optional
         Whether to cast the returned values to integer (years)
     """
-    direction = [direction] if isstr(direction) else list(direction)
+    direction = [direction] if is_str(direction) else list(direction)
     if not set(direction).issubset(set(["from above", "from below"])):
         raise ValueError(f"Invalid direction: {direction}")
 
