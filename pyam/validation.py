@@ -6,7 +6,7 @@ from pyam.utils import make_index, s
 logger = logging.getLogger(__name__)
 
 
-def exclude_on_fail(df, index):
+def _exclude_on_fail(df, index):
     """Assign a selection of scenarios as `exclude: True`"""
 
     if not isinstance(index, pd.MultiIndex):
