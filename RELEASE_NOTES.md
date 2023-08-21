@@ -14,8 +14,8 @@ When importing an xlsx file created with pyam < 2.0, which has an "exclude" colu
 
 PR [#764](https://github.com/IAMconsortium/pyam/pull/764) implemented a more restrictive
 approach to exposing pyam-internals at the package level, requiring a more explicit
-usage of these methods.
-For example, use `pyam.utils.IAMC_IDX` instead of `pyam.IAMC_IDX`.
+import of these methods. For example, use `pyam.utils.to_list()`
+instead of `pyam.to_list()`.
 
 ## Individual updates
 
