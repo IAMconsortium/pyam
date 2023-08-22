@@ -19,6 +19,7 @@ instead of `pyam.to_list()`.
 
 ## Individual updates
 
+- [#772](https://github.com/IAMconsortium/pyam/pull/772) Show all missing rows for `require_data()`
 - [#771](https://github.com/IAMconsortium/pyam/pull/771) Refactor to start a separate validation module
 - [#764](https://github.com/IAMconsortium/pyam/pull/764) Clean-up exposing internal methods and attributes
 - [#763](https://github.com/IAMconsortium/pyam/pull/763) Implement a fix against carrying over unused levels when initializing from an indexed pandas object

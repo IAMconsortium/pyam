@@ -43,6 +43,7 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS,
+    remove_from_list,
 )
 from pyam.filter import (
     datetime_match,
@@ -65,6 +66,7 @@ from pyam.index import (
     get_keep_col,
     verify_index_integrity,
     replace_index_values,
+    append_index_col,
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam.logging import raise_data_error, deprecation_warning
@@ -972,7 +974,7 @@ class IamDataFrame(object):
     def require_data(
         self, region=None, variable=None, unit=None, year=None, exclude_on_fail=False
     ):
-        """Check whether scenarios have values for all combinations of given elements
+        """Check whether scenarios have values for all (combinations of) given elements.
 
         Parameters
         ----------
@@ -991,14 +993,13 @@ class IamDataFrame(object):
         Returns
         -------
         :class:`pandas.DataFrame` or None
-            A dataframe of the *index* of scenarios not satisfying the criteria.
+            A dataframe of missing (combinations of) elements for all scenarios.
         """
 
         # TODO: option to require values in certain ranges, see `_apply_criteria()`
 
         # create mapping of required dimensions
         required = {}
-        n = 1  # expected number of rows per scenario
         for dim, value in [
             ("region", region),
             ("variable", variable),
@@ -1006,41 +1007,38 @@ class IamDataFrame(object):
             ("year", year),
         ]:
             if value is not None:
-                required[dim] = value
-                n *= len(to_list(value))
+                required[dim] = to_list(value)
 
-        # fast exit if no arguments values are given
+        # fast exit if no arguments are given
         if not required:
+            logger.warning("No validation criteria provided.")
             return
 
-        # downselect to relevant rows
-        keep = self._apply_filters(**required)
-        rows = self._data.index[keep]
-
-        # identify scenarios that have none of the required values
-        index_none = self.index.difference(
-            rows.droplevel(level=self.coordinates).drop_duplicates()
-        ).to_frame(index=False)
-
-        # identify scenarios that have some but not all required values
-        columns = [i for i in self.coordinates if i not in required]
-        rows = rows.droplevel(level=columns).drop_duplicates()
-        data = (
-            pd.DataFrame(index=rows)
-            .reset_index(level=list(required))
-            .groupby(self.index.names)
+        # create index of required elements
+        index_required = pd.MultiIndex.from_product(
+            required.values(), names=list(required)
         )
 
-        index_incomplete = pd.DataFrame(
-            [idx for idx, df in data if len(df) != n], columns=self.index.names
-        )
+        # create scenario index of suitable length, merge required elements as columns
+        n = len(self.index)
+        index = self.index.repeat(len(index_required))
+        for i, name in enumerate(required.keys()):
+            index = append_index_col(
+                index, list(index_required.get_level_values(i)) * n, name=name
+            )
 
-        # merge all scenarios where not all required data is present
-        index_missing_required = pd.concat([index_none, index_incomplete])
-        if not index_missing_required.empty:
+        # identify scenarios that do not have all required elements
+        rows = (
+            self._data.index[self._apply_filters(**required)]
+            .droplevel(level=remove_from_list(self.coordinates, required))
+            .drop_duplicates()
+        )
+        missing_required = index.difference(rows)
+
+        if not missing_required.empty:
             if exclude_on_fail:
-                _exclude_on_fail(self, index_missing_required)
-            return index_missing_required
+                _exclude_on_fail(self, missing_required.droplevel(list(required)))
+            return missing_required.to_frame(index=False)
 
     def require_variable(self, variable, unit=None, year=None, exclude_on_fail=False):
         """Check whether all scenarios have a required variable
