@@ -1,9 +1,11 @@
 # Next Release
 
 The next release must bump the major version number.
-Reactivate tests for Python 3.11 once ixmp4 0.3 is released. 
+Reactivate tests for Python 3.11 once ixmp4 0.3 is released.
 
 ## Dependency changes
+
+Support for Python 3.7-3.9 was removed due to an incompatible dependency.  
 
 PR [#766](https://github.com/IAMconsortium/pyam/pull/766) added the **ixmp4** package
 for better integration with the IIASA scenario database infrastructure.
