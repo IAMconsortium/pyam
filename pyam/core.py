@@ -1016,7 +1016,7 @@ class IamDataFrame(object):
 
         # create index of required elements
         index_required = pd.MultiIndex.from_product(
-            required.values(), names=required.keys()
+            required.values(), names=list(required)
         )
 
         # create scenario index of suitable length, merge required elements as columns
@@ -1037,8 +1037,7 @@ class IamDataFrame(object):
 
         if not missing_required.empty:
             if exclude_on_fail:
-                non_index_levels = remove_from_list(self.coordinates, self.index.names)
-                _exclude_on_fail(self, missing_required.droplevel(non_index_levels))
+                _exclude_on_fail(self, missing_required.droplevel(list(required)))
             return missing_required.to_frame(index=False)
 
     def require_variable(self, variable, unit=None, year=None, exclude_on_fail=False):
