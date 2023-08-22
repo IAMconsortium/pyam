@@ -63,9 +63,9 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
     pdt.assert_frame_equal(obs, exp)
 
     if exclude_on_fail:
-        list(df.exclude) == [False, True]
+        assert list(df.exclude) == [False, True]
     else:
-        list(df.exclude) == [False, False]
+        assert list(df.exclude) == [False, False]
 
 
 def test_require_variable_pass(test_df):
