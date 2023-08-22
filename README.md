@@ -8,7 +8,7 @@ pyam: analysis & visualization <br /> of integrated-assessment and macro-energy 
 
 <!-- replace python version by dynamic reference to pypi once Python versions are configured there -->
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![python](https://img.shields.io/badge/python-≥3.8,<3.12-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
+[![python](https://img.shields.io/badge/python-≥3.10,<3.12-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
 [![pytest](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml/badge.svg)](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml)
 [![ReadTheDocs](https://readthedocs.org/projects/pyam-iamc/badge/?version=latest)](https://pyam-iamc.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)

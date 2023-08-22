@@ -1,6 +1,7 @@
 # Next Release
 
 The next release must bump the major version number.
+Reactivate tests for Python 3.11 once ixmp4 0.3 is released. 
 
 ## Dependency changes
 
