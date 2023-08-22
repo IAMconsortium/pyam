@@ -1,6 +1,5 @@
 import logging
 import pytest
-import re
 import datetime
 
 import numpy as np

@@ -3,7 +3,19 @@ import pandas.testing as pdt
 import pytest
 
 from pyam import IamDataFrame, validate, categorize, require_variable
-from pyam.utils import META_IDX
+from pyam.utils import IAMC_IDX, META_IDX
+
+from .conftest import TEST_YEARS
+
+
+# add row for `Primary Energy|Gas` to test that all permutations
+DATA_GAS = pd.DataFrame(
+    [
+        ["model_a", "scen_a", "World", "Primary Energy|Gas", "EJ/yr", 0.5, 3],
+        ["model_a", "scen_b", "World", "Primary Energy|Gas", "EJ/yr", 1, 2],
+    ],
+    columns=IAMC_IDX + TEST_YEARS,
+)
 
 
 @pytest.mark.parametrize(
@@ -11,19 +23,24 @@ from pyam.utils import META_IDX
     (
         dict(),
         dict(variable="Primary Energy"),
+        dict(variable="Primary Energy", year=[2005, 2010]),
         dict(variable=["Primary Energy"], year=[2005, 2010]),
+        dict(variable=["Primary Energy", "Primary Energy|Gas"], year=[2005, 2010]),
     ),
 )
 def test_require_data_pass(test_df_year, kwargs):
     # check that IamDataFrame with all required data returns None
-    assert test_df_year.require_data(**kwargs) is None
+    df = test_df_year.append(IamDataFrame(DATA_GAS))
+    assert df.require_data(**kwargs) is None
 
 
 @pytest.mark.parametrize(
     "kwargs",
     (
         dict(variable="Primary Energy|Coal"),
+        dict(variable="Primary Energy", year=[2005, 2010]),
         dict(variable=["Primary Energy"], year=[2005, 2010]),
+        dict(variable=["Primary Energy", "Primary Energy|Gas"], year=[2005, 2010]),
     ),
 )
 @pytest.mark.parametrize("exclude_on_fail", (False, True))
@@ -31,15 +48,16 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
     # check different ways of failing when not all required data is present
 
     test_df_year._data = test_df_year._data[0:5]  # remove value for scen_b & 2010
+    df = test_df_year.append(IamDataFrame(DATA_GAS))
 
-    obs = test_df_year.require_data(**kwargs, exclude_on_fail=exclude_on_fail)
+    obs = df.require_data(**kwargs, exclude_on_fail=exclude_on_fail)
     exp = pd.DataFrame([["model_a", "scen_b"]], columns=["model", "scenario"])
     pdt.assert_frame_equal(obs, exp)
 
     if exclude_on_fail:
-        list(test_df_year.exclude) == [False, True]
+        list(df.exclude) == [False, True]
     else:
-        list(test_df_year.exclude) == [False, False]
+        list(df.exclude) == [False, False]
 
 
 def test_require_variable_pass(test_df):

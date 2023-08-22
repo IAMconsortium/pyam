@@ -520,6 +520,21 @@ def merge_exclude(left, right, ignore_conflict=False):
     return pd.concat([left, right.loc[diff]], sort=False)
 
 
+def make_index(df, cols=META_IDX, unique=True):
+    """Create an index from the columns/index of a dataframe or series"""
+
+    def _get_col(c):
+        try:
+            return df.index.get_level_values(c)
+        except KeyError:
+            return df[c]
+
+    index = list(zip(*[_get_col(col) for col in cols]))
+    if unique:
+        index = pd.unique(index)
+    return pd.MultiIndex.from_tuples(index, names=tuple(cols))
+
+
 def pattern_match(
     data, values, level=None, regexp=False, has_nan=False, return_codes=False
 ):
