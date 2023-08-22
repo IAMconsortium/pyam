@@ -6,7 +6,8 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 
-from pyam import IamDataFrame, IAMC_IDX
+from pyam import IamDataFrame
+from pyam.utils import IAMC_IDX
 
 from .conftest import EXP_DATETIME_INDEX
 

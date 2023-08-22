@@ -11,7 +11,8 @@ import numpy as np
 import pandas as pd
 
 from datetime import datetime
-from pyam import IamDataFrame, META_IDX, IAMC_IDX, iiasa
+from pyam import IamDataFrame, iiasa
+from pyam.utils import META_IDX, IAMC_IDX
 
 
 # verify whether IIASA database API can be reached, skip tests otherwise

@@ -1,7 +1,8 @@
 import os
 import pytest
 
-from pyam import IamDataFrame, run_control
+from pyam import IamDataFrame
+from pyam.run_control import run_control
 
 from .conftest import TEST_DATA_DIR, TEST_DF
 

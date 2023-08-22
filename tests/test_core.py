@@ -1,6 +1,5 @@
 import logging
 import pytest
-import re
 import datetime
 
 import numpy as np
@@ -8,9 +7,10 @@ import pandas as pd
 from numpy import testing as npt
 from pandas import testing as pdt
 
-from pyam import IamDataFrame, filter_by_meta, META_IDX, IAMC_IDX, sort_data
+from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
-from pyam.utils import isstr
+from pyam.str import is_str
+from pyam.utils import IAMC_IDX, META_IDX, sort_data
 from pyam.testing import assert_iamframe_equal
 
 
@@ -534,7 +534,7 @@ def test_interpolate(test_pd_df):
     assert not df._data.index.duplicated().any()
 
     # assert that extra_col does not have nan's (check for #351)
-    assert all([True if isstr(i) else ~np.isnan(i) for i in df.foo])
+    assert all([True if is_str(i) else ~np.isnan(i) for i in df.foo])
 
 
 def test_interpolate_time_exists(test_df_year):

@@ -14,7 +14,7 @@ Credentials to access the IIASA scenario database infrastructure should now be m
 using the **ixmp4** package
 (see [here](https://pyam-iamc.readthedocs.io/en/stable/api/iiasa.html)).
 
-The column *exclude* of the `meta` attribute was refacored to a new attribute `exclude`.
+The column *exclude* of the `meta` indicators was moved to a new attribute `exclude`.
 All validation methods are refactored such that the argument `exclude_on_fail` changes
 this new attribute (see PR [#759](https://github.com/IAMconsortium/pyam/pull/759)).
 
@@ -22,12 +22,21 @@ The term "exclude" is now an illegal column name for (timeseries) data and meta 
 When importing an xlsx file created with pyam < 2.0, which has an "exclude" column in
 "meta", that column is moved to the new exclude attribute with a log message.
 
+PR [#764](https://github.com/IAMconsortium/pyam/pull/764) implemented a more restrictive
+approach to exposing pyam-internals at the package level, requiring a more explicit
+import of these methods. For example, use `pyam.utils.to_list()`
+instead of `pyam.to_list()`.
+
 ## Individual updates
 
+
+- [#772](https://github.com/IAMconsortium/pyam/pull/772) Show all missing rows for `require_data()`
+- [#771](https://github.com/IAMconsortium/pyam/pull/771) Refactor to start a separate validation module
 - [#766](https://github.com/IAMconsortium/pyam/pull/766) Use **ixmp4** for credentials to access a Scenario Explorer database
+- [#764](https://github.com/IAMconsortium/pyam/pull/764) Clean-up exposing internal methods and attributes
 - [#763](https://github.com/IAMconsortium/pyam/pull/763) Implement a fix against carrying over unused levels when initializing from an indexed pandas object
 - [#759](https://github.com/IAMconsortium/pyam/pull/759) Excise "exclude" column from meta and add a own attribute
-- [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7 #747
+- [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7
 
 # Release v1.9.0
 

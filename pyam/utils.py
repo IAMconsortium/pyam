@@ -2,15 +2,15 @@ from pathlib import Path
 import itertools
 import logging
 import string
-import six
 import re
 import dateutil
-
-from pyam.index import get_index_levels, replace_index_labels
-from pyam.logging import raise_data_error
 import numpy as np
 import pandas as pd
-from collections.abc import Iterable
+from pandas.api.types import is_list_like, is_float
+
+from pyam.index import get_index_levels, replace_index_labels
+from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
+from pyam.logging import raise_data_error, deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -74,23 +74,30 @@ def requires_package(pkg, msg, error_type=ImportError):
 
 
 def isstr(x):
-    """Returns True if x is a string"""
-    return isinstance(x, six.string_types)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning("Please use `pyam.str.is_str()`.", "The function `isstr()`")
+    return is_str(x)
 
 
 def isscalar(x):
-    """Returns True if x is a scalar"""
-    return not isinstance(x, Iterable) or isstr(x)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning(
+        "Please use `pandas.api.types.is_float()`.", "The function `isscalar()`"
+    )
+    return is_float(x)
 
 
 def islistable(x):
-    """Returns True if x is a list but not a string"""
-    return isinstance(x, Iterable) and not isstr(x)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning(
+        "Please use `pyam.utils.is_list_like()`.", "The function `islistable()`"
+    )
+    return is_list_like(x)
 
 
 def to_list(x):
     """Return x as a list"""
-    return x if islistable(x) else [x]
+    return x if is_list_like(x) else [x]
 
 
 def remove_from_list(x, items):
@@ -205,7 +212,7 @@ def _knead_data(df, **kwargs):
     # melt value columns and use column name as `variable`
     if "value" in kwargs and "variable" not in kwargs:
         value = kwargs.pop("value")
-        value = value if islistable(value) else [value]
+        value = value if is_list_like(value) else [value]
         _df = df.set_index(list(set(df.columns) - set(value)))
         dfs = []
         for v in value:
@@ -221,12 +228,12 @@ def _knead_data(df, **kwargs):
         if col in df:
             raise ValueError(f"Conflict of kwarg with column `{col}` in dataframe!")
 
-        if isstr(value) and value in df:
+        if is_str(value) and value in df:
             df.rename(columns={value: col}, inplace=True)
-        elif islistable(value) and all([c in df.columns for c in value]):
+        elif is_list_like(value) and all([c in df.columns for c in value]):
             df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
             df.drop(value, axis=1, inplace=True)
-        elif isstr(value):
+        elif is_str(value):
             df[col] = value
         else:
             raise ValueError(f"Invalid argument for casting `{col}: {value}`")
@@ -397,7 +404,7 @@ def format_data(df, index, **kwargs):
 
         # all lower case
         df.rename(
-            columns={c: str(c).lower() for c in df.columns if isstr(c)}, inplace=True
+            columns={c: str(c).lower() for c in df.columns if is_str(c)}, inplace=True
         )
 
         if "notes" in df.columns:  # this came from a legacy database (SSP or earlier)
@@ -513,60 +520,19 @@ def merge_exclude(left, right, ignore_conflict=False):
     return pd.concat([left, right.loc[diff]], sort=False)
 
 
-def find_depth(data, s="", level=None):
-    """Return or assert the depth (number of ``|``) of variables
+def make_index(df, cols=META_IDX, unique=True):
+    """Create an index from the columns/index of a dataframe or series"""
 
-    Parameters
-    ----------
-    data : str or list of strings
-        IAMC-style variables
-    s : str, default ''
-        remove leading `s` from any variable in `data`
-    level : int or str, default None
-        if None, return depth (number of ``|``); else, return list of booleans
-        whether depth satisfies the condition (equality if level is int,
-        >= if ``.+``,  <= if ``.-``)
-    """
-    if islistable(level):
-        raise ValueError(
-            "Level is only run with ints or strings, not lists. Use strings with "
-            "integers and + or - to filter by ranges."
-        )
-    if isstr(data):
-        return _find_depth([data], s, level)[0]
+    def _get_col(c):
+        try:
+            return df.index.get_level_values(c)
+        except KeyError:
+            return df[c]
 
-    return _find_depth(data, s, level)
-
-
-def _find_depth(data, s="", level=None):
-    """Internal implementation of `find_depth()´"""
-    # remove wildcard as last character from string, escape regex characters
-    _s = re.compile("^" + _escape_regexp(s.rstrip("*")))
-    _p = re.compile("\\|")
-
-    # find depth
-    def _count_pipes(val):
-        return len(_p.findall(re.sub(_s, "", val))) if _s.match(val) else None
-
-    n_pipes = map(_count_pipes, to_list(data))
-
-    # if no level test is specified, return the depth as (list of) int
-    if level is None:
-        return list(n_pipes)
-
-    # if `level` is given, set function for finding depth level =, >=, <= |s
-    if not isstr(level):
-        test = lambda x: level == x if x is not None else False
-    elif level[-1] == "-":
-        level = int(level[:-1])
-        test = lambda x: level >= x if x is not None else False
-    elif level[-1] == "+":
-        level = int(level[:-1])
-        test = lambda x: level <= x if x is not None else False
-    else:
-        raise ValueError("Unknown level type: `{}`".format(level))
-
-    return list(map(test, n_pipes))
+    index = list(zip(*[_get_col(col) for col in cols]))
+    if unique:
+        index = pd.unique(index)
+    return pd.MultiIndex.from_tuples(index, names=tuple(cols))
 
 
 def pattern_match(
@@ -580,7 +546,7 @@ def pattern_match(
     """
     codes = []
     matches = np.zeros(len(data), dtype=bool)
-    values = values if islistable(values) else [values]
+    values = values if is_list_like(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.fillna("") if has_nan else data
@@ -593,8 +559,8 @@ def pattern_match(
             except KeyError:
                 pass
 
-        if isstr(s):
-            pattern = re.compile(_escape_regexp(s) + "$" if not regexp else s)
+        if is_str(s):
+            pattern = re.compile(escape_regexp(s) + "$" if not regexp else s)
             depth = True if level is None else find_depth(_data, s, level)
             matches |= data.str.match(pattern) & depth
         else:
@@ -605,20 +571,6 @@ def pattern_match(
         return codes
 
     return matches
-
-
-def _escape_regexp(s):
-    """Escape characters with specific regexp use"""
-    return (
-        str(s)
-        .replace("|", "\\|")
-        .replace(".", "\.")  # `.` has to be replaced before `*`
-        .replace("*", ".*")
-        .replace("+", "\+")
-        .replace("(", "\(")
-        .replace(")", "\)")
-        .replace("$", "\\$")
-    )
 
 
 def print_list(x, n):
@@ -702,40 +654,6 @@ def to_int(x, index=False):
         return x
     else:
         return _x
-
-
-def concat_with_pipe(x, cols=None):
-    """Concatenate a pandas.Series x using ``|``, drop None or numpy.nan"""
-    cols = cols or x.index
-    return "|".join([x[i] for i in cols if x[i] not in [None, np.nan]])
-
-
-def reduce_hierarchy(x, depth):
-    """Reduce the hierarchy (indicated by ``|``) of x to the specified depth"""
-    _x = x.split("|")
-    depth = len(_x) + depth - 1 if depth < 0 else depth
-    return "|".join(_x[0 : (depth + 1)])
-
-
-def get_variable_components(x, level, join=False):
-    """Return components for requested level in a list or join these in a str.
-
-    Parameters
-    ----------
-    x : str
-        Uses ``|`` to separate the components of the variable.
-    level : int or list of int
-        Position of the component.
-    join : bool or str, optional
-        If True, IAMC-style (``|``) is used as separator for joined components.
-    """
-    _x = x.split("|")
-    if join is False:
-        return [_x[i] for i in level] if islistable(level) else _x[level]
-    else:
-        level = [level] if type(level) == int else level
-        join = "|" if join is True else join
-        return join.join([_x[i] for i in level])
 
 
 def s(n):

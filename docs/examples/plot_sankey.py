@@ -18,9 +18,9 @@ Sankey diagram
 #
 # .. _SR15: http://ipcc.ch/sr15/
 #
-# .. _`IAMC 1.5°C Scenario Explorer and Data hosted by IIASA` : https://data.ene.iiasa.ac.at/iamc-1.5c-explorer
+# .. _`IAMC 1.5°C Scenario Explorer and Data hosted by IIASA` : https://data.ece.iiasa.ac.at/iamc-1.5c-explorer
 #
-# .. _License : https://data.ene.iiasa.ac.at/iamc-1.5c-explorer/#/license
+# .. _License : https://data.ece.iiasa.ac.at/iamc-1.5c-explorer/#/license
 #
 # If you haven't cloned the **pyam** GitHub repository to your machine,
 # you can download the data file from

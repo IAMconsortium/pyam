@@ -24,18 +24,18 @@ except ImportError:
     HAS_DATAPACKAGE = False
 
 from pyam.run_control import run_control
+from pyam.str import find_depth, is_str
 from pyam.utils import (
     write_sheet,
     read_file,
     read_pandas,
     format_data,
+    make_index,
     merge_meta,
     merge_exclude,
-    find_depth,
     pattern_match,
     to_list,
-    isstr,
-    islistable,
+    is_list_like,
     print_list,
     s,
     DEFAULT_META_INDEX,
@@ -43,6 +43,7 @@ from pyam.utils import (
     IAMC_IDX,
     SORT_IDX,
     ILLEGAL_COLS,
+    remove_from_list,
 )
 from pyam.filter import (
     datetime_match,
@@ -65,9 +66,11 @@ from pyam.index import (
     get_keep_col,
     verify_index_integrity,
     replace_index_values,
+    append_index_col,
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam.logging import raise_data_error, deprecation_warning
+from pyam.validation import _exclude_on_fail
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +171,7 @@ class IamDataFrame(object):
             _data = format_data(data, index=index, **kwargs)
 
         # unsupported `data` args
-        elif islistable(data):
+        elif is_list_like(data):
             raise ValueError(
                 "Initializing from list is not supported, "
                 "use `IamDataFrame.append()` or `pyam.concat()`"
@@ -179,7 +182,7 @@ class IamDataFrame(object):
         self._data, index, self.time_col, self.extra_cols = _data
 
         # define `meta` dataframe for categorization & quantitative indicators
-        _index = _make_index(self._data, cols=index)
+        _index = make_index(self._data, cols=index)
         self.meta = pd.DataFrame(index=_index)
         self.exclude = False
 
@@ -235,7 +238,7 @@ class IamDataFrame(object):
             return IamDataFrame(data, meta=self.meta, **args)
 
     def __getitem__(self, key):
-        _key_check = [key] if isstr(key) else key
+        _key_check = [key] if is_str(key) else key
         if isinstance(key, IamSlice):
             return IamDataFrame(self._data.loc[key])
         elif key == "value":
@@ -615,22 +618,21 @@ class IamDataFrame(object):
         Parameters
         ----------
         index : str or list of str
-            rows for Pivot table
+            Rows for Pivot table
         columns : str or list of str
-            columns for Pivot table
-        values : str, default 'value'
-            dataframe column to aggregate or count
-        aggfunc : str or function, default 'count'
-            function used for aggregation,
-            accepts 'count', 'mean', and 'sum'
-        fill_value : scalar, default None
-            value to replace missing values with
-        style : str, default None
-            output style for pivot table formatting
+            Columns for Pivot table
+        values : str, optional
+            Dataframe column to aggregate or count
+        aggfunc : str or function, optional
+            Function used for aggregation, accepts 'count', 'mean', and 'sum'
+        fill_value : scalar, optional
+            Value to replace missing values
+        style : str, optional
+            Output style for pivot table formatting,
             accepts 'highlight_not_max', 'heatmap'
         """
-        index = [index] if isstr(index) else index
-        columns = [columns] if isstr(columns) else columns
+        index = [index] if is_str(index) else index
+        columns = [columns] if is_str(columns) else columns
 
         if values != "value":
             raise ValueError("This method only supports `values='value'`!")
@@ -638,7 +640,7 @@ class IamDataFrame(object):
         df = self._data
 
         # allow 'aggfunc' to be passed as string for easier user interface
-        if isstr(aggfunc):
+        if is_str(aggfunc):
             if aggfunc == "count":
                 df = self._data.groupby(index + columns).count()
                 fill_value = 0
@@ -768,7 +770,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        meta_cols : list, default None
+        meta_cols : list, optional
             join `data` with all `meta` columns if True (default)
             or only with columns in list, or return copy of `data` if False
         """
@@ -866,7 +868,7 @@ class IamDataFrame(object):
 
         # if no valid index is provided, add meta as new column `name` and exit
         if index is None:
-            self.meta[name] = list(meta) if islistable(meta) else meta
+            self.meta[name] = list(meta) if is_list_like(meta) else meta
             return
 
         # use meta.index if index arg is an IamDataFrame
@@ -950,7 +952,7 @@ class IamDataFrame(object):
                 run_control().update({kind: {name: {value: arg}}})
         # find all data that matches categorization
         rows = _apply_criteria(self._data, criteria, in_range=True, return_test="all")
-        idx = _make_index(rows, cols=self.index.names)
+        idx = make_index(rows, cols=self.index.names)
 
         if len(idx) == 0:
             logger.info("No scenarios satisfy the criteria")
@@ -972,7 +974,7 @@ class IamDataFrame(object):
     def require_data(
         self, region=None, variable=None, unit=None, year=None, exclude_on_fail=False
     ):
-        """Check whether scenarios have values for all combinations of given elements
+        """Check whether scenarios have values for all (combinations of) given elements.
 
         Parameters
         ----------
@@ -991,14 +993,13 @@ class IamDataFrame(object):
         Returns
         -------
         :class:`pandas.DataFrame` or None
-            A dataframe of the *index* of scenarios not satisfying the criteria.
+            A dataframe of missing (combinations of) elements for all scenarios.
         """
 
         # TODO: option to require values in certain ranges, see `_apply_criteria()`
 
         # create mapping of required dimensions
         required = {}
-        n = 1  # expected number of rows per scenario
         for dim, value in [
             ("region", region),
             ("variable", variable),
@@ -1006,41 +1007,38 @@ class IamDataFrame(object):
             ("year", year),
         ]:
             if value is not None:
-                required[dim] = value
-                n *= len(to_list(value))
+                required[dim] = to_list(value)
 
-        # fast exit if no arguments values are given
+        # fast exit if no arguments are given
         if not required:
+            logger.warning("No validation criteria provided.")
             return
 
-        # downselect to relevant rows
-        keep = self._apply_filters(**required)
-        rows = self._data.index[keep]
-
-        # identify scenarios that have none of the required values
-        index_none = self.index.difference(
-            rows.droplevel(level=self.coordinates).drop_duplicates()
-        ).to_frame(index=False)
-
-        # identify scenarios that have some but not all required values
-        columns = [i for i in self.coordinates if i not in required]
-        rows = rows.droplevel(level=columns).drop_duplicates()
-        data = (
-            pd.DataFrame(index=rows)
-            .reset_index(level=list(required))
-            .groupby(self.index.names)
+        # create index of required elements
+        index_required = pd.MultiIndex.from_product(
+            required.values(), names=list(required)
         )
 
-        index_incomplete = pd.DataFrame(
-            [idx for idx, df in data if len(df) != n], columns=self.index.names
-        )
+        # create scenario index of suitable length, merge required elements as columns
+        n = len(self.index)
+        index = self.index.repeat(len(index_required))
+        for i, name in enumerate(required.keys()):
+            index = append_index_col(
+                index, list(index_required.get_level_values(i)) * n, name=name
+            )
 
-        # merge all scenarios where not all required data is present
-        index_missing_required = pd.concat([index_none, index_incomplete])
-        if not index_missing_required.empty:
+        # identify scenarios that do not have all required elements
+        rows = (
+            self._data.index[self._apply_filters(**required)]
+            .droplevel(level=remove_from_list(self.coordinates, required))
+            .drop_duplicates()
+        )
+        missing_required = index.difference(rows)
+
+        if not missing_required.empty:
             if exclude_on_fail:
-                self._exclude_on_fail(index_missing_required)
-            return index_missing_required
+                _exclude_on_fail(self, missing_required.droplevel(list(required)))
+            return missing_required.to_frame(index=False)
 
     def require_variable(self, variable, unit=None, year=None, exclude_on_fail=False):
         """Check whether all scenarios have a required variable
@@ -1084,7 +1082,7 @@ class IamDataFrame(object):
         )
 
         if exclude_on_fail:
-            self._exclude_on_fail(idx)
+            _exclude_on_fail(self, idx)
 
         logger.info(msg.format(n, variable))
         return pd.DataFrame(index=idx).reset_index()
@@ -1119,7 +1117,7 @@ class IamDataFrame(object):
             logger.info(msg.format(len(df), len(self.data)))
 
             if exclude_on_fail and len(df) > 0:
-                self._exclude_on_fail(df)
+                _exclude_on_fail(self, df)
             return df.reset_index()
 
     def rename(
@@ -1195,7 +1193,7 @@ class IamDataFrame(object):
 
         # renaming is only applied where a filter matches for all given columns
         rows = ret._apply_filters(**filters)
-        idx = ret.meta.index.isin(_make_index(ret._data[rows], cols=meta_idx))
+        idx = ret.meta.index.isin(make_index(ret._data[rows], cols=meta_idx))
 
         # apply renaming changes (for `data` only on the index)
         _data_index = ret._data.index
@@ -1449,7 +1447,7 @@ class IamDataFrame(object):
         ----------
         variable : str or list of str
             Variable(s) checked for matching aggregation of sub-categories.
-        components : list of str, default None
+        components : list of str, optional
             List of variables to aggregate, defaults to sub-categories of `variable`.
         method : func or str, optional
             Method to use for aggregation,
@@ -1488,7 +1486,7 @@ class IamDataFrame(object):
             logger.info(msg.format(variable, sum(rows), len(df_var)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(_meta_idx(df_var[rows].reset_index()))
+                _exclude_on_fail(self, _meta_idx(df_var[rows].reset_index()))
 
             return pd.concat(
                 [df_var[rows], df_components[rows]],
@@ -1643,7 +1641,7 @@ class IamDataFrame(object):
             logger.info(msg.format(variable, sum(rows), len(df_region)))
 
             if exclude_on_fail:
-                self._exclude_on_fail(_meta_idx(df_region[rows].reset_index()))
+                _exclude_on_fail(self, _meta_idx(df_region[rows].reset_index()))
 
             _df = pd.concat(
                 [
@@ -1824,19 +1822,6 @@ class IamDataFrame(object):
                 ]
             ]
 
-    def _exclude_on_fail(self, df):
-        """Assign a selection of scenarios as `exclude: True`"""
-        idx = (
-            df
-            if isinstance(df, pd.MultiIndex)
-            else _make_index(df, cols=self.index.names)
-        )
-        self.exclude[idx] = True
-        n = len(idx)
-        logger.info(
-            f"{n} scenario{s(n)} failed validation and will be set as `exclude=True`."
-        )
-
     def slice(self, keep=True, **kwargs):
         """Return a (filtered) slice object of the IamDataFrame timeseries data index
 
@@ -1849,7 +1834,7 @@ class IamDataFrame(object):
 
         Returns
         -------
-        :class:`IamSlice`
+        :class:`pyam.slice.IamSlice`
 
         Notes
         -----
@@ -1910,7 +1895,7 @@ class IamDataFrame(object):
                 logger.info(msg)
 
         # downselect `meta` dataframe
-        idx = _make_index(ret._data, cols=self.index.names)
+        idx = make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
             logger.warning("Filtered IamDataFrame is empty!")
         ret.meta = ret.meta.loc[idx]
@@ -1946,7 +1931,7 @@ class IamDataFrame(object):
                         f"Filter by `exclude` requires a boolean, found: {values}"
                     )
                 exclude_index = (self.exclude[self.exclude == values]).index
-                keep_col = _make_index(
+                keep_col = make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(exclude_index)
 
@@ -1955,7 +1940,7 @@ class IamDataFrame(object):
                     self.meta[col], values, regexp=regexp, has_nan=True
                 )
                 cat_idx = self.meta[matches].index
-                keep_col = _make_index(
+                keep_col = make_index(
                     self._data, cols=self.index.names, unique=False
                 ).isin(cat_idx)
 
@@ -2416,14 +2401,14 @@ class IamDataFrame(object):
         excel_writer : path-like, file-like, or ExcelWriter object
             File path as string or :class:`pathlib.Path`,
             or existing :class:`pandas.ExcelWriter`.
-        sheet_name : string
+        sheet_name : str, optional
             Name of sheet which will contain :meth:`IamDataFrame.timeseries` data.
         iamc_index : bool, optional
             If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
             else, use all :attr:`dimensions`.
             See :meth:`IamDataFrame.timeseries` for details.
-        include_meta : boolean or string, optional
-            If True, write :any:`IamDataFrame.meta` to a sheet 'meta' (default);
+        include_meta : bool or str, optional
+            If True, write :attr:`meta` to a sheet 'meta' (default);
             if this is a string, use it as sheet name.
         **kwargs
             Passed to :class:`pandas.ExcelWriter` (if *excel_writer* is path-like)
@@ -2743,21 +2728,6 @@ def _apply_criteria(df, criteria, **kwargs):
     return df
 
 
-def _make_index(df, cols=META_IDX, unique=True):
-    """Create an index from the columns/index of a dataframe or series"""
-
-    def _get_col(c):
-        try:
-            return df.index.get_level_values(c)
-        except KeyError:
-            return df[c]
-
-    index = list(zip(*[_get_col(col) for col in cols]))
-    if unique:
-        index = pd.unique(index)
-    return pd.MultiIndex.from_tuples(index, names=tuple(cols))
-
-
 def _empty_iamframe(index):
     """Return an empty IamDataFrame with the correct index columns"""
     return IamDataFrame(pd.DataFrame([], columns=index))
@@ -2865,15 +2835,15 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
 
     Parameters
     ----------
-    data : pandas.DataFrame
-        :class:`pandas.DataFrame` to which meta columns are to be joined,
+    data : :class:`pandas.DataFrame`
+        Data to which meta columns are to be joined,
         index or columns must include `['model', 'scenario']`
-    df : IamDataFrame
+    df : :class:`IamDataFrame`
         IamDataFrame from which meta columns are filtered and joined (optional)
-    join_meta : bool, default False
+    join_meta : bool, optional
         join selected columns from `df.meta` on `data`
     kwargs
-        meta columns to be filtered/joined, where `col=...` applies filters
+        Meta columns to be filtered/joined, where `col=...` applies filters
         with the given arguments (using :meth:`utils.pattern_match`).
         Using `col=None` joins the column without filtering (setting col
         to nan if `(model, scenario)` not in `df.meta.index`)
@@ -2923,7 +2893,7 @@ def compare(
     ----------
     left, right : IamDataFrames
         two :class:`IamDataFrame` instances to be compared
-    left_label, right_label : str, default `left`, `right`
+    left_label, right_label : str, optional
         column names of the returned :class:`pandas.DataFrame`
     drop_close : bool, optional
         remove all data where `left` and `right` are close
@@ -2966,7 +2936,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):
     The :attr:`dimensions` and :attr:`index` names of all elements of *dfs* must be
     identical. The returned IamDataFrame inherits the dimensions and index names.
     """
-    if not islistable(objs) or isinstance(objs, pd.DataFrame):
+    if not is_list_like(objs) or isinstance(objs, pd.DataFrame):
         raise TypeError(f"'{objs.__class__.__name__}' object is not iterable")
 
     objs = list(objs)
