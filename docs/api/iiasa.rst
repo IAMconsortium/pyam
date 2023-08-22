@@ -22,7 +22,7 @@ we depend on the Python package |ixmp4|. You only have to do this once
 
 In a console, run the following:
 
-.. code-block::
+.. code-block:: console
 
     ixmp4 login <username>
 
