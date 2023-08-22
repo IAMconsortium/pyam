@@ -85,7 +85,7 @@ class SceSeAuth(AuthBase):
                 self.auth = _read_config(DEFAULT_IIASA_CREDS)
             else:
                 self.auth = ixmp4.conf.settings.default_auth
-        elif isinstance(creds, Path) or isstr(creds):
+        elif isinstance(creds, Path) or is_str(creds):
             self.auth = _read_config(creds)
         else:
             raise DeprecationWarning(
