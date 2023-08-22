@@ -20,6 +20,9 @@ To store the credentials on your machine so that |pyam| can use it to query a da
 we depend on the Python package |ixmp4|. You only have to do this once
 (unless you change your password).
 
+The credentials will be valid for connecting to *Scenario Apps* based on |ixmp4|
+as well as for (legacy) *Scenario Explorer* database backends (see below).
+
 In a console, run the following:
 
 .. code-block:: console
@@ -32,8 +35,8 @@ You will be prompted to enter your password.
 
     Your username and password will be saved locally in plain-text for future use!
 
-ixmp4 platform instances
-------------------------
+*Scenario Apps* instances
+-------------------------
 
 Coming soon...
 
