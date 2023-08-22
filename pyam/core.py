@@ -1011,6 +1011,7 @@ class IamDataFrame(object):
 
         # fast exit if no arguments are given
         if not required:
+            logger.warning("No validation criteria provided.")
             return
 
         # create index of required elements
