@@ -974,7 +974,7 @@ class IamDataFrame(object):
     def require_data(
         self, region=None, variable=None, unit=None, year=None, exclude_on_fail=False
     ):
-        """Check whether scenarios have values for all combinations of given elements
+        """Check whether scenarios have values for all (combinations of) given elements.
 
         Parameters
         ----------
@@ -993,7 +993,7 @@ class IamDataFrame(object):
         Returns
         -------
         :class:`pandas.DataFrame` or None
-            A dataframe of the scenarios and columns not satisfying the criteria.
+            A dataframe of missing (combinations of) elements for all scenarios.
         """
 
         # TODO: option to require values in certain ranges, see `_apply_criteria()`
