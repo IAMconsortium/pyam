@@ -1544,6 +1544,14 @@ class IamDataFrame(object):
         --------
         add : Add timeseries data items `a` and `b` along an `axis`
         aggregate : Aggregate timeseries data along the `variable` hierarchy.
+        nomenclature.RegionProcessor : Processing of model-specific region-mappings.
+
+        Notes
+        -----
+        The :class:`nomenclature-iamc` package supports structured processing
+        of many-to-many-region mappings. Read the `user guide`_ for more information.
+
+        .. _`user guide` : https://nomenclature-iamc.readthedocs.io/en/stable/user_guide.html
 
         """
         _df = _aggregate_region(
