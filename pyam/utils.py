@@ -51,28 +51,6 @@ KNOWN_FUNCS = {
 }
 
 
-def requires_package(pkg, msg, error_type=ImportError):
-    """Decorator when a function requires an optional dependency
-
-    Parameters
-    ----------
-    pkg : imported package object
-    msg : string
-        Message to show to user with error_type
-    error_type : python error class
-    """
-
-    def _requires_package(func):
-        def wrapper(*args, **kwargs):
-            if pkg is None:
-                raise error_type(msg)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _requires_package
-
-
 def isstr(x):
     # TODO deprecated, remove for release >= 2.1
     deprecation_warning("Please use `pyam.str.is_str()`.", "The function `isstr()`")
