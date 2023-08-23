@@ -1,8 +1,20 @@
 # Next Release
 
 The next release must bump the major version number.
+Reactivate tests for Python 3.11 once ixmp4 0.3 is released.
+
+## Dependency changes
+
+Support for Python 3.7-3.9 was removed due to an incompatible dependency.  
+
+PR [#766](https://github.com/IAMconsortium/pyam/pull/766) added the **ixmp4** package
+for better integration with the IIASA scenario database infrastructure.
 
 ## API changes
+
+Credentials to access the IIASA scenario database infrastructure should now be managed
+using the **ixmp4** package
+(see [here](https://pyam-iamc.readthedocs.io/en/stable/api/iiasa.html)).
 
 The column *exclude* of the `meta` indicators was moved to a new attribute `exclude`.
 All validation methods are refactored such that the argument `exclude_on_fail` changes
@@ -19,8 +31,10 @@ instead of `pyam.to_list()`.
 
 ## Individual updates
 
+
 - [#772](https://github.com/IAMconsortium/pyam/pull/772) Show all missing rows for `require_data()`
 - [#771](https://github.com/IAMconsortium/pyam/pull/771) Refactor to start a separate validation module
+- [#766](https://github.com/IAMconsortium/pyam/pull/766) Use **ixmp4** for credentials to access a Scenario Explorer database
 - [#764](https://github.com/IAMconsortium/pyam/pull/764) Clean-up exposing internal methods and attributes
 - [#763](https://github.com/IAMconsortium/pyam/pull/763) Implement a fix against carrying over unused levels when initializing from an indexed pandas object
 - [#759](https://github.com/IAMconsortium/pyam/pull/759) Excise "exclude" column from meta and add a own attribute

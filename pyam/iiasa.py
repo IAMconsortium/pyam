@@ -23,6 +23,10 @@ from pyam.utils import (
     is_list_like,
 )
 from pyam.logging import deprecation_warning
+import ixmp4
+from ixmp4.conf import settings
+from ixmp4.conf.auth import ManagerAuth
+
 
 logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
@@ -36,28 +40,22 @@ You are connected to the {} scenario explorer hosted by IIASA.
 """.replace(
     "\n", ""
 )
+IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 
 # path to local configuration settings
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
 
-JWT_DECODE_ARGS = {"verify_signature": False, "verify_exp": True}
-
 
 def set_config(user, password, file=None):
-    """Save username and password for the IIASA API connection to a file"""
-    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
-    if not file.parent.exists():
-        file.parent.mkdir(parents=True)
-
-    with open(file, mode="w") as f:
-        logger.info(f"Setting IIASA-connection configuration file: {file}")
-        yaml.dump(dict(username=user, password=password), f, sort_keys=False)
+    raise DeprecationWarning(f"This method is deprecated. {IXMP4_LOGIN}.")
 
 
 def _read_config(file):
     """Read username and password for IIASA API connection from file"""
     with open(file, "r") as stream:
-        return yaml.safe_load(stream)
+        creds = yaml.safe_load(stream)
+
+    return ManagerAuth(**creds, url=settings.manager_url)
 
 
 def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
@@ -73,74 +71,58 @@ class SceSeAuth(AuthBase):
         ----------
         creds : pathlib.Path or str, optional
             Path to a file with authentication credentials
-        auth_url : str, optionl
+        auth_url : str, optional
             Url of the authentication service
         """
         self.client = httpx.Client(base_url=auth_url, timeout=10.0, http2=True)
-        self.access_token, self.refresh_token = None, None
 
         if creds is None:
             if DEFAULT_IIASA_CREDS.exists():
-                self.creds = _read_config(DEFAULT_IIASA_CREDS)
+                deprecation_warning(
+                    f"{IXMP4_LOGIN} and manually delete the file '{DEFAULT_IIASA_CREDS}'.",
+                    "Using a pyam-credentials file",
+                )
+                self.auth = _read_config(DEFAULT_IIASA_CREDS)
             else:
-                self.creds = None
+                self.auth = ixmp4.conf.settings.default_auth
         elif isinstance(creds, Path) or is_str(creds):
-            self.creds = _read_config(creds)
+            self.auth = _read_config(creds)
         else:
             raise DeprecationWarning(
                 "Passing credentials as clear-text is not allowed. "
-                "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
+                f"{IXMP4_LOGIN} instead."
             )
 
-        # if no creds, get anonymous token
-        # TODO: explicit token for anonymous login will not be necessary for ixmp-server
-        if self.creds is None:
-            r = self.client.get("/legacy/anonym/")
-            if r.status_code >= 400:
-                raise ValueError("Unknown API error: " + r.text)
-            self.user = None
-            self.access_token = r.json()
+        # explicit token for anonymous login is not necessary for ixmp4 platforms
+        # but is required for legacy Scenario Explorer databases
+        if self.auth.user.username == "@anonymous":
+            self._get_anonymous_token()
 
-        # else get user-token
         else:
-            self.user = self.creds["username"]
-            self.obtain_jwt()
+            self.user = self.auth.user.username
+            self.access_token = self.auth.access_token
+
+    def _get_anonymous_token(self):
+        r = self.client.get("/legacy/anonym/")
+        if r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
+        self.user, self.access_token = None, r.json()
 
     def __call__(self):
         try:
             # raises jwt.ExpiredSignatureError if token is expired
-            jwt.decode(self.access_token, options=JWT_DECODE_ARGS)
-
+            jwt.decode(
+                self.access_token,
+                options={"verify_signature": False, "verify_exp": True},
+            )
         except jwt.ExpiredSignatureError:
-            self.refresh_jwt()
+            if self.auth.user.username == "@anonymous":
+                self._get_anonymous_token()
+            else:
+                self.auth.refresh_or_reobtain_jwt()
+                self.access_token = self.auth.access_token
 
         return {"Authorization": "Bearer " + self.access_token}
-
-    def obtain_jwt(self):
-        r = self.client.post("/v1/token/obtain/", json=self.creds)
-        if r.status_code == 401:
-            raise ValueError(
-                "Credentials not valid to connect to https://manager.ece.iiasa.ac.at."
-            )
-        elif r.status_code >= 400:
-            raise ValueError("Unknown API error: " + r.text)
-
-        _json = r.json()
-        self.access_token = _json["access"]
-        self.refresh_token = _json["refresh"]
-
-    def refresh_jwt(self):
-        try:
-            # raises jwt.ExpiredSignatureError if token is expired
-            jwt.decode(self.refresh_token, options=JWT_DECODE_ARGS)
-            r = self.client.post(
-                "/v1/token/refresh/", json={"refresh": self.refresh_token}
-            )
-            if r.status_code >= 400:
-                raise ValueError("Unknown API error: " + r.text)
-            self.access_token = r.json()["access"]
-        except jwt.ExpiredSignatureError:
-            self.obtain_jwt()
 
 
 class Connection(object):
