@@ -39,19 +39,20 @@ try:
     from ipykernel.zmqshell import ZMQInteractiveShell
     from IPython import get_ipython
 
-    # harmonize formatting of ixmp4 and pyam logging
-    ixmp4_logger = logging.getLogger("ixmp4")
-    ixmp4_logger.removeHandler(ixmp4_logger.handlers[0])
-
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("%(name)s - %(levelname)s: %(message)s"))
-
-    for _logger in [logger, ixmp4_logger]:
-        _logger.addHandler(handler)
-
-    # deactivate in-cell scrolling in a Jupyter notebook
     shell = get_ipython()
     if isinstance(shell, ZMQInteractiveShell):
+
+        # harmonize formatting of ixmp4 and pyam logging
+        ixmp4_logger = logging.getLogger("ixmp4")
+        ixmp4_logger.removeHandler(ixmp4_logger.handlers[0])
+
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(name)s - %(levelname)s: %(message)s"))
+
+        for _logger in [logger, ixmp4_logger]:
+            _logger.addHandler(handler)
+
+        # deactivate in-cell scrolling in a Jupyter notebook
         shell.run_cell_magic(
             "javascript",
             "",
