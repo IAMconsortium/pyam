@@ -2569,98 +2569,10 @@ class IamDataFrame(object):
         remove_duplicates=False,
         inplace=False,
     ):
-        """Plot regional data for a single model, scenario, variable, and year
-
-        see pyam.plotting.region_plot() for all available options
-
-        Parameters
-        ----------
-        map_col : str
-            The column used to map new regions to. Common examples include
-            iso and 5_region.
-        agg : str, optional
-            Perform a data aggregation. Options include: sum.
-        copy_col : str, optional
-            Copy the existing region data into a new column for later use.
-        fname : str, optional
-            Use a non-default region mapping file
-        region_col : string, optional
-            Use a non-default column name for regions to map from.
-        remove_duplicates : bool, optional
-            If there are duplicates in the mapping from one regional level to
-            another, then remove these duplicates by counting the most common
-            mapped value.
-            This option is most useful when mapping from high resolution
-            (e.g., model regions) to low resolution (e.g., 5_region).
-        inplace : bool, optional
-            if True, do operation inplace and return None
-        """
-        fname = fname or run_control()["region_mapping"]["default"]
-        mapping = read_pandas(Path(fname)).rename(str.lower, axis="columns")
-        map_col = map_col.lower()
-
-        ret = self.copy() if not inplace else self
-        _df = ret.data
-        columns_orderd = _df.columns
-
-        # merge data
-        dfs = []
-        for model in self.model:
-            df = _df[_df["model"] == model]
-            _col = region_col or "{}.REGION".format(model)
-            _map = mapping.rename(columns={_col.lower(): "region"})
-            _map = _map[["region", map_col]].dropna().drop_duplicates()
-            _map = _map[_map["region"].isin(_df["region"])]
-            if remove_duplicates and _map["region"].duplicated().any():
-                # find duplicates
-                where_dup = _map["region"].duplicated(keep=False)
-                dups = _map[where_dup]
-                logger.warning(
-                    """
-                Duplicate entries found for the following regions.
-                Mapping will occur only for the most common instance.
-                {}""".format(
-                        dups["region"].unique()
-                    )
-                )
-                # get non duplicates
-                _map = _map[~where_dup]
-                # order duplicates by the count frequency
-                dups = (
-                    dups.groupby(["region", map_col])
-                    .size()
-                    .reset_index(name="count")
-                    .sort_values(by="count", ascending=False)
-                    .drop("count", axis=1)
-                )
-                # take top occurance
-                dups = dups[~dups["region"].duplicated(keep="first")]
-                # combine them back
-                _map = pd.concat([_map, dups])
-            if copy_col is not None:
-                df[copy_col] = df["region"]
-
-            df = (
-                df.merge(_map, on="region")
-                .drop("region", axis=1)
-                .rename(columns={map_col: "region"})
-            )
-            dfs.append(df)
-        df = pd.concat(dfs)
-
-        # perform aggregations
-        if agg == "sum":
-            df = df.groupby(self.dimensions).sum().reset_index()
-
-        df = (
-            df.reindex(columns=columns_orderd)
-            .sort_values(SORT_IDX)
-            .reset_index(drop=True)
+        # TODO: deprecated, remove for release >= 2.1
+        raise DeprecationWarning(
+            "This method was removed. Please use `aggregate_region()` instead."
         )
-        ret._data = df.set_index(self.dimensions).value
-
-        if not inplace:
-            return ret
 
 
 def _meta_idx(data):

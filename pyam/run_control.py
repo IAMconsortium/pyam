@@ -19,9 +19,6 @@ _RC_DEFAULTS = {
     "marker": {},
     "linestyle": {},
     "order": {},
-    "region_mapping": {
-        "default": _REG_MAP_PATH("default_mapping.csv"),
-    },
 }
 
 
