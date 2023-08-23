@@ -46,7 +46,7 @@ try:
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter("%(name)s - %(levelname)s: %(message)s"))
 
-    for _logger in [logger, ixmp4_logger].
+    for _logger in [logger, ixmp4_logger]:
         _logger.addHandler(handler)
 
     # deactivate in-cell scrolling in a Jupyter notebook
