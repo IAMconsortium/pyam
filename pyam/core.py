@@ -2507,13 +2507,13 @@ class IamDataFrame(object):
         """
         # load from file
         path = path if isinstance(path, pd.ExcelFile) else Path(path)
-        df = read_pandas(path, sheet_name=sheet_name, **kwargs)
+        meta = read_pandas(path, sheet_name=sheet_name, **kwargs)
 
         # cast model-scenario column headers to lower-case (if necessary)
-        df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
+        meta = meta.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
 
         # check that required index columns exist
-        missing_cols = [c for c in self.index.names if c not in df.columns]
+        missing_cols = [c for c in self.index.names if c not in meta.columns]
         if missing_cols:
             raise ValueError(
                 f"File {Path(path)} (sheet {sheet_name}) "
@@ -2521,9 +2521,9 @@ class IamDataFrame(object):
             )
 
         # set index, filter to relevant scenarios from imported file
-        n = len(df)
-        df.set_index(self.index.names, inplace=True)
-        df = df.loc[self.meta.index.intersection(df.index)]
+        n = len(meta)
+        meta.set_index(self.index.names, inplace=True)
+        meta = meta.loc[self.meta.index.intersection(meta.index)]
 
         # skip import of meta indicators if np
         if not n:
@@ -2532,12 +2532,12 @@ class IamDataFrame(object):
 
         msg = "Reading meta indicators"
         # indicate if not all scenarios are included in the meta file
-        if len(df) < len(self.meta):
+        if len(meta) < len(self.meta):
             i = len(self.meta)
-            msg += f" for {len(df)} out of {i} scenario{s(i)}"
+            msg += f" for {len(meta)} out of {i} scenario{s(i)}"
 
         # indicate if more scenarios exist in meta file than in self
-        invalid = n - len(df)
+        invalid = n - len(meta)
         if invalid:
             msg += f", ignoring {invalid} scenario{s(invalid)} from file"
             logger.warning(msg)
@@ -2546,18 +2546,18 @@ class IamDataFrame(object):
 
         # in pyam < 2.0, an "exclude" columns was part of the `meta` attribute
         # this section ensures compatibility with xlsx files created with pyam < 2.0
-        if "exclude" in df.columns:
+        if "exclude" in meta.columns:
             logger.info(
                 f"Found column 'exclude' in sheet '{sheet_name}', "
                 "moved to attribute `IamDataFrame.exclude`."
             )
             self._exclude = merge_exclude(
-                df.exclude, self.exclude, ignore_conflict=ignore_conflict
+                meta.exclude, self.exclude, ignore_conflict=ignore_conflict
             )
-            df.drop(columns="exclude", inplace=True)
+            meta.drop(columns="exclude", inplace=True)
 
         # merge imported meta indicators
-        self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
+        self.meta = merge_meta(meta, self.meta, ignore_conflict=ignore_conflict)
 
     def map_regions(
         self,
