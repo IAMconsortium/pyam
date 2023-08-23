@@ -29,9 +29,12 @@ approach to exposing pyam-internals at the package level, requiring a more expli
 import of these methods. For example, use `pyam.utils.to_list()`
 instead of `pyam.to_list()`.
 
+PR [#773](https://github.com/IAMconsortium/pyam/pull/773) removed the `map_regions()`
+method. This feature is now implemented via the **nomenclature.RegionProcessor** class.
+
 ## Individual updates
 
-
+- [#773](https://github.com/IAMconsortium/pyam/pull/773) Remove `map_regions()` and default mappings csv
 - [#772](https://github.com/IAMconsortium/pyam/pull/772) Show all missing rows for `require_data()`
 - [#771](https://github.com/IAMconsortium/pyam/pull/771) Refactor to start a separate validation module
 - [#766](https://github.com/IAMconsortium/pyam/pull/766) Use **ixmp4** for credentials to access a Scenario Explorer database
