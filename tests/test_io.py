@@ -198,7 +198,7 @@ def test_load_meta_wrong_index(test_df_year, tmpdir):
     file = tmpdir / "testing_meta_empty.xlsx"
     pd.DataFrame(columns=["model", "foo"]).to_excel(file, index=False)
 
-    match = ".* \(sheet meta\) missing required index columns \['scenario'\]\!"
+    match = "Missing index columns for meta indicators: \['scenario'\]"
     with pytest.raises(ValueError, match=match):
         test_df_year.load_meta(file)
 
