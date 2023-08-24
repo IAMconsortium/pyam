@@ -2505,6 +2505,7 @@ class IamDataFrame(object):
         kwargs
             Passed to :func:`pandas.read_excel` or :func:`pandas.read_csv`
         """
+
         # load from file
         path = path if isinstance(path, pd.ExcelFile) else Path(path)
         meta = read_pandas(path, sheet_name=sheet_name, **kwargs)
@@ -2516,8 +2517,7 @@ class IamDataFrame(object):
         missing_cols = [c for c in self.index.names if c not in meta.columns]
         if missing_cols:
             raise ValueError(
-                f"File {Path(path)} (sheet {sheet_name}) "
-                f"missing required index columns {missing_cols}!"
+                f"Missing index columns for meta indicators: {missing_cols}"
             )
 
         # set index, filter to relevant scenarios from imported file
@@ -2849,7 +2849,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
         to nan if `(model, scenario)` not in `df.meta.index`)
     """
     if not set(META_IDX).issubset(data.index.names + list(data.columns)):
-        raise ValueError("Missing required index dimensions or columns!")
+        raise ValueError("Missing required index dimensions or data columns.")
 
     meta = pd.DataFrame(df.meta[list(set(kwargs) - set(META_IDX))].copy())
 
