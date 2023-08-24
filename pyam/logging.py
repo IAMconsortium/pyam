@@ -27,9 +27,13 @@ def deprecation_warning(msg, item="This method", stacklevel=3):
 
 
 def raise_data_error(msg, data):
-    """Utils function to format error message from data formatting"""
+    """Format error message with (head of) data table and raise"""
+    raise ValueError(format_log_message(msg, data))
+
+
+def format_log_message(msg, data):
+    """Utils function to format message with (head of) data table"""
     if isinstance(data, pd.MultiIndex):
         data = data.to_frame(index=False)
     data = data.drop_duplicates()
-    msg = f"{msg}:\n{data.head()}" + ("\n..." if len(data) > 5 else "")
-    raise ValueError(msg)
+    return f"{msg}:\n{data.head()}" + ("\n..." if len(data) > 5 else "")
