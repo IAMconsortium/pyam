@@ -41,7 +41,6 @@ try:
 
     shell = get_ipython()
     if isinstance(shell, ZMQInteractiveShell):
-
         # harmonize formatting of ixmp4 and pyam logging
         ixmp4_logger = logging.getLogger("ixmp4")
         ixmp4_logger.removeHandler(ixmp4_logger.handlers[0])
