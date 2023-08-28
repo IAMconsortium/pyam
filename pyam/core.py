@@ -2561,16 +2561,7 @@ class IamDataFrame(object):
         # merge imported meta indicators
         self.meta = merge_meta(meta, self.meta, ignore_conflict=ignore_conflict)
 
-    def map_regions(
-        self,
-        map_col,
-        agg=None,
-        copy_col=None,
-        fname=None,
-        region_col=None,
-        remove_duplicates=False,
-        inplace=False,
-    ):
+    def map_regions(self, map_col, **kwargs):
         # TODO: deprecated, remove for release >= 2.1
         raise DeprecationWarning(
             "This method was removed. Please use `aggregate_region()` instead."
