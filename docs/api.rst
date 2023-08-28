@@ -23,29 +23,23 @@ and methods.
    api/timeseries
    api/variables
 
-**Notebook logging behaviour**
+Logging behaviour in Jupyter notebooks
+--------------------------------------
 
-|pyam| wants to provide sensible defaults for users unfamiliar with
-`setting up python's logging library <https://realpython.com/python-logging/#basic-configurations>`_,
-and therefore will provide a basic configuration by invoking
+The |pyam| package wants to provide sensible defaults for users unfamiliar with setting
+up python's logging library (`read more`_), and therefore will add a streamhandler if
+(and only if) it determines to be running within a notebook.
 
-.. code-block:: python
+.. _`read more` : https://realpython.com/python-logging/#basic-configurations
 
-   import logging
-   logging.basicConfig(level="INFO", format="%(name)s - %(levelname)s: %(message)s")
-
-if (and only if):
-
-1. it determines to be running within a notebook, and
-2. logging is still *unconfigured by the time the first logging message by |pyam| is to be emitted*.
-
-**Intersphinx mapping**
+Intersphinx mapping
+-------------------
 
 To use sphinx.ext.intersphinx_ for generating automatic links from your project
 to the documentation of |pyam| classes and functions, please add the following
 to your project's :code:`conf.py`:
 
-.. _sphinx.ext.intersphinx: https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
+.. _sphinx.ext.intersphinx : https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 
 .. code-block:: python
 

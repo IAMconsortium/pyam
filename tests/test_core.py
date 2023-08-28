@@ -206,7 +206,7 @@ def test_init_df_with_custom_index(test_pd_df):
 
 def test_init_empty_message(caplog):
     IamDataFrame(data=df_empty)
-    drop_message = "Formatted data is empty!"
+    drop_message = "Formatted data is empty."
     message_idx = caplog.messages.index(drop_message)
     assert caplog.records[message_idx].levelno == logging.WARNING
 
@@ -216,7 +216,7 @@ def test_init_with_unnamed_column(test_pd_df):
     test_pd_df[None] = "foo"
 
     # check that initialising an instance with an unnamed column raises
-    with pytest.raises(ValueError, match="Unnamed column in `data`: None"):
+    with pytest.raises(ValueError, match="Unnamed column in timeseries data: None"):
         IamDataFrame(test_pd_df)
 
 

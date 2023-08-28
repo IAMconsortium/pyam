@@ -69,7 +69,7 @@ from pyam.index import (
     append_index_col,
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
-from pyam.logging import raise_data_error, deprecation_warning
+from pyam.logging import raise_data_error, deprecation_warning, format_log_message
 from pyam.validation import _exclude_on_fail
 
 logger = logging.getLogger(__name__)
@@ -160,7 +160,6 @@ class IamDataFrame(object):
 
         # read from file
         if isinstance(data, Path):
-            data = Path(data)  # casting str or LocalPath to Path
             if not data.is_file():
                 raise FileNotFoundError(f"No such file: '{data}'")
             logger.info(f"Reading file {data}")
@@ -2488,9 +2487,7 @@ class IamDataFrame(object):
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
 
-    def load_meta(
-        self, path, sheet_name="meta", ignore_conflict=False, *args, **kwargs
-    ):
+    def load_meta(self, path, sheet_name="meta", ignore_conflict=False, **kwargs):
         """Load 'meta' indicators from file
 
         Parameters
@@ -2505,59 +2502,57 @@ class IamDataFrame(object):
         kwargs
             Passed to :func:`pandas.read_excel` or :func:`pandas.read_csv`
         """
+
         # load from file
         path = path if isinstance(path, pd.ExcelFile) else Path(path)
-        df = read_pandas(path, sheet_name=sheet_name, **kwargs)
+        meta = read_pandas(path, sheet_name=sheet_name, **kwargs)
 
-        # cast model-scenario column headers to lower-case (if necessary)
-        df = df.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
-
-        # check that required index columns exist
-        missing_cols = [c for c in self.index.names if c not in df.columns]
-        if missing_cols:
+        # cast index-column headers to lower-case, check that required index exists
+        meta = meta.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
+        if missing_cols := [c for c in self.index.names if c not in meta.columns]:
             raise ValueError(
-                f"File {Path(path)} (sheet {sheet_name}) "
-                f"missing required index columns {missing_cols}!"
+                f"Missing index columns for meta indicators: {missing_cols}"
             )
 
-        # set index, filter to relevant scenarios from imported file
-        n = len(df)
-        df.set_index(self.index.names, inplace=True)
-        df = df.loc[self.meta.index.intersection(df.index)]
-
-        # skip import of meta indicators if np
-        if not n:
-            logger.info(f"No scenarios found in sheet {sheet_name}")
+        # skip import of meta indicators if no rows in meta
+        if not len(meta.index):
+            logger.warning(f"No scenarios found in sheet {sheet_name}")
             return
 
-        msg = "Reading meta indicators"
-        # indicate if not all scenarios are included in the meta file
-        if len(df) < len(self.meta):
-            i = len(self.meta)
-            msg += f" for {len(df)} out of {i} scenario{s(i)}"
+        # set index, check consistency between existing index and meta
+        meta.set_index(self.index.names, inplace=True)
 
-        # indicate if more scenarios exist in meta file than in self
-        invalid = n - len(df)
-        if invalid:
-            msg += f", ignoring {invalid} scenario{s(invalid)} from file"
-            logger.warning(msg)
-        else:
-            logger.info(msg)
+        missing = self.index.difference(meta.index)
+        invalid = meta.index.difference(self.index)
+
+        if not missing.empty:
+            logger.warning(
+                format_log_message(
+                    "No meta indicators for the following scenarios", missing
+                )
+            )
+        if not invalid.empty:
+            logger.warning(
+                format_log_message(
+                    "Ignoring meta indicators for the following scenarios", invalid
+                )
+            )
+            meta = meta.loc[self.meta.index.intersection(meta.index)]
 
         # in pyam < 2.0, an "exclude" columns was part of the `meta` attribute
         # this section ensures compatibility with xlsx files created with pyam < 2.0
-        if "exclude" in df.columns:
+        if "exclude" in meta.columns:
             logger.info(
                 f"Found column 'exclude' in sheet '{sheet_name}', "
                 "moved to attribute `IamDataFrame.exclude`."
             )
             self._exclude = merge_exclude(
-                df.exclude, self.exclude, ignore_conflict=ignore_conflict
+                meta.exclude, self.exclude, ignore_conflict=ignore_conflict
             )
-            df.drop(columns="exclude", inplace=True)
+            meta.drop(columns="exclude", inplace=True)
 
         # merge imported meta indicators
-        self.meta = merge_meta(df, self.meta, ignore_conflict=ignore_conflict)
+        self.meta = merge_meta(meta, self.meta, ignore_conflict=ignore_conflict)
 
     def map_regions(
         self,
@@ -2849,7 +2844,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
         to nan if `(model, scenario)` not in `df.meta.index`)
     """
     if not set(META_IDX).issubset(data.index.names + list(data.columns)):
-        raise ValueError("Missing required index dimensions or columns!")
+        raise ValueError("Missing required index dimensions or data columns.")
 
     meta = pd.DataFrame(df.meta[list(set(kwargs) - set(META_IDX))].copy())
 

@@ -51,28 +51,6 @@ KNOWN_FUNCS = {
 }
 
 
-def requires_package(pkg, msg, error_type=ImportError):
-    """Decorator when a function requires an optional dependency
-
-    Parameters
-    ----------
-    pkg : imported package object
-    msg : string
-        Message to show to user with error_type
-    error_type : python error class
-    """
-
-    def _requires_package(func):
-        def wrapper(*args, **kwargs):
-            if pkg is None:
-                raise error_type(msg)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _requires_package
-
-
 def isstr(x):
     # TODO deprecated, remove for release >= 2.1
     deprecation_warning("Please use `pyam.str.is_str()`.", "The function `isstr()`")
@@ -152,7 +130,7 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
             # apply pattern-matching for sheet names (use * as wildcard)
             sheets = sheet_names[pattern_match(sheet_names, values=sheets)]
             if sheets.empty:
-                raise ValueError(f"No sheets {sheet_name} in file {path}!")
+                raise ValueError(f"Sheet(s) '{sheet_name}' not found in file '{path}'.")
 
             df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
 
@@ -217,7 +195,9 @@ def _knead_data(df, **kwargs):
         dfs = []
         for v in value:
             if v not in df.columns:
-                raise ValueError("column `{}` does not exist!".format(v))
+                raise ValueError(
+                    f"Column `{v}` not in timeseries data, found: {df.columns}"
+                )
             vdf = _df[v].to_frame().rename(columns={v: "value"})
             vdf["variable"] = v
             dfs.append(vdf.reset_index())
@@ -226,7 +206,9 @@ def _knead_data(df, **kwargs):
     # otherwise, rename columns or concat to IAMC-style or do a fill-by-value
     for col, value in kwargs.items():
         if col in df:
-            raise ValueError(f"Conflict of kwarg with column `{col}` in dataframe!")
+            raise ValueError(
+                f"Conflict of kwarg with column `{col}` in timeseries data."
+            )
 
         if is_str(value) and value in df:
             df.rename(columns={value: col}, inplace=True)
@@ -236,7 +218,7 @@ def _knead_data(df, **kwargs):
         elif is_str(value):
             df[col] = value
         else:
-            raise ValueError(f"Invalid argument for casting `{col}: {value}`")
+            raise ValueError(f"Invalid argument for casting data: `{col}: {value}`")
 
     return df
 
@@ -244,7 +226,7 @@ def _knead_data(df, **kwargs):
 def _format_from_legacy_database(df):
     """Process data from legacy databases (SSP and earlier)"""
 
-    logger.info("Ignoring notes column in `data`")
+    logger.info("Ignoring notes column in `data`.")
     df.drop(columns="notes", inplace=True)
     col = df.columns[0]  # first column has database copyright notice
     df = df[~df[col].str.contains("database", case=False)]
@@ -270,7 +252,7 @@ def _intuit_column_groups(df, index, include_index=False):
 
     # check that there is no column in the timeseries data with reserved names
     if None in existing_cols:
-        raise ValueError("Unnamed column in `data`: None")
+        raise ValueError("Unnamed column in timeseries data: None")
 
     # check that there is no column in the timeseries data with reserved/illegal names
     conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
@@ -286,11 +268,13 @@ def _intuit_column_groups(df, index, include_index=False):
     # check that index and required columns exist
     missing_index = [c for c in index if c not in existing_cols]
     if missing_index:
-        raise ValueError(f"Missing index columns: {missing_index}")
+        raise ValueError(f"Missing index columns in timeseries data: {missing_index}")
 
     missing_required_col = [c for c in REQUIRED_COLS if c not in existing_cols]
     if missing_required_col:
-        raise ValueError(f"Missing required columns: {missing_required_col}")
+        raise ValueError(
+            f"Missing required columns in timeseries data: {missing_required_col}"
+        )
 
     # check whether data in wide format (standard IAMC) or long format (`value` column)
     if "value" in existing_cols:
@@ -300,7 +284,7 @@ def _intuit_column_groups(df, index, include_index=False):
         elif "time" in existing_cols and "year" not in existing_cols:
             time_col = "time"
         else:
-            raise ValueError("Invalid time domain, must have either `year` or `time`!")
+            raise ValueError("Invalid time domain, must have either `year` or `time`.")
         extra_cols = [
             c
             for c in existing_cols
@@ -334,7 +318,7 @@ def _intuit_column_groups(df, index, include_index=False):
             time_col = "time"
             data_cols = sorted(year_cols) + sorted(time_cols)
         if not data_cols:
-            raise ValueError("Missing time domain")
+            raise ValueError("No time domain in the data.")
 
     return time_col, extra_cols, data_cols
 
@@ -438,7 +422,7 @@ def format_data(df, index, **kwargs):
         )
     del rows
     if df.empty:
-        logger.warning("Formatted data is empty!")
+        logger.warning("Formatted data is empty.")
 
     return df.sort_index(), index, time_col, extra_cols
 
@@ -469,7 +453,7 @@ def merge_meta(left, right, ignore_conflict=False):
     diff = right.index.difference(left.index)
     sect = right.index.intersection(left.index)
 
-    # merge `right` into `left` for overlapping scenarios ( `sect`)
+    # merge `right` into `left` for overlapping scenarios (`sect`)
     if not sect.empty:
         # if not ignored, check that overlapping `meta` columns are equal
         if not ignore_conflict:
@@ -480,7 +464,7 @@ def merge_meta(left, right, ignore_conflict=False):
                     .drop_duplicates()
                     .index.drop_duplicates()
                 )
-                msg = "conflict in `meta` for scenarios {}".format(
+                msg = "Conflict in `meta` for scenarios {}".format(
                     [i for i in pd.DataFrame(index=conflict_idx).index]
                 )
                 raise ValueError(msg)
