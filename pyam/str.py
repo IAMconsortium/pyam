@@ -106,8 +106,8 @@ def reduce_hierarchy(x, depth):
     ----------
     x : str
         Uses ``|`` to separate the components of the variable.
-    level : int or list of int
-        Position of the component.s
+    depth : int or list of int
+        Position of the components.
 
     """
     _x = x.split("|")

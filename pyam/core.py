@@ -181,8 +181,7 @@ class IamDataFrame(object):
         self._data, index, self.time_col, self.extra_cols = _data
 
         # define `meta` dataframe for categorization & quantitative indicators
-        _index = make_index(self._data, cols=index)
-        self.meta = pd.DataFrame(index=_index)
+        self.meta = pd.DataFrame(index=make_index(self._data, cols=index))
         self.exclude = False
 
         # if given explicitly, merge meta dataframe after downselecting
