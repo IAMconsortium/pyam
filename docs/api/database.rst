@@ -13,7 +13,7 @@ See https://software.ece.iiasa.ac.at/ixmp-server for more information.
 The |pyam| package uses this interface to read timeseries data as well as
 categorization and quantitative indicators.
 The data is returned as an :class:`IamDataFrame`.
-See `this tutorial <../tutorials/iiasa_dbs.html>`_ for more information.
+See `this tutorial <../tutorials/iiasa.html>`_ for more information.
 
 .. autofunction:: read_iiasa
 

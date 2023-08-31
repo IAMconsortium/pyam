@@ -46,7 +46,7 @@ Coming soon...
 The *Scenario Explorer* infrastructure developed by the Scenario Services and Scientific
 Software team was developed and used for projects from 2018 until 2023.
 
-See `this tutorial <../tutorials/iiasa_dbs.html>`_ for more information.
+See `this tutorial <../tutorials/iiasa.html>`_ for more information.
 
 .. autoclass:: Connection
    :members:
