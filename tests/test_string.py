@@ -114,6 +114,12 @@ def test_concat_args_with_pipe_by_cols():
     assert obs == "foo|baz"
 
 
+def test_concat_args_deprecated():
+    # test error message for legacy-issues when introducing `*args` (#778)
+    with pytest.raises(DeprecationWarning, match="Please use `cols=\[0, 2\]`."):
+        concat_with_pipe(["foo", "bar", "baz"], [0, 2])
+
+
 def test_reduce_hierarchy_0():
     assert reduce_hierarchy("foo|bar|baz", 0) == "foo"
 
