@@ -90,7 +90,27 @@ def test_concat_with_pipe_exclude_nan():
 
 
 def test_concat_with_pipe_by_name():
-    obs = concat_with_pipe(TEST_CONCAT_SERIES, ["f", "z"])
+    obs = concat_with_pipe(TEST_CONCAT_SERIES, cols=["f", "z"])
+    assert obs == "foo|baz"
+
+
+def test_concat_list_with_pipe():
+    obs = concat_with_pipe(["foo", "bar"])
+    assert obs == "foo|bar"
+
+
+def test_concat_list_with_pipe_by_cols():
+    obs = concat_with_pipe(["foo", "bar", "baz"], cols=[0, 2])
+    assert obs == "foo|baz"
+
+
+def test_concat_args_with_pipe():
+    obs = concat_with_pipe("foo", "bar")
+    assert obs == "foo|bar"
+
+
+def test_concat_args_with_pipe_by_cols():
+    obs = concat_with_pipe("foo", "bar", "baz", cols=[0, 2])
     assert obs == "foo|baz"
 
 
