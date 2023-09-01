@@ -19,7 +19,7 @@ from pyam.utils import META_IDX, IAMC_IDX
 try:
     iiasa.Connection()
     IIASA_UNAVAILABLE = False
-except ConnectionError:  # pragma: no cover
+except ConnectError:  # pragma: no cover
     IIASA_UNAVAILABLE = True
 
 TEST_API = "integration-test"
