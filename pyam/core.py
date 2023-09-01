@@ -1039,51 +1039,9 @@ class IamDataFrame(object):
             return missing_required.to_frame(index=False)
 
     def require_variable(self, variable, unit=None, year=None, exclude_on_fail=False):
-        """Check whether all scenarios have a required variable
-
-        Parameters
-        ----------
-        variable : str
-            Required variable.
-        unit : str, optional
-            Name of unit (optional).
-        year : int or list, optional
-            Check whether the variable exists for ANY of the years (if a list).
-        exclude_on_fail : bool, optional
-            If True, set :attr:`exclude` = True for all scenarios that do not satisfy
-            the criteria.
-
-        """
-        # TODO: deprecated, remove for release >= 2.0
-        deprecation_warning("Use `df.require_data()` instead.")
-
-        criteria = {"variable": variable}
-        if unit:
-            criteria.update({"unit": unit})
-        if year:
-            criteria.update({"year": year})
-
-        keep = self._apply_filters(**criteria)
-        idx = self.meta.index.difference(_meta_idx(self.data[keep]))
-
-        n = len(idx)
-        if n == 0:
-            logger.info(
-                "All scenarios have the required variable `{}`".format(variable)
-            )
-            return
-
-        msg = (
-            "{} scenario does not include required variable `{}`"
-            if n == 1
-            else "{} scenarios do not include required variable `{}`"
-        )
-
-        if exclude_on_fail:
-            _exclude_on_fail(self, idx)
-
-        logger.info(msg.format(n, variable))
-        return pd.DataFrame(index=idx).reset_index()
+        """This method is deprecated, use `df.require_data()` instead."""
+        # TODO: deprecated, remove for release >= 2.1
+        raise DeprecationWarning("Use `df.require_data()` instead.")
 
     def validate(self, criteria={}, exclude_on_fail=False):
         """Validate scenarios using criteria on timeseries values
