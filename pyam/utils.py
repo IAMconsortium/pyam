@@ -47,7 +47,7 @@ KNOWN_FUNCS = {
     "max": np.max,
     "avg": np.mean,
     "mean": np.mean,
-    "sum": np.sum,
+    "sum": "sum",
 }
 
 
@@ -546,7 +546,7 @@ def pattern_match(
         if is_str(s):
             pattern = re.compile(escape_regexp(s) + "$" if not regexp else s)
             depth = True if level is None else find_depth(_data, s, level)
-            matches |= data.str.match(pattern) & depth
+            matches |= data.str.match(pattern) & np.array(depth)
         else:
             matches = np.logical_or(matches, data == s)
 
