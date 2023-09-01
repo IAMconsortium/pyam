@@ -213,7 +213,7 @@ def _knead_data(df, **kwargs):
         if is_str(value) and value in df:
             df.rename(columns={value: col}, inplace=True)
         elif is_list_like(value) and all([c in df.columns for c in value]):
-            df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
+            df[col] = df.apply(lambda x: concat_with_pipe(x, cols=value), axis=1)
             df.drop(value, axis=1, inplace=True)
         elif is_str(value):
             df[col] = value
