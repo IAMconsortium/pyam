@@ -1,16 +1,14 @@
 # has to go first for environment setup reasons
 import matplotlib
-
 matplotlib.use("agg")
 
-from pathlib import Path
-import os
-from requests.exceptions import ConnectionError
-import pytest
+from datetime import datetime
+from httpx import ConnectError
 import numpy as np
 import pandas as pd
+import pytest
+from pathlib import Path
 
-from datetime import datetime
 from pyam import IamDataFrame, iiasa
 from pyam.utils import META_IDX, IAMC_IDX
 
@@ -237,7 +235,7 @@ def reg_df():
 
 @pytest.fixture(scope="session")
 def plot_df():
-    df = IamDataFrame(data=os.path.join(TEST_DATA_DIR, "plot_data.csv"))
+    df = IamDataFrame(data=TEST_DATA_DIR / "plot_data.csv")
     yield df
 
 
