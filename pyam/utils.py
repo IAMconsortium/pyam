@@ -513,10 +513,10 @@ def make_index(df, cols=META_IDX, unique=True):
         except KeyError:
             return df[c]
 
-    index = list(zip(*[_get_col(col) for col in cols]))
-    if unique:
-        index = pd.unique(index)
-    return pd.MultiIndex.from_tuples(index, names=tuple(cols))
+    index = pd.MultiIndex.from_tuples(
+        list(zip(*[_get_col(col) for col in cols])), names=tuple(cols)
+    )
+    return index.drop_duplicates() if unique else index
 
 
 def pattern_match(
