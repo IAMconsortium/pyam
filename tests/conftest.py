@@ -1,5 +1,6 @@
 # has to go first for environment setup reasons
 import matplotlib
+
 matplotlib.use("agg")
 
 from datetime import datetime
