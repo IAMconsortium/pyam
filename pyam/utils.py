@@ -47,7 +47,7 @@ KNOWN_FUNCS = {
     "max": np.max,
     "avg": np.mean,
     "mean": np.mean,
-    "sum": np.sum,
+    "sum": "sum",
 }
 
 
@@ -513,10 +513,10 @@ def make_index(df, cols=META_IDX, unique=True):
         except KeyError:
             return df[c]
 
-    index = list(zip(*[_get_col(col) for col in cols]))
-    if unique:
-        index = pd.unique(index)
-    return pd.MultiIndex.from_tuples(index, names=tuple(cols))
+    index = pd.MultiIndex.from_tuples(
+        list(zip(*[_get_col(col) for col in cols])), names=tuple(cols)
+    )
+    return index.drop_duplicates() if unique else index
 
 
 def pattern_match(
@@ -546,7 +546,7 @@ def pattern_match(
         if is_str(s):
             pattern = re.compile(escape_regexp(s) + "$" if not regexp else s)
             depth = True if level is None else find_depth(_data, s, level)
-            matches |= data.str.match(pattern) & depth
+            matches |= data.str.match(pattern) & np.array(depth)
         else:
             matches = np.logical_or(matches, data == s)
 

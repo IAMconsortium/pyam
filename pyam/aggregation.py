@@ -13,7 +13,7 @@ from pyam._compare import _compare
 logger = logging.getLogger(__name__)
 
 
-def _aggregate(df, variable, components=None, method=np.sum):
+def _aggregate(df, variable, components=None, method="sum"):
     """Internal implementation of the `aggregate` function"""
 
     if components is not None:
@@ -168,7 +168,7 @@ def _aggregate_region(
     return _data
 
 
-def _aggregate_time(df, variable, column, value, components, method=np.sum):
+def _aggregate_time(df, variable, column, value, components, method="sum"):
     """Internal implementation for aggregating data over subannual time"""
     # default `components` to all entries in `column` other than `value`
     if components is None:
@@ -196,7 +196,7 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
     return _data
 
 
-def _group_and_agg(df, by, method=np.sum):
+def _group_and_agg(df, by, method="sum"):
     """Group-by & aggregate `pd.Series` by index names on `by`"""
     cols = df.index.names.difference(to_list(by))
     # pick aggregator func (default: sum)
