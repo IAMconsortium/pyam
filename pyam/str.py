@@ -1,13 +1,21 @@
 from pandas.api.types import is_list_like
 import numpy as np
+import pandas as pd
 import six
 import re
 
 
-def concat_with_pipe(x, cols=None):
-    """Concatenate a pandas.Series x using ``|``, drop None or numpy.nan"""
-    cols = cols or x.index
-    return "|".join([x[i] for i in cols if x[i] not in [None, np.nan]])
+def concat_with_pipe(x, *args, cols=None):
+    """Concatenate a list or pandas.Series using ``|``, drop None or numpy.nan"""
+    if args:
+        # Guard against legacy-errors when adding `*args` (#778)
+        # TODO: deprecated, remove for release >= 2.1
+        for i in args:
+            if is_list_like(i):
+                raise DeprecationWarning(f"Please use `cols={i}`.")
+        x = [x] + list(args)
+    cols = cols or (x.index if isinstance(x, pd.Series) else range(len(x)))
+    return "|".join([x[i] for i in cols if x[i] not in [None, np.nan, ""]])
 
 
 def find_depth(data, s="", level=None):
