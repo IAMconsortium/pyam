@@ -2,8 +2,8 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 
-from pyam import IamDataFrame, validate, categorize, require_variable
-from pyam.utils import IAMC_IDX, META_IDX
+from pyam import IamDataFrame, validate, categorize
+from pyam.utils import IAMC_IDX
 
 from .conftest import TEST_YEARS
 
@@ -66,58 +66,6 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
         assert list(df.exclude) == [False, True]
     else:
         assert list(df.exclude) == [False, False]
-
-
-def test_require_variable_pass(test_df):
-    # checking that the return-type is correct
-    obs = test_df.require_variable(variable="Primary Energy", exclude_on_fail=True)
-    assert obs is None
-    assert list(test_df.exclude) == [False, False]
-
-
-def test_require_variable(test_df):
-    exp = pd.DataFrame([["model_a", "scen_b"]], columns=META_IDX)
-
-    # checking that the return-type is correct
-    obs = test_df.require_variable(variable="Primary Energy|Coal")
-    pdt.assert_frame_equal(obs, exp)
-    assert list(test_df.exclude) == [False, False]
-
-    # checking exclude on fail
-    obs = test_df.require_variable(variable="Primary Energy|Coal", exclude_on_fail=True)
-    pdt.assert_frame_equal(obs, exp)
-    assert list(test_df.exclude) == [False, True]
-
-
-def test_require_variable_top_level(test_df):
-    exp = pd.DataFrame([["model_a", "scen_b"]], columns=META_IDX)
-
-    # checking that the return-type is correct
-    obs = require_variable(test_df, variable="Primary Energy|Coal")
-    pdt.assert_frame_equal(obs, exp)
-    assert list(test_df.exclude) == [False, False]
-
-    # checking exclude on fail
-    obs = require_variable(
-        test_df, variable="Primary Energy|Coal", exclude_on_fail=True
-    )
-    pdt.assert_frame_equal(obs, exp)
-    assert list(test_df.exclude) == [False, True]
-
-
-def test_require_variable_year_list(test_df):
-    # drop first data point
-    df = IamDataFrame(test_df.data[1:])
-    # checking for variables that have data for ANY of the years in the list
-    obs = df.require_variable(variable="Primary Energy", year=[2005, 2010])
-    assert obs is None
-
-    # checking for variables that have data for ALL of the years in the list
-    df = IamDataFrame(test_df.data[1:])
-    exp = pd.DataFrame([["model_a", "scen_a"]], columns=META_IDX)
-
-    obs = df.require_variable(variable="Primary Energy", year=[2005])
-    pdt.assert_frame_equal(obs, exp)
 
 
 def test_validate_pass(test_df):

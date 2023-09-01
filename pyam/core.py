@@ -1038,7 +1038,7 @@ class IamDataFrame(object):
                 _exclude_on_fail(self, missing_required.droplevel(list(required)))
             return missing_required.to_frame(index=False)
 
-    def require_variable(self, variable, unit=None, year=None, exclude_on_fail=False):
+    def require_variable(self, *args, **kwargs):
         """This method is deprecated, use `df.require_data()` instead."""
         # TODO: deprecated, remove for release >= 2.1
         raise DeprecationWarning("Use `df.require_data()` instead.")
@@ -2619,25 +2619,10 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
         return vdf
 
 
-def require_variable(
-    df, variable, unit=None, year=None, exclude_on_fail=False, **kwargs
-):
-    """Check whether all scenarios have a required variable
-
-    Parameters
-    ----------
-    df : IamDataFrame
-    args : passed to :meth:`IamDataFrame.require_variable`
-    kwargs : used for downselecting IamDataFrame
-        passed to :meth:`IamDataFrame.filter`
-    """
-    fdf = df.filter(**kwargs)
-    if len(fdf.data) > 0:
-        vdf = fdf.require_variable(
-            variable=variable, unit=unit, year=year, exclude_on_fail=exclude_on_fail
-        )
-        df._exclude |= fdf._exclude  # update if any excluded
-        return vdf
+def require_variable(*args, **kwargs):
+    """This method is deprecated, use `df.require_data()` instead."""
+    # TODO: deprecated, remove for release >= 2.1
+    raise DeprecationWarning("Use `df.require_data()` instead.")
 
 
 def categorize(
