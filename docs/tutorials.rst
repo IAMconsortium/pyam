@@ -24,7 +24,7 @@ The source code is available in the folder
    tutorials/unit_conversion.ipynb
    tutorials/algebraic_operations.ipynb
    tutorials/quantiles.ipynb
-   tutorials/iiasa_dbs.ipynb
+   tutorials/iiasa.ipynb
    tutorials/unfccc.ipynb
    tutorials/GAMS_to_pyam.ipynb
    tutorials/aggregating_downscaling_consistency.ipynb

@@ -181,8 +181,7 @@ class IamDataFrame(object):
         self._data, index, self.time_col, self.extra_cols = _data
 
         # define `meta` dataframe for categorization & quantitative indicators
-        _index = make_index(self._data, cols=index)
-        self.meta = pd.DataFrame(index=_index)
+        self.meta = pd.DataFrame(index=make_index(self._data, cols=index))
         self.exclude = False
 
         # if given explicitly, merge meta dataframe after downselecting
@@ -1039,52 +1038,10 @@ class IamDataFrame(object):
                 _exclude_on_fail(self, missing_required.droplevel(list(required)))
             return missing_required.to_frame(index=False)
 
-    def require_variable(self, variable, unit=None, year=None, exclude_on_fail=False):
-        """Check whether all scenarios have a required variable
-
-        Parameters
-        ----------
-        variable : str
-            Required variable.
-        unit : str, optional
-            Name of unit (optional).
-        year : int or list, optional
-            Check whether the variable exists for ANY of the years (if a list).
-        exclude_on_fail : bool, optional
-            If True, set :attr:`exclude` = True for all scenarios that do not satisfy
-            the criteria.
-
-        """
-        # TODO: deprecated, remove for release >= 2.0
-        deprecation_warning("Use `df.require_data()` instead.")
-
-        criteria = {"variable": variable}
-        if unit:
-            criteria.update({"unit": unit})
-        if year:
-            criteria.update({"year": year})
-
-        keep = self._apply_filters(**criteria)
-        idx = self.meta.index.difference(_meta_idx(self.data[keep]))
-
-        n = len(idx)
-        if n == 0:
-            logger.info(
-                "All scenarios have the required variable `{}`".format(variable)
-            )
-            return
-
-        msg = (
-            "{} scenario does not include required variable `{}`"
-            if n == 1
-            else "{} scenarios do not include required variable `{}`"
-        )
-
-        if exclude_on_fail:
-            _exclude_on_fail(self, idx)
-
-        logger.info(msg.format(n, variable))
-        return pd.DataFrame(index=idx).reset_index()
+    def require_variable(self, *args, **kwargs):
+        """This method is deprecated, use `df.require_data()` instead."""
+        # TODO: deprecated, remove for release >= 2.1
+        raise DeprecationWarning("Use `df.require_data()` instead.")
 
     def validate(self, criteria={}, exclude_on_fail=False):
         """Validate scenarios using criteria on timeseries values
@@ -1901,6 +1858,8 @@ class IamDataFrame(object):
                 msg = "Only yearly data after filtering, time-domain changed to 'year'."
                 logger.info(msg)
 
+        ret._data.sort_index(inplace=True)
+
         # downselect `meta` dataframe
         idx = make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
@@ -2562,16 +2521,7 @@ class IamDataFrame(object):
         # merge imported meta indicators
         self.meta = merge_meta(meta, self.meta, ignore_conflict=ignore_conflict)
 
-    def map_regions(
-        self,
-        map_col,
-        agg=None,
-        copy_col=None,
-        fname=None,
-        region_col=None,
-        remove_duplicates=False,
-        inplace=False,
-    ):
+    def map_regions(self, map_col, **kwargs):
         # TODO: deprecated, remove for release >= 2.1
         raise DeprecationWarning(
             "This method was removed. Please use `aggregate_region()` instead."
@@ -2671,25 +2621,10 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
         return vdf
 
 
-def require_variable(
-    df, variable, unit=None, year=None, exclude_on_fail=False, **kwargs
-):
-    """Check whether all scenarios have a required variable
-
-    Parameters
-    ----------
-    df : IamDataFrame
-    args : passed to :meth:`IamDataFrame.require_variable`
-    kwargs : used for downselecting IamDataFrame
-        passed to :meth:`IamDataFrame.filter`
-    """
-    fdf = df.filter(**kwargs)
-    if len(fdf.data) > 0:
-        vdf = fdf.require_variable(
-            variable=variable, unit=unit, year=year, exclude_on_fail=exclude_on_fail
-        )
-        df._exclude |= fdf._exclude  # update if any excluded
-        return vdf
+def require_variable(*args, **kwargs):
+    """This method is deprecated, use `df.require_data()` instead."""
+    # TODO: deprecated, remove for release >= 2.1
+    raise DeprecationWarning("Use `df.require_data()` instead.")
 
 
 def categorize(

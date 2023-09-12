@@ -42,5 +42,5 @@ def test_tutorial_notebook(file):
 
 
 @pytest.mark.skipif(IIASA_UNAVAILABLE, reason="IIASA database API unavailable")
-def test_tutorial_iiasa_dbs():
-    _run_notebook("iiasa_dbs")
+def test_tutorial_iiasa():
+    _run_notebook("iiasa")

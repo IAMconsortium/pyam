@@ -1,7 +1,10 @@
-# Next Release
+# Release v2.0.0
 
-The next release must bump the major version number.
-Reactivate tests for Python 3.11 once ixmp4 0.3 is released.
+## Highlights
+
+- Use **ixmp4** as dependency for better integration with the IIASA Scenario Explorer database infrastructure 
+- Refactor the "exclude"-column for validation as own attribute (instead of a column in `meta`)
+- Implement a cleaner package structure and reduce exposure of internal methods/modules
 
 ## Dependency changes
 
@@ -20,9 +23,9 @@ The column *exclude* of the `meta` indicators was moved to a new attribute `excl
 All validation methods are refactored such that the argument `exclude_on_fail` changes
 this new attribute (see PR [#759](https://github.com/IAMconsortium/pyam/pull/759)).
 
-The term "exclude" is now an illegal column name for (timeseries) data and meta tables.
+The term "exclude" is now an illegal column for (timeseries) data and meta indicators.
 When importing an xlsx file created with pyam < 2.0, which has an "exclude" column in
-"meta", that column is moved to the new exclude attribute with a log message.
+the "meta" sheet, the column is moved to the new `exclude` attribute with a log message.
 
 PR [#764](https://github.com/IAMconsortium/pyam/pull/764) implemented a more restrictive
 approach to exposing pyam-internals at the package level, requiring a more explicit
