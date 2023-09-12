@@ -1858,6 +1858,8 @@ class IamDataFrame(object):
                 msg = "Only yearly data after filtering, time-domain changed to 'year'."
                 logger.info(msg)
 
+        ret._data.sort_index(inplace=True)
+
         # downselect `meta` dataframe
         idx = make_index(ret._data, cols=self.index.names)
         if len(idx) == 0:
