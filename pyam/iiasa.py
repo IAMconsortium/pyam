@@ -1,3 +1,4 @@
+from io import StringIO
 from pathlib import Path
 import json
 import logging
@@ -242,7 +243,7 @@ class Connection(object):
         url = "/".join([self._base_url, "metadata/types"])
         r = requests.get(url, headers=self.auth())
         _check_response(r)
-        return pd.read_json(r.text, orient="records")["name"]
+        return pd.read_json(StringIO(r.text), orient="records")["name"]
 
     def _query_index(self, default_only=True, meta=False, cols=[], **kwargs):
         # TODO: at present this reads in all data for all scenarios,
@@ -255,7 +256,7 @@ class Connection(object):
         _check_response(r)
 
         # cast response to dataframe, apply filter by kwargs, and return
-        runs = pd.read_json(r.text, orient="records")
+        runs = pd.read_json(StringIO(r.text), orient="records")
         if runs.empty:
             logger.warning("No permission to view model(s) or no scenarios exist.")
             return pd.DataFrame([], columns=META_IDX + ["version", "run_id"] + cols)
@@ -360,7 +361,7 @@ class Connection(object):
         url = "/".join([self._base_url, "ts"])
         r = requests.get(url, headers=self.auth())
         _check_response(r)
-        df = pd.read_json(r.text, orient="records")
+        df = pd.read_json(StringIO(r.text), orient="records")
         return pd.Series(df["variable"].unique(), name="variable")
 
     @lru_cache()
@@ -382,7 +383,7 @@ class Connection(object):
 
     @staticmethod
     def convert_regions_payload(response, include_synonyms):
-        df = pd.read_json(response, orient="records")
+        df = pd.read_json(StringIO(response), orient="records")
         if df.empty:
             return df
         if "synonyms" not in df.columns:
@@ -449,10 +450,6 @@ class Connection(object):
         # pass empty list to API if all regions selected
         if len(regions) == len(self.regions()):
             regions = []
-        logger.debug(
-            f"Prepared filter for {len(regions)} region(s), "
-            f"{len(variables)} variables and {len(runs)} runs"
-        )
         data = {
             "filters": {
                 "regions": list(regions),
@@ -523,7 +520,6 @@ class Connection(object):
         # retrieve data
         _args = json.dumps(self._query_post(_meta, default_only=default_only, **kwargs))
         url = "/".join([self._base_url, "runs/bulk/ts"])
-        logger.debug(f"Query timeseries data from {url} with data {_args}")
         r = requests.post(url, headers=headers, data=_args)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
@@ -537,8 +533,7 @@ class Connection(object):
             value=float,
             version=int,
         )
-        data = pd.read_json(r.text, orient="records", dtype=dtype)
-        logger.debug(f"Response: {len(r.text)} bytes, {len(data)} records")
+        data = pd.read_json(StringIO(r.text), orient="records", dtype=dtype)
         cols = IAMC_IDX + ["year", "value", "subannual", "version"]
         # keep only known columns or init empty df
         data = pd.DataFrame(data=data, columns=cols)
