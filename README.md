@@ -3,8 +3,8 @@ pyam: analysis & visualization <br /> of integrated-assessment and macro-energy 
 
 [![license](https://img.shields.io/badge/License-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
-[![conda](https://anaconda.org/conda-forge/pyam/badges/version.svg)](https://anaconda.org/conda-forge/pyam)
-[![latest](https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyam)
+[![conda](https://img.shields.io/conda/vn/conda-forge/pyam)](https://anaconda.org/conda-forge/pyam)
+[![last-release](https://img.shields.io/github/release-date/iamconsortium/pyam?logo=github&label=last%20release)](https://github.com/IAMconsortium/pyam/releases)
 
 <!-- replace python version by dynamic reference to pypi once Python versions are configured there -->
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)

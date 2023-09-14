@@ -15,11 +15,11 @@ Release v\ |version|.
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
 
-.. |conda| image:: https://anaconda.org/conda-forge/pyam/badges/version.svg
+.. |conda| image:: https://img.shields.io/conda/vn/conda-forge/pyam
    :target: https://anaconda.org/conda-forge/pyam
 
-.. |latest| image:: https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg
-   :target: https://anaconda.org/conda-forge/pyam
+.. |latest| image:: https://img.shields.io/github/release-date/iamconsortium/pyam?logo=github&label=last%20release
+   :target: https://github.com/IAMconsortium/pyam/releases
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
