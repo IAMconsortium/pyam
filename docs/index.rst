@@ -9,7 +9,7 @@ Release v\ |version|.
 
 |doi| |ore| |joss| |groupsio| |slack|
 
-.. |license| image:: https://img.shields.io/badge/License-Apache%202.0-black
+.. |license| image:: https://img.shields.io/badge/license-Apache%202.0-black
    :target: https://github.com/IAMconsortium/pyam/blob/main/LICENSE
 
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
