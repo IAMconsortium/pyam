@@ -27,7 +27,7 @@ Release v\ |version|.
 .. |python| image:: https://img.shields.io/badge/python-≥3.10,<3.12-blue?logo=python&logoColor=white
    :target: https://github.com/IAMconsortium/pyam
 
-.. |pytest| image:: https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml/badge.svg
+.. |pytest| image:: https://img.shields.io/github/actions/workflow/status/iamconsortium/pyam/pytest.yml?logo=GitHub&label=pytest
    :target: https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml
 
 .. |rtd| image:: https://readthedocs.org/projects/pyam-iamc/badge/?version=latest
