@@ -15,7 +15,7 @@ Release v\ |version|.
 .. |pypi| image:: https://img.shields.io/pypi/v/pyam-iamc.svg
    :target: https://pypi.python.org/pypi/pyam-iamc/
 
-.. |conda| image:: https://img.shields.io/conda/vn/conda-forge/pyam
+.. |conda| image:: https://img.shields.io/conda/vn/conda-forge/pyam?logo=anaconda
    :target: https://anaconda.org/conda-forge/pyam
 
 .. |latest| image:: https://img.shields.io/github/release-date/iamconsortium/pyam?logo=github&label=last%20release
