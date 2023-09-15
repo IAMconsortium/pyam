@@ -3,13 +3,13 @@ pyam: analysis & visualization <br /> of integrated-assessment and macro-energy 
 
 [![license](https://img.shields.io/badge/license-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
-[![conda](https://img.shields.io/conda/vn/conda-forge/pyam)](https://anaconda.org/conda-forge/pyam)
+[![conda](https://img.shields.io/conda/vn/conda-forge/pyam?logo=anaconda)](https://anaconda.org/conda-forge/pyam)
 [![last-release](https://img.shields.io/github/release-date/iamconsortium/pyam?logo=github&label=last%20release)](https://github.com/IAMconsortium/pyam/releases)
 
 <!-- replace python version by dynamic reference to pypi once Python versions are configured there -->
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![python](https://img.shields.io/badge/python-≥3.10,<3.12-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
-[![pytest](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml/badge.svg)](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml)
+[![pytest](https://img.shields.io/github/actions/workflow/status/iamconsortium/pyam/pytest.yml?logo=GitHub&label=pytest)](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml)
 [![ReadTheDocs](https://readthedocs.org/projects/pyam-iamc/badge/?version=latest)](https://pyam-iamc.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
 
