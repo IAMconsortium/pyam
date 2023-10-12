@@ -37,17 +37,18 @@ jobs:
     - name: Install dependencies and package
       run: pip install .[tests,optional_plotting,optional_io_formats,tutorials]
 
+    # run tests without Matplotlib & CodeCode tests on earlier Python versions
     - name: Test with pytest
-      if: ${{ matrix.python-version != '3.10' }}
+      if: ${{ matrix.python-version != '3.11' }}
       run: pytest tests
 
-    # only execute Matplotlib tests & CodeCov on latest Python version
+    # run tests with Matplotlib & CodeCov on latest Python version
     - name: Test with pytest including Matplotlib & Codecov
-      if: ${{ matrix.python-version == '3.10' }}
+      if: ${{ matrix.python-version == '3.11' }}
       run: pytest tests --mpl --cov=./ --cov-report=xml
 
     - name: Upload coverage report to Codecov
-      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10' }}
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11' }}
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
