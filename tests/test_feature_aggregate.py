@@ -396,7 +396,7 @@ def test_aggregate_region_empty(test_df, variable, append, caplog):
     caplog.set_level(logging.INFO, logger="pyam.aggregation")
     msg = (
         f"Cannot aggregate variable '{variable}' to 'World' "
-        "because it does not exist in any subregion!"
+        "because it does not exist in any subregion."
     )
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "INFO"
