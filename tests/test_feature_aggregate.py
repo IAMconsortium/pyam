@@ -43,20 +43,6 @@ PRICE_MAX_DF = pd.DataFrame(
     columns=LONG_IDX + ["value"],
 )
 
-NEG_WEIGHTS_DF = pd.DataFrame(
-    [
-        ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2005, -4.0],
-        ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2010, 5.0],
-        ["model_a", "scen_a", "reg_b", "Emissions|CO2", "EJ/yr", 2005, 2.0],
-        ["model_a", "scen_a", "reg_b", "Emissions|CO2", "EJ/yr", 2010, 3.0],
-        ["model_a", "scen_a", "reg_a", "Price|Carbon", "USD/tCO2", 2005, 6.0],
-        ["model_a", "scen_a", "reg_a", "Price|Carbon", "USD/tCO2", 2010, 6.0],
-        ["model_a", "scen_a", "reg_b", "Price|Carbon", "USD/tCO2", 2005, 3.0],
-        ["model_a", "scen_a", "reg_b", "Price|Carbon", "USD/tCO2", 2010, 4.0],
-    ],
-    columns=LONG_IDX + ["value"],
-)
-
 
 @pytest.mark.parametrize(
     "variable,data",
@@ -318,60 +304,60 @@ def test_aggregate_region_with_components(simple_df):
     assert _df.check_aggregate_region(v, components=["foo"]) is None
 
 
-def test_agg_weight():
-    variable = "Price|Carbon"
-    weight = "Emissions|CO2"
-    # negative weights should be dropped on default
-    obs_1 = IamDataFrame(NEG_WEIGHTS_DF).aggregate_region(variable, weight=weight)._data
-    exp_1 = np.array([5.25])
-    np.testing.assert_array_equal(obs_1.values, exp_1)
-
-    # negative weights shouldn't be dropped if drop_negative_weights=False
-    obs_2 = (
-        IamDataFrame(NEG_WEIGHTS_DF)
-        .aggregate_region(variable, weight=weight, drop_negative_weights=False)
-        ._data
-    )
-    exp_2 = np.array([9, 5.25])
-    np.testing.assert_array_equal(obs_2.values, exp_2)
-
-
-def test_aggregate_region_with_no_weights_drop_negative_weights_raises(simple_df):
-    # dropping negative weights can only be used with weight
-    pytest.raises(
-        ValueError,
-        simple_df.aggregate_region,
-        "Price|Carbon",
-        drop_negative_weights=False,
-    )
-
-
-def test_aggregate_region_with_weights(simple_df):
+def test_aggregate_region_with_weights(simple_df, caplog):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
     w = "Emissions|CO2"
     assert simple_df.check_aggregate_region(v) is not None
     assert simple_df.check_aggregate_region(v, weight=w) is None
 
+    # test the full dataset
     exp = simple_df.filter(variable=v, region="World")
     assert_iamframe_equal(simple_df.aggregate_region(v, weight=w), exp)
 
+    # test that dropping negative weights works as expected
+    neg_weights_df = simple_df.copy()
+    neg_weights_df._data[18] = -6
+    exp = simple_df.filter(variable=v, region="World", year=2010)
+    assert_iamframe_equal(neg_weights_df.aggregate_region(v, weight=w), exp)
+
+    msg = (
+        "Some weights are negative. Data weighted by negative values will be dropped. "
+        "To use both positive and negative weights, please use the keyword argument "
+        "`drop_negative_weights=False`."
+    )
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "WARNING"
+
+    # test that not dropping negative weights works as expected
+    exp = simple_df.filter(variable=v, region="World")
+    exp._data[0] = -8
+    assert_iamframe_equal(
+        neg_weights_df.aggregate_region(v, weight=w, drop_negative_weights=False), exp
+    )
+
+
+def test_aggregate_region_with_weights_raises(simple_df):
+    # carbon price shouldn't be summed but be weighted by emissions
+    v = "Price|Carbon"
+    w = "Emissions|CO2"
+
     # inconsistent index of variable and weight raises an error
     _df = simple_df.filter(variable=w, region="reg_b", keep=False)
-    pytest.raises(ValueError, _df.aggregate_region, v, weight=w)
+    with pytest.raises(ValueError, match="Inconsistent index between variable and wei"):
+        _df.aggregate_region(v, weight=w)
 
     # using weight and method other than 'sum' raises an error
     pytest.raises(ValueError, simple_df.aggregate_region, v, method="max", weight="bar")
 
-
-def test_aggregate_region_with_components_and_weights_raises(simple_df):
     # setting both weight and components raises an error
     pytest.raises(
-        ValueError,
-        simple_df.aggregate_region,
-        "Emissions|CO2",
-        components=True,
-        weight="bar",
+        ValueError, simple_df.aggregate_region, v, components=True, weight="bar"
+    )
+
+    # dropping negative weights can only be used with weight
+    pytest.raises(
+        ValueError, simple_df.aggregate_region, v, drop_negative_weights=False
     )
 
 

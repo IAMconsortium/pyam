@@ -218,11 +218,11 @@ def _agg_weight(data, weight, method, drop_negative_weights):
     if drop_negative_weights is True:
         if any(weight < 0):
             logger.warning(
-                "Some weights are negative. All data weighted by negative values will "
-                "be dropped. To use both positive and negative weights, "
+                "Some weights are negative. Data weighted by negative values will be "
+                "dropped. To use both positive and negative weights, "
                 "please use the keyword argument `drop_negative_weights=False`."
             )
-            # Drop negative weights
+            # drop negative weights
             weight[weight < 0] = None
 
     col1 = data.index.names.difference(["region"])
