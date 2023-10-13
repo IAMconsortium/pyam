@@ -1464,7 +1464,7 @@ class IamDataFrame(object):
         """Aggregate timeseries data by subregions.
 
         This function allows to add variable sub-categories that are only
-        defined at the `region` level by setting `components=True`
+        defined at the `region` level by setting `components=True`.
 
         Parameters
         ----------
@@ -1589,7 +1589,7 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(region=region, variable=variable)
         if not rows.any():
-            logger.info(f"Variable '{variable}' does not exist in region '{region}'!")
+            logger.info(f"Variable '{variable}' does not exist in region '{region}'.")
             return
 
         df_region, df_subregions = _group_and_agg(self._data[rows], "region").align(
@@ -1630,7 +1630,7 @@ class IamDataFrame(object):
         method="sum",
         append=False,
     ):
-        """Aggregate timeseries data by subannual time resolution
+        """Aggregate timeseries data by subannual time resolution.
 
         Parameters
         ----------
@@ -1671,7 +1671,7 @@ class IamDataFrame(object):
         weight=None,
         append=False,
     ):
-        """Downscale timeseries data to a number of subregions
+        """Downscale timeseries data to a number of subregions.
 
         Parameters
         ----------
@@ -1742,7 +1742,7 @@ class IamDataFrame(object):
         return META_IDX + cols + self.extra_cols
 
     def check_internal_consistency(self, components=False, **kwargs):
-        """Check whether a scenario ensemble is internally consistent
+        """Check whether a scenario ensemble is internally consistent.
 
         We check that all variables are equal to the sum of their sectoral
         components and that all the regions add up to the World total. If
