@@ -1589,7 +1589,7 @@ class IamDataFrame(object):
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(region=region, variable=variable)
         if not rows.any():
-            logger.info(f"Variable '{variable}' does not exist in region '{region}'!")
+            logger.info(f"Variable '{variable}' does not exist in region '{region}'.")
             return
 
         df_region, df_subregions = _group_and_agg(self._data[rows], "region").align(

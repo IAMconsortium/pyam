@@ -30,7 +30,7 @@ def _aggregate(df, variable, components=None, method="sum"):
             )
 
     mapping = {}
-    msg = "Cannot aggregate variable '{}' because it has no components!"
+    msg = "Cannot aggregate variable '{}' because it has no components."
     # if single variable
     if is_str(variable):
         # default components to all variables one level below `variable`
