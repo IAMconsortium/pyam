@@ -30,7 +30,7 @@ def _aggregate(df, variable, components=None, method="sum"):
             )
 
     mapping = {}
-    msg = "Cannot aggregate variable '{}' because it has no components."
+    msg = "Cannot aggregate variable '{}' because it has no components!"
     # if single variable
     if is_str(variable):
         # default components to all variables one level below `variable`
@@ -109,11 +109,11 @@ def _aggregate_region(
     """Internal implementation for aggregating data over subregions"""
     if not is_str(variable) and components is not False:
         raise ValueError(
-            "Aggregating by list of variables with components is not supported."
+            "Aggregating by list of variables with components is not supported!"
         )
 
     if weight is not None and components is not False:
-        raise ValueError("Using weights and components in one operation not supported.")
+        raise ValueError("Using weights and components in one operation not supported!")
 
     # default subregions to all regions other than `region`
     subregions = subregions or df._all_other_regions(region, variable)
@@ -121,7 +121,7 @@ def _aggregate_region(
     if not len(subregions):
         logger.info(
             f"Cannot aggregate variable '{variable}' to '{region}' "
-            "because it does not exist in any subregion."
+            "because it does not exist in any subregion!"
         )
         return
 
@@ -131,7 +131,7 @@ def _aggregate_region(
     if weight is None:
         if drop_negative_weights is False:
             raise ValueError(
-                "Dropping negative weights can only be used with `weights`."
+                "Dropping negative weights can only be used with `weights`!"
             )
 
         _data = _group_and_agg(subregion_df._data[rows], "region", method=method)
@@ -208,7 +208,7 @@ def _agg_weight(data, weight, method, drop_negative_weights):
 
     # only summation allowed with weights
     if method not in ["sum", np.sum]:
-        raise ValueError("Only method 'np.sum' allowed for weighted average.")
+        raise ValueError("Only method 'np.sum' allowed for weighted average!")
 
     weight = weight.droplevel(["variable", "unit"])
 
@@ -218,11 +218,12 @@ def _agg_weight(data, weight, method, drop_negative_weights):
     if drop_negative_weights is True:
         if any(weight < 0):
             logger.warning(
-                "Some weights are negative. Data weighted by negative values will be "
-                "dropped. To use both positive and negative weights, "
+                "Some of the weights are negative. "
+                "All data weighted by negative values will be dropped. "
+                "To apply both positive and negative weights to the data, "
                 "please use the keyword argument `drop_negative_weights=False`."
             )
-            # drop negative weights
+            # Drop negative weights
             weight[weight < 0] = None
 
     col1 = data.index.names.difference(["region"])
@@ -241,4 +242,4 @@ def _get_method_func(method):
         return KNOWN_FUNCS[method]
 
     # raise error if `method` is a string but not in dict of known methods
-    raise ValueError(f"Unknown method: {method}")
+    raise ValueError(f"'{method}' is not a known method!")
