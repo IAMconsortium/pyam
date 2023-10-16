@@ -193,6 +193,9 @@ def _aggregate_time(df, variable, column, value, components, method="sum"):
     # reset index-level order to original IamDataFrame
     _data.index = _data.index.reorder_levels(df.dimensions)
 
+    # set name of series
+    _data.name = "value"
+
     return _data
 
 
