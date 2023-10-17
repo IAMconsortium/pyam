@@ -360,7 +360,9 @@ def test_aggregate_region_with_weights_inconsistent_index(
     log_message = "\n0  " + log_message + "model_a   scen_a  reg_b  2010"
     if simple_df.time_domain == "datetime":
         time_col = "     time"
-        log_message = log_message.replace("2005", "2005-6-17").replace(" 2010", "2010-07-21")
+        log_message = log_message.replace(" 2005", "2005-06-17").replace(
+            " 2010", "2010-07-21"
+        )
     else:
         time_col = "year"
 
@@ -373,7 +375,7 @@ def test_aggregate_region_with_weights_inconsistent_index(
     # missing data row prints a warning (data-index is a subset of weight-index)
     exp = simple_df.filter(variable=v, region="World")
     if not filter_arg:
-        exp._data[0] = 1.
+        exp._data[0] = 1.0
     exp._data[1] = 30.0
     _df = simple_df.filter(variable=v, region="reg_b", keep=False, **filter_arg)
     assert_iamframe_equal(_df.aggregate_region(v, weight=w), exp)
