@@ -1,5 +1,4 @@
 import pytest
-import logging
 
 import numpy as np
 import pandas as pd
@@ -238,7 +237,7 @@ def test_check_aggregate_region_log(simple_df, caplog):
 @pytest.mark.parametrize(
     "variable",
     (
-        ("Primary Energy"),
+        "Primary Energy",
         (["Primary Energy", "Primary Energy|Coal", "Primary Energy|Wind"]),
     ),
 )
@@ -252,7 +251,7 @@ def test_aggregate_region_append(simple_df, variable):
 @pytest.mark.parametrize(
     "variable",
     (
-        ("Primary Energy"),
+        "Primary Energy",
         (["Primary Energy", "Primary Energy|Coal", "Primary Energy|Wind"]),
     ),
 )
@@ -315,7 +314,12 @@ def test_aggregate_region_with_weights(simple_df, caplog):
     exp = simple_df.filter(variable=v, region="World")
     assert_iamframe_equal(simple_df.aggregate_region(v, weight=w), exp)
 
-    # test that dropping negative weights works as expected
+def test_aggregate_region_with_negative_weights(simple_df, caplog):
+    # carbon price shouldn't be summed but be weighted by emissions
+    v = "Price|Carbon"
+    w = "Emissions|CO2"
+
+    # dropping negative weights works as expected
     neg_weights_df = simple_df.copy()
     neg_weights_df._data[18] = -6
     exp = simple_df.filter(variable=v, region="World", year=2010)
@@ -329,7 +333,7 @@ def test_aggregate_region_with_weights(simple_df, caplog):
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "WARNING"
 
-    # test that not dropping negative weights works as expected
+    # *not* dropping negative weights works as expected
     exp = simple_df.filter(variable=v, region="World")
     exp._data[0] = -8
     assert_iamframe_equal(

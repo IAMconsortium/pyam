@@ -66,5 +66,5 @@ def test_growth_rate_timeseries(x2010, rates):
 def test_growth_rate_timeseries_fails(value):
     """Check that a timeseries reaching/crossing 0 raises"""
 
-    with pytest.raises(ValueError, match="Cannot compute growth rate when*."):
+    with pytest.raises(ValueError, match="Cannot compute growth rate when"):
         growth_rate(pd.Series([1.0, value]))
