@@ -1,4 +1,5 @@
 import pytest
+import re
 
 import numpy as np
 import pandas as pd
@@ -314,6 +315,7 @@ def test_aggregate_region_with_weights(simple_df, caplog):
     exp = simple_df.filter(variable=v, region="World")
     assert_iamframe_equal(simple_df.aggregate_region(v, weight=w), exp)
 
+
 def test_aggregate_region_with_negative_weights(simple_df, caplog):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
@@ -341,28 +343,46 @@ def test_aggregate_region_with_negative_weights(simple_df, caplog):
     )
 
 
-def test_aggregate_region_with_weights_inconsistent_index(simple_df, caplog):
+@pytest.mark.parametrize(
+    "filter_arg,log_message",
+    (
+        (dict(year=2010), ""),
+        (dict(), "model_a   scen_a  reg_b  2005\n1  "),
+    ),
+)
+def test_aggregate_region_with_weights_inconsistent_index(
+    simple_df, caplog, filter_arg, log_message
+):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
     w = "Emissions|CO2"
 
+    log_message = "\n0  " + log_message + "model_a   scen_a  reg_b  2010"
+    if simple_df.time_domain == "datetime":
+        time_col = "     time"
+        log_message = log_message.replace("2005", "2005-6-17").replace(" 2010", "2010-07-21")
+    else:
+        time_col = "year"
+
     # missing weight row raises an error
-    _df = simple_df.filter(variable=w, region="reg_b", keep=False)
-    match = r"Missing weights for the following data.*\n.*\n.*\n.*scen_a  reg_b  2010"
+    _df = simple_df.filter(variable=w, region="reg_b", keep=False, **filter_arg)
+    match = r"Missing weights for the following data.*\n.*" + re.escape(log_message)
     with pytest.raises(ValueError, match=match):
         _df.aggregate_region(v, weight=w)
 
     # missing data row prints a warning (data-index is a subset of weight-index)
     exp = simple_df.filter(variable=v, region="World")
-    exp._data[1] = 30.
-    _df = simple_df.filter(variable=v, region="reg_b", year=2010, keep=False)
+    if not filter_arg:
+        exp._data[0] = 1.
+    exp._data[1] = 30.0
+    _df = simple_df.filter(variable=v, region="reg_b", keep=False, **filter_arg)
     assert_iamframe_equal(_df.aggregate_region(v, weight=w), exp)
 
     msg = (
         "Ignoring weights for the following missing data rows:\n"
-        "     model scenario region  year\n"
-        "0  model_a   scen_a  reg_b  2010"
+        f"     model scenario region  {time_col}" + log_message
     )
+
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "WARNING"
 

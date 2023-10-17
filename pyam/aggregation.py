@@ -116,7 +116,10 @@ def _aggregate_region(
         raise ValueError("Using weights and components in one operation not supported.")
 
     # default subregions to all regions other than `region`
-    subregions = subregions or df._all_other_regions(region, variable)
+    if weight is None:
+        subregions = subregions or df._all_other_regions(region, variable)
+    else:
+        subregions = subregions or df._all_other_regions(region, [variable, weight])
 
     if not len(subregions):
         logger.info(
