@@ -1,5 +1,7 @@
 # Release v2.0.0
 
+- [#789](https://github.com/IAMconsortium/pyam/pull/789) Support region-aggregation with weights-index >> data-index
+
 ## Highlights
 
 - Use **ixmp4** as dependency for better integration with the IIASA Scenario Explorer database infrastructure 
