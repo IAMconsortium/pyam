@@ -4,7 +4,7 @@ import logging
 from itertools import compress
 
 from pyam.index import replace_index_values
-from pyam.logging import adjust_log_level
+from pyam.logging import adjust_log_level, format_log_message
 from pyam.str import find_depth, is_str, reduce_hierarchy
 from pyam.utils import KNOWN_FUNCS, is_list_like, to_list
 from pyam._compare import _compare
@@ -214,10 +214,28 @@ def _agg_weight(data, weight, method, drop_negative_weights):
         raise ValueError("Only method 'np.sum' allowed for weighted average.")
 
     weight = weight.droplevel(["variable", "unit"])
+    data_index = data.droplevel(["variable", "unit"]).index
 
-    if not data.droplevel(["variable", "unit"]).index.equals(weight.index):
-        raise ValueError("Inconsistent index between variable and weight!")
+    # check that weights exist for all data rows
+    missing_weights = data_index.difference(weight.index)
+    if not missing_weights.empty:
+        raise ValueError(
+            format_log_message(
+                "Missing weights for the following data rows", missing_weights
+            )
+        )
 
+    # warn if no data exists for available weights
+    missing_data = weight.index.difference(data_index)
+    if not missing_data.empty:
+        logger.warning(
+            format_log_message(
+                "Ignoring weights for the following missing data rows", missing_data
+            )
+        )
+        weight[missing_data] = np.nan
+
+    # remove (and warn) negative values from weights due to strange behavior
     if drop_negative_weights is True:
         if any(weight < 0):
             logger.warning(
