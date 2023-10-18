@@ -1,6 +1,6 @@
 # Release v2.0.0
 
-- [#789](https://github.com/IAMconsortium/pyam/pull/789) Support region-aggregation with weights-index >> data-index
+- [#792](https://github.com/IAMconsortium/pyam/pull/792) Support region-aggregation with weights-index >> data-index
 
 ## Highlights
 
