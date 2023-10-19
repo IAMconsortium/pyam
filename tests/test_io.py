@@ -43,7 +43,7 @@ def test_not_a_file():
 
 def test_io_list():
     # initializing with a list raises an error
-    match = r"Initializing from list is not supported,*."
+    match = "Initializing from list is not supported,"
     with pytest.raises(ValueError, match=match):
         IamDataFrame([1, 2])
 

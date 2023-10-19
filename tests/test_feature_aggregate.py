@@ -1,5 +1,5 @@
 import pytest
-import logging
+import re
 
 import numpy as np
 import pandas as pd
@@ -238,7 +238,7 @@ def test_check_aggregate_region_log(simple_df, caplog):
 @pytest.mark.parametrize(
     "variable",
     (
-        ("Primary Energy"),
+        "Primary Energy",
         (["Primary Energy", "Primary Energy|Coal", "Primary Energy|Wind"]),
     ),
 )
@@ -252,7 +252,7 @@ def test_aggregate_region_append(simple_df, variable):
 @pytest.mark.parametrize(
     "variable",
     (
-        ("Primary Energy"),
+        "Primary Energy",
         (["Primary Energy", "Primary Energy|Coal", "Primary Energy|Wind"]),
     ),
 )
@@ -315,7 +315,13 @@ def test_aggregate_region_with_weights(simple_df, caplog):
     exp = simple_df.filter(variable=v, region="World")
     assert_iamframe_equal(simple_df.aggregate_region(v, weight=w), exp)
 
-    # test that dropping negative weights works as expected
+
+def test_aggregate_region_with_negative_weights(simple_df, caplog):
+    # carbon price shouldn't be summed but be weighted by emissions
+    v = "Price|Carbon"
+    w = "Emissions|CO2"
+
+    # dropping negative weights works as expected
     neg_weights_df = simple_df.copy()
     neg_weights_df._data[18] = -6
     exp = simple_df.filter(variable=v, region="World", year=2010)
@@ -329,7 +335,7 @@ def test_aggregate_region_with_weights(simple_df, caplog):
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "WARNING"
 
-    # test that not dropping negative weights works as expected
+    # *not* dropping negative weights works as expected
     exp = simple_df.filter(variable=v, region="World")
     exp._data[0] = -8
     assert_iamframe_equal(
@@ -337,15 +343,56 @@ def test_aggregate_region_with_weights(simple_df, caplog):
     )
 
 
-def test_aggregate_region_with_weights_raises(simple_df):
+@pytest.mark.parametrize(
+    "filter_arg,log_message",
+    (
+        (dict(year=2010), ""),
+        (dict(), "model_a   scen_a  reg_b  2005\n1  "),
+    ),
+)
+def test_aggregate_region_with_weights_inconsistent_index(
+    simple_df, caplog, filter_arg, log_message
+):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
     w = "Emissions|CO2"
 
-    # inconsistent index of variable and weight raises an error
-    _df = simple_df.filter(variable=w, region="reg_b", keep=False)
-    with pytest.raises(ValueError, match="Inconsistent index between variable and wei"):
+    log_message = "\n0  " + log_message + "model_a   scen_a  reg_b  2010"
+    if simple_df.time_domain == "datetime":
+        time_col = "     time"
+        log_message = log_message.replace(" 2005", "2005-06-17").replace(
+            " 2010", "2010-07-21"
+        )
+    else:
+        time_col = "year"
+
+    # missing weight row raises an error
+    _df = simple_df.filter(variable=w, region="reg_b", keep=False, **filter_arg)
+    match = r"Missing weights for the following data.*\n.*" + re.escape(log_message)
+    with pytest.raises(ValueError, match=match):
         _df.aggregate_region(v, weight=w)
+
+    # missing data row prints a warning (data-index is a subset of weight-index)
+    exp = simple_df.filter(variable=v, region="World")
+    if not filter_arg:
+        exp._data[0] = 1.0
+    exp._data[1] = 30.0
+    _df = simple_df.filter(variable=v, region="reg_b", keep=False, **filter_arg)
+    assert_iamframe_equal(_df.aggregate_region(v, weight=w), exp)
+
+    msg = (
+        "Ignoring weights for the following missing data rows:\n"
+        f"     model scenario region  {time_col}" + log_message
+    )
+
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "WARNING"
+
+
+def test_aggregate_region_with_weights_raises(simple_df):
+    # carbon price shouldn't be summed but be weighted by emissions
+    v = "Price|Carbon"
+    w = "Emissions|CO2"
 
     # using weight and method other than 'sum' raises an error
     pytest.raises(ValueError, simple_df.aggregate_region, v, method="max", weight="bar")
