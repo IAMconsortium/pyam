@@ -6,7 +6,8 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 
-from pyam import IamDataFrame, IAMC_IDX
+from pyam import IamDataFrame
+from pyam.utils import IAMC_IDX
 
 from .conftest import EXP_DATETIME_INDEX
 
@@ -55,7 +56,8 @@ def test_filter_mixed_time_domain(test_df_mixed, arg_year, arg_time):
     assert obs.time_col == "year"
     assert obs.time_domain == "year"
     assert obs.year == [2005]
-    pdt.assert_index_equal(obs.time, pd.Int64Index([2005], name="time"))
+    pdt.assert_index_equal(obs.time, pd.Index([2005], name="time"))
+    assert obs.time.dtype == "int64"
 
 
 def test_filter_time_domain_raises(test_df_year):
@@ -106,10 +108,12 @@ def test_filter_day(test_df, test_day):
 
 def test_filter_with_numpy_64_date_vals(test_df):
     dates = test_df[test_df.time_col].unique()
-    key = "year" if test_df.time_col == "year" else "time"
-    res_0 = test_df.filter(**{key: dates[0]})
-    res = test_df.filter(**{key: dates})
-    assert np.equal(res_0.data[res_0.time_col].values, dates[0]).all()
+    res_0 = test_df.filter(**{test_df.time_col: dates[0]})
+    res = test_df.filter(**{test_df.time_col: dates})
+    if test_df.time_col == "year":
+        assert res_0.data[res_0.time_col].values[0] == dates[0]
+    else:
+        assert res_0.data[res_0.time_col].values[0] == np.datetime64(dates[0])
     assert res.equals(test_df)
 
 
@@ -305,3 +309,25 @@ def test_filter_keep_false(test_df):
 def test_filter_by_regexp(test_df):
     obs = test_df.filter(scenario="sce._a$", regexp=True)
     assert obs["scenario"].unique() == "scen_a"
+
+
+def test_filter_by_exclude(test_df):
+    index = pd.MultiIndex.from_tuples(
+        [("model_a", "scen_a")], names=["model", "scenario"]
+    )
+    test_df.exclude[index] = True
+
+    obs = test_df.filter(exclude=True)
+    assert obs.scenario == ["scen_a"]
+
+    obs = test_df.filter(exclude=False, keep=False)
+    assert obs.scenario == ["scen_a"]
+
+    obs = test_df.filter(exclude=False)
+    assert obs.scenario == ["scen_b"]
+
+
+@pytest.mark.parametrize("value", [[True, False], "any", 3])
+def test_filter_by_exclude_raises(test_df, value):
+    with pytest.raises(ValueError, match="Filter by `exclude` requires a boolean, "):
+        test_df.filter(exclude=value)

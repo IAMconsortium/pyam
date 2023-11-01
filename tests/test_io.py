@@ -43,7 +43,7 @@ def test_not_a_file():
 
 def test_io_list():
     # initializing with a list raises an error
-    match = r"Initializing from list is not supported,*."
+    match = "Initializing from list is not supported,"
     with pytest.raises(ValueError, match=match):
         IamDataFrame([1, 2])
 
@@ -66,11 +66,7 @@ def test_io_csv_none(test_df_year):
         "model_a,scen_a,World,Primary Energy|Coal,EJ/yr,0.5,3.0\n"
         "model_a,scen_b,World,Primary Energy,EJ/yr,2.0,7.0\n"
     )
-    try:
-        assert test_df_year.to_csv(lineterminator="\n") == exp
-    # special treatment for Python 3.7 and pandas < 1.5
-    except TypeError:
-        assert test_df_year.to_csv(line_terminator="\n") == exp
+    assert test_df_year.to_csv(lineterminator="\n") == exp
 
 
 @pytest.mark.parametrize(
@@ -202,7 +198,7 @@ def test_load_meta_wrong_index(test_df_year, tmpdir):
     file = tmpdir / "testing_meta_empty.xlsx"
     pd.DataFrame(columns=["model", "foo"]).to_excel(file, index=False)
 
-    match = ".* \(sheet meta\) missing required index columns \['scenario'\]\!"
+    match = "Missing index columns for meta indicators: \['scenario'\]"
     with pytest.raises(ValueError, match=match):
         test_df_year.load_meta(file)
 
@@ -217,6 +213,14 @@ def test_load_meta_empty_rows(test_df_year, tmpdir):
     test_df_year.load_meta(file)
 
     assert_iamframe_equal(test_df_year, exp)
+
+
+def test_load_meta_exclude(test_pd_df):
+    """Initializing from xlsx where 'meta' has an exclude columns (pyam < 2.0)"""
+    obs = IamDataFrame(TEST_DATA_DIR / "exclude_meta_sheet.xlsx")
+    exp = IamDataFrame(test_pd_df)
+    exp.exclude[0] = True
+    assert_iamframe_equal(obs, exp)
 
 
 def test_load_meta_empty(test_pd_df):

@@ -1,5 +1,91 @@
 # Next Release
 - [#794](https://github.com/IAMconsortium/pyam/pull/794] Fixed wrong color codes for AR6 Illustrative Pathways
+
+# Release v2.0.0
+
+- [#792](https://github.com/IAMconsortium/pyam/pull/792) Support region-aggregation with weights-index >> data-index
+
+## Highlights
+
+- Use **ixmp4** as dependency for better integration with the IIASA Scenario Explorer database infrastructure 
+- Refactor the "exclude"-column for validation as own attribute (instead of a column in `meta`)
+- Implement a cleaner package structure and reduce exposure of internal methods/modules
+
+## Dependency changes
+
+Support for Python 3.7-3.9 was removed due to an incompatible dependency.  
+
+PR [#766](https://github.com/IAMconsortium/pyam/pull/766) added the **ixmp4** package
+for better integration with the IIASA scenario database infrastructure.
+
+## API changes
+
+Credentials to access the IIASA scenario database infrastructure should now be managed
+using the **ixmp4** package
+(see [here](https://pyam-iamc.readthedocs.io/en/stable/api/iiasa.html)).
+
+The column *exclude* of the `meta` indicators was moved to a new attribute `exclude`.
+All validation methods are refactored such that the argument `exclude_on_fail` changes
+this new attribute (see PR [#759](https://github.com/IAMconsortium/pyam/pull/759)).
+
+The term "exclude" is now an illegal column for (timeseries) data and meta indicators.
+When importing an xlsx file created with pyam < 2.0, which has an "exclude" column in
+the "meta" sheet, the column is moved to the new `exclude` attribute with a log message.
+
+PR [#764](https://github.com/IAMconsortium/pyam/pull/764) implemented a more restrictive
+approach to exposing pyam-internals at the package level, requiring a more explicit
+import of these methods. For example, use `pyam.utils.to_list()`
+instead of `pyam.to_list()`.
+
+PR [#773](https://github.com/IAMconsortium/pyam/pull/773) removed the `map_regions()`
+method. This feature is now implemented via the **nomenclature.RegionProcessor** class.
+
+## Individual updates
+
+- [#773](https://github.com/IAMconsortium/pyam/pull/773) Remove `map_regions()` and default mappings csv
+- [#772](https://github.com/IAMconsortium/pyam/pull/772) Show all missing rows for `require_data()`
+- [#771](https://github.com/IAMconsortium/pyam/pull/771) Refactor to start a separate validation module
+- [#766](https://github.com/IAMconsortium/pyam/pull/766) Use **ixmp4** for credentials to access a Scenario Explorer database
+- [#764](https://github.com/IAMconsortium/pyam/pull/764) Clean-up exposing internal methods and attributes
+- [#763](https://github.com/IAMconsortium/pyam/pull/763) Implement a fix against carrying over unused levels when initializing from an indexed pandas object
+- [#759](https://github.com/IAMconsortium/pyam/pull/759) Excise "exclude" column from meta and add a own attribute
+- [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7
+
+# Release v1.9.0
+
+## Highlights
+
+- Ensure compatibility with **pandas v2.0**
+- Add **Python 3.11** to supported versions
+- Fix an issue when concatenating a list of **pd.DataFrame** objects 
+
+## Individual updates
+
+- [#745](https://github.com/IAMconsortium/pyam/pull/745) Add Python 3.11 to supported versions
+- [#742](https://github.com/IAMconsortium/pyam/pull/742) Fix an issue when concatenating only pd.DataFrame objects
+- [#739](https://github.com/IAMconsortium/pyam/pull/739) Ensure compatibility with **pandas v2.0**
+
+# Release v1.8.0
+
+## Highlights
+
+- **Performance improvement** at initialization and in internal operations
+- Update the **IIASA-Connection API** in preparation of a new database backend
+- Improve the **tutorials**
+
+## API changes
+
+In anticipation of a change in the **ixmp** API, the argument `default` in the
+IIASA-Connection methods was renamed to `default_only`.
+
+## Individual updates
+
+- [#734](https://github.com/IAMconsortium/pyam/pull/734) Validation for illegal column names in `data`
+- [#733](https://github.com/IAMconsortium/pyam/pull/733) Change IIASA-Connection argument to `default_only`
+- [#732](https://github.com/IAMconsortium/pyam/pull/732) Fix a few typos in tutorials
+- [#731](https://github.com/IAMconsortium/pyam/pull/731) Add fast-path to initialization for sufficient multi-index
+- [#730](https://github.com/IAMconsortium/pyam/pull/730) Refactor initialization code
+- [#729](https://github.com/IAMconsortium/pyam/pull/729) Improve performance at initialization
 - [#723](https://github.com/IAMconsortium/pyam/pull/723) Ensure correct order of `time` attribute
 
 # Release v1.7.0

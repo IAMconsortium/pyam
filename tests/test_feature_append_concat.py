@@ -5,7 +5,9 @@ import pandas as pd
 import pandas.testing as pdt
 from datetime import datetime
 
-from pyam import IamDataFrame, IAMC_IDX, META_IDX, assert_iamframe_equal, concat
+from pyam import IamDataFrame, concat
+from pyam.testing import assert_iamframe_equal
+from pyam.utils import IAMC_IDX, META_IDX
 
 from .conftest import TEST_DF, META_COLS, META_DF
 
@@ -13,11 +15,11 @@ from .conftest import TEST_DF, META_COLS, META_DF
 # assert that merging of meta works as expected
 EXP_META = pd.DataFrame(
     [
-        ["model_a", "scen_a", False, 1, "foo", 0, "a", np.nan],
-        ["model_a", "scen_b", False, 2, np.nan, 1, "b", np.nan],
-        ["model_a", "scen_c", False, 2, np.nan, 2, np.nan, "x"],
+        ["model_a", "scen_a", 1, "foo", 0, "a", np.nan],
+        ["model_a", "scen_b", 2, np.nan, 1, "b", np.nan],
+        ["model_a", "scen_c", 2, np.nan, 2, np.nan, "x"],
     ],
-    columns=META_IDX + ["exclude", "number", "string", "col1", "col2", "col3"],
+    columns=META_IDX + ["number", "string", "col1", "col2", "col3"],
 ).set_index(META_IDX)
 
 
@@ -136,6 +138,20 @@ def test_concat_non_default_index():
     assert_iamframe_equal(exp, concat([df1, df2]))
 
 
+def test_concat_inconsistent_index_raises(test_df):
+    # Test that merging two IamDataFrames with inconsistent index raises
+
+    df_version = IamDataFrame(
+        pd.DataFrame(
+            [["model_a", "scenario_a", "region_a", "variable_a", "unit", 1, 1, 2]],
+            columns=IAMC_IDX + ["version", 2005, 2010],
+        ),
+        index=META_IDX + ["version"],
+    )
+    with pytest.raises(ValueError, match="Items have incompatible index dimensions"):
+        concat([test_df, df_version])
+
+
 @pytest.mark.parametrize("reverse", (False, True))
 def test_concat_with_pd_dataframe(test_df, reverse):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
@@ -152,8 +168,20 @@ def test_concat_with_pd_dataframe(test_df, reverse):
     # assert that merging meta from `other` is ignored
     exp_meta = META_DF.copy()
     exp_meta.loc[("model_a", "scen_c"), "number"] = np.nan
-    exp_meta["exclude"] = False
-    pdt.assert_frame_equal(result.meta, exp_meta[["exclude"] + META_COLS])
+    pdt.assert_frame_equal(result.meta, exp_meta[META_COLS])
+
+    # assert that appending data works as expected
+    ts = result.timeseries()
+    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+
+
+def test_concat_all_pd_dataframe(test_df):
+    # Try concatenating only pd.DataFrame objects and casting to an IamDataFrame
+
+    other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
+
+    # merge only the timeseries `data` DataFrame of both items
+    result = concat([test_df.data, other.data])
 
     # assert that appending data works as expected
     ts = result.timeseries()
@@ -185,7 +213,6 @@ def test_append(test_df):
 @pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
 @pytest.mark.parametrize("reverse", (False, True))
 def test_concat_time_domain(test_pd_df, test_df_mixed, time, reverse):
-
     df_year = IamDataFrame(test_pd_df[IAMC_IDX + [2005]], meta=test_df_mixed.meta)
     df_time = IamDataFrame(
         test_pd_df[IAMC_IDX + [2010]].rename({2010: time}, axis="columns")
@@ -208,7 +235,6 @@ def test_concat_time_domain(test_pd_df, test_df_mixed, time, reverse):
 @pytest.mark.parametrize("time", (datetime(2010, 7, 21), "2010-07-21 00:00:00"))
 @pytest.mark.parametrize("inplace", (True, False))
 def test_append_time_domain(test_pd_df, test_df_mixed, other, time, inplace):
-
     df_year = IamDataFrame(test_pd_df[IAMC_IDX + [2005]], meta=test_df_mixed.meta)
     df_time = IamDataFrame(
         test_pd_df[IAMC_IDX + [2010]].rename({2010: time}, axis="columns")
@@ -262,7 +288,7 @@ def test_append_same_scenario(test_df):
     df = test_df.append(other, ignore_meta_conflict=True)
 
     # check that the new meta.index is updated, but not the original one
-    cols = ["exclude"] + META_COLS + ["col1"]
+    cols = META_COLS + ["col1"]
     npt.assert_array_equal(test_df.meta.columns, cols)
 
     # assert that merging of meta works as expected

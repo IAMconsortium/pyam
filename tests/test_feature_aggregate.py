@@ -1,9 +1,10 @@
 import pytest
-import logging
+import re
 
 import numpy as np
 import pandas as pd
-from pyam import check_aggregate, IamDataFrame, IAMC_IDX
+from pyam import check_aggregate, IamDataFrame
+from pyam.utils import IAMC_IDX
 from pyam.testing import assert_iamframe_equal
 
 from .conftest import DTS_MAPPING
@@ -38,20 +39,6 @@ PRICE_MAX_DF = pd.DataFrame(
     [
         ["model_a", "scen_a", "World", "Price|Carbon", "USD/tCO2", 2005, 10.0],
         ["model_a", "scen_a", "World", "Price|Carbon", "USD/tCO2", 2010, 30.0],
-    ],
-    columns=LONG_IDX + ["value"],
-)
-
-NEG_WEIGHTS_DF = pd.DataFrame(
-    [
-        ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2005, -4.0],
-        ["model_a", "scen_a", "reg_a", "Emissions|CO2", "EJ/yr", 2010, 5.0],
-        ["model_a", "scen_a", "reg_b", "Emissions|CO2", "EJ/yr", 2005, 2.0],
-        ["model_a", "scen_a", "reg_b", "Emissions|CO2", "EJ/yr", 2010, 3.0],
-        ["model_a", "scen_a", "reg_a", "Price|Carbon", "USD/tCO2", 2005, 6.0],
-        ["model_a", "scen_a", "reg_a", "Price|Carbon", "USD/tCO2", 2010, 6.0],
-        ["model_a", "scen_a", "reg_b", "Price|Carbon", "USD/tCO2", 2005, 3.0],
-        ["model_a", "scen_a", "reg_b", "Price|Carbon", "USD/tCO2", 2010, 4.0],
     ],
     columns=LONG_IDX + ["value"],
 )
@@ -107,12 +94,11 @@ def test_check_aggregate_top_level(simple_df):
     np.testing.assert_array_equal(obs.values, exp.values)
 
     # assert that scenario `foo` has correctly been assigned as `exclude=True`
-    np.testing.assert_array_equal(_df.meta.exclude.values, [True, False])
+    np.testing.assert_array_equal(_df.exclude, [True, False])
 
 
 @pytest.mark.parametrize(
-    "variable",
-    (("Primary Energy"), (["Primary Energy", "Emissions|CO2"])),
+    "variable", ("Primary Energy", (["Primary Energy", "Emissions|CO2"]))
 )
 def test_aggregate_append(simple_df, variable):
     # remove `variable`, do aggregate and append, check equality to original
@@ -181,7 +167,6 @@ def test_aggregate_skip_intermediate(recursive_df):
 )
 def test_aggregate_empty(test_df, variable, append, caplog):
     """Check for performing an "empty" aggregation"""
-    caplog.set_level(logging.INFO, logger="pyam.aggregation")
 
     if append:
         # with `append=True`, the instance is unchanged
@@ -192,7 +177,7 @@ def test_aggregate_empty(test_df, variable, append, caplog):
         # with `append=False` (default), an empty instance is returned
         assert test_df.aggregate(variable).empty
 
-    msg = f"Cannot aggregate variable '{variable}' because it has no components!"
+    msg = f"Cannot aggregate variable '{variable}' because it has no components."
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "INFO"
 
@@ -211,7 +196,7 @@ def test_aggregate_components_as_dict(simple_df):
 @pytest.mark.parametrize(
     "variable",
     (
-        ("Primary Energy"),
+        "Primary Energy",
         (["Primary Energy", "Primary Energy|Coal", "Primary Energy|Wind"]),
     ),
 )
@@ -240,13 +225,12 @@ def test_check_aggregate_region(simple_df):
 
 def test_check_aggregate_region_log(simple_df, caplog):
     # verify that `check_aggregate_region()` writes log on empty assertion
-    caplog.set_level(logging.INFO, logger="pyam.core")
     (
         simple_df.filter(
             variable="Primary Energy", region="World", keep=False
         ).check_aggregate_region("Primary Energy")
     )
-    msg = "Variable 'Primary Energy' does not exist in region 'World'!"
+    msg = "Variable 'Primary Energy' does not exist in region 'World'."
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "INFO"
 
@@ -254,12 +238,12 @@ def test_check_aggregate_region_log(simple_df, caplog):
 @pytest.mark.parametrize(
     "variable",
     (
-        ("Primary Energy"),
+        "Primary Energy",
         (["Primary Energy", "Primary Energy|Coal", "Primary Energy|Wind"]),
     ),
 )
 def test_aggregate_region_append(simple_df, variable):
-    # remove `variable`, do aggregate and append, check equality to original
+    # remove `variable`, aggregate and append, check equality to original
     _df = simple_df.filter(variable=variable, region="World", keep=False)
     _df.aggregate_region(variable, append=True)
     assert_iamframe_equal(_df, simple_df)
@@ -268,7 +252,7 @@ def test_aggregate_region_append(simple_df, variable):
 @pytest.mark.parametrize(
     "variable",
     (
-        ("Primary Energy"),
+        "Primary Energy",
         (["Primary Energy", "Primary Energy|Coal", "Primary Energy|Wind"]),
     ),
 )
@@ -320,67 +304,113 @@ def test_aggregate_region_with_components(simple_df):
     assert _df.check_aggregate_region(v, components=["foo"]) is None
 
 
-def test_agg_weight():
-    variable = "Price|Carbon"
-    weight = "Emissions|CO2"
-    # negative weights should be dropped on default
-    obs_1 = IamDataFrame(NEG_WEIGHTS_DF).aggregate_region(variable, weight=weight)._data
-    exp_1 = np.array([5.25])
-    np.testing.assert_array_equal(obs_1.values, exp_1)
-
-    # negative weights shouldn't be dropped if drop_negative_weights=False
-    obs_2 = (
-        IamDataFrame(NEG_WEIGHTS_DF)
-        .aggregate_region(variable, weight=weight, drop_negative_weights=False)
-        ._data
-    )
-    exp_2 = np.array([9, 5.25])
-    np.testing.assert_array_equal(obs_2.values, exp_2)
-
-
-def test_aggregate_region_with_no_weights_drop_negative_weights_raises(simple_df):
-    # dropping negative weights can only be used with weight
-    pytest.raises(
-        ValueError,
-        simple_df.aggregate_region,
-        "Price|Carbon",
-        drop_negative_weights=False,
-    )
-
-
-def test_aggregate_region_with_weights(simple_df):
+def test_aggregate_region_with_weights(simple_df, caplog):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
     w = "Emissions|CO2"
     assert simple_df.check_aggregate_region(v) is not None
     assert simple_df.check_aggregate_region(v, weight=w) is None
 
+    # test the full dataset
     exp = simple_df.filter(variable=v, region="World")
     assert_iamframe_equal(simple_df.aggregate_region(v, weight=w), exp)
 
-    # inconsistent index of variable and weight raises an error
-    _df = simple_df.filter(variable=w, region="reg_b", keep=False)
-    pytest.raises(ValueError, _df.aggregate_region, v, weight=w)
+
+def test_aggregate_region_with_negative_weights(simple_df, caplog):
+    # carbon price shouldn't be summed but be weighted by emissions
+    v = "Price|Carbon"
+    w = "Emissions|CO2"
+
+    # dropping negative weights works as expected
+    neg_weights_df = simple_df.copy()
+    neg_weights_df._data[18] = -6
+    exp = simple_df.filter(variable=v, region="World", year=2010)
+    assert_iamframe_equal(neg_weights_df.aggregate_region(v, weight=w), exp)
+
+    msg = (
+        "Some weights are negative. Data weighted by negative values will be dropped. "
+        "To use both positive and negative weights, please use the keyword argument "
+        "`drop_negative_weights=False`."
+    )
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "WARNING"
+
+    # *not* dropping negative weights works as expected
+    exp = simple_df.filter(variable=v, region="World")
+    exp._data[0] = -8
+    assert_iamframe_equal(
+        neg_weights_df.aggregate_region(v, weight=w, drop_negative_weights=False), exp
+    )
+
+
+@pytest.mark.parametrize(
+    "filter_arg,log_message",
+    (
+        (dict(year=2010), ""),
+        (dict(), "model_a   scen_a  reg_b  2005\n1  "),
+    ),
+)
+def test_aggregate_region_with_weights_inconsistent_index(
+    simple_df, caplog, filter_arg, log_message
+):
+    # carbon price shouldn't be summed but be weighted by emissions
+    v = "Price|Carbon"
+    w = "Emissions|CO2"
+
+    log_message = "\n0  " + log_message + "model_a   scen_a  reg_b  2010"
+    if simple_df.time_domain == "datetime":
+        time_col = "     time"
+        log_message = log_message.replace(" 2005", "2005-06-17").replace(
+            " 2010", "2010-07-21"
+        )
+    else:
+        time_col = "year"
+
+    # missing weight row raises an error
+    _df = simple_df.filter(variable=w, region="reg_b", keep=False, **filter_arg)
+    match = r"Missing weights for the following data.*\n.*" + re.escape(log_message)
+    with pytest.raises(ValueError, match=match):
+        _df.aggregate_region(v, weight=w)
+
+    # missing data row prints a warning (data-index is a subset of weight-index)
+    exp = simple_df.filter(variable=v, region="World")
+    if not filter_arg:
+        exp._data[0] = 1.0
+    exp._data[1] = 30.0
+    _df = simple_df.filter(variable=v, region="reg_b", keep=False, **filter_arg)
+    assert_iamframe_equal(_df.aggregate_region(v, weight=w), exp)
+
+    msg = (
+        "Ignoring weights for the following missing data rows:\n"
+        f"     model scenario region  {time_col}" + log_message
+    )
+
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "WARNING"
+
+
+def test_aggregate_region_with_weights_raises(simple_df):
+    # carbon price shouldn't be summed but be weighted by emissions
+    v = "Price|Carbon"
+    w = "Emissions|CO2"
 
     # using weight and method other than 'sum' raises an error
     pytest.raises(ValueError, simple_df.aggregate_region, v, method="max", weight="bar")
 
-
-def test_aggregate_region_with_components_and_weights_raises(simple_df):
     # setting both weight and components raises an error
     pytest.raises(
-        ValueError,
-        simple_df.aggregate_region,
-        "Emissions|CO2",
-        components=True,
-        weight="bar",
+        ValueError, simple_df.aggregate_region, v, components=True, weight="bar"
+    )
+
+    # dropping negative weights can only be used with weight
+    pytest.raises(
+        ValueError, simple_df.aggregate_region, v, drop_negative_weights=False
     )
 
 
 @pytest.mark.parametrize("variable, append", (("Primary Energy", "foo"), (False, True)))
 def test_aggregate_region_empty(test_df, variable, append, caplog):
     """Check for performing an "empty" aggregation"""
-    caplog.set_level(logging.INFO, logger="pyam.aggregation")
 
     if append:
         # with `append=True`, the instance is unchanged
@@ -392,10 +422,9 @@ def test_aggregate_region_empty(test_df, variable, append, caplog):
         # with `append=False` (default), an empty instance is returned
         assert test_df.aggregate_region(variable).empty
 
-    caplog.set_level(logging.INFO, logger="pyam.aggregation")
     msg = (
         f"Cannot aggregate variable '{variable}' to 'World' "
-        "because it does not exist in any subregion!"
+        "because it does not exist in any subregion."
     )
     idx = caplog.messages.index(msg)
     assert caplog.records[idx].levelname == "INFO"

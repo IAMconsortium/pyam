@@ -3,22 +3,22 @@ import matplotlib
 
 matplotlib.use("agg")
 
-from pathlib import Path
-import os
-from requests.exceptions import ConnectionError
-import pytest
+from datetime import datetime
+from httpx import ConnectError
 import numpy as np
 import pandas as pd
+import pytest
+from pathlib import Path
 
-from datetime import datetime
-from pyam import IamDataFrame, META_IDX, IAMC_IDX, iiasa
+from pyam import IamDataFrame, iiasa
+from pyam.utils import META_IDX, IAMC_IDX
 
 
 # verify whether IIASA database API can be reached, skip tests otherwise
 try:
     iiasa.Connection()
     IIASA_UNAVAILABLE = False
-except ConnectionError:  # pragma: no cover
+except ConnectError:  # pragma: no cover
     IIASA_UNAVAILABLE = True
 
 TEST_API = "integration-test"
@@ -236,14 +236,13 @@ def reg_df():
 
 @pytest.fixture(scope="session")
 def plot_df():
-    df = IamDataFrame(data=os.path.join(TEST_DATA_DIR, "plot_data.csv"))
+    df = IamDataFrame(data=TEST_DATA_DIR / "plot_data.csv")
     yield df
 
 
 # IamDataFrame with two scenarios and structure for recursive aggregation
 @pytest.fixture(scope="function", params=["year", "datetime"])
 def recursive_df(request):
-
     data = (
         RECURSIVE_DF
         if request.param == "year"

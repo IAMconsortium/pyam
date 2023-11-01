@@ -13,12 +13,12 @@ from collections.abc import Iterable
 from pyam.run_control import run_control
 from pyam.figures import sankey
 from pyam.timeseries import cross_threshold
+from pyam.str import is_str
 from pyam.utils import (
     META_IDX,
     IAMC_IDX,
     SORT_IDX,
     YEAR_IDX,
-    isstr,
     to_list,
 )
 from pyam.logging import raise_data_error
@@ -177,7 +177,7 @@ def mpl_args_to_meta_cols(df, **kwargs):
     """Return the kwargs values (not keys) matching a `df.meta` column name"""
     cols = set()
     for arg, value in kwargs.items():
-        if isstr(value) and value in df.meta.columns:
+        if is_str(value) and value in df.meta.columns:
             cols.add(value)
     return list(cols)
 
@@ -1070,7 +1070,7 @@ def line(
     label = kwargs.pop("label", None)
 
     # plot data, keeping track of which legend labels to apply
-    for col, data in df.iteritems():
+    for col, data in df.items():
         # handle case where columns are not strings or only have 1 dimension
         col = list(map(str, to_list(col)))
         pargs = {}

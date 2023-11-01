@@ -4,41 +4,35 @@ import logging
 from itertools import compress
 
 from pyam.index import replace_index_values
-from pyam.logging import adjust_log_level
-from pyam.utils import (
-    islistable,
-    isstr,
-    find_depth,
-    reduce_hierarchy,
-    KNOWN_FUNCS,
-    to_list,
-)
+from pyam.logging import adjust_log_level, format_log_message
+from pyam.str import find_depth, is_str, reduce_hierarchy
+from pyam.utils import KNOWN_FUNCS, is_list_like, to_list
 from pyam._compare import _compare
 
 
 logger = logging.getLogger(__name__)
 
 
-def _aggregate(df, variable, components=None, method=np.sum):
+def _aggregate(df, variable, components=None, method="sum"):
     """Internal implementation of the `aggregate` function"""
 
     if components is not None:
         # ensure that components is a proper list (not a dictionary)
-        if not islistable(components) or isinstance(components, dict):
+        if not is_list_like(components) or isinstance(components, dict):
             raise ValueError(
                 f"Value for `components` must be a list, found: {components}"
             )
 
         # list of variables require default components (no manual list)
-        if islistable(variable):
+        if is_list_like(variable):
             raise NotImplementedError(
                 "Aggregating by list of variables does not support `components`."
             )
 
     mapping = {}
-    msg = "Cannot aggregate variable '{}' because it has no components!"
+    msg = "Cannot aggregate variable '{}' because it has no components."
     # if single variable
-    if isstr(variable):
+    if is_str(variable):
         # default components to all variables one level below `variable`
         components = components or df._variable_components(variable)
 
@@ -51,7 +45,7 @@ def _aggregate(df, variable, components=None, method=np.sum):
 
     # else, use all variables one level below `variable` as components
     else:
-        for v in variable if islistable(variable) else [variable]:
+        for v in variable if is_list_like(variable) else [variable]:
             _components = df._variable_components(v)
             if not len(_components):
                 logger.info(msg.format(v))
@@ -113,21 +107,24 @@ def _aggregate_region(
     drop_negative_weights=True,
 ):
     """Internal implementation for aggregating data over subregions"""
-    if not isstr(variable) and components is not False:
+    if not is_str(variable) and components is not False:
         raise ValueError(
-            "Aggregating by list of variables with components is not supported!"
+            "Aggregating by list of variables with components is not supported."
         )
 
     if weight is not None and components is not False:
-        raise ValueError("Using weights and components in one operation not supported!")
+        raise ValueError("Using weights and components in one operation not supported.")
 
     # default subregions to all regions other than `region`
-    subregions = subregions or df._all_other_regions(region, variable)
+    if weight is None:
+        subregions = subregions or df._all_other_regions(region, variable)
+    else:
+        subregions = subregions or df._all_other_regions(region, [variable, weight])
 
     if not len(subregions):
         logger.info(
             f"Cannot aggregate variable '{variable}' to '{region}' "
-            "because it does not exist in any subregion!"
+            "because it does not exist in any subregion."
         )
         return
 
@@ -135,10 +132,9 @@ def _aggregate_region(
     subregion_df = df.filter(region=subregions)
     rows = subregion_df._apply_filters(variable=variable)
     if weight is None:
-
         if drop_negative_weights is False:
             raise ValueError(
-                "Dropping negative weights can only be used with `weights`!"
+                "Dropping negative weights can only be used with `weights`."
             )
 
         _data = _group_and_agg(subregion_df._data[rows], "region", method=method)
@@ -175,7 +171,7 @@ def _aggregate_region(
     return _data
 
 
-def _aggregate_time(df, variable, column, value, components, method=np.sum):
+def _aggregate_time(df, variable, column, value, components, method="sum"):
     """Internal implementation for aggregating data over subannual time"""
     # default `components` to all entries in `column` other than `value`
     if components is None:
@@ -200,10 +196,13 @@ def _aggregate_time(df, variable, column, value, components, method=np.sum):
     # reset index-level order to original IamDataFrame
     _data.index = _data.index.reorder_levels(df.dimensions)
 
+    # set name of series
+    _data.name = "value"
+
     return _data
 
 
-def _group_and_agg(df, by, method=np.sum):
+def _group_and_agg(df, by, method="sum"):
     """Group-by & aggregate `pd.Series` by index names on `by`"""
     cols = df.index.names.difference(to_list(by))
     # pick aggregator func (default: sum)
@@ -215,22 +214,39 @@ def _agg_weight(data, weight, method, drop_negative_weights):
 
     # only summation allowed with weights
     if method not in ["sum", np.sum]:
-        raise ValueError("Only method 'np.sum' allowed for weighted average!")
+        raise ValueError("Only method 'np.sum' allowed for weighted average.")
 
     weight = weight.droplevel(["variable", "unit"])
+    data_index = data.droplevel(["variable", "unit"]).index
 
-    if not data.droplevel(["variable", "unit"]).index.equals(weight.index):
-        raise ValueError("Inconsistent index between variable and weight!")
+    # check that weights exist for all data rows
+    missing_weights = data_index.difference(weight.index)
+    if not missing_weights.empty:
+        raise ValueError(
+            format_log_message(
+                "Missing weights for the following data rows", missing_weights
+            )
+        )
 
+    # warn if no data exists for available weights
+    missing_data = weight.index.difference(data_index)
+    if not missing_data.empty:
+        logger.warning(
+            format_log_message(
+                "Ignoring weights for the following missing data rows", missing_data
+            )
+        )
+        weight[missing_data] = np.nan
+
+    # remove (and warn) negative values from weights due to strange behavior
     if drop_negative_weights is True:
         if any(weight < 0):
             logger.warning(
-                "Some of the weights are negative. "
-                "All data weighted by negative values will be dropped. "
-                "To apply both positive and negative weights to the data, "
+                "Some weights are negative. Data weighted by negative values will be "
+                "dropped. To use both positive and negative weights, "
                 "please use the keyword argument `drop_negative_weights=False`."
             )
-            # Drop negative weights
+            # drop negative weights
             weight[weight < 0] = None
 
     col1 = data.index.names.difference(["region"])
@@ -242,11 +258,11 @@ def _agg_weight(data, weight, method, drop_negative_weights):
 
 def _get_method_func(method):
     """Translate a string to a known method"""
-    if not isstr(method):
+    if not is_str(method):
         return method
 
     if method in KNOWN_FUNCS:
         return KNOWN_FUNCS[method]
 
     # raise error if `method` is a string but not in dict of known methods
-    raise ValueError(f"'{method}' is not a known method!")
+    raise ValueError(f"Unknown method: {method}")

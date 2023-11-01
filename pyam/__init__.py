@@ -1,27 +1,26 @@
+from importlib.metadata import version, PackageNotFoundError
 import logging
 from pathlib import Path
 from setuptools_scm import get_version
 
-# use standard library for Python >=3.8
-try:
-    from importlib.metadata import version, PackageNotFoundError
-# use dedicated package for Python 3.7
-except ModuleNotFoundError:
-    from importlib_metadata import version, PackageNotFoundError
-
-from pyam.core import *
-from pyam.slice import IamSlice  # noqa: F401
-from pyam.utils import *
-from pyam.statistics import *
-from pyam.timeseries import *
-from pyam.logging import *
-from pyam.run_control import *
+from pyam.core import (
+    IamDataFrame,
+    categorize,
+    check_aggregate,
+    compare,
+    concat,
+    filter_by_meta,
+    require_variable,
+    read_datapackage,
+    validate,
+)
+from pyam.statistics import Statistics
 from pyam.iiasa import read_iiasa, lazy_read_iiasa  # noqa: F401
 from pyam.datareader import read_worldbank  # noqa: F401
 from pyam.unfccc import read_unfccc  # noqa: F401
 from pyam.testing import assert_iamframe_equal  # noqa: F401
-
-from pyam.logging import defer_logging_config
+from pyam.run_control import run_control  # noqa: F401
+from pyam.utils import IAMC_IDX  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
@@ -42,16 +41,15 @@ try:
 
     shell = get_ipython()
     if isinstance(shell, ZMQInteractiveShell):
+        # harmonize formatting of ixmp4 and pyam logging
+        ixmp4_logger = logging.getLogger("ixmp4")
+        ixmp4_logger.removeHandler(ixmp4_logger.handlers[0])
 
-        # set up basic logging if running in a notebook
-        log_msg = "Running in a notebook, setting up a basic logging at level INFO"
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(name)s - %(levelname)s: %(message)s"))
 
-        defer_logging_config(
-            logger,
-            log_msg,
-            level="INFO",
-            format="%(name)s - %(levelname)s: %(message)s",
-        )
+        for _logger in [logger, ixmp4_logger]:
+            _logger.addHandler(handler)
 
         # deactivate in-cell scrolling in a Jupyter notebook
         shell.run_cell_magic(

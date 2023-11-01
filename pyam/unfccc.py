@@ -10,7 +10,8 @@ except ImportError:  # pragma: no cover
     HAS_UNFCCC = False
 
 from pyam import IamDataFrame
-from pyam.utils import pattern_match, isstr, to_list
+from pyam.str import is_str
+from pyam.utils import pattern_match, to_list
 
 # columns from UNFCCC data that can be used for variable names
 NAME_COLS = ["category", "classification", "measure", "gas"]
@@ -56,13 +57,14 @@ def read_unfccc(
 
         .. code-block:: python
 
-            {
-                'Emissions|{gas}|Energy': ('1.  Energy', '*', '*', '*'),
-            }
+          {
+            "Emissions|{gas}|Energy":
+              ("1.  Energy", "*", "*", "*"),
+          }
 
         where the tuple corresponds to filters for the columns
-        `['category', 'classification', 'measure', 'gas']`
-        and `{<col>}` tags in the key are replaced by the column value.
+        ``["category", "classification", "measure", "gas"]``
+        and ``{<col>}`` tags in the key are replaced by the column value.
     model : str, optional
         Name to be used as model identifier
     scenario : str, optional
@@ -71,13 +73,19 @@ def read_unfccc(
     Returns
     -------
     :class:`IamDataFrame`
+
+    Notes
+    -----
+    This method is currently not tested due to a change in the UNFCCC-DI API,
+    which sometimes causes a `JsonDecodeError`.
+    See https://github.com/pik-primap/unfccc_di_api/issues/74 for more info.
     """
     if not HAS_UNFCCC:  # pragma: no cover
-        raise ImportError("Required package `unfccc-di-api` not found!")
+        raise ImportError("Required package `unfccc-di-api` not found.")
 
     # check that only one of `tier` or `mapping` is provided
     if (tier is None and mapping is None) or (tier is not None and mapping is not None):
-        raise ValueError("Please specify either `tier` or `mapping`!")
+        raise ValueError("Please specify either `tier` or `mapping`.")
 
     global _READER
     if _READER is None:
@@ -121,7 +129,7 @@ def read_unfccc(
 
     # drop unspecified rows and columns, rename value column
     cols = ["party", "variable", "unit", "year", "gas", "numberValue"]
-    data = data.loc[[isstr(i) for i in data.variable], cols]
+    data = data.loc[[is_str(i) for i in data.variable], cols]
     data.rename(columns={"numberValue": "value"}, inplace=True)
 
     # append `gas` to unit, drop `gas` column
@@ -134,7 +142,7 @@ def read_unfccc(
 def _compile_variable(i, variable):
     """Translate UNFCCC columns into an IAMC-style variable"""
     if i["variable"]:
-        raise ValueError("Conflict in variable mapping!")
+        raise ValueError("Conflict in variable mapping.")
     return variable.format(**dict((c, i[c]) for c in NAME_COLS))
 
 

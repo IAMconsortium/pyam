@@ -9,6 +9,7 @@ def stats_add(stats, plot_df):
     # test describing as pd.DataFrame
     primary = plot_df.filter(variable="Primary Energy", year=2005).timeseries()
     stats.add(data=primary, header="primary")
+
     # test describing as unamed pd.Series with `subheader` arg
     coal = plot_df.filter(variable="Primary Energy|Coal").timeseries()[2010]
     coal.name = None
@@ -48,7 +49,6 @@ def test_statistics(plot_df):
     idx = pd.MultiIndex(
         levels=[["category", "scen"], ["b", "a", "test"]],
         codes=[[0, 0, 1], [0, 1, 2]],
-        names=["", ""],
     )
     cols = pd.MultiIndex(
         levels=[["count", "primary", "coal"], ["", 2005]],

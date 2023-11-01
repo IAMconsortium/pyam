@@ -3,7 +3,7 @@ import os
 import yaml
 
 from collections.abc import Mapping
-from pyam.utils import isstr
+from pyam.str import is_str
 
 # user-defined defaults for various plot settings
 _RUN_CONTROL = None
@@ -19,9 +19,6 @@ _RC_DEFAULTS = {
     "marker": {},
     "linestyle": {},
     "order": {},
-    "region_mapping": {
-        "default": _REG_MAP_PATH("default_mapping.csv"),
-    },
 }
 
 
@@ -119,9 +116,9 @@ class RunControl(Mapping):
         check_rel_paths = False
         if hasattr(obj, "read"):  # it's a file
             obj = obj.read()
-        if isstr(obj) and not os.path.exists(obj):
+        if is_str(obj) and not os.path.exists(obj):
             raise IOError("File {} does not exist".format(obj))
-        if isstr(obj) and os.path.exists(obj):
+        if is_str(obj) and os.path.exists(obj):
             check_rel_paths = True
             fname = obj
             with open(fname) as f:

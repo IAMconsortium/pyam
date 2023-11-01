@@ -1,6 +1,5 @@
 import logging
 import pytest
-import re
 import datetime
 
 import numpy as np
@@ -8,9 +7,10 @@ import pandas as pd
 from numpy import testing as npt
 from pandas import testing as pdt
 
-from pyam import IamDataFrame, filter_by_meta, META_IDX, IAMC_IDX, sort_data
+from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
-from pyam.utils import isstr
+from pyam.str import is_str
+from pyam.utils import IAMC_IDX, META_IDX, sort_data
 from pyam.testing import assert_iamframe_equal
 
 
@@ -35,11 +35,11 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame(
 
 META_DF = pd.DataFrame(
     [
-        ["model_a", "scen_a", 1, False],
-        ["model_a", "scen_b", np.nan, False],
-        ["model_a", "scen_c", 2, False],
+        ["model_a", "scen_a", 1],
+        ["model_a", "scen_b", np.nan],
+        ["model_a", "scen_c", 2],
     ],
-    columns=META_IDX + ["foo", "exclude"],
+    columns=META_IDX + ["foo"],
 ).set_index(META_IDX)
 
 
@@ -86,8 +86,8 @@ def test_init_df_with_float_cols_raises(test_pd_df):
 
 
 def test_init_df_with_duplicates_raises(test_df):
-    _df = test_df.timeseries()
-    _df = _df.append(_df.iloc[0]).reset_index()
+    _df = test_df.timeseries().reset_index()
+    _df = pd.concat([_df, _df.iloc[0].to_frame().T])
     match = "0  model_a   scen_a  World  Primary Energy  EJ/yr"
     with pytest.raises(ValueError, match=match):
         IamDataFrame(_df)
@@ -102,7 +102,6 @@ def test_init_df_with_illegal_values_raises(test_pd_df, illegal_value):
         f'.*string "{illegal_value}" in `data`:'
         r"(\n.*){2}model_a.*scen_a.*World.*Primary Energy.*EJ/yr.*2005"
     )
-
     with pytest.raises(ValueError, match=msg):
         IamDataFrame(test_pd_df)
 
@@ -110,7 +109,12 @@ def test_init_df_with_illegal_values_raises(test_pd_df, illegal_value):
 def test_init_df_with_na_scenario(test_pd_df):
     # missing values in an index dimension raises an error
     test_pd_df.loc[1, "scenario"] = np.nan
-    pytest.raises(ValueError, IamDataFrame, data=test_pd_df)
+    msg = (
+        "Empty cells in `data` \(columns: 'scenario'\):"
+        r"(\n.*){2}model_a.*NaN.*World.*Primary Energy|Coal.*EJ/yr.*2005.*"
+    )
+    with pytest.raises(ValueError, match=msg):
+        IamDataFrame(test_pd_df)
 
 
 def test_init_df_with_float_cols(test_pd_df):
@@ -122,6 +126,20 @@ def test_init_df_with_float_cols(test_pd_df):
 def test_init_df_from_timeseries(test_df):
     df = IamDataFrame(test_df.timeseries())
     pd.testing.assert_frame_equal(df.timeseries(), test_df.timeseries())
+
+
+def test_init_df_from_timeseries_unused_levels(test_df):
+    # this test guards against regression for the bug
+    # reported in https://github.com/IAMconsortium/pyam/issues/762
+
+    for (model, scenario), data in test_df.timeseries().groupby(["model", "scenario"]):
+        # we're only interested in the second model-scenario combination
+        if model == "model_a" and scenario == "scen_b":
+            df = IamDataFrame(data)
+
+    # pandas 2.0 does not remove unused levels (here: "Primary Energy|Coal") in groupby
+    # we check that unused levels are removed at initialization of the IamDataFrame
+    assert df.variable == ["Primary Energy"]
 
 
 def test_init_df_with_extra_col(test_pd_df):
@@ -148,15 +166,23 @@ def test_init_df_with_meta(test_pd_df):
     assert df.scenario == ["scen_a", "scen_b"]
 
 
-def test_init_df_with_meta_incompatible_index(test_pd_df):
+def test_init_df_with_meta_exclude_raises(test_pd_df):
+    # pass explicit meta dataframe with a scenario that
+    meta = META_DF.copy()
+    meta["exclude"] = False
+    with pytest.raises(ValueError, match="Illegal columns in `meta`: 'exclude'"):
+        IamDataFrame(test_pd_df, meta=meta)
+
+
+def test_init_df_with_meta_incompatible_index_raises(test_pd_df):
     # define a meta dataframe with a non-standard index
     index = ["source", "scenario"]
     meta = pd.DataFrame(
-        [False, False, False], columns=["exclude"], index=META_DF.index.rename(index)
+        [False, False, False], columns=["foo"], index=META_DF.index.rename(index)
     )
 
     # assert that using an incompatible index for the meta arg raises
-    match = "Incompatible `index=\['model', 'scenario'\]` with `meta` *."
+    match = "Incompatible `index=\['model', 'scenario'\]` with `meta.index=*."
     with pytest.raises(ValueError, match=match):
         IamDataFrame(test_pd_df, meta=meta)
 
@@ -180,32 +206,42 @@ def test_init_df_with_custom_index(test_pd_df):
 
 def test_init_empty_message(caplog):
     IamDataFrame(data=df_empty)
-    drop_message = "Formatted data is empty!"
+    drop_message = "Formatted data is empty."
     message_idx = caplog.messages.index(drop_message)
     assert caplog.records[message_idx].levelno == logging.WARNING
 
 
-def test_init_with_column_conflict(test_pd_df):
-    # add a column to the timeseries data with a conflict to the meta attribute
-    test_pd_df["meta"] = "foo"
+def test_init_with_unnamed_column(test_pd_df):
+    # add a column to the timeseries data with an unnamed column
+    test_pd_df[None] = "foo"
 
-    # check that initialising an instance with an extra-column `meta` raises
-    msg = re.compile(r"Column name \['meta'\] is illegal for timeseries data.")
+    # check that initialising an instance with an unnamed column raises
+    with pytest.raises(ValueError, match="Unnamed column in timeseries data: None"):
+        IamDataFrame(test_pd_df)
+
+
+@pytest.mark.parametrize("illegal", ["meta", ""])
+def test_init_with_illegal_column(test_pd_df, illegal):
+    # add a column to the timeseries data with an illegal column name
+    test_pd_df[illegal] = "foo"
+
+    # check that initialising an instance with an illegal column name raises
+    msg = f"Illegal column for timeseries data: '{illegal}'"
     with pytest.raises(ValueError, match=msg):
         IamDataFrame(test_pd_df)
 
     # check that recommended fix works
-    df = IamDataFrame(test_pd_df, meta_1="meta")
-    assert df.meta_1 == ["foo"]
+    df = IamDataFrame(test_pd_df, valid=illegal)
+    assert df.valid == ["foo"]
 
 
 def test_set_meta_with_column_conflict(test_df_year):
     # check that setting a `meta` column with a name conflict raises
-    msg = "Column model already exists in `data`!"
+    msg = "Column 'model' already exists in `data`."
     with pytest.raises(ValueError, match=msg):
         test_df_year.set_meta(name="model", meta="foo")
 
-    msg = "Name meta is illegal for meta indicators!"
+    msg = "Name 'meta' is illegal for meta indicators."
     with pytest.raises(ValueError, match=msg):
         test_df_year.set_meta(name="meta", meta="foo")
 
@@ -224,7 +260,6 @@ def test_print(test_df_year):
             "   unit     : EJ/yr (1)",
             "   year     : 2005, 2010 (2)",
             "Meta indicators:",
-            "   exclude (bool) False (1)",
             "   number (int64) 1, 2 (2)",
             "   string (object) foo, nan (2)",
         ]
@@ -247,7 +282,6 @@ def test_print_empty(test_df_year):
             "   unit     : (0)",
             "   year     : (0)",
             "Meta indicators:",
-            "   exclude (bool) (0)",
             "   number (int64) (0)",
             "   string (object) (0)",
         ]
@@ -500,7 +534,7 @@ def test_interpolate(test_pd_df):
     assert not df._data.index.duplicated().any()
 
     # assert that extra_col does not have nan's (check for #351)
-    assert all([True if isstr(i) else ~np.isnan(i) for i in df.foo])
+    assert all([True if is_str(i) else ~np.isnan(i) for i in df.foo])
 
 
 def test_interpolate_time_exists(test_df_year):
@@ -590,143 +624,22 @@ def test_interpolate_datetimes(test_df):
         test_df.interpolate(some_date, inplace=True)
         obs = test_df.filter(time=some_date).data["value"].reset_index(drop=True)
         exp = pd.Series([3, 1.5, 4], name="value")
-        pd.testing.assert_series_equal(obs, exp, check_less_precise=True)
+        pd.testing.assert_series_equal(obs, exp, rtol=0.01)
         # redo the interpolation and check that no duplicates are added
         test_df.interpolate(some_date, inplace=True)
         assert not test_df.filter()._data.index.duplicated().any()
 
 
 def test_filter_by_bool(test_df):
-    test_df.set_meta([True, False], name="exclude")
-    obs = test_df.filter(exclude=True)
-    assert obs["scenario"].unique() == "scen_a"
+    test_df.set_meta([True, False], name="meta_bool")
+    obs = test_df.filter(meta_bool=True)
+    assert obs.scenario == ["scen_a"]
 
 
 def test_filter_by_int(test_df):
-    test_df.set_meta([1, 2], name="test")
-    obs = test_df.filter(test=[1, 3])
-    assert obs["scenario"].unique() == "scen_a"
-
-
-def _r5_regions_exp(df):
-    df = df.filter(region="World", keep=False)
-    data = df.data
-    data["region"] = "R5MAF"
-    return sort_data(data, df.dimensions)
-
-
-def test_map_regions_r5(reg_df):
-    obs = reg_df.map_regions("r5_region").data
-    exp = _r5_regions_exp(reg_df)
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
-
-
-def test_map_regions_r5_region_col(reg_df):
-    df = reg_df.filter(model="MESSAGE-GLOBIOM")
-    obs = df.map_regions("r5_region", region_col="MESSAGE-GLOBIOM.REGION").data
-    exp = _r5_regions_exp(df)
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
-
-
-def test_map_regions_r5_inplace(reg_df):
-    exp = _r5_regions_exp(reg_df)
-    reg_df.map_regions("r5_region", inplace=True)
-    obs = reg_df.data
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
-
-
-def test_map_regions_r5_agg(reg_df):
-    columns = reg_df.data.columns
-    obs = reg_df.map_regions("r5_region", agg="sum").data
-
-    exp = _r5_regions_exp(reg_df)
-    grp = list(columns)
-    grp.remove("value")
-    exp = exp.groupby(grp).sum().reset_index()
-    exp = exp[columns]
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
-
-
-def test_48a():
-    # tests fix for #48 mapping many->few
-    df = IamDataFrame(
-        pd.DataFrame(
-            [
-                ["model", "scen", "SSD", "var", "unit", 1, 6],
-                ["model", "scen", "SDN", "var", "unit", 2, 7],
-                ["model", "scen1", "SSD", "var", "unit", 2, 7],
-                ["model", "scen1", "SDN", "var", "unit", 2, 7],
-            ],
-            columns=["model", "scenario", "region", "variable", "unit", 2005, 2010],
-        )
-    )
-
-    exp = _r5_regions_exp(df)
-    columns = df.data.columns
-    grp = list(columns)
-    grp.remove("value")
-    exp = exp.groupby(grp).sum().reset_index()
-    exp = exp[columns]
-
-    obs = df.map_regions("r5_region", region_col="iso", agg="sum").data
-
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
-
-
-def test_48b():
-    # tests fix for #48 mapping few->many
-
-    exp = IamDataFrame(
-        pd.DataFrame(
-            [
-                ["model", "scen", "SSD", "var", "unit", 1, 6],
-                ["model", "scen", "SDN", "var", "unit", 1, 6],
-                ["model", "scen1", "SSD", "var", "unit", 2, 7],
-                ["model", "scen1", "SDN", "var", "unit", 2, 7],
-            ],
-            columns=["model", "scenario", "region", "variable", "unit", 2005, 2010],
-        )
-    ).data
-
-    df = IamDataFrame(
-        pd.DataFrame(
-            [
-                ["model", "scen", "R5MAF", "var", "unit", 1, 6],
-                ["model", "scen1", "R5MAF", "var", "unit", 2, 7],
-            ],
-            columns=["model", "scenario", "region", "variable", "unit", 2005, 2010],
-        )
-    )
-    obs = df.map_regions("iso", region_col="r5_region").data
-    obs = sort_data(obs[obs.region.isin(["SSD", "SDN"])], df.dimensions)
-
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
-
-
-def test_48c():
-    # tests fix for #48 mapping few->many, dropping duplicates
-
-    exp = IamDataFrame(
-        pd.DataFrame(
-            [
-                ["model", "scen", "AGO", "var", "unit", 1, 6],
-                ["model", "scen1", "AGO", "var", "unit", 2, 7],
-            ],
-            columns=["model", "scenario", "region", "variable", "unit", 2005, 2010],
-        )
-    ).data.reset_index(drop=True)
-
-    df = IamDataFrame(
-        pd.DataFrame(
-            [
-                ["model", "scen", "R5MAF", "var", "unit", 1, 6],
-                ["model", "scen1", "R5MAF", "var", "unit", 2, 7],
-            ],
-            columns=["model", "scenario", "region", "variable", "unit", 2005, 2010],
-        )
-    )
-    obs = df.map_regions("iso", region_col="r5_region", remove_duplicates=True).data
-    pd.testing.assert_frame_equal(obs, exp, check_index_type=False)
+    test_df.set_meta([1, 2], name="meta_int")
+    obs = test_df.filter(meta_int=[1, 3])
+    assert obs.scenario == ["scen_a"]
 
 
 def test_pd_filter_by_meta(test_df):

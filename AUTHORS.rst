@@ -1,11 +1,10 @@
 Authors and Developers
 ======================
 
-The following persons contributed to the development of the |pyam| framework:
+The following persons contributed to the development of the |pyam| package:
 
 - Matthew Gidden `@gidden <https://github.com/gidden>`_
-- Daniel Huppmann `@danielhuppmann <https://github.com/danielhuppmann>`_,
-  `iiasa <https://www.iiasa.ac.at/staff/huppmann>`_
+- Daniel Huppmann `@danielhuppmann <https://github.com/danielhuppmann>`_
 - Zebedee Nicholls `@znicholls <https://github.com/znicholls>`_
 - Nikolay Kushin `@zikolach <https://github.com/zikolach>`_
 - Robin Lamboll `@Rlamboll <https://github.com/Rlamboll>`_
@@ -21,3 +20,9 @@ The following persons contributed to the development of the |pyam| framework:
 - Florian Maczek `@macflo8 <https://github.com/macflo8>`_
 - Laura Wienpahl `@LauWien <https://github.com/LauWien>`_
 - Philip Hackstock `@phackstock <https://github.com/phackstock>`_
+- Pietro Monticone `@pitmonticone <https://github.com/pitmonticone>`_
+
+| The core maintenance of the |pyam| package is done by
+  the *Scenario Services & Scientific Software* research theme
+  at the IIASA Energy, Climate, and Enviroment program.
+| Visit https://software.ece.iiasa.ac.at for more information.

@@ -6,8 +6,10 @@ import pandas.testing as pdt
 import numpy as np
 import numpy.testing as npt
 import yaml
+from ixmp4.core.exceptions import InvalidCredentials
 
-from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa, META_IDX
+from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa
+from pyam.utils import META_IDX
 from pyam.testing import assert_iamframe_equal
 
 from .conftest import META_COLS, IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
@@ -15,15 +17,6 @@ from .conftest import META_COLS, IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
 
 if IIASA_UNAVAILABLE:
     pytest.skip("IIASA database API unavailable", allow_module_level=True)
-
-
-# TODO environment variables are currently not set up on GitHub Actions
-TEST_ENV_USER = "IIASA_CONN_TEST_USER"
-TEST_ENV_PW = "IIASA_CONN_TEST_PW"
-CONN_ENV_AVAILABLE = TEST_ENV_USER in os.environ and TEST_ENV_PW in os.environ
-CONN_ENV_REASON = "Requires env variables defined: {} and {}".format(
-    TEST_ENV_USER, TEST_ENV_PW
-)
 
 
 FILTER_ARGS = [{}, dict(model="model_a"), dict(model=["model_a"]), dict(model="m*_a")]
@@ -78,13 +71,6 @@ def test_anon_conn(conn):
     assert conn.current_connection == TEST_API_NAME
 
 
-@pytest.mark.skipif(not CONN_ENV_AVAILABLE, reason=CONN_ENV_REASON)
-def test_conn_creds_config():
-    iiasa.set_config(os.environ[TEST_ENV_USER], os.environ[TEST_ENV_PW])
-    conn = iiasa.Connection(TEST_API)
-    assert conn.current_connection == TEST_API_NAME
-
-
 def test_conn_nonexisting_creds_file():
     # pointing to non-existing creds file raises
     with pytest.raises(FileNotFoundError):
@@ -92,17 +78,17 @@ def test_conn_nonexisting_creds_file():
 
 
 @pytest.mark.parametrize(
-    "creds, match",
+    "creds, error, match",
     [
-        (dict(username="user", password="password"), "Credentials not valid "),
-        (dict(username="user"), "Unknown API error:*."),
+        (dict(username="foo", password="bar"), InvalidCredentials, " rejected "),
+        (dict(username="user"), TypeError, "missing 1 required .* 'password'"),
     ],
 )
-def test_conn_invalid_creds_file(creds, match, tmpdir):
+def test_conn_invalid_creds_file(creds, error, match, tmpdir):
     # invalid credentials raises the expected errors
     with open(tmpdir / "creds.yaml", mode="w") as f:
         yaml.dump(creds, f)
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(error, match=match):
         iiasa.Connection(TEST_API, creds=Path(tmpdir) / "creds.yaml")
 
 
@@ -223,7 +209,7 @@ def test_meta(conn, kwargs, default):
 @pytest.mark.parametrize("default", [True, False])
 def test_properties(conn, kwargs, default):
     # test that connection returns the correct properties dataframe
-    obs = conn.properties(default, **kwargs)
+    obs = conn.properties(default=default, **kwargs)
 
     if default:
         exp_cols = ["version"]

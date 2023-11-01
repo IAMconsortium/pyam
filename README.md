@@ -1,15 +1,15 @@
 pyam: analysis & visualization <br /> of integrated-assessment and macro-energy scenarios
 =========================================================================================
 
-[![license](https://img.shields.io/badge/License-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
+[![license](https://img.shields.io/badge/license-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
-[![conda](https://anaconda.org/conda-forge/pyam/badges/version.svg)](https://anaconda.org/conda-forge/pyam)
-[![latest](https://anaconda.org/conda-forge/pyam/badges/latest_release_date.svg)](https://anaconda.org/conda-forge/pyam)
+[![conda](https://img.shields.io/conda/vn/conda-forge/pyam?logo=anaconda)](https://anaconda.org/conda-forge/pyam)
+[![last-release](https://img.shields.io/github/release-date/iamconsortium/pyam?logo=github&label=last%20release)](https://github.com/IAMconsortium/pyam/releases)
 
 <!-- replace python version by dynamic reference to pypi once Python versions are configured there -->
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![python](https://img.shields.io/badge/python-3.7_|_3.8_|_3.9_|_3.10-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
-[![pytest](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml/badge.svg)](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml)
+[![python](https://img.shields.io/badge/python-≥3.10,<3.12-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
+[![pytest](https://img.shields.io/github/actions/workflow/status/iamconsortium/pyam/pytest.yml?logo=GitHub&label=pytest)](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml)
 [![ReadTheDocs](https://readthedocs.org/projects/pyam-iamc/badge/?version=latest)](https://pyam-iamc.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
 
@@ -73,12 +73,12 @@ Tutorials
 ---------
 
 An introduction to the basic functions is shown
-in [the "first-steps" notebook](doc/source/tutorials/pyam_first_steps.ipynb).
+in [the "first-steps" notebook](docs/tutorials/pyam_first_steps.ipynb).
 
 All tutorials are available in rendered format (i.e., with output) as part of
 the [online documentation](https://pyam-iamc.readthedocs.io/en/stable/tutorials.html).
 The source code of the tutorials notebooks is available
-in the folder [doc/source/tutorials](doc/source/tutorials) of this repository.
+in the folder [docs/tutorials](docs/tutorials) of this repository.
 
 Documentation
 -------------
@@ -86,7 +86,7 @@ Documentation
 The comprehensive documentation is hosted on [Read the Docs](https://pyam-iamc.readthedocs.io).
 
 The documentation pages can be built locally,
-refer to the instruction in [doc/README](doc/README.md).
+refer to the instruction in [docs/README](docs/README.md).
 
 Authors & Contributors
 ----------------------
@@ -94,8 +94,12 @@ Authors & Contributors
 This package was initiated and is currently maintained
 by Matthew Gidden ([@gidden](https://github.com/gidden))
 and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
-
 See the complete [list of contributors](AUTHORS.rst).
+
+The core maintenance of the package is done by 
+the *Scenario Services & Scientific Software* research theme
+at the IIASA Energy, Climate, and Enviroment program.
+Visit https://software.ece.iiasa.ac.at for more information.
 
 Scientific publications
 -----------------------
@@ -133,7 +137,7 @@ doi: [10.21105/joss.01095](https://doi.org/10.21105/joss.01095).
 License
 -------
 
-Copyright 2017-2022 IIASA and the pyam developer team
+Copyright 2017-2023 IIASA and the pyam developer team
 
 The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");  

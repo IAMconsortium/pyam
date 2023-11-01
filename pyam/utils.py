@@ -2,20 +2,15 @@ from pathlib import Path
 import itertools
 import logging
 import string
-import six
 import re
 import dateutil
-
-from pyam.index import get_index_levels, replace_index_labels
-from pyam.logging import raise_data_error
 import numpy as np
 import pandas as pd
-from collections.abc import Iterable
+from pandas.api.types import is_list_like, is_float
 
-try:
-    import seaborn as sns
-except ImportError:
-    pass
+from pyam.index import get_index_levels, replace_index_labels
+from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
+from pyam.logging import raise_data_error, deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +26,7 @@ LONG_IDX = IAMC_IDX + ["year"]
 REQUIRED_COLS = ["region", "variable", "unit"]
 
 # illegal terms for data/meta column names to prevent attribute conflicts
-ILLEGAL_COLS = ["data", "meta", "level"]
+ILLEGAL_COLS = ["data", "meta", "level", "exclude", ""]
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(
@@ -52,50 +47,35 @@ KNOWN_FUNCS = {
     "max": np.max,
     "avg": np.mean,
     "mean": np.mean,
-    "sum": np.sum,
+    "sum": "sum",
 }
 
 
-def requires_package(pkg, msg, error_type=ImportError):
-    """Decorator when a function requires an optional dependency
-
-    Parameters
-    ----------
-    pkg : imported package object
-    msg : string
-        Message to show to user with error_type
-    error_type : python error class
-    """
-
-    def _requires_package(func):
-        def wrapper(*args, **kwargs):
-            if pkg is None:
-                raise error_type(msg)
-            return func(*args, **kwargs)
-
-        return wrapper
-
-    return _requires_package
-
-
 def isstr(x):
-    """Returns True if x is a string"""
-    return isinstance(x, six.string_types)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning("Please use `pyam.str.is_str()`.", "The function `isstr()`")
+    return is_str(x)
 
 
 def isscalar(x):
-    """Returns True if x is a scalar"""
-    return not isinstance(x, Iterable) or isstr(x)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning(
+        "Please use `pandas.api.types.is_float()`.", "The function `isscalar()`"
+    )
+    return is_float(x)
 
 
 def islistable(x):
-    """Returns True if x is a list but not a string"""
-    return isinstance(x, Iterable) and not isstr(x)
+    # TODO deprecated, remove for release >= 2.1
+    deprecation_warning(
+        "Please use `pyam.utils.is_list_like()`.", "The function `islistable()`"
+    )
+    return is_list_like(x)
 
 
 def to_list(x):
     """Return x as a list"""
-    return x if islistable(x) else [x]
+    return x if is_list_like(x) else [x]
 
 
 def remove_from_list(x, items):
@@ -150,7 +130,7 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
             # apply pattern-matching for sheet names (use * as wildcard)
             sheets = sheet_names[pattern_match(sheet_names, values=sheets)]
             if sheets.empty:
-                raise ValueError(f"No sheets {sheet_name} in file {path}!")
+                raise ValueError(f"Sheet(s) '{sheet_name}' not found in file '{path}'.")
 
             df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
 
@@ -181,14 +161,10 @@ def read_file(path, *args, **kwargs):
     return format_data(read_pandas(path, *args, **kwargs), **format_kwargs)
 
 
-def format_data(df, index, **kwargs):
-    """Convert a pandas.Dataframe or pandas.Series to the required format"""
-    if isinstance(df, pd.Series):
-        df.name = df.name or "value"
-        df = df.to_frame()
+def _convert_r_columns(df):
+    """Check and convert R-style year columns"""
 
-    # check for R-style year columns, converting where necessary
-    def convert_r_columns(c):
+    def strip_R_integer_prefix(c):
         try:
             first = c[0]
             second = c[1:]
@@ -204,18 +180,24 @@ def format_data(df, index, **kwargs):
             pass
         return c
 
-    df.columns = df.columns.map(convert_r_columns)
+    return df.set_axis(df.columns.map(strip_R_integer_prefix), axis="columns")
+
+
+def _knead_data(df, **kwargs):
+    """Replace, rename and concat according to user arguments"""
 
     # if `value` is given but not `variable`,
     # melt value columns and use column name as `variable`
     if "value" in kwargs and "variable" not in kwargs:
         value = kwargs.pop("value")
-        value = value if islistable(value) else [value]
+        value = value if is_list_like(value) else [value]
         _df = df.set_index(list(set(df.columns) - set(value)))
         dfs = []
         for v in value:
             if v not in df.columns:
-                raise ValueError("column `{}` does not exist!".format(v))
+                raise ValueError(
+                    f"Column `{v}` not in timeseries data, found: {df.columns}"
+                )
             vdf = _df[v].to_frame().rename(columns={v: "value"})
             vdf["variable"] = v
             dfs.append(vdf.reset_index())
@@ -224,73 +206,94 @@ def format_data(df, index, **kwargs):
     # otherwise, rename columns or concat to IAMC-style or do a fill-by-value
     for col, value in kwargs.items():
         if col in df:
-            raise ValueError(f"Conflict of kwarg with column `{col}` in dataframe!")
-
-        if isstr(value) and value in df:
-            df.rename(columns={value: col}, inplace=True)
-        elif islistable(value) and all([c in df.columns for c in value]):
-            df[col] = df.apply(lambda x: concat_with_pipe(x, value), axis=1)
-            df.drop(value, axis=1, inplace=True)
-        elif isstr(value):
-            df[col] = value
-        else:
-            raise ValueError(f"Invalid argument for casting `{col}: {value}`")
-
-    # all lower case
-    str_cols = [c for c in df.columns if isstr(c)]
-    df.rename(columns={c: str(c).lower() for c in str_cols}, inplace=True)
-
-    if "notes" in df.columns:  # this came from the database
-        logger.info("Ignoring notes column in dataframe")
-        df.drop(columns="notes", inplace=True)
-        col = df.columns[0]  # first column has database copyright notice
-        df = df[~df[col].str.contains("database", case=False)]
-        if "scenario" in df.columns and "model" not in df.columns:
-            # model and scenario are jammed together in RCP data
-            scen = df["scenario"]
-            df.loc[:, "model"] = scen.apply(lambda s: s.split("-")[0].strip())
-            df.loc[:, "scenario"] = scen.apply(
-                lambda s: "-".join(s.split("-")[1:]).strip()
+            raise ValueError(
+                f"Conflict of kwarg with column `{col}` in timeseries data."
             )
 
-    # reset the index if meaningful entries are included there
-    if not list(df.index.names) == [None]:
-        df.reset_index(inplace=True)
+        if is_str(value) and value in df:
+            df.rename(columns={value: col}, inplace=True)
+        elif is_list_like(value) and all([c in df.columns for c in value]):
+            df[col] = df.apply(lambda x: concat_with_pipe(x, cols=value), axis=1)
+            df.drop(value, axis=1, inplace=True)
+        elif is_str(value):
+            df[col] = value
+        else:
+            raise ValueError(f"Invalid argument for casting data: `{col}: {value}`")
+
+    return df
+
+
+def _format_from_legacy_database(df):
+    """Process data from legacy databases (SSP and earlier)"""
+
+    logger.info("Ignoring notes column in `data`.")
+    df.drop(columns="notes", inplace=True)
+    col = df.columns[0]  # first column has database copyright notice
+    df = df[~df[col].str.contains("database", case=False)]
+    if "scenario" in df.columns and "model" not in df.columns:
+        # model and scenario are jammed together in RCP data
+        parts = df["scenario"].str.split("-", n=1, expand=True)
+        df = df.assign(model=parts[0].str.strip(), scenario=parts[1].str.strip())
+
+    return df
+
+
+def _intuit_column_groups(df, index, include_index=False):
+    """Check and categorise columns in dataframe"""
+
+    if include_index:
+        existing_cols = pd.Index(df.index.names)
+    else:
+        existing_cols = pd.Index([])
+    if isinstance(df, pd.Series):
+        existing_cols = existing_cols.union(["value"])
+    elif isinstance(df, pd.DataFrame):
+        existing_cols = existing_cols.union(df.columns)
 
     # check that there is no column in the timeseries data with reserved names
-    conflict_cols = [i for i in df.columns if i in ILLEGAL_COLS]
+    if None in existing_cols:
+        raise ValueError("Unnamed column in timeseries data: None")
+
+    # check that there is no column in the timeseries data with reserved/illegal names
+    conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
     if conflict_cols:
-        msg = f"Column name {conflict_cols} is illegal for timeseries data.\n"
-        _args = ", ".join([f"{i}_1='{i}'" for i in conflict_cols])
-        msg += f"Use `IamDataFrame(..., {_args})` to rename at initialization."
-        raise ValueError(msg)
+        sep = "', '"
+        _cols = f"'{sep.join(conflict_cols)}'"
+        _args = ", ".join([f"<alternative_column_name>='{i}'" for i in conflict_cols])
+        raise ValueError(
+            f"Illegal column{s(len(conflict_cols))} for timeseries data: {_cols}\n"
+            f"Use `IamDataFrame(..., {_args})` to rename at initialization."
+        )
 
     # check that index and required columns exist
-    missing_index = [c for c in index if c not in df.columns]
+    missing_index = [c for c in index if c not in existing_cols]
     if missing_index:
-        raise ValueError(f"Missing index columns: {missing_index}")
+        raise ValueError(f"Missing index columns in timeseries data: {missing_index}")
 
-    missing_required_col = [c for c in REQUIRED_COLS if c not in df.columns]
+    missing_required_col = [c for c in REQUIRED_COLS if c not in existing_cols]
     if missing_required_col:
-        raise ValueError(f"Missing required columns: {missing_required_col}")
+        raise ValueError(
+            f"Missing required columns in timeseries data: {missing_required_col}"
+        )
 
-    # check whether data in wide format (IAMC) or long format (`value` column)
-    if "value" in df.columns:
+    # check whether data in wide format (standard IAMC) or long format (`value` column)
+    if "value" in existing_cols:
         # check if time column is given as `year` (int) or `time` (datetime)
-        if "year" in df.columns and "time" not in df.columns:
+        if "year" in existing_cols and "time" not in existing_cols:
             time_col = "year"
-        elif "time" in df.columns and "year" not in df.columns:
+        elif "time" in existing_cols and "year" not in existing_cols:
             time_col = "time"
         else:
-            raise ValueError("Invalid time domain, must have either `year` or `time`!")
+            raise ValueError("Invalid time domain, must have either `year` or `time`.")
         extra_cols = [
             c
-            for c in df.columns
+            for c in existing_cols
             if c not in index + REQUIRED_COLS + [time_col, "value"]
         ]
+        data_cols = []
     else:
         # if in wide format, check if columns are years (int) or datetime
-        cols = [c for c in df.columns if c not in index + REQUIRED_COLS]
+        cols = [c for c in existing_cols if c not in index + REQUIRED_COLS]
         year_cols, time_cols, extra_cols = [], [], []
         for i in cols:
             # if the column name can be cast to integer, assume it's a year column
@@ -310,25 +313,96 @@ def format_data(df, index, **kwargs):
 
         if year_cols and not time_cols:
             time_col = "year"
-            melt_cols = sorted(year_cols)
+            data_cols = sorted(year_cols)
         else:
             time_col = "time"
-            melt_cols = sorted(year_cols) + sorted(time_cols)
-        if not melt_cols:
-            raise ValueError("Missing time domain")
+            data_cols = sorted(year_cols) + sorted(time_cols)
+        if not data_cols:
+            raise ValueError("No time domain in the data.")
 
-        # melt the dataframe
-        df = pd.melt(
-            df,
-            id_vars=index + REQUIRED_COLS + extra_cols,
-            var_name=time_col,
-            value_vars=melt_cols,
-            value_name="value",
+    return time_col, extra_cols, data_cols
+
+
+def _format_data_to_series(df, index):
+    """Convert a long or wide pandas dataframe to a series with the required columns"""
+
+    time_col, extra_cols, data_cols = _intuit_column_groups(df, index)
+
+    _validate_complete_index(df[index + REQUIRED_COLS + extra_cols])
+
+    idx_order = index + REQUIRED_COLS + [time_col] + extra_cols
+
+    if data_cols:
+        # wide format
+        df = (
+            df.set_index(index + REQUIRED_COLS + extra_cols)
+            .rename_axis(columns=time_col)
+            .stack(dropna=True)
+            .rename("value")
+            .reorder_levels(idx_order)
+        )
+    else:
+        # long format
+        df = df.set_index(idx_order)["value"].dropna()
+
+    return df, time_col, extra_cols
+
+
+def format_data(df, index, **kwargs):
+    """Convert a pandas.Dataframe or pandas.Series to the required format"""
+
+    # Fast-pass if `df` has the index and required columns as a pd.MultiIndex
+    if set(df.index.names) >= set(index) | set(REQUIRED_COLS) and not kwargs:
+        time_col, extra_cols, data_cols = _intuit_column_groups(
+            df, index=index, include_index=True
         )
 
-    # cast value column to numeric and drop nan
+        if isinstance(df, pd.DataFrame):
+            extra_cols_not_in_index = [c for c in extra_cols if c in df.columns]
+            if extra_cols_not_in_index:
+                df = df.set_index(extra_cols_not_in_index, append=True)
+
+            if data_cols:
+                df = df[data_cols].rename_axis(columns=time_col).stack().rename("value")
+            else:
+                df = df["value"]
+
+        df = df.reorder_levels(index + REQUIRED_COLS + [time_col] + extra_cols).dropna()
+
+        # remove unused levels to guard against issue #762
+        df.index = df.index.remove_unused_levels()
+
+    else:
+        if isinstance(df, pd.Series):
+            if not df.name:
+                df = df.rename("value")
+            df = df.reset_index()
+        elif not list(df.index.names) == [None]:
+            # reset the index if meaningful entries are included there
+            df = df.reset_index()
+
+        df = _convert_r_columns(df)
+
+        if kwargs:
+            df = _knead_data(df, **kwargs)
+
+        # all lower case
+        df.rename(
+            columns={c: str(c).lower() for c in df.columns if is_str(c)}, inplace=True
+        )
+
+        if "notes" in df.columns:  # this came from a legacy database (SSP or earlier)
+            df = _format_from_legacy_database(df)
+
+        # replace missing units by an empty string for user-friendly filtering
+        if "unit" in df.columns:
+            df = df.assign(unit=df["unit"].fillna(""))
+
+        df, time_col, extra_cols = _format_data_to_series(df, index)
+
+    # cast value column to numeric
     try:
-        df["value"] = pd.to_numeric(df["value"])
+        df = pd.to_numeric(df)
     except ValueError as e:
         # get the row number where the error happened
         row_nr_regex = re.compile(r"(?<=at position )\d+")
@@ -336,24 +410,6 @@ def format_data(df, index, **kwargs):
         short_error_regex = re.compile(r".*(?= at position \d*)")
         short_error = short_error_regex.search(str(e)).group()
         raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
-
-    df.dropna(inplace=True, subset=["value"])
-
-    # replace missing units by an empty string for user-friendly filtering
-    df.loc[df.unit.isnull(), "unit"] = ""
-
-    # verify that there are no nan's left (in columns)
-    null_rows = df.isnull().T.any()
-    if null_rows.any():
-        cols = ", ".join(df.columns[df.isnull().any().values])
-        raise_data_error(
-            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
-        )
-    del null_rows
-
-    # cast to pd.Series, check for duplicates
-    idx_cols = index + REQUIRED_COLS + [time_col] + extra_cols
-    df = df.set_index(idx_cols).value
 
     # format the time-column
     _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
@@ -366,9 +422,21 @@ def format_data(df, index, **kwargs):
         )
     del rows
     if df.empty:
-        logger.warning("Formatted data is empty!")
+        logger.warning("Formatted data is empty.")
 
     return df.sort_index(), index, time_col, extra_cols
+
+
+def _validate_complete_index(df):
+    """Validate that there are no nan's in the (index) columns"""
+    null_cells = df.isnull()
+    null_rows = null_cells.any(axis=1)
+    if null_rows.any():
+        null_cols = null_cells.any()
+        cols = ", ".join(null_cols.index[null_cols])
+        raise_data_error(
+            f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
+        )
 
 
 def sort_data(data, cols):
@@ -385,7 +453,7 @@ def merge_meta(left, right, ignore_conflict=False):
     diff = right.index.difference(left.index)
     sect = right.index.intersection(left.index)
 
-    # merge `right` into `left` for overlapping scenarios ( `sect`)
+    # merge `right` into `left` for overlapping scenarios (`sect`)
     if not sect.empty:
         # if not ignored, check that overlapping `meta` columns are equal
         if not ignore_conflict:
@@ -396,7 +464,7 @@ def merge_meta(left, right, ignore_conflict=False):
                     .drop_duplicates()
                     .index.drop_duplicates()
                 )
-                msg = "conflict in `meta` for scenarios {}".format(
+                msg = "Conflict in `meta` for scenarios {}".format(
                     [i for i in pd.DataFrame(index=conflict_idx).index]
                 )
                 raise ValueError(msg)
@@ -414,60 +482,41 @@ def merge_meta(left, right, ignore_conflict=False):
     return left.dropna(axis=1, how="all")
 
 
-def find_depth(data, s="", level=None):
-    """Return or assert the depth (number of ``|``) of variables
+def merge_exclude(left, right, ignore_conflict=False):
+    """Merge two `exclude` series; raise if values are in conflict (optional)"""
 
-    Parameters
-    ----------
-    data : str or list of strings
-        IAMC-style variables
-    s : str, default ''
-        remove leading `s` from any variable in `data`
-    level : int or str, default None
-        if None, return depth (number of ``|``); else, return list of booleans
-        whether depth satisfies the condition (equality if level is int,
-        >= if ``.+``,  <= if ``.-``)
-    """
-    if islistable(level):
-        raise ValueError(
-            "Level is only run with ints or strings, not lists. Use strings with "
-            "integers and + or - to filter by ranges."
-        )
-    if isstr(data):
-        return _find_depth([data], s, level)[0]
+    left = left.copy()  # make a copy to not change the original object
+    diff = right.index.difference(left.index)
+    sect = right.index.intersection(left.index)
 
-    return _find_depth(data, s, level)
+    # if not ignored, check that overlapping `meta` columns are equal
+    if not sect.empty:
+        conflict = left[sect][left[sect] != right[sect]].index
+        if not conflict.empty:
+            n = len(conflict)
+            if ignore_conflict:
+                logger.warning(f"Ignoring conflict{s(n)} in `exclude` attribute.")
+            else:
+                raise_data_error(
+                    f"Conflict when merging `exclude` for the following scenario{s(n)}",
+                    conflict,
+                )
+    return pd.concat([left, right.loc[diff]], sort=False)
 
 
-def _find_depth(data, s="", level=None):
-    """Internal implementation of `find_depth()´"""
-    # remove wildcard as last character from string, escape regex characters
-    _s = re.compile("^" + _escape_regexp(s.rstrip("*")))
-    _p = re.compile("\\|")
+def make_index(df, cols=META_IDX, unique=True):
+    """Create an index from the columns/index of a dataframe or series"""
 
-    # find depth
-    def _count_pipes(val):
-        return len(_p.findall(re.sub(_s, "", val))) if _s.match(val) else None
+    def _get_col(c):
+        try:
+            return df.index.get_level_values(c)
+        except KeyError:
+            return df[c]
 
-    n_pipes = map(_count_pipes, to_list(data))
-
-    # if no level test is specified, return the depth as (list of) int
-    if level is None:
-        return list(n_pipes)
-
-    # if `level` is given, set function for finding depth level =, >=, <= |s
-    if not isstr(level):
-        test = lambda x: level == x if x is not None else False
-    elif level[-1] == "-":
-        level = int(level[:-1])
-        test = lambda x: level >= x if x is not None else False
-    elif level[-1] == "+":
-        level = int(level[:-1])
-        test = lambda x: level <= x if x is not None else False
-    else:
-        raise ValueError("Unknown level type: `{}`".format(level))
-
-    return list(map(test, n_pipes))
+    index = pd.MultiIndex.from_tuples(
+        list(zip(*[_get_col(col) for col in cols])), names=tuple(cols)
+    )
+    return index.drop_duplicates() if unique else index
 
 
 def pattern_match(
@@ -481,7 +530,7 @@ def pattern_match(
     """
     codes = []
     matches = np.zeros(len(data), dtype=bool)
-    values = values if islistable(values) else [values]
+    values = values if is_list_like(values) else [values]
 
     # issue (#40) with string-to-nan comparison, replace nan by empty string
     _data = data.fillna("") if has_nan else data
@@ -494,10 +543,10 @@ def pattern_match(
             except KeyError:
                 pass
 
-        if isstr(s):
-            pattern = re.compile(_escape_regexp(s) + "$" if not regexp else s)
+        if is_str(s):
+            pattern = re.compile(escape_regexp(s) + "$" if not regexp else s)
             depth = True if level is None else find_depth(_data, s, level)
-            matches |= data.str.match(pattern) & depth
+            matches |= data.str.match(pattern) & np.array(depth)
         else:
             matches = np.logical_or(matches, data == s)
 
@@ -506,20 +555,6 @@ def pattern_match(
         return codes
 
     return matches
-
-
-def _escape_regexp(s):
-    """Escape characters with specific regexp use"""
-    return (
-        str(s)
-        .replace("|", "\\|")
-        .replace(".", "\.")  # `.` has to be replaced before `*`
-        .replace("*", ".*")
-        .replace("+", "\+")
-        .replace("(", "\(")
-        .replace(")", "\)")
-        .replace("$", "\\$")
-    )
 
 
 def print_list(x, n):
@@ -603,40 +638,6 @@ def to_int(x, index=False):
         return x
     else:
         return _x
-
-
-def concat_with_pipe(x, cols=None):
-    """Concatenate a pandas.Series x using ``|``, drop None or numpy.nan"""
-    cols = cols or x.index
-    return "|".join([x[i] for i in cols if x[i] not in [None, np.nan]])
-
-
-def reduce_hierarchy(x, depth):
-    """Reduce the hierarchy (indicated by ``|``) of x to the specified depth"""
-    _x = x.split("|")
-    depth = len(_x) + depth - 1 if depth < 0 else depth
-    return "|".join(_x[0 : (depth + 1)])
-
-
-def get_variable_components(x, level, join=False):
-    """Return components for requested level in a list or join these in a str.
-
-    Parameters
-    ----------
-    x : str
-        Uses ``|`` to separate the components of the variable.
-    level : int or list of int
-        Position of the component.
-    join : bool or str, optional
-        If True, IAMC-style (``|``) is used as separator for joined components.
-    """
-    _x = x.split("|")
-    if join is False:
-        return [_x[i] for i in level] if islistable(level) else _x[level]
-    else:
-        level = [level] if type(level) == int else level
-        join = "|" if join is True else join
-        return join.join([_x[i] for i in level])
 
 
 def s(n):

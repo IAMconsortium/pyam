@@ -10,27 +10,15 @@ on:
     branches: [ '**' ]
 
 jobs:
-  pytest:
-    strategy:
-      matrix:
-        os:
-        - ubuntu-latest
-        python-version:
-        - '3.9'
-
-      fail-fast: false
-
-
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} py${{ matrix.python-version }}
-  
+  docs:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.10'
 
     - name: Install Pandoc
       uses: r-lib/actions/setup-pandoc@v1
@@ -39,4 +27,4 @@ jobs:
       run: pip install -e .[tutorials,optional_plotting,docs]
 
     - name: Build the docs
-      run: make --directory=doc html
+      run: make --directory=docs html

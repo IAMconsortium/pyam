@@ -2,7 +2,20 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 
-from pyam import IamDataFrame, validate, categorize, require_variable, META_IDX
+from pyam import IamDataFrame, validate, categorize
+from pyam.utils import IAMC_IDX
+
+from .conftest import TEST_YEARS
+
+
+# add row for `Primary Energy|Gas` to test that all permutations
+DATA_GAS = pd.DataFrame(
+    [
+        ["model_a", "scen_a", "World", "Primary Energy|Gas", "EJ/yr", 0.5, 3],
+        ["model_a", "scen_b", "World", "Primary Energy|Gas", "EJ/yr", 1, 2],
+    ],
+    columns=IAMC_IDX + TEST_YEARS,
+)
 
 
 @pytest.mark.parametrize(
@@ -10,19 +23,24 @@ from pyam import IamDataFrame, validate, categorize, require_variable, META_IDX
     (
         dict(),
         dict(variable="Primary Energy"),
+        dict(variable="Primary Energy", year=[2005, 2010]),
         dict(variable=["Primary Energy"], year=[2005, 2010]),
+        dict(variable=["Primary Energy", "Primary Energy|Gas"], year=[2005, 2010]),
     ),
 )
 def test_require_data_pass(test_df_year, kwargs):
     # check that IamDataFrame with all required data returns None
-    assert test_df_year.require_data(**kwargs) is None
+    df = test_df_year.append(IamDataFrame(DATA_GAS))
+    assert df.require_data(**kwargs) is None
 
 
 @pytest.mark.parametrize(
     "kwargs",
     (
         dict(variable="Primary Energy|Coal"),
+        dict(variable="Primary Energy", year=[2005, 2010]),
         dict(variable=["Primary Energy"], year=[2005, 2010]),
+        dict(variable=["Primary Energy", "Primary Energy|Gas"], year=[2005, 2010]),
     ),
 )
 @pytest.mark.parametrize("exclude_on_fail", (False, True))
@@ -30,73 +48,30 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
     # check different ways of failing when not all required data is present
 
     test_df_year._data = test_df_year._data[0:5]  # remove value for scen_b & 2010
+    df = test_df_year.append(IamDataFrame(DATA_GAS))
 
-    obs = test_df_year.require_data(**kwargs, exclude_on_fail=exclude_on_fail)
+    obs = df.require_data(**kwargs, exclude_on_fail=exclude_on_fail)
+
     exp = pd.DataFrame([["model_a", "scen_b"]], columns=["model", "scenario"])
+    # add parametrization-dependent columns to expected output
+    if kwargs["variable"] == "Primary Energy|Coal":
+        exp["variable"] = ["Primary Energy|Coal"]
+    else:
+        exp["variable"] = ["Primary Energy"]
+        exp["year"] = [2010]
+
     pdt.assert_frame_equal(obs, exp)
 
     if exclude_on_fail:
-        list(test_df_year.meta["exclude"]) == [False, True]
+        assert list(df.exclude) == [False, True]
     else:
-        list(test_df_year.meta["exclude"]) == [False, False]
-
-
-def test_require_variable_pass(test_df):
-    # checking that the return-type is correct
-    obs = test_df.require_variable(variable="Primary Energy", exclude_on_fail=True)
-    assert obs is None
-    assert list(test_df["exclude"]) == [False, False]
-
-
-def test_require_variable(test_df):
-    exp = pd.DataFrame([["model_a", "scen_b"]], columns=META_IDX)
-
-    # checking that the return-type is correct
-    obs = test_df.require_variable(variable="Primary Energy|Coal")
-    pdt.assert_frame_equal(obs, exp)
-    assert list(test_df["exclude"]) == [False, False]
-
-    # checking exclude on fail
-    obs = test_df.require_variable(variable="Primary Energy|Coal", exclude_on_fail=True)
-    pdt.assert_frame_equal(obs, exp)
-    assert list(test_df["exclude"]) == [False, True]
-
-
-def test_require_variable_top_level(test_df):
-    exp = pd.DataFrame([["model_a", "scen_b"]], columns=META_IDX)
-
-    # checking that the return-type is correct
-    obs = require_variable(test_df, variable="Primary Energy|Coal")
-    pdt.assert_frame_equal(obs, exp)
-    assert list(test_df["exclude"]) == [False, False]
-
-    # checking exclude on fail
-    obs = require_variable(
-        test_df, variable="Primary Energy|Coal", exclude_on_fail=True
-    )
-    pdt.assert_frame_equal(obs, exp)
-    assert list(test_df["exclude"]) == [False, True]
-
-
-def test_require_variable_year_list(test_df):
-    # drop first data point
-    df = IamDataFrame(test_df.data[1:])
-    # checking for variables that have data for ANY of the years in the list
-    obs = df.require_variable(variable="Primary Energy", year=[2005, 2010])
-    assert obs is None
-
-    # checking for variables that have data for ALL of the years in the list
-    df = IamDataFrame(test_df.data[1:])
-    exp = pd.DataFrame([["model_a", "scen_a"]], columns=META_IDX)
-
-    obs = df.require_variable(variable="Primary Energy", year=[2005])
-    pdt.assert_frame_equal(obs, exp)
+        assert list(df.exclude) == [False, False]
 
 
 def test_validate_pass(test_df):
     obs = test_df.validate({"Primary Energy": {"up": 10}}, exclude_on_fail=True)
     assert obs is None
-    assert list(test_df["exclude"]) == [False, False]  # none excluded
+    assert list(test_df.exclude) == [False, False]  # none excluded
 
 
 def test_validate_nonexisting(test_df):
@@ -105,45 +80,45 @@ def test_validate_nonexisting(test_df):
     # checking that the return-type is correct
     pdt.assert_frame_equal(obs, test_df.data[3:4].reset_index(drop=True))
     # scenario with failed validation excluded, scenario with no value passes
-    assert list(test_df["exclude"]) == [True, False]
+    assert list(test_df.exclude) == [True, False]
 
 
 def test_validate_up(test_df):
     # checking that the return-type is correct
     obs = test_df.validate({"Primary Energy": {"up": 6.5}})
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [False, False]
+    assert list(test_df.exclude) == [False, False]
 
     # checking exclude on fail
     obs = test_df.validate({"Primary Energy": {"up": 6.5}}, exclude_on_fail=True)
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [False, True]
+    assert list(test_df.exclude) == [False, True]
 
 
 def test_validate_lo(test_df):
     # checking that the return-type is correct
     obs = test_df.validate({"Primary Energy": {"up": 8, "lo": 2}})
     pdt.assert_frame_equal(obs, test_df.data[0:1].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [False, False]
+    assert list(test_df.exclude) == [False, False]
 
     # checking exclude on fail
     obs = test_df.validate({"Primary Energy": {"up": 8, "lo": 2}}, exclude_on_fail=True)
     pdt.assert_frame_equal(obs, test_df.data[0:1].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [True, False]
+    assert list(test_df.exclude) == [True, False]
 
 
 def test_validate_both(test_df):
     # checking that the return-type is correct
     obs = test_df.validate({"Primary Energy": {"up": 6.5, "lo": 2}})
     pdt.assert_frame_equal(obs, test_df.data[0:6:5].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [False, False]
+    assert list(test_df.exclude) == [False, False]
 
     # checking exclude on fail
     obs = test_df.validate(
         {"Primary Energy": {"up": 6.5, "lo": 2}}, exclude_on_fail=True
     )
     pdt.assert_frame_equal(obs, test_df.data[0:6:5].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [True, True]
+    assert list(test_df.exclude) == [True, True]
 
 
 def test_validate_year(test_df):
@@ -154,14 +129,14 @@ def test_validate_year(test_df):
     # checking that the return-type is correct
     obs = test_df.validate({"Primary Energy": {"up": 6, "year": 2010}})
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [False, False]
+    assert list(test_df.exclude) == [False, False]
 
     # checking exclude on fail
     obs = test_df.validate(
         {"Primary Energy": {"up": 6, "year": 2010}}, exclude_on_fail=True
     )
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [False, True]
+    assert list(test_df.exclude) == [False, True]
 
 
 def test_validate_top_level(test_df):
@@ -172,7 +147,7 @@ def test_validate_top_level(test_df):
         variable="Primary Energy",
     )
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
-    assert list(test_df["exclude"]) == [False, True]
+    assert list(test_df.exclude) == [False, True]
 
 
 def test_category_none(test_df):

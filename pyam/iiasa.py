@@ -1,3 +1,4 @@
+from io import StringIO
 from pathlib import Path
 import json
 import logging
@@ -15,13 +16,18 @@ import numpy as np
 import pandas as pd
 
 from pyam.core import IamDataFrame
+from pyam.str import is_str
 from pyam.utils import (
     META_IDX,
     IAMC_IDX,
-    isstr,
     pattern_match,
-    islistable,
+    is_list_like,
 )
+from pyam.logging import deprecation_warning
+import ixmp4
+from ixmp4.conf import settings
+from ixmp4.conf.auth import ManagerAuth
+
 
 logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
@@ -35,28 +41,22 @@ You are connected to the {} scenario explorer hosted by IIASA.
 """.replace(
     "\n", ""
 )
+IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 
 # path to local configuration settings
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
 
-JWT_DECODE_ARGS = {"verify_signature": False, "verify_exp": True}
-
 
 def set_config(user, password, file=None):
-    """Save username and password for the IIASA API connection to a file"""
-    file = Path(file) if file is not None else DEFAULT_IIASA_CREDS
-    if not file.parent.exists():
-        file.parent.mkdir(parents=True)
-
-    with open(file, mode="w") as f:
-        logger.info(f"Setting IIASA-connection configuration file: {file}")
-        yaml.dump(dict(username=user, password=password), f, sort_keys=False)
+    raise DeprecationWarning(f"This method is deprecated. {IXMP4_LOGIN}.")
 
 
 def _read_config(file):
     """Read username and password for IIASA API connection from file"""
     with open(file, "r") as stream:
-        return yaml.safe_load(stream)
+        creds = yaml.safe_load(stream)
+
+    return ManagerAuth(**creds, url=settings.manager_url)
 
 
 def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
@@ -72,74 +72,58 @@ class SceSeAuth(AuthBase):
         ----------
         creds : pathlib.Path or str, optional
             Path to a file with authentication credentials
-        auth_url : str, optionl
+        auth_url : str, optional
             Url of the authentication service
         """
         self.client = httpx.Client(base_url=auth_url, timeout=10.0, http2=True)
-        self.access_token, self.refresh_token = None, None
 
         if creds is None:
             if DEFAULT_IIASA_CREDS.exists():
-                self.creds = _read_config(DEFAULT_IIASA_CREDS)
+                deprecation_warning(
+                    f"{IXMP4_LOGIN} and manually delete the file '{DEFAULT_IIASA_CREDS}'.",
+                    "Using a pyam-credentials file",
+                )
+                self.auth = _read_config(DEFAULT_IIASA_CREDS)
             else:
-                self.creds = None
-        elif isinstance(creds, Path) or isstr(creds):
-            self.creds = _read_config(creds)
+                self.auth = ixmp4.conf.settings.default_auth
+        elif isinstance(creds, Path) or is_str(creds):
+            self.auth = _read_config(creds)
         else:
             raise DeprecationWarning(
                 "Passing credentials as clear-text is not allowed. "
-                "Please use `pyam.iiasa.set_config(<user>, <password>)` instead!"
+                f"{IXMP4_LOGIN} instead."
             )
 
-        # if no creds, get anonymous token
-        # TODO: explicit token for anonymous login will not be necessary for ixmp-server
-        if self.creds is None:
-            r = self.client.get("/legacy/anonym/")
-            if r.status_code >= 400:
-                raise ValueError("Unknown API error: " + r.text)
-            self.user = None
-            self.access_token = r.json()
+        # explicit token for anonymous login is not necessary for ixmp4 platforms
+        # but is required for legacy Scenario Explorer databases
+        if self.auth.user.username == "@anonymous":
+            self._get_anonymous_token()
 
-        # else get user-token
         else:
-            self.user = self.creds["username"]
-            self.obtain_jwt()
+            self.user = self.auth.user.username
+            self.access_token = self.auth.access_token
+
+    def _get_anonymous_token(self):
+        r = self.client.get("/legacy/anonym/")
+        if r.status_code >= 400:
+            raise ValueError("Unknown API error: " + r.text)
+        self.user, self.access_token = None, r.json()
 
     def __call__(self):
         try:
             # raises jwt.ExpiredSignatureError if token is expired
-            jwt.decode(self.access_token, options=JWT_DECODE_ARGS)
-
+            jwt.decode(
+                self.access_token,
+                options={"verify_signature": False, "verify_exp": True},
+            )
         except jwt.ExpiredSignatureError:
-            self.refresh_jwt()
+            if self.auth.user.username == "@anonymous":
+                self._get_anonymous_token()
+            else:
+                self.auth.refresh_or_reobtain_jwt()
+                self.access_token = self.auth.access_token
 
         return {"Authorization": "Bearer " + self.access_token}
-
-    def obtain_jwt(self):
-        r = self.client.post("/v1/token/obtain/", json=self.creds)
-        if r.status_code == 401:
-            raise ValueError(
-                "Credentials not valid to connect to https://manager.ece.iiasa.ac.at."
-            )
-        elif r.status_code >= 400:
-            raise ValueError("Unknown API error: " + r.text)
-
-        _json = r.json()
-        self.access_token = _json["access"]
-        self.refresh_token = _json["refresh"]
-
-    def refresh_jwt(self):
-        try:
-            # raises jwt.ExpiredSignatureError if token is expired
-            jwt.decode(self.refresh_token, options=JWT_DECODE_ARGS)
-            r = self.client.post(
-                "/v1/token/refresh/", json={"refresh": self.refresh_token}
-            )
-            if r.status_code >= 400:
-                raise ValueError("Unknown API error: " + r.text)
-            self.access_token = r.json()["access"]
-        except jwt.ExpiredSignatureError:
-            self.obtain_jwt()
 
 
 class Connection(object):
@@ -225,7 +209,8 @@ class Connection(object):
         if name not in valid:
             raise ValueError(
                 f"You do not have access to instance '{name}' or it does not exist. "
-                "Use `Connection.valid_connections` for a list of accessible services."
+                "Use `pyam.iiasa.Connection().valid_connections` for a list "
+                "of accessible services."
             )
 
         # TODO: config will be reimplemented in conjunction with ixmp-server
@@ -258,12 +243,12 @@ class Connection(object):
         url = "/".join([self._base_url, "metadata/types"])
         r = requests.get(url, headers=self.auth())
         _check_response(r)
-        return pd.read_json(r.text, orient="records")["name"]
+        return pd.read_json(StringIO(r.text), orient="records")["name"]
 
-    def _query_index(self, default=True, meta=False, cols=[], **kwargs):
+    def _query_index(self, default_only=True, meta=False, cols=[], **kwargs):
         # TODO: at present this reads in all data for all scenarios,
         #  it could be sped up in the future to try to query a subset
-        _default = "true" if default else "false"
+        _default = "true" if default_only else "false"
         _meta = "true" if meta else "false"
         add_url = f"runs?getOnlyDefaultRuns={_default}&includeMetadata={_meta}"
         url = "/".join([self._base_url, add_url])
@@ -271,7 +256,7 @@ class Connection(object):
         _check_response(r)
 
         # cast response to dataframe, apply filter by kwargs, and return
-        runs = pd.read_json(r.text, orient="records")
+        runs = pd.read_json(StringIO(r.text), orient="records")
         if runs.empty:
             logger.warning("No permission to view model(s) or no scenarios exist.")
             return pd.DataFrame([], columns=META_IDX + ["version", "run_id"] + cols)
@@ -287,38 +272,44 @@ class Connection(object):
         else:
             return runs
 
-    def index(self, default=True, **kwargs):
+    def index(self, default_only=True, **kwargs):
         """Return the index of models and scenarios
 
         Parameters
         ----------
-        default : bool, optional
+        default_only : bool, optional
             If `True`, return *only* the default version of a model/scenario.
-            Any model/scenario without a default version is omitted.
-            If `False`, returns all versions.
+            If `False`, return all versions.
         kwargs
-            Arguments to filer by *model* and *scenario*, `*` can be used as wildcard.
+            Arguments to filter by *model* and *scenario*, `*` can be used as wildcard.
         """
-        cols = ["version"] if default else ["version", "is_default"]
-        return self._query_index(default, **kwargs)[META_IDX + cols].set_index(META_IDX)
+        if "default" in kwargs:
+            default_only = _new_default_api(kwargs)
 
-    def meta(self, default=True, run_id=False, **kwargs):
+        cols = ["version"] if default_only else ["version", "is_default"]
+        return self._query_index(default_only, **kwargs)[META_IDX + cols].set_index(
+            META_IDX
+        )
+
+    def meta(self, default_only=True, run_id=False, **kwargs):
         """Return categories and indicators (meta) of scenarios
 
         Parameters
         ----------
-        default : bool, optional
-            Return *only* the default version of each scenario.
-            Any (`model`, `scenario`) without a default version is omitted.
+        default_only : bool, optional
+            If `True`, return *only* the default version of a model/scenario.
             If `False`, return all versions.
         run_id : bool, optional
             Include "run id" column
         kwargs
             Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
-        df = self._query_index(default, meta=True, **kwargs)
+        if "default" in kwargs:
+            default_only = _new_default_api(kwargs)
 
-        cols = ["version"] if default else ["version", "is_default"]
+        df = self._query_index(default_only, meta=True, **kwargs)
+
+        cols = ["version"] if default_only else ["version", "is_default"]
         if run_id:
             cols.append("run_id")
 
@@ -327,25 +318,31 @@ class Connection(object):
             extra_meta = pd.DataFrame.from_records(df.metadata)
             meta = pd.concat([meta, extra_meta], axis=1)
 
-        return meta.set_index(META_IDX + ([] if default else ["version"]))
+        # remove "exclude" column when querying from an ixmp (legacy) IIASA database
+        if "exclude" in meta.columns:
+            meta.drop(columns="exclude", inplace=True)
 
-    def properties(self, default=True, **kwargs):
+        return meta.set_index(META_IDX + ([] if default_only else ["version"]))
+
+    def properties(self, default_only=True, **kwargs):
         """Return the audit properties of scenarios
 
         Parameters
         ----------
-        default : bool, optional
-            Return *only* the default version of each scenario.
-            Any (`model`, `scenario`) without a default version is omitted.
-            If :obj:`False`, return all versions.
+        default_only : bool, optional
+            If `True`, return *only* the default version of a model/scenario.
+            If `False`, return all versions.
         kwargs
             Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
+        if "default" in kwargs:
+            default_only = _new_default_api(kwargs)
+
         audit_cols = ["cre_user", "cre_date", "upd_user", "upd_date"]
-        other_cols = ["version"] if default else ["version", "is_default"]
+        other_cols = ["version"] if default_only else ["version", "is_default"]
         cols = audit_cols + other_cols
 
-        _df = self._query_index(default, meta=True, cols=cols, **kwargs)
+        _df = self._query_index(default_only, meta=True, cols=cols, **kwargs)
         audit_mapping = dict([(i, i.replace("_", "ate_")) for i in audit_cols])
 
         return _df.set_index(META_IDX).rename(columns=audit_mapping)
@@ -364,7 +361,7 @@ class Connection(object):
         url = "/".join([self._base_url, "ts"])
         r = requests.get(url, headers=self.auth())
         _check_response(r)
-        df = pd.read_json(r.text, orient="records")
+        df = pd.read_json(StringIO(r.text), orient="records")
         return pd.Series(df["variable"].unique(), name="variable")
 
     @lru_cache()
@@ -386,7 +383,7 @@ class Connection(object):
 
     @staticmethod
     def convert_regions_payload(response, include_synonyms):
-        df = pd.read_json(response, orient="records")
+        df = pd.read_json(StringIO(response), orient="records")
         if df.empty:
             return df
         if "synonyms" not in df.columns:
@@ -405,11 +402,11 @@ class Connection(object):
             return df.rename(columns={"name": "region", "synonyms": "synonym"})
         return pd.Series(df["name"].unique(), name="region")
 
-    def _query_post(self, meta, default=True, **kwargs):
+    def _query_post(self, meta, default_only=True, **kwargs):
         def _get_kwarg(k):
             # TODO refactor API to return all models if model-list is empty
             x = kwargs.pop(k, "*" if k == "model" else [])
-            return [x] if isstr(x) else x
+            return [x] if is_str(x) else x
 
         m_pattern = _get_kwarg("model")
         s_pattern = _get_kwarg("scenario")
@@ -427,7 +424,7 @@ class Connection(object):
             return data[matches].unique()
 
         # drop non-default runs if only default is requested
-        if default and hasattr(meta, "is_default"):
+        if default_only and hasattr(meta, "is_default"):
             meta = meta[meta.is_default]
 
         # determine relevant run id's
@@ -453,10 +450,6 @@ class Connection(object):
         # pass empty list to API if all regions selected
         if len(regions) == len(self.regions()):
             regions = []
-        logger.debug(
-            f"Prepared filter for {len(regions)} region(s), "
-            f"{len(variables)} variables and {len(runs)} runs"
-        )
         data = {
             "filters": {
                 "regions": list(regions),
@@ -469,15 +462,14 @@ class Connection(object):
         }
         return data
 
-    def query(self, default=True, meta=True, **kwargs):
+    def query(self, default_only=True, meta=True, **kwargs):
         """Query the connected resource for timeseries data (with filters)
 
         Parameters
         ----------
-        default : bool, optional
-            Return *only* the default version of each scenario.
-            Any (`model`, `scenario`) without a default version is omitted.
-            If :obj:`False`, return all versions.
+        default_only : bool, optional
+            If `True`, return *only* the default version of a model/scenario.
+            If `False`, return all versions.
         meta : bool or list, optional
             If :obj:`True`, merge all meta columns indicators
             (or subset if list is given).
@@ -504,28 +496,30 @@ class Connection(object):
                              variable=['Emissions|CO2', 'Primary Energy'])
 
         """
+        if "default" in kwargs:
+            default_only = _new_default_api(kwargs)
+
         headers = self.auth().copy()
         headers["Content-Type"] = "application/json"
 
         # retrieve meta (with run ids) or only index
         if meta:
-            _meta = self.meta(default=default, run_id=True)
+            _meta = self.meta(default_only=default_only, run_id=True)
             # downselect to subset of meta columns if given as list
-            if islistable(meta):
+            if is_list_like(meta):
                 # always merge 'version' (even if not requested explicitly)
                 # 'run_id' is required to determine `_args`, dropped later
-                _meta = _meta[set(meta).union(["version", "run_id"])]
+                _meta = _meta[list(set(meta).union(["version", "run_id"]))]
         else:
-            _meta = self._query_index(default=default).set_index(META_IDX)
+            _meta = self._query_index(default_only=default_only).set_index(META_IDX)
 
         # return nothing if no data exists at all
         if _meta.empty:
             return
 
         # retrieve data
-        _args = json.dumps(self._query_post(_meta, default=default, **kwargs))
+        _args = json.dumps(self._query_post(_meta, default_only=default_only, **kwargs))
         url = "/".join([self._base_url, "runs/bulk/ts"])
-        logger.debug(f"Query timeseries data from {url} with data {_args}")
         r = requests.post(url, headers=headers, data=_args)
         _check_response(r)
         # refactor returned json object to be castable to an IamDataFrame
@@ -539,8 +533,7 @@ class Connection(object):
             value=float,
             version=int,
         )
-        data = pd.read_json(r.text, orient="records", dtype=dtype)
-        logger.debug(f"Response: {len(r.text)} bytes, {len(data)} records")
+        data = pd.read_json(StringIO(r.text), orient="records", dtype=dtype)
         cols = IAMC_IDX + ["year", "value", "subannual", "version"]
         # keep only known columns or init empty df
         data = pd.DataFrame(data=data, columns=cols)
@@ -552,7 +545,7 @@ class Connection(object):
                 data.drop(columns="subannual", inplace=True)
 
         # define the index for the IamDataFrame
-        if default:
+        if default_only:
             index = META_IDX
             data.drop(columns="version", inplace=True)
         else:
@@ -562,14 +555,24 @@ class Connection(object):
         # merge meta indicators (if requested) and cast to IamDataFrame
         if meta:
             # 'run_id' is necessary to retrieve data, not returned by default
-            if not (islistable(meta) and "run_id" in meta):
+            if not (is_list_like(meta) and "run_id" in meta):
                 _meta.drop(columns="run_id", inplace=True)
             return IamDataFrame(data, meta=_meta, index=index)
         else:
             return IamDataFrame(data, index=index)
 
 
-def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs):
+def _new_default_api(kwargs):
+    """Change kwargs from `default` to `default_only`"""
+    # TODO: argument `default` is deprecated, change to  for release >= 2.0
+    v = kwargs.pop("default")
+    deprecation_warning(f"Use `default_only={v}`.", "The argument `default`")
+    return v
+
+
+def read_iiasa(
+    name, default_only=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
+):
     """Query an IIASA Scenario Explorer database API and return as IamDataFrame
 
     Parameters
@@ -577,10 +580,9 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     name : str
         | Name of an IIASA Scenario Explorer database instance.
         | See :attr:`pyam.iiasa.Connection.valid_connections`.
-    default : bool, optional
-        Return *only* the default version of each scenario.
-        Any (`model`, `scenario`) without a default version is omitted.
-        If :obj:`False`, return all versions.
+    default_only : bool, optional
+        If `True`, return *only* the default version of a model/scenario.
+        If `False`, return all versions.
     meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
@@ -595,11 +597,13 @@ def read_iiasa(name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **
     kwargs
         Arguments for :meth:`pyam.iiasa.Connection.query`
     """
-    return Connection(name, creds, base_url).query(default=default, meta=meta, **kwargs)
+    return Connection(name, creds, base_url).query(
+        default_only=default_only, meta=meta, **kwargs
+    )
 
 
 def lazy_read_iiasa(
-    file, name, default=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
+    file, name, default_only=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
 ):
     """
     Try to load data from a local cache, failing that, loads it from the internet.
@@ -619,10 +623,9 @@ def lazy_read_iiasa(
     name : str
         | Name of an IIASA Scenario Explorer database instance.
         | See :attr:`pyam.iiasa.Connection.valid_connections`.
-    default : bool, optional
-        Return *only* the default version of each scenario.
-        Any (`model`, `scenario`) without a default version is omitted.
-        If :obj:`False`, return all versions.
+    default_only : bool, optional
+        If `True`, return *only* the default version of a model/scenario.
+        If `False`, return all versions.
     meta : bool or list of strings, optional
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
@@ -659,7 +662,12 @@ def lazy_read_iiasa(
             logger.info("Database out of date and will be re-downloaded")
     # If we get here, we need to redownload the database
     new_read = read_iiasa(
-        name, meta=meta, default=default, creds=creds, base_url=base_url, **kwargs
+        name,
+        meta=meta,
+        default_only=default_only,
+        creds=creds,
+        base_url=base_url,
+        **kwargs,
     )
     Path(file).parent.mkdir(parents=True, exist_ok=True)
     if file.suffix == ".csv":

@@ -1,8 +1,10 @@
 from copy import deepcopy
 import numpy as np
 import pandas as pd
-from pyam import filter_by_meta, META_IDX
-from pyam.utils import isstr, islistable
+
+from pyam import filter_by_meta
+from pyam.str import is_str
+from pyam.utils import is_list_like, META_IDX
 
 
 class Statistics(object):
@@ -35,7 +37,7 @@ class Statistics(object):
         # assing `groupby` settings and check that specifications are valid
         self.col = None
         self.groupby = None
-        if isstr(groupby):
+        if is_str(groupby):
             self.col = groupby
             self.groupby = {groupby: None}
         elif isinstance(groupby, dict) and len(groupby) == 1:
@@ -65,16 +67,16 @@ class Statistics(object):
         self._headers, self._subheaders = ([], [])
 
         # assing `filters` settings and check that specifications are valid
-        for (idx, _filter) in self.filters:
+        for idx, _filter in self.filters:
             # check that index in tuple is valid
-            if isstr(idx):
+            if is_str(idx):
                 self._add_to_index(idx)
             else:
                 if not (
                     isinstance(idx, tuple)
                     and len(idx) == 2
-                    and isstr(idx[0])
-                    or not isstr(idx[1])
+                    and is_str(idx[0])
+                    or not is_str(idx[1])
                 ):
                     raise ValueError("`{}` is not a valid index".format(idx))
                 self._add_to_index(idx[0], idx[1])
@@ -123,7 +125,7 @@ class Statistics(object):
     def _add_to_header(self, header, subheader):
         if header not in self._headers:
             self._headers.append(header)
-        if islistable(subheader):
+        if is_list_like(subheader):
             for s in subheader:
                 if s not in self._subheaders:
                     self._subheaders.append(s)
@@ -181,7 +183,7 @@ class Statistics(object):
             _stats.index.names = [""] * 3 if self.rows else [""] * 2
 
         # describe with filter feature
-        for (idx, _filter) in self.filters:
+        for idx, _filter in self.filters:
             filter_args = dict(data=data, df=self.df)
             filter_args.update(_filter)
             _stats_f = filter_by_meta(**filter_args).describe(
@@ -198,10 +200,11 @@ class Statistics(object):
                 else (levels + [[row]], [[0]] * (self.idx_depth + 1))
             )
             _stats_f.index = pd.MultiIndex(levels=lvls, codes=lbls)
-            _stats = _stats_f if _stats is None else _stats.append(_stats_f)
+            _stats = _stats_f if _stats is None else pd.concat([_stats, _stats_f])
 
         # add header
         _stats = pd.concat([_stats], keys=[header], names=[""], axis=1)
+        _stats.index.names = [None] * len(_stats.index.names)
         subheader = _stats.columns.get_level_values(1).unique()
         self._add_to_header(header, subheader)
 
@@ -272,15 +275,14 @@ def format_rows(
         legend = "{} ({})".format(
             center, "max, min" if fullrange is True else "interquartile range"
         )
-        index = row.index.droplevel(2).drop_duplicates()
-        count_arg = dict(tuples=[("count", "")], names=[None, legend])
-    else:
-        msg = "displaying multiple range formats simultaneously not supported"
-        raise NotImplementedError(msg)
 
-    ret = pd.Series(
-        index=pd.MultiIndex.from_tuples(**count_arg).append(index), dtype=float
-    )
+        row_index = row.index.droplevel(2).drop_duplicates()
+        ret_index = pd.MultiIndex.from_tuples([("count", "")]).append(row_index)
+        ret_index.names = [None, legend]
+    else:
+        raise ValueError("Use either fullrange or interquartile range.")
+
+    ret = pd.Series(index=ret_index, dtype=float)
 
     row = row.sort_index()
     center = "50%" if center == "median" else center
@@ -295,7 +297,7 @@ def format_rows(
     upper, lower = ("max", "min") if fullrange is True else ("75%", "25%")
 
     # format `describe()` columns to string output
-    for i in index:
+    for i in row_index:
         x = row.loc[i]
         _count = x["count"]
         if np.isnan(_count) or _count == 0:
