@@ -87,14 +87,14 @@ PYAM_COLORS = {
     "AR6-C7": "#F18872",  # C7: scenarios that limit warming to 4°C (>50%)
     "AR6-C8": "#BD7161",  # C8: scenarios that exceed 4°C warming (≥50%)
     # AR6 Illustrative Mitigation Pathway (IMP)
-    "AR6-IMP-LD": "#DAA25A",  # LD: emphasis on a low demand for resources
-    "AR6-IMP-Ren": "#EED2AE",  # Ren: emphasis on renewables resources
-    "AR6-IMP-SP": "#F7E7D7",  # SP: emphasis on sustainable development
-    "AR6-IMP-Neg": "#B8BDAA",  # Neg: emphasis on deployment of carbon dioxide removal
-    "AR6-IMP-GS": "#B5B7CA",  # GS: less rapid near-term mitigation followed by a gradual strengthening
+    "AR6-IMP-LD": "#4FA7BF",  # LD: emphasis on a low demand for resources
+    "AR6-IMP-Ren": "#2B7C8B",  # Ren: emphasis on renewables resources
+    "AR6-IMP-SP": "#004D52",  # SP: emphasis on sustainable development
+    "AR6-IMP-Neg": "#84A12B",  # Neg: emphasis on deployment of carbon dioxide removal
+    "AR6-IMP-GS": "#6E7895",  # GS: less rapid near-term mitigation followed by a gradual strengthening
     # AR6 Illustrative Pathway (IP)
-    "AR6-IP-ModAct": "#DDB6AB",  # pathway with moderate climate action
-    "AR6-IP-CurPol": "#F9C8B7",  # pathway modelling current policies
+    "AR6-IP-ModAct": "#F29424",  # pathway with moderate climate action
+    "AR6-IP-CurPol": "#E31F2B",  # pathway modelling current policies
 }
 
 
