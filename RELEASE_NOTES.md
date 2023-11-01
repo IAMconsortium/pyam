@@ -1,5 +1,5 @@
 # Next Release
-
+- [#794](https://github.com/IAMconsortium/pyam/pull/794] Fixed wrong color codes for AR6 Illustrative Pathways
 - [#723](https://github.com/IAMconsortium/pyam/pull/723) Ensure correct order of `time` attribute
 
 # Release v1.7.0
