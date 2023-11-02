@@ -66,12 +66,13 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
 
 class SceSeAuth(AuthBase):
     def __init__(self, creds: str = None, auth_url: str = _AUTH_URL):
-        """Connection to the Scenario Services Manager AAC service.
+        """Connection to the Scenario Services manager service for authentication.
 
         Parameters
         ----------
         creds : pathlib.Path or str, optional
-            Path to a file with authentication credentials
+            Path to a file with authentication credentials. This feature is deprecated,
+            please run `ixmp4 login <username>` in a console instead.
         auth_url : str, optional
             Url of the authentication service
         """
