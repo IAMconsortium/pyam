@@ -96,6 +96,10 @@ class SceSeAuth(AuthBase):
                 f"{IXMP4_LOGIN} instead."
             )
 
+        # self.auth is None if connection to manager service cannot be established
+        if self.auth is None:
+            raise httpx.ConnectError("No connection to IIASA manager service.")
+
         # explicit token for anonymous login is not necessary for ixmp4 platforms
         # but is required for legacy Scenario Explorer databases
         if self.auth.user.username == "@anonymous":
