@@ -11,6 +11,8 @@ from pandas.api.types import is_integer
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import ixmp4
+
 from pyam.slice import IamSlice
 from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
 
@@ -2332,6 +2334,26 @@ class IamDataFrame(object):
 
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
+
+    def to_ixmp4(self, platform: ixmp4.Platform):
+        """Save all scenarios as new default runs in an ixmp4 platform database instance
+
+        Parameters
+        ----------
+        platform : :class:`ixmp4.Platform` or str
+            The ixmp4 platform database instance to which the scenario data is saved
+        """
+        if not isinstance(platform, ixmp4.Platform):
+            platform = ixmp4.Platform(platform)
+
+        for model, scenario in self.index:
+            _df = self.filter(model=model, scenario=scenario)
+
+            run = platform.Run(model=model, scenario=scenario, version="new")
+            run.iamc.add(_df.data)
+            for key, value in dict(_df.meta.iloc[0]).items():
+                run.meta[key] = value
+            run.set_as_default()
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
