@@ -1,3 +1,6 @@
+# Next Release
+- [#794](https://github.com/IAMconsortium/pyam/pull/794] Fixed wrong color codes for AR6 Illustrative Pathways
+
 # Release v2.0.0
 
 - [#792](https://github.com/IAMconsortium/pyam/pull/792) Support region-aggregation with weights-index >> data-index
