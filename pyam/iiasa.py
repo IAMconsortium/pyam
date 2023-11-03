@@ -66,12 +66,13 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
 
 class SceSeAuth(AuthBase):
     def __init__(self, creds: str = None, auth_url: str = _AUTH_URL):
-        """Connection to the Scenario Services Manager AAC service.
+        """Connection to the Scenario Services manager service for authentication.
 
         Parameters
         ----------
         creds : pathlib.Path or str, optional
-            Path to a file with authentication credentials
+            Path to a file with authentication credentials. This feature is deprecated,
+            please run `ixmp4 login <username>` in a console instead.
         auth_url : str, optional
             Url of the authentication service
         """
@@ -87,12 +88,17 @@ class SceSeAuth(AuthBase):
             else:
                 self.auth = ixmp4.conf.settings.default_auth
         elif isinstance(creds, Path) or is_str(creds):
+            deprecation_warning(f"{IXMP4_LOGIN}.", "Using a pyam-credentials file")
             self.auth = _read_config(creds)
         else:
             raise DeprecationWarning(
                 "Passing credentials as clear-text is not allowed. "
                 f"{IXMP4_LOGIN} instead."
             )
+
+        # self.auth is None if connection to manager service cannot be established
+        if self.auth is None:
+            raise httpx.ConnectError("No connection to IIASA manager service.")
 
         # explicit token for anonymous login is not necessary for ixmp4 platforms
         # but is required for legacy Scenario Explorer databases
