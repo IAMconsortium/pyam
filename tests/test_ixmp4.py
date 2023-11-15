@@ -26,3 +26,5 @@ def test_ixmp4_integration(test_df_year):
     platform.regions.create(name="World", hierarchy="common")
     platform.units.create(name="EJ/yr")
     test_df_year.to_ixmp4(platform=platform)
+
+    # TODO add test for reading data from ixmp4 platform
