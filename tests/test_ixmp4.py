@@ -20,9 +20,9 @@ def test_to_ixmp4_missing_unit_raises(test_df_year):
         test_df_year.to_ixmp4(platform=platform)
 
 
-def test_ixmp4_integration(test_df):
+def test_ixmp4_integration(test_df_year):
     """Write an IamDataFrame to the platform"""
     platform = Platform(_backend=SqliteTestBackend())
     platform.regions.create(name="World", hierarchy="common")
     platform.units.create(name="EJ/yr")
-    test_df.to_ixmp4(platform=platform)
+    test_df_year.to_ixmp4(platform=platform)

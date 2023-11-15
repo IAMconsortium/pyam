@@ -1,3 +1,4 @@
+import numpy as np
 import ixmp4
 from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
@@ -35,5 +36,8 @@ def write_to_ixmp4(df, platform: ixmp4.Platform):
         run = platform.Run(model=model, scenario=scenario, version="new")
         run.iamc.add(_df.data)
         for key, value in dict(_df.meta.iloc[0]).items():
-            run.meta[key] = value
+            if isinstance(value, np.int64):
+                run.meta[key] = int(value)
+            else:
+                run.meta[key] = value
         run.set_as_default()
