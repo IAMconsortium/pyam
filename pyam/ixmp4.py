@@ -18,20 +18,16 @@ def write_to_ixmp4(df, platform: ixmp4.Platform):
     # TODO: implement a try-except to roll back changes if any error writing to platform
     # depends on https://github.com/iiasa/ixmp4/issues/29
     # quickfix: ensure that units and regions exist before writing
-
-    platform_regions = platform.regions.tabulate().name.values
-    if missing := [r for r in df.region if r not in platform_regions]:
-        raise RegionModel.NotFound(
-            ", ".join(missing) +
-            ". Use `Platform.regions.create()` to add the missing region(s)."
-        )
-
-    platform_units = platform.units.tabulate().name.values
-    if missing := [u for u in df.unit if u not in platform_units]:
-        raise UnitModel.NotFound(
-            ", ".join(missing) +
-            ". Use `Platform.units.create()` to add the missing unit(s)."
-    )
+    for dimension, values, model in [
+        ("regions", df.region, RegionModel),
+        ("units", df.unit, UnitModel)
+    ]:
+        platform_values = platform.__getattribute__(dimension).tabulate().name.values
+        if missing := [i for i in values if i not in platform_values]:
+            raise model.NotFound(
+                ", ".join(missing) +
+                f". Use `Platform.{dimension}.create()` to add the missing {dimension}."
+            )
 
     for model, scenario in df.index:
         _df = df.filter(model=model, scenario=scenario)
