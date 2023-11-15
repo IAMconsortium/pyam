@@ -1,5 +1,6 @@
 import ixmp4
-
+from ixmp4.core.region import RegionModel
+from ixmp4.core.unit import UnitModel
 
 def write_to_ixmp4(df, platform: ixmp4.Platform):
     """Save all scenarios as new default runs in an ixmp4 platform database instance
@@ -13,6 +14,18 @@ def write_to_ixmp4(df, platform: ixmp4.Platform):
     """
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
+
+    # TODO: implement a try-except to roll back changes if any error writing to platform
+    # depends on https://github.com/iiasa/ixmp4/issues/29
+    # quickfix: ensure that units and regions exist before writing
+
+    platform_regions = platform.regions.tabulate().name.values
+    if any([r not in platform_regions for r in df.region]):
+        raise RegionModel.NotFound()
+
+    platform_units = platform.units.tabulate().name.values
+    if any([r not in platform_regions for r in df.unit]):
+        raise UnitModel.NotFound()
 
     for model, scenario in df.index:
         _df = df.filter(model=model, scenario=scenario)
