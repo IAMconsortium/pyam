@@ -20,12 +20,18 @@ def write_to_ixmp4(df, platform: ixmp4.Platform):
     # quickfix: ensure that units and regions exist before writing
 
     platform_regions = platform.regions.tabulate().name.values
-    if any([r not in platform_regions for r in df.region]):
-        raise RegionModel.NotFound()
+    if missing := [r for r in df.region if r not in platform_regions]:
+        raise RegionModel.NotFound(
+            ", ".join(missing) +
+            ". Use `Platform.regions.create()` to add the missing region(s)."
+        )
 
     platform_units = platform.units.tabulate().name.values
-    if any([r not in platform_regions for r in df.unit]):
-        raise UnitModel.NotFound()
+    if missing := [u for u in df.unit if u not in platform_units]:
+        raise UnitModel.NotFound(
+            ", ".join(missing) +
+            ". Use `Platform.units.create()` to add the missing unit(s)."
+    )
 
     for model, scenario in df.index:
         _df = df.filter(model=model, scenario=scenario)
