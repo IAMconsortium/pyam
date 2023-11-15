@@ -13,6 +13,7 @@ from tempfile import TemporaryDirectory
 
 import ixmp4
 
+from pyam.ixmp4 import write_to_ixmp4
 from pyam.slice import IamSlice
 from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
 
@@ -2343,17 +2344,7 @@ class IamDataFrame(object):
         platform : :class:`ixmp4.Platform` or str
             The ixmp4 platform database instance to which the scenario data is saved
         """
-        if not isinstance(platform, ixmp4.Platform):
-            platform = ixmp4.Platform(platform)
-
-        for model, scenario in self.index:
-            _df = self.filter(model=model, scenario=scenario)
-
-            run = platform.Run(model=model, scenario=scenario, version="new")
-            run.iamc.add(_df.data)
-            for key, value in dict(_df.meta.iloc[0]).items():
-                run.meta[key] = value
-            run.set_as_default()
+        write_to_ixmp4(self, platform)
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
