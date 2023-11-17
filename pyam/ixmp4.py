@@ -36,9 +36,5 @@ def write_to_ixmp4(df, platform: ixmp4.Platform):
 
         run = platform.Run(model=model, scenario=scenario, version="new")
         run.iamc.add(_df.data)
-        for key, value in dict(_df.meta.iloc[0]).items():
-            if isinstance(value, np.int64):
-                run.meta[key] = int(value)
-            else:
-                run.meta[key] = value
+        run.meta = dict(_df.meta.iloc[0])
         run.set_as_default()
