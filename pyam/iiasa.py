@@ -139,8 +139,8 @@ class Connection(object):
     ----------
     name : str, optional
         The name of a database API.
-        See :attr:`pyam.iiasa.Connection.valid_connections` for a list
-        of available APIs.
+        Use :attr:`valid_connections <pyam.iiasa.Connection.valid_connections>`
+        for a list of available APIs.
     creds : str or :class:`pathlib.Path`, optional
         By default, the class will search for user credentials which
         were set using :meth:`pyam.iiasa.set_config`.
