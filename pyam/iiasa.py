@@ -139,8 +139,8 @@ class Connection(object):
     ----------
     name : str, optional
         The name of a database API.
-        See :attr:`pyam.iiasa.Connection.valid_connections` for a list
-        of available APIs.
+        Use :attr:`valid_connections <pyam.iiasa.Connection.valid_connections>`
+        for a list of available APIs.
     creds : str or :class:`pathlib.Path`, optional
         By default, the class will search for user credentials which
         were set using :meth:`pyam.iiasa.set_config`.
@@ -585,7 +585,8 @@ def read_iiasa(
     ----------
     name : str
         | Name of an IIASA Scenario Explorer database instance.
-        | See :attr:`pyam.iiasa.Connection.valid_connections`.
+        | Use :attr:`valid_connections <pyam.iiasa.Connection.valid_connections>`
+          for a list of available instances.
     default_only : bool, optional
         If `True`, return *only* the default version of a model/scenario.
         If `False`, return all versions.
@@ -628,7 +629,8 @@ def lazy_read_iiasa(
         either xlsx or csv.
     name : str
         | Name of an IIASA Scenario Explorer database instance.
-        | See :attr:`pyam.iiasa.Connection.valid_connections`.
+        | Use :attr:`valid_connections <pyam.iiasa.Connection.valid_connections>`
+          for a list of available instances.
     default_only : bool, optional
         If `True`, return *only* the default version of a model/scenario.
         If `False`, return all versions.
