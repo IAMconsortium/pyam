@@ -84,12 +84,13 @@ class IamDataFrame(object):
 
     Parameters
     ----------
-    data : :class:`pandas.DataFrame` or file-like object as str or :class:`pathlib.Path`
+    data : :class:`pandas.DataFrame`, :class:`pathlib.Path` or file-like object
         Scenario timeseries data following the IAMC data format or
         a supported variation as pandas object or a path to a file.
     meta : :class:`pandas.DataFrame`, optional
-        A dataframe with suitable 'meta' indicators for the new instance.
-        The index will be downselected to scenarios present in `data`.
+        A dataframe with suitable 'meta' indicators in wide (indicator as column name)
+        or long (key/value columns) format.
+        The dataframe will be downselected to scenarios present in `data`.
     index : list, optional
         Columns to use for resulting IamDataFrame index.
     kwargs
