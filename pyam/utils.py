@@ -228,7 +228,7 @@ def _intuit_column_groups(df, index, include_index=False):
     elif isinstance(df, pd.DataFrame):
         existing_cols = existing_cols.union(df.columns)
 
-    # check that there is no column in the timeseries data with reserved names
+    # check that there is no unnamed column in the timeseries data
     if None in existing_cols:
         raise ValueError("Unnamed column in timeseries data: None")
 
