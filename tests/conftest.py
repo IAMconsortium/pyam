@@ -57,7 +57,7 @@ META_DF = pd.DataFrame(
         ["model_a", "scen_b", 2, np.nan],
     ],
     columns=META_IDX + META_COLS,
-).set_index(META_IDX)
+)
 
 
 FULL_FEATURE_DF = pd.DataFrame(
