@@ -33,13 +33,14 @@ df_filter_by_meta_nonmatching_idx = pd.DataFrame(
     columns=["model", "scenario", "region", 2010, 2020],
 ).set_index(["model", "region"])
 
+
 META_DF = pd.DataFrame(
     [
-        ["model_a", "scen_a", 1],
-        ["model_a", "scen_b", np.nan],
-        ["model_a", "scen_c", 2],
+        ["model_a", "scen_a", 1, "foo"],
+        ["model_a", "scen_b", np.nan, "bar"],
+        ["model_a", "scen_c", 2, "baz"],
     ],
-    columns=META_IDX + ["foo"],
+    columns=META_IDX + ["number", "string"],
 ).set_index(META_IDX)
 
 
@@ -157,17 +158,45 @@ def test_init_df_with_extra_col(test_pd_df):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-def test_init_df_with_meta(test_pd_df):
-    # pass explicit meta dataframe with a scenario that doesn't exist in data
-    df = IamDataFrame(test_pd_df, meta=META_DF[["foo"]])
+def test_init_df_with_meta_with_index(test_pd_df):
+    # pass indexed meta dataframe with a scenario that doesn't exist in data
+    df = IamDataFrame(test_pd_df, meta=META_DF)
 
     # check that scenario not existing in data is removed during initialization
     pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
     assert df.scenario == ["scen_a", "scen_b"]
 
 
+def test_init_df_with_meta_no_index(test_pd_df):
+    # pass meta without index with a scenario that doesn't exist in data
+    df = IamDataFrame(test_pd_df, meta=META_DF.reset_index())
+
+    # check that scenario not existing in data is removed during initialization
+    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+    assert df.scenario == ["scen_a", "scen_b"]
+
+
+def test_init_df_with_meta_key_value(test_pd_df):
+    # pass meta with key-value columns with a scenario that doesn't exist in data
+
+    meta_df = pd.DataFrame(
+        [
+            ["model_a", "scen_a", "number", 1],
+            ["model_a", "scen_a", "string", "foo"],
+            ["model_a", "scen_b", "string", "bar"],
+            ["model_a", "scen_c", "number", 2],
+        ],
+        columns=META_IDX + ["key", "value"],
+    )
+    df = IamDataFrame(test_pd_df, meta=meta_df)
+
+    # check that scenario not existing in data is removed during initialization
+    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]], check_dtype=False)
+    assert df.scenario == ["scen_a", "scen_b"]
+
+
 def test_init_df_with_meta_exclude_raises(test_pd_df):
-    # pass explicit meta dataframe with a scenario that
+    # pass explicit meta dataframe with a legacy "exclude" column
     meta = META_DF.copy()
     meta["exclude"] = False
     with pytest.raises(ValueError, match="Illegal columns in `meta`: 'exclude'"):

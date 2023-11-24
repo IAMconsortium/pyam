@@ -147,10 +147,16 @@ class IamDataFrame(object):
 
         # if meta is given explicitly, verify that index and column names are valid
         if meta is not None:
+            if meta.index.names == [None]:
+                meta.set_index(index, inplace=True)
             if not meta.index.names == index:
                 raise ValueError(
                     f"Incompatible `index={index}` with `meta.index={meta.index.names}`"
                 )
+            # if meta is in "long" format as key-value columns, cast to wide format
+            if all(meta.columns == ["key", "value"]):
+                meta = meta.pivot(values="value", columns="key")
+                meta.columns.name = None
 
         # try casting to Path if file-like is string or LocalPath or pytest.LocalPath
         try:
