@@ -154,7 +154,7 @@ class IamDataFrame(object):
                     f"Incompatible `index={index}` with `meta.index={meta.index.names}`"
                 )
             # if meta is in "long" format as key-value columns, cast to wide format
-            if all(meta.columns == ["key", "value"]):
+            if len(meta.columns) == 2 and all(meta.columns == ["key", "value"]):
                 meta = meta.pivot(values="value", columns="key")
                 meta.columns.name = None
 
