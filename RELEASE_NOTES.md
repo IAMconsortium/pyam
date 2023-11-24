@@ -1,7 +1,8 @@
 # Next Release
 
-- [#796](https://github.com/IAMconsortium/pyam/pull/796] Raise explicit error message if no connection to IIASA manager service
-- [#794](https://github.com/IAMconsortium/pyam/pull/794] Fixed wrong color codes for AR6 Illustrative Pathways
+- [#801](https://github.com/IAMconsortium/pyam/pull/801) Support initializing with `meta` dataframe in long format
+- [#796](https://github.com/IAMconsortium/pyam/pull/796) Raise explicit error message if no connection to IIASA manager service
+- [#794](https://github.com/IAMconsortium/pyam/pull/794) Fixed wrong color codes for AR6 Illustrative Pathways
 
 # Release v2.0.0
 
