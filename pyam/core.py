@@ -2525,6 +2525,7 @@ def _meta_idx(data):
     """Return the 'META_IDX' from data by index"""
     return data[META_IDX].drop_duplicates().set_index(META_IDX).index
 
+
 def _empty_iamframe(index):
     """Return an empty IamDataFrame with the correct index columns"""
     return IamDataFrame(pd.DataFrame([], columns=index))
