@@ -1793,7 +1793,7 @@ class IamDataFrame(object):
                 ]
             ]
 
-    def slice(self, keep=True, **kwargs):
+    def slice(self, *, keep=True, **kwargs):
         """Return a (filtered) slice object of the IamDataFrame timeseries data index
 
         Parameters
@@ -1827,9 +1827,6 @@ class IamDataFrame(object):
 
         """
 
-        if not isinstance(keep, bool):
-            raise ValueError(f"Value of `keep` must be a boolean, found: {keep}")
-
         _keep = self._apply_filters(**kwargs)
         _keep = _keep if keep else ~_keep
 
@@ -1839,7 +1836,7 @@ class IamDataFrame(object):
             else IamSlice(_keep, self._data.index)
         )
 
-    def filter(self, keep=True, inplace=False, **kwargs):
+    def filter(self, *, keep=True, inplace=False, **kwargs):
         """Return a (copy of a) filtered (downselected) IamDataFrame
 
         Parameters
