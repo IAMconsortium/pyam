@@ -67,7 +67,7 @@ from pyam.index import (
 )
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam.logging import raise_data_error, deprecation_warning, format_log_message
-from pyam.validation import _exclude_on_fail, _apply_criteria
+from pyam.validation import _apply_criteria, _exclude_on_fail, _validate
 
 logger = logging.getLogger(__name__)
 
@@ -1070,15 +1070,7 @@ class IamDataFrame(object):
         :class:`pandas.DataFrame` or None
             All data points that do not satisfy the criteria.
         """
-        df = _apply_criteria(self._data, criteria, in_range=False)
-
-        if not df.empty:
-            msg = "{} of {} data points do not satisfy the criteria"
-            logger.info(msg.format(len(df), len(self.data)))
-
-            if exclude_on_fail and len(df) > 0:
-                _exclude_on_fail(self, df)
-            return df.reset_index()
+        return _validate(self, criteria, exclude_on_fail=exclude_on_fail)
 
     def rename(
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs

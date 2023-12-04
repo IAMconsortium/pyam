@@ -7,6 +7,18 @@ from pyam.utils import META_IDX, make_index, s
 logger = logging.getLogger(__name__)
 
 
+def _validate(df, criteria, exclude_on_fail):
+    _df = _apply_criteria(df._data, criteria, in_range=False)
+
+    if not _df.empty:
+        msg = "{} of {} data points do not satisfy the criteria"
+        logger.info(msg.format(len(_df), len(df.data)))
+
+        if exclude_on_fail and len(_df) > 0:
+            _exclude_on_fail(df, _df)
+        return _df.reset_index()
+
+
 def _check_rows(rows, check, in_range=True, return_test="any"):
     """Check all rows to be in/out of a certain range and provide testing on
     return values based on provided conditions
