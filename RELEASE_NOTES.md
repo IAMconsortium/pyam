@@ -2,11 +2,10 @@
 
 - [#801](https://github.com/IAMconsortium/pyam/pull/801) Support initializing with `meta` dataframe in long format
 - [#796](https://github.com/IAMconsortium/pyam/pull/796) Raise explicit error message if no connection to IIASA manager service
-- [#794](https://github.com/IAMconsortium/pyam/pull/794) Fixed wrong color codes for AR6 Illustrative Pathways
+- [#794](https://github.com/IAMconsortium/pyam/pull/794) Fix wrong color codes for AR6 Illustrative Pathways
+- [#792](https://github.com/IAMconsortium/pyam/pull/792) Support region-aggregation with weights-index >> data-index
 
 # Release v2.0.0
-
-- [#792](https://github.com/IAMconsortium/pyam/pull/792) Support region-aggregation with weights-index >> data-index
 
 ## Highlights
 
