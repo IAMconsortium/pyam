@@ -21,8 +21,7 @@ def test_filter_error_illegal_column(test_df, method):
 @pytest.mark.parametrize("method", ("filter", "slice"))
 def test_filter_error_keep(test_df, method):
     # string or non-starred dict was mis-interpreted as `keep` kwarg, see #253
-    pytest.raises(ValueError, getattr(test_df, method), model="foo", keep=1)
-    pytest.raises(ValueError, getattr(test_df, method), dict(model="foo"))
+    pytest.raises(TypeError, getattr(test_df, method), dict(model="foo"))
 
 
 @pytest.mark.parametrize("method", ("filter", "slice"))
