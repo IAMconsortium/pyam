@@ -10,11 +10,36 @@ logger = logging.getLogger(__name__)
 
 def _validate(df, criteria, upper, lower, exclude_on_fail, **kwargs):
     # TODO: argument `criteria` is deprecated, remove for release >= 3.0
-    deprecation_warning(
-        "Use `upper`, `lower`, and filter-arguments instead.", "Argument `criteria`"
-    )
+    if criteria is not None:
+        deprecation_warning(
+            "Use `upper`, `lower`, and filter-arguments instead.", "Argument `criteria`"
+        )
+        if upper or lower is not None and not kwargs.empty:
+            raise NotImplementedError(
+                "Using `criteria` and other arguments simultaneously is not supported."
+            )
+        # translate legcy `criteria` argument to explicit kwargs
+        if len(criteria) == 1:
+            key, value = list(criteria.items())[0]
+            kwargs = dict(variable=key)
+            upper, lower = value.get("up", None), value.get("lo", None)
+            kwargs["year"] = value.get("year", None)
+            criteria = None
 
-    _df = _apply_criteria(df._data, criteria, in_range=False)
+    if criteria is None:
+        _df = df._data[df.slice(**kwargs)]
+        failed_validation = []
+        if upper is not None:
+            failed_validation.append(_df[_df > upper])
+        if lower is not None:
+            failed_validation.append(_df[_df < lower])
+        if not failed_validation:
+            return
+        _df = pd.concat(failed_validation).sort_index()
+
+    # legcy implementation for multiple validation within one dictioanry
+    else:
+        _df = _apply_criteria(df._data, criteria, in_range=False)
 
     if not _df.empty:
         msg = "{} of {} data points do not satisfy the criteria"
