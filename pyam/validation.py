@@ -28,6 +28,9 @@ def _validate(df, criteria, upper, lower, exclude_on_fail, **kwargs):
 
     if criteria is None:
         _df = df._data[df.slice(**kwargs)]
+        if _df.empty:
+            logger.warning("No timeseries matches given criteria, skipping validation.")
+
         failed_validation = []
         if upper is not None:
             failed_validation.append(_df[_df > upper])
