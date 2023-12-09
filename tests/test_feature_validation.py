@@ -72,6 +72,23 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
 @pytest.mark.parametrize(
     "args",
     (
+        dict(variable="Primary Energy"),
+        dict(criteria={"Primary Energy": {}}),
+        dict(variable="foo", upper=10),
+        dict(criteria={"foo": {"up": 10}}),
+    ),
+)
+def test_validate_none(test_df, args):
+    # validation for non-existing variables or without upper or lower bound passes
+    obs = test_df.validate(**args, exclude_on_fail=True)
+    assert obs is None
+    assert list(test_df.exclude) == [False, False]  # none excluded
+
+
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
         dict(variable="Primary Energy", upper=10),
         dict(criteria={"Primary Energy": {"up": 10}}),
     ),
