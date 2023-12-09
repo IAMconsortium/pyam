@@ -1819,9 +1819,10 @@ class IamDataFrame(object):
         -----
         The following arguments are available for filtering:
 
-         - 'meta' columns: filter by string value of that column
          - 'model', 'scenario', 'region', 'variable', 'unit':
            string or list of strings, where `*` can be used as a wildcard
+         - 'meta' columns: mapping of column name to allowed values
+         - 'exclude': values of :attr:`exclude`
          - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
          - 'level': the "depth" of entries in the variable column (number of '|')
            (excluding the strings given in the 'variable' argument)
