@@ -2,12 +2,18 @@ import itertools
 import logging
 import pandas as pd
 
+from pyam.logging import deprecation_warning
 from pyam.utils import META_IDX, make_index, s
 
 logger = logging.getLogger(__name__)
 
 
-def _validate(df, criteria, exclude_on_fail):
+def _validate(df, criteria, upper, lower, exclude_on_fail, **kwargs):
+    # TODO: argument `criteria` is deprecated, remove for release >= 3.0
+    deprecation_warning(
+        "Use `upper`, `lower`, and filter-arguments instead.", "Argument `criteria`"
+    )
+
     _df = _apply_criteria(df._data, criteria, in_range=False)
 
     if not _df.empty:
