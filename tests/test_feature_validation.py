@@ -210,6 +210,24 @@ def test_validate_year_201ß(test_df, args):
     assert list(test_df.exclude) == [False, True]
 
 
+def test_validate_multiple_criteria(test_df):
+    # test that validating with multiple criteria works as expected (deprecated feature)
+    criteria = {
+        "Primary Energy": {"lo": 7, "year": 2010},
+        "Primary Energy|Coal": {"lo": 3},
+    }
+    exp = test_df.data[1:3].reset_index(drop=True)
+
+    obs = test_df.validate(criteria=criteria)
+    pdt.assert_frame_equal(obs, exp)
+    assert list(test_df.exclude) == [False, False]
+
+    # checking exclude on fail
+    obs = test_df.validate(criteria=criteria, exclude_on_fail=True)
+    pdt.assert_frame_equal(obs, exp)
+    assert list(test_df.exclude) == [True, False]
+
+
 def test_validate_top_level(test_df):
     obs = validate(
         test_df,
