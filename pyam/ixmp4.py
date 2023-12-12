@@ -34,7 +34,7 @@ def write_to_ixmp4(df, platform: ixmp4.Platform):
     for model, scenario in df.index:
         _df = df.filter(model=model, scenario=scenario)
 
-        run = platform.Run(model=model, scenario=scenario, version="new")
+        run = platform.runs.create(model=model, scenario=scenario)
         run.iamc.add(_df.data)
         run.meta = dict(_df.meta.iloc[0])
         run.set_as_default()
