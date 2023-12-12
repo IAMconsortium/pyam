@@ -8,13 +8,14 @@ from pyam.utils import META_IDX, make_index, s
 logger = logging.getLogger(__name__)
 
 
-def _validate(df, criteria, upper, lower, exclude_on_fail, **kwargs):
+def _validate(df, criteria, upper_bound, lower_bound, exclude_on_fail, **kwargs):
     # TODO: argument `criteria` is deprecated, remove for release >= 3.0
     if criteria is not None:
         deprecation_warning(
-            "Use `upper`, `lower`, and filter-arguments instead.", "Argument `criteria`"
+            "Use `upper_bound`, `lower_bound`, and filter-arguments instead.",
+            "Argument `criteria`",
         )
-        if upper or lower is not None and not kwargs.empty:
+        if upper_bound or lower_bound is not None and not kwargs.empty:
             raise NotImplementedError(
                 "Using `criteria` and other arguments simultaneously is not supported."
             )
@@ -22,7 +23,7 @@ def _validate(df, criteria, upper, lower, exclude_on_fail, **kwargs):
         if len(criteria) == 1:
             key, value = list(criteria.items())[0]
             kwargs = dict(variable=key)
-            upper, lower = value.get("up", None), value.get("lo", None)
+            upper_bound, lower_bound = value.get("up", None), value.get("lo", None)
             kwargs["year"] = value.get("year", None)
             criteria = None
 
@@ -32,15 +33,15 @@ def _validate(df, criteria, upper, lower, exclude_on_fail, **kwargs):
             logger.warning("No data matches filters, skipping validation.")
 
         failed_validation = []
-        if upper is not None:
-            failed_validation.append(_df[_df > upper])
-        if lower is not None:
-            failed_validation.append(_df[_df < lower])
+        if upper_bound is not None:
+            failed_validation.append(_df[_df > upper_bound])
+        if lower_bound is not None:
+            failed_validation.append(_df[_df < lower_bound])
         if not failed_validation:
             return
         _df = pd.concat(failed_validation).sort_index()
 
-    # legcy implementation for multiple validation within one dictioanry
+    # legcy implementation for multiple validation within one dictionary
     else:
         _df = _apply_criteria(df._data, criteria, in_range=False)
 

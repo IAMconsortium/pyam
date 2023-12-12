@@ -74,7 +74,7 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
     (
         dict(variable="Primary Energy"),
         dict(criteria={"Primary Energy": {}}),
-        dict(variable="foo", upper=10),
+        dict(variable="foo", upper_bound=10),
         dict(criteria={"foo": {"up": 10}}),
     ),
 )
@@ -89,7 +89,7 @@ def test_validate_none(test_df, args):
 @pytest.mark.parametrize(
     "args",
     (
-        dict(variable="Primary Energy", upper=10),
+        dict(variable="Primary Energy", upper_bound=10),
         dict(criteria={"Primary Energy": {"up": 10}}),
     ),
 )
@@ -103,7 +103,7 @@ def test_validate_pass(test_df, args):
 @pytest.mark.parametrize(
     "args",
     (
-        dict(variable="Primary Energy|Coal", upper=2),
+        dict(variable="Primary Energy|Coal", upper_bound=2),
         dict(criteria={"Primary Energy|Coal": {"up": 2}}),
     ),
 )
@@ -120,7 +120,7 @@ def test_validate_nonexisting(test_df, args):
 @pytest.mark.parametrize(
     "args",
     (
-        dict(variable="Primary Energy", upper=6.5),
+        dict(variable="Primary Energy", upper_bound=6.5),
         dict(criteria={"Primary Energy": {"up": 6.5}}),
     ),
 )
@@ -140,7 +140,7 @@ def test_validate_up(test_df, args):
 @pytest.mark.parametrize(
     "args",
     (
-        dict(variable="Primary Energy", upper=8, lower=2),
+        dict(variable="Primary Energy", upper_bound=8, lower_bound=2),
         dict(criteria={"Primary Energy": {"up": 8, "lo": 2}}),
     ),
 )
@@ -160,7 +160,7 @@ def test_validate_lo(test_df, args):
 @pytest.mark.parametrize(
     "args",
     (
-        dict(variable="Primary Energy", upper=6.5, lower=2),
+        dict(variable="Primary Energy", upper_bound=6.5, lower_bound=2),
         dict(criteria={"Primary Energy": {"up": 6.5, "lo": 2}}),
     ),
 )
@@ -180,7 +180,7 @@ def test_validate_both(test_df, args):
 @pytest.mark.parametrize(
     "args",
     (
-        dict(variable="Primary Energy", year=2005, upper=6),
+        dict(variable="Primary Energy", year=2005, upper_bound=6),
         dict(criteria={"Primary Energy": {"up": 6, "year": 2005}}),
     ),
 )
@@ -194,7 +194,7 @@ def test_validate_year_2010(test_df, args):
 @pytest.mark.parametrize(
     "args",
     (
-        dict(variable="Primary Energy", year=2010, upper=6),
+        dict(variable="Primary Energy", year=2010, upper_bound=6),
         dict(criteria={"Primary Energy": {"up": 6, "year": 2010}}),
     ),
 )
