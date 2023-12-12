@@ -14,8 +14,8 @@ Background: The IAMC timeseries scenario data format
 
 Over the past decade, the Integrated Assessment Modeling Consortium (IAMC)
 developed a standardised tabular timeseries format to exchange scenario data
-related to energy systems modelling, land-use change, demand sectors,
-and economic indicators in the context of the Sustainable Development Goals.
+related to energy systems modelling, land-use change, demand sectors, and economic
+indicators in the context of climate change and the the Sustainable Development Goals.
 Previous high-level use cases include reports by the *Intergovernmental Panel
 on Climate Change* (`IPCC`_) and model comparison exercises
 within the *Energy Modeling Forum* (`EMF`_) hosted by Stanford University.
