@@ -25,5 +25,5 @@ The following persons contributed to the development of the |pyam| package:
 
 | The core maintenance of the |pyam| package is done by
   the *Scenario Services & Scientific Software* research theme
-  at the IIASA Energy, Climate, and Enviroment program.
+  at the IIASA Energy, Climate, and Environment program.
 | Visit https://software.ece.iiasa.ac.at for more information.
