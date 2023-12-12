@@ -1047,30 +1047,49 @@ class IamDataFrame(object):
         # TODO: deprecated, remove for release >= 2.1
         raise DeprecationWarning("Use `df.require_data()` instead.")
 
-    def validate(self, criteria={}, exclude_on_fail=False):
-        """Validate scenarios using criteria on timeseries values
+    def validate(
+        self,
+        criteria: dict = None,
+        *,
+        upper_bound: float = None,
+        lower_bound: float = None,
+        exclude_on_fail: bool = False,
+        **kwargs,
+    ) -> pd.DataFrame:
+        """Validate scenarios using bounds on (filtered) timeseries 'data' values.
 
-        Returns all scenarios which do not match the criteria and prints a log
-        message, or returns None if all scenarios match the criteria.
+        Returns all data rows that do not match the criteria, or returns None if all
+        scenarios match the criteria.
 
-        When called with `exclude_on_fail=True`, scenarios not
-        satisfying the criteria will be marked as `exclude=True`.
+        When called with `exclude_on_fail=True`, scenarios not satisfying the criteria
+        will be marked as `exclude=True`.
 
         Parameters
         ----------
-        criteria : dict
-           dictionary with variable keys and validation mappings
-            ('up' and 'lo' for respective bounds, 'year' for years)
+        upper_bound, lower_bound : float, optional
+            Upper and lower bounds for validation criteria of timeseries :attr:`data`.
+        criteria : dict, optional, deprecated
+           This option is deprecated; dictionary with variable keys and validation
+           mappings ('up' and 'lo' for respective bounds, 'year' for years).
         exclude_on_fail : bool, optional
             If True, set :attr:`exclude` = *True* for all scenarios that do not satisfy
             the criteria.
+        **kwargs
+            Passed to :meth:`slice` to downselect datapoints for validation.
 
         Returns
         -------
         :class:`pandas.DataFrame` or None
             All data points that do not satisfy the criteria.
         """
-        return _validate(self, criteria, exclude_on_fail=exclude_on_fail)
+        return _validate(
+            self,
+            criteria=criteria,
+            upper_bound=upper_bound,
+            lower_bound=lower_bound,
+            exclude_on_fail=exclude_on_fail,
+            **kwargs,
+        )
 
     def rename(
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs
@@ -1800,9 +1819,10 @@ class IamDataFrame(object):
         -----
         The following arguments are available for filtering:
 
-         - 'meta' columns: filter by string value of that column
          - 'model', 'scenario', 'region', 'variable', 'unit':
            string or list of strings, where `*` can be used as a wildcard
+         - 'meta' columns: mapping of column name to allowed values
+         - 'exclude': values of :attr:`exclude`
          - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
          - 'level': the "depth" of entries in the variable column (number of '|')
            (excluding the strings given in the 'variable' argument)
@@ -2532,21 +2552,9 @@ def _empty_iamframe(index):
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
-    """Validate scenarios using criteria on timeseries values
-
-    Returns all scenarios which do not match the criteria and prints a log
-    message or returns None if all scenarios match the criteria.
-
-    When called with `exclude_on_fail=True`, scenarios in `df` not satisfying
-    the criteria will be marked as :attr:`exclude` = *True*.
-
-    Parameters
-    ----------
-    df : IamDataFrame
-    args : passed to :meth:`IamDataFrame.validate`
-    kwargs : used for downselecting IamDataFrame
-        passed to :meth:`IamDataFrame.filter`
-    """
+    """This method is deprecated, use `df.validate()` instead."""
+    # TODO: method is deprecated, remove for release >= 3.0
+    deprecation_warning("Use `IamDataFrame.validate()` instead.")
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
         vdf = fdf.validate(criteria=criteria, exclude_on_fail=exclude_on_fail)

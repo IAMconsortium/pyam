@@ -68,75 +68,164 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
         assert list(df.exclude) == [False, False]
 
 
-def test_validate_pass(test_df):
-    obs = test_df.validate({"Primary Energy": {"up": 10}}, exclude_on_fail=True)
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy"),
+        dict(criteria={"Primary Energy": {}}),
+        dict(variable="foo", upper_bound=10),
+        dict(criteria={"foo": {"up": 10}}),
+    ),
+)
+def test_validate_none(test_df, args):
+    # validation for non-existing variables or without upper or lower bound passes
+    obs = test_df.validate(**args, exclude_on_fail=True)
     assert obs is None
     assert list(test_df.exclude) == [False, False]  # none excluded
 
 
-def test_validate_nonexisting(test_df):
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy", upper_bound=10),
+        dict(criteria={"Primary Energy": {"up": 10}}),
+    ),
+)
+def test_validate_pass(test_df, args):
+    obs = test_df.validate(**args, exclude_on_fail=True)
+    assert obs is None
+    assert list(test_df.exclude) == [False, False]  # none excluded
+
+
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy|Coal", upper_bound=2),
+        dict(criteria={"Primary Energy|Coal": {"up": 2}}),
+    ),
+)
+def test_validate_nonexisting(test_df, args):
     # checking that a scenario with no relevant value does not fail validation
-    obs = test_df.validate({"Primary Energy|Coal": {"up": 2}}, exclude_on_fail=True)
+    obs = test_df.validate(**args, exclude_on_fail=True)
     # checking that the return-type is correct
     pdt.assert_frame_equal(obs, test_df.data[3:4].reset_index(drop=True))
     # scenario with failed validation excluded, scenario with no value passes
     assert list(test_df.exclude) == [True, False]
 
 
-def test_validate_up(test_df):
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy", upper_bound=6.5),
+        dict(criteria={"Primary Energy": {"up": 6.5}}),
+    ),
+)
+def test_validate_up(test_df, args):
     # checking that the return-type is correct
-    obs = test_df.validate({"Primary Energy": {"up": 6.5}})
+    obs = test_df.validate(**args)
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
     assert list(test_df.exclude) == [False, False]
 
     # checking exclude on fail
-    obs = test_df.validate({"Primary Energy": {"up": 6.5}}, exclude_on_fail=True)
+    obs = test_df.validate(**args, exclude_on_fail=True)
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
     assert list(test_df.exclude) == [False, True]
 
 
-def test_validate_lo(test_df):
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy", upper_bound=8, lower_bound=2),
+        dict(criteria={"Primary Energy": {"up": 8, "lo": 2}}),
+    ),
+)
+def test_validate_lo(test_df, args):
     # checking that the return-type is correct
-    obs = test_df.validate({"Primary Energy": {"up": 8, "lo": 2}})
+    obs = test_df.validate(**args)
     pdt.assert_frame_equal(obs, test_df.data[0:1].reset_index(drop=True))
     assert list(test_df.exclude) == [False, False]
 
     # checking exclude on fail
-    obs = test_df.validate({"Primary Energy": {"up": 8, "lo": 2}}, exclude_on_fail=True)
+    obs = test_df.validate(**args, exclude_on_fail=True)
     pdt.assert_frame_equal(obs, test_df.data[0:1].reset_index(drop=True))
     assert list(test_df.exclude) == [True, False]
 
 
-def test_validate_both(test_df):
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy", upper_bound=6.5, lower_bound=2),
+        dict(criteria={"Primary Energy": {"up": 6.5, "lo": 2}}),
+    ),
+)
+def test_validate_both(test_df, args):
     # checking that the return-type is correct
-    obs = test_df.validate({"Primary Energy": {"up": 6.5, "lo": 2}})
+    obs = test_df.validate(**args)
     pdt.assert_frame_equal(obs, test_df.data[0:6:5].reset_index(drop=True))
     assert list(test_df.exclude) == [False, False]
 
     # checking exclude on fail
-    obs = test_df.validate(
-        {"Primary Energy": {"up": 6.5, "lo": 2}}, exclude_on_fail=True
-    )
+    obs = test_df.validate(**args, exclude_on_fail=True)
     pdt.assert_frame_equal(obs, test_df.data[0:6:5].reset_index(drop=True))
     assert list(test_df.exclude) == [True, True]
 
 
-def test_validate_year(test_df):
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy", year=2005, upper_bound=6),
+        dict(criteria={"Primary Energy": {"up": 6, "year": 2005}}),
+    ),
+)
+def test_validate_year_2010(test_df, args):
     # checking that the year filter works as expected
-    obs = test_df.validate({"Primary Energy": {"up": 6, "year": 2005}})
+    obs = test_df.validate(**args)
     assert obs is None
 
+
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy", year=2010, upper_bound=6),
+        dict(criteria={"Primary Energy": {"up": 6, "year": 2010}}),
+    ),
+)
+def test_validate_year_201ß(test_df, args):
     # checking that the return-type is correct
-    obs = test_df.validate({"Primary Energy": {"up": 6, "year": 2010}})
+    obs = test_df.validate(**args)
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
     assert list(test_df.exclude) == [False, False]
 
     # checking exclude on fail
-    obs = test_df.validate(
-        {"Primary Energy": {"up": 6, "year": 2010}}, exclude_on_fail=True
-    )
+    obs = test_df.validate(**args, exclude_on_fail=True)
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
     assert list(test_df.exclude) == [False, True]
+
+
+def test_validate_multiple_criteria(test_df):
+    # test that validating with multiple criteria works as expected (deprecated feature)
+    criteria = {
+        "Primary Energy": {"lo": 7, "year": 2010},
+        "Primary Energy|Coal": {"lo": 3},
+    }
+    exp = test_df.data[1:3].reset_index(drop=True)
+
+    obs = test_df.validate(criteria=criteria)
+    pdt.assert_frame_equal(obs, exp)
+    assert list(test_df.exclude) == [False, False]
+
+    # checking exclude on fail
+    obs = test_df.validate(criteria=criteria, exclude_on_fail=True)
+    pdt.assert_frame_equal(obs, exp)
+    assert list(test_df.exclude) == [True, False]
 
 
 def test_validate_top_level(test_df):

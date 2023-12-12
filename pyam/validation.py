@@ -2,13 +2,48 @@ import itertools
 import logging
 import pandas as pd
 
+from pyam.logging import deprecation_warning
 from pyam.utils import META_IDX, make_index, s
 
 logger = logging.getLogger(__name__)
 
 
-def _validate(df, criteria, exclude_on_fail):
-    _df = _apply_criteria(df._data, criteria, in_range=False)
+def _validate(df, criteria, upper_bound, lower_bound, exclude_on_fail, **kwargs):
+    # TODO: argument `criteria` is deprecated, remove for release >= 3.0
+    if criteria is not None:
+        deprecation_warning(
+            "Use `upper_bound`, `lower_bound`, and filter-arguments instead.",
+            "Argument `criteria`",
+        )
+        if upper_bound or lower_bound is not None and not kwargs.empty:
+            raise NotImplementedError(
+                "Using `criteria` and other arguments simultaneously is not supported."
+            )
+        # translate legcy `criteria` argument to explicit kwargs
+        if len(criteria) == 1:
+            key, value = list(criteria.items())[0]
+            kwargs = dict(variable=key)
+            upper_bound, lower_bound = value.get("up", None), value.get("lo", None)
+            kwargs["year"] = value.get("year", None)
+            criteria = None
+
+    if criteria is None:
+        _df = df._data[df.slice(**kwargs)]
+        if _df.empty:
+            logger.warning("No data matches filters, skipping validation.")
+
+        failed_validation = []
+        if upper_bound is not None:
+            failed_validation.append(_df[_df > upper_bound])
+        if lower_bound is not None:
+            failed_validation.append(_df[_df < lower_bound])
+        if not failed_validation:
+            return
+        _df = pd.concat(failed_validation).sort_index()
+
+    # legcy implementation for multiple validation within one dictionary
+    else:
+        _df = _apply_criteria(df._data, criteria, in_range=False)
 
     if not _df.empty:
         msg = "{} of {} data points do not satisfy the criteria"
