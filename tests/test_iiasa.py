@@ -157,12 +157,12 @@ def test_meta_columns(conn):
 
 
 @pytest.mark.parametrize("kwargs", FILTER_ARGS)
-@pytest.mark.parametrize("default", [True, False])
-def test_index(conn, kwargs, default):
+@pytest.mark.parametrize("default_only", [True, False])
+def test_index(conn, kwargs, default_only):
     # test that connection returns the correct index
-    obs = conn.index(default=default, **kwargs)
+    obs = conn.index(default_only=default_only, **kwargs)
 
-    if default:
+    if default_only:
         exp = META_DF.loc[META_DF.is_default, ["version"]]
         if kwargs:
             exp = exp.iloc[0:2]
@@ -187,13 +187,13 @@ def test_index_illegal_column(conn):
 
 
 @pytest.mark.parametrize("kwargs", FILTER_ARGS)
-@pytest.mark.parametrize("default", [True, False])
-def test_meta(conn, kwargs, default):
+@pytest.mark.parametrize("default_only", [True, False])
+def test_meta(conn, kwargs, default_only):
     # test that connection returns the correct meta dataframe
-    obs = conn.meta(default=default, **kwargs)
+    obs = conn.meta(default_only=default_only, **kwargs)
 
     v = "version"
-    if default:
+    if default_only:
         exp = META_DF.loc[META_DF.is_default, [v] + META_COLS]
         if kwargs:
             exp = exp.iloc[0:2]
@@ -206,12 +206,12 @@ def test_meta(conn, kwargs, default):
 
 
 @pytest.mark.parametrize("kwargs", FILTER_ARGS)
-@pytest.mark.parametrize("default", [True, False])
-def test_properties(conn, kwargs, default):
+@pytest.mark.parametrize("default_only", [True, False])
+def test_properties(conn, kwargs, default_only):
     # test that connection returns the correct properties dataframe
-    obs = conn.properties(default=default, **kwargs)
+    obs = conn.properties(default_only=default_only, **kwargs)
 
-    if default:
+    if default_only:
         exp_cols = ["version"]
         exp = META_DF.loc[META_DF.is_default, exp_cols]
         if kwargs:
@@ -345,11 +345,11 @@ def test_query_non_default(conn, test_pd_df):
     exp = IamDataFrame(df, meta=meta, index=index, region="World")
 
     # test method via Connection
-    df = conn.query(default=False)
+    df = conn.query(default_only=False)
     assert_iamframe_equal(df, exp)
 
     # test top-level method
-    df = read_iiasa(TEST_API, default=False)
+    df = read_iiasa(TEST_API, default_only=False)
     assert_iamframe_equal(df, exp)
 
 
