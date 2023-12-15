@@ -569,11 +569,10 @@ class Connection(object):
 
 
 def _new_default_api(kwargs):
-    """Change kwargs from `default` to `default_only`"""
-    # TODO: argument `default` is deprecated, change to  for release >= 2.0
-    v = kwargs.pop("default")
-    deprecation_warning(f"Use `default_only={v}`.", "The argument `default`")
-    return v
+    # TODO: argument `default` is deprecated, remove this warning for release >= 3.0
+    raise DeprecationWarning(
+        "The argument `default` is deprecated, use `default_only` instead."
+    )
 
 
 def read_iiasa(

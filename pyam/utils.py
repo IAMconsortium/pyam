@@ -51,28 +51,6 @@ KNOWN_FUNCS = {
 }
 
 
-def isstr(x):
-    # TODO deprecated, remove for release >= 2.1
-    deprecation_warning("Please use `pyam.str.is_str()`.", "The function `isstr()`")
-    return is_str(x)
-
-
-def isscalar(x):
-    # TODO deprecated, remove for release >= 2.1
-    deprecation_warning(
-        "Please use `pandas.api.types.is_float()`.", "The function `isscalar()`"
-    )
-    return is_float(x)
-
-
-def islistable(x):
-    # TODO deprecated, remove for release >= 2.1
-    deprecation_warning(
-        "Please use `pyam.utils.is_list_like()`.", "The function `islistable()`"
-    )
-    return is_list_like(x)
-
-
 def to_list(x):
     """Return x as a list"""
     return x if is_list_like(x) else [x]

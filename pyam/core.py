@@ -814,12 +814,6 @@ class IamDataFrame(object):
 
         return s.unstack(level=self.time_col).rename_axis(None, axis=1)
 
-    def reset_exclude(self):
-        """Reset exclusion assignment for all scenarios to :attr:`exclude` = *False*"""
-        # TODO: deprecated, remove for release >= 2.1
-        deprecation_warning("Use `IamDataFrame.exclude = False` instead.")
-        self.exclude = False
-
     def set_meta(self, meta, name=None, index=None):
         """Add meta indicators as pandas.Series, list or value (int/float/str)
 
@@ -2533,12 +2527,6 @@ class IamDataFrame(object):
 
         # merge imported meta indicators
         self.meta = merge_meta(meta, self.meta, ignore_conflict=ignore_conflict)
-
-    def map_regions(self, map_col, **kwargs):
-        # TODO: deprecated, remove for release >= 2.1
-        raise DeprecationWarning(
-            "This method was removed. Please use `aggregate_region()` instead."
-        )
 
 
 def _meta_idx(data):
