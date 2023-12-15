@@ -56,7 +56,7 @@ def _read_config(file):
     with open(file, "r") as stream:
         creds = yaml.safe_load(stream)
 
-    return ManagerAuth(**creds, url=settings.manager_url)
+    return ManagerAuth(**creds, url=str(settings.manager_url))
 
 
 def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
@@ -569,11 +569,10 @@ class Connection(object):
 
 
 def _new_default_api(kwargs):
-    """Change kwargs from `default` to `default_only`"""
-    # TODO: argument `default` is deprecated, change to  for release >= 2.0
-    v = kwargs.pop("default")
-    deprecation_warning(f"Use `default_only={v}`.", "The argument `default`")
-    return v
+    # TODO: argument `default` is deprecated, remove this warning for release >= 3.0
+    raise DeprecationWarning(
+        "The argument `default` is deprecated, use `default_only` instead."
+    )
 
 
 def read_iiasa(
