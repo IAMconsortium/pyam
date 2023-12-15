@@ -56,7 +56,7 @@ def _read_config(file):
     with open(file, "r") as stream:
         creds = yaml.safe_load(stream)
 
-    return ManagerAuth(**creds, url=settings.manager_url)
+    return ManagerAuth(**creds, url=str(settings.manager_url))
 
 
 def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeError):
