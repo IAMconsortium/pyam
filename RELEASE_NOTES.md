@@ -1,4 +1,12 @@
-# Next Release
+# Release v2.1.0
+
+## Highlights
+
+- More flexible and intuitive signature for data validation
+- Improved support for region-aggregation with inconsistent data/weight index
+- Fix wrong color codes for AR6 Illustrative Pathways
+
+## Individual updates
 
 - [#804](https://github.com/IAMconsortium/pyam/pull/804) Support filters as direct keyword arguments for `validate()` method
 - [#801](https://github.com/IAMconsortium/pyam/pull/801) Support initializing with `meta` dataframe in long format
