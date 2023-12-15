@@ -1038,7 +1038,7 @@ class IamDataFrame(object):
 
     def require_variable(self, *args, **kwargs):
         """This method is deprecated, use `df.require_data()` instead."""
-        # TODO: deprecated, remove for release >= 2.1
+        # TODO: deprecated, remove for release >= 3.0
         raise DeprecationWarning("Use `df.require_data()` instead.")
 
     def validate(
@@ -2552,7 +2552,7 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
 
 def require_variable(*args, **kwargs):
     """This method is deprecated, use `df.require_data()` instead."""
-    # TODO: deprecated, remove for release >= 2.1
+    # TODO: deprecated, remove for release >= 3.0
     raise DeprecationWarning("Use `df.require_data()` instead.")
 
 
