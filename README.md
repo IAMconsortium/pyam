@@ -137,7 +137,7 @@ doi: [10.21105/joss.01095](https://doi.org/10.21105/joss.01095).
 License
 -------
 
-Copyright 2017-2023 IIASA and the pyam developer team
+Copyright 2017-2024 IIASA and the pyam developer team
 
 The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");  

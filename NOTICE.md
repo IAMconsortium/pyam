@@ -1,4 +1,4 @@
-Copyright 2017-2023 IIASA and the pyam developer team
+Copyright 2017-2024 IIASA and the pyam developer team
 
 The **pyam** package is licensed under the Apache License, Version 2.0 (the "License");
 you may not use the package except in compliance with the License.

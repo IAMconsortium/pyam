@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = "pyam"
-copyright = "2023 IIASA and the pyam developer team"
+copyright = "2024 IIASA and the pyam developer team"
 author = "Daniel Huppmann, Matthew Gidden, et al."
 
 
