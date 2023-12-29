@@ -992,8 +992,6 @@ class IamDataFrame(object):
             A dataframe of missing (combinations of) elements for all scenarios.
         """
 
-        # TODO: option to require values in certain ranges, see `_apply_criteria()`
-
         # create mapping of required dimensions
         required = {}
         for dim, value in [

@@ -21,7 +21,7 @@ WB_REASON = "World Bank API unavailable"
 WB_DF = pd.DataFrame(
     [
         ["foo", "WDI", "Canada", "GDP", "n/a", 42793.1, 43704.4, 44680.8],
-        ["foo", "WDI", "Mexico", "GDP", "n/a", 17262.3, 17693.0, 17846.0],
+        ["foo", "WDI", "Mexico", "GDP", "n/a", 18634.9, 19017.8, 19144.0],
         ["foo", "WDI", "United States", "GDP", "n/a", 51569.8, 53035.7, 54395.4],
     ],
     columns=IAMC_IDX + [2003, 2004, 2005],
