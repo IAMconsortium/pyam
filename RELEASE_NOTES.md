@@ -1,3 +1,7 @@
+# Next release
+
+- [#797](https://github.com/IAMconsortium/pyam/pull/797) Add `to_ixmp4()` method to write to an **ixmp4** platform
+
 # Release v2.1.0
 
 ## Highlights
@@ -10,7 +14,6 @@
 
 - [#804](https://github.com/IAMconsortium/pyam/pull/804) Support filters as direct keyword arguments for `validate()` method
 - [#801](https://github.com/IAMconsortium/pyam/pull/801) Support initializing with `meta` dataframe in long format
-- [#797](https://github.com/IAMconsortium/pyam/pull/797) Add `to_ixmp4()` method to write to an **ixmp4** platform
 - [#796](https://github.com/IAMconsortium/pyam/pull/796) Raise explicit error message if no connection to IIASA manager service
 - [#794](https://github.com/IAMconsortium/pyam/pull/794) Fix wrong color codes for AR6 Illustrative Pathways
 - [#792](https://github.com/IAMconsortium/pyam/pull/792) Support region-aggregation with weights-index >> data-index
