@@ -2344,7 +2344,7 @@ class IamDataFrame(object):
         platform : :class:`ixmp4.Platform` or str
             The ixmp4 platform database instance to which the scenario data is saved
         """
-        write_to_ixmp4(self, platform)
+        write_to_ixmp4(platform, self)
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""

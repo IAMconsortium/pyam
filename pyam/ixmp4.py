@@ -9,10 +9,10 @@ def write_to_ixmp4(df, platform: ixmp4.Platform):
 
     Parameters
     ----------
-    df : pyam.IamDataFrame
-        The IamDataFrame instance with scenario data
     platform : :class:`ixmp4.Platform` or str
         The ixmp4 platform database instance to which the scenario data is saved
+    df : pyam.IamDataFrame
+        The IamDataFrame instance with scenario data
     """
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
