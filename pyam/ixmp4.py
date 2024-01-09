@@ -1,10 +1,9 @@
-import numpy as np
 import ixmp4
 from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
 
 
-def write_to_ixmp4(df, platform: ixmp4.Platform):
+def write_to_ixmp4(platform: ixmp4.Platform, df):
     """Save all scenarios as new default runs in an ixmp4 platform database instance
 
     Parameters
