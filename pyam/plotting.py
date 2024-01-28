@@ -710,8 +710,7 @@ def box(df, y="value", x=None, by=None, legend=True, title=None, ax=None, **kwar
         if "palette" not in kwargs and "color" in rc and by in rc["color"]:
             # TODO this only works if all categories are defined in run_control
             palette = rc["color"][by]
-            df[by] = df[by].astype("category")
-            df[by].cat.set_categories(list(palette), inplace=True)
+            df[by] = df[by].astype("category").cat.set_categories(list(palette))
             kwargs["palette"] = palette
         else:
             df.sort_values(by, inplace=True)
