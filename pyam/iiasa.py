@@ -141,11 +141,9 @@ class Connection(object):
         The name of a database API.
         Use :attr:`valid_connections <pyam.iiasa.Connection.valid_connections>`
         for a list of available APIs.
-    creds : str or :class:`pathlib.Path`, optional
-        By default, the class will search for user credentials which
-        were set using :meth:`pyam.iiasa.set_config`.
-        Alternatively, you can provide a path to a yaml file
-        with entries of 'username' and 'password'.
+    creds : pathlib.Path or str, optional
+        Path to a file with authentication credentials. This feature is deprecated,
+        please run `ixmp4 login <username>` in a console instead.
     auth_url : str, optional
         custom authentication server URL
 
