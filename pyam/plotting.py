@@ -151,9 +151,11 @@ def reset_default_props(**kwargs):
     global _DEFAULT_PROPS
     pcycle = plt.rcParams["axes.prop_cycle"]
     _DEFAULT_PROPS = {
-        "color": itertools.cycle(_get_standard_colors(**kwargs))
-        if len(kwargs) > 0
-        else itertools.cycle([x["color"] for x in pcycle]),
+        "color": (
+            itertools.cycle(_get_standard_colors(**kwargs))
+            if len(kwargs) > 0
+            else itertools.cycle([x["color"] for x in pcycle])
+        ),
         "marker": itertools.cycle(["o", "x", ".", "+", "*"]),
         "linestyle": itertools.cycle(["-", "--", "-.", ":"]),
     }

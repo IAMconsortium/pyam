@@ -4,6 +4,7 @@ Sankey diagram
 ==============
 
 """
+
 ###############################
 # Read in example data and show a summary
 # ***************************************
