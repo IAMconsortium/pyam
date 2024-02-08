@@ -27,7 +27,7 @@ def test_get_index_levels_raises(test_df_index):
     [
         (["scen_c", "scen_c", "scen_b"], {"scen_a": "scen_c"}),
         (["scen_c", "scen_c", "scen_c"], {"scen_a": "scen_c", "scen_b": "scen_c"}),
-        (["scen_b", "scen_b", "scen_c"], {"scen_a": "scen_b", "scen_b": "scen_c"})
+        (["scen_b", "scen_b", "scen_c"], {"scen_a": "scen_b", "scen_b": "scen_c"}),
         # this test ensures that no transitive replacing occurs
     ],
 )

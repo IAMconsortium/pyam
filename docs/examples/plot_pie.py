@@ -4,6 +4,7 @@ Pie chart visualizations
 ========================
 
 """
+
 # sphinx_gallery_thumbnail_number = 3
 
 ###############################

@@ -4,6 +4,7 @@ Boxplot charts
 ==============
 
 """
+
 # sphinx_gallery_thumbnail_number = 2
 
 ###############################

@@ -4,6 +4,7 @@ Scatter plot
 ============
 
 """
+
 ###############################
 # Read in tutorial data and show a summary
 # ****************************************

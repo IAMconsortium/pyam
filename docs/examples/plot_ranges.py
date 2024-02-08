@@ -4,6 +4,7 @@ Ranges of timeseries data
 =========================
 
 """
+
 # sphinx_gallery_thumbnail_number = 3
 
 ###############################

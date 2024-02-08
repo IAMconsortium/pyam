@@ -4,6 +4,7 @@ Composing plots with a secondary axis
 =====================================
 
 """
+
 # sphinx_gallery_thumbnail_number = 2
 
 ###############################
