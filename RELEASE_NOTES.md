@@ -1,3 +1,7 @@
+# Next Release
+
+- [#813](https://github.com/IAMconsortium/pyam/pull/813) Fix a corner case in region-aggregation with missing data
+
 # Release v2.1.0
 
 ## Highlights
