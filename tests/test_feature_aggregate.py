@@ -356,6 +356,11 @@ def test_aggregate_region_with_negative_weights(simple_df, caplog):
             "0  model_a   scen_a  reg_b  2010",
             (4, 30),
         ),
+        (
+            dict(year=2010),
+            "0  model_a   scen_a  reg_a  2010\n1  model_a   scen_a  reg_b  2010",
+            (4, 30),
+        ),
     ),
 )
 def test_aggregate_region_with_weights_inconsistent_index(
