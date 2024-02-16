@@ -359,7 +359,7 @@ def test_aggregate_region_with_negative_weights(simple_df, caplog):
         (
             dict(year=2010),
             "0  model_a   scen_a  reg_a  2010\n1  model_a   scen_a  reg_b  2010",
-            (4, 30),
+            4,
         ),
     ),
 )
@@ -385,6 +385,8 @@ def test_aggregate_region_with_weights_inconsistent_index(
 
     # missing data row prints a warning (data-index is a subset of weight-index)
     exp = simple_df.filter(variable=v, region="World")
+    if values == 4:
+        exp.filter(year=2005, inplace=True)
     exp._data.iloc[:] = values
     _df = simple_df.filter(variable=v, keep=False, **filter_arg)
     assert_iamframe_equal(_df.aggregate_region(v, weight=w), exp)

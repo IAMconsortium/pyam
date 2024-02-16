@@ -168,7 +168,7 @@ def _aggregate_region(
             _df.index = replace_index_values(_df.index, "variable", mapping)
             _data = _data.add(_group_and_agg(_df, "region"), fill_value=0)
 
-    return _data
+    return _data.dropna()
 
 
 def _aggregate_time(df, variable, column, value, components, method="sum"):
