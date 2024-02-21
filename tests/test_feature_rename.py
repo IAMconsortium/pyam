@@ -245,7 +245,6 @@ def test_rename_index(test_df):
         exp.columns = list(map(int, exp.columns))
     else:
         exp.columns = pd.to_datetime(exp.columns)
-
     pdt.assert_frame_equal(obs.timeseries(), exp)
 
     # test meta changes
@@ -267,30 +266,25 @@ def test_rename_index(test_df):
 
 
 def test_rename_append(test_df):
-    mapping = {"model": {"model_a": "model_b"}, "scenario": {"scen_a": "scen_c"}}
-    obs = test_df.rename(mapping, append=True)
+    obs = test_df.rename(
+        model={"model_a": "model_b"}, scenario={"scen_a": "scen_c"}, append=True
+    )
 
     # test data changes
-    times = [2005, 2010] if obs.time_col == "year" else obs.data.time.unique()
-    exp = (
-        pd.DataFrame(
-            [
-                ["model_a", "scen_a", "World", "Primary Energy", "EJ/yr", 1, 6.0],
-                ["model_a", "scen_a", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
-                ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
-                ["model_b", "scen_c", "World", "Primary Energy", "EJ/yr", 1, 6.0],
-                ["model_b", "scen_c", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
-            ],
-            columns=IAMC_IDX + list(times),
-        )
-        .set_index(IAMC_IDX)
-        .sort_index()
-    )
-    if "year" in test_df.data:
+    exp = pd.DataFrame(
+        [
+            ["model_a", "scen_a", "World", "Primary Energy", "EJ/yr", 1, 6.0],
+            ["model_a", "scen_a", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
+            ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
+            ["model_b", "scen_c", "World", "Primary Energy", "EJ/yr", 1, 6.0],
+            ["model_b", "scen_c", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
+        ],
+        columns=IAMC_IDX + list(obs.time),
+    ).set_index(IAMC_IDX)
+    if test_df.time_col == "year":
         exp.columns = list(map(int, exp.columns))
     else:
         exp.columns = pd.to_datetime(exp.columns)
-
     pdt.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
@@ -303,6 +297,10 @@ def test_rename_append(test_df):
         columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
     pdt.assert_frame_equal(obs.meta, exp)
+
+    # test 'exclude' changes
+    exp = pd.Series([False, False, False], index=exp.index)
+    pdt.assert_series_equal(obs.exclude, exp)
 
 
 def test_rename_duplicates():
