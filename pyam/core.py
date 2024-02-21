@@ -1195,6 +1195,7 @@ class IamDataFrame(object):
         # quickfix for issue 811, to be removed when tackling issue 812
         ret._data.sort_index(inplace=True)
         ret.meta.sort_index(inplace=True)
+        ret._exclude.sort_index(inplace=True)
 
         if not inplace:
             return ret

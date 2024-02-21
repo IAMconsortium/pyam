@@ -261,6 +261,10 @@ def test_rename_index(test_df):
     # check that the attributes are ordered correctly
     assert obs.model == ["model_a", "model_c"]
 
+    # test 'exclude' changes
+    exp = pd.Series([False, False], index=exp.index)
+    pdt.assert_series_equal(obs.exclude, exp)
+
 
 def test_rename_append(test_df):
     mapping = {"model": {"model_a": "model_b"}, "scenario": {"scen_a": "scen_c"}}
