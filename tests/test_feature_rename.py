@@ -233,17 +233,14 @@ def test_rename_index(test_df):
     obs = test_df.rename(model={"model_a": "model_c"}, scenario={"scen_a": "scen_b"})
 
     # test data changes
-    exp = (
-        pd.DataFrame(
-            [
-                ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
-                ["model_c", "scen_b", "World", "Primary Energy", "EJ/yr", 1, 6.0],
-                ["model_c", "scen_b", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
-            ],
-            columns=IAMC_IDX + list(obs.time),
-        )
-        .set_index(IAMC_IDX)
-    )
+    exp = pd.DataFrame(
+        [
+            ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
+            ["model_c", "scen_b", "World", "Primary Energy", "EJ/yr", 1, 6.0],
+            ["model_c", "scen_b", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
+        ],
+        columns=IAMC_IDX + list(obs.time),
+    ).set_index(IAMC_IDX)
     if test_df.time_col == "year":
         exp.columns = list(map(int, exp.columns))
     else:
