@@ -233,7 +233,6 @@ def test_rename_index(test_df):
     obs = test_df.rename(model={"model_a": "model_c"}, scenario={"scen_a": "scen_b"})
 
     # test data changes
-    times = [2005, 2010] if obs.time_col == "year" else obs.data.time.unique()
     exp = (
         pd.DataFrame(
             [
@@ -241,11 +240,11 @@ def test_rename_index(test_df):
                 ["model_c", "scen_b", "World", "Primary Energy", "EJ/yr", 1, 6.0],
                 ["model_c", "scen_b", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
             ],
-            columns=IAMC_IDX + list(times),
+            columns=IAMC_IDX + list(obs.time),
         )
         .set_index(IAMC_IDX)
     )
-    if "year" in test_df.data:
+    if test_df.time_col == "year":
         exp.columns = list(map(int, exp.columns))
     else:
         exp.columns = pd.to_datetime(exp.columns)
