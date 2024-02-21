@@ -69,7 +69,7 @@ def test_append_other_scenario(test_df):
 
     # sort columns for assertion in older pandas versions
     df.meta = df.meta.reindex(columns=exp.columns)
-    pd.testing.assert_frame_equal(df.meta, exp)
+    pdt.assert_frame_equal(df.meta, exp)
 
     # assert that appending data works as expected
     ts = df.timeseries()
@@ -106,7 +106,7 @@ def test_append_same_scenario(test_df):
     # assert that merging of meta works as expected
     exp = test_df.meta.copy()
     exp["col2"] = [np.nan, "b"]
-    pd.testing.assert_frame_equal(df.meta, exp)
+    pdt.assert_frame_equal(df.meta, exp)
 
     # assert that appending data works as expected
     ts = df.timeseries()
@@ -167,7 +167,7 @@ def test_rename_data_cols_by_dict():
         variable={"test_1": "test", "test_3": "test"}, region={"region_a": "region_c"}
     )
     obs = RENAME_DF.rename(mapping, check_duplicates=False).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
+    pdt.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
 def test_rename_data_cols_by_kwargs():
@@ -176,7 +176,7 @@ def test_rename_data_cols_by_kwargs():
         "region": {"region_a": "region_c"},
     }
     obs = RENAME_DF.rename(**args, check_duplicates=False).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
+    pdt.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
 def test_rename_data_cols_by_mixed():
@@ -185,7 +185,7 @@ def test_rename_data_cols_by_mixed():
         "region": {"region_a": "region_c"},
     }
     obs = RENAME_DF.rename(**args, check_duplicates=False).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
+    pdt.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
 def test_rename_conflict(test_df):
@@ -291,7 +291,7 @@ def test_rename_append(test_df):
     else:
         exp.columns = pd.to_datetime(exp.columns)
 
-    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+    pdt.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
     exp = pd.DataFrame(
@@ -302,7 +302,7 @@ def test_rename_append(test_df):
         ],
         columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
-    pd.testing.assert_frame_equal(obs.meta, exp)
+    pdt.assert_frame_equal(obs.meta, exp)
 
 
 def test_rename_duplicates():
@@ -323,4 +323,4 @@ def test_rename_duplicates():
     )
 
     assert compare(obs, exp).empty
-    pd.testing.assert_frame_equal(obs.data, exp.data)
+    pdt.assert_frame_equal(obs.data, exp.data)
