@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from numpy import testing as npt
+from pandas import testing as pdt
 
 from pyam import IamDataFrame, compare
 from pyam.utils import IAMC_IDX, META_IDX
@@ -229,39 +230,40 @@ def test_rename_index_fail_duplicates(test_df):
 
 
 def test_rename_index(test_df):
-    mapping = {"model": {"model_a": "model_b"}}
-    obs = test_df.rename(mapping, scenario={"scen_a": "scen_c"})
+    obs = test_df.rename(model={"model_a": "model_c"}, scenario={"scen_a": "scen_b"})
 
     # test data changes
     times = [2005, 2010] if obs.time_col == "year" else obs.data.time.unique()
     exp = (
         pd.DataFrame(
             [
-                ["model_b", "scen_c", "World", "Primary Energy", "EJ/yr", 1, 6.0],
-                ["model_b", "scen_c", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
                 ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
+                ["model_c", "scen_b", "World", "Primary Energy", "EJ/yr", 1, 6.0],
+                ["model_c", "scen_b", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
             ],
             columns=IAMC_IDX + list(times),
         )
         .set_index(IAMC_IDX)
-        .sort_index()
     )
     if "year" in test_df.data:
         exp.columns = list(map(int, exp.columns))
     else:
         exp.columns = pd.to_datetime(exp.columns)
 
-    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+    pdt.assert_frame_equal(obs.timeseries(), exp)
 
     # test meta changes
     exp = pd.DataFrame(
         [
-            ["model_b", "scen_c", 1, "foo"],
             ["model_a", "scen_b", 2, np.nan],
+            ["model_c", "scen_b", 1, "foo"],
         ],
         columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
-    pd.testing.assert_frame_equal(obs.meta, exp)
+    pdt.assert_frame_equal(obs.meta, exp)
+
+    # check that the attributes are ordered correctly
+    assert obs.model == ["model_a", "model_c"]
 
 
 def test_rename_append(test_df):
