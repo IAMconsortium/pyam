@@ -4,6 +4,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from numpy import testing as npt
+from pandas import testing as pdt
 
 from pyam import IamDataFrame, compare
 from pyam.utils import IAMC_IDX, META_IDX
@@ -68,7 +69,7 @@ def test_append_other_scenario(test_df):
 
     # sort columns for assertion in older pandas versions
     df.meta = df.meta.reindex(columns=exp.columns)
-    pd.testing.assert_frame_equal(df.meta, exp)
+    pdt.assert_frame_equal(df.meta, exp)
 
     # assert that appending data works as expected
     ts = df.timeseries()
@@ -105,7 +106,7 @@ def test_append_same_scenario(test_df):
     # assert that merging of meta works as expected
     exp = test_df.meta.copy()
     exp["col2"] = [np.nan, "b"]
-    pd.testing.assert_frame_equal(df.meta, exp)
+    pdt.assert_frame_equal(df.meta, exp)
 
     # assert that appending data works as expected
     ts = df.timeseries()
@@ -166,7 +167,7 @@ def test_rename_data_cols_by_dict():
         variable={"test_1": "test", "test_3": "test"}, region={"region_a": "region_c"}
     )
     obs = RENAME_DF.rename(mapping, check_duplicates=False).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
+    pdt.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
 def test_rename_data_cols_by_kwargs():
@@ -175,7 +176,7 @@ def test_rename_data_cols_by_kwargs():
         "region": {"region_a": "region_c"},
     }
     obs = RENAME_DF.rename(**args, check_duplicates=False).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
+    pdt.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
 def test_rename_data_cols_by_mixed():
@@ -184,7 +185,7 @@ def test_rename_data_cols_by_mixed():
         "region": {"region_a": "region_c"},
     }
     obs = RENAME_DF.rename(**args, check_duplicates=False).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
+    pdt.assert_frame_equal(obs, EXP_RENAME_DF, check_index_type=False)
 
 
 def test_rename_conflict(test_df):
@@ -229,67 +230,62 @@ def test_rename_index_fail_duplicates(test_df):
 
 
 def test_rename_index(test_df):
-    mapping = {"model": {"model_a": "model_b"}}
-    obs = test_df.rename(mapping, scenario={"scen_a": "scen_c"})
+    obs = test_df.rename(model={"model_a": "model_c"}, scenario={"scen_a": "scen_b"})
 
     # test data changes
-    times = [2005, 2010] if obs.time_col == "year" else obs.data.time.unique()
-    exp = (
-        pd.DataFrame(
-            [
-                ["model_b", "scen_c", "World", "Primary Energy", "EJ/yr", 1, 6.0],
-                ["model_b", "scen_c", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
-                ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
-            ],
-            columns=IAMC_IDX + list(times),
-        )
-        .set_index(IAMC_IDX)
-        .sort_index()
-    )
-    if "year" in test_df.data:
+    exp = pd.DataFrame(
+        [
+            ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
+            ["model_c", "scen_b", "World", "Primary Energy", "EJ/yr", 1, 6.0],
+            ["model_c", "scen_b", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
+        ],
+        columns=IAMC_IDX + list(obs.time),
+    ).set_index(IAMC_IDX)
+    if test_df.time_col == "year":
         exp.columns = list(map(int, exp.columns))
     else:
         exp.columns = pd.to_datetime(exp.columns)
-
-    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+    pdt.assert_frame_equal(obs.timeseries(), exp)
 
     # test meta changes
     exp = pd.DataFrame(
         [
-            ["model_b", "scen_c", 1, "foo"],
             ["model_a", "scen_b", 2, np.nan],
+            ["model_c", "scen_b", 1, "foo"],
         ],
         columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
-    pd.testing.assert_frame_equal(obs.meta, exp)
+    pdt.assert_frame_equal(obs.meta, exp)
+
+    # check that the attributes are ordered correctly
+    assert obs.model == ["model_a", "model_c"]
+
+    # test 'exclude' changes
+    exp = pd.Series([False, False], index=exp.index)
+    pdt.assert_series_equal(obs.exclude, exp)
 
 
 def test_rename_append(test_df):
-    mapping = {"model": {"model_a": "model_b"}, "scenario": {"scen_a": "scen_c"}}
-    obs = test_df.rename(mapping, append=True)
+    obs = test_df.rename(
+        model={"model_a": "model_b"}, scenario={"scen_a": "scen_c"}, append=True
+    )
 
     # test data changes
-    times = [2005, 2010] if obs.time_col == "year" else obs.data.time.unique()
-    exp = (
-        pd.DataFrame(
-            [
-                ["model_a", "scen_a", "World", "Primary Energy", "EJ/yr", 1, 6.0],
-                ["model_a", "scen_a", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
-                ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
-                ["model_b", "scen_c", "World", "Primary Energy", "EJ/yr", 1, 6.0],
-                ["model_b", "scen_c", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
-            ],
-            columns=IAMC_IDX + list(times),
-        )
-        .set_index(IAMC_IDX)
-        .sort_index()
-    )
-    if "year" in test_df.data:
+    exp = pd.DataFrame(
+        [
+            ["model_a", "scen_a", "World", "Primary Energy", "EJ/yr", 1, 6.0],
+            ["model_a", "scen_a", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
+            ["model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2, 7],
+            ["model_b", "scen_c", "World", "Primary Energy", "EJ/yr", 1, 6.0],
+            ["model_b", "scen_c", "World", "Primary Energy|Coal", "EJ/yr", 0.5, 3],
+        ],
+        columns=IAMC_IDX + list(obs.time),
+    ).set_index(IAMC_IDX)
+    if test_df.time_col == "year":
         exp.columns = list(map(int, exp.columns))
     else:
         exp.columns = pd.to_datetime(exp.columns)
-
-    pd.testing.assert_frame_equal(obs.timeseries().sort_index(), exp)
+    pdt.assert_frame_equal(obs.timeseries().sort_index(), exp)
 
     # test meta changes
     exp = pd.DataFrame(
@@ -300,7 +296,11 @@ def test_rename_append(test_df):
         ],
         columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
-    pd.testing.assert_frame_equal(obs.meta, exp)
+    pdt.assert_frame_equal(obs.meta, exp)
+
+    # test 'exclude' changes
+    exp = pd.Series([False, False, False], index=exp.index)
+    pdt.assert_series_equal(obs.exclude, exp)
 
 
 def test_rename_duplicates():
@@ -321,4 +321,4 @@ def test_rename_duplicates():
     )
 
     assert compare(obs, exp).empty
-    pd.testing.assert_frame_equal(obs.data, exp.data)
+    pdt.assert_frame_equal(obs.data, exp.data)
