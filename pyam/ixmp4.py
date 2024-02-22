@@ -27,7 +27,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         ("units", df.unit, UnitModel),
     ]:
         platform_values = platform.__getattribute__(dimension).tabulate().name.values
-        if missing := [i for i in values if i not in platform_values]:
+        if missing := set(values).difference(platform_values):
             raise model.NotFound(
                 ", ".join(missing)
                 + f". Use `Platform.{dimension}.create()` to add the missing {dimension}."
