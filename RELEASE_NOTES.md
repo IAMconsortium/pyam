@@ -1,6 +1,7 @@
-# Next Release
+# Next release
 
 - [#813](https://github.com/IAMconsortium/pyam/pull/813) Fix a corner case in region-aggregation with missing data
+- [#797](https://github.com/IAMconsortium/pyam/pull/797) Add `to_ixmp4()` method to write to an **ixmp4** platform
 
 # Release v2.1.0
 
