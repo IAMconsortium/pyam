@@ -3,7 +3,7 @@ from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
 
 
-def write_to_ixmp4(platform: ixmp4.Platform, df):
+def write_to_ixmp4(platform: ixmp4.Platform | str, df):
     """Save all scenarios as new default runs in an ixmp4 platform database instance
 
     Parameters
