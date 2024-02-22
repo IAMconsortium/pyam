@@ -20,11 +20,16 @@ def test_to_ixmp4_missing_unit_raises(test_df_year):
         test_df_year.to_ixmp4(platform=platform)
 
 
-def test_ixmp4_integration(test_df_year):
+def test_ixmp4_integration(test_df):
     """Write an IamDataFrame to the platform"""
     platform = Platform(_backend=SqliteTestBackend())
     platform.regions.create(name="World", hierarchy="common")
     platform.units.create(name="EJ/yr")
-    test_df_year.to_ixmp4(platform=platform)
+
+    if test_df.time_domain == "year":
+        test_df.to_ixmp4(platform=platform)
+    else:
+        with pytest.raises(NotImplementedError):
+            test_df.to_ixmp4(platform=platform)
 
     # TODO add test for reading data from ixmp4 platform
