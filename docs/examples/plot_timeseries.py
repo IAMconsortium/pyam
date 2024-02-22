@@ -4,6 +4,7 @@ Timeseries data charts
 ======================
 
 """
+
 ###############################
 # Read in tutorial data and show a summary
 # ****************************************

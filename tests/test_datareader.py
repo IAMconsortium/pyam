@@ -1,4 +1,4 @@
-from requests.exceptions import ConnectionError, ReadTimeout
+from requests.exceptions import ConnectionError, ReadTimeout, JSONDecodeError
 import pytest
 import logging
 import pandas as pd
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 try:
     wb.get_indicators()
     WB_UNAVAILABLE = False
-except (ReadTimeout, ConnectionError):
+except (ReadTimeout, ConnectionError, JSONDecodeError):
     WB_UNAVAILABLE = True
 
 WB_REASON = "World Bank API unavailable"

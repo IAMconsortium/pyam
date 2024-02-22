@@ -1,5 +1,6 @@
 """This file is a **NOT** used to test specific functions of pyam, but rather
 to print configuration information of the loaded package(s) to users!"""
+
 import sys
 
 from .test_plotting import MPL_KWARGS

@@ -4,6 +4,7 @@ Stacked bar charts
 ==================
 
 """
+
 # sphinx_gallery_thumbnail_number = 4
 
 ###############################
