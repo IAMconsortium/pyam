@@ -106,9 +106,7 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
             # apply pattern-matching for sheet names (use * as wildcard)
             sheets = sheet_names[pattern_match(sheet_names, values=sheets)]
             if sheets.empty:
-                raise ValueError(
-                    f"Sheet(s) '{sheet_name}' not found in file '{path}'."
-                )
+                raise ValueError(f"Sheet(s) '{sheet_name}' not found in file '{path}'.")
 
             df = pd.concat([xl.parse(s, *args, **kwargs) for s in sheets])
 
