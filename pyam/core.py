@@ -3,19 +3,17 @@ import importlib
 import logging
 import os
 import sys
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
-from pathlib import Path
-from tempfile import TemporaryDirectory
-
 import ixmp4
-
+from pyam.filter import filter_by_dt_arg, filter_by_time_domain, filter_by_year
 from pyam.ixmp4 import write_to_ixmp4
 from pyam.slice import IamSlice
-from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
 
 try:
     from datapackage import Package
@@ -25,51 +23,49 @@ except ImportError:
     Package = None
     HAS_DATAPACKAGE = False
 
-from pyam.run_control import run_control
-from pyam.str import find_depth, is_str
-from pyam.utils import (
-    write_sheet,
-    read_file,
-    read_pandas,
-    format_data,
-    make_index,
-    merge_meta,
-    merge_exclude,
-    pattern_match,
-    to_list,
-    is_list_like,
-    print_list,
-    DEFAULT_META_INDEX,
-    META_IDX,
-    IAMC_IDX,
-    ILLEGAL_COLS,
-    remove_from_list,
-)
-from pyam.filter import (
-    datetime_match,
-)
-from pyam.plotting import PlotAccessor
-from pyam.compute import IamComputeAccessor
 from pyam._compare import _compare
+from pyam._ops import _op_data
 from pyam.aggregation import (
     _aggregate,
+    _aggregate_recursive,
     _aggregate_region,
     _aggregate_time,
-    _aggregate_recursive,
     _group_and_agg,
 )
-from pyam._ops import _op_data
-from pyam.units import convert_unit
+from pyam.compute import IamComputeAccessor
+from pyam.filter import datetime_match
 from pyam.index import (
+    append_index_col,
     get_index_levels,
     get_index_levels_codes,
     get_keep_col,
-    verify_index_integrity,
     replace_index_values,
-    append_index_col,
+    verify_index_integrity,
 )
+from pyam.logging import deprecation_warning, format_log_message, raise_data_error
+from pyam.plotting import PlotAccessor
+from pyam.run_control import run_control
+from pyam.str import find_depth, is_str
 from pyam.time import swap_time_for_year, swap_year_for_time
-from pyam.logging import raise_data_error, deprecation_warning, format_log_message
+from pyam.units import convert_unit
+from pyam.utils import (
+    DEFAULT_META_INDEX,
+    IAMC_IDX,
+    ILLEGAL_COLS,
+    META_IDX,
+    format_data,
+    is_list_like,
+    make_index,
+    merge_exclude,
+    merge_meta,
+    pattern_match,
+    print_list,
+    read_file,
+    read_pandas,
+    remove_from_list,
+    to_list,
+    write_sheet,
+)
 from pyam.validation import _apply_criteria, _exclude_on_fail, _validate
 
 logger = logging.getLogger(__name__)
@@ -921,7 +917,15 @@ class IamDataFrame(object):
         self.set_meta(meta, name)
 
     def categorize(
-        self, name, value, criteria, color=None, marker=None, linestyle=None
+        self,
+        name,
+        value,
+        criteria: dict = None,
+        *,
+        color=None,
+        marker=None,
+        linestyle=None,
+        **kwargs,
     ):
         """Assign scenarios to a category according to specific criteria
 
@@ -942,6 +946,7 @@ class IamDataFrame(object):
             assign a linestyle to this category for plotting
         """
         # add plotting run control
+
         for kind, arg in [
             ("color", color),
             ("marker", marker),
@@ -949,11 +954,17 @@ class IamDataFrame(object):
         ]:
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
-        # find all data that matches categorization
-        rows = _apply_criteria(self._data, criteria, in_range=True, return_test="all")
-        idx = make_index(rows, cols=self.index.names)
 
-        if len(idx) == 0:
+        # find all data that matches categorization
+        # TODO: if validate returned an empty index, this check would be easier
+        not_valid = self.validate(criteria=criteria, **kwargs)
+        if not_valid is None:
+            idx = self.index
+        elif len(not_valid) < len(self.index):
+            idx = self.index.difference(
+                not_valid.set_index(["model", "scenario"]).index.unique()
+            )
+        else:
             logger.info("No scenarios satisfy the criteria")
             return
 
