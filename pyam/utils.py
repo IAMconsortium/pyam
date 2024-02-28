@@ -98,9 +98,7 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
     if isinstance(path, Path) and path.suffix == ".csv":
         return pd.read_csv(path, *args, **kwargs)
 
-    else:
-        xl = path if isinstance(path, pd.ExcelFile) else pd.ExcelFile(path)
-
+    with pd.ExcelFile(path) as xl:
         # reading multiple sheets
         sheet_names = pd.Series(xl.sheet_names)
         if len(sheet_names) > 1:
@@ -116,18 +114,18 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
         else:
             df = pd.read_excel(xl, *args, **kwargs)
 
-        # remove unnamed and empty columns, and rows were all values are nan
-        def is_empty(name, s):
-            if str(name).startswith("Unnamed: "):
-                try:
-                    if len(s) == 0 or all(np.isnan(s)):
-                        return True
-                except TypeError:
-                    pass
-            return False
+    # remove unnamed and empty columns, and rows were all values are nan
+    def is_empty(name, s):
+        if str(name).startswith("Unnamed: "):
+            try:
+                if len(s) == 0 or all(np.isnan(s)):
+                    return True
+            except TypeError:
+                pass
+        return False
 
-        empty_cols = [c for c in df.columns if is_empty(c, df[c])]
-        return df.drop(columns=empty_cols).dropna(axis=0, how="all")
+    empty_cols = [c for c in df.columns if is_empty(c, df[c])]
+    return df.drop(columns=empty_cols).dropna(axis=0, how="all")
 
 
 def read_file(path, *args, **kwargs):
