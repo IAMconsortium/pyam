@@ -2,6 +2,7 @@ import datetime as dt
 
 import numpy as np
 import pandas as pd
+
 from pyam import compare
 from pyam.utils import IAMC_IDX
 

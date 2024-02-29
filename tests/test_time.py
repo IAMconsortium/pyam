@@ -1,17 +1,19 @@
-import pytest
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 import pandas.testing as pdt
-from datetime import datetime
+import pytest
+
 from pyam import IamDataFrame
 from pyam.testing import assert_iamframe_equal
 
 from .conftest import (
-    TEST_YEARS,
     TEST_DTS,
+    TEST_TIME_MIXED,
     TEST_TIME_STR,
     TEST_TIME_STR_HR,
-    TEST_TIME_MIXED,
+    TEST_YEARS,
 )
 
 
@@ -32,7 +34,10 @@ def get_subannual_df(date1, date2):
 
 # this is the subannual column format used in the openENTRANCE project
 OE_DATETIME = ["2005-10-01 23:15+01:00", "2010-10-02 23:15+01:00"]
-OE_SUBANNUAL_FORMAT = lambda x: x.strftime("%m-%d %H:%M%z").replace("+0100", "+01:00")
+
+
+def OE_SUBANNUAL_FORMAT(x: datetime) -> str:
+    return x.strftime("%m-%d %H:%M%z").replace("+0100", "+01:00")
 
 
 # TODO implement this parametrization as part of `conftest.py:test_df`

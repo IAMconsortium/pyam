@@ -1,17 +1,21 @@
 import copy
 import os
+from collections.abc import Mapping
+
 import yaml
 
-from collections.abc import Mapping
 from pyam.str import is_str
 
 # user-defined defaults for various plot settings
 _RUN_CONTROL = None
 
+
 # path to regional mapping files
-_REG_MAP_PATH = lambda x: os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), "region_mappings", x
-)
+def _REG_MAP_PATH(x) -> str:
+    return os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), "region_mappings", x
+    )
+
 
 # defaults for run control
 _RC_DEFAULTS = {
@@ -113,13 +117,11 @@ class RunControl(Mapping):
         return _fname
 
     def _load_yaml(self, obj):
-        check_rel_paths = False
         if hasattr(obj, "read"):  # it's a file
             obj = obj.read()
         if is_str(obj) and not os.path.exists(obj):
             raise IOError("File {} does not exist".format(obj))
         if is_str(obj) and os.path.exists(obj):
-            check_rel_paths = True
             fname = obj
             with open(fname) as f:
                 obj = f.read()

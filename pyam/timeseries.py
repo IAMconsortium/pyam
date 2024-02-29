@@ -1,9 +1,11 @@
 import logging
 import math
+
 import numpy as np
 import pandas as pd
+
 from pyam.str import is_str
-from pyam.utils import to_int, raise_data_error
+from pyam.utils import raise_data_error, to_int
 
 logger = logging.getLogger(__name__)
 

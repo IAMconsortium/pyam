@@ -1,12 +1,13 @@
-from requests.exceptions import ConnectionError, ReadTimeout, JSONDecodeError
-import pytest
 import logging
+
 import pandas as pd
+import pytest
+from pandas_datareader import wb
+from requests.exceptions import ConnectionError, JSONDecodeError, ReadTimeout
 
 from pyam import IamDataFrame, read_worldbank
-from pyam.utils import IAMC_IDX
 from pyam.testing import assert_iamframe_equal
-from pandas_datareader import wb
+from pyam.utils import IAMC_IDX
 
 logger = logging.getLogger(__name__)
 

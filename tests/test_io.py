@@ -1,13 +1,14 @@
 from pathlib import Path
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import pytest
 
 from pyam import IamDataFrame, read_datapackage
-from pyam.utils import META_IDX
 from pyam.testing import assert_iamframe_equal
+from pyam.utils import META_IDX
 
-from .conftest import TEST_DATA_DIR, META_DF
+from .conftest import META_DF, TEST_DATA_DIR
 
 try:
     import xlrd  # noqa: F401
@@ -139,7 +140,7 @@ def test_init_df_with_na_unit(test_pd_df, tmpdir):
 
 def test_init_df_with_na_column_raises(test_pd_df, tmpdir):
     # reading from file with a "corrupted" column raises expected error
-    match = "Empty cells in `data` \(columns: 'unnamed: 7'\):"
+    match = r"Empty cells in `data` \(columns: 'unnamed: 7'\):"
     with pytest.raises(ValueError, match=match):
         IamDataFrame(TEST_DATA_DIR / "na_column.xlsx")
 
@@ -198,7 +199,7 @@ def test_load_meta_wrong_index(test_df_year, tmpdir):
     file = tmpdir / "testing_meta_empty.xlsx"
     pd.DataFrame(columns=["model", "foo"]).to_excel(file, index=False)
 
-    match = "Missing index columns for meta indicators: \['scenario'\]"
+    match = r"Missing index columns for meta indicators: \['scenario'\]"
     with pytest.raises(ValueError, match=match):
         test_df_year.load_meta(file)
 

@@ -1,5 +1,6 @@
 import itertools
 import logging
+
 import pandas as pd
 
 from pyam.logging import deprecation_warning
@@ -8,7 +9,7 @@ from pyam.utils import META_IDX, make_index, s
 logger = logging.getLogger(__name__)
 
 
-def _validate(df, criteria, upper_bound, lower_bound, exclude_on_fail, **kwargs):
+def _validate(df, criteria, upper_bound, lower_bound, exclude_on_fail, **kwargs):  # noqa: C901
     # TODO: argument `criteria` is deprecated, remove for release >= 3.0
     if criteria is not None:
         deprecation_warning(

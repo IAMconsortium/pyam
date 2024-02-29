@@ -1,7 +1,8 @@
-import pandas as pd
 import numpy.testing as npt
+import pandas as pd
 import pint
 import pytest
+
 from pyam import IamDataFrame
 
 

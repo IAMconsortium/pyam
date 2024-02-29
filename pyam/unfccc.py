@@ -1,4 +1,5 @@
 import re
+
 import numpy as np
 
 try:
@@ -58,8 +59,7 @@ def read_unfccc(
         .. code-block:: python
 
           {
-            "Emissions|{gas}|Energy":
-              ("1.  Energy", "*", "*", "*"),
+              "Emissions|{gas}|Energy": ("1.  Energy", "*", "*", "*"),
           }
 
         where the tuple corresponds to filters for the columns

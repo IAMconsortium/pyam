@@ -4,15 +4,15 @@ import matplotlib
 matplotlib.use("agg")
 
 from datetime import datetime
-from httpx import ConnectError
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
-from pathlib import Path
+from httpx import ConnectError
 
 from pyam import IamDataFrame, iiasa
-from pyam.utils import META_IDX, IAMC_IDX
-
+from pyam.utils import IAMC_IDX, META_IDX
 
 # verify whether IIASA database API can be reached, skip tests otherwise
 try:

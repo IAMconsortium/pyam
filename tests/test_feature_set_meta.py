@@ -1,7 +1,6 @@
-import pytest
 import numpy as np
 import pandas as pd
-
+import pytest
 
 EXP_IDX = pd.MultiIndex(
     levels=[["model_a"], ["scen_a", "scen_b"]],

@@ -1,10 +1,11 @@
 from copy import deepcopy
+
 import numpy as np
 import pandas as pd
 
 from pyam import filter_by_meta
 from pyam.str import is_str
-from pyam.utils import is_list_like, META_IDX
+from pyam.utils import META_IDX, is_list_like
 
 
 class Statistics(object):
@@ -28,7 +29,7 @@ class Statistics(object):
         which returns the 25th, 50th, and 75th percentiles.
     """
 
-    def __init__(
+    def __init__(  # noqa: C901
         self, df, groupby=None, filters=None, rows=False, percentiles=[0.25, 0.5, 0.75]
     ):
         self.df = df
@@ -132,7 +133,7 @@ class Statistics(object):
         elif subheader not in self._subheaders:
             self._subheaders.append(subheader)
 
-    def add(self, data, header, row=None, subheader=None):
+    def add(self, data, header, row=None, subheader=None):  # noqa: C901
         """Filter 'data' by arguments of this Statistics instance,
 
         Apply :meth:`pandas.DataFrame.describe()` and format the statistics

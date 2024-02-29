@@ -1,11 +1,12 @@
-import pytest
 import re
 
 import numpy as np
 import pandas as pd
-from pyam import check_aggregate, IamDataFrame
-from pyam.utils import IAMC_IDX
+import pytest
+
+from pyam import IamDataFrame, check_aggregate
 from pyam.testing import assert_iamframe_equal
+from pyam.utils import IAMC_IDX
 
 from .conftest import DTS_MAPPING
 
@@ -400,7 +401,7 @@ def test_aggregate_region_with_weights_inconsistent_index(
 def test_aggregate_region_with_weights_raises(simple_df):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
-    w = "Emissions|CO2"
+    # w = "Emissions|CO2"
 
     # using weight and method other than 'sum' raises an error
     pytest.raises(ValueError, simple_df.aggregate_region, v, method="max", weight="bar")

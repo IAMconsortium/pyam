@@ -1,8 +1,9 @@
 from pathlib import Path
+
 import pandas as pd
 import pytest
 
-from pyam import IamDataFrame, IAMC_IDX
+from pyam import IAMC_IDX, IamDataFrame
 
 DATA_PATH = Path("data")
 TEST_DF = pd.DataFrame(

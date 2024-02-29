@@ -1,7 +1,8 @@
-from pyam import IamDataFrame
-import pytest
-from pyam.testing import assert_iamframe_equal
 import pandas as pd
+import pytest
+
+from pyam import IamDataFrame
+from pyam.testing import assert_iamframe_equal
 
 
 def test_quantile_one_variable(test_pd_df):

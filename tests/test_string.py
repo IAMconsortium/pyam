@@ -3,10 +3,10 @@ import pandas as pd
 import pytest
 
 from pyam.str import (
+    concat_with_pipe,
     find_depth,
     get_variable_components,
     reduce_hierarchy,
-    concat_with_pipe,
 )
 
 TEST_VARS = ["foo", "foo|bar", "foo|bar|baz"]
@@ -116,7 +116,7 @@ def test_concat_args_with_pipe_by_cols():
 
 def test_concat_args_deprecated():
     # test error message for legacy-issues when introducing `*args` (#778)
-    with pytest.raises(DeprecationWarning, match="Please use `cols=\[0, 2\]`."):
+    with pytest.raises(DeprecationWarning, match=r"Please use `cols=\[0, 2\]`."):
         concat_with_pipe(["foo", "bar", "baz"], [0, 2])
 
 
