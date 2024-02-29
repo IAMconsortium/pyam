@@ -12,9 +12,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 from datetime import datetime
-import pyam
 
 from plotly.io._sg_scraper import plotly_sg_scraper
+
+import pyam
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -362,7 +363,7 @@ rst_prolog = """
 
    <a href="https://docs.ece.iiasa.ac.at/ixmp4/">
    <code class="xref py py-class docutils literal notranslate"><span class="pre">
-   ixmp4</span></code></a> 
+   ixmp4</span></code></a>
 
 .. |br| raw:: html
 
@@ -372,4 +373,4 @@ rst_prolog = """
 
    <a href="https://github.com/frictionlessdata/datapackage-py#package">read the docs</a>
 
-"""
+"""  # noqa: E501

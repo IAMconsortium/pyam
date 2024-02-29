@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import pytest
 import pandas as pd
+import pytest
+
 from pyam import Statistics
 
 

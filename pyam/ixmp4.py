@@ -30,7 +30,8 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         if missing := set(values).difference(platform_values):
             raise model.NotFound(
                 ", ".join(missing)
-                + f". Use `Platform.{dimension}.create()` to add the missing {dimension}."
+                + f". Use `Platform.{dimension}.create()` to add the missing "
+                f"{dimension}."
             )
 
     for model, scenario in df.index:

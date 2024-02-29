@@ -1,12 +1,12 @@
-import pytest
 import pandas as pd
 import pandas.testing as pdt
+import pytest
 
 from pyam.index import (
-    get_index_levels,
-    replace_index_values,
-    replace_index_labels,
     append_index_level,
+    get_index_levels,
+    replace_index_labels,
+    replace_index_values,
 )
 from pyam.utils import IAMC_IDX
 

@@ -1,14 +1,14 @@
-import pandas as pd
-import pytest
 import operator
+
+import pandas as pd
 import pint
+import pytest
 from iam_units import registry
 
 from pyam import IamDataFrame
-from pyam.utils import IAMC_IDX
-from pyam.testing import assert_iamframe_equal
 from pyam._ops import _op_data
-
+from pyam.testing import assert_iamframe_equal
+from pyam.utils import IAMC_IDX
 
 DF_INDEX = ["scenario", 2005, 2010]
 # dictionary with common IamDataFrame args for all tests operating on variable

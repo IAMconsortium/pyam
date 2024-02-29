@@ -1,8 +1,9 @@
-from pandas.api.types import is_list_like
+import re
+
 import numpy as np
 import pandas as pd
 import six
-import re
+from pandas.api.types import is_list_like
 
 
 def concat_with_pipe(x, *args, cols=None):
@@ -61,13 +62,21 @@ def _find_depth(data, s="", level=None):
 
     # if `level` is given, set function for finding depth level =, >=, <= |s
     if not is_str(level):
-        test = lambda x: level == x if x is not None else False
+        # test = lambda x: level == x if x is not None else False
+        def test(x):
+            return level == x if x is not None else False
     elif level[-1] == "-":
         level = int(level[:-1])
-        test = lambda x: level >= x if x is not None else False
+
+        # test = lambda x: level >= x if x is not None else False
+        def test(x):
+            return level >= x if x is not None else False
     elif level[-1] == "+":
         level = int(level[:-1])
-        test = lambda x: level <= x if x is not None else False
+
+        # test = lambda x: level <= x if x is not None else False
+        def test(x):
+            return level <= x if x is not None else False
     else:
         raise ValueError("Unknown level type: `{}`".format(level))
 
@@ -94,7 +103,7 @@ def get_variable_components(x, level, join=False):
     if join is False:
         return [_x[i] for i in level] if is_list_like(level) else _x[level]
     else:
-        level = [level] if type(level) == int else level
+        level = [level] if isinstance(level, int) else level
         join = "|" if join is True else join
         return join.join([_x[i] for i in level])
 
@@ -120,11 +129,11 @@ def escape_regexp(s):
     return (
         str(s)
         .replace("|", "\\|")
-        .replace(".", "\.")  # `.` has to be replaced before `*`
+        .replace(".", r"\.")  # `.` has to be replaced before `*`
         .replace("*", ".*")
-        .replace("+", "\+")
-        .replace("(", "\(")
-        .replace(")", "\)")
+        .replace("+", r"\+")
+        .replace("(", r"\(")
+        .replace(")", r"\)")
         .replace("$", "\\$")
     )
 

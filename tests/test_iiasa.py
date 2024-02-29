@@ -1,19 +1,19 @@
 import os
 from pathlib import Path
-import pytest
-import pandas as pd
-import pandas.testing as pdt
+
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
+import pandas.testing as pdt
+import pytest
 import yaml
 from ixmp4.core.exceptions import InvalidCredentials
 
 from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa
-from pyam.utils import META_IDX
 from pyam.testing import assert_iamframe_equal
+from pyam.utils import META_IDX
 
-from .conftest import META_COLS, IIASA_UNAVAILABLE, TEST_API, TEST_API_NAME
-
+from .conftest import IIASA_UNAVAILABLE, META_COLS, TEST_API, TEST_API_NAME
 
 if IIASA_UNAVAILABLE:
     pytest.skip("IIASA database API unavailable", allow_module_level=True)

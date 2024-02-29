@@ -1,17 +1,16 @@
 import copy
-import pytest
 
 import numpy as np
 import pandas as pd
+import pytest
 from numpy import testing as npt
 from pandas import testing as pdt
 
 from pyam import IamDataFrame, compare
-from pyam.utils import IAMC_IDX, META_IDX
 from pyam.testing import assert_iamframe_equal
+from pyam.utils import IAMC_IDX, META_IDX
 
 from .conftest import META_COLS
-
 
 RENAME_DF = IamDataFrame(
     pd.DataFrame(

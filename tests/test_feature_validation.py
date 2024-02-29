@@ -2,11 +2,10 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 
-from pyam import IamDataFrame, validate, categorize
+from pyam import IamDataFrame, categorize, validate
 from pyam.utils import IAMC_IDX
 
 from .conftest import TEST_YEARS
-
 
 # add row for `Primary Energy|Gas` to test that all permutations
 DATA_GAS = pd.DataFrame(

@@ -3,6 +3,7 @@ import re
 
 import iam_units
 import pint
+
 from pyam.index import replace_index_values
 
 logger = logging.getLogger(__name__)

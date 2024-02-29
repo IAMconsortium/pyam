@@ -8,7 +8,7 @@ except ModuleNotFoundError:
         "Missing Jupyter Notebook and related dependencies", allow_module_level=True
     )
 
-from .conftest import here, IIASA_UNAVAILABLE
+from .conftest import IIASA_UNAVAILABLE, here
 
 nb_path = here.parent / "docs" / "tutorials"
 

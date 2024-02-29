@@ -1,7 +1,7 @@
-import pytest
 import pandas as pd
-from pyam import IamDataFrame, compare
+import pytest
 
+from pyam import IamDataFrame, compare
 
 # when making any updates to this file,
 # please also update the `data_table_formats` tutorial notebook!

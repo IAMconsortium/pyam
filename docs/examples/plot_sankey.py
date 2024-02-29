@@ -29,8 +29,9 @@ Sankey diagram
 #
 # Make sure to place the data file in the same folder as this script/notebook.
 
-import pyam
 import plotly
+
+import pyam
 
 df = pyam.IamDataFrame("sankey_data.csv")
 df

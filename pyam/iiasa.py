@@ -1,33 +1,30 @@
-from io import StringIO
-from pathlib import Path
 import json
 import logging
 import os.path
-import requests
+from functools import lru_cache
+from io import StringIO
+from pathlib import Path
 
 import httpx
+import ixmp4
 import jwt
-from requests.auth import AuthBase
-
-import yaml
-from functools import lru_cache
-
 import numpy as np
 import pandas as pd
-
-from pyam.core import IamDataFrame
-from pyam.str import is_str
-from pyam.utils import (
-    META_IDX,
-    IAMC_IDX,
-    pattern_match,
-    is_list_like,
-)
-from pyam.logging import deprecation_warning
-import ixmp4
+import requests
+import yaml
 from ixmp4.conf import settings
 from ixmp4.conf.auth import ManagerAuth
+from requests.auth import AuthBase
 
+from pyam.core import IamDataFrame
+from pyam.logging import deprecation_warning
+from pyam.str import is_str
+from pyam.utils import (
+    IAMC_IDX,
+    META_IDX,
+    is_list_like,
+    pattern_match,
+)
 
 logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
@@ -38,9 +35,7 @@ _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
  data as provided in the explorer guidelines: {}
-""".replace(
-    "\n", ""
-)
+""".replace("\n", "")
 IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 
 # path to local configuration settings
@@ -81,8 +76,8 @@ class SceSeAuth(AuthBase):
         if creds is None:
             if DEFAULT_IIASA_CREDS.exists():
                 deprecation_warning(
-                    f"{IXMP4_LOGIN} and manually delete the file '{DEFAULT_IIASA_CREDS}'.",
-                    "Using a pyam-credentials file",
+                    f"{IXMP4_LOGIN} and manually delete the file "
+                    f"'{DEFAULT_IIASA_CREDS}'. Using a pyam-credentials file",
                 )
                 self.auth = _read_config(DEFAULT_IIASA_CREDS)
             else:
@@ -406,7 +401,7 @@ class Connection(object):
             return df.rename(columns={"name": "region", "synonyms": "synonym"})
         return pd.Series(df["name"].unique(), name="region")
 
-    def _query_post(self, meta, default_only=True, **kwargs):
+    def _query_post(self, meta, default_only=True, **kwargs):  # noqa: C901
         def _get_kwarg(k):
             # TODO refactor API to return all models if model-list is empty
             x = kwargs.pop(k, "*" if k == "model" else [])
@@ -496,8 +491,11 @@ class Connection(object):
 
         .. code-block:: python
 
-            Connection.query(model='MESSAGE*', scenario='SSP2*',
-                             variable=['Emissions|CO2', 'Primary Energy'])
+            Connection.query(
+                model="MESSAGE*",
+                scenario="SSP2*",
+                variable=["Emissions|CO2", "Primary Energy"],
+            )
 
         """
         if "default" in kwargs:

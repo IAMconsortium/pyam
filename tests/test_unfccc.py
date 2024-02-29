@@ -1,8 +1,8 @@
-import pytest
 import pandas as pd
+import pytest
+
 from pyam import IamDataFrame, read_unfccc
 from pyam.testing import assert_iamframe_equal
-
 
 UNFCCC_DF = pd.DataFrame(
     [[1990, 1638.57], [1991, 1460.31], [1992, 1429.20]],
