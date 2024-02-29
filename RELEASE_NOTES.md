@@ -1,7 +1,7 @@
 # Next release
 
 - [#824](https://github.com/IAMconsortium/pyam/pull/824) Update ixmp4 requirement to >=0.7.1
-- [#820](https://github.com/IAMconsortium/pyam/pull/820) Add support for Python 3.12 and introduce ruff
+- [#821](https://github.com/IAMconsortium/pyam/pull/821) Introduce ruff
 - [#818](https://github.com/IAMconsortium/pyam/pull/818) Use context manager for reading Excel file
 - [#813](https://github.com/IAMconsortium/pyam/pull/813) Fix a corner case in region-aggregation with missing data
 - [#797](https://github.com/IAMconsortium/pyam/pull/797) Add `to_ixmp4()` method to write to an **ixmp4** platform
