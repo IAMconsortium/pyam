@@ -25,7 +25,8 @@ For contributions to the code base, please use GitHub *Pull Requests*,
 including a detailed description of the new feature and unit tests
 to illustrate the intended functionality.
 Code submitted via pull requests must adhere to the `pep8`_ style formats
-and the documentation should follow  the `numpydoc docstring guide`_.
+and the documentation should follow  the `numpydoc docstring guide`_. We are 
+using `ruff`_ to check the code style.
 
 We do not require users to sign a *Contributor License Agreement*, because we
 believe that when posting ideas or submitting code to an open-source project,
@@ -35,3 +36,5 @@ are made in the spirit of open collaborative development.
 .. _`pep8`: https://www.python.org/dev/peps/pep-0008/
 
 .. _`numpydoc docstring guide`: https://numpydoc.readthedocs.io/en/latest/format.html
+
+.. _`ruff`: https://docs.astral.sh/ruff/
