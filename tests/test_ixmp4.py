@@ -1,8 +1,8 @@
 import pytest
 from ixmp4.core import Platform
-from ixmp4.data.backend import SqliteTestBackend
 from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
+from ixmp4.data.backend import SqliteTestBackend
 
 
 def test_to_ixmp4_missing_region_raises(test_df_year):
