@@ -98,3 +98,8 @@ docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
+
+[tool.poetry-dynamic-versioning]
+enable = true
+style = "pep440"
+vcs = "git"
