@@ -1,6 +1,43 @@
 import ixmp4
+import pandas as pd
 from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
+
+
+def read_ixmp4(platform: ixmp4.Platform | str, default_only: bool = True):
+    """Read scenario runs from an ixmp4 platform database instance
+
+    Parameters
+    ----------
+    platform : :class:`ixmp4.Platform` or str
+        The ixmp4 platform database instance to which the scenario data is saved
+    default_only : :class:`bool`, optional
+        Read only default runs
+    """
+    from pyam import IamDataFrame
+
+    if not isinstance(platform, ixmp4.Platform):
+        platform = ixmp4.Platform(platform)
+
+    data = platform.iamc.tabulate(run={"default_only": default_only})
+    meta = platform.meta.tabulate(run={"default_only": default_only})
+
+    # if default-only, simplify to standard IAMC index, add `version` as meta indicator
+    if default_only:
+        index = ["model", "scenario"]
+        data.drop(columns="version", inplace=True)
+        meta_version = (
+            meta[["model", "scenario", "version"]]
+            .drop_duplicates()
+            .rename(columns={"version": "value"})
+        )
+        meta_version["key"] = "version"
+        meta = pd.concat([meta.drop(columns="version"), meta_version])
+
+    else:
+        index = ["model", "scenario", "version"]
+
+    return IamDataFrame(data, meta=meta, index=index)
 
 
 def write_to_ixmp4(platform: ixmp4.Platform | str, df):
