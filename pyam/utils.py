@@ -152,7 +152,7 @@ def _convert_r_columns(df):
                 except ValueError:
                     # nope, not an int, fall down to final return statement
                     pass
-        except TypeError:
+        except (TypeError, IndexError):
             # not a string/iterable/etc, fall down to final return statement
             pass
         return c
