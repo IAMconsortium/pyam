@@ -62,7 +62,7 @@ def replace_index_values(df, name, mapping, rows=None):
         )
 
     # else, replace the level values for the entire index dimension
-    _levels = index.levels[n].map(lambda l: mapping.get(l, l))  # noqa: E741
+    _levels = index.levels[n].map(lambda level: mapping.get(level, level))
     _unique_levels = _levels.unique()
 
     # if no duplicate levels exist after replace, set new levels and return
