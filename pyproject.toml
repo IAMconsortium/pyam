@@ -26,8 +26,33 @@ authors = [
 ]
 license = "Apache-2.0"
 readme = "README.md"
+repository = "https://github.com/IAMconsortium/pyam"
+documentation = "https://pyam-iamc.readthedocs.io"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+]
 
+# TODO figure out how and when to print the following with poetry:
+# # Thanks to http://patorjk.com/software/taag/
+# logo = r"""
+#  ______   __  __     ______     __    __
+# /\  == \ /\ \_\ \   /\  __ \   /\ "-./  \
+# \ \  _-/ \ \____ \  \ \  __ \  \ \ \-./\ \
+#  \ \_\    \/\_____\  \ \_\ \_\  \ \_\ \ \_\
+#   \/_/     \/_____/   \/_/\/_/   \/_/  \/_/
+# """
+
+# NOTE TO DEVS
+# If you change a minimum version below, please explicitly implement the change
+# in our minimum-reqs test in the file ./.github/workflows/pytest-dependency.yml
+# Please also add a section "Dependency changes" to the release notes
 [tool.poetry.dependencies]
+# httpx[http2] included via ixmp4    
+# requests  included via ixmp4
 python = "^3.10"
 iam-units = ">=2020.4.21"
 ixmp4 = ">=0.7.1"
@@ -45,8 +70,60 @@ setuptools-scm = "^8.0.4"
 wquantiles = "^0.6"
 XlsxWriter = "^3.2.0"
 
+[tool.poetry.group.dev]
+optional = true
+
 [tool.poetry.group.dev.dependencies]
 ruff = ">=0.2.1"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+# docs requires 'tutorials'
+autodocsum = "^0.2.12"
+kaleido = "^0.2.1"
+nbsphinx = "^0.9.3"
+numpydocs = "^1.6.0"
+pillow = "^10.2.0"
+sphinx = "^7.2.6"
+sphinx-gallery = "^0.15.0"
+
+[tool.poetry.group.optional_io_formats]
+optional = true
+
+[tool.poetry.group.optional_io_formats.dependencies]
+datapackage = "^1.15.2"
+pandas-datareader = "^0.10.0"
+unfccc_di_api = ">=3.0.1"
+xlrd = "^2.0.1"
+
+[tool.poetry.group.optional_plotting]
+optional = true
+
+[tool.poetry.group.optional_plotting.dependencies]
+plotly = "^5.19.0"
+
+[tool.poetry.group.tests]
+optional = true
+
+[tool.poetry.group.tests.dependencies]
+coverage = "^6.5.0"
+coveralls = "^3.3.1"
+pytest = "^8.0.2"
+pytest-cov = "^4.1.0"
+pytest-mpl = "^0.17.0"
+
+[tool.poetry.group.tutorials]
+optional = true
+
+[tool.poetry.group.tutorials.dependencies]
+ipykernel = "^6.29.3"
+jupyter_client = "^8.6.0"
+nbconvert = ">= 7.3"
+nbformat = "^5.9.2"
+pypandoc = "^1.13"
+
 
 [build-system]
 requires = ["poetry-core"]
