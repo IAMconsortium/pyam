@@ -1,0 +1,100 @@
+[tool.poetry]
+name = "pyam-iamc"
+version = "0.0.0"
+description = "Analysis & visualization of integrated-assessment scenarios"
+authors = [
+    "Matthew Gidden `@gidden <gidden@iiasa.ac.at>",
+    "Daniel Huppmann <huppmann@iiasa.ac.at>",
+    "Zebedee Nicholls <znicholls@unknown.com>",
+    "Nikolay Kushin <zikolach@unknown.com>",
+    "Robin Lamboll <Rlamboll@unknown.com>",
+    "Oliver Fricko <fricko@iiasa.ac.at>",
+    "Jonas Hörsch <coroa@unknown.com>",
+    "Paul Natsuo Kishimoto <kishimot@iiasa.ac.at>",
+    "Thorsten Burandt <tburandt@unknown.com>",
+    "Ross Ursino <rossursino@unknown.com>",
+    "Maik Budzinski <mabudz@unknown.com>",
+    "Jarmo Kikstra <kikstra@iiasa.ac.at>",
+    "Michael Pimmer <fonfon@unknown.com>",
+    "Patrick Jürgens <pjuergens@unknown.com>",
+    "Florian Maczek <maczek@iiasa.ac.at>",
+    "Laura Wienpahl <LauWien@unknown.com>",
+    "Philip Hackstock <hackstock@iiasa.ac.at>",
+    "Pietro Monticone <pitmonticone@unknown.com>",
+    "Edward Byers <byers@iiasa.ac.at>",
+    "Fridolin Glatter <glatter@iiasa.ac.at>",
+]
+license = "Apache-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+iam-units = ">=2020.4.21"
+ixmp4 = ">=0.7.1"
+numpy = ">=1.23.0"
+openpyxl = "^3.1.2"
+pandas = ">=2.0.0"
+Pint = ">=0.13"
+PyYAML = "^6.0.1"
+matplotlib = ">=3.6.0"
+scipy = ">=1.10.0"
+seaborn = ">=0.11"
+six = "^1.16.0"
+setuptools = ">=69"
+setuptools-scm = "^8.0.4"
+wquantiles = "^0.6"
+XlsxWriter = "^3.2.0"
+
+[tool.poetry.group.dev.dependencies]
+ruff = ">=0.2.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".git",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "site-packages",
+    "venv",
+]
+extend-include = ["*.ipynb"]
+
+# Same as Black.
+line-length = 88
+
+
+[tool.ruff.lint]
+select = ["C9", "E", "F", "I", "W"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+
+[tool.ruff.format]
+# Enable auto-formatting of code examples in docstrings. Markdown,
+# reStructuredText code/literal blocks and doctests are all supported.
+#
+# This is currently disabled by default, but it is planned for this
+# to be opt-out in the future.
+docstring-code-format = true
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+#
+# This only has an effect when the `docstring-code-format` setting is
+# enabled.
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
