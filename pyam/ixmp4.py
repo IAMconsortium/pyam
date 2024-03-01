@@ -33,7 +33,6 @@ def read_ixmp4(platform: ixmp4.Platform | str, default_only: bool = True):
         )
         meta_version["key"] = "version"
         meta = pd.concat([meta.drop(columns="version"), meta_version])
-
     else:
         index = ["model", "scenario", "version"]
 
