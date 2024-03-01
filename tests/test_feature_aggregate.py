@@ -401,7 +401,7 @@ def test_aggregate_region_with_weights_inconsistent_index(
 def test_aggregate_region_with_weights_raises(simple_df):
     # carbon price shouldn't be summed but be weighted by emissions
     v = "Price|Carbon"
-    # w = "Emissions|CO2"
+    w = "Emissions|CO2"
 
     # using weight and method other than 'sum' raises an error
     pytest.raises(ValueError, simple_df.aggregate_region, v, method="max", weight=w)
