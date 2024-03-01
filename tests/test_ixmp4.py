@@ -32,7 +32,6 @@ def test_ixmp4_time_not_implemented(test_df):
     if test_df.time_domain != "year":
         with pytest.raises(NotImplementedError):
             test_df.to_ixmp4(platform=platform)
-        # pass
 
 
 def test_ixmp4_integration(test_df_year):
