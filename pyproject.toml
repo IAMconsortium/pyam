@@ -53,7 +53,7 @@ classifiers = [
 [tool.poetry.dependencies]
 # httpx[http2] included via ixmp4    
 # requests  included via ixmp4
-python = "^3.10"
+python = ">=3.10, <3.13"
 iam-units = ">=2020.4.21"
 ixmp4 = ">=0.7.1"
 numpy = ">=1.23.0"
@@ -81,10 +81,10 @@ optional = true
 
 [tool.poetry.group.docs.dependencies]
 # docs requires 'tutorials'
-autodocsum = "^0.2.12"
-kaleido = "^0.2.1"
+autodocsumm = "^0.2.12"
+kaleido = ">=0.2.0, <0.2.1.post"
 nbsphinx = "^0.9.3"
-numpydocs = "^1.6.0"
+numpydoc = "^1.6.0"
 pillow = "^10.2.0"
 sphinx = "^7.2.6"
 sphinx-gallery = "^0.15.0"
