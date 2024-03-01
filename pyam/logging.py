@@ -1,9 +1,8 @@
+import warnings
 from contextlib import contextmanager
-from logging import *
+from logging import getLogger
 
 import pandas as pd
-import warnings
-
 
 logger = getLogger(__name__)
 

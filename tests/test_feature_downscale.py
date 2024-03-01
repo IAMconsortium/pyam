@@ -1,4 +1,5 @@
 import pytest
+
 from pyam.testing import assert_iamframe_equal
 
 

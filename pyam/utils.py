@@ -1,16 +1,17 @@
-from pathlib import Path
 import itertools
 import logging
-import string
 import re
+import string
+from pathlib import Path
+
 import dateutil
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_list_like, is_float
+from pandas.api.types import is_list_like
 
 from pyam.index import get_index_levels, replace_index_labels
+from pyam.logging import raise_data_error
 from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
-from pyam.logging import raise_data_error, deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -148,10 +149,10 @@ def _convert_r_columns(df):
                 try:
                     #  bingo! was X2015 R-style, return the integer
                     return int(second)
-                except:
+                except ValueError:
                     # nope, not an int, fall down to final return statement
                     pass
-        except:
+        except (TypeError, IndexError):
             # not a string/iterable/etc, fall down to final return statement
             pass
         return c
@@ -214,7 +215,7 @@ def _format_from_legacy_database(df):
     return df
 
 
-def _intuit_column_groups(df, index, include_index=False):
+def _intuit_column_groups(df, index, include_index=False):  # noqa: C901
     """Check and categorise columns in dataframe"""
 
     if include_index:
@@ -324,7 +325,7 @@ def _format_data_to_series(df, index):
     return df, time_col, extra_cols
 
 
-def format_data(df, index, **kwargs):
+def format_data(df, index, **kwargs):  # noqa: C901
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
 
     # Fast-pass if `df` has the index and required columns as a pd.MultiIndex

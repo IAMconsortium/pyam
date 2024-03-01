@@ -1,5 +1,6 @@
-from . import compare
 import pandas.testing as pdt
+
+from . import compare
 
 
 def assert_iamframe_equal(left, right, **kwargs):

@@ -1,0 +1,45 @@
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".git",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "site-packages",
+    "venv",
+]
+extend-include = ["*.ipynb"]
+
+# Same as Black.
+line-length = 88
+
+
+[lint]
+select = ["C9", "E", "F", "I", "W"]
+ignore = ["B008"]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+
+[format]
+# Enable auto-formatting of code examples in docstrings. Markdown,
+# reStructuredText code/literal blocks and doctests are all supported.
+#
+# This is currently disabled by default, but it is planned for this
+# to be opt-out in the future.
+docstring-code-format = true
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+#
+# This only has an effect when the `docstring-code-format` setting is
+# enabled.
+docstring-code-line-length = "dynamic"
+
+[lint.mccabe]
+max-complexity = 10

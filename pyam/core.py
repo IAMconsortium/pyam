@@ -3,19 +3,17 @@ import importlib
 import logging
 import os
 import sys
-
-import numpy as np
-import pandas as pd
-from pandas.api.types import is_integer
-
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import ixmp4
+import numpy as np
+import pandas as pd
+from pandas.api.types import is_integer
 
+from pyam.filter import filter_by_dt_arg, filter_by_time_domain, filter_by_year
 from pyam.ixmp4 import write_to_ixmp4
 from pyam.slice import IamSlice
-from pyam.filter import filter_by_time_domain, filter_by_year, filter_by_dt_arg
 
 try:
     from datapackage import Package
@@ -25,51 +23,51 @@ except ImportError:
     Package = None
     HAS_DATAPACKAGE = False
 
-from pyam.run_control import run_control
-from pyam.str import find_depth, is_str
-from pyam.utils import (
-    write_sheet,
-    read_file,
-    read_pandas,
-    format_data,
-    make_index,
-    merge_meta,
-    merge_exclude,
-    pattern_match,
-    to_list,
-    is_list_like,
-    print_list,
-    DEFAULT_META_INDEX,
-    META_IDX,
-    IAMC_IDX,
-    ILLEGAL_COLS,
-    remove_from_list,
+from pyam._compare import _compare
+from pyam._ops import _op_data
+from pyam.aggregation import (
+    _aggregate,
+    _aggregate_recursive,
+    _aggregate_region,
+    _aggregate_time,
+    _group_and_agg,
 )
+from pyam.compute import IamComputeAccessor
 from pyam.filter import (
     datetime_match,
 )
-from pyam.plotting import PlotAccessor
-from pyam.compute import IamComputeAccessor
-from pyam._compare import _compare
-from pyam.aggregation import (
-    _aggregate,
-    _aggregate_region,
-    _aggregate_time,
-    _aggregate_recursive,
-    _group_and_agg,
-)
-from pyam._ops import _op_data
-from pyam.units import convert_unit
 from pyam.index import (
+    append_index_col,
     get_index_levels,
     get_index_levels_codes,
     get_keep_col,
-    verify_index_integrity,
     replace_index_values,
-    append_index_col,
+    verify_index_integrity,
 )
+from pyam.logging import deprecation_warning, format_log_message, raise_data_error
+from pyam.plotting import PlotAccessor
+from pyam.run_control import run_control
+from pyam.str import find_depth, is_str
 from pyam.time import swap_time_for_year, swap_year_for_time
-from pyam.logging import raise_data_error, deprecation_warning, format_log_message
+from pyam.units import convert_unit
+from pyam.utils import (
+    DEFAULT_META_INDEX,
+    IAMC_IDX,
+    ILLEGAL_COLS,
+    META_IDX,
+    format_data,
+    is_list_like,
+    make_index,
+    merge_exclude,
+    merge_meta,
+    pattern_match,
+    print_list,
+    read_file,
+    read_pandas,
+    remove_from_list,
+    to_list,
+    write_sheet,
+)
 from pyam.validation import _apply_criteria, _exclude_on_fail, _validate
 
 logger = logging.getLogger(__name__)
@@ -140,7 +138,7 @@ class IamDataFrame(object):
         else:
             self._init(data, meta, index=index, **kwargs)
 
-    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
+    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):  # noqa: C901
         """Process data and set attributes for new instance"""
 
         # pop kwarg for meta_sheet_name (prior to reading data from file)
@@ -817,7 +815,7 @@ class IamDataFrame(object):
 
         return s.unstack(level=self.time_col).rename_axis(None, axis=1)
 
-    def set_meta(self, meta, name=None, index=None):
+    def set_meta(self, meta, name=None, index=None):  # noqa: C901
         """Add meta indicators as pandas.Series, list or value (int/float/str)
 
         Parameters
@@ -1086,7 +1084,7 @@ class IamDataFrame(object):
             **kwargs,
         )
 
-    def rename(
+    def rename(  # noqa: C901
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs
     ):
         """Rename any index dimension or data coordinate.
@@ -1206,7 +1204,7 @@ class IamDataFrame(object):
     def convert_unit(
         self, current, to, factor=None, registry=None, context=None, inplace=False
     ):
-        """Convert all timeseries data having *current* units to new units.
+        r"""Convert all timeseries data having *current* units to new units.
 
         If *factor* is given, existing values are multiplied by it, and the
         *to* units are assigned to the 'unit' column.
@@ -1885,7 +1883,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def _apply_filters(self, level=None, **filters):
+    def _apply_filters(self, level=None, **filters):  # noqa: C901
         """Determine rows to keep in data for given set of filters
 
         Parameters
@@ -2698,7 +2696,7 @@ def compare(
     return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
 
 
-def concat(objs, ignore_meta_conflict=False, **kwargs):
+def concat(objs, ignore_meta_conflict=False, **kwargs):  # noqa: C901
     """Concatenate a series of IamDataFrame-like objects
 
     Parameters

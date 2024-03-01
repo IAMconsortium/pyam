@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyam.timeseries import fill_series, cumulative, cross_threshold
+from pyam.timeseries import cross_threshold, cumulative, fill_series
 from pyam.utils import to_int
 
 

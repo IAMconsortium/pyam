@@ -1,6 +1,7 @@
-from pyam import IamDataFrame
 import pytest
 from numpy.testing import assert_array_equal
+
+from pyam import IamDataFrame
 
 
 @pytest.mark.parametrize(

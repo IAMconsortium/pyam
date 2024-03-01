@@ -1,6 +1,7 @@
 import logging
 
 import pandas as pd
+
 from pyam.index import get_index_levels
 
 logger = logging.getLogger(__name__)

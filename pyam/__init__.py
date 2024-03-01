@@ -1,6 +1,7 @@
-from importlib.metadata import version, PackageNotFoundError
 import logging
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
+
 from setuptools_scm import get_version
 
 from pyam.core import (
@@ -10,16 +11,16 @@ from pyam.core import (
     compare,
     concat,
     filter_by_meta,
-    require_variable,
     read_datapackage,
+    require_variable,
     validate,
 )
-from pyam.statistics import Statistics
-from pyam.iiasa import read_iiasa, lazy_read_iiasa  # noqa: F401
 from pyam.datareader import read_worldbank  # noqa: F401
-from pyam.unfccc import read_unfccc  # noqa: F401
-from pyam.testing import assert_iamframe_equal  # noqa: F401
+from pyam.iiasa import lazy_read_iiasa, read_iiasa  # noqa: F401
 from pyam.run_control import run_control  # noqa: F401
+from pyam.statistics import Statistics
+from pyam.testing import assert_iamframe_equal  # noqa: F401
+from pyam.unfccc import read_unfccc  # noqa: F401
 from pyam.utils import IAMC_IDX  # noqa: F401
 
 logger = logging.getLogger(__name__)

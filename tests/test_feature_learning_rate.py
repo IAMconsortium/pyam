@@ -1,9 +1,9 @@
 import pandas as pd
-from pyam import IamDataFrame
-from pyam.utils import IAMC_IDX
-from pyam.testing import assert_iamframe_equal
 import pytest
 
+from pyam import IamDataFrame
+from pyam.testing import assert_iamframe_equal
+from pyam.utils import IAMC_IDX
 
 TEST_DF = IamDataFrame(
     pd.DataFrame(

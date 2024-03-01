@@ -1,18 +1,17 @@
-import logging
-import pytest
 import datetime
+import logging
 
 import numpy as np
 import pandas as pd
+import pytest
 from numpy import testing as npt
 from pandas import testing as pdt
 
 from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
 from pyam.str import is_str
-from pyam.utils import IAMC_IDX, META_IDX, sort_data
 from pyam.testing import assert_iamframe_equal
-
+from pyam.utils import IAMC_IDX, META_IDX
 
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
@@ -111,7 +110,7 @@ def test_init_df_with_na_scenario(test_pd_df):
     # missing values in an index dimension raises an error
     test_pd_df.loc[1, "scenario"] = np.nan
     msg = (
-        "Empty cells in `data` \(columns: 'scenario'\):"
+        r"Empty cells in `data` \(columns: 'scenario'\):"
         r"(\n.*){2}model_a.*NaN.*World.*Primary Energy|Coal.*EJ/yr.*2005.*"
     )
     with pytest.raises(ValueError, match=msg):
@@ -211,7 +210,7 @@ def test_init_df_with_meta_incompatible_index_raises(test_pd_df):
     )
 
     # assert that using an incompatible index for the meta arg raises
-    match = "Incompatible `index=\['model', 'scenario'\]` with `meta.index=*."
+    match = r"Incompatible `index=\['model', 'scenario'\]` with `meta.index=*."
     with pytest.raises(ValueError, match=match):
         IamDataFrame(test_pd_df, meta=meta)
 
