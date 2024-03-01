@@ -1,5 +1,6 @@
 # Next release
 
+- [#826](https://github.com/IAMconsortium/pyam/pull/826) Add `read_ixmp4()` function and extend integration test
 - [#824](https://github.com/IAMconsortium/pyam/pull/824) Update ixmp4 requirement to >=0.7.1
 - [#821](https://github.com/IAMconsortium/pyam/pull/821) Introduce ruff
 - [#818](https://github.com/IAMconsortium/pyam/pull/818) Use context manager for reading Excel file
