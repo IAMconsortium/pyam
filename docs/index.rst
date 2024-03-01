@@ -5,7 +5,7 @@ Release v\ |version|.
 
 |license| |pypi| |conda| |latest|
 
-|black| |python| |pytest| |rtd| |codecov|
+|ruff| |python| |pytest| |rtd| |codecov|
 
 |doi| |ore| |joss| |groupsio| |slack|
 
