@@ -44,7 +44,6 @@ You can list all available ixmp4 platforms hosted by IIASA using the following:
 .. autofunction:: list_platforms
    :noindex:
 
-
 *Scenario Explorer* instances (legacy service)
 ----------------------------------------------
 
