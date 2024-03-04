@@ -46,6 +46,7 @@ DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
 
 
 def list_platforms():
+    """Print all available ixmp4 platforms hosted by IIASA"""
 
     platforms = ixmp4.conf.settings.manager.list_platforms()
     utils.echo("IIASA platform".ljust(20) + "Access".ljust(10) + "Notice\n")
@@ -217,8 +218,8 @@ class Connection(object):
     def valid_connections(self):
         """Return available resources (database API connections)"""
         logger.warning(
-            "IIASA is migrating to a new database infrastructure based on the ixmp4 package."
-            "Please use `pyam.iiasa.list_platforms()` to list available ixmp4 databases."
+            "IIASA is migrating to a database infrastructure using the ixmp4 package."
+            "Use `pyam.iiasa.list_platforms()` to list available ixmp4 databases."
         )
         return list(self._connection_map.keys())
 
