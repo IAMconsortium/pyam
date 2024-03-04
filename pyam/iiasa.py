@@ -46,7 +46,12 @@ DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
 
 
 def platforms() -> None:
-    """Print all available ixmp4 platforms hosted by IIASA"""
+    """Print all available ixmp4 platforms hosted by IIASA
+
+    See Also
+    --------
+    ixmp4.conf.settings.manager.list_platforms
+    """
 
     _platforms = ixmp4.conf.settings.manager.list_platforms()
     utils.echo("IIASA platform".ljust(20) + "Access".ljust(10) + "Notice\n")
