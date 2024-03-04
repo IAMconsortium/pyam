@@ -45,13 +45,13 @@ IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
 
 
-def list_platforms():
+def platforms() -> None:
     """Print all available ixmp4 platforms hosted by IIASA"""
 
-    platforms = ixmp4.conf.settings.manager.list_platforms()
+    _platforms = ixmp4.conf.settings.manager.list_platforms()
     utils.echo("IIASA platform".ljust(20) + "Access".ljust(10) + "Notice\n")
 
-    for p in platforms:
+    for p in _platforms:
         utils.important(shorten(p.name, 20), nl=False)
         utils.echo(str(p.accessibility.value.lower()).ljust(10), nl=False)
 
@@ -59,7 +59,7 @@ def list_platforms():
             utils.echo(shorten(p.notice, 55), nl=False)
         utils.echo()
 
-    utils.info("\n" + str(len(platforms)) + " total \n")
+    utils.info("\n" + str(len(_platforms)) + " total \n")
 
 
 def set_config(user, password, file=None):
