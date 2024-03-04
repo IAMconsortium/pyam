@@ -3,7 +3,7 @@ name = "pyam-iamc"
 version = "0.0.0"
 description = "Analysis & visualization of integrated-assessment scenarios"
 authors = [
-    "Matthew Gidden `@gidden <gidden@iiasa.ac.at>",
+    "Matthew Gidden <gidden@iiasa.ac.at>",
     "Daniel Huppmann <huppmann@iiasa.ac.at>",
     "Zebedee Nicholls <znicholls@unknown.com>",
     "Nikolay Kushin <zikolach@unknown.com>",
@@ -35,16 +35,6 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python",
 ]
-
-# TODO figure out how and when to print the following with poetry:
-# # Thanks to http://patorjk.com/software/taag/
-# logo = r"""
-#  ______   __  __     ______     __    __
-# /\  == \ /\ \_\ \   /\  __ \   /\ "-./  \
-# \ \  _-/ \ \____ \  \ \  __ \  \ \ \-./\ \
-#  \ \_\    \/\_____\  \ \_\ \_\  \ \_\ \ \_\
-#   \/_/     \/_____/   \/_/\/_/   \/_/  \/_/
-# """
 
 # NOTE TO DEVS
 # If you change a minimum version below, please explicitly implement the change
