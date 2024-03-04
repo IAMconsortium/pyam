@@ -38,10 +38,15 @@ You will be prompted to enter your password.
 *Scenario Apps* instances
 -------------------------
 
-Coming soon...
+The *Scenario Apps* use the |ixmp4| package as a database backend.
+You can list all available ixmp4 platforms hosted by IIASA using the following:
 
-*Scenario Explorer* instances
------------------------------
+.. autofunction:: list_platforms
+   :noindex:
+
+
+*Scenario Explorer* instances (legacy service)
+----------------------------------------------
 
 The *Scenario Explorer* infrastructure developed by the Scenario Services and Scientific
 Software team was developed and used for projects from 2018 until 2023.
