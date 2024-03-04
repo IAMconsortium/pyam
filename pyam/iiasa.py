@@ -216,6 +216,10 @@ class Connection(object):
     @lru_cache()
     def valid_connections(self):
         """Return available resources (database API connections)"""
+        logger.warning(
+            "IIASA is migrating to a new database infrastructure based on the ixmp4 package."
+            "Please use `pyam.iiasa.list_platforms()` to list available ixmp4 databases."
+        )
         return list(self._connection_map.keys())
 
     def connect(self, name):
