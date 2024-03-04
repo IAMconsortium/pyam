@@ -56,6 +56,11 @@ jobs:
         path: .venv
         key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
     #----------------------------------------------
+    # Update dependencies to latest versions
+    #----------------------------------------------
+    - name: Update dependencies
+      run: poetry update --with docs,optional_io_formats,optional_plotting,tests,tutorials
+    #----------------------------------------------
     # install your root project, if required
     #----------------------------------------------
     - name: Install library
