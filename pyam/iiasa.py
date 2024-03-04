@@ -12,13 +12,14 @@ import numpy as np
 import pandas as pd
 import requests
 import yaml
+from ixmp4.cli import utils
 from ixmp4.conf import settings
 from ixmp4.conf.auth import ManagerAuth
 from requests.auth import AuthBase
 
 from pyam.core import IamDataFrame
 from pyam.logging import deprecation_warning
-from pyam.str import is_str
+from pyam.str import is_str, shorten
 from pyam.utils import (
     IAMC_IDX,
     META_IDX,
@@ -35,11 +36,29 @@ _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
  data as provided in the explorer guidelines: {}
-""".replace("\n", "")
+""".replace(
+    "\n", ""
+)
 IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 
 # path to local configuration settings
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
+
+
+def list_platforms():
+
+    platforms = ixmp4.conf.settings.manager.list_platforms()
+    utils.echo("IIASA platform".ljust(20) + "Access".ljust(10) + "Notice\n")
+
+    for p in platforms:
+        utils.important(shorten(p.name, 20), nl=False)
+        utils.echo(str(p.accessibility.value.lower()).ljust(10), nl=False)
+
+        if p.notice is not None:
+            utils.echo(shorten(p.notice, 55), nl=False)
+        utils.echo()
+
+    utils.info("\n" + str(len(platforms)) + " total \n")
 
 
 def set_config(user, password, file=None):
