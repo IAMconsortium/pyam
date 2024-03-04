@@ -26,6 +26,7 @@ authors = [
 ]
 license = "Apache-2.0"
 readme = "README.md"
+packages = [{ include = "pyam" }]
 repository = "https://github.com/IAMconsortium/pyam"
 documentation = "https://pyam-iamc.readthedocs.io"
 classifiers = [
