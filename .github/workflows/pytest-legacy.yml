@@ -40,16 +40,24 @@ jobs:
       with:
         path: .venv
         key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+    - name: Enforce usage of specific out-dated version of dependencies
+      # Update the package requirements when changing minimum dependency versions
+      # Please also add a section "Dependency changes" to the release notes
+      run: |
+        poetry add iam-units@2020.4.21
+        poetry add matplotlib@3.6.0
+        poetry add numpy@1.23.0
+        poetry add pandas@2.1.2
+        poetry add pint@0.13
+        poetry add xlrd@2.0.1 --group optional_io_formats
+
     #----------------------------------------------
     # install your root project, if required
     #----------------------------------------------
     - name: Install library
       run: poetry install --no-interaction --with optional_io_formats,optional_plotting,tests,tutorials
 
-    - name: Install specific out-dated version of dependencies
-      # Update the package requirements when changing minimum dependency versions
-      # Please also add a section "Dependency changes" to the release notes
-      run: poetry run pip install pandas==2.0.0 numpy==1.23.0 matplotlib==3.6.0 iam-units==2020.4.21 xlrd==2.0.1 pint==0.13
 
     - name: Test with pytest
       run: poetry run pytest tests
