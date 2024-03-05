@@ -2,7 +2,7 @@
 
 ## Dependency changes
 
-Bumped minimum version of pandas to 2.1.2 to fit **ixmp4**'s requirement.
+Bumped minimum version of pandas and numpy to fit **ixmp4**'s requirement.
 
 ## Individual updates
 
