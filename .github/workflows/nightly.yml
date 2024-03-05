@@ -67,11 +67,7 @@ jobs:
       run: poetry install --no-interaction --with docs,optional_io_formats,optional_plotting,tests,tutorials
 
     - name: Test with pytest (including Matplotlib)
-      run: |
-        pytest tests --mpl
+      run: poetry run pytest tests --mpl
 
     - name: Build the docs
-      run: |
-        cd docs
-        make html
-        cd ..
+      run: poetry run make --directory=docs html

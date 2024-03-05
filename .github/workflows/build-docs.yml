@@ -48,4 +48,4 @@ jobs:
       run: poetry install --no-interaction --with docs,optional_plotting,tutorials
 
     - name: Build the docs
-      run: make --directory=docs html
+      run: poetry run make --directory=docs html
