@@ -65,18 +65,21 @@ def _find_depth(data, s="", level=None):
         # test = lambda x: level == x if x is not None else False
         def test(x):
             return level == x if x is not None else False
+
     elif level[-1] == "-":
         level = int(level[:-1])
 
         # test = lambda x: level >= x if x is not None else False
         def test(x):
             return level >= x if x is not None else False
+
     elif level[-1] == "+":
         level = int(level[:-1])
 
         # test = lambda x: level <= x if x is not None else False
         def test(x):
             return level <= x if x is not None else False
+
     else:
         raise ValueError("Unknown level type: `{}`".format(level))
 
@@ -141,3 +144,10 @@ def escape_regexp(s):
 def is_str(x):
     """Returns True if x is a string"""
     return isinstance(x, six.string_types)
+
+
+def shorten(value: str, length: int):
+    """Shorten a string to a given length adding `...`"""
+    if len(value) > length - 4:
+        value = value[: length - 4] + "..."
+    return value.ljust(length)
