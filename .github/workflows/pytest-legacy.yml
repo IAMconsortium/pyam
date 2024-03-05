@@ -22,13 +22,34 @@ jobs:
       with:
         python-version: '3.10'
 
+    #----------------------------------------------
+    #  -----  install & configure poetry  -----
+    #----------------------------------------------
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+        installer-parallel: true
+    #----------------------------------------------
+    #       load cached venv if cache exists
+    #----------------------------------------------
+    - name: Load cached venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v4
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+    #----------------------------------------------
+    # install your root project, if required
+    #----------------------------------------------
+    - name: Install library
+      run: poetry install --no-interaction --with optional_io_formats,optional_plotting,tests,tutorials
+
     - name: Install specific out-dated version of dependencies
       # Update the package requirements when changing minimum dependency versions
       # Please also add a section "Dependency changes" to the release notes
-      run: pip install pandas==2.0.0 numpy==1.23.0 matplotlib==3.6.0 iam-units==2020.4.21 xlrd==2.0.1 pint==0.13
-
-    - name: Install other dependencies and package
-      run: pip install .[tests,optional_plotting,optional_io_formats,tutorials]
+      run: poetry run pip install pandas==2.0.0 numpy==1.23.0 matplotlib==3.6.0 iam-units==2020.4.21 xlrd==2.0.1 pint==0.13
 
     - name: Test with pytest
-      run: pytest tests
+      run: poetry run pytest tests
