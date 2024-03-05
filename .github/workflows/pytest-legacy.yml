@@ -47,7 +47,7 @@ jobs:
       run: |
         poetry add iam-units@2020.4.21
         poetry add matplotlib@3.6.0
-        poetry add numpy@1.23.2
+        poetry add numpy@1.26.0
         poetry add pandas@2.1.2
         poetry add pint@0.13
         poetry add xlrd@2.0.1 --group optional_io_formats
