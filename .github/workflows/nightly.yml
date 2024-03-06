@@ -64,7 +64,7 @@ jobs:
     # install your root project, if required
     #----------------------------------------------
     - name: Install library
-      run: poetry install --no-interaction --with docs,optional_io_formats,optional_plotting,tests,tutorials
+      run: poetry install --no-interaction --only-root
 
     - name: Test with pytest (including Matplotlib)
       run: poetry run pytest tests --mpl
