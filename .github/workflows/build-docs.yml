@@ -43,12 +43,12 @@ jobs:
       with:
         path: .venv
         key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-        
+
     #------------------------
     #  install root project
     #------------------------
     - name: Install library
-      run: poetry install --no-interaction --with docs,optional_plotting,tutorials
+      run: poetry install --no-interaction --extras "docs optional_plotting tutorials"
 
     - name: Build the docs
       run: poetry run make --directory=docs html

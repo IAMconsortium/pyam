@@ -51,7 +51,7 @@ jobs:
     #  update dependencies to latest versions
     #------------------------------------------
     - name: Update dependencies
-      run: poetry update --with docs,optional_io_formats,optional_plotting,tests,tutorials --lock
+      run: poetry update --lock
 
     #------------------------------------
     #  load cached venv if cache exists
@@ -68,7 +68,7 @@ jobs:
     #------------------------------------------------
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: poetry install --no-interaction --with docs,optional_io_formats,optional_plotting,tests,tutorials --no-root
+      run: poetry install --no-interaction --extras "docs optional_io_formats optional_plotting tests tutorials" --no-root
 
     #------------------------
     #  install root project

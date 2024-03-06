@@ -43,74 +43,64 @@ classifiers = [
 # Please also add a section "Dependency changes" to the release notes
 [tool.poetry.dependencies]
 python = ">=3.10, <3.13"
+autodocsumm = { version = ">=0.2.12", optional = true }
+coverage = { version = ">=6.5.0", optional = true }
+coveralls = { version = ">=3.3.1", optional = true }
+datapackage = { version = ">=1.15.2", optional = true }
 iam-units = ">=2020.4.21"
+ipykernel = { version = ">=6.29.3", optional = true }
 ixmp4 = ">=0.7.1"
+jupyter_client = { version = ">=8.6.0", optional = true }
+kaleido = { version = ">=0.2.0, <0.2.1.post", optional = true }
 matplotlib = ">=3.6.0"
+nbconvert = { version = ">= 7.3", optional = true }
+nbformat = { version = ">=5.9.2", optional = true }
+nbsphinx = { version = ">=0.9.3", optional = true }
 numpy = ">=1.26.0"
+numpydoc = { version = ">=1.6.0", optional = true }
 openpyxl = ">=3.1.2"
 pandas = ">=2.1.2"
+pandas-datareader = { version = ">=0.10.0", optional = true }
+pillow = { version = ">=10.2.0", optional = true }
 Pint = ">=0.13"
+plotly = { version = ">=5.19.0", optional = true }
+pypandoc = { version = ">=1.13", optional = true }
+pytest = { version = ">=8.0.2", optional = true }
+pytest-cov = { version = ">=4.1.0", optional = true }
+pytest-mpl = { version = ">=0.17.0", optional = true }
 PyYAML = ">=6.0.1"
+ruff = { version = ">=0.2.1", optional = true }
 scipy = ">=1.10.0"
 seaborn = ">=0.11"
 six = ">=1.16.0"
+sphinx = { version = ">=7.2.6", optional = true }
+sphinx-gallery = { version = ">=0.15.0", optional = true }
+unfccc_di_api = { version = ">=3.0.1", optional = true }
 wquantiles = ">=0.6"
+xlrd = { version = ">=2.0.1", optional = true }
 XlsxWriter = ">=3.2.0"
 
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-ruff = ">=0.2.1"
-
-[tool.poetry.group.docs]
-optional = true
-
-[tool.poetry.group.docs.dependencies]
+[tool.poetry.extras]
+dev = ["ruff"]
 # docs requires 'tutorials'
-autodocsumm = ">=0.2.12"
-kaleido = ">=0.2.0, <0.2.1.post"
-nbsphinx = ">=0.9.3"
-numpydoc = ">=1.6.0"
-pillow = ">=10.2.0"
-sphinx = ">=7.2.6"
-sphinx-gallery = ">=0.15.0"
-
-[tool.poetry.group.optional_io_formats]
-optional = true
-
-[tool.poetry.group.optional_io_formats.dependencies]
-datapackage = ">=1.15.2"
-pandas-datareader = ">=0.10.0"
-unfccc_di_api = ">=3.0.1"
-xlrd = ">=2.0.1"
-
-[tool.poetry.group.optional_plotting]
-optional = true
-
-[tool.poetry.group.optional_plotting.dependencies]
-plotly = ">=5.19.0"
-
-[tool.poetry.group.tests]
-optional = true
-
-[tool.poetry.group.tests.dependencies]
-coverage = ">=6.5.0"
-coveralls = ">=3.3.1"
-pytest = ">=8.0.2"
-pytest-cov = ">=4.1.0"
-pytest-mpl = ">=0.17.0"
-
-[tool.poetry.group.tutorials]
-optional = true
-
-[tool.poetry.group.tutorials.dependencies]
-ipykernel = ">=6.29.3"
-jupyter_client = ">=8.6.0"
-nbconvert = ">= 7.3"
-nbformat = ">=5.9.2"
-pypandoc = ">=1.13"
-
+docs = [
+    "autodocsumm",
+    "kaleido",
+    "nbsphinx",
+    "numpydoc",
+    "pillow",
+    "sphinx",
+    "sphinx-gallery",
+]
+optional_io_formats = [
+    "datapackage",
+    "pandas-datareader",
+    "unfccc_di_api",
+    "xlrd",
+]
+optional_plotting = ["plotly"]
+tests = ["coverage", "coveralls", "pytest", "pytest-cov", "pytest-mpl"]
+tutorials = ["ipykernel", "jupyter_client", "nbconvert", "nbformat", "pypandoc"]
 
 [build-system]
 build-backend = "poetry_dynamic_versioning.backend"
@@ -132,10 +122,8 @@ exclude = [
     "venv",
 ]
 extend-include = ["*.ipynb"]
-
 # Same as Black.
 line-length = 88
-
 
 [tool.ruff.lint]
 select = ["C9", "E", "F", "I", "W"]
@@ -143,7 +131,6 @@ ignore = ["B008"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-
 
 [tool.ruff.format]
 # Enable auto-formatting of code examples in docstrings. Markdown,

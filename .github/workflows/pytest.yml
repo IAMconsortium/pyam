@@ -63,7 +63,7 @@ jobs:
     #  install your project
     #------------------------
     - name: Install library
-      run: poetry install --no-interaction --with optional_io_formats,optional_plotting,tests,tutorials
+      run: poetry install --no-interaction --extras "optional_io_formats optional_plotting tests tutorials"
 
     # run tests without Matplotlib & CodeCode tests on earlier Python versions
     - name: Test with pytest
@@ -77,7 +77,7 @@ jobs:
 
     - name: Upload coverage report to Codecov
       if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         env_vars: ${{ matrix.os }} py${{ matrix.python-version }}

@@ -43,7 +43,7 @@ jobs:
         poetry add numpy@1.26.0 --lock
         poetry add pandas@2.1.2 --lock
         poetry add pint@0.13 --lock
-        poetry add xlrd@2.0.1 --group optional_io_formats --lock
+        poetry add xlrd@2.0.1 --extras optional_io_formats --optional --lock
 
     #------------------------------------
     #  load cached venv if cache exists
@@ -60,7 +60,7 @@ jobs:
     #------------------------------------------------
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: poetry install --no-interaction --with optional_io_formats,optional_plotting,tests,tutorials --no-root
+      run: poetry install --no-interaction --extras "optional_io_formats optional_plotting tests tutorials" --no-root
 
     #------------------------
     #  install root project
