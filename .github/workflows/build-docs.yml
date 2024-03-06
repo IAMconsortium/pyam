@@ -22,7 +22,7 @@ jobs:
         python-version: '3.10'
 
     - name: Install Pandoc
-      uses: r-lib/actions/setup-pandoc@v1
+      uses: r-lib/actions/setup-pandoc@v2
 
     #----------------------------------------------
     #  -----  install & configure poetry  -----
