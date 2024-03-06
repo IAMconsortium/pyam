@@ -66,7 +66,7 @@ jobs:
     #  install root project
     #------------------------
     - name: Install library
-      run: poetry install --no-interaction --only-root
+      run: poetry install --no-interaction --extras "optional_io_formats optional_plotting tests tutorials" --only-root
 
     - name: Test with pytest
       run: poetry run pytest tests
