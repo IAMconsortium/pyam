@@ -76,6 +76,7 @@ first step is removing the old poetry version:
 after that, the latest poetry version can be installed using:
 
 .. code-block:: bash
+
     curl -sSL https://install.python-poetry.org | python3 -
 
 
@@ -93,6 +94,7 @@ resolve the conflict.
 #. Instead checkout the target branch locally and merge into your branch:
 
 .. code-block:: bash
+
     git checkout main
     git pull origin main
     git checkout my-branch
@@ -104,6 +106,7 @@ resolve the conflict.
    it:
 
 .. code-block:: bash
+
     # Get poetry.lock to look like it does in master
     git checkout main poetry.lock
     # Rewrite the lock file
@@ -113,9 +116,10 @@ resolve the conflict.
    finalize the merge:
 
 .. code-block:: bash
+
     git add poetry.lock
     git commit
-
+    
     # and most likely needed
     poetry install
 
