@@ -56,7 +56,7 @@ jobs:
         key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
     #-----------------------------------------------
-    # install dependencies, if cache does not exist
+    # install dependencies if cache does not exist
     #-----------------------------------------------
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'

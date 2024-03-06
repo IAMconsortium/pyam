@@ -35,7 +35,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Pandoc
-      uses: r-lib/actions/setup-pandoc@v1
+      uses: r-lib/actions/setup-pandoc@v2
 
     #----------------------------------------------
     #  -----  install & configure poetry  -----
@@ -46,6 +46,13 @@ jobs:
         virtualenvs-create: true
         virtualenvs-in-project: true
         installer-parallel: true
+  
+    #----------------------------------------------
+    # Update dependencies to latest versions
+    #----------------------------------------------
+    - name: Update dependencies
+      run: poetry update --with docs,optional_io_formats,optional_plotting,tests,tutorials --lock
+
     #----------------------------------------------
     #       load cached venv if cache exists
     #----------------------------------------------
@@ -55,11 +62,14 @@ jobs:
       with:
         path: .venv
         key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
-    #----------------------------------------------
-    # Update dependencies to latest versions
-    #----------------------------------------------
-    - name: Update dependencies
-      run: poetry update --with docs,optional_io_formats,optional_plotting,tests,tutorials
+    
+    #-----------------------------------------------
+    # install dependencies if cache does not exist
+    #-----------------------------------------------
+    - name: Install dependencies
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction --with docs,optional_io_formats,optional_plotting,tests,tutorials --no-root
+
     #----------------------------------------------
     # install your root project, if required
     #----------------------------------------------
