@@ -37,9 +37,9 @@ jobs:
     - name: Install Pandoc
       uses: r-lib/actions/setup-pandoc@v2
 
-    #----------------------------------------------
-    #  -----  install & configure poetry  -----
-    #----------------------------------------------
+    #------------------------------
+    #  install & configure poetry  
+    #------------------------------
     - name: Install Poetry
       uses: snok/install-poetry@v1
       with:
@@ -47,15 +47,15 @@ jobs:
         virtualenvs-in-project: true
         installer-parallel: true
   
-    #----------------------------------------------
-    # Update dependencies to latest versions
-    #----------------------------------------------
+    #------------------------------------------
+    #  update dependencies to latest versions
+    #------------------------------------------
     - name: Update dependencies
       run: poetry update --with docs,optional_io_formats,optional_plotting,tests,tutorials --lock
 
-    #----------------------------------------------
-    #       load cached venv if cache exists
-    #----------------------------------------------
+    #------------------------------------
+    #  load cached venv if cache exists
+    #------------------------------------
     - name: Load cached venv
       id: cached-poetry-dependencies
       uses: actions/cache@v4
@@ -63,16 +63,16 @@ jobs:
         path: .venv
         key: venv-${{ matrix.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
     
-    #-----------------------------------------------
-    # install dependencies if cache does not exist
-    #-----------------------------------------------
+    #------------------------------------------------
+    #  install dependencies if cache does not exist
+    #------------------------------------------------
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --with docs,optional_io_formats,optional_plotting,tests,tutorials --no-root
 
-    #----------------------------------------------
-    # install your root project, if required
-    #----------------------------------------------
+    #------------------------
+    #  install root project
+    #------------------------
     - name: Install library
       run: poetry install --no-interaction --only-root
 
