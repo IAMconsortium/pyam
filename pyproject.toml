@@ -42,8 +42,6 @@ classifiers = [
 # in our minimum-reqs test in the file ./.github/workflows/pytest-dependency.yml
 # Please also add a section "Dependency changes" to the release notes
 [tool.poetry.dependencies]
-# httpx[http2] included via ixmp4    
-# requests  included via ixmp4
 python = ">=3.10, <3.13"
 iam-units = ">=2020.4.21"
 ixmp4 = ">=0.7.1"
