@@ -115,8 +115,8 @@ pypandoc = ">=1.13"
 
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+build-backend = "poetry_dynamic_versioning.backend"
+requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning"]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
