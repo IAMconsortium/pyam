@@ -56,14 +56,12 @@ Setup
 
     # Activate virtual environment
     poetry shell
-
-    # Copy the template environment configuration
-    cp template.env .env
+    
 
 Update poetry
 ^^^^^^^^^^^^^
 
-Developing ixmp4 requires poetry ``>= 1.2``.
+Developing pyam requires poetry ``>= 1.2``.
 
 If you already have a previous version of poetry installed you will need to update. The
 first step is removing the old poetry version:
@@ -119,7 +117,7 @@ resolve the conflict.
 
     git add poetry.lock
     git commit
-    
+
     # and most likely needed
     poetry install
 
