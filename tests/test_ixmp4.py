@@ -54,11 +54,18 @@ def test_ixmp4_integration(test_platform, test_df_year):
     pyam.assert_iamframe_equal(exp, obs)
 
 
-def test_ixmp4_reserved_columns(test_platform, test_df_year):
+@pytest.mark.parametrize("drop_meta", (True, False))
+def test_ixmp4_reserved_columns(test_platform, test_df_year, drop_meta):
     """Make sure that a 'version' column in `meta` is not written to the platform"""
+
+    if drop_meta:
+        test_df_year = pyam.IamDataFrame(test_df_year.data, index=test_df_year.index)
 
     # test writing to platform with a version-number as meta indicator
     test_df_year.set_meta(1, "version")  # add version number added from ixmp4
     test_df_year.to_ixmp4(platform=test_platform)
 
-    assert "version" not in test_platform.runs.get("model_a", "scen_a").meta
+    if drop_meta:
+        assert test_platform.runs.get("model_a", "scen_a").meta.empty
+    else:
+        assert "version" not in test_platform.runs.get("model_a", "scen_a").meta
