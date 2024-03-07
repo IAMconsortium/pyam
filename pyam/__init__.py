@@ -34,5 +34,5 @@ except LookupError:
         __version__ = version("pyam")
 
 
-# Set up logging overriding the ixmp4 logging configuration
+# Set up logging consistent with the ixmp4 "production" logging configuration
 logging.configure_logging()

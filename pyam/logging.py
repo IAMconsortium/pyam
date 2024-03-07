@@ -10,6 +10,7 @@ logger = getLogger(__name__)
 
 
 def configure_logging():
+    """Configure logging"""
     config.fileConfig(here / "logging.conf", disable_existing_loggers=False)
 
 
