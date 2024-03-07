@@ -8,14 +8,14 @@ from pyam import read_ixmp4
 
 def test_to_ixmp4_missing_region_raises(test_platform, test_df_year):
     """Writing to platform raises if region not defined"""
-    test_df_year.rename(region={"World": "foo"})
+    test_df_year.rename(region={"World": "foo"}, inplace=True)
     with pytest.raises(RegionModel.NotFound, match="foo. Use `Platform.regions."):
         test_df_year.to_ixmp4(platform=test_platform)
 
 
 def test_to_ixmp4_missing_unit_raises(test_platform, test_df_year):
     """Writing to platform raises if unit not defined"""
-    test_df_year.rename(region={"EJ/yr": "foo"})
+    test_df_year.rename(region={"EJ/yr": "foo"}, inplace=True)
     with pytest.raises(UnitModel.NotFound, match="foo. Use `Platform.units."):
         test_df_year.to_ixmp4(platform=test_platform)
 
@@ -55,7 +55,7 @@ def test_ixmp4_integration(test_platform, test_df_year):
 
 
 def test_ixmp4_reserved_columns(test_platform, test_df_year):
-    """Make sure that the `version` column is not written to the platform"""
+    """Make sure that a 'version' column in `meta` is not written to the platform"""
 
     # test writing to platform with a version-number as meta indicator
     test_df_year.set_meta(1, "version")  # add version number added from ixmp4

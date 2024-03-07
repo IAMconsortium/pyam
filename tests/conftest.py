@@ -265,7 +265,7 @@ def plot_stackplot_df():
     yield df
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def test_platform():
     platform = Platform(_backend=SqliteTestBackend())
     platform.regions.create(name="World", hierarchy="common")
