@@ -1,5 +1,6 @@
 # Next release
 
+- [#830](https://github.com/IAMconsortium/pyam/pull/830) Implement more consistent logging behavior with **ixmp4**
 - [#829](https://github.com/IAMconsortium/pyam/pull/829) Add a `pyam.iiasa.platforms()` function for a list of available platforms
 - [#826](https://github.com/IAMconsortium/pyam/pull/826) Add `read_ixmp4()` function and extend integration test
 - [#825](https://github.com/IAMconsortium/pyam/pull/825) Add support for Python 3.12
