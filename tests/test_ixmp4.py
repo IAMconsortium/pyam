@@ -49,6 +49,11 @@ def test_ixmp4_integration(test_df_year):
     exp.set_meta(1, "version")  # add version number added from ixmp4
     pyam.assert_iamframe_equal(exp, obs)
 
+    # make one scenario a non-default scenario, make sure that it is not included
+    platform.runs.get("model_a", "scen_b").unset_as_default()
+    obs = read_ixmp4(platform=platform)
+    pyam.assert_iamframe_equal(exp.filter(scenario="scen_a"), obs)
+
     # read all scenarios (runs) - version number used as additional index dimension
     obs = read_ixmp4(platform=platform, default_only=False)
     data = test_df_year.data
