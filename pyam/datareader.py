@@ -1,7 +1,9 @@
+import pandas as pd
+
 from pyam import IamDataFrame
 
 try:
-    import pandas_datareader.wb as wb
+    import wbdata as wb
 
     HAS_DATAREADER = True
 except ImportError:  # pragma: no cover
@@ -9,17 +11,16 @@ except ImportError:  # pragma: no cover
     HAS_DATAREADER = False
 
 
-def read_worldbank(model="World Bank", scenario="WDI", **kwargs):
+def read_worldbank(model="World Bank", scenario="WDI", **kwargs) -> IamDataFrame:
     """Read data from the World Bank Data Catalogue and return as IamDataFrame
 
-    This function is a simple wrapper for the class
-    :class:`pandas_datareader.wb.WorldBankReader` and the function
-    :func:`pandas_datareader.wb.download`. Import the module to retrieve/search
+    This function is a simple wrapper for the function
+    :func:`wbdata.get_dataframe`. Import the module to retrieve/search
     the list of indicators (and their id's), countries, etc.
 
     .. code-block:: python
 
-        from pandas_datareader import wb
+        import wbdata as wb
 
     Parameters
     ----------
@@ -28,18 +29,18 @@ def read_worldbank(model="World Bank", scenario="WDI", **kwargs):
     scenario : str, optional
         The `scenario` name to be used for the returned timeseries data.
     kwargs
-        passed to :func:`pandas_datareader.wb.download`
+        passed to :func:`wbdata.get_dataframe`
 
     Notes
     -----
-    The function :func:`pandas_datareader.wb.download` takes an `indicator`
-    argument, which can be a string or list of strings. If the `indicator`
-    passed to :func:`read_worldbank` is a dictionary of a World Bank id mapped
-    to a string, the variables in the returned IamDataFrame will be renamed.
+    The function :func:`wbdata.get_dataframe` takes an `indicators`
+    argument, which is a dictionary where the keys are desired indicators and the values
+    are the desired column names. If the `indicators` passed to :func:`read_worldbank`
+    is a single indicator code string, we should instead use :func:`wbdata.get_series`.
 
-    The function :func:`pandas_datareader.wb.download` does not return a unit,
+    The function :func:`wbdata.get_dataframe` does not return a unit,
     but it can be collected for some indicators using the function
-    :func:`pandas_datareader.wb.get_indicators`.
+    :func:`wbdata.get_indicators`.
     In the current implementation, unit is defined as `n/a` for all data;
     this can be enhanced later (if there is interest from users).
 
@@ -48,21 +49,24 @@ def read_worldbank(model="World Bank", scenario="WDI", **kwargs):
     :class:`IamDataFrame`
     """
     if not HAS_DATAREADER:  # pragma: no cover
-        raise ImportError("Required package `pandas-datareader` not found!")
+        raise ImportError("Required package `wbdata` not found!")
 
-    data = wb.download(**kwargs)
+    data: pd.DataFrame = wb.get_dataframe(**kwargs)
+    value = data.columns
+    data.reset_index(inplace=True)
+    data.rename(columns={"date": "year"}, inplace=True)
     df = IamDataFrame(
-        data.reset_index(),
+        data,
         model=model,
         scenario=scenario,
-        value=data.columns,
+        value=value,
         unit="n/a",
         region="country",
     )
     # TODO use wb.get_indicators to retrieve corrent units (where available)
 
-    # if `indicator` is a mapping, use it for renaming
-    if "indicator" in kwargs and isinstance(kwargs["indicator"], dict):
-        df.rename(variable=kwargs["indicator"], inplace=True)
+    # if `indicators` is a mapping, use it for renaming
+    if "indicators" in kwargs and isinstance(kwargs["indicators"], dict):
+        df.rename(variable=kwargs["indicators"], inplace=True)
 
     return df

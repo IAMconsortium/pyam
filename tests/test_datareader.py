@@ -2,7 +2,7 @@ import logging
 
 import pandas as pd
 import pytest
-from pandas_datareader import wb
+import wbdata as wb
 from requests.exceptions import ConnectionError, JSONDecodeError, ReadTimeout
 
 from pyam import IamDataFrame, read_worldbank
@@ -32,7 +32,13 @@ WB_DF = pd.DataFrame(
 @pytest.mark.skipif(WB_UNAVAILABLE, reason=WB_REASON)
 def test_worldbank():
     try:
-        obs = read_worldbank(model="foo", indicator={"NY.GDP.PCAP.PP.KD": "GDP"})
+        # Find the country codes via wbdata.get_countries(query="Canada") etc
+        obs = read_worldbank(
+            model="foo",
+            indicators={"NY.GDP.PCAP.PP.KD": "GDP"},
+            country=["CAN", "MEX", "USA"],
+            date=("2003", "2005"),
+        )
         exp = IamDataFrame(WB_DF)
         # test data with 5% relative tolerance to guard against minor data changes
         assert_iamframe_equal(obs, exp, rtol=5.0e-2)
