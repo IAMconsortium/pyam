@@ -59,7 +59,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
-    # TODO: implement a try-except to roll back changes if any error writing to platform
+    # TODO: implement try-except to roll back changes if any error writing to platform
     # depends on https://github.com/iiasa/ixmp4/issues/29
     # quickfix: ensure that units and regions exist before writing
     for dimension, values, model in [
@@ -74,10 +74,11 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
                 f"{dimension}."
             )
 
-    # The "version" meta-indicator should not be written to the database
+    # The "version" meta-indicator, added when reading from an ixmp4 platform,
+    # should not be written to the platform
     if "version" in df.meta.columns:
         logger.warning(
-            "The `meta.version` column will be dropped when writing to the ixmp4 database."
+            "The `meta.version` column was dropped when writing to the ixmp4 platform."
         )
         meta = df.meta.drop(columns="version")
     else:
