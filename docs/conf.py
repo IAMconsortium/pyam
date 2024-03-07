@@ -327,10 +327,10 @@ intersphinx_mapping = {
     "pint": ("https://pint.readthedocs.io/en/stable", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "plotly": ("https://plotly.com/python-api-reference/", None),
-    "pandas_datareader": ("https://pandas-datareader.readthedocs.io/en/stable", None),
     "unfccc_di_api": ("https://unfccc-di-api.readthedocs.io/en/stable", None),
     "nomenclature": ("https://nomenclature-iamc.readthedocs.io/en/stable", None),
     "ixmp4": ("https://docs.ece.iiasa.ac.at/projects/ixmp4/en/stable", None),
+    "wbdata": ("https://wbdata.readthedocs.io/en/stable/", None),
 }
 
 # Set up the plotting gallery with plotly scraper

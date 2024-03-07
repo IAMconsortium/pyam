@@ -2,8 +2,6 @@ import logging
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
-from setuptools_scm import get_version
-
 from pyam.core import (
     IamDataFrame,
     categorize,
@@ -25,13 +23,10 @@ from pyam.unfccc import read_unfccc  # noqa: F401
 from pyam.utils import IAMC_IDX  # noqa: F401
 
 try:
-    __version__ = get_version(root=Path(__file__).parents[1])
-except LookupError:
-    try:
-        __version__ = version("pyam-iamc")
-    # the pyam package is distributed under different names on pypi and conda
-    except PackageNotFoundError:
-        __version__ = version("pyam")
+    __version__ = version("pyam-iamc")
+# the pyam package is distributed under different names on pypi and conda
+except PackageNotFoundError:
+    __version__ = version("pyam")
 
 
 # Set up logging consistent with the ixmp4 "production" logging configuration

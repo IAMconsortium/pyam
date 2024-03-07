@@ -1,0 +1,156 @@
+[tool.poetry]
+name = "pyam-iamc"
+version = "0.0.0"
+description = "Analysis & visualization of integrated-assessment scenarios"
+authors = [
+    "Matthew Gidden <gidden@iiasa.ac.at>",
+    "Daniel Huppmann <huppmann@iiasa.ac.at>",
+    "Zebedee Nicholls <znicholls@unknown.com>",
+    "Nikolay Kushin <zikolach@unknown.com>",
+    "Robin Lamboll <Rlamboll@unknown.com>",
+    "Oliver Fricko <fricko@iiasa.ac.at>",
+    "Jonas Hörsch <coroa@unknown.com>",
+    "Paul Natsuo Kishimoto <kishimot@iiasa.ac.at>",
+    "Thorsten Burandt <tburandt@unknown.com>",
+    "Ross Ursino <rossursino@unknown.com>",
+    "Maik Budzinski <mabudz@unknown.com>",
+    "Jarmo Kikstra <kikstra@iiasa.ac.at>",
+    "Michael Pimmer <fonfon@unknown.com>",
+    "Patrick Jürgens <pjuergens@unknown.com>",
+    "Florian Maczek <maczek@iiasa.ac.at>",
+    "Laura Wienpahl <LauWien@unknown.com>",
+    "Philip Hackstock <hackstock@iiasa.ac.at>",
+    "Pietro Monticone <pitmonticone@unknown.com>",
+    "Edward Byers <byers@iiasa.ac.at>",
+    "Fridolin Glatter <glatter@iiasa.ac.at>",
+]
+license = "Apache-2.0"
+readme = "README.md"
+packages = [{ include = "pyam" }]
+repository = "https://github.com/IAMconsortium/pyam"
+documentation = "https://pyam-iamc.readthedocs.io"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+]
+
+# NOTE TO DEVS
+# If you change a minimum version below, please explicitly implement the change
+# in our minimum-reqs test in the file ./.github/workflows/pytest-dependency.yml
+# Please also add a section "Dependency changes" to the release notes
+[tool.poetry.dependencies]
+python = ">=3.10, <3.13"
+autodocsumm = { version = ">=0.2.12", optional = true }
+coverage = { version = ">=6.5.0", optional = true }
+coveralls = { version = ">=3.3.1", optional = true }
+datapackage = { version = ">=1.15.2", optional = true }
+iam-units = ">=2020.4.21"
+ipykernel = { version = ">=6.29.3", optional = true }
+ixmp4 = ">=0.7.1"
+jupyter_client = { version = ">=8.6.0", optional = true }
+kaleido = { version = ">=0.2.0, <0.2.1.post", optional = true }
+matplotlib = ">=3.6.0"
+nbconvert = { version = ">= 7.3", optional = true }
+nbformat = { version = ">=5.9.2", optional = true }
+nbsphinx = { version = ">=0.9.3", optional = true }
+numpy = ">=1.26.0"
+numpydoc = { version = ">=1.6.0", optional = true }
+openpyxl = ">=3.1.2"
+pandas = ">=2.1.2"
+pillow = { version = ">=10.2.0", optional = true }
+Pint = ">=0.13"
+plotly = { version = ">=5.19.0", optional = true }
+pypandoc = { version = ">=1.13", optional = true }
+pytest = { version = ">=8.0.2", optional = true }
+pytest-cov = { version = ">=4.1.0", optional = true }
+pytest-mpl = { version = ">=0.17.0", optional = true }
+PyYAML = ">=6.0.1"
+ruff = { version = ">=0.2.1", optional = true }
+scipy = ">=1.10.0"
+seaborn = ">=0.11"
+six = ">=1.16.0"
+sphinx = { version = ">=7.2.6", optional = true }
+sphinx-gallery = { version = ">=0.15.0", optional = true }
+unfccc_di_api = { version = ">=3.0.1", optional = true }
+wquantiles = ">=0.6"
+xlrd = { version = ">=2.0.1", optional = true }
+XlsxWriter = ">=3.2.0"
+wbdata = { version = ">=1.0.0", optional = true }
+
+[tool.poetry.extras]
+dev = ["ruff"]
+# docs requires 'tutorials'
+docs = [
+    "autodocsumm",
+    "kaleido",
+    "nbsphinx",
+    "numpydoc",
+    "pillow",
+    "sphinx",
+    "sphinx-gallery",
+]
+optional_io_formats = [
+    "datapackage",
+    "unfccc_di_api",
+    "wbdata",
+    "xlrd",
+]
+optional_plotting = ["plotly"]
+tests = ["coverage", "coveralls", "pytest", "pytest-cov", "pytest-mpl"]
+tutorials = ["ipykernel", "jupyter_client", "nbconvert", "nbformat", "pypandoc"]
+
+[build-system]
+build-backend = "poetry_dynamic_versioning.backend"
+requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning"]
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".git",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "site-packages",
+    "venv",
+]
+extend-include = ["*.ipynb"]
+# Same as Black.
+line-length = 88
+
+[tool.ruff.lint]
+select = ["C9", "E", "F", "I", "W"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.format]
+# Enable auto-formatting of code examples in docstrings. Markdown,
+# reStructuredText code/literal blocks and doctests are all supported.
+#
+# This is currently disabled by default, but it is planned for this
+# to be opt-out in the future.
+docstring-code-format = true
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+#
+# This only has an effect when the `docstring-code-format` setting is
+# enabled.
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.poetry-dynamic-versioning]
+enable = true
+style = "pep440"
+vcs = "git"
