@@ -43,7 +43,7 @@ jobs:
         poetry add numpy@1.26.0 --lock
         poetry add pandas@2.1.2 --lock
         poetry add pint@0.13 --lock
-        poetry add xlrd@2.0.1 --extras optional_io_formats --optional --lock
+        poetry add xlrd@2.0.1 --optional --lock
 
     #------------------------------------
     #  load cached venv if cache exists
