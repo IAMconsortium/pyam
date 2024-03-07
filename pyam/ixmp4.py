@@ -54,7 +54,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         The IamDataFrame instance with scenario data
     """
     if df.time_domain != "year":
-        raise NotImplementedError("Only time_domain='year' is supported for now")
+        raise NotImplementedError("Only time_domain='year' is supported for now.")
 
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
