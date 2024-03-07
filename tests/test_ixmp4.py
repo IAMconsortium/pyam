@@ -62,3 +62,16 @@ def test_ixmp4_integration(test_df_year):
     meta["version"] = 1
     exp = pyam.IamDataFrame(data, meta=meta, index=["model", "scenario", "version"])
     pyam.assert_iamframe_equal(exp, obs)
+
+
+def test_ixmp4_reserved_columns(test_df_year):
+    """Make sure that the `version` column is not written to the platform"""
+    platform = Platform(_backend=SqliteTestBackend())
+    platform.regions.create(name="World", hierarchy="common")
+    platform.units.create(name="EJ/yr")
+
+    # test writing to platform
+    test_df_year.set_meta(1, "version")  # add version number added from ixmp4
+    test_df_year.to_ixmp4(platform=platform)
+
+    assert "version" not in platform.runs.get("model_a", "scen_a").meta

@@ -1,7 +1,11 @@
+import logging
+
 import ixmp4
 import pandas as pd
 from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
+
+logger = logging.getLogger(__name__)
 
 
 def read_ixmp4(platform: ixmp4.Platform | str, default_only: bool = True):
@@ -70,10 +74,20 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
                 f"{dimension}."
             )
 
+    # The "version" meta-indicator should not be written to the database
+    if "version" in df.meta.columns:
+        logger.warning(
+            "The `meta.version` column will be dropped when writing to the ixmp4 database."
+        )
+        meta = df.meta.drop(columns="version")
+    else:
+        meta = df.meta.copy()
+
+    # Create runs and add IAMC timeseries data and meta indicators
     for model, scenario in df.index:
         _df = df.filter(model=model, scenario=scenario)
 
         run = platform.runs.create(model=model, scenario=scenario)
         run.iamc.add(_df.data)
-        run.meta = dict(_df.meta.iloc[0])
+        run.meta = dict(meta.loc[(model, scenario)])
         run.set_as_default()
