@@ -15,7 +15,7 @@ def test_to_ixmp4_missing_region_raises(test_platform, test_df_year):
 
 def test_to_ixmp4_missing_unit_raises(test_platform, test_df_year):
     """Writing to platform raises if unit not defined"""
-    test_df_year.rename(region={"EJ/yr": "foo"}, inplace=True)
+    test_df_year.rename(unit={"EJ/yr": "foo"}, inplace=True)
     with pytest.raises(UnitModel.NotFound, match="foo. Use `Platform.units."):
         test_df_year.to_ixmp4(platform=test_platform)
 
