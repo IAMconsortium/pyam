@@ -66,6 +66,6 @@ def test_ixmp4_reserved_columns(test_platform, test_df_year, drop_meta):
     test_df_year.to_ixmp4(platform=test_platform)
 
     if drop_meta:
-        assert test_platform.runs.get("model_a", "scen_a").meta.empty
+        assert len(test_platform.runs.get("model_a", "scen_a").meta) == 0
     else:
         assert "version" not in test_platform.runs.get("model_a", "scen_a").meta
