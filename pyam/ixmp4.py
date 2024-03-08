@@ -1,7 +1,11 @@
+import logging
+
 import ixmp4
 import pandas as pd
 from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
+
+logger = logging.getLogger(__name__)
 
 
 def read_ixmp4(platform: ixmp4.Platform | str, default_only: bool = True):
@@ -50,12 +54,12 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         The IamDataFrame instance with scenario data
     """
     if df.time_domain != "year":
-        raise NotImplementedError("Only time_domain='year' is supported for now")
+        raise NotImplementedError("Only time_domain='year' is supported for now.")
 
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
-    # TODO: implement a try-except to roll back changes if any error writing to platform
+    # TODO: implement try-except to roll back changes if any error writing to platform
     # depends on https://github.com/iiasa/ixmp4/issues/29
     # quickfix: ensure that units and regions exist before writing
     for dimension, values, model in [
@@ -70,10 +74,22 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
                 f"{dimension}."
             )
 
+    # The "version" meta-indicator, added when reading from an ixmp4 platform,
+    # should not be written to the platform
+    if "version" in df.meta.columns:
+        logger.warning(
+            "The `meta.version` column was dropped when writing to the ixmp4 platform."
+        )
+        meta = df.meta.drop(columns="version")
+    else:
+        meta = df.meta.copy()
+
+    # Create runs and add IAMC timeseries data and meta indicators
     for model, scenario in df.index:
         _df = df.filter(model=model, scenario=scenario)
 
         run = platform.runs.create(model=model, scenario=scenario)
         run.iamc.add(_df.data)
-        run.meta = dict(_df.meta.iloc[0])
+        if not meta.empty:
+            run.meta = dict(meta.loc[(model, scenario)])
         run.set_as_default()
