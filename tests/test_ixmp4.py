@@ -59,7 +59,7 @@ def test_ixmp4_reserved_columns(test_platform, test_df_year, drop_meta):
     """Make sure that a 'version' column in `meta` is not written to the platform"""
 
     if drop_meta:
-        test_df_year = pyam.IamDataFrame(test_df_year.data, index=test_df_year.index)
+        test_df_year = pyam.IamDataFrame(test_df_year.data)
 
     # test writing to platform with a version-number as meta indicator
     test_df_year.set_meta(1, "version")  # add version number added from ixmp4

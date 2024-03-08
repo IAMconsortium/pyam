@@ -90,5 +90,6 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
 
         run = platform.runs.create(model=model, scenario=scenario)
         run.iamc.add(_df.data)
-        run.meta = dict(meta.loc[(model, scenario)])
+        if not meta.empty:
+            run.meta = dict(meta.loc[(model, scenario)])
         run.set_as_default()
