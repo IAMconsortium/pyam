@@ -2,14 +2,6 @@ import pandas as pd
 
 from pyam import IamDataFrame
 
-try:
-    import wbdata as wb
-
-    HAS_DATAREADER = True
-except ImportError:  # pragma: no cover
-    wb = None
-    HAS_DATAREADER = False
-
 
 def read_worldbank(model="World Bank", scenario="WDI", **kwargs) -> IamDataFrame:
     """Read data from the World Bank Data Catalogue and return as IamDataFrame
@@ -48,10 +40,12 @@ def read_worldbank(model="World Bank", scenario="WDI", **kwargs) -> IamDataFrame
     -------
     :class:`IamDataFrame`
     """
-    if not HAS_DATAREADER:  # pragma: no cover
-        raise ImportError("Required package `wbdata` not found!")
+    # import packages for functions with low-frequency usage only when needed
+    # also, there seems to be an issue with wbdata on Mac OS
+    # see https://github.com/OliverSherouse/wbdata/issues/74
+    import wbdata  # noqa: F401
 
-    data: pd.DataFrame = wb.get_dataframe(**kwargs)
+    data: pd.DataFrame = wbdata.get_dataframe(**kwargs)
     value = data.columns
     data.reset_index(inplace=True)
     data.rename(columns={"date": "year"}, inplace=True)
@@ -63,7 +57,7 @@ def read_worldbank(model="World Bank", scenario="WDI", **kwargs) -> IamDataFrame
         unit="n/a",
         region="country",
     )
-    # TODO use wb.get_indicators to retrieve corrent units (where available)
+    # TODO use wb.get_indicators to retrieve correct units (where available)
 
     # if `indicators` is a mapping, use it for renaming
     if "indicators" in kwargs and isinstance(kwargs["indicators"], dict):

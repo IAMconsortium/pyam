@@ -2,8 +2,7 @@ import logging
 
 import pandas as pd
 import pytest
-import wbdata as wb
-from requests.exceptions import ConnectionError, JSONDecodeError, ReadTimeout
+from requests.exceptions import ReadTimeout
 
 from pyam import IamDataFrame, read_worldbank
 from pyam.testing import assert_iamframe_equal
@@ -12,9 +11,9 @@ from pyam.utils import IAMC_IDX
 logger = logging.getLogger(__name__)
 
 try:
-    wb.get_indicators()
+    import wbdata  # noqa: F401
     WB_UNAVAILABLE = False
-except (ReadTimeout, ConnectionError, JSONDecodeError):
+except ImportError:
     WB_UNAVAILABLE = True
 
 WB_REASON = "World Bank API unavailable"
@@ -43,4 +42,4 @@ def test_worldbank():
         # test data with 5% relative tolerance to guard against minor data changes
         assert_iamframe_equal(obs, exp, rtol=5.0e-2)
     except ReadTimeout:
-        logger.error("Timeout when reading from WorldBank API!")
+        logger.error("Timeout when reading from WorldBank API.")
