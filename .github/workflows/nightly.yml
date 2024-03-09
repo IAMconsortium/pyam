@@ -51,7 +51,7 @@ jobs:
     #  update dependencies to latest versions
     #------------------------------------------
     - name: Update dependencies
-      run: poetry update --lock
+      run: poetry update dev,docs,optional_io_formats,optional_plotting,tutorials,wbdata --lock
 
     #------------------------------------
     #  load cached venv if cache exists
@@ -68,13 +68,13 @@ jobs:
     #------------------------------------------------
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: poetry install --no-interaction --extras "docs optional_io_formats optional_plotting tests tutorials" --no-root
+      run: poetry install --no-interaction --with dev,docs,optional_io_formats,optional_plotting,tutorials,wbdata --no-root
 
     #------------------------
     #  install root project
     #------------------------
     - name: Install library
-      run: poetry install --no-interaction --extras "optional_io_formats optional_plotting tests tutorials" --only-root
+      run: poetry install --no-interaction --with dev,optional_io_formats,optional_plotting,tutorials,wbdata --only-root
 
     - name: Test with pytest (including Matplotlib)
       run: poetry run pytest tests --mpl

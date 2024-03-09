@@ -51,12 +51,12 @@ Setup
     poetry self add "poetry-dynamic-versioning[plugin]"
 
     # Install dependencies
-    # (using "--with docs" if docs dependencies should be installed as well)
-    poetry install --with docs,server,dev
+    # (using "--with dev,..." if dependencies should be installed as well)
+    poetry install --with dev,docs,optional_io_formats,optional_plotting,tutorials,wbdata,unfccc
 
     # Activate virtual environment
     poetry shell
-    
+
 
 Update poetry
 ^^^^^^^^^^^^^
