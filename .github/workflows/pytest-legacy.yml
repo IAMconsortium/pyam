@@ -60,13 +60,13 @@ jobs:
     #------------------------------------------------
     - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: poetry install --no-interaction --extras "optional_io_formats optional_plotting tests tutorials" --no-root
+      run: poetry install --no-interaction --with dev,optional_io_formats,optional_plotting,tutorials --no-root
 
     #------------------------
     #  install root project
     #------------------------
     - name: Install library
-      run: poetry install --no-interaction --extras "optional_io_formats optional_plotting tests tutorials" --only-root
+      run: poetry install --no-interaction --only-root
 
     - name: Test with pytest
       run: poetry run pytest tests
