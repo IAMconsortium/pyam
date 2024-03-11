@@ -11,15 +11,15 @@ from pyam.core import (
     require_variable,
     validate,
 )
-from pyam.iiasa import lazy_read_iiasa, read_iiasa  # noqa: F401  # noqa: F401
-from pyam.ixmp4 import read_ixmp4  # noqa: F401
-from pyam.logging import configure_logging  # noqa: F401
-from pyam.run_control import run_control  # noqa: F401
-from pyam.statistics import Statistics  # noqa: F401
-from pyam.testing import assert_iamframe_equal  # noqa: F401
-from pyam.unfccc import read_unfccc  # noqa: F401
-from pyam.utils import IAMC_IDX  # noqa: F401
-from pyam.worldbank import read_worldbank  # noqa: F401
+from pyam.iiasa import lazy_read_iiasa, read_iiasa
+from pyam.ixmp4 import read_ixmp4
+from pyam.logging import configure_logging
+from pyam.run_control import run_control
+from pyam.statistics import Statistics
+from pyam.testing import assert_iamframe_equal
+from pyam.unfccc import read_unfccc
+from pyam.utils import IAMC_IDX
+from pyam.worldbank import read_worldbank
 
 try:
     __version__ = version("pyam-iamc")
