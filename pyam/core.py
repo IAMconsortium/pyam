@@ -6,11 +6,11 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import ixmp4
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
-import ixmp4
 from pyam.filter import filter_by_dt_arg, filter_by_time_domain, filter_by_year
 from pyam.ixmp4 import write_to_ixmp4
 from pyam.slice import IamSlice
@@ -66,7 +66,7 @@ from pyam.utils import (
     to_list,
     write_sheet,
 )
-from pyam.validation import _apply_criteria, _exclude_on_fail, _validate
+from pyam.validation import _exclude_on_fail, _validate
 
 logger = logging.getLogger(__name__)
 
