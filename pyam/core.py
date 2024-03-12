@@ -11,7 +11,6 @@ import pandas as pd
 from pandas.api.types import is_integer
 
 import ixmp4
-
 from pyam.filter import filter_by_dt_arg, filter_by_time_domain, filter_by_year
 from pyam.ixmp4 import write_to_ixmp4
 from pyam.slice import IamSlice
@@ -34,9 +33,7 @@ from pyam.aggregation import (
     _group_and_agg,
 )
 from pyam.compute import IamComputeAccessor
-
 from pyam.filter import datetime_match
-
 from pyam.index import (
     append_index_col,
     get_index_levels,
