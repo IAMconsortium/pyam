@@ -11,6 +11,7 @@ import pandas as pd
 from pandas.api.types import is_integer
 
 import ixmp4
+
 from pyam.filter import filter_by_dt_arg, filter_by_time_domain, filter_by_year
 from pyam.ixmp4 import write_to_ixmp4
 from pyam.slice import IamSlice
@@ -33,7 +34,9 @@ from pyam.aggregation import (
     _group_and_agg,
 )
 from pyam.compute import IamComputeAccessor
+
 from pyam.filter import datetime_match
+
 from pyam.index import (
     append_index_col,
     get_index_levels,
@@ -136,7 +139,7 @@ class IamDataFrame(object):
         else:
             self._init(data, meta, index=index, **kwargs)
 
-    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):
+    def _init(self, data, meta=None, index=DEFAULT_META_INDEX, **kwargs):  # noqa: C901
         """Process data and set attributes for new instance"""
 
         # pop kwarg for meta_sheet_name (prior to reading data from file)
@@ -813,7 +816,7 @@ class IamDataFrame(object):
 
         return s.unstack(level=self.time_col).rename_axis(None, axis=1)
 
-    def set_meta(self, meta, name=None, index=None):
+    def set_meta(self, meta, name=None, index=None):  # noqa: C901
         """Add meta indicators as pandas.Series, list or value (int/float/str)
 
         Parameters
@@ -1097,7 +1100,7 @@ class IamDataFrame(object):
             **kwargs,
         )
 
-    def rename(
+    def rename(  # noqa: C901
         self, mapping=None, inplace=False, append=False, check_duplicates=True, **kwargs
     ):
         """Rename any index dimension or data coordinate.
@@ -1217,7 +1220,7 @@ class IamDataFrame(object):
     def convert_unit(
         self, current, to, factor=None, registry=None, context=None, inplace=False
     ):
-        """Convert all timeseries data having *current* units to new units.
+        r"""Convert all timeseries data having *current* units to new units.
 
         If *factor* is given, existing values are multiplied by it, and the
         *to* units are assigned to the 'unit' column.
@@ -1896,7 +1899,7 @@ class IamDataFrame(object):
         if not inplace:
             return ret
 
-    def _apply_filters(self, level=None, **filters):
+    def _apply_filters(self, level=None, **filters):  # noqa: C901
         """Determine rows to keep in data for given set of filters
 
         Parameters
@@ -2709,7 +2712,7 @@ def compare(
     return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
 
 
-def concat(objs, ignore_meta_conflict=False, **kwargs):
+def concat(objs, ignore_meta_conflict=False, **kwargs):  # noqa: C901
     """Concatenate a series of IamDataFrame-like objects
 
     Parameters

@@ -1,14 +1,15 @@
-import pytest
-import pandas as pd
-import numpy as np
-from pandas import testing as pdt
-from pandas import Timestamp
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
+import pytest
+from pandas import Timestamp
+from pandas import testing as pdt
 
 from pyam.utils import (
     META_IDX,
-    pattern_match,
     merge_meta,
+    pattern_match,
     to_time,
 )
 

@@ -1,13 +1,6 @@
 import re
+
 import numpy as np
-
-try:
-    import unfccc_di_api
-
-    HAS_UNFCCC = True
-except ImportError:  # pragma: no cover
-    unfccc_di_api = None
-    HAS_UNFCCC = False
 
 from pyam import IamDataFrame
 from pyam.str import is_str
@@ -58,8 +51,7 @@ def read_unfccc(
         .. code-block:: python
 
           {
-            "Emissions|{gas}|Energy":
-              ("1.  Energy", "*", "*", "*"),
+              "Emissions|{gas}|Energy": ("1.  Energy", "*", "*", "*"),
           }
 
         where the tuple corresponds to filters for the columns
@@ -80,8 +72,9 @@ def read_unfccc(
     which sometimes causes a `JsonDecodeError`.
     See https://github.com/pik-primap/unfccc_di_api/issues/74 for more info.
     """
-    if not HAS_UNFCCC:  # pragma: no cover
-        raise ImportError("Required package `unfccc-di-api` not found.")
+
+    # import packages for functions with low-frequency usage only when needed
+    import unfccc_di_api
 
     # check that only one of `tier` or `mapping` is provided
     if (tier is None and mapping is None) or (tier is not None and mapping is not None):

@@ -1,11 +1,17 @@
+import warnings
 from contextlib import contextmanager
-from logging import *
+from logging import config, getLogger
+from pathlib import Path
 
 import pandas as pd
-import warnings
 
-
+here = Path(__file__).parent
 logger = getLogger(__name__)
+
+
+def configure_logging():
+    """Configure logging"""
+    config.fileConfig(here / "logging.conf", disable_existing_loggers=False)
 
 
 @contextmanager

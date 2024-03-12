@@ -1,10 +1,12 @@
 import itertools
 import math
-import wquantiles
+
 import pandas as pd
+import wquantiles
+
+from pyam._debiasing import _compute_bias
 from pyam.index import replace_index_values
 from pyam.timeseries import growth_rate
-from pyam._debiasing import _compute_bias
 from pyam.utils import remove_from_list
 
 
@@ -34,7 +36,7 @@ class IamComputeAccessor:
 
         .. code-block:: python
 
-            df.filter(variable='Emissions|CO2').compute.quantiles([0.25, 0.5, 0.75])
+            df.filter(variable="Emissions|CO2").compute.quantiles([0.25, 0.5, 0.75])
 
         Parameters
         ----------
@@ -60,7 +62,7 @@ class IamComputeAccessor:
         from pyam.core import (
             IamDataFrame,
             concat,
-        )  # here because of circular import issue
+        )
 
         self_df = self._df
         if len(self_df.variable) > 1:

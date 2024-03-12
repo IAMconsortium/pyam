@@ -1,4 +1,5 @@
 import pandas as pd
+
 from pyam.utils import print_list
 
 

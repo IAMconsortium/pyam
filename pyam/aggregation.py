@@ -1,14 +1,14 @@
-import pandas as pd
-import numpy as np
 import logging
 from itertools import compress
 
+import numpy as np
+import pandas as pd
+
+from pyam._compare import _compare
 from pyam.index import replace_index_values
 from pyam.logging import adjust_log_level, format_log_message
 from pyam.str import find_depth, is_str, reduce_hierarchy
 from pyam.utils import KNOWN_FUNCS, is_list_like, to_list
-from pyam._compare import _compare
-
 
 logger = logging.getLogger(__name__)
 

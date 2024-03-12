@@ -20,7 +20,9 @@ Stacked bar charts
 # Make sure to place the data file in the same folder as this script/notebook.
 
 import matplotlib.pyplot as plt
+
 import pyam
+from pyam.plotting import add_net_values_to_bar_plot
 
 df = pyam.IamDataFrame("tutorial_data.csv")
 df
@@ -77,8 +79,6 @@ plt.show()
 #
 # Sometimes, stacked bar charts have negative entries.
 # In that case, it helps to add a line showing the net value.
-
-from pyam.plotting import add_net_values_to_bar_plot
 
 fig, ax = plt.subplots()
 data.plot.bar(

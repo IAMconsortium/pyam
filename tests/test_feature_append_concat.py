@@ -1,16 +1,16 @@
-import pytest
+from datetime import datetime
+
 import numpy as np
-from numpy import testing as npt
 import pandas as pd
 import pandas.testing as pdt
-from datetime import datetime
+import pytest
+from numpy import testing as npt
 
 from pyam import IamDataFrame, concat
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import IAMC_IDX, META_IDX
 
-from .conftest import TEST_DF, META_COLS, META_DF
-
+from .conftest import META_COLS, META_DF, TEST_DF
 
 # assert that merging of meta works as expected
 EXP_META = pd.DataFrame(

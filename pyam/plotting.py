@@ -1,33 +1,31 @@
 import itertools
 import logging
-
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import numpy as np
-import pandas as pd
-import seaborn as sns
-
 from collections import defaultdict
 from collections.abc import Iterable
 
-from pyam.run_control import run_control
-from pyam.figures import sankey
-from pyam.timeseries import cross_threshold
-from pyam.str import is_str
-from pyam.utils import (
-    META_IDX,
-    IAMC_IDX,
-    SORT_IDX,
-    YEAR_IDX,
-    to_list,
-)
-from pyam.logging import raise_data_error
-from pyam.index import get_index_levels
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 # TODO: this is a hotfix for changes in pandas 0.25.0, per discussions on the
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
 from pyam._style import _get_standard_colors
+from pyam.figures import sankey
+from pyam.index import get_index_levels
+from pyam.logging import raise_data_error
+from pyam.run_control import run_control
+from pyam.str import is_str
+from pyam.timeseries import cross_threshold
+from pyam.utils import (
+    IAMC_IDX,
+    META_IDX,
+    SORT_IDX,
+    YEAR_IDX,
+    to_list,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +76,8 @@ PYAM_COLORS = {
     "AR5-RCP-6.0": "#FF822D",
     "AR5-RCP-8.5": "#FF0000",
     # AR6 WG III scenario categorization (C)
-    "AR6-C1": "#97CEE4",  # C1: scenarios that limit warming to 1.5°C (>50%) with no or limited overshoot
-    "AR6-C2": "#778663",  # C2: scenarios that return warming to 1.5°C (>50%) after a high overshoot
+    "AR6-C1": "#97CEE4",  # C1: scenarios that limit warming to 1.5°C (>50%) with no or limited overshoot  # noqa: E501
+    "AR6-C2": "#778663",  # C2: scenarios that return warming to 1.5°C (>50%) after a high overshoot # noqa: E501
     "AR6-C3": "#6F7899",  # C3: scenarios that limit warming to 2°C (>67%)
     "AR6-C4": "#A7C682",  # C4: scenarios that limit warming to 2°C (>50%)
     "AR6-C5": "#8CA7D0",  # C5: scenarios that limit warming to 2.5°C (>50%)
@@ -91,7 +89,7 @@ PYAM_COLORS = {
     "AR6-IMP-Ren": "#2B7C8B",  # Ren: emphasis on renewables resources
     "AR6-IMP-SP": "#004D52",  # SP: emphasis on sustainable development
     "AR6-IMP-Neg": "#84A12B",  # Neg: emphasis on deployment of carbon dioxide removal
-    "AR6-IMP-GS": "#6E7895",  # GS: less rapid near-term mitigation followed by a gradual strengthening
+    "AR6-IMP-GS": "#6E7895",  # GS: less rapid near-term mitigation followed by a gradual strengthening # noqa: E501
     # AR6 Illustrative Pathway (IP)
     "AR6-IP-ModAct": "#F29424",  # pathway with moderate climate action
     "AR6-IP-CurPol": "#E31F2B",  # pathway modelling current policies
@@ -379,7 +377,7 @@ def pie(
     return ax
 
 
-def stack(
+def stack(  # noqa: C901
     df,
     x=None,
     y="value",
@@ -392,7 +390,7 @@ def stack(
     cmap=None,
     **kwargs,
 ):
-    """Plot a stacked area chart of timeseries data
+    r"""Plot a stacked area chart of timeseries data
 
     Parameters
     ----------
@@ -484,8 +482,8 @@ def stack(
         colors[key] = c
 
     # determine positive and negative parts of the timeseries data
-    _df_pos = _df.applymap(lambda x: max(x, 0))
-    _df_neg = _df.applymap(lambda x: min(x, 0))
+    _df_pos = _df.map(lambda x: max(x, 0))
+    _df_neg = _df.map(lambda x: min(x, 0))
 
     lower = [0] * len(_df_pos)
     for col in reversed(_df_pos.columns):
@@ -549,7 +547,7 @@ def stack(
     return ax
 
 
-def bar(
+def bar(  # noqa: C901
     df,
     x=None,
     y="value",
@@ -563,7 +561,7 @@ def bar(
     cmap=None,
     **kwargs,
 ):
-    """Plot data as a stacked or grouped bar chart
+    r"""Plot data as a stacked or grouped bar chart
 
     Parameters
     ----------
@@ -773,7 +771,7 @@ def add_net_values_to_bar_plot(axs, color="k"):
             ax.add_patch(rect)
 
 
-def scatter(
+def scatter(  # noqa: C901
     df,
     x,
     y,
@@ -926,7 +924,7 @@ def scatter(
     return ax
 
 
-def line(
+def line(  # noqa: C901
     df,
     x=None,
     y="value",
@@ -943,7 +941,7 @@ def line(
     cmap=None,
     **kwargs,
 ):
-    """Plot data as lines with or without markers.
+    r"""Plot data as lines with or without markers.
 
     Parameters
     ----------

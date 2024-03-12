@@ -4,15 +4,17 @@ import matplotlib
 matplotlib.use("agg")
 
 from datetime import datetime
-from httpx import ConnectError
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
-from pathlib import Path
+from httpx import ConnectError
+from ixmp4.core import Platform
+from ixmp4.data.backend import SqliteTestBackend
 
 from pyam import IamDataFrame, iiasa
-from pyam.utils import META_IDX, IAMC_IDX
-
+from pyam.utils import IAMC_IDX, META_IDX
 
 # verify whether IIASA database API can be reached, skip tests otherwise
 try:
@@ -261,6 +263,14 @@ def recursive_df(request):
 def plot_stackplot_df():
     df = IamDataFrame(TEST_STACKPLOT_DF)
     yield df
+
+
+@pytest.fixture(scope="function")
+def test_platform():
+    platform = Platform(_backend=SqliteTestBackend())
+    platform.regions.create(name="World", hierarchy="common")
+    platform.units.create(name="EJ/yr")
+    yield platform
 
 
 @pytest.fixture(scope="session")

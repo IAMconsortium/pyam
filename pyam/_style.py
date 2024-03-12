@@ -10,13 +10,11 @@ import warnings
 import matplotlib.cm as cm
 import matplotlib.colors
 import numpy as np
-
+import pandas.core.common as com
 from pandas.core.dtypes.common import is_list_like
 
-import pandas.core.common as com
 
-
-def _get_standard_colors(
+def _get_standard_colors(  # noqa: C901
     num_colors=None, colormap=None, color_type="default", color=None
 ):
     import matplotlib.pyplot as plt

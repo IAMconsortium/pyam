@@ -5,7 +5,7 @@ Release v\ |version|.
 
 |license| |pypi| |conda| |latest|
 
-|black| |python| |pytest| |rtd| |codecov|
+|ruff| |python| |pytest| |rtd| |codecov|
 
 |doi| |ore| |joss| |groupsio| |slack|
 
@@ -21,10 +21,10 @@ Release v\ |version|.
 .. |latest| image:: https://img.shields.io/github/release-date/iamconsortium/pyam?logo=github&label=last%20release
    :target: https://github.com/IAMconsortium/pyam/releases
 
-.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/psf/black
+.. |ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json
+   :target: https://github.com/astral-sh/ruff
 
-.. |python| image:: https://img.shields.io/badge/python-≥3.10,<3.12-blue?logo=python&logoColor=white
+.. |python| image:: https://img.shields.io/badge/python-≥3.10,<3.13-blue?logo=python&logoColor=white
    :target: https://github.com/IAMconsortium/pyam
 
 .. |pytest| image:: https://img.shields.io/github/actions/workflow/status/iamconsortium/pyam/pytest.yml?logo=GitHub&label=pytest

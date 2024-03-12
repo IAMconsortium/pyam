@@ -12,9 +12,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 from datetime import datetime
-import pyam
 
 from plotly.io._sg_scraper import plotly_sg_scraper
+
+import pyam
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -326,9 +327,10 @@ intersphinx_mapping = {
     "pint": ("https://pint.readthedocs.io/en/stable", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "plotly": ("https://plotly.com/python-api-reference/", None),
-    "pandas_datareader": ("https://pandas-datareader.readthedocs.io/en/stable", None),
     "unfccc_di_api": ("https://unfccc-di-api.readthedocs.io/en/stable", None),
     "nomenclature": ("https://nomenclature-iamc.readthedocs.io/en/stable", None),
+    "ixmp4": ("https://docs.ece.iiasa.ac.at/projects/ixmp4/en/stable", None),
+    "wbdata": ("https://wbdata.readthedocs.io/en/stable/", None),
 }
 
 # Set up the plotting gallery with plotly scraper
@@ -362,7 +364,7 @@ rst_prolog = """
 
    <a href="https://docs.ece.iiasa.ac.at/ixmp4/">
    <code class="xref py py-class docutils literal notranslate"><span class="pre">
-   ixmp4</span></code></a> 
+   ixmp4</span></code></a>
 
 .. |br| raw:: html
 
@@ -372,4 +374,4 @@ rst_prolog = """
 
    <a href="https://github.com/frictionlessdata/datapackage-py#package">read the docs</a>
 
-"""
+"""  # noqa: E501

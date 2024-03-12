@@ -1,9 +1,11 @@
 import operator
+
 import pandas as pd
-from pyam.index import append_index_level, get_index_levels, replace_index_values
-from pyam.utils import to_list
 from iam_units import registry
 from pint import Quantity
+
+from pyam.index import append_index_level, get_index_levels, replace_index_values
+from pyam.utils import to_list
 
 
 # these functions have to be defined explicitly to allow calling them with keyword args
@@ -44,7 +46,7 @@ KNOWN_OPS = {
 }
 
 
-def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, **kwds):
+def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, **kwds):  # noqa: C901
     """Internal implementation of numerical operations on timeseries"""
 
     if axis not in df.dimensions:

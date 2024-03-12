@@ -1,33 +1,31 @@
-from io import StringIO
-from pathlib import Path
 import json
 import logging
 import os.path
-import requests
+from functools import lru_cache
+from io import StringIO
+from pathlib import Path
 
 import httpx
+import ixmp4
 import jwt
-from requests.auth import AuthBase
-
-import yaml
-from functools import lru_cache
-
 import numpy as np
 import pandas as pd
-
-from pyam.core import IamDataFrame
-from pyam.str import is_str
-from pyam.utils import (
-    META_IDX,
-    IAMC_IDX,
-    pattern_match,
-    is_list_like,
-)
-from pyam.logging import deprecation_warning
-import ixmp4
+import requests
+import yaml
+from ixmp4.cli import utils
 from ixmp4.conf import settings
 from ixmp4.conf.auth import ManagerAuth
+from requests.auth import AuthBase
 
+from pyam.core import IamDataFrame
+from pyam.logging import deprecation_warning
+from pyam.str import is_str, shorten
+from pyam.utils import (
+    IAMC_IDX,
+    META_IDX,
+    is_list_like,
+    pattern_match,
+)
 
 logger = logging.getLogger(__name__)
 # set requests-logger to WARNING only
@@ -45,6 +43,28 @@ IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 
 # path to local configuration settings
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
+
+
+def platforms() -> None:
+    """Print a list of available ixmp4 platforms hosted by IIASA
+
+    See Also
+    --------
+    ixmp4.conf.settings.manager.list_platforms
+    """
+
+    _platforms = ixmp4.conf.settings.manager.list_platforms()
+    utils.echo("IIASA platform".ljust(20) + "Access".ljust(10) + "Notice\n")
+
+    for p in _platforms:
+        utils.important(shorten(p.name, 20), nl=False)
+        utils.echo(str(p.accessibility.value.lower()).ljust(10), nl=False)
+
+        if p.notice is not None:
+            utils.echo(shorten(p.notice, 55), nl=False)
+        utils.echo()
+
+    utils.info("\n" + str(len(_platforms)) + " total \n")
 
 
 def set_config(user, password, file=None):
@@ -81,8 +101,8 @@ class SceSeAuth(AuthBase):
         if creds is None:
             if DEFAULT_IIASA_CREDS.exists():
                 deprecation_warning(
-                    f"{IXMP4_LOGIN} and manually delete the file '{DEFAULT_IIASA_CREDS}'.",
-                    "Using a pyam-credentials file",
+                    f"{IXMP4_LOGIN} and manually delete the file "
+                    f"'{DEFAULT_IIASA_CREDS}'. Using a pyam-credentials file",
                 )
                 self.auth = _read_config(DEFAULT_IIASA_CREDS)
             else:
@@ -202,6 +222,10 @@ class Connection(object):
     @lru_cache()
     def valid_connections(self):
         """Return available resources (database API connections)"""
+        logger.warning(
+            "IIASA is migrating to a database infrastructure using the ixmp4 package."
+            "Use `pyam.iiasa.platforms()` to list available ixmp4 databases."
+        )
         return list(self._connection_map.keys())
 
     def connect(self, name):
@@ -406,7 +430,7 @@ class Connection(object):
             return df.rename(columns={"name": "region", "synonyms": "synonym"})
         return pd.Series(df["name"].unique(), name="region")
 
-    def _query_post(self, meta, default_only=True, **kwargs):
+    def _query_post(self, meta, default_only=True, **kwargs):  # noqa: C901
         def _get_kwarg(k):
             # TODO refactor API to return all models if model-list is empty
             x = kwargs.pop(k, "*" if k == "model" else [])
@@ -496,8 +520,11 @@ class Connection(object):
 
         .. code-block:: python
 
-            Connection.query(model='MESSAGE*', scenario='SSP2*',
-                             variable=['Emissions|CO2', 'Primary Energy'])
+            Connection.query(
+                model="MESSAGE*",
+                scenario="SSP2*",
+                variable=["Emissions|CO2", "Primary Energy"],
+            )
 
         """
         if "default" in kwargs:

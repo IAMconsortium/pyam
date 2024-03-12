@@ -20,6 +20,7 @@ Stacked line charts
 # Make sure to place the data file in the same folder as this script/notebook.
 
 import matplotlib.pyplot as plt
+
 import pyam
 
 df = pyam.IamDataFrame("tutorial_data.csv")

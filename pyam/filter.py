@@ -1,11 +1,11 @@
 import datetime
 import time
+
 import numpy as np
 import pandas as pd
 
-from pyam.utils import to_list
 from pyam.index import get_keep_col
-
+from pyam.utils import to_list
 
 FILTER_DATETIME_ATTRS = {
     "month": (["%b", "%B"], "tm_mon", "months"),

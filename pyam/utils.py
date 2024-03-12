@@ -1,16 +1,17 @@
-from pathlib import Path
 import itertools
 import logging
-import string
 import re
+import string
+from pathlib import Path
+
 import dateutil
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_list_like, is_float
+from pandas.api.types import is_list_like
 
 from pyam.index import get_index_levels, replace_index_labels
+from pyam.logging import raise_data_error
 from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
-from pyam.logging import raise_data_error, deprecation_warning
 
 logger = logging.getLogger(__name__)
 
@@ -86,8 +87,9 @@ def write_sheet(writer, name, df, index=False):
         if df.dtypes[col].name.startswith(("float", "int")):
             width = len(str(col)) + 2
         else:
-            width = (
-                max([df[col].map(lambda x: len(str(x or "None"))).max(), len(col)]) + 2
+            width = min(
+                max([df[col].map(lambda x: len(str(x or "None"))).max(), len(col)]) + 2,
+                100,  # make sure that column width is not too large
             )
         writer.sheets[name].set_column(i, i, width)  # assumes xlsxwriter as engine
 
@@ -98,9 +100,7 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
     if isinstance(path, Path) and path.suffix == ".csv":
         return pd.read_csv(path, *args, **kwargs)
 
-    else:
-        xl = path if isinstance(path, pd.ExcelFile) else pd.ExcelFile(path)
-
+    with pd.ExcelFile(path) as xl:
         # reading multiple sheets
         sheet_names = pd.Series(xl.sheet_names)
         if len(sheet_names) > 1:
@@ -116,18 +116,18 @@ def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
         else:
             df = pd.read_excel(xl, *args, **kwargs)
 
-        # remove unnamed and empty columns, and rows were all values are nan
-        def is_empty(name, s):
-            if str(name).startswith("Unnamed: "):
-                try:
-                    if len(s) == 0 or all(np.isnan(s)):
-                        return True
-                except TypeError:
-                    pass
-            return False
+    # remove unnamed and empty columns, and rows were all values are nan
+    def is_empty(name, s):
+        if str(name).startswith("Unnamed: "):
+            try:
+                if len(s) == 0 or all(np.isnan(s)):
+                    return True
+            except TypeError:
+                pass
+        return False
 
-        empty_cols = [c for c in df.columns if is_empty(c, df[c])]
-        return df.drop(columns=empty_cols).dropna(axis=0, how="all")
+    empty_cols = [c for c in df.columns if is_empty(c, df[c])]
+    return df.drop(columns=empty_cols).dropna(axis=0, how="all")
 
 
 def read_file(path, *args, **kwargs):
@@ -150,10 +150,10 @@ def _convert_r_columns(df):
                 try:
                     #  bingo! was X2015 R-style, return the integer
                     return int(second)
-                except:
+                except ValueError:
                     # nope, not an int, fall down to final return statement
                     pass
-        except:
+        except (TypeError, IndexError):
             # not a string/iterable/etc, fall down to final return statement
             pass
         return c
@@ -216,7 +216,7 @@ def _format_from_legacy_database(df):
     return df
 
 
-def _intuit_column_groups(df, index, include_index=False):
+def _intuit_column_groups(df, index, include_index=False):  # noqa: C901
     """Check and categorise columns in dataframe"""
 
     if include_index:
@@ -326,7 +326,7 @@ def _format_data_to_series(df, index):
     return df, time_col, extra_cols
 
 
-def format_data(df, index, **kwargs):
+def format_data(df, index, **kwargs):  # noqa: C901
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
 
     # Fast-pass if `df` has the index and required columns as a pd.MultiIndex

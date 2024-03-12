@@ -1,19 +1,18 @@
-import pytest
-import os
 import copy
 import logging
+import os
+from contextlib import contextmanager
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-from contextlib import contextmanager
+import pytest
 
 import pyam
 from pyam import plotting
-from pyam.run_control import run_control, reset_rc_defaults
-from .conftest import IMAGE_BASELINE_DIR
+from pyam.run_control import reset_rc_defaults, run_control
 
+from .conftest import IMAGE_BASELINE_DIR
 
 logger = logging.getLogger(__name__)
 

@@ -1,14 +1,15 @@
 import math
+
 import pandas as pd
 import pandas.testing as pdt
-from pyam import IamDataFrame
-from pyam.utils import IAMC_IDX
-from pyam.testing import assert_iamframe_equal
-from pyam.timeseries import growth_rate
 import pytest
 
-from .conftest import META_DF
+from pyam import IamDataFrame
+from pyam.testing import assert_iamframe_equal
+from pyam.timeseries import growth_rate
+from pyam.utils import IAMC_IDX
 
+from .conftest import META_DF
 
 EXP_DF = IamDataFrame(
     pd.DataFrame(

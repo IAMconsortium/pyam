@@ -25,13 +25,106 @@ For contributions to the code base, please use GitHub *Pull Requests*,
 including a detailed description of the new feature and unit tests
 to illustrate the intended functionality.
 Code submitted via pull requests must adhere to the `pep8`_ style formats
-and the documentation should follow  the `numpydoc docstring guide`_.
+and the documentation should follow  the `numpydoc docstring guide`_. We are 
+using `ruff`_ to check the code style.
 
 We do not require users to sign a *Contributor License Agreement*, because we
 believe that when posting ideas or submitting code to an open-source project,
 it should be obvious and self-evident that any such contributions
 are made in the spirit of open collaborative development.
 
+Setup
+-----
+
+.. code-block:: bash
+
+    # Install Poetry, minimum version >=1.2 required
+    curl -sSL https://install.python-poetry.org | python -
+
+    # You may have to reinitialize your shell at this point.
+    source ~/.bashrc
+
+    # Activate in-project virtualenvs
+    poetry config virtualenvs.in-project true
+
+    # Add dynamic versioning plugin
+    poetry self add "poetry-dynamic-versioning[plugin]"
+
+    # Install dependencies
+    # (using "--with dev,..." if dependencies should be installed as well)
+    poetry install --with dev,docs,optional_io_formats,optional_plotting,tutorials,wbdata,unfccc
+
+    # Activate virtual environment
+    poetry shell
+
+
+Update poetry
+^^^^^^^^^^^^^
+
+Developing pyam requires poetry ``>= 1.2``.
+
+If you already have a previous version of poetry installed you will need to update. The
+first step is removing the old poetry version:
+
+.. code-block:: bash
+
+    curl -sSL https://install.python-poetry.org | python3 - --uninstall
+
+
+after that, the latest poetry version can be installed using:
+
+.. code-block:: bash
+
+    curl -sSL https://install.python-poetry.org | python3 -
+
+
+details can be found here in the poetry docs:
+https://python-poetry.org/docs/#installation.
+
+Resolve conflicts in poetry.lock
+--------------------------------
+
+When updating dependencies it can happen that a conflict between the current and the
+target poetry.lock file occurs. In this case the following steps should be taken to
+resolve the conflict.
+
+#. Do not attempt to manually resolve in the GitHub web interface.
+#. Instead checkout the target branch locally and merge into your branch:
+
+.. code-block:: bash
+
+    git checkout main
+    git pull origin main
+    git checkout my-branch
+    git merge main
+
+
+#. After the last step you'll have a merge conflict in poetry.lock.
+#. Instead of resolving the conflict, directly checkout the one from main and rewrite
+   it:
+
+.. code-block:: bash
+
+    # Get poetry.lock to look like it does in master
+    git checkout main poetry.lock
+    # Rewrite the lock file
+    poetry lock --no-update
+
+#. After that simply add poetry.lock to mark the conflict as resolved and commit to
+   finalize the merge:
+
+.. code-block:: bash
+
+    git add poetry.lock
+    git commit
+
+    # and most likely needed
+    poetry install
+
+(Taken from https://www.peterbe.com/plog/how-to-resolve-a-git-conflict-in-poetry.lock)
+
 .. _`pep8`: https://www.python.org/dev/peps/pep-0008/
 
 .. _`numpydoc docstring guide`: https://numpydoc.readthedocs.io/en/latest/format.html
+
+.. _`ruff`: https://docs.astral.sh/ruff/

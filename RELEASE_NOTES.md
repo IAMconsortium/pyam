@@ -1,5 +1,20 @@
 # Next release
 
+## Dependency changes
+
+Bumped minimum version of pandas and numpy to fit **ixmp4**'s requirement.
+
+## Individual updates
+
+- [#832](https://github.com/IAMconsortium/pyam/pull/832) Improve the test-suite for the ixmp4 integration
+- [#827](https://github.com/IAMconsortium/pyam/pull/827) Migrate to poetry for project management
+- [#830](https://github.com/IAMconsortium/pyam/pull/830) Implement more consistent logging behavior with **ixmp4**
+- [#829](https://github.com/IAMconsortium/pyam/pull/829) Add a `pyam.iiasa.platforms()` function for a list of available platforms
+- [#826](https://github.com/IAMconsortium/pyam/pull/826) Add `read_ixmp4()` function and extend integration test
+- [#825](https://github.com/IAMconsortium/pyam/pull/825) Add support for Python 3.12
+- [#824](https://github.com/IAMconsortium/pyam/pull/824) Update ixmp4 requirement to >=0.7.1
+- [#821](https://github.com/IAMconsortium/pyam/pull/821) Introduce ruff
+- [#818](https://github.com/IAMconsortium/pyam/pull/818) Use context manager for reading Excel file
 - [#813](https://github.com/IAMconsortium/pyam/pull/813) Fix a corner case in region-aggregation with missing data
 - [#797](https://github.com/IAMconsortium/pyam/pull/797) Add `to_ixmp4()` method to write to an **ixmp4** platform
 
@@ -23,13 +38,13 @@
 
 ## Highlights
 
-- Use **ixmp4** as dependency for better integration with the IIASA Scenario Explorer database infrastructure 
+- Use **ixmp4** as dependency for better integration with the IIASA Scenario Explorer database infrastructure
 - Refactor the "exclude"-column for validation as own attribute (instead of a column in `meta`)
 - Implement a cleaner package structure and reduce exposure of internal methods/modules
 
 ## Dependency changes
 
-Support for Python 3.7-3.9 was removed due to an incompatible dependency.  
+Support for Python 3.7-3.9 was removed due to an incompatible dependency.
 
 PR [#766](https://github.com/IAMconsortium/pyam/pull/766) added the **ixmp4** package
 for better integration with the IIASA scenario database infrastructure.
@@ -73,7 +88,7 @@ method. This feature is now implemented via the **nomenclature.RegionProcessor**
 
 - Ensure compatibility with **pandas v2.0**
 - Add **Python 3.11** to supported versions
-- Fix an issue when concatenating a list of **pd.DataFrame** objects 
+- Fix an issue when concatenating a list of **pd.DataFrame** objects
 
 ## Individual updates
 
@@ -110,7 +125,7 @@ IIASA-Connection methods was renamed to `default_only`.
 
 - Add a feature to compute (weighted) quantiles for scenario data
 - Implement a `require_data()` method for scenario validation
-- Remove 'xls' as by-default-supported file format to harmonize behavior with **pandas** 
+- Remove 'xls' as by-default-supported file format to harmonize behavior with **pandas**
 
 ## API changes
 
@@ -135,7 +150,7 @@ Bump minimum version of **pandas** to v1.2.0 to support automatic engine selecti
 
 - Improved performance for writing data to *xlsx*
 - Support for filtering by model-scenario pairs with an `index` argument
-- Better integration with the IIASA Scenario Explorer database API 
+- Better integration with the IIASA Scenario Explorer database API
 
 ## Dependency changes
 
@@ -151,7 +166,7 @@ dependency for better performance.
 - [#696](https://github.com/IAMconsortium/pyam/pull/696) Added ability to load preferentially from a local cache
 - [#695](https://github.com/IAMconsortium/pyam/pull/695) Remove unused meta levels during initialization
 - [#688](https://github.com/IAMconsortium/pyam/pull/688) Remove ixmp as optional dependency
-- [#684](https://github.com/IAMconsortium/pyam/pull/684) Use new IIASA-manager API with token refresh 
+- [#684](https://github.com/IAMconsortium/pyam/pull/684) Use new IIASA-manager API with token refresh
 - [#679](https://github.com/IAMconsortium/pyam/pull/679) `set_meta()` now supports pandas.DataFrame as an argument
 - [#674](https://github.com/IAMconsortium/pyam/pull/674) Support filtering data by model-scenario pairs with the `index` argument to `filter()` and `slice()`
 
@@ -174,7 +189,7 @@ class that allows faster filtering and inspection of an **IamDataFrame**.
 ## Highlights
 
 - Add colors used for IPCC AR6 WGIII scenario analysis
-- Support scenario data with mixed 'year' and 'datetime' domain (beta) 
+- Support scenario data with mixed 'year' and 'datetime' domain (beta)
 - Add explicit support for Python 3.10
 
 ## Dependency changes
@@ -197,7 +212,7 @@ an empty **IamDataFrame**. Previously, this raised an error.
 - [#651](https://github.com/IAMconsortium/pyam/pull/651) Pin `pint<=0.18` as a quickfix for a regression in the latest release
 - [#650](https://github.com/IAMconsortium/pyam/pull/650) Add IPCC AR6 WGIII colors to PYAM_COLORS
 - [#647](https://github.com/IAMconsortium/pyam/pull/647) Pin `unfccc-di-api` to latest release
-- [#634](https://github.com/IAMconsortium/pyam/pull/634) Better error message when initializing with invisible columns 
+- [#634](https://github.com/IAMconsortium/pyam/pull/634) Better error message when initializing with invisible columns
 - [#598](https://github.com/IAMconsortium/pyam/pull/598) Support mixed 'year' and 'datetime' domain
 
 # Release v1.3.1
@@ -217,7 +232,7 @@ pandas [v1.4.0](https://pandas.pydata.org/docs/whatsnew/v1.4.0.html).
 
 - [#608](https://github.com/IAMconsortium/pyam/pull/608) The method `assert_iamframe_equals()` passes if an all-nan-col is present
 - [#604](https://github.com/IAMconsortium/pyam/pull/604) Add an annualized-growth-rate method
-- [#602](https://github.com/IAMconsortium/pyam/pull/602) Add a `compute` module/accessor and a learning-rate method 
+- [#602](https://github.com/IAMconsortium/pyam/pull/602) Add a `compute` module/accessor and a learning-rate method
 - [#600](https://github.com/IAMconsortium/pyam/pull/600) Add a `diff()` method
 - [#592](https://github.com/IAMconsortium/pyam/pull/592) Fix for running in jupyter-lab notebooks
 - [#590](https://github.com/IAMconsortium/pyam/pull/590) Update expected figures of plotting tests to use matplotlib 3.5
@@ -239,7 +254,7 @@ was added as a dependency.
 
 ## Individual updates
 
-- [#585](https://github.com/IAMconsortium/pyam/pull/585) Include revisions to the ORE manuscript source code following acceptance/publication 
+- [#585](https://github.com/IAMconsortium/pyam/pull/585) Include revisions to the ORE manuscript source code following acceptance/publication
 - [#583](https://github.com/IAMconsortium/pyam/pull/583) Add profiler module for performance benchmarking
 - [#579](https://github.com/IAMconsortium/pyam/pull/579) Increase performance of IamDataFrame initialization
 - [#572](https://github.com/IAMconsortium/pyam/pull/572) Unpinned the requirements for xlrd and added openpyxl as a requirement to ensure ongoing support of both `.xlsx` and `.xls` files out of the box
@@ -255,13 +270,13 @@ was added as a dependency.
 ## API changes
 
 PR [#559](https://github.com/IAMconsortium/pyam/pull/559) marked
-the attribute `_LONG_IDX` as deprecated. Please use `dimensions` instead. 
+the attribute `_LONG_IDX` as deprecated. Please use `dimensions` instead.
 
 ## Individual updates
 
 - [#566](https://github.com/IAMconsortium/pyam/pull/566) Updated AR6 default color pallet to final version used by WG1
-- [#564](https://github.com/IAMconsortium/pyam/pull/564) Add an example with a secondary axis to the plotting gallery 
-- [#563](https://github.com/IAMconsortium/pyam/pull/563) Enable `colors` keyword argument as list in `plot.pie()` 
+- [#564](https://github.com/IAMconsortium/pyam/pull/564) Add an example with a secondary axis to the plotting gallery
+- [#563](https://github.com/IAMconsortium/pyam/pull/563) Enable `colors` keyword argument as list in `plot.pie()`
 - [#562](https://github.com/IAMconsortium/pyam/pull/562) Add `get_data_column()`, refactor filtering by the time domain
 - [#560](https://github.com/IAMconsortium/pyam/pull/560) Add a feature to `swap_year_for_time()`
 - [#559](https://github.com/IAMconsortium/pyam/pull/559) Add attribute `dimensions`, fix compatibility with pandas v1.3
