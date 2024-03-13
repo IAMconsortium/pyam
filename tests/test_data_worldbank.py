@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import wbdata  # noqa: F401
+
     WB_UNAVAILABLE = False
 except ImportError:
     WB_UNAVAILABLE = True

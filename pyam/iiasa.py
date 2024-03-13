@@ -36,9 +36,7 @@ _CITE_MSG = """
 You are connected to the {} scenario explorer hosted by IIASA.
  If you use this data in any published format, please cite the
  data as provided in the explorer guidelines: {}
-""".replace(
-    "\n", ""
-)
+""".replace("\n", "")
 IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 
 # path to local configuration settings
