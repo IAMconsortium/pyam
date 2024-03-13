@@ -52,19 +52,7 @@ def platforms() -> None:
     --------
     ixmp4.conf.settings.manager.list_platforms
     """
-
-    _platforms = ixmp4.conf.settings.manager.list_platforms()
-    utils.echo("IIASA platform".ljust(20) + "Access".ljust(10) + "Notice\n")
-
-    for p in _platforms:
-        utils.important(shorten(p.name, 20), nl=False)
-        utils.echo(str(p.accessibility.value.lower()).ljust(10), nl=False)
-
-        if p.notice is not None:
-            utils.echo(shorten(p.notice, 55), nl=False)
-        utils.echo()
-
-    utils.info("\n" + str(len(_platforms)) + " total \n")
+    tabulate_manager_platforms(ixmp4.conf.settings.manager.list_platforms())
 
 
 def set_config(user, password, file=None):
