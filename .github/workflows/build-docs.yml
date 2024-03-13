@@ -13,42 +13,42 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python
-      id: setup-python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install Pandoc
-      uses: r-lib/actions/setup-pandoc@v2
+      - name: Install Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
 
-    #------------------------------
-    #  install & configure poetry  
-    #------------------------------
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-      with:
-        virtualenvs-create: true
-        virtualenvs-in-project: true
-        installer-parallel: true
+      #------------------------------
+      #  install & configure poetry
+      #------------------------------
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
 
-    #------------------------------------
-    #  load cached venv if cache exists
-    #------------------------------------
-    - name: Load cached venv
-      id: cached-poetry-dependencies
-      uses: actions/cache@v4
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      #------------------------------------
+      #  load cached venv if cache exists
+      #------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    #------------------------
-    #  install root project
-    #------------------------
-    - name: Install library
-      run: poetry install --no-interaction --with docs,optional_plotting,tutorials
+      #------------------------
+      #  install root project
+      #------------------------
+      - name: Install library
+        run: poetry install --no-interaction --with docs,optional_plotting,tutorials
 
-    - name: Build the docs
-      run: poetry run make --directory=docs html
+      - name: Build the docs
+        run: poetry run make --directory=docs html
