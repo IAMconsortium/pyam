@@ -676,7 +676,9 @@ click = ">=8.1"
 cloudpickle = ">=1.5.0"
 fsspec = ">=2021.09.0"
 importlib-metadata = ">=4.13.0"
+numpy = {version = ">=1.21", optional = true, markers = "extra == \"array\""}
 packaging = ">=20.0"
+pandas = {version = ">=1.3", optional = true, markers = "extra == \"dataframe\""}
 partd = ">=1.2.0"
 pyyaml = ">=5.3.1"
 toolz = ">=0.10.0"
@@ -1412,18 +1414,18 @@ six = "*"
 
 [[package]]
 name = "ixmp4"
-version = "0.7.2"
+version = "0.7.3"
 description = "a data warehouse for scenario analysis"
 optional = false
 python-versions = ">=3.10,<3.13"
 files = [
-    {file = "ixmp4-0.7.2-py3-none-any.whl", hash = "sha256:878dddd2d4238fae45dff213666b26b68852be612897a963bcd0ac408ee1b1e5"},
-    {file = "ixmp4-0.7.2.tar.gz", hash = "sha256:ba9d6d958b86b024121c9ab3cd554065e58ac0483bbee8b49a6e1def09cb7ead"},
+    {file = "ixmp4-0.7.3-py3-none-any.whl", hash = "sha256:4ef3123c7dd689faa8a68df61a02a3c95ca4af5cecc18a1b5bc996dfc9ad3653"},
+    {file = "ixmp4-0.7.3.tar.gz", hash = "sha256:f5569cbecc139eca6a456f4cfb70faab6f71653cdd3d18d080d82f09b6778abd"},
 ]
 
 [package.dependencies]
 alembic = ">=1.13.1,<2.0.0"
-dask = ">=2024.1.1,<2025.0.0"
+dask = {version = ">=2024.1.1,<2025.0.0", extras = ["dataframe"]}
 fastapi = ">=0.109.0,<0.110.0"
 httpx = {version = ">=0.26.0,<0.27.0", extras = ["http2"]}
 openpyxl = ">=3.0.9,<4.0.0"
@@ -4516,4 +4518,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10, <3.13"
-content-hash = "740b9cdc8172161a60749b2498a48bb10e489763efb46b7a3ca7e2310dd8310b"
+content-hash = "052ef0a9fc5e9ac1dfd92402e17637d155c00cf635810355628ae51a68cd434d"
