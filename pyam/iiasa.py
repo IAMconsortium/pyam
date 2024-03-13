@@ -12,14 +12,14 @@ import numpy as np
 import pandas as pd
 import requests
 import yaml
-from ixmp4.cli import utils
+from ixmp4.cli.platforms import tabulate_manager_platforms
 from ixmp4.conf import settings
 from ixmp4.conf.auth import ManagerAuth
 from requests.auth import AuthBase
 
 from pyam.core import IamDataFrame
 from pyam.logging import deprecation_warning
-from pyam.str import is_str, shorten
+from pyam.str import is_str
 from pyam.utils import (
     IAMC_IDX,
     META_IDX,

@@ -144,10 +144,3 @@ def escape_regexp(s):
 def is_str(x):
     """Returns True if x is a string"""
     return isinstance(x, six.string_types)
-
-
-def shorten(value: str, length: int):
-    """Shorten a string to a given length adding `...`"""
-    if len(value) > length - 4:
-        value = value[: length - 4] + "..."
-    return value.ljust(length)
