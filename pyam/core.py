@@ -33,9 +33,7 @@ from pyam.aggregation import (
     _group_and_agg,
 )
 from pyam.compute import IamComputeAccessor
-from pyam.filter import (
-    datetime_match,
-)
+from pyam.filter import datetime_match
 from pyam.index import (
     append_index_col,
     get_index_levels,
@@ -68,7 +66,7 @@ from pyam.utils import (
     to_list,
     write_sheet,
 )
-from pyam.validation import _apply_criteria, _exclude_on_fail, _validate
+from pyam.validation import _exclude_on_fail, _validate
 
 logger = logging.getLogger(__name__)
 
@@ -919,7 +917,15 @@ class IamDataFrame(object):
         self.set_meta(meta, name)
 
     def categorize(
-        self, name, value, criteria, color=None, marker=None, linestyle=None
+        self,
+        name,
+        value,
+        criteria: dict = None,
+        *,
+        color=None,
+        marker=None,
+        linestyle=None,
+        **kwargs,
     ):
         """Assign scenarios to a category according to specific criteria
 
@@ -940,6 +946,7 @@ class IamDataFrame(object):
             assign a linestyle to this category for plotting
         """
         # add plotting run control
+
         for kind, arg in [
             ("color", color),
             ("marker", marker),
@@ -947,11 +954,17 @@ class IamDataFrame(object):
         ]:
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
-        # find all data that matches categorization
-        rows = _apply_criteria(self._data, criteria, in_range=True, return_test="all")
-        idx = make_index(rows, cols=self.index.names)
 
-        if len(idx) == 0:
+        # find all data that matches categorization
+        # TODO: if validate returned an empty index, this check would be easier
+        not_valid = self.validate(criteria=criteria, **kwargs)
+        if not_valid is None:
+            idx = self.index
+        elif len(not_valid) < len(self.index):
+            idx = self.index.difference(
+                not_valid.set_index(["model", "scenario"]).index.unique()
+            )
+        else:
             logger.info("No scenarios satisfy the criteria")
             return
 

@@ -6,6 +6,9 @@ Bumped minimum version of pandas and numpy to fit **ixmp4**'s requirement.
 
 ## Individual updates
 
+- [#819](https://github.com/IAMconsortium/pyam/pull/819) Speed up `categorize()`
+  in line with `validate()` improvements in
+  [#804](https://github.com/IAMconsortium/pyam/pull/804)
 - [#832](https://github.com/IAMconsortium/pyam/pull/832) Improve the test-suite for the ixmp4 integration
 - [#827](https://github.com/IAMconsortium/pyam/pull/827) Migrate to poetry for project management
 - [#830](https://github.com/IAMconsortium/pyam/pull/830) Implement more consistent logging behavior with **ixmp4**
