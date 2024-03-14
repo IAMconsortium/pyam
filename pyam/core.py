@@ -925,28 +925,38 @@ class IamDataFrame(object):
         value,
         criteria: dict = None,
         *,
+        upper_bound: float = None,
+        lower_bound: float = None,
         color=None,
         marker=None,
         linestyle=None,
         **kwargs,
     ):
-        """Assign scenarios to a category according to specific criteria
+        """Assign meta indicator to all scenarios that meet given validation criteria
 
         Parameters
         ----------
         name : str
-            column name of the 'meta' table
+            Name of the meta indicator
         value : str
-            category identifier
-        criteria : dict
-            dictionary with variables mapped to applicable checks
-            ('up' and 'lo' for respective bounds, 'year' for years - optional)
+            Value of the meta indicator
+        criteria : dict, optional, deprecated
+           This option is deprecated; dictionary with variable keys and validation
+           mappings ('up' and 'lo' for respective bounds, 'year' for years).
+        upper_bound, lower_bound : float, optional
+            Upper and lower bounds for validation criteria of timeseries :attr:`data`.
         color : str, optional
-            assign a color to this category for plotting
+            Assign a color to this category for plotting
         marker : str, optional
-            assign a marker to this category for plotting
+            Assign a marker to this category for plotting
         linestyle : str, optional
-            assign a linestyle to this category for plotting
+            Assign a linestyle to this category for plotting
+        **kwargs
+            Passed to :meth:`slice` to downselect datapoints for validation.
+
+        See Also
+        --------
+        validate
         """
         # add plotting run control
 
@@ -958,9 +968,14 @@ class IamDataFrame(object):
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
 
-        # find all data that matches categorization
+        # find all data that satisfies the validation criteria
         # TODO: if validate returned an empty index, this check would be easier
-        not_valid = self.validate(criteria=criteria, **kwargs)
+        not_valid = self.validate(
+            criteria=criteria,
+            upper_bound=upper_bound,
+            lower_bound=lower_bound,
+            **kwargs,
+        )
         if not_valid is None:
             idx = self.index
         elif len(not_valid) < len(self.index):
@@ -1090,6 +1105,10 @@ class IamDataFrame(object):
         -------
         :class:`pandas.DataFrame` or None
             All data points that do not satisfy the criteria.
+
+        See Also
+        --------
+        categorize
         """
         return _validate(
             self,
