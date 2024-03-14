@@ -20,7 +20,7 @@ def _validate(df, criteria, upper_bound, lower_bound, exclude_on_fail, **kwargs)
             raise NotImplementedError(
                 "Using `criteria` and other arguments simultaneously is not supported."
             )
-        # translate legcy `criteria` argument to explicit kwargs
+        # translate legacy `criteria` argument to explicit kwargs
         if len(criteria) == 1:
             key, value = list(criteria.items())[0]
             kwargs = dict(variable=key)
