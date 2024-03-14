@@ -34,6 +34,9 @@ jobs:
           virtualenvs-in-project: true
           installer-parallel: true
 
+      - name: Install poetry dynamic versioning plugin
+        run: poetry self add "poetry-dynamic-versioning[plugin]"
+
       #------------------------------------
       #  load cached venv if cache exists
       #------------------------------------
@@ -44,9 +47,9 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-      #------------------------
-      #  install root project
-      #------------------------
+      #-------------------------------------------
+      #  install root project and build the docs
+      #-------------------------------------------
       - name: Install library
         run: poetry install --no-interaction --with docs,optional_plotting,tutorials
 
