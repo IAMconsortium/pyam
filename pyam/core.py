@@ -2589,15 +2589,9 @@ def require_variable(*args, **kwargs):
 def categorize(
     df, name, value, criteria, color=None, marker=None, linestyle=None, **kwargs
 ):
-    """Assign scenarios to a category according to specific criteria.
-
-    Parameters
-    ----------
-    df : IamDataFrame
-    args : passed to :meth:`IamDataFrame.categorize`
-    kwargs : used for downselecting IamDataFrame
-        passed to :meth:`IamDataFrame.filter`
-    """
+    """This method is deprecated, use `df.validate()` instead."""
+    # TODO: method is deprecated, remove for release >= 3.0
+    deprecation_warning("Use `IamDataFrame.categorize()` instead.")
     fdf = df.filter(**kwargs)
     fdf.categorize(
         name=name,
