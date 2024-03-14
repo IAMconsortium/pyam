@@ -11,10 +11,6 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
-from pyam.filter import filter_by_dt_arg, filter_by_time_domain, filter_by_year
-from pyam.ixmp4 import write_to_ixmp4
-from pyam.slice import IamSlice
-
 try:
     from datapackage import Package
 
@@ -33,7 +29,12 @@ from pyam.aggregation import (
     _group_and_agg,
 )
 from pyam.compute import IamComputeAccessor
-from pyam.filter import datetime_match
+from pyam.filter import (
+    datetime_match,
+    filter_by_dt_arg,
+    filter_by_time_domain,
+    filter_by_year,
+)
 from pyam.index import (
     append_index_col,
     get_index_levels,
@@ -42,9 +43,11 @@ from pyam.index import (
     replace_index_values,
     verify_index_integrity,
 )
+from pyam.ixmp4 import write_to_ixmp4
 from pyam.logging import deprecation_warning, format_log_message, raise_data_error
 from pyam.plotting import PlotAccessor
 from pyam.run_control import run_control
+from pyam.slice import IamSlice
 from pyam.str import find_depth, is_str
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam.units import convert_unit
