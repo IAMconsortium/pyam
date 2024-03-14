@@ -13,7 +13,8 @@
 # serve to show the default.
 from datetime import datetime
 
-# from plotly.io._sg_scraper import plotly_sg_scraper
+from plotly.io._sg_scraper import plotly_sg_scraper
+
 import pyam
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -335,7 +336,7 @@ intersphinx_mapping = {
 # Set up the plotting gallery with plotly scraper
 image_scrapers = (
     "matplotlib",
-    #    plotly_sg_scraper,
+    plotly_sg_scraper,
 )
 
 sphinx_gallery_conf = {
