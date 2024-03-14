@@ -183,7 +183,7 @@ def test_validate_both(test_df, args):
         dict(criteria={"Primary Energy": {"up": 6, "year": 2005}}),
     ),
 )
-def test_validate_year_2010(test_df, args):
+def test_validate_year_2005(test_df, args):
     # checking that the year filter works as expected
     obs = test_df.validate(**args)
     assert obs is None
@@ -197,7 +197,7 @@ def test_validate_year_2010(test_df, args):
         dict(criteria={"Primary Energy": {"up": 6, "year": 2010}}),
     ),
 )
-def test_validate_year_201ß(test_df, args):
+def test_validate_year_2010(test_df, args):
     # checking that the return-type is correct
     obs = test_df.validate(**args)
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
