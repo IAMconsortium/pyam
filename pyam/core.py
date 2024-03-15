@@ -11,10 +11,6 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
-from pyam.filter import filter_by_dt_arg, filter_by_time_domain, filter_by_year
-from pyam.ixmp4 import write_to_ixmp4
-from pyam.slice import IamSlice
-
 try:
     from datapackage import Package
 
@@ -35,6 +31,9 @@ from pyam.aggregation import (
 from pyam.compute import IamComputeAccessor
 from pyam.filter import (
     datetime_match,
+    filter_by_dt_arg,
+    filter_by_time_domain,
+    filter_by_year,
 )
 from pyam.index import (
     append_index_col,
@@ -44,9 +43,11 @@ from pyam.index import (
     replace_index_values,
     verify_index_integrity,
 )
+from pyam.ixmp4 import write_to_ixmp4
 from pyam.logging import deprecation_warning, format_log_message, raise_data_error
 from pyam.plotting import PlotAccessor
 from pyam.run_control import run_control
+from pyam.slice import IamSlice
 from pyam.str import find_depth, is_str
 from pyam.time import swap_time_for_year, swap_year_for_time
 from pyam.units import convert_unit
@@ -68,7 +69,7 @@ from pyam.utils import (
     to_list,
     write_sheet,
 )
-from pyam.validation import _apply_criteria, _exclude_on_fail, _validate
+from pyam.validation import _exclude_on_fail, _validate
 
 logger = logging.getLogger(__name__)
 
@@ -919,27 +920,46 @@ class IamDataFrame(object):
         self.set_meta(meta, name)
 
     def categorize(
-        self, name, value, criteria, color=None, marker=None, linestyle=None
+        self,
+        name,
+        value,
+        criteria: dict = None,
+        *,
+        upper_bound: float = None,
+        lower_bound: float = None,
+        color=None,
+        marker=None,
+        linestyle=None,
+        **kwargs,
     ):
-        """Assign scenarios to a category according to specific criteria
+        """Assign meta indicator to all scenarios that meet given validation criteria
 
         Parameters
         ----------
         name : str
-            column name of the 'meta' table
+            Name of the meta indicator
         value : str
-            category identifier
-        criteria : dict
-            dictionary with variables mapped to applicable checks
-            ('up' and 'lo' for respective bounds, 'year' for years - optional)
+            Value of the meta indicator
+        criteria : dict, optional, deprecated
+           This option is deprecated; dictionary with variable keys and validation
+           mappings ('up' and 'lo' for respective bounds, 'year' for years).
+        upper_bound, lower_bound : float, optional
+            Upper and lower bounds for validation criteria of timeseries :attr:`data`.
         color : str, optional
-            assign a color to this category for plotting
+            Assign a color to this category for plotting
         marker : str, optional
-            assign a marker to this category for plotting
+            Assign a marker to this category for plotting
         linestyle : str, optional
-            assign a linestyle to this category for plotting
+            Assign a linestyle to this category for plotting
+        **kwargs
+            Passed to :meth:`slice` to downselect datapoints for validation.
+
+        See Also
+        --------
+        validate
         """
         # add plotting run control
+
         for kind, arg in [
             ("color", color),
             ("marker", marker),
@@ -947,11 +967,22 @@ class IamDataFrame(object):
         ]:
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
-        # find all data that matches categorization
-        rows = _apply_criteria(self._data, criteria, in_range=True, return_test="all")
-        idx = make_index(rows, cols=self.index.names)
 
-        if len(idx) == 0:
+        # find all data that satisfies the validation criteria
+        # TODO: if validate returned an empty index, this check would be easier
+        not_valid = self.validate(
+            criteria=criteria,
+            upper_bound=upper_bound,
+            lower_bound=lower_bound,
+            **kwargs,
+        )
+        if not_valid is None:
+            idx = self.index
+        elif len(not_valid) < len(self.index):
+            idx = self.index.difference(
+                not_valid.set_index(["model", "scenario"]).index.unique()
+            )
+        else:
             logger.info("No scenarios satisfy the criteria")
             return
 
@@ -1074,6 +1105,10 @@ class IamDataFrame(object):
         -------
         :class:`pandas.DataFrame` or None
             All data points that do not satisfy the criteria.
+
+        See Also
+        --------
+        categorize
         """
         return _validate(
             self,
@@ -2573,15 +2608,9 @@ def require_variable(*args, **kwargs):
 def categorize(
     df, name, value, criteria, color=None, marker=None, linestyle=None, **kwargs
 ):
-    """Assign scenarios to a category according to specific criteria.
-
-    Parameters
-    ----------
-    df : IamDataFrame
-    args : passed to :meth:`IamDataFrame.categorize`
-    kwargs : used for downselecting IamDataFrame
-        passed to :meth:`IamDataFrame.filter`
-    """
+    """This method is deprecated, use `df.validate()` instead."""
+    # TODO: method is deprecated, remove for release >= 3.0
+    deprecation_warning("Use `IamDataFrame.categorize()` instead.")
     fdf = df.filter(**kwargs)
     fdf.categorize(
         name=name,

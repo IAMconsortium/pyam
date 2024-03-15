@@ -6,10 +6,12 @@ Bumped minimum version of pandas and numpy to fit **ixmp4**'s requirement.
 
 ## Individual updates
 
+- [#837](https://github.com/IAMconsortium/pyam/pull/837) Support filters as direct keyword arguments for `categorize()`
+  similar to `validate()` signature (see [#804](https://github.com/IAMconsortium/pyam/pull/804))
 - [#832](https://github.com/IAMconsortium/pyam/pull/832) Improve the test-suite for the ixmp4 integration
 - [#827](https://github.com/IAMconsortium/pyam/pull/827) Migrate to poetry for project management
 - [#830](https://github.com/IAMconsortium/pyam/pull/830) Implement more consistent logging behavior with **ixmp4**
-- [#829](https://github.com/IAMconsortium/pyam/pull/829) Add a `pyam.iiasa.platforms()` function for a list of available platforms
+- [#829](https://github.com/IAMconsortium/pyam/pull/829) Add `pyam.iiasa.platforms()` for a list of available platforms
 - [#826](https://github.com/IAMconsortium/pyam/pull/826) Add `read_ixmp4()` function and extend integration test
 - [#825](https://github.com/IAMconsortium/pyam/pull/825) Add support for Python 3.12
 - [#824](https://github.com/IAMconsortium/pyam/pull/824) Update ixmp4 requirement to >=0.7.1
@@ -28,9 +30,9 @@ Bumped minimum version of pandas and numpy to fit **ixmp4**'s requirement.
 
 ## Individual updates
 
-- [#804](https://github.com/IAMconsortium/pyam/pull/804) Support filters as direct keyword arguments for `validate()` method
+- [#804](https://github.com/IAMconsortium/pyam/pull/804) Support filters as direct keyword arguments for `validate()`
 - [#801](https://github.com/IAMconsortium/pyam/pull/801) Support initializing with `meta` dataframe in long format
-- [#796](https://github.com/IAMconsortium/pyam/pull/796) Raise explicit error message if no connection to IIASA manager service
+- [#796](https://github.com/IAMconsortium/pyam/pull/796) Raise explicit error if no connection to IIASA manager service
 - [#794](https://github.com/IAMconsortium/pyam/pull/794) Fix wrong color codes for AR6 Illustrative Pathways
 - [#792](https://github.com/IAMconsortium/pyam/pull/792) Support region-aggregation with weights-index >> data-index
 

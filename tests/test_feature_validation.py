@@ -183,7 +183,7 @@ def test_validate_both(test_df, args):
         dict(criteria={"Primary Energy": {"up": 6, "year": 2005}}),
     ),
 )
-def test_validate_year_2010(test_df, args):
+def test_validate_year_2005(test_df, args):
     # checking that the year filter works as expected
     obs = test_df.validate(**args)
     assert obs is None
@@ -197,7 +197,7 @@ def test_validate_year_2010(test_df, args):
         dict(criteria={"Primary Energy": {"up": 6, "year": 2010}}),
     ),
 )
-def test_validate_year_201ß(test_df, args):
+def test_validate_year_2010(test_df, args):
     # checking that the return-type is correct
     obs = test_df.validate(**args)
     pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
@@ -238,12 +238,28 @@ def test_validate_top_level(test_df):
     assert list(test_df.exclude) == [False, True]
 
 
-def test_category_none(test_df):
-    test_df.categorize("category", "Testing", {"Primary Energy": {"up": 0.8}})
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy", upper_bound=0),
+        dict(criteria={"Primary Energy": {"up": 0}}),
+    ),
+)
+def test_category_no_match(test_df, args):
+    test_df.categorize("category", "foo", **args)
     assert "category" not in test_df.meta.columns
 
 
-def test_category_pass(test_df):
+# include args for deprecated legacy signature
+@pytest.mark.parametrize(
+    "args",
+    (
+        dict(variable="Primary Energy", upper_bound=6),
+        dict(criteria={"Primary Energy": {"up": 6}}),
+    ),
+)
+def test_category_match(test_df, args):
     dct = {
         "model": ["model_a", "model_a"],
         "scenario": ["scen_a", "scen_b"],
@@ -251,7 +267,7 @@ def test_category_pass(test_df):
     }
     exp = pd.DataFrame(dct).set_index(["model", "scenario"])["category"]
 
-    test_df.categorize("category", "foo", {"Primary Energy": {"up": 6, "year": 2010}})
+    test_df.categorize("category", "foo", **args)
     obs = test_df["category"]
     pd.testing.assert_series_equal(obs, exp)
 
