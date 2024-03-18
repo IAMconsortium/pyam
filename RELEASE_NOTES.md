@@ -6,6 +6,7 @@ Bumped minimum version of pandas and numpy to fit **ixmp4**'s requirement.
 
 ## Individual updates
 
+- [#838](https://github.com/IAMconsortium/pyam/pull/838) Support filters when reading from an ixmp4 platform
 - [#837](https://github.com/IAMconsortium/pyam/pull/837) Support filters as direct keyword arguments for `categorize()`
   similar to `validate()` signature (see [#804](https://github.com/IAMconsortium/pyam/pull/804))
 - [#832](https://github.com/IAMconsortium/pyam/pull/832) Improve the test-suite for the ixmp4 integration
