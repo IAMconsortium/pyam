@@ -4,6 +4,7 @@ from ixmp4.core.unit import UnitModel
 
 import pyam
 from pyam import read_ixmp4
+from pyam.testing import assert_iamframe_equal
 
 
 def test_to_ixmp4_missing_region_raises(test_platform, test_df_year):
@@ -37,12 +38,12 @@ def test_ixmp4_integration(test_platform, test_df_year):
     obs = read_ixmp4(platform=test_platform)
     exp = test_df_year.copy()
     exp.set_meta(1, "version")  # add version number added from ixmp4
-    pyam.assert_iamframe_equal(exp, obs)
+    assert_iamframe_equal(exp, obs)
 
     # make one scenario a non-default scenario, make sure that it is not included
     test_platform.runs.get("model_a", "scen_b").unset_as_default()
     obs = read_ixmp4(platform=test_platform)
-    pyam.assert_iamframe_equal(exp.filter(scenario="scen_a"), obs)
+    assert_iamframe_equal(exp.filter(scenario="scen_a"), obs)
 
     # read all scenarios (runs) - version number used as additional index dimension
     obs = read_ixmp4(platform=test_platform, default_only=False)
@@ -52,6 +53,32 @@ def test_ixmp4_integration(test_platform, test_df_year):
     meta["version"] = 1
     exp = pyam.IamDataFrame(data, meta=meta, index=["model", "scenario", "version"])
     pyam.assert_iamframe_equal(exp, obs)
+
+
+@pytest.mark.parametrize(
+    "filters",
+    (
+        dict(model="model_a"),
+        dict(scenario="scen_a"),
+        dict(scenario="*n_a"),
+        dict(model="model_a", scenario="scen_a", region="World", variable="* Energy"),
+        dict(scenario="scen_a", region="World", variable="Primary Energy", year=2010),
+    ),
+)
+def test_ixmp4_filters(test_platform, test_df_year, filters):
+    """Write an IamDataFrame to the platform and read it back with filters"""
+
+    # test writing to platform
+    test_df_year.to_ixmp4(platform=test_platform)
+
+    # add 'version' meta indicator (indicator during imp4 roundtrip)
+    test_df_year.set_meta(1, "version")
+
+    # read with filters
+    assert_iamframe_equal(
+        read_ixmp4(test_platform, **filters),
+        test_df_year.filter(**filters),
+    )
 
 
 @pytest.mark.parametrize("drop_meta", (True, False))
