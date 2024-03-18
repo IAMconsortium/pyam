@@ -102,8 +102,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         if missing := set(values).difference(platform_values):
             raise model.NotFound(
                 ", ".join(missing)
-                + f". Use `Platform.{dimension}.create()` to add the missing "
-                f"{dimension}."
+                + f". Use `Platform.{dimension}.create()` to add missing elements."
             )
 
     # The "version" meta-indicator, added when reading from an ixmp4 platform,
