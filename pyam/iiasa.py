@@ -156,8 +156,8 @@ class Connection(object):
 
     Notes
     -----
-    Credentials (username & password) are not required to access any public
-    Scenario Explorer instances (i.e., with Guest login).
+    Credentials (username & password) are not required to access any public |ixmp4|
+    or Scenario Explorer database (i.e., with Guest login).
     """
 
     def __init__(self, name=None, creds=None, auth_url=_AUTH_URL):
@@ -590,14 +590,16 @@ def _new_default_api(kwargs):
 def read_iiasa(
     name, default_only=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
 ):
-    """Query an IIASA Scenario Explorer database API and return as IamDataFrame
+    """Read data from an |ixmp4| platform or an IIASA Scenario Explorer database.
 
     Parameters
     ----------
     name : str
-        | Name of an IIASA Scenario Explorer database instance.
+        | Name of an |ixmp4| platform or an IIASA Scenario Explorer database instance.
+        | Use :attr:`platforms <pyam.iiasa.platforms>` for a list of |ixmp4| platforms
+          hosted by IIASA.
         | Use :attr:`valid_connections <pyam.iiasa.Connection.valid_connections>`
-          for a list of available instances.
+          for a list of available Scenario Explorer database instances.
     default_only : bool, optional
         If `True`, return *only* the default version of a model/scenario.
         If `False`, return all versions.
@@ -605,18 +607,23 @@ def read_iiasa(
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
     creds : str or :class:`pathlib.Path`, optional
-        | Credentials (username & password) are not required to access
-          any public Scenario Explorer instances (i.e., with Guest login).
-        | See :class:`pyam.iiasa.Connection` for details.
-        | Use :meth:`pyam.iiasa.set_config` to set credentials
-          for accessing private/restricted Scenario Explorer instances.
+        Path to a file with authentication credentials. This feature is deprecated,
+        please run ``ixmp4 login <username>`` in a console instead.
     base_url : str
-        Authentication server URL
-    kwargs
-        Arguments for :meth:`pyam.iiasa.Connection.query`
+        Authentication server URL.
+    **kwargs
+        Arguments for :meth:`pyam.read_ixmp4` or :meth:`pyam.iiasa.Connection.query`.
+
+    Notes
+    -----
+    Credentials (username & password) are not required to access any public |ixmp4|
+    or Scenario Explorer database (i.e., with Guest login).
     """
-    ixmp4_platforms = [i.name for i in ixmp4.conf.settings.manager.list_platforms()]
-    if name in ixmp4_platforms:
+    if name in [i.name for i in ixmp4.conf.settings.manager.list_platforms()]:
+        if meta is not True:
+            raise NotImplementedError(
+                "Reading from ixmp4 platforms requires `meta=True`"
+            )
         return read_ixmp4(name, default_only=default_only, **kwargs)
 
     return Connection(name, creds, base_url).query(
@@ -628,7 +635,7 @@ def lazy_read_iiasa(
     file, name, default_only=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
 ):
     """
-    Try to load data from a local cache, failing that, loads it from the internet.
+    Try to load data from a local cache, failing that, loads it from an IIASA database.
 
     Check if the file in a given location is an up-to-date version of an IIASA
     database. If so, load it. If not, load  data from the IIASA scenario explorer
@@ -653,16 +660,24 @@ def lazy_read_iiasa(
         If `True`, include all meta categories & quantitative indicators
         (or subset if list is given).
     creds : str or :class:`pathlib.Path`, optional
-        | Credentials (username & password) are not required to access
-          any public Scenario Explorer instances (i.e., with Guest login).
-        | See :class:`pyam.iiasa.Connection` for details.
-        | Use :meth:`pyam.iiasa.set_config` to set credentials
-          for accessing private/restricted Scenario Explorer instances.
+        Path to a file with authentication credentials. This feature is deprecated,
+        please run ``ixmp4 login <username>`` in a console instead.
     base_url : str
         Authentication server URL
     kwargs
-        Arguments for :meth:`pyam.iiasa.Connection.query`
+        Arguments for :meth:`pyam.read_ixmp4` or :meth:`pyam.iiasa.Connection.query`.
+
+    Notes
+    -----
+    This feature does currently not support reading data from |ixmp4| platforms.
+
+    Credentials (username & password) are not required to access any public |ixmp4|
+    or Scenario Explorer database (i.e., with Guest login).
     """
+    if name in [i.name for i in ixmp4.conf.settings.manager.list_platforms()]:
+        raise NotImplementedError(
+            "The function `lazy_read_iiasa()` does not support ixmp4 platforms."
+        )
 
     file = Path(file)
     assert file.suffix in [
