@@ -36,8 +36,12 @@ def read_ixmp4(
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
-    run_filters = _make_dict(run=dict(default_only=default_only))
+    # TODO This may have to be revised, see https://github.com/iiasa/ixmp4/issues/72
+    meta_filters = _make_dict(
+        run=dict(default_only=default_only, model=model, scenario=scenario)
+    )
     iamc_filters = _make_dict(
+        run=dict(default_only=default_only),
         model=model,
         scenario=scenario,
         region=region,
@@ -45,22 +49,20 @@ def read_ixmp4(
         unit=unit,
         year=year,
     )
-
-    data = platform.iamc.tabulate(**run_filters, **iamc_filters)
-    # TODO filter by model/scenario depends on https://github.com/iiasa/ixmp4/pull/66
-    meta = platform.meta.tabulate(**run_filters)
+    data = platform.iamc.tabulate(**iamc_filters)
+    meta = platform.meta.tabulate(**meta_filters)
 
     # if default-only, simplify to standard IAMC index, add `version` as meta indicator
     if default_only:
         index = ["model", "scenario"]
-        data.drop(columns="version", inplace=True)
         meta_version = (
-            meta[["model", "scenario", "version"]]
+            data[index + ["version"]]
             .drop_duplicates()
             .rename(columns={"version": "value"})
         )
         meta_version["key"] = "version"
         meta = pd.concat([meta.drop(columns="version"), meta_version])
+        data.drop(columns="version", inplace=True)
     else:
         index = ["model", "scenario", "version"]
 

@@ -88,11 +88,15 @@ def test_ixmp4_reserved_columns(test_platform, test_df_year, drop_meta):
     if drop_meta:
         test_df_year = pyam.IamDataFrame(test_df_year.data)
 
-    # test writing to platform with a version-number as meta indicator
+    # write to platform with a version-number as meta indicator
     test_df_year.set_meta(1, "version")  # add version number added from ixmp4
     test_df_year.to_ixmp4(platform=test_platform)
 
+    # version is not saved to the platform
     if drop_meta:
         assert len(test_platform.runs.get("model_a", "scen_a").meta) == 0
     else:
         assert "version" not in test_platform.runs.get("model_a", "scen_a").meta
+
+    # version is included when reading again from the platform
+    assert_iamframe_equal(test_df_year, pyam.read_ixmp4(test_platform))
