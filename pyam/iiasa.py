@@ -18,6 +18,7 @@ from ixmp4.conf.auth import ManagerAuth
 from requests.auth import AuthBase
 
 from pyam.core import IamDataFrame
+from pyam.ixmp4 import read_ixmp4
 from pyam.logging import deprecation_warning
 from pyam.str import is_str
 from pyam.utils import (
@@ -614,6 +615,10 @@ def read_iiasa(
     kwargs
         Arguments for :meth:`pyam.iiasa.Connection.query`
     """
+    ixmp4_platforms = [i.name for i in ixmp4.conf.settings.manager.list_platforms()]
+    if name in ixmp4_platforms:
+        return read_ixmp4(name, default_only=default_only, **kwargs)
+
     return Connection(name, creds, base_url).query(
         default_only=default_only, meta=meta, **kwargs
     )
