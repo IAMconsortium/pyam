@@ -3,6 +3,7 @@ _build
 build
 
 # exclude built gallery folder (built by sphinx-gallery module)
+sg_execution_times.rst
 gallery
 modules
 
