@@ -71,7 +71,7 @@ def test_ixmp4_filters(test_platform, test_df_year, filters):
     # test writing to platform
     test_df_year.to_ixmp4(platform=test_platform)
 
-    # add 'version' meta indicator (indicator during imp4 roundtrip)
+    # add 'version' meta indicator (indicator during ixmp4 roundtrip)
     test_df_year.set_meta(1, "version")
 
     # read with filters
