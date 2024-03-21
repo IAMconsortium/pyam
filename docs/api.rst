@@ -23,15 +23,6 @@ and methods.
    api/timeseries
    api/variables
 
-Logging behaviour in Jupyter notebooks
---------------------------------------
-
-The |pyam| package wants to provide sensible defaults for users unfamiliar with setting
-up python's logging library (`read more`_), and therefore will add a streamhandler if
-(and only if) it determines to be running within a notebook.
-
-.. _`read more` : https://realpython.com/python-logging/#basic-configurations
-
 Intersphinx mapping
 -------------------
 
