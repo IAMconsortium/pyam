@@ -39,9 +39,9 @@ You will be prompted to enter your password.
 -------------------------
 
 The *Scenario Apps* use the |ixmp4| package as a database backend.
-You can list all available ixmp4 platforms hosted by IIASA using the following:
+You can list all available ixmp4 platforms hosted by IIASA using the following function:
 
-.. autofunctions:: platforms
+.. autofunction:: platforms
 
 *Scenario Explorer* instances (legacy service)
 ----------------------------------------------

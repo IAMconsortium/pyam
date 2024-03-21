@@ -3,21 +3,29 @@
 Data resources integration
 ==========================
 
-Connecting to an IIASA Scenario Explorer instance
--------------------------------------------------
+Connecting to an IIASA database instance
+----------------------------------------
 
 IIASA's ixmp Scenario Explorer infrastructure implements a RestAPI
 to directly query the database server connected to an explorer instance.
-See https://software.ece.iiasa.ac.at/ixmp-server for more information.
+See https://docs.ece.iiasa.ac.at/ for more information.
 
 The |pyam| package uses this interface to read timeseries data as well as
-categorization and quantitative indicators.
+categorization and quantitative meta indicators.
 The data is returned as an :class:`IamDataFrame`.
 See `this tutorial <../tutorials/iiasa.html>`_ for more information.
 
 .. autofunction:: read_iiasa
 
 .. autofunction:: lazy_read_iiasa
+
+Reading from an |ixmp4| platform
+--------------------------------
+
+The |pyam| package provides a simple interface to read timeseries data and meta
+indicators from local or remote |ixmp4| platform instancs.
+
+.. autofunction:: read_ixmp4
 
 Reading UNFCCC inventory data
 -----------------------------

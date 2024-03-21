@@ -8,35 +8,61 @@ from ixmp4.core.unit import UnitModel
 logger = logging.getLogger(__name__)
 
 
-def read_ixmp4(platform: ixmp4.Platform | str, default_only: bool = True):
+def read_ixmp4(
+    platform: ixmp4.Platform | str,
+    default_only: bool = True,
+    model: str | list[str] | None = None,
+    scenario: str | list[str] | None = None,
+    region: str | list[str] | None = None,
+    variable: str | list[str] | None = None,
+    unit: str | list[str] | None = None,
+    year: int | list[int] | None = None,
+):
     """Read scenario runs from an ixmp4 platform database instance
 
     Parameters
     ----------
     platform : :class:`ixmp4.Platform` or str
-        The ixmp4 platform database instance to which the scenario data is saved
+        The ixmp4 platform database instance to which the scenario data is saved.
     default_only : :class:`bool`, optional
-        Read only default runs
+        Read only default runs.
+    model, scenario, region, variable, unit : str or list of str, optional
+        Filter by these dimensions.
+    year : int or list of int, optional
+        Filter by time domain.
     """
     from pyam import IamDataFrame
 
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
-    data = platform.iamc.tabulate(run={"default_only": default_only})
-    meta = platform.meta.tabulate(run={"default_only": default_only})
+    # TODO This may have to be revised, see https://github.com/iiasa/ixmp4/issues/72
+    meta_filters = dict(
+        run=dict(default_only=default_only, model=model, scenario=scenario)
+    )
+    iamc_filters = dict(
+        run=dict(default_only=default_only),
+        model=model,
+        scenario=scenario,
+        region=region,
+        variable=variable,
+        unit=unit,
+        year=year,
+    )
+    data = platform.iamc.tabulate(**iamc_filters)
+    meta = platform.meta.tabulate(**meta_filters)
 
     # if default-only, simplify to standard IAMC index, add `version` as meta indicator
     if default_only:
         index = ["model", "scenario"]
-        data.drop(columns="version", inplace=True)
         meta_version = (
-            meta[["model", "scenario", "version"]]
+            data[index + ["version"]]
             .drop_duplicates()
             .rename(columns={"version": "value"})
         )
         meta_version["key"] = "version"
         meta = pd.concat([meta.drop(columns="version"), meta_version])
+        data.drop(columns="version", inplace=True)
     else:
         index = ["model", "scenario", "version"]
 
@@ -70,8 +96,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         if missing := set(values).difference(platform_values):
             raise model.NotFound(
                 ", ".join(missing)
-                + f". Use `Platform.{dimension}.create()` to add the missing "
-                f"{dimension}."
+                + f". Use `Platform.{dimension}.create()` to add missing elements."
             )
 
     # The "version" meta-indicator, added when reading from an ixmp4 platform,
