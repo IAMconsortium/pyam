@@ -37,10 +37,10 @@ def read_ixmp4(
         platform = ixmp4.Platform(platform)
 
     # TODO This may have to be revised, see https://github.com/iiasa/ixmp4/issues/72
-    meta_filters = _make_dict(
+    meta_filters = dict(
         run=dict(default_only=default_only, model=model, scenario=scenario)
     )
-    iamc_filters = _make_dict(
+    iamc_filters = dict(
         run=dict(default_only=default_only),
         model=model,
         scenario=scenario,
@@ -67,14 +67,6 @@ def read_ixmp4(
         index = ["model", "scenario", "version"]
 
     return IamDataFrame(data, meta=meta, index=index)
-
-
-def _make_dict(**kwargs):
-    _dict = dict()
-    for key, value in kwargs.items():
-        if value is not None:
-            _dict[key] = value
-    return _dict
 
 
 def write_to_ixmp4(platform: ixmp4.Platform | str, df):
