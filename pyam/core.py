@@ -1065,7 +1065,7 @@ class IamDataFrame(object):
             return missing_required.to_frame(index=False)
 
     def require_variable(self, *args, **kwargs):
-        """This method is deprecated, use `df.require_data()` instead."""
+        """This method is deprecated, use :meth:`IamDataFrame.require_data()`."""
         # TODO: deprecated, remove for release >= 3.0
         raise DeprecationWarning("Use `df.require_data()` instead.")
 
@@ -2588,7 +2588,7 @@ def _empty_iamframe(index):
 
 
 def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
-    """This method is deprecated, use `df.validate()` instead."""
+    """This method is deprecated, use :meth:`IamDataFrame.validate()` instead."""
     # TODO: method is deprecated, remove for release >= 3.0
     deprecation_warning("Use `IamDataFrame.validate()` instead.")
     fdf = df.filter(**kwargs)
@@ -2599,15 +2599,15 @@ def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
 
 
 def require_variable(*args, **kwargs):
-    """This method is deprecated, use `df.require_data()` instead."""
+    """This method is deprecated, use :meth:`IamDataFrame.require_data()` instead."""
     # TODO: deprecated, remove for release >= 3.0
-    raise DeprecationWarning("Use `df.require_data()` instead.")
+    raise DeprecationWarning("Use `IamDataFrame.require_data()` instead.")
 
 
 def categorize(
     df, name, value, criteria, color=None, marker=None, linestyle=None, **kwargs
 ):
-    """This method is deprecated, use `df.validate()` instead."""
+    """This method is deprecated, use :meth:`IamDataFrame.categorize()` instead."""
     # TODO: method is deprecated, remove for release >= 3.0
     deprecation_warning("Use `IamDataFrame.categorize()` instead.")
     fdf = df.filter(**kwargs)
@@ -2712,15 +2712,17 @@ def compare(
     Parameters
     ----------
     left, right : IamDataFrames
-        two :class:`IamDataFrame` instances to be compared
+        Two :class:`IamDataFrame` instances to be compared
     left_label, right_label : str, optional
-        column names of the returned :class:`pandas.DataFrame`
+        Column names of the returned :class:`pandas.DataFrame`
     drop_close : bool, optional
-        remove all data where `left` and `right` are close
+        Remove all data where `left` and `right` are close
     **kwargs : arguments for comparison of values
-        passed to :func:`numpy.isclose`
+        Passed to :func:`numpy.isclose`
     """
-    return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
+    return _compare(
+        left, right, left_label, right_label, drop_close=drop_close, **kwargs
+    )
 
 
 def concat(objs, ignore_meta_conflict=False, **kwargs):  # noqa: C901
