@@ -1,4 +1,10 @@
-# Next release
+# Release v2.1.0
+
+## Highlights
+
+- Direct integration with **ixmp4** platforms hosted by IIASA
+- More flexible and intuitive signature for data validation and categorization
+- Support for Python 3.12 and migrate to poetry & ruff
 
 ## Dependency changes
 
