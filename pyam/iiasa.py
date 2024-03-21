@@ -622,14 +622,10 @@ def read_iiasa(name, default_only=True, meta=True, creds=None, **kwargs):
             )
         return read_ixmp4(name, default_only=default_only, **kwargs)
 
-    return Connection(name, creds).query(
-        default_only=default_only, meta=meta, **kwargs
-    )
+    return Connection(name, creds).query(default_only=default_only, meta=meta, **kwargs)
 
 
-def lazy_read_iiasa(
-    file, name, default_only=True, meta=True, creds=None, **kwargs
-):
+def lazy_read_iiasa(file, name, default_only=True, meta=True, creds=None, **kwargs):
     """
     Try to load data from a local cache, failing that, loads it from an IIASA database.
 
