@@ -54,7 +54,7 @@ def platforms() -> None:
     tabulate_manager_platforms(ixmp4.conf.settings.manager.list_platforms())
 
 
-def set_config(user, password, file=None):
+def set_config(*args, **kwargs):
     raise DeprecationWarning(f"This method is deprecated. {IXMP4_LOGIN}.")
 
 
@@ -587,9 +587,7 @@ def _new_default_api(kwargs):
     )
 
 
-def read_iiasa(
-    name, default_only=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
-):
+def read_iiasa(name, default_only=True, meta=True, creds=None, **kwargs):
     """Read data from an |ixmp4| platform or an IIASA Scenario Explorer database.
 
     Parameters
@@ -609,8 +607,6 @@ def read_iiasa(
     creds : str or :class:`pathlib.Path`, optional
         Path to a file with authentication credentials. This feature is deprecated,
         please run ``ixmp4 login <username>`` in a console instead.
-    base_url : str
-        Authentication server URL.
     **kwargs
         Arguments for :meth:`pyam.read_ixmp4` or :meth:`pyam.iiasa.Connection.query`.
 
@@ -626,13 +622,13 @@ def read_iiasa(
             )
         return read_ixmp4(name, default_only=default_only, **kwargs)
 
-    return Connection(name, creds, base_url).query(
+    return Connection(name, creds).query(
         default_only=default_only, meta=meta, **kwargs
     )
 
 
 def lazy_read_iiasa(
-    file, name, default_only=True, meta=True, creds=None, base_url=_AUTH_URL, **kwargs
+    file, name, default_only=True, meta=True, creds=None, **kwargs
 ):
     """
     Try to load data from a local cache, failing that, loads it from an IIASA database.
@@ -662,9 +658,7 @@ def lazy_read_iiasa(
     creds : str or :class:`pathlib.Path`, optional
         Path to a file with authentication credentials. This feature is deprecated,
         please run ``ixmp4 login <username>`` in a console instead.
-    base_url : str
-        Authentication server URL
-    kwargs
+    **kwargs
         Arguments for :meth:`pyam.read_ixmp4` or :meth:`pyam.iiasa.Connection.query`.
 
     Notes
@@ -688,7 +682,7 @@ def lazy_read_iiasa(
     ], "We will only read and write to csv and xlsx format."
     if os.path.exists(file):
         date_set = pd.to_datetime(os.path.getmtime(file), unit="s")
-        version_info = Connection(name, creds, base_url).properties()
+        version_info = Connection(name, creds).properties()
         latest_new = np.nanmax(pd.to_datetime(version_info["create_date"]))
         latest_update = np.nanmax(pd.to_datetime(version_info["update_date"]))
         latest = pd.Series([latest_new, latest_update]).max()
