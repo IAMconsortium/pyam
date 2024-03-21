@@ -20,9 +20,9 @@ The following persons contributed to the development of the |pyam| package:
 - Florian Maczek `@macflo8 <https://github.com/macflo8>`_
 - Laura Wienpahl `@LauWien <https://github.com/LauWien>`_
 - Philip Hackstock `@phackstock <https://github.com/phackstock>`_
-- Pietro Monticone `@pitmonticone <https://github.com/pitmonticone>`
-- Edward Byers `@byersiiasa <https://github.com/byersiiasa>`
-- Fridolin Glatter `@glatterf42 <https://github.com/glatterf42>`
+- Pietro Monticone `@pitmonticone <https://github.com/pitmonticone>`_
+- Edward Byers `@byersiiasa <https://github.com/byersiiasa>`_
+- Fridolin Glatter `@glatterf42 <https://github.com/glatterf42>`_
 
 | The core maintenance of the |pyam| package is done by
   the *Scenario Services & Scientific Software* research theme

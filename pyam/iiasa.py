@@ -295,7 +295,7 @@ class Connection(object):
         default_only : bool, optional
             If `True`, return *only* the default version of a model/scenario.
             If `False`, return all versions.
-        kwargs
+        **kwargs
             Arguments to filter by *model* and *scenario*, `*` can be used as wildcard.
         """
         if "default" in kwargs:
@@ -316,7 +316,7 @@ class Connection(object):
             If `False`, return all versions.
         run_id : bool, optional
             Include "run id" column
-        kwargs
+        **kwargs
             Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
         if "default" in kwargs:
@@ -347,7 +347,7 @@ class Connection(object):
         default_only : bool, optional
             If `True`, return *only* the default version of a model/scenario.
             If `False`, return all versions.
-        kwargs
+        **kwargs
             Arguments to filer by *model* and *scenario*, `*` can be used as wildcard
         """
         if "default" in kwargs:
@@ -488,7 +488,7 @@ class Connection(object):
         meta : bool or list, optional
             If :obj:`True`, merge all meta columns indicators
             (or subset if list is given).
-        kwargs
+        **kwargs
             Available keyword arguments include
 
             - model

@@ -10,7 +10,7 @@ def assert_iamframe_equal(left, right, **kwargs):
     ----------
     left, right : :class:`IamDataFrame`
         Two IamDataFrame instances to be compared.
-    kwargs
+    **kwargs
         Passed to :meth:`IamDataFrame.compare`, comparing the `data` objects.
 
     Raises

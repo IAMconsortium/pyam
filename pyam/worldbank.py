@@ -20,7 +20,7 @@ def read_worldbank(model="World Bank", scenario="WDI", **kwargs) -> IamDataFrame
         The `model` name to be used for the returned timeseries data.
     scenario : str, optional
         The `scenario` name to be used for the returned timeseries data.
-    kwargs
+    **kwargs
         passed to :func:`wbdata.get_dataframe`
 
     Notes
