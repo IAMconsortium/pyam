@@ -1,4 +1,4 @@
-# Release v2.1.0
+# Release v2.2.0
 
 ## Highlights
 
