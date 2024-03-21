@@ -696,7 +696,6 @@ def lazy_read_iiasa(file, name, default_only=True, meta=True, creds=None, **kwar
         meta=meta,
         default_only=default_only,
         creds=creds,
-        base_url=base_url,
         **kwargs,
     )
     Path(file).parent.mkdir(parents=True, exist_ok=True)
