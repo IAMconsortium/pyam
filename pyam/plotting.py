@@ -316,7 +316,7 @@ def pie(
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
-    kwargs
+    **kwargs
         Additional arguments passed to :meth:`pandas.DataFrame.plot`.
 
     Returns
@@ -419,7 +419,7 @@ def stack(  # noqa: C901
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
-    kwargs
+    **kwargs
         Additional arguments passed to :meth:`pandas.DataFrame.plot`
 
     Returns
@@ -588,7 +588,7 @@ def bar(  # noqa: C901
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
-    kwargs
+    **kwargs
         Additional arguments passed to :meth:`pandas.DataFrame.plot`
 
     Returns
@@ -688,7 +688,7 @@ def box(df, y="value", x=None, by=None, legend=True, title=None, ax=None, **kwar
     title : bool or string, optional
         Text to use for the title, display a default if True.
     ax : :class:`matplotlib.axes.Axes`, optional
-    kwargs
+    **kwargs
         Additional arguments passed to :meth:`pandas.DataFrame.plot`.
 
     Returns
@@ -819,7 +819,7 @@ def scatter(  # noqa: C901
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
-    kwargs
+    **kwargs
         Additional arguments passed to :meth:`pandas.DataFrame.plot`.
 
     Returns
@@ -988,7 +988,7 @@ def line(  # noqa: C901
     ax : :class:`matplotlib.axes.Axes`, optional
     cmap : string, optional
         The name of a registered colormap.
-    kwargs
+    **kwargs
         Additional arguments passed to :meth:`pandas.DataFrame.plot`.
 
     Returns

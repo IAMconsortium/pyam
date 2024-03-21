@@ -91,8 +91,8 @@ class IamDataFrame(object):
         or long (key/value columns) format.
         The dataframe will be downselected to scenarios present in `data`.
     index : list, optional
-        Columns to use for resulting IamDataFrame index.
-    kwargs
+        Columns to use as :attr:`index <IamDataFrame.index>` names.
+    **kwargs
         If `value=<col>`, melt column `<col>` to 'value' and use `<col>` name
         as 'variable'; or mapping of required columns (:code:`IAMC_IDX`) to
         any of the following:
@@ -103,8 +103,7 @@ class IamDataFrame(object):
 
     Notes
     -----
-    A :class:`pandas.DataFrame` can have the required dimensions
-    as columns or index.
+    A :class:`pandas.DataFrame` can have the required dimensions as columns or index.
     R-style integer column headers (i.e., `X2015`) are acceptable.
 
     When initializing an :class:`IamDataFrame` from an xlsx file,
@@ -307,8 +306,8 @@ class IamDataFrame(object):
                 [
                     print_meta_row(m, t, self.meta[m].unique())
                     for m, t in zip(
-                        self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
-                    )
+                    self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
+                )
                 ]
             )
             # print `...` if more than `meta_rows` columns
@@ -341,8 +340,7 @@ class IamDataFrame(object):
     def index(self):
         """Return all model-scenario combinations as :class:`pandas.MultiIndex`
 
-        The index allows to loop over the available model-scenario combinations
-        using:
+        The index allows to loop over all model-scenario combinations using:
 
         .. code-block:: python
 
@@ -403,7 +401,7 @@ class IamDataFrame(object):
 
     @property
     def time(self):
-        """The time index, i.e., axis labels related to the time domain.
+        """The time index, i.e., axis labels related to the time domain
 
         Returns
         -------
@@ -514,8 +512,8 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        other : IamDataFrame
-            the other :class:`IamDataFrame` to be compared with `self`
+        other : :class:`IamDataFrame`
+            The other :class:`IamDataFrame` to be compared with `self`
         """
         if not isinstance(other, IamDataFrame):
             raise ValueError("`other` is not an `IamDataFrame` instance")
@@ -545,22 +543,22 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        other : IamDataFrame, pandas.DataFrame or data file
-            Any object castable as IamDataFrame to be appended
+        other : :class:`IamDataFrame`, :class:`pandas.DataFrame` or file-like
+            Any object castable as :class:`IamDataFrame` to be appended
         ignore_meta_conflict : bool, optional
-            If False and `other` is an IamDataFrame, raise an error if
+            If False and `other` is an :class:`IamDataFrame`, raise an error if
             any meta columns present in `self` and `other` are not identical.
         inplace : bool, optional
             If True, do operation inplace and return None
         verify_integrity : bool, optional
             If True, verify integrity of index
-        kwargs
+        **kwargs
             Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
             if `other` is not already an IamDataFrame
 
         Returns
         -------
-        IamDataFrame
+        :class:`IamDataFrame`
             If *inplace* is :obj:`False`.
         None
             If *inplace* is :obj:`True`.
@@ -671,7 +669,7 @@ class IamDataFrame(object):
              This must match the datetime/year format of `self`.
         inplace : bool, optional
             if True, do operation inplace and return None
-        kwargs
+        **kwargs
             passed to :meth:`pandas.DataFrame.interpolate`
         """
         ret = self.copy() if not inplace else self
@@ -909,7 +907,7 @@ class IamDataFrame(object):
             required if downselected data do not yield unique values
         column : str, optional
             the column from `data` to be used to derive the indicator
-        kwargs
+        **kwargs
             passed to :meth:`filter` for downselected data
         """
         _data = self.filter(**kwargs).data
@@ -937,20 +935,20 @@ class IamDataFrame(object):
         Parameters
         ----------
         name : str
-            Name of the meta indicator
+            Name of the meta indicator.
         value : str
-            Value of the meta indicator
+            Value of the meta indicator.
         criteria : dict, optional, deprecated
            This option is deprecated; dictionary with variable keys and validation
            mappings ('up' and 'lo' for respective bounds, 'year' for years).
         upper_bound, lower_bound : float, optional
             Upper and lower bounds for validation criteria of timeseries :attr:`data`.
         color : str, optional
-            Assign a color to this category for plotting
+            Assign a color to this category for plotting.
         marker : str, optional
-            Assign a marker to this category for plotting
+            Assign a marker to this category for plotting.
         linestyle : str, optional
-            Assign a linestyle to this category for plotting
+            Assign a linestyle to this category for plotting.
         **kwargs
             Passed to :meth:`slice` to downselect datapoints for validation.
 
@@ -1319,7 +1317,7 @@ class IamDataFrame(object):
         ----------
         inplace : bool, optional
             if :obj:`True`, do operation inplace and return None
-        kwargs
+        **kwargs
             the column and value on which to normalize (e.g., `year=2005`)
         """
         if len(kwargs) > 1 or self.time_col not in kwargs:
@@ -1361,7 +1359,7 @@ class IamDataFrame(object):
             https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.subtract.html
         inplace : bool, optional
             if :obj:`True`, do operation inplace and return None
-        kwargs
+        **kwargs
             the column and value on which to offset (e.g., `year=2005`)
         """
         if len(kwargs) > 1 or self.time_col not in kwargs:
@@ -1461,7 +1459,7 @@ class IamDataFrame(object):
             does not match the aggregated components.
         multiplier : number, optional
             Multiplicative factor when comparing variable and sum of components.
-        kwargs : Tolerance arguments for comparison of values
+        **kwargs : Tolerance arguments for comparison of values
             Passed to :func:`numpy.isclose`.
 
         Returns
@@ -1610,7 +1608,7 @@ class IamDataFrame(object):
             does not match the aggregated components.
         drop_negative_weights : bool, optional
             Removes any aggregated values that are computed using negative weights
-        kwargs : Tolerance arguments for comparison of values
+        **kwargs : Tolerance arguments for comparison of values
             Passed to :func:`numpy.isclose`.
 
         Returns
@@ -1804,7 +1802,7 @@ class IamDataFrame(object):
 
         Parameters
         ----------
-        kwargs : arguments for comparison of values
+        **kwargs : arguments for comparison of values
             passed to :func:`numpy.isclose`
         components : bool, optional
             passed to :meth:`check_aggregate_region` if `True`, use all
@@ -2267,7 +2265,7 @@ class IamDataFrame(object):
         return self._finalize(_value, append=append)
 
     def apply(
-        self, func, name, axis="variable", fillna=None, append=False, args=(), **kwds
+        self, func, name, axis="variable", fillna=None, append=False, args=(), **kwargs
     ):
         """Apply a function to components of timeseries data along an `axis`
 
@@ -2291,7 +2289,7 @@ class IamDataFrame(object):
             Whether to append aggregated timeseries data to this instance.
         args : tuple or list of str
             List of variables to pass as positional arguments to `func`.
-        **kwds
+        **kwargs
             Additional keyword arguments to pass as keyword arguments to `func`. If the
             name of a variable is given, the associated timeseries is passed. Otherwise
             the value itself is passed.
@@ -2316,10 +2314,11 @@ class IamDataFrame(object):
         As a result, the notation of returned units may differ from the input format.
         For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
-        _value = _op_data(self, name, func, axis=axis, fillna=fillna, args=args, **kwds)
 
-        # append to `self` or return as `IamDataFrame`
-        return self._finalize(_value, append=append)
+        return self._finalize(
+            _op_data(self, name, func, axis=axis, fillna=fillna, args=args, **kwargs),
+            append=append,
+        )
 
     def diff(self, mapping, periods=1, append=False):
         """Compute the difference of timeseries data along the time dimension
@@ -2522,7 +2521,7 @@ class IamDataFrame(object):
         ignore_conflict : bool, optional
             If `True`, values in `path` take precedence over existing `meta`.
             If `False`, raise an error in case of conflicts.
-        kwargs
+        **kwargs
             Passed to :func:`pandas.read_excel` or :func:`pandas.read_csv`
         """
 
@@ -2636,9 +2635,8 @@ def check_aggregate(
     Parameters
     ----------
     df : IamDataFrame
-    args : passed to :meth:`IamDataFrame.check_aggregate`
-    kwargs : used for downselecting IamDataFrame
-        passed to :meth:`IamDataFrame.filter`
+    **kwargs
+        Passed to :meth:`IamDataFrame.filter`
     """
     fdf = df.filter(**kwargs)
     if len(fdf.data) > 0:
@@ -2664,7 +2662,7 @@ def filter_by_meta(data, df, join_meta=False, **kwargs):
         IamDataFrame from which meta columns are filtered and joined (optional)
     join_meta : bool, optional
         join selected columns from `df.meta` on `data`
-    kwargs
+    **kwargs
         Meta columns to be filtered/joined, where `col=...` applies filters
         with the given arguments (using :meth:`utils.pattern_match`).
         Using `col=None` joins the column without filtering (setting col
@@ -2719,7 +2717,7 @@ def compare(
         column names of the returned :class:`pandas.DataFrame`
     drop_close : bool, optional
         remove all data where `left` and `right` are close
-    kwargs : arguments for comparison of values
+    **kwargs : arguments for comparison of values
         passed to :func:`numpy.isclose`
     """
     return _compare(left, right, left_label, right_label, drop_close=True, **kwargs)
@@ -2735,7 +2733,7 @@ def concat(objs, ignore_meta_conflict=False, **kwargs):  # noqa: C901
     ignore_meta_conflict : bool, optional
         If False, raise an error if any meta columns present in `dfs` are not identical.
         If True, values in earlier elements of `dfs` take precedence.
-    kwargs
+    **kwargs
         Passed to :class:`IamDataFrame(other, **kwargs) <IamDataFrame>`
         for any item of `dfs` which isn't already an IamDataFrame.
 
