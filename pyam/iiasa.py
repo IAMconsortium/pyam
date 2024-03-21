@@ -674,7 +674,9 @@ def lazy_read_iiasa(
     Credentials (username & password) are not required to access any public |ixmp4|
     or Scenario Explorer database (i.e., with Guest login).
     """
-    if name in [platform.name for platform in ixmp4.conf.settings.manager.list_platforms()]:
+    if name in [
+        platform.name for platform in ixmp4.conf.settings.manager.list_platforms()
+    ]:
         raise NotImplementedError(
             "The function `lazy_read_iiasa()` does not support ixmp4 platforms."
         )
