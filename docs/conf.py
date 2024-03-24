@@ -355,6 +355,9 @@ nbsphinx_requirejs_path = ""
 # Extend the timeout limit for running notebooks
 nbsphinx_timeout = 120
 
+# Make the prompt wider to accommodate longer output
+nbsphinx_prompt_width = "800px"
+
 # prolog for all rst files
 rst_prolog = """
 
