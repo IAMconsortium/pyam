@@ -44,6 +44,7 @@ jobs:
         poetry add pandas@2.1.2 --lock
         poetry add pint@0.13 --lock
         poetry add xlrd@2.0.1 --optional --lock
+        poetry add xlsxwriter@3.0.3 --lock
 
     #------------------------------------
     #  load cached venv if cache exists
