@@ -55,7 +55,7 @@ scipy = ">=1.10.0"
 seaborn = ">=0.11"
 six = ">=1.16.0"
 wquantiles = ">=0.6"
-XlsxWriter = ">=3.2.0"
+XlsxWriter = ">=3.0.3"
 
 [tool.poetry.group.dev]
 optional = true
