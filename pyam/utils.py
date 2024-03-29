@@ -89,7 +89,7 @@ def write_sheet(writer, name, df, index=False):
         else:
             width = min(
                 max([df[col].map(lambda x: len(str(x or "None"))).max(), len(col)]) + 2,
-                100,  # make sure that column width is not too large
+                80,  # make sure that column width is not too large
             )
         writer.sheets[name].set_column(i, i, width)  # assumes xlsxwriter as engine
 
