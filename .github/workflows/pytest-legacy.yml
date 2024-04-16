@@ -41,7 +41,7 @@ jobs:
           poetry add iam-units@2020.4.21 --lock
           poetry add matplotlib@3.6.0 --lock
           poetry add numpy@1.26.0 --lock
-          poetry add pandas@2.2.0 --lock
+          poetry add pandas@2.1.2 --lock
           poetry add pint@0.13 --lock
           poetry add xlrd@2.0.1 --optional --lock
           poetry add xlsxwriter@3.0.3 --lock
