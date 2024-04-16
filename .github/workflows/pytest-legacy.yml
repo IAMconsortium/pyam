@@ -15,59 +15,59 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python
-      id: setup-python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-    #------------------------------
-    #  install & configure poetry
-    #------------------------------
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-      with:
-        virtualenvs-create: true
-        virtualenvs-in-project: true
-        installer-parallel: true
+      #------------------------------
+      #  install & configure poetry
+      #------------------------------
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
 
-    - name: Enforce usage of specific out-dated versions of dependencies
-      # Update the package requirements when changing minimum dependency versions
-      # Please also add a section "Dependency changes" to the release notes
-      # Don't install packages, just update lock file to see if a cache exists
-      run: |
-        poetry add iam-units@2020.4.21 --lock
-        poetry add matplotlib@3.6.0 --lock
-        poetry add numpy@1.26.0 --lock
-        poetry add pandas@2.1.2 --lock
-        poetry add pint@0.13 --lock
-        poetry add xlrd@2.0.1 --optional --lock
-        poetry add xlsxwriter@3.0.3 --lock
+      - name: Enforce usage of specific out-dated versions of dependencies
+        # Update the package requirements when changing minimum dependency versions
+        # Please also add a section "Dependency changes" to the release notes
+        # Don't install packages, just update lock file to see if a cache exists
+        run: |
+          poetry add iam-units@2020.4.21 --lock
+          poetry add matplotlib@3.6.0 --lock
+          poetry add numpy@1.26.0 --lock
+          poetry add pandas@2.2.0 --lock
+          poetry add pint@0.13 --lock
+          poetry add xlrd@2.0.1 --optional --lock
+          poetry add xlsxwriter@3.0.3 --lock
 
-    #------------------------------------
-    #  load cached venv if cache exists
-    #------------------------------------
-    - name: Load cached venv
-      id: cached-poetry-dependencies
-      uses: actions/cache@v4
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      #------------------------------------
+      #  load cached venv if cache exists
+      #------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-    #------------------------------------------------
-    #  install dependencies if cache does not exist
-    #------------------------------------------------
-    - name: Install dependencies
-      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-      run: poetry install --no-interaction --with dev,optional_io_formats,optional_plotting,tutorials --no-root
+      #------------------------------------------------
+      #  install dependencies if cache does not exist
+      #------------------------------------------------
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --with dev,optional_io_formats,optional_plotting,tutorials --no-root
 
-    #------------------------
-    #  install root project
-    #------------------------
-    - name: Install library
-      run: poetry install --no-interaction --only-root
+      #------------------------
+      #  install root project
+      #------------------------
+      - name: Install library
+        run: poetry install --no-interaction --only-root
 
-    - name: Test with pytest
-      run: poetry run pytest tests
+      - name: Test with pytest
+        run: poetry run pytest tests
