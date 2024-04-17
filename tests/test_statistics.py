@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import pandas as pd
 import pytest
 
@@ -142,4 +140,4 @@ def test_statistics_with_percentiles(plot_df):
     )
     stats = stats_add(stats, plot_df)
     obs = set(stats.stats.columns.get_level_values(2))
-    assert obs == set(["count", "mean", "std", "min", "5%", "50%", "95%", "max"])
+    assert obs == {"count", "mean", "std", "min", "5%", "50%", "95%", "max"}

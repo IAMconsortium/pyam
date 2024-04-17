@@ -8,7 +8,7 @@ from pyam.str import is_str
 from pyam.utils import META_IDX, is_list_like
 
 
-class Statistics(object):
+class Statistics:
     """This class generates descriptive statistics of timeseries data
 
     Parameters
@@ -46,9 +46,9 @@ class Statistics(object):
             self.groupby = groupby
             self.idx_depth = 2
         elif groupby is not None:
-            raise ValueError("arg `{}` not valid `groupby`".format(groupby))
+            raise ValueError(f"arg `{groupby}` not valid `groupby`")
         if self.col is not None and self.col not in df.meta.columns:
-            raise ValueError("column `{}` not in `df.meta`".format(self.col))
+            raise ValueError(f"column `{self.col}` not in `df.meta`")
 
         # if neither groupby nor filters is given, use filters to describe all
         # and assume that rows are used
@@ -79,11 +79,11 @@ class Statistics(object):
                     and is_str(idx[0])
                     or not is_str(idx[1])
                 ):
-                    raise ValueError("`{}` is not a valid index".format(idx))
+                    raise ValueError(f"`{idx}` is not a valid index")
                 self._add_to_index(idx[0], idx[1])
             # check that filters in tuple are valid
             if not isinstance(_filter, dict):
-                raise ValueError("`{}` is not a valid filter".format(_filter))
+                raise ValueError(f"`{_filter}` is not a valid filter")
             elif not (set(_filter) - set(META_IDX)).issubset(df.meta):
                 raise ValueError(
                     "column `{}` not in `df.meta`".format(
@@ -98,7 +98,7 @@ class Statistics(object):
         self.percentiles = list(percentiles)
         self._describe_cols = (
             ["count", "mean", "std", "min"]
-            + ["{:.0%}".format(i) for i in self.percentiles]
+            + [f"{i:.0%}" for i in self.percentiles]
             + ["max"]
         )
 
@@ -112,10 +112,10 @@ class Statistics(object):
             raise ValueError(msg.format(idx, "(idx0, idx1)"))
         if self.idx_depth == 1 and sub_idx is not None:
             raise ValueError(
-                "index depth set to 1, found `({}, {})`".format(idx, sub_idx)
+                f"index depth set to 1, found `({idx}, {sub_idx})`"
             )
         if self.idx_depth == 2 and sub_idx is None:
-            raise ValueError("index depth set to 2, found `({})`".format(idx))
+            raise ValueError(f"index depth set to 2, found `({idx})`")
 
         # append to lists for sorting index
         if idx not in self._idx:
@@ -292,7 +292,7 @@ def format_rows(
     count = max(
         [i for i in row.loc[(slice(None), slice(None), "count")] if not np.isnan(i)]
     )
-    ret.loc[("count", "")] = ("{:.0f}".format(count)) if count > 1 else ""
+    ret.loc[("count", "")] = (f"{count:.0f}") if count > 1 else ""
 
     # set upper and lower for the range
     upper, lower = ("max", "min") if fullrange is True else ("75%", "25%")
@@ -308,10 +308,10 @@ def format_rows(
                 x[center], x[upper], x[lower]
             )
         elif _count == 1:
-            s = "{f}".format(f=custom_format).format(x["50%"])
+            s = f"{custom_format}".format(x["50%"])
         # add count of this section as `[]` if different from count_max
         if 0 < _count < count:
-            s += " [{:.0f}]".format(_count)
+            s += f" [{_count:.0f}]"
         ret.loc[i] = s
 
     return ret

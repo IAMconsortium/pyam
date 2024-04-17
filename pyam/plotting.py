@@ -330,7 +330,7 @@ def pie(
     if not isinstance(df, pd.DataFrame):
         df = df.as_pandas()
 
-    for col in set(SORT_IDX) - set([category]):
+    for col in set(SORT_IDX) - {category}:
         if len(df[col].unique()) > 1:
             msg = (
                 "Can not plot multiple {}s in a pie plot with value={} and category={}"
@@ -436,7 +436,7 @@ def stack(  # noqa: C901
     if not isinstance(df, pd.DataFrame):
         df = df.as_pandas()
 
-    for col in set(SORT_IDX) - set([x, stack]):
+    for col in set(SORT_IDX) - {x, stack}:
         if len(df[col].unique()) > 1:
             msg = "Can not plot multiple {}s in stack_plot with x={}, stack={}"
             raise ValueError(msg.format(col, x, stack))
@@ -539,7 +539,7 @@ def stack(  # noqa: C901
     for var in ["model", "scenario", "region", "variable"]:
         values = df[var].unique()
         if len(values) == 1:
-            _title.append("{}: {}".format(var, values[0]))
+            _title.append(f"{var}: {values[0]}")
     if title and _title:
         title = " ".join(_title) if title is True else title
         ax.set_title(title)
@@ -605,7 +605,7 @@ def bar(  # noqa: C901
     if not isinstance(df, pd.DataFrame):
         df = df.as_pandas()
 
-    for col in set(SORT_IDX) - set([x, bars]):
+    for col in set(SORT_IDX) - {x, bars}:
         if len(df[col].unique()) > 1:
             msg = "Can not plot multiple {}s in bar plot with x={}, bars={}"
             raise ValueError(msg.format(col, x, bars))
@@ -658,7 +658,7 @@ def bar(  # noqa: C901
     for var in ["model", "scenario", "region", "variable"]:
         values = df[var].unique()
         if len(values) == 1:
-            _title.append("{}: {}".format(var, values[0]))
+            _title.append(f"{var}: {values[0]}")
     if title and _title:
         title = " ".join(_title) if title is True else title
         ax.set_title(title)
@@ -1008,9 +1008,9 @@ def line(  # noqa: C901
     # pivot data if asked for explicit variable name
     variables = df["variable"].unique()
     if x in variables or y in variables:
-        keep_vars = set([x, y]) & set(variables)
+        keep_vars = {x, y} & set(variables)
         df = df[df["variable"].isin(keep_vars)]
-        idx = list(set(df.columns) - set(["value"]))
+        idx = list(set(df.columns) - {"value"})
         df = (
             df.reset_index()
             .set_index(idx)
@@ -1038,7 +1038,7 @@ def line(  # noqa: C901
     # prepare a dict for ordering, reshape data for use in line_plot
     idx_cols = list(df.columns.drop(y))
     if not isinstance(order, dict):
-        order = dict([(i, None) for i in order or idx_cols])
+        order = {i: None for i in order or idx_cols}
     df = reshape_mpl(df, x, y, idx_cols, **order)
 
     # determine the columns that should go into the legend
@@ -1158,7 +1158,7 @@ def line(  # noqa: C901
 
     # build unique legend handles and labels
     if legend is not False:
-        handles, labels = [np.array(i) for i in ax.get_legend_handles_labels()]
+        handles, labels = (np.array(i) for i in ax.get_legend_handles_labels())
         if label is not None:  # label given explicitly via kwarg
             _add_legend(ax, handles, labels, legend)
         else:

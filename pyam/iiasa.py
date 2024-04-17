@@ -60,7 +60,7 @@ def set_config(*args, **kwargs):
 
 def _read_config(file):
     """Read username and password for IIASA API connection from file"""
-    with open(file, "r") as stream:
+    with open(file) as stream:
         creds = yaml.safe_load(stream)
 
     return ManagerAuth(**creds, url=str(settings.manager_url))
@@ -139,7 +139,7 @@ class SceSeAuth(AuthBase):
         return {"Authorization": "Bearer " + self.access_token}
 
 
-class Connection(object):
+class Connection:
     """A class to facilitate querying an IIASA Scenario Explorer database API
 
     Parameters
@@ -177,7 +177,7 @@ class Connection(object):
             logger.info("You are connected as an anonymous user")
 
     @property
-    @lru_cache()
+    @lru_cache
     def _connection_map(self):
         # TODO: application-list will be reimplemented in conjunction with ixmp-server
         r = self.auth.client.get("legacy/applications", headers=self.auth())
@@ -194,7 +194,7 @@ class Connection(object):
                 name = x["name"]
                 if env is not None:
                     if env in aliases:
-                        logger.warning("Duplicate instance alias {}".format(env))
+                        logger.warning(f"Duplicate instance alias {env}")
                         conn_map[name] = name
                         first_duplicate = conn_map.pop(env)
                         conn_map[first_duplicate] = first_duplicate
@@ -206,7 +206,7 @@ class Connection(object):
         return conn_map
 
     @property
-    @lru_cache()
+    @lru_cache
     def valid_connections(self):
         """Return available resources (database API connections)"""
         logger.warning(
@@ -358,7 +358,7 @@ class Connection(object):
         cols = audit_cols + other_cols
 
         _df = self._query_index(default_only, meta=True, cols=cols, **kwargs)
-        audit_mapping = dict([(i, i.replace("_", "ate_")) for i in audit_cols])
+        audit_mapping = {i: i.replace("_", "ate_") for i in audit_cols}
 
         return _df.set_index(META_IDX).rename(columns=audit_mapping)
 
@@ -370,7 +370,7 @@ class Connection(object):
         """List all scenarios in the connected resource"""
         return pd.Series(self._query_index()["scenario"].unique(), name="scenario")
 
-    @lru_cache()
+    @lru_cache
     def variables(self):
         """List all variables in the connected resource"""
         url = "/".join([self._base_url, "ts"])
@@ -379,7 +379,7 @@ class Connection(object):
         df = pd.read_json(StringIO(r.text), orient="records")
         return pd.Series(df["variable"].unique(), name="variable")
 
-    @lru_cache()
+    @lru_cache
     def regions(self, include_synonyms=False):
         """List all regions in the connected resource
 

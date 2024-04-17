@@ -72,7 +72,7 @@ def _check_rows(rows, check, in_range=True, return_test="any"):
             - 'any': default, return scenarios where check passes for any entry
             - 'all': test if all values match checks, if not, return empty set
     """
-    valid_checks = set(["up", "lo", "year"])
+    valid_checks = {"up", "lo", "year"}
     if not set(check.keys()).issubset(valid_checks):
         msg = "Unknown checking type: {}"
         raise ValueError(msg.format(check.keys() - valid_checks))
@@ -99,7 +99,7 @@ def _check_rows(rows, check, in_range=True, return_test="any"):
     elif return_test == "all":
         ret = where_idx if where_idx == set.intersection(*check_idx) else set()
     else:
-        raise ValueError("Unknown return test: {}".format(return_test))
+        raise ValueError(f"Unknown return test: {return_test}")
     return ret
 
 

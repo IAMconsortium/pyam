@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # pyam documentation build configuration file, created by
 # sphinx-quickstart on Tue Feb  9 09:59:03 2016.
