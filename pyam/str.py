@@ -2,7 +2,6 @@ import re
 
 import numpy as np
 import pandas as pd
-import six
 from pandas.api.types import is_list_like
 
 
@@ -143,4 +142,4 @@ def escape_regexp(s):
 
 def is_str(x):
     """Returns True if x is a string"""
-    return isinstance(x, six.string_types)
+    return isinstance(x, str)
