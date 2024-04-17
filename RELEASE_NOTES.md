@@ -1,3 +1,8 @@
+# Release v2.2.1
+
+Patch release to explicitly include the **requests** dependency, which was dropped
+from **ixmp4** with release 0.8.1.
+
 # Release v2.2.0
 
 ## Highlights
