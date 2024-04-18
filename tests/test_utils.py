@@ -86,6 +86,14 @@ def test_pattern_match_brackets():
     assert (obs == [True, False]).all()
 
 
+def test_pattern_match_square_brackets():
+    data = pd.Series(["foo [bar]", "foo bar"])
+    values = ["foo [bar]"]
+
+    obs = pattern_match(data, values)
+    assert (obs == [True, False]).all()
+
+
 def test_pattern_match_dollar():
     data = pd.Series(["foo$bar", "foo"])
     values = ["foo$bar"]
