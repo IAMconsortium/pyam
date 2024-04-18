@@ -33,7 +33,7 @@ def convert_unit(
     registry = registry or iam_units.registry
 
     # Make versions without -equiv
-    _current, _to = [i.replace("-equiv", "") for i in [current, to]]
+    _current, _to = (i.replace("-equiv", "") for i in [current, to])
     # Pair of (magnitude, unit)
     qty = [ret._data.loc[where].values, _current]
 

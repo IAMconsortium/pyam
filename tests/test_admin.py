@@ -18,11 +18,11 @@ def test_config(capsys):
     with capsys.disabled():
         print("\nPlotting function decorator kwargs:")
         for k, v in MPL_KWARGS.items():
-            print("{}: {}".format(k, v))
+            print(f"{k}: {v}")
 
         print("\nModule versions:")
         for key in sorted(list(modules.keys())):
-            print("{}: {}".format(key, modules[key]))
+            print(f"{key}: {modules[key]}")
 
         if IIASA_UNAVAILABLE:
             print("\nWARNING: IIASA-API unavailable, skipping related tests\n")

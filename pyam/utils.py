@@ -35,7 +35,7 @@ NUMERIC_TO_STR = dict(
         range(0, 702),
         [i for i in string.ascii_uppercase]
         + [
-            "{}{}".format(i, j)
+            f"{i}{j}"
             for i, j in itertools.product(
                 string.ascii_uppercase, string.ascii_uppercase
             )

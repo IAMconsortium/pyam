@@ -106,7 +106,7 @@ def cross_threshold(
         Whether to cast the returned values to integer (years)
     """
     direction = [direction] if is_str(direction) else list(direction)
-    if not set(direction).issubset(set(["from above", "from below"])):
+    if not set(direction).issubset({"from above", "from below"}):
         raise ValueError(f"Invalid direction: {direction}")
 
     # get the values and time-domain index

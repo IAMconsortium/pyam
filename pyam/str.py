@@ -80,7 +80,7 @@ def _find_depth(data, s="", level=None):
             return level <= x if x is not None else False
 
     else:
-        raise ValueError("Unknown level type: `{}`".format(level))
+        raise ValueError(f"Unknown level type: `{level}`")
 
     return list(map(test, n_pipes))
 

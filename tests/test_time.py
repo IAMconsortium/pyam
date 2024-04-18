@@ -58,7 +58,7 @@ def test_time_domain(test_pd_df, time, domain, index):
     # see https://github.com/IAMconsortium/pyam/issues/722
     test_pd_df.loc[0, test_pd_df.columns[5]] = np.nan
 
-    mapping = dict([(i, j) for i, j in zip(TEST_YEARS, time)])
+    mapping = {i: j for i, j in zip(TEST_YEARS, time)}
     df = IamDataFrame(data=test_pd_df.rename(mapping, axis="columns"))
 
     assert df.time_col == "year" if domain == "year" else "time"

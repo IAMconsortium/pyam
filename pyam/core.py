@@ -74,7 +74,7 @@ from pyam.validation import _exclude_on_fail, _validate
 logger = logging.getLogger(__name__)
 
 
-class IamDataFrame(object):
+class IamDataFrame:
     """Scenario timeseries data and meta indicators
 
     The class provides a number of diagnostic features (including validation of
@@ -1781,7 +1781,7 @@ class IamDataFrame(object):
         include `'foo|bar|baz'`, which is a sub-sub-category. If `level=None`,
         all variables below `variable` in the hierarchy are returned."""
         var_list = pd.Series(self.variable)
-        return var_list[pattern_match(var_list, "{}|*".format(variable), level=level)]
+        return var_list[pattern_match(var_list, f"{variable}|*", level=level)]
 
     def _get_cols(self, cols):
         """Return a list of columns of `self.data`"""
@@ -2445,7 +2445,7 @@ class IamDataFrame(object):
 
         # write meta table unless `include_meta=False`
         if include_meta and len(self.meta.columns):
-            meta_rename = dict([(i, i.capitalize()) for i in self.index.names])
+            meta_rename = {i: i.capitalize() for i in self.index.names}
             write_sheet(
                 excel_writer,
                 "meta" if include_meta is True else include_meta,
@@ -2501,7 +2501,7 @@ class IamDataFrame(object):
 
             # cast tables to datapackage
             package = Package()
-            package.infer("{}/*.csv".format(tmp))
+            package.infer(f"{tmp}/*.csv")
             if not package.valid:
                 logger.warning("The exported datapackage is not valid")
             package.save(path)
@@ -2530,7 +2530,7 @@ class IamDataFrame(object):
         meta = read_pandas(path, sheet_name=sheet_name, **kwargs)
 
         # cast index-column headers to lower-case, check that required index exists
-        meta = meta.rename(columns=dict([(i.capitalize(), i) for i in META_IDX]))
+        meta = meta.rename(columns={i.capitalize(): i for i in META_IDX})
         if missing_cols := [c for c in self.index.names if c not in meta.columns]:
             raise ValueError(
                 f"Missing index columns for meta indicators: {missing_cols}"

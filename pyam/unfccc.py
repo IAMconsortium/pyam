@@ -136,7 +136,7 @@ def _compile_variable(i, variable):
     """Translate UNFCCC columns into an IAMC-style variable"""
     if i["variable"]:
         raise ValueError("Conflict in variable mapping.")
-    return variable.format(**dict((c, i[c]) for c in NAME_COLS))
+    return variable.format(**{c: i[c] for c in NAME_COLS})
 
 
 def _compile_unit(i):

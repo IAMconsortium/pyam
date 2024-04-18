@@ -113,14 +113,14 @@ class RunControl(Mapping):
             msg = (
                 "YAML key '{}' in {}: {} is not a valid relative " + "or absolute path"
             )
-            raise IOError(msg.format(key, fyaml, fname))
+            raise OSError(msg.format(key, fyaml, fname))
         return _fname
 
     def _load_yaml(self, obj):
         if hasattr(obj, "read"):  # it's a file
             obj = obj.read()
         if is_str(obj) and not os.path.exists(obj):
-            raise IOError("File {} does not exist".format(obj))
+            raise OSError(f"File {obj} does not exist")
         if is_str(obj) and os.path.exists(obj):
             fname = obj
             with open(fname) as f:

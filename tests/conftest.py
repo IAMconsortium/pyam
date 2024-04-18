@@ -146,9 +146,9 @@ TEST_STACKPLOT_DF["scenario"] = "a_scen"
         # standard IAMC format
         {},
         # testing several versions of datetime format
-        dict([(i, j) for i, j in zip(TEST_YEARS, TEST_DTS)]),
-        dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_STR)]),
-        dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_STR_HR)]),
+        {i: j for i, j in zip(TEST_YEARS, TEST_DTS)},
+        {i: j for i, j in zip(TEST_YEARS, TEST_TIME_STR)},
+        {i: j for i, j in zip(TEST_YEARS, TEST_TIME_STR_HR)},
     ],
 )
 def test_df(request):
@@ -181,7 +181,7 @@ def test_df_time():
 # minimal IamDataFrame for specifically testing 'mixed'-time-domain features
 @pytest.fixture(scope="function")
 def test_df_mixed():
-    mapping = dict([(i, j) for i, j in zip(TEST_YEARS, TEST_TIME_MIXED)])
+    mapping = {i: j for i, j in zip(TEST_YEARS, TEST_TIME_MIXED)}
     df = IamDataFrame(data=TEST_DF.rename(mapping, axis="columns"))
     for i in META_COLS:
         df.set_meta(META_DF[i])

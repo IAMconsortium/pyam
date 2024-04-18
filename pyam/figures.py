@@ -51,12 +51,10 @@ def sankey(df, mapping):
     _df = pd.DataFrame.from_dict(
         mapping, orient="index", columns=["source", "target"]
     ).merge(df._data, how="left", left_index=True, right_on="variable")
-    label_mapping = dict(
-        [
-            (label, i)
+    label_mapping = {
+            label: i
             for i, label in enumerate(set(pd.concat([_df["source"], _df["target"]])))
-        ]
-    )
+    }
     _df.replace(label_mapping, inplace=True)
     region = get_index_levels(_df, "region")[0]
     unit = get_index_levels(_df, "unit")[0]
