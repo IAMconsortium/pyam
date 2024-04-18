@@ -123,7 +123,7 @@ def reduce_hierarchy(x, depth):
     """
     _x = x.split("|")
     depth = len(_x) + depth - 1 if depth < 0 else depth
-    return "|".join(_x[0 : (depth + 1)])
+    return "|".join(_x[0: (depth + 1)])
 
 
 def escape_regexp(s):
@@ -136,6 +136,8 @@ def escape_regexp(s):
         .replace("+", r"\+")
         .replace("(", r"\(")
         .replace(")", r"\)")
+        .replace("[", r"\[")
+        .replace("]", r"\]")
         .replace("$", "\\$")
     )
 
