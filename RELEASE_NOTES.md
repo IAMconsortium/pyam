@@ -1,3 +1,8 @@
+# Release v2.2.2
+
+Patch release to correctly handle regexp-characters (`[]{}?^`) in `filter()`
+and better handling of the logging-configuration.
+
 # Release v2.2.1
 
 Patch release to explicitly include the **requests** dependency, which was dropped
