@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_list_like
 
+REGEXP_CHARACTERS = r".+()[]{}|$"
+
 
 def concat_with_pipe(x, *args, cols=None):
     """Concatenate a list or pandas.Series using ``|``, drop None or numpy.nan"""
@@ -128,18 +130,12 @@ def reduce_hierarchy(x, depth):
 
 def escape_regexp(s):
     """Escape characters with specific regexp use"""
-    return (
-        str(s)
-        .replace("|", "\\|")
-        .replace(".", r"\.")  # `.` has to be replaced before `*`
-        .replace("*", ".*")
-        .replace("+", r"\+")
-        .replace("(", r"\(")
-        .replace(")", r"\)")
-        .replace("[", r"\[")
-        .replace("]", r"\]")
-        .replace("$", "\\$")
-    )
+    s = str(s)
+    for c in REGEXP_CHARACTERS:
+        s = s.replace(c, "\\" + c)
+    # pyam uses `*` as wildcard, replace with `.*` for regex
+    s = s.replace("*", ".*")
+    return s
 
 
 def is_str(x):
