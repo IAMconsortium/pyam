@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_list_like
 
-REGEXP_CHARACTERS = r".+()[]{}|$"
+REGEXP_CHARACTERS = r".^$+?()[]{}|"
 
 
 def concat_with_pipe(x, *args, cols=None):
