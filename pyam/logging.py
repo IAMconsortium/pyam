@@ -13,7 +13,7 @@ logger = getLogger(__name__)
 def configure_logging():
     """Configure logging"""
     logging_config = here / "logging.json"
-    with open(logging_config, "r") as file:
+    with open(logging_config) as file:
         config_dict = json.load(file)
     config.dictConfig(config_dict)
 
