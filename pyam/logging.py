@@ -1,3 +1,4 @@
+import json
 import warnings
 from contextlib import contextmanager
 from logging import config, getLogger
@@ -11,7 +12,9 @@ logger = getLogger(__name__)
 
 def configure_logging():
     """Configure logging"""
-    config.fileConfig(here / "logging.conf", disable_existing_loggers=False)
+    logging_config = here / "logging.json"
+    with open(logging_config) as file:
+        config.dictConfig(json.load(file))
 
 
 @contextmanager
