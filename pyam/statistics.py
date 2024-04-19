@@ -111,9 +111,7 @@ class Statistics:
             msg = "if `groupby` is used, index `{}` must have format `{}`"
             raise ValueError(msg.format(idx, "(idx0, idx1)"))
         if self.idx_depth == 1 and sub_idx is not None:
-            raise ValueError(
-                f"index depth set to 1, found `({idx}, {sub_idx})`"
-            )
+            raise ValueError(f"index depth set to 1, found `({idx}, {sub_idx})`")
         if self.idx_depth == 2 and sub_idx is None:
             raise ValueError(f"index depth set to 2, found `({idx})`")
 
