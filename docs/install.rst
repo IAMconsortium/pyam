@@ -38,6 +38,6 @@ Dependencies
 Like any software project, we stand on the shoulders of giants. Our particular
 giants include **pandas** (https://pandas.pydata.org),
 **matplotlib** (https://matplotlib.org), and **numpy** (https://numpy.org).
-See the `setup configuration`_ for more information.
+See the `pyproject.toml`_ for more information.
 
-.. _`setup configuration`: https://github.com/IAMconsortium/pyam/blob/main/setup.cfg
+.. _`pyproject.toml`: https://github.com/IAMconsortium/pyam/blob/main/pyproject.toml
