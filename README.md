@@ -93,6 +93,20 @@ Please install using
 conda install pyam
 ```
 
+### install from source
+
+To install from source (including all dependencies) after cloning this repository, run
+
+```
+pip install --editable .[tests,optional_io_formats,tutorials]
+```
+
+To check that the package was installed correctly, run
+
+```
+pytest tests
+```
+
 Tutorials
 ---------
 
@@ -166,22 +180,3 @@ Copyright 2017-2024 IIASA and the pyam developer team
 The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");  
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
-
-Install
--------
-
-For basic instructions,
-please [read the docs](https://pyam-iamc.readthedocs.io/en/stable/install.html)!
-
-To install from source (including all dependencies)
-after cloning this repository, simply run
-
-```
-pip install --editable .[tests,optional_io_formats,tutorials]
-```
-
-To check that the package was installed correctly, run
-
-```
-pytest tests
-```
