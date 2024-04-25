@@ -69,6 +69,44 @@ for more information about the pyam data model
 or look at the [data-table tutorial](https://pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.html)
 to see how to cast from a variety of timeseries formats to a **pyam.IamDataFrame**.
 
+Installation
+------------
+
+### pip
+
+> [!WARNING]
+> The **pyam** package is distributed on https://pypi.org under the name **pyam-iamc**.
+
+https://pypi.org/project/pyam-iamc/
+
+Please install using
+```
+pip install pyam-iamc
+```
+
+### conda
+
+https://anaconda.org/conda-forge/pyam
+
+Please install using
+```
+conda install pyam
+```
+
+### install from source
+
+To install from source (including all dependencies) after cloning this repository, run
+
+```
+pip install --editable .[tests,optional_io_formats,tutorials]
+```
+
+To check that the package was installed correctly, run
+
+```
+pytest tests
+```
+
 Tutorials
 ---------
 
@@ -142,22 +180,3 @@ Copyright 2017-2024 IIASA and the pyam developer team
 The **pyam** package is licensed
 under the Apache License, Version 2.0 (the "License");  
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
-
-Install
--------
-
-For basic instructions,
-please [read the docs](https://pyam-iamc.readthedocs.io/en/stable/install.html)!
-
-To install from source (including all dependencies)
-after cloning this repository, simply run
-
-```
-pip install --editable .[tests,optional_io_formats,tutorials]
-```
-
-To check that the package was installed correctly, run
-
-```
-pytest tests
-```
