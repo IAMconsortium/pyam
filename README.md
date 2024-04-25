@@ -77,12 +77,17 @@ Installation
 > [!WARNING]
 > The **pyam** package is distributed on https://pypi.org under the name **pyam-iamc**.
 
+https://pypi.org/project/pyam-iamc/
+
 Please install using
 ```
 pip install pyam-iamc
 ```
 
 ### conda
+
+https://anaconda.org/conda-forge/pyam
+
 Please install using
 ```
 conda install pyam
