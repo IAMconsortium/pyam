@@ -69,6 +69,25 @@ for more information about the pyam data model
 or look at the [data-table tutorial](https://pyam-iamc.readthedocs.io/en/stable/tutorials/data_table_formats.html)
 to see how to cast from a variety of timeseries formats to a **pyam.IamDataFrame**.
 
+Installation
+------------
+
+### pip
+
+> [!WARNING]
+> The **pyam** package is distributed on https://pypi.org under the name **pyam-iamc**.
+
+Please install using
+```
+pip install pyam-iamc
+```
+
+### conda
+Please install using
+```
+conda install pyam
+```
+
 Tutorials
 ---------
 
