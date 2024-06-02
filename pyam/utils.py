@@ -341,7 +341,12 @@ def format_data(df, index, **kwargs):  # noqa: C901
                 df = df.set_index(extra_cols_not_in_index, append=True)
 
             if data_cols:
-                df = df[data_cols].rename_axis(columns=time_col).stack(future_stack=True).rename("value")
+                df = (
+                    df[data_cols]
+                    .rename_axis(columns=time_col)
+                    .stack(future_stack=True)
+                    .rename("value")
+                )
             else:
                 df = df["value"]
 
