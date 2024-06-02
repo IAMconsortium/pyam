@@ -1,24 +1,25 @@
 {
-    "version": 1,
-    "disable_existing_loggers": false,
-    "formatters": {
-      "generic": {
-        "format": "[%(levelname)s] %(asctime)s - %(name)s: %(message)s",
-        "datefmt": "%H:%M:%S"
-      }
-    },
-    "loggers": {
-      "pyam": {
-        "level": "INFO",
-        "handlers": ["console"]
-      }
-    },
-    "handlers": {
-      "console": {
-        "class": "logging.StreamHandler",
-        "level": "NOTSET",
-        "formatter": "generic"
-      }
+  "version": 1,
+  "disable_existing_loggers": false,
+  "formatters": {
+    "generic": {
+      "format": "[%(levelname)s] %(asctime)s - %(name)s: %(message)s",
+      "datefmt": "%H:%M:%S"
+    }
+  },
+  "loggers": {
+    "pyam": {
+      "level": "INFO",
+      "handlers": [
+        "console"
+      ]
+    }
+  },
+  "handlers": {
+    "console": {
+      "class": "logging.StreamHandler",
+      "level": "NOTSET",
+      "formatter": "generic"
     }
   }
-  
+}
