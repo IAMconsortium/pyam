@@ -1752,7 +1752,7 @@ class IamDataFrame:
                 rows = weight.index.isin(subregions, level="region")
             else:
                 rows = ~weight.index.isin([region], level="region")
-            _proxy = weight[rows].stack()
+            _proxy = weight[rows].stack(future_stack=True)
         else:
             raise ValueError("Either a 'proxy' or 'weight' argument is required!")
 
