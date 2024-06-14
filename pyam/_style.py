@@ -7,7 +7,6 @@
 # being a bit too dynamic
 import warnings
 
-import matplotlib.cm as cm
 import matplotlib.colors
 import numpy as np
 import pandas.core.common as com
@@ -22,7 +21,7 @@ def _get_standard_colors(  # noqa: C901
     if color is None and colormap is not None:
         if isinstance(colormap, str):
             cmap = colormap
-            colormap = cm.get_cmap(colormap)
+            colormap = plt.get_cmap(colormap)
             if colormap is None:
                 raise ValueError(f"Colormap {cmap} is not recognized")
         colors = [colormap(num) for num in np.linspace(0, 1, num=num_colors)]
