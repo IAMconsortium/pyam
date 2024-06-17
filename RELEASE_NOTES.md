@@ -1,3 +1,7 @@
+# Release v2.2.3
+
+Bump **ixmp4** minimum dependency to latest version and pin **numpy** to <2.0.
+
 # Release v2.2.2
 
 Patch release to correctly handle regexp-characters (`[]{}?^`) in `filter()`
