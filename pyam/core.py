@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 
 import ixmp4
 import numpy as np
+import xarray as xr
 import pandas as pd
 from pandas.api.types import is_integer
 
@@ -2853,3 +2854,45 @@ def read_datapackage(path, data="data", meta="meta"):
         df.meta = _meta.set_index(META_IDX)
 
     return df
+
+
+def read_agg_netcdf(path):
+    """Read timeseries data and meta-indicators from aggregated netCDF (intermediate from Euro Calliope netCDF)
+
+    Parameters
+    ----------
+    path : string or path object to the netcdf file
+
+    output
+    ----------
+    IamDataFrame
+    
+    """
+    
+    _ds = xr.open_dataset(path)
+    def _get_column_names(_ds):
+        _list_cols = ['Model', 'Scenario', 'Region', 'Variable', 'Unit']
+        _list_cols.extend(_ds.coords['time'].values.tolist())
+        return _list_cols
+        
+    # read `data` table
+    list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
+    _full_df = pd.DataFrame()
+    for _var in list_variables:
+        _tmp = _ds[_var].to_dataframe().pivot_table(index=['Model', 'Scenario', 'Region'], columns='time', values=_var).reset_index(drop=False)
+        _tmp['Variable'] = _ds[_var].long_name
+        _tmp['Unit'] = _ds[_var].unit
+        _tmp = _tmp.reindex(columns=_get_column_names(_ds))
+        _full_df = pd.concat([_full_df, _tmp])
+    
+    # remove index name as 'time' and reset index to number the whole dataset
+    _full_df = _full_df.rename_axis(None, axis=1).reset_index(drop=True)
+
+    # read `meta` table
+    if 'meta' in _ds.attrs.keys():
+        _full_df.meta_netcdf = _ds.attrs['meta']
+    else: Print('Meta Missing: No meta data found in the netcdf file')
+
+    return IamDataFrame(_full_df)
+
+
