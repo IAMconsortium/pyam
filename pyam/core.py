@@ -9,6 +9,7 @@ from tempfile import TemporaryDirectory
 import ixmp4
 import numpy as np
 import xarray as xr
+import datetime as dt
 import pandas as pd
 from pandas.api.types import is_integer
 
@@ -2870,19 +2871,41 @@ def read_agg_netcdf(path):
     """
     
     _ds = xr.open_dataset(path)
-    def _get_column_names(_ds):
-        _list_cols = ['Model', 'Scenario', 'Region', 'Variable', 'Unit']
+    # Check if the time coordinate is year-based in the range of 1900--2100, or timeseries
+    def is_year_valid(_x):
+        if isinstance(_x, (int, np.integer)):
+            return all([_x >= 1900, _x <= 2100])
+        else: 
+            return False 
+    
+    is_year_based = all(is_year_valid(x) for x in _ds.coords['time'].values)
+    is_datetime = all(isinstance(x, (dt.date, dt.time, np.datetime64)) for x in _ds.coords['time'].values)
+
+    if not is_year_based and not is_datetime:
+        raise TypeError("Time coordinate needs to be integer between 1900 and 2100 (year-based) or datetime (timeseries), given neither")
+    
+    _list_cols = ['model', 'scenario', 'region', 'variable', 'unit']
+    _list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
+    
+    # Check if the xarray dataset has the correct coordinates, then get column names
+    if is_year_based:
         _list_cols.extend(_ds.coords['time'].values.tolist())
-        return _list_cols
-        
+    elif is_datetime:
+        _list_cols.extend(['time', 'value'])
+    
     # read `data` table
-    list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
     _full_df = pd.DataFrame()
-    for _var in list_variables:
-        _tmp = _ds[_var].to_dataframe().pivot_table(index=['Model', 'Scenario', 'Region'], columns='time', values=_var).reset_index(drop=False)
-        _tmp['Variable'] = _ds[_var].long_name
-        _tmp['Unit'] = _ds[_var].unit
-        _tmp = _tmp.reindex(columns=_get_column_names(_ds))
+    for _var in _list_variables:
+        # if year-based data, convert into wide-format table
+        if is_year_based:
+            _tmp = _ds[_var].to_dataframe().pivot_table(index=['model', 'scenario', 'region'], columns='time', values=_var).reset_index(drop=False)
+        # if timeseries, convert into long-format table
+        elif is_datetime:
+            _tmp = _ds[_var].to_dataframe().reset_index(drop=False).rename(columns={_var: "value"})
+        
+        _tmp['variable'] = _ds[_var].long_name
+        _tmp['unit'] = _ds[_var].unit
+        _tmp = _tmp.reindex(columns=_list_cols)
         _full_df = pd.concat([_full_df, _tmp])
     
     # remove index name as 'time' and reset index to number the whole dataset
