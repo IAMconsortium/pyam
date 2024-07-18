@@ -1073,6 +1073,8 @@ class IamDataFrame:
         self,
         criteria: dict = None,
         *,
+        value: float = None,
+        rtol: float = None,
         upper_bound: float = None,
         lower_bound: float = None,
         exclude_on_fail: bool = False,
@@ -1088,6 +1090,10 @@ class IamDataFrame:
 
         Parameters
         ----------
+        value : float, optional
+            Value to compare with timeseries data.
+        rtol : float, optional
+            Relative allowed tolerance of timeseries data from `value`.
         upper_bound, lower_bound : float, optional
             Upper and lower bounds for validation criteria of timeseries :attr:`data`.
         criteria : dict, optional, deprecated
@@ -1111,6 +1117,8 @@ class IamDataFrame:
         return _validate(
             self,
             criteria=criteria,
+            value=value,
+            rtol=rtol,
             upper_bound=upper_bound,
             lower_bound=lower_bound,
             exclude_on_fail=exclude_on_fail,
