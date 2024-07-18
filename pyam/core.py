@@ -697,7 +697,7 @@ class IamDataFrame:
         # replace underlying data object
         # TODO naming time_col could be done in timeseries()
         df.columns.name = ret.time_col
-        df = df.stack()  # long-data to pd.Series
+        df = df.stack(future_stack=True).dropna()  # long-data to pd.Series
         df.name = "value"
         ret._data = df.sort_index()
         ret._set_attributes()
