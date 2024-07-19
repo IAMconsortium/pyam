@@ -31,31 +31,15 @@ def _validate(
             kwargs["year"] = _value.get("year", None)
             criteria = None
 
+        # legacy implementation for multiple validation within one dictionary
+        else:
+            _df = _apply_criteria(df._data, criteria, in_range=False)
+
     if criteria is None:
         _df = df._data[df.slice(**kwargs)]
         if _df.empty:
             logger.warning("No data matches filters, skipping validation.")
-
-        if value is not None:
-            if upper_bound or lower_bound is not None:
-                raise ValueError(
-                    "Using `value` and bounds simultaneously is not supported."
-                )
-            upper_bound = value * (1 + (rtol or 0))
-            lower_bound = value * (1 - (rtol or 0))
-
-        failed_validation = []
-        if upper_bound is not None:
-            failed_validation.append(_df[_df > upper_bound])
-        if lower_bound is not None:
-            failed_validation.append(_df[_df < lower_bound])
-        if not failed_validation:
-            return
-        _df = pd.concat(failed_validation).sort_index()
-
-    # legcy implementation for multiple validation within one dictionary
-    else:
-        _df = _apply_criteria(df._data, criteria, in_range=False)
+        _df = _check_bounds(_df, value, rtol, upper_bound, lower_bound)
 
     if not _df.empty:
         msg = "{} of {} data points do not satisfy the criteria"
@@ -64,6 +48,29 @@ def _validate(
         if exclude_on_fail and len(_df) > 0:
             _exclude_on_fail(df, _df)
         return _df.reset_index()
+
+
+def _check_bounds(data, value=None, rtol=None, upper_bound=None, lower_bound=None):
+    """Return al data points that do not satisfy the criteria"""
+    if value is None and rtol is not None:
+        raise ValueError(
+            "Using `rtol` is only supported in conjunction with `value`."
+        )
+    if value is not None:
+        if upper_bound or lower_bound is not None:
+            raise ValueError(
+                "Using `value` and bounds simultaneously is not supported."
+            )
+        upper_bound, lower_bound = value * ((1 + (rtol or 0)), (1 - (rtol or 0)))
+
+    failed_validation = []
+    if upper_bound is not None:
+        failed_validation.append(data[data > upper_bound])
+    if lower_bound is not None:
+        failed_validation.append(data[data < lower_bound])
+    if not failed_validation:
+        return pd.Series([])
+    return pd.concat(failed_validation).sort_index()
 
 
 def _check_rows(rows, check, in_range=True, return_test="any"):
@@ -120,10 +127,8 @@ def _apply_criteria(df, criteria, **kwargs):
     for var, check in criteria.items():
         _df = df[df.index.get_level_values("variable") == var]
         for group in _df.groupby(META_IDX):
-            grp_idxs = _check_rows(group[-1], check, **kwargs)
-            idxs.append(grp_idxs)
-    df = df.loc[itertools.chain(*idxs)]
-    return df
+            idxs.append(_check_rows(group[-1], check, **kwargs))
+    return df.loc[itertools.chain(*idxs)]
 
 
 def _exclude_on_fail(df, index):
