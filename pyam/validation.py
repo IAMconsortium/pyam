@@ -25,16 +25,24 @@ def _validate(
             )
         # translate legacy `criteria` argument to explicit kwargs
         if len(criteria) == 1:
-            key, value = list(criteria.items())[0]
+            key, _value = list(criteria.items())[0]
             kwargs = dict(variable=key)
-            upper_bound, lower_bound = value.get("up", None), value.get("lo", None)
-            kwargs["year"] = value.get("year", None)
+            upper_bound, lower_bound = _value.get("up", None), _value.get("lo", None)
+            kwargs["year"] = _value.get("year", None)
             criteria = None
 
     if criteria is None:
         _df = df._data[df.slice(**kwargs)]
         if _df.empty:
             logger.warning("No data matches filters, skipping validation.")
+
+        if value is not None:
+            if upper_bound or lower_bound is not None:
+                raise ValueError(
+                    "Using `value` and bounds simultaneously is not supported."
+                )
+            upper_bound = value * (1 + (rtol or 0))
+            lower_bound = value * (1 - (rtol or 0))
 
         failed_validation = []
         if upper_bound is not None:
