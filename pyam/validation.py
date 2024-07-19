@@ -135,5 +135,5 @@ def _exclude_on_fail(df, index):
     df.exclude[index] = True
     n = len(index)
     logger.info(
-        f"{n} scenario{s(n)} failed validation and will be set as `exclude=True`."
+        f"{n} scenario{s(n)} failed validation and will be marked as `exclude=True`."
     )
