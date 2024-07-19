@@ -78,9 +78,7 @@ def test_pattern_match_dot():
     assert (obs == [False, True]).all()
 
 
-@pytest.mark.parametrize(
-    "bracket", ("(bar)", "[bar]", "{2}")
-)
+@pytest.mark.parametrize("bracket", ("(bar)", "[bar]", "{2}"))
 def test_pattern_match_brackets(bracket):
     s = f"foo {bracket}"
     data = pd.Series([s, "foo bar"])
