@@ -61,7 +61,8 @@ def _check_bounds(data, value=None, rtol=None, upper_bound=None, lower_bound=Non
             raise ValueError(
                 "Using `value` and bounds simultaneously is not supported."
             )
-        upper_bound, lower_bound = value * ((1 + (rtol or 0)), (1 - (rtol or 0)))
+        upper_bound = value * (1 + (rtol or 0))
+        lower_bound = value * (1 - (rtol or 0))
 
     failed_validation = []
     if upper_bound is not None:
