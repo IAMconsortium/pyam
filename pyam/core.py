@@ -306,8 +306,8 @@ class IamDataFrame:
                 [
                     print_meta_row(m, t, self.meta[m].unique())
                     for m, t in zip(
-                        self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
-                    )
+                    self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
+                )
                 ]
             )
             # print `...` if more than `meta_rows` columns
@@ -697,7 +697,7 @@ class IamDataFrame:
         # replace underlying data object
         # TODO naming time_col could be done in timeseries()
         df.columns.name = ret.time_col
-        df = df.stack(future_stack=True).dropna()  # long-data to pd.Series
+        df = df.stack(future_stack=True).dropna()  # wide data to pd.Series
         df.name = "value"
         ret._data = df.sort_index()
         ret._set_attributes()
