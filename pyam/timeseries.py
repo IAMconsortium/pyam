@@ -129,7 +129,7 @@ def cross_threshold(
     years = index[pre] - values[pre] / change
 
     # it year (as int) is returned, add one because int() rounds down
-    if return_type == int:
+    if return_type is int:
         return [y + 1 for y in map(int, years)]
     return years
 

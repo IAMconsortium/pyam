@@ -82,7 +82,7 @@ def write_sheet(writer, name, df, index=False):
     """
     if index:
         df = df.reset_index()
-    df.to_excel(writer, name, index=False)
+    df.to_excel(writer, sheet_name=name, index=False)
     for i, col in enumerate(df.columns):
         if df.dtypes[col].name.startswith(("float", "int")):
             width = len(str(col)) + 2
@@ -315,7 +315,7 @@ def _format_data_to_series(df, index):
         df = (
             df.set_index(index + REQUIRED_COLS + extra_cols)
             .rename_axis(columns=time_col)
-            .stack(dropna=True)
+            .stack()
             .rename("value")
             .reorder_levels(idx_order)
         )
