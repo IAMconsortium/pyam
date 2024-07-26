@@ -545,13 +545,13 @@ def test_meta_idx(test_df):
     assert len(_meta_idx(test_df.data)) == 2
 
 
-def test_filter_by_bool(test_df):
+def test_filter_meta_by_bool(test_df):
     test_df.set_meta([True, False], name="meta_bool")
     obs = test_df.filter(meta_bool=True)
     assert obs.scenario == ["scen_a"]
 
 
-def test_filter_by_int(test_df):
+def test_filter_meta_by_int(test_df):
     test_df.set_meta([1, 2], name="meta_int")
     obs = test_df.filter(meta_int=[1, 3])
     assert obs.scenario == ["scen_a"]
