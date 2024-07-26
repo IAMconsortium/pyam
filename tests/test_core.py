@@ -431,11 +431,19 @@ def test_filter_empty_df():
     assert len(obs) == 0
 
 
-def test_filter_variable_and_depth(test_df):
-    obs = test_df.filter(variable="*rimary*C*", level=0).variable
+def test_variable_and_measurand_raises(test_df):
+    pytest.raises(ValueError, test_df.filter, variable="foo", measurand=("foo", "bar"))
+
+
+@pytest.mark.parametrize(
+    "filter_args",
+    (dict(variable="*rimary*C*"), dict(measurand=("*rimary*C*", "EJ/*"))),
+)
+def test_filter_variable_and_depth(test_df, filter_args):
+    obs = test_df.filter(**filter_args, level=0).variable
     assert obs == ["Primary Energy|Coal"]
 
-    obs = test_df.filter(variable="*rimary*C*", level=1).variable
+    obs = test_df.filter(**filter_args, level=1).variable
     assert obs == []
 
 

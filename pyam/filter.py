@@ -4,13 +4,26 @@ import time
 import numpy as np
 import pandas as pd
 
-from pyam.index import get_keep_col
-from pyam.utils import to_list
+from pyam.index import get_index_levels_codes, get_keep_col
+from pyam.utils import pattern_match, to_list
 
 FILTER_DATETIME_ATTRS = {
     "month": (["%b", "%B"], "tm_mon", "months"),
     "day": (["%a", "%A"], "tm_wday", "days"),
 }
+
+
+def filter_by_col(data, col, values, regexp, level=None):
+    levels, codes = get_index_levels_codes(data, col)
+    matches = pattern_match(
+        levels,
+        values,
+        regexp=regexp,
+        level=level,
+        has_nan=True,
+        return_codes=True,
+    )
+    return get_keep_col(codes, matches)
 
 
 def filter_by_time_domain(values, levels, codes):

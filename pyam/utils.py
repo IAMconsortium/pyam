@@ -27,7 +27,7 @@ LONG_IDX = IAMC_IDX + ["year"]
 REQUIRED_COLS = ["region", "variable", "unit"]
 
 # illegal terms for data/meta column names to prevent attribute conflicts
-ILLEGAL_COLS = ["data", "meta", "level", "exclude", ""]
+ILLEGAL_COLS = ["data", "meta", "level", "exclude", "measurand", ""]
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(

@@ -31,6 +31,7 @@ from pyam.aggregation import (
 from pyam.compute import IamComputeAccessor
 from pyam.filter import (
     datetime_match,
+    filter_by_col,
     filter_by_dt_arg,
     filter_by_time_domain,
     filter_by_year,
@@ -1852,6 +1853,7 @@ class IamDataFrame:
 
          - 'model', 'scenario', 'region', 'variable', 'unit':
            string or list of strings, where `*` can be used as a wildcard
+         - 'measurand': a tuple of 'variable' and 'unit'
          - 'meta' columns: mapping of column name to allowed values
          - 'exclude': values of :attr:`exclude`
          - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
@@ -1929,6 +1931,9 @@ class IamDataFrame:
         regexp = filters.pop("regexp", False)
         keep = np.ones(len(self), dtype=bool)
 
+        if "variable" in filters and "measurand" in filters:
+            raise ValueError("Filter by `variable` and `measurand` not supported")
+
         # filter by columns and list of values
         for col, values in filters.items():
             # treat `_apply_filters(col=None)` as no filter applied
@@ -1998,25 +2003,24 @@ class IamDataFrame:
 
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
-            elif col in self.dimensions:
-                levels, codes = get_index_levels_codes(self._data, col)
-
-                matches = pattern_match(
-                    levels,
-                    values,
-                    regexp=regexp,
-                    level=level if col == "variable" else None,
-                    has_nan=True,
-                    return_codes=True,
+            elif col == "measurand":
+                variable, unit = values
+                keep_col = np.logical_and(
+                    filter_by_col(self._data, "variable", variable, regexp, level),
+                    filter_by_col(self._data, "unit", unit, regexp),
                 )
-                keep_col = get_keep_col(codes, matches)
+
+            elif col in self.dimensions:
+                _level = level if col == "variable" else None
+                keep_col = filter_by_col(self._data, col, values, regexp, _level)
 
             else:
-                raise ValueError(f"Filter by `{col}` not supported!")
+                raise ValueError(f"Filter by `{col}` not supported")
 
             keep = np.logical_and(keep, keep_col)
 
-        if level is not None and "variable" not in filters:
+        if level is not None and not ("variable" in filters or "measurand" in filters):
+            # if level and variable/measurand is given, level-filter is applied there
             col = "variable"
             lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
             matches = find_depth(lvl_index, level=level)
