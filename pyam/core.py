@@ -307,8 +307,8 @@ class IamDataFrame:
                 [
                     print_meta_row(m, t, self.meta[m].unique())
                     for m, t in zip(
-                    self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
-                )
+                        self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
+                    )
                 ]
             )
             # print `...` if more than `meta_rows` columns
