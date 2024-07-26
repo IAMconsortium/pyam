@@ -449,15 +449,15 @@ def test_filter_variable_and_depth(test_df, filter_args):
 
 def test_filter_measurand_list(test_df):
     data = test_df.data
-    data.loc[3, "variable"] = "foo"
-    data.loc[4, "unit"] = "bar"
+    data.loc[4, "variable"] = "foo"
+    data.loc[5, "unit"] = "bar"
     df = IamDataFrame(data)
 
     obs = df.filter(measurand=(("foo", "EJ/yr"), ("Primary Energy", "bar")))
 
-    assert obs.variable == ["foo", "Primary Energy"]
+    assert obs.variable == ["Primary Energy", "foo"]
     assert obs.unit == ["EJ/yr", "bar"]
-    assert obs.scenario == "scen_a"
+    assert obs.scenario == ["scen_b"]
 
 
 def test_variable_depth_0_keep_false(test_df):
