@@ -1853,8 +1853,8 @@ class IamDataFrame:
         The following arguments are available for filtering:
 
          - 'model', 'scenario', 'region', 'variable', 'unit':
-           string or list of strings, where `*` can be used as a wildcard
-         - 'measurand': a tuple of 'variable' and 'unit'
+           string or list of strings
+         - 'measurand': a tuple (or list of tuples) of 'variable' and 'unit'
          - 'meta' columns: mapping of column name to allowed values
          - 'exclude': values of :attr:`exclude`
          - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
@@ -1867,6 +1867,8 @@ class IamDataFrame:
          - arguments for filtering by `datetime.datetime` or np.datetime64
            ('month', 'hour', 'time')
          - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
+
+        In any string filters, `*` is interpreted as wildcard.
 
         """
 
