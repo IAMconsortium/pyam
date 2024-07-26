@@ -1,3 +1,8 @@
+# Next release
+
+- [#866](https://github.com/IAMconsortium/pyam/pull/888) Support filtering by a `measurand` argument with tuples of
+  variable and units
+
 # Release v2.2.3
 
 Bump **ixmp4** minimum dependency to latest version and pin **numpy** to <2.0.
