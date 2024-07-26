@@ -33,6 +33,7 @@ from pyam.filter import (
     datetime_match,
     filter_by_col,
     filter_by_dt_arg,
+    filter_by_measurand,
     filter_by_time_domain,
     filter_by_year,
 )
@@ -2004,11 +2005,7 @@ class IamDataFrame:
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
             elif col == "measurand":
-                variable, unit = values
-                keep_col = np.logical_and(
-                    filter_by_col(self._data, "variable", variable, regexp, level),
-                    filter_by_col(self._data, "unit", unit, regexp),
-                )
+                keep_col = filter_by_measurand(self._data, values, regexp, level)
 
             elif col in self.dimensions:
                 _level = level if col == "variable" else None
