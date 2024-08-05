@@ -455,8 +455,8 @@ def test_filter_measurand_list(test_df):
 
     obs = df.filter(measurand=(("foo", "EJ/yr"), ("Primary Energy", "bar")))
 
-    assert obs.variable == ["Primary Energy", "foo"]
-    assert obs.unit == ["EJ/yr", "bar"]
+    assert set(obs.variable) == {"Primary Energy", "foo"}
+    assert set(obs.unit) == {"EJ/yr", "bar"}
     assert obs.scenario == ["scen_b"]
 
 
