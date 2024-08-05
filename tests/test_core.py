@@ -431,12 +431,33 @@ def test_filter_empty_df():
     assert len(obs) == 0
 
 
-def test_filter_variable_and_depth(test_df):
-    obs = test_df.filter(variable="*rimary*C*", level=0).variable
+def test_variable_and_measurand_raises(test_df):
+    pytest.raises(ValueError, test_df.filter, variable="foo", measurand=("foo", "bar"))
+
+
+@pytest.mark.parametrize(
+    "filter_args",
+    (dict(variable="*rimary*C*"), dict(measurand=("*rimary*C*", "EJ/*"))),
+)
+def test_filter_variable_and_depth(test_df, filter_args):
+    obs = test_df.filter(**filter_args, level=0).variable
     assert obs == ["Primary Energy|Coal"]
 
-    obs = test_df.filter(variable="*rimary*C*", level=1).variable
+    obs = test_df.filter(**filter_args, level=1).variable
     assert obs == []
+
+
+def test_filter_measurand_list(test_df):
+    data = test_df.data
+    data.loc[4, "variable"] = "foo"
+    data.loc[5, "unit"] = "bar"
+    df = IamDataFrame(data)
+
+    obs = df.filter(measurand=(("foo", "EJ/yr"), ("Primary Energy", "bar")))
+
+    assert set(obs.variable) == {"Primary Energy", "foo"}
+    assert set(obs.unit) == {"EJ/yr", "bar"}
+    assert obs.scenario == ["scen_b"]
 
 
 def test_variable_depth_0_keep_false(test_df):
@@ -545,13 +566,13 @@ def test_meta_idx(test_df):
     assert len(_meta_idx(test_df.data)) == 2
 
 
-def test_filter_by_bool(test_df):
+def test_filter_meta_by_bool(test_df):
     test_df.set_meta([True, False], name="meta_bool")
     obs = test_df.filter(meta_bool=True)
     assert obs.scenario == ["scen_a"]
 
 
-def test_filter_by_int(test_df):
+def test_filter_meta_by_int(test_df):
     test_df.set_meta([1, 2], name="meta_int")
     obs = test_df.filter(meta_int=[1, 3])
     assert obs.scenario == ["scen_a"]

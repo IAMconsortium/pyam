@@ -31,7 +31,9 @@ from pyam.aggregation import (
 from pyam.compute import IamComputeAccessor
 from pyam.filter import (
     datetime_match,
+    filter_by_col,
     filter_by_dt_arg,
+    filter_by_measurand,
     filter_by_time_domain,
     filter_by_year,
 )
@@ -306,8 +308,8 @@ class IamDataFrame:
                 [
                     print_meta_row(m, t, self.meta[m].unique())
                     for m, t in zip(
-                    self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
-                )
+                        self.meta.columns[0:meta_rows], self.meta.dtypes[0:meta_rows]
+                    )
                 ]
             )
             # print `...` if more than `meta_rows` columns
@@ -1851,7 +1853,8 @@ class IamDataFrame:
         The following arguments are available for filtering:
 
          - 'model', 'scenario', 'region', 'variable', 'unit':
-           string or list of strings, where `*` can be used as a wildcard
+           string or list of strings
+         - 'measurand': a tuple (or list of tuples) of 'variable' and 'unit'
          - 'meta' columns: mapping of column name to allowed values
          - 'exclude': values of :attr:`exclude`
          - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
@@ -1864,6 +1867,8 @@ class IamDataFrame:
          - arguments for filtering by `datetime.datetime` or np.datetime64
            ('month', 'hour', 'time')
          - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
+
+        In any string filters, `*` is interpreted as wildcard.
 
         """
 
@@ -1928,6 +1933,9 @@ class IamDataFrame:
         """
         regexp = filters.pop("regexp", False)
         keep = np.ones(len(self), dtype=bool)
+
+        if "variable" in filters and "measurand" in filters:
+            raise ValueError("Filter by `variable` and `measurand` not supported")
 
         # filter by columns and list of values
         for col, values in filters.items():
@@ -1998,25 +2006,20 @@ class IamDataFrame:
 
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
-            elif col in self.dimensions:
-                levels, codes = get_index_levels_codes(self._data, col)
+            elif col == "measurand":
+                keep_col = filter_by_measurand(self._data, values, regexp, level)
 
-                matches = pattern_match(
-                    levels,
-                    values,
-                    regexp=regexp,
-                    level=level if col == "variable" else None,
-                    has_nan=True,
-                    return_codes=True,
-                )
-                keep_col = get_keep_col(codes, matches)
+            elif col in self.dimensions:
+                _level = level if col == "variable" else None
+                keep_col = filter_by_col(self._data, col, values, regexp, _level)
 
             else:
-                raise ValueError(f"Filter by `{col}` not supported!")
+                raise ValueError(f"Filter by `{col}` not supported")
 
             keep = np.logical_and(keep, keep_col)
 
-        if level is not None and "variable" not in filters:
+        if level is not None and not ("variable" in filters or "measurand" in filters):
+            # if level and variable/measurand is given, level-filter is applied there
             col = "variable"
             lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
             matches = find_depth(lvl_index, level=level)
