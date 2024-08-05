@@ -1842,34 +1842,12 @@ class IamDataFrame:
         keep : bool, optional
             Keep all scenarios satisfying the filters (if *True*) or the inverse.
         **kwargs
-            Arguments for filtering. See the "Notes".
+            Arguments for filtering. Read more about the `available filter options
+            <https://pyam-iamc.readthedocs.io/en/stable/api/filtering.html>`_.
 
         Returns
         -------
         :class:`pyam.slice.IamSlice`
-
-        Notes
-        -----
-        The following arguments are available for filtering:
-
-         - 'model', 'scenario', 'region', 'variable', 'unit':
-           string or list of strings
-         - 'measurand': a tuple (or list of tuples) of 'variable' and 'unit'
-         - 'meta' columns: mapping of column name to allowed values
-         - 'exclude': values of :attr:`exclude`
-         - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
-         - 'level': the "depth" of entries in the variable column (number of '|')
-           (excluding the strings given in the 'variable' argument)
-         - 'year': takes an integer (int/np.int64), a list of integers or
-           a range. Note that the last year of a range is not included,
-           so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
-         - 'time_domain': can be "year" or "datetime"
-         - arguments for filtering by `datetime.datetime` or np.datetime64
-           ('month', 'hour', 'time')
-         - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
-
-        In any string filters, `*` is interpreted as wildcard.
-
         """
 
         _keep = self._apply_filters(**kwargs)
@@ -1891,7 +1869,12 @@ class IamDataFrame:
         inplace : bool, optional
             If *True*, do operation inplace and return *None*.
         **kwargs
-            Passed to :meth:`slice`.
+            Arguments for filtering. Read more about the `available filter options
+            <https://pyam-iamc.readthedocs.io/en/stable/api/filtering.html>`_.
+
+        Returns
+        -------
+        :class:`pyam.IamDataFrame` or **None**
         """
 
         # downselect `data` rows and clean up index
