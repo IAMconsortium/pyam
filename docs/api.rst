@@ -13,7 +13,6 @@ and methods.
    api/general
    api/iamdataframe
    api/database
-   api/slice
    api/filtering
    api/compute
    api/plotting
