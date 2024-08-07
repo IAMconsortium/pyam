@@ -123,6 +123,7 @@ requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning"]
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
+    "RELEASE_NOTES.md",
     ".git",
     ".ipynb_checkpoints",
     ".mypy_cache",

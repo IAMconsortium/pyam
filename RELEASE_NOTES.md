@@ -1,3 +1,7 @@
+# Next release
+
+- [#xxx](https://github.com/IAMconsortium/pyam/pull/xxx) Description of the PR
+
 # Release v2.2.4
 
 Support filtering by a `measurand` argument with tuples of variable and units
