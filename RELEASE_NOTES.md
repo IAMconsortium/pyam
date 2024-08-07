@@ -1,6 +1,7 @@
 # Next release
 
-- [#866](https://github.com/IAMconsortium/pyam/pull/888) Support filtering by a `measurand` argument with tuples of
+- [#870](https://github.com/IAMconsortium/pyam/pull/870) Improve the docs of the `filter()` arguments
+- [#866](https://github.com/IAMconsortium/pyam/pull/866) Support filtering by a `measurand` argument with tuples of
   variable and units
 
 # Release v2.2.3
