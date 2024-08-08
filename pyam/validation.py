@@ -9,8 +9,11 @@ from pyam.utils import META_IDX, make_index, s
 logger = logging.getLogger(__name__)
 
 
-def _validate(df, criteria, upper_bound, lower_bound, exclude_on_fail, **kwargs):  # noqa: C901
+def _validate(
+    df, criteria, *, value, rtol, upper_bound, lower_bound, exclude_on_fail, **kwargs
+):  # noqa: C901
     # TODO: argument `criteria` is deprecated, remove for release >= 3.0
+
     if criteria is not None:
         deprecation_warning(
             "Use `upper_bound`, `lower_bound`, and filter-arguments instead.",
@@ -22,29 +25,21 @@ def _validate(df, criteria, upper_bound, lower_bound, exclude_on_fail, **kwargs)
             )
         # translate legacy `criteria` argument to explicit kwargs
         if len(criteria) == 1:
-            key, value = list(criteria.items())[0]
+            key, _value = list(criteria.items())[0]
             kwargs = dict(variable=key)
-            upper_bound, lower_bound = value.get("up", None), value.get("lo", None)
-            kwargs["year"] = value.get("year", None)
+            upper_bound, lower_bound = _value.get("up", None), _value.get("lo", None)
+            kwargs["year"] = _value.get("year", None)
             criteria = None
+
+        # legacy implementation for multiple validation within one dictionary
+        else:
+            _df = _apply_criteria(df._data, criteria, in_range=False)
 
     if criteria is None:
         _df = df._data[df.slice(**kwargs)]
         if _df.empty:
             logger.warning("No data matches filters, skipping validation.")
-
-        failed_validation = []
-        if upper_bound is not None:
-            failed_validation.append(_df[_df > upper_bound])
-        if lower_bound is not None:
-            failed_validation.append(_df[_df < lower_bound])
-        if not failed_validation:
-            return
-        _df = pd.concat(failed_validation).sort_index()
-
-    # legcy implementation for multiple validation within one dictionary
-    else:
-        _df = _apply_criteria(df._data, criteria, in_range=False)
+        _df = _check_bounds(_df, value, rtol, upper_bound, lower_bound)
 
     if not _df.empty:
         msg = "{} of {} data points do not satisfy the criteria"
@@ -53,6 +48,30 @@ def _validate(df, criteria, upper_bound, lower_bound, exclude_on_fail, **kwargs)
         if exclude_on_fail and len(_df) > 0:
             _exclude_on_fail(df, _df)
         return _df.reset_index()
+
+
+def _check_bounds(data, value=None, rtol=None, upper_bound=None, lower_bound=None):
+    """Return al data points that do not satisfy the criteria"""
+    if value is None and rtol is not None:
+        raise ValueError(
+            "Using `rtol` is only supported in conjunction with `value`."
+        )
+    if value is not None:
+        if upper_bound or lower_bound is not None:
+            raise ValueError(
+                "Using `value` and bounds simultaneously is not supported."
+            )
+        upper_bound = value * (1 + (rtol or 0))
+        lower_bound = value * (1 - (rtol or 0))
+
+    failed_validation = []
+    if upper_bound is not None:
+        failed_validation.append(data[data > upper_bound])
+    if lower_bound is not None:
+        failed_validation.append(data[data < lower_bound])
+    if not failed_validation:
+        return pd.Series([])
+    return pd.concat(failed_validation).sort_index()
 
 
 def _check_rows(rows, check, in_range=True, return_test="any"):
@@ -109,10 +128,8 @@ def _apply_criteria(df, criteria, **kwargs):
     for var, check in criteria.items():
         _df = df[df.index.get_level_values("variable") == var]
         for group in _df.groupby(META_IDX):
-            grp_idxs = _check_rows(group[-1], check, **kwargs)
-            idxs.append(grp_idxs)
-    df = df.loc[itertools.chain(*idxs)]
-    return df
+            idxs.append(_check_rows(group[-1], check, **kwargs))
+    return df.loc[itertools.chain(*idxs)]
 
 
 def _exclude_on_fail(df, index):
@@ -124,5 +141,5 @@ def _exclude_on_fail(df, index):
     df.exclude[index] = True
     n = len(index)
     logger.info(
-        f"{n} scenario{s(n)} failed validation and will be set as `exclude=True`."
+        f"{n} scenario{s(n)} failed validation and will be marked as `exclude=True`."
     )

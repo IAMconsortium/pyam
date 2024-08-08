@@ -75,6 +75,7 @@ def test_require_data(test_df_year, kwargs, exclude_on_fail):
         dict(criteria={"Primary Energy": {}}),
         dict(variable="foo", upper_bound=10),
         dict(criteria={"foo": {"up": 10}}),
+        dict(variable="foo", value=10),
     ),
 )
 def test_validate_none(test_df, args):
@@ -90,6 +91,10 @@ def test_validate_none(test_df, args):
     (
         dict(variable="Primary Energy", upper_bound=10),
         dict(criteria={"Primary Energy": {"up": 10}}),
+        dict(variable="Primary Energy", scenario="scen_a", year=2005, value=1),
+        # two alternative ways to make values 1 & 2 within tolerance
+        dict(variable="Primary Energy", year=2005, value=2, rtol=0.5),
+        dict(variable="Primary Energy", year=2005, value=0.5, rtol=3),
     ),
 )
 def test_validate_pass(test_df, args):
@@ -104,6 +109,8 @@ def test_validate_pass(test_df, args):
     (
         dict(variable="Primary Energy|Coal", upper_bound=2),
         dict(criteria={"Primary Energy|Coal": {"up": 2}}),
+        dict(variable="Primary Energy|Coal", value=0.5),
+        dict(variable="Primary Energy|Coal", value=1, rtol=0.5),
     ),
 )
 def test_validate_nonexisting(test_df, args):
@@ -121,6 +128,8 @@ def test_validate_nonexisting(test_df, args):
     (
         dict(variable="Primary Energy", upper_bound=6.5),
         dict(criteria={"Primary Energy": {"up": 6.5}}),
+        dict(variable="Primary Energy", year=2010, value=6),
+        dict(variable="Primary Energy", value=2, rtol=2),
     ),
 )
 def test_validate_up(test_df, args):
@@ -141,6 +150,7 @@ def test_validate_up(test_df, args):
     (
         dict(variable="Primary Energy", upper_bound=8, lower_bound=2),
         dict(criteria={"Primary Energy": {"up": 8, "lo": 2}}),
+        dict(variable="Primary Energy", value=8, rtol=0.75),
     ),
 )
 def test_validate_lo(test_df, args):
@@ -161,6 +171,7 @@ def test_validate_lo(test_df, args):
     (
         dict(variable="Primary Energy", upper_bound=6.5, lower_bound=2),
         dict(criteria={"Primary Energy": {"up": 6.5, "lo": 2}}),
+        dict(variable="Primary Energy", value=4, rtol=0.5),
     ),
 )
 def test_validate_both(test_df, args):
@@ -181,6 +192,7 @@ def test_validate_both(test_df, args):
     (
         dict(variable="Primary Energy", year=2005, upper_bound=6),
         dict(criteria={"Primary Energy": {"up": 6, "year": 2005}}),
+        dict(variable="Primary Energy", year=2005, value=1, rtol=1),
     ),
 )
 def test_validate_year_2005(test_df, args):
@@ -195,6 +207,7 @@ def test_validate_year_2005(test_df, args):
     (
         dict(variable="Primary Energy", year=2010, upper_bound=6),
         dict(criteria={"Primary Energy": {"up": 6, "year": 2010}}),
+        dict(variable="Primary Energy", year=2010, value=6),
     ),
 )
 def test_validate_year_2010(test_df, args):
