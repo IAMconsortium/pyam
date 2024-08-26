@@ -70,6 +70,7 @@ from pyam.utils import (
     remove_from_list,
     to_list,
     write_sheet,
+    get_excel_file_with_kwargs,
 )
 from pyam.validation import _exclude_on_fail, _validate
 
@@ -197,7 +198,7 @@ class IamDataFrame:
 
         # if initializing from xlsx, try to load `meta` table from file
         if meta_sheet and isinstance(data, Path) and data.suffix in [".xlsx", ".xls"]:
-            excel_file = pd.ExcelFile(data)
+            excel_file, kwargs = get_excel_file_with_kwargs(data, **kwargs)
             if meta_sheet in excel_file.sheet_names:
                 self.load_meta(excel_file, sheet_name=meta_sheet, ignore_conflict=True)
 
