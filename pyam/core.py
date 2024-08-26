@@ -59,6 +59,7 @@ from pyam.utils import (
     ILLEGAL_COLS,
     META_IDX,
     format_data,
+    get_excel_file_with_kwargs,
     is_list_like,
     make_index,
     merge_exclude,
@@ -70,7 +71,6 @@ from pyam.utils import (
     remove_from_list,
     to_list,
     write_sheet,
-    get_excel_file_with_kwargs,
 )
 from pyam.validation import _exclude_on_fail, _validate
 
