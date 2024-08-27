@@ -118,6 +118,25 @@ def test_read_xls(test_df_year):
     assert_iamframe_equal(test_df_year, import_df)
 
 
+def test_read_xlsx_kwargs(test_df_year):
+    # Test that kwargs to `IamDataFrame.__init__` are passed to `pd.read_excel`
+    # or `pd.ExcelFile` when reading an Excel file. The `engine_kwargs`
+    # here does not really do anything, but is included to make sure that using
+    # it doesn't crash anything, which would be a sign that it's not being
+    # passed correctly to `pd.ExcelFile`.
+    import_df = IamDataFrame(
+        TEST_DATA_DIR / "test_df.xlsx",
+        sheet_name="custom data sheet name",
+        nrows=2,
+        engine="openpyxl",
+        engine_kwargs={"data_only": False},
+    )
+    assert_iamframe_equal(
+        test_df_year.filter(scenario="scen_a"),
+        import_df,
+    )
+
+
 def test_init_df_with_na_unit(test_pd_df, tmpdir):
     # missing values in the unit column are replaced by an empty string
     test_pd_df.loc[1, "unit"] = np.nan
