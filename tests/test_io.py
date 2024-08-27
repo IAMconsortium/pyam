@@ -1,9 +1,8 @@
-from pathlib import Path
 import importlib.metadata
-import packaging
-
+from pathlib import Path
 
 import numpy as np
+import packaging
 import pandas as pd
 import pytest
 

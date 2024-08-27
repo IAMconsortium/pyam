@@ -1,14 +1,14 @@
 import importlib.metadata
 import itertools
 import logging
-import packaging.version
 import re
 import string
-from pathlib import Path
 import warnings
+from pathlib import Path
 
 import dateutil
 import numpy as np
+import packaging.version
 import pandas as pd
 from pandas.api.types import is_list_like
 
