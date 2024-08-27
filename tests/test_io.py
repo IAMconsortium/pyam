@@ -17,6 +17,12 @@ try:
 except ModuleNotFoundError:  # pragma: no cover
     has_xlrd = False
 
+try:
+    import python_calamine  # noqa: F401
+    has_calamine = True
+except ModuleNotFoundError:  # pragma: no cover
+    has_calamine = False
+
 
 FILTER_ARGS = dict(scenario="scen_a")
 
@@ -135,6 +141,18 @@ def test_read_xlsx_kwargs(test_df_year):
         test_df_year.filter(scenario="scen_a"),
         import_df,
     )
+
+
+@pytest.mark.skipif(not has_calamine, reason="Package 'python_calamine' not installed.")
+def test_read_xlsx_calamine(test_df_year):
+    # Test that an xlsx file is read correctly when using the calamine engine,
+    # and that excel kwargs such as `sheet_name` are still handled correctly
+    import_df = IamDataFrame(
+        TEST_DATA_DIR / "test_df.xlsx",
+        engine="calamine",
+        sheet_name="custom data sheet name",
+    )
+    assert_iamframe_equal(import_df, test_df_year)
 
 
 def test_init_df_with_na_unit(test_pd_df, tmpdir):
