@@ -1,8 +1,11 @@
+import importlib.metadata
 import itertools
 import logging
+import packaging.version
 import re
 import string
 from pathlib import Path
+import warnings
 
 import dateutil
 import numpy as np
@@ -107,6 +110,12 @@ def get_excel_file_with_kwargs(path, **kwargs):
     excel_file_kwargs = {
         k: kwargs.pop(k) for k in EXCEL_FILE_KWS if k in kwargs
     }
+    if packaging.version.parse(importlib.metadata.version("pandas")) \
+            < packaging.version.parse("2.2.0"):
+        warnings.warn(
+            "pandas < 2.2.0 has inconsistent support for `engine_kwargs`. "
+            "Using it is likely to result in an exception."
+        )
     return pd.ExcelFile(path, **excel_file_kwargs), kwargs
 
 

@@ -1,4 +1,7 @@
 from pathlib import Path
+import importlib.metadata
+import packaging
+
 
 import numpy as np
 import pandas as pd
@@ -124,6 +127,11 @@ def test_read_xls(test_df_year):
     assert_iamframe_equal(test_df_year, import_df)
 
 
+@pytest.mark.skipif(
+        packaging.version.parse(importlib.metadata.version("pandas")) \
+          < packaging.version.parse("2.2.0"),
+        reason="pandas < 2.2.0 has inconsistent support for `engine_kwargs`",
+)
 def test_read_xlsx_kwargs(test_df_year):
     # Test that kwargs to `IamDataFrame.__init__` are passed to `pd.read_excel`
     # or `pd.ExcelFile` when reading an Excel file. The `engine_kwargs`
@@ -144,6 +152,11 @@ def test_read_xlsx_kwargs(test_df_year):
 
 
 @pytest.mark.skipif(not has_calamine, reason="Package 'python_calamine' not installed.")
+@pytest.mark.skipif(
+    packaging.version.parse(importlib.metadata.version("pandas")) \
+      < packaging.version.parse("2.2.0"),
+    reason="`engine='calamine' requires pandas >= 2.2.0",
+)
 def test_read_xlsx_calamine(test_df_year):
     # Test that an xlsx file is read correctly when using the calamine engine,
     # and that excel kwargs such as `sheet_name` are still handled correctly
