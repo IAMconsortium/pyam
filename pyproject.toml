@@ -116,6 +116,12 @@ optional = true
 [tool.poetry.group.unfccc.dependencies]
 unfccc_di_api = ">=3.0.1"
 
+[tool.poetry.group.calamine]
+optional = true
+
+[tool.poetry.group.calamine.dependencies]
+python-calamine = ">=0.2.3"
+
 [build-system]
 build-backend = "poetry_dynamic_versioning.backend"
 requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning"]

@@ -64,7 +64,7 @@ jobs:
       #  install your project
       #------------------------
       - name: Install library
-        run: poetry install --no-interaction --with dev,optional_io_formats,optional_plotting,tutorials,wbdata
+        run: poetry install --no-interaction --with calamine,dev,optional_io_formats,optional_plotting,tutorials,wbdata
 
       # run tests without Matplotlib & CodeCode tests on earlier Python versions
       - name: Test with pytest

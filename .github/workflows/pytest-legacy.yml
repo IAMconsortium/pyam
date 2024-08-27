@@ -61,7 +61,7 @@ jobs:
       #------------------------------------------------
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev,optional_io_formats,optional_plotting,tutorials --no-root
+        run: poetry install --no-interaction --with calamine,dev,optional_io_formats,optional_plotting,tutorials --no-root
 
       #------------------------
       #  install root project
