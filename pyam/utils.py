@@ -110,8 +110,10 @@ def get_excel_file_with_kwargs(path, **kwargs):
     excel_file_kwargs = {
         k: kwargs.pop(k) for k in EXCEL_FILE_KWS if k in kwargs
     }
-    if packaging.version.parse(importlib.metadata.version("pandas")) \
-            < packaging.version.parse("2.2.0"):
+    # TODO remove when bumping minimum pandas dependency to >= 2.2
+    if "engine_kwargs" in excel_file_kwargs and packaging.version.parse(
+        importlib.metadata.version("pandas")
+    ) < packaging.version.parse("2.2.0"):
         warnings.warn(
             "pandas < 2.2.0 has inconsistent support for `engine_kwargs`. "
             "Using it is likely to result in an exception."
