@@ -1,6 +1,6 @@
 # Next release
 
-- [#xxx](https://github.com/IAMconsortium/pyam/pull/xxx) Description of the PR
+- [#877](https://github.com/IAMconsortium/pyam/pull/xxx) Support `engine` and other `pd.ExcelFile` keywords.
 
 # Release v2.2.4
 

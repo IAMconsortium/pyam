@@ -1,6 +1,8 @@
+import importlib.metadata
 from pathlib import Path
 
 import numpy as np
+import packaging
 import pandas as pd
 import pytest
 
@@ -16,6 +18,12 @@ try:
     has_xlrd = True
 except ModuleNotFoundError:  # pragma: no cover
     has_xlrd = False
+
+try:
+    import python_calamine  # noqa: F401
+    has_calamine = True
+except ModuleNotFoundError:  # pragma: no cover
+    has_calamine = False
 
 
 FILTER_ARGS = dict(scenario="scen_a")
@@ -116,6 +124,47 @@ def test_io_xlsx_multiple_data_sheets(test_df, sheets, sheetname, tmpdir):
 def test_read_xls(test_df_year):
     import_df = IamDataFrame(TEST_DATA_DIR / "test_df.xls")
     assert_iamframe_equal(test_df_year, import_df)
+
+
+@pytest.mark.skipif(
+        packaging.version.parse(importlib.metadata.version("pandas")) \
+          < packaging.version.parse("2.2.0"),
+        reason="pandas < 2.2.0 has inconsistent support for `engine_kwargs`",
+)
+def test_read_xlsx_kwargs(test_df_year):
+    # Test that kwargs to `IamDataFrame.__init__` are passed to `pd.read_excel`
+    # or `pd.ExcelFile` when reading an Excel file. The `engine_kwargs`
+    # here does not really do anything, but is included to make sure that using
+    # it doesn't crash anything, which would be a sign that it's not being
+    # passed correctly to `pd.ExcelFile`.
+    import_df = IamDataFrame(
+        TEST_DATA_DIR / "test_df.xlsx",
+        sheet_name="custom data sheet name",
+        nrows=2,
+        engine="openpyxl",
+        engine_kwargs={"data_only": False},
+    )
+    assert_iamframe_equal(
+        test_df_year.filter(scenario="scen_a"),
+        import_df,
+    )
+
+
+@pytest.mark.skipif(not has_calamine, reason="Package 'python_calamine' not installed.")
+@pytest.mark.skipif(
+    packaging.version.parse(importlib.metadata.version("pandas")) \
+      < packaging.version.parse("2.2.0"),
+    reason="`engine='calamine' requires pandas >= 2.2.0",
+)
+def test_read_xlsx_calamine(test_df_year):
+    # Test that an xlsx file is read correctly when using the calamine engine,
+    # and that excel kwargs such as `sheet_name` are still handled correctly
+    import_df = IamDataFrame(
+        TEST_DATA_DIR / "test_df.xlsx",
+        engine="calamine",
+        sheet_name="custom data sheet name",
+    )
+    assert_iamframe_equal(import_df, test_df_year)
 
 
 def test_init_df_with_na_unit(test_pd_df, tmpdir):
