@@ -2857,7 +2857,7 @@ def read_datapackage(path, data="data", meta="meta"):
     return df
 
 
-def read_agg_netcdf(path):
+def read_netcdf(path):
     """Read timeseries data and meta-indicators from aggregated netCDF (intermediate from Euro Calliope netCDF)
 
     Parameters
@@ -2871,6 +2871,10 @@ def read_agg_netcdf(path):
     """
     
     _ds = xr.open_dataset(path)
+    _list_cols = ['model', 'scenario', 'region', 'variable', 'unit']
+    _list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
+    _meta = []
+    
     # Check if the time coordinate is year-based in the range of 1900--2100, or timeseries
     def is_year_valid(_x):
         if isinstance(_x, (int, np.integer)):
@@ -2881,41 +2885,51 @@ def read_agg_netcdf(path):
     is_year_based = all(is_year_valid(x) for x in _ds.coords['time'].values)
     is_datetime = all(isinstance(x, (dt.date, dt.time, np.datetime64)) for x in _ds.coords['time'].values)
 
-    if not is_year_based and not is_datetime:
-        raise TypeError("Time coordinate needs to be integer between 1900 and 2100 (year-based) or datetime (timeseries), given neither")
-    
-    _list_cols = ['model', 'scenario', 'region', 'variable', 'unit']
-    _list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
-    
     # Check if the xarray dataset has the correct coordinates, then get column names
     if is_year_based:
         _list_cols.extend(_ds.coords['time'].values.tolist())
     elif is_datetime:
         _list_cols.extend(['time', 'value'])
+    else:
+        raise TypeError("Time coordinate needs to be integer between 1900 and 2100 (year-based) or datetime (timeseries), given neither")
     
     # read `data` table
     _full_df = pd.DataFrame()
     for _var in _list_variables:
-        # if year-based data, convert into wide-format table
-        if is_year_based:
-            _tmp = _ds[_var].to_dataframe().pivot_table(index=['model', 'scenario', 'region'], columns='time', values=_var).reset_index(drop=False)
-        # if timeseries, convert into long-format table
-        elif is_datetime:
-            _tmp = _ds[_var].to_dataframe().reset_index(drop=False).rename(columns={_var: "value"})
+        # Check dimensions, if exactly as in META_IDX is a meta indicator
+        # variable has more dimensions than META_IDX, eliminate those with fewer dimensions
+        missing = set(META_IDX).difference(_ds[_var].dims)
+        var_idx = set(_ds[_var].dims).difference(set(META_IDX))
         
-        _tmp['variable'] = _ds[_var].long_name
-        _tmp['unit'] = _ds[_var].unit
-        _tmp = _tmp.reindex(columns=_list_cols)
-        _full_df = pd.concat([_full_df, _tmp])
+        if not var_idx:
+            if not missing:
+                _meta.append(_var)
+                print("{} is a meta indicator".format(_var))
+            elif missing:
+                print("{} eliminated, does NOT have the following index {}".format(_var, missing))
+        else:
+            print("{} is a variable with additional index {}".format(_var, var_idx))
+            
+            # if year-based data, convert into wide-format table
+            if is_year_based:
+                _tmp = _ds[_var].to_dataframe().pivot_table(index=['model', 'scenario', 'region'], columns='time', values=_var).reset_index(drop=False)
+            # if timeseries, convert into long-format table
+            elif is_datetime:
+                _tmp = _ds[_var].to_dataframe().reset_index(drop=False).rename(columns={_var: "value"})
+            
+            _tmp['variable'] = _ds[_var].long_name
+            _tmp['unit'] = _ds[_var].unit
+            _tmp = _tmp.reindex(columns=_list_cols)
+            _full_df = pd.concat([_full_df, _tmp])
     
     # remove index name as 'time' and reset index to number the whole dataset
     _full_df = _full_df.rename_axis(None, axis=1).reset_index(drop=True)
+    _full_df = IamDataFrame(_full_df)
 
-    # read `meta` table
-    if 'meta' in _ds.attrs.keys():
-        _full_df.meta_netcdf = _ds.attrs['meta']
-    else: Print('Meta Missing: No meta data found in the netcdf file')
+    # add meta indicators in IamDataFrame.meta
+    if _meta:
+        _full_df.meta = _ds[_meta].to_dataframe()
 
-    return IamDataFrame(_full_df)
+    return _full_df
 
 
