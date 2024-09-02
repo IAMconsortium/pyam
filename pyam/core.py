@@ -2891,25 +2891,23 @@ def read_netcdf(path):
     elif is_datetime:
         _list_cols.extend(['time', 'value'])
     else:
-        raise TypeError("Time coordinate needs to be integer between 1900 and 2100 (year-based) or datetime (timeseries), given neither")
+        raise TypeError("Time coordinate needs to be integer between 1900 and 2100 (year-based) or datetime (timeseries), neither was given.")
     
     # read `data` table
     _full_df = pd.DataFrame()
     for _var in _list_variables:
         # Check dimensions, if exactly as in META_IDX is a meta indicator
-        # variable has more dimensions than META_IDX, eliminate those with fewer dimensions
+        # if more dimensions than META_IDX treat as variable
+        # if fewer dimensions, eliminate with warning logger
         missing = set(META_IDX).difference(_ds[_var].dims)
         var_idx = set(_ds[_var].dims).difference(set(META_IDX))
         
         if not var_idx:
             if not missing:
                 _meta.append(_var)
-                print("{} is a meta indicator".format(_var))
             elif missing:
-                print("{} eliminated, does NOT have the following index {}".format(_var, missing))
+                logger.warning("{} eliminated due to NOT having the following index {}".format(_var, missing))
         else:
-            print("{} is a variable with additional index {}".format(_var, var_idx))
-            
             # if year-based data, convert into wide-format table
             if is_year_based:
                 _tmp = _ds[_var].to_dataframe().pivot_table(index=['model', 'scenario', 'region'], columns='time', values=_var).reset_index(drop=False)
