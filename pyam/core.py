@@ -2871,6 +2871,7 @@ def read_netcdf(path):
     """
     
     _ds = xr.open_dataset(path)
+    NETCDF_IDX = ['time', 'model', 'scenario', 'region']
     _list_cols = IAMC_IDX.copy()
     _list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
     _meta = []
@@ -2897,17 +2898,10 @@ def read_netcdf(path):
     _full_df = pd.DataFrame()
     for _var in _list_variables:
         # Check dimensions, if exactly as in META_IDX is a meta indicator
-        # if more dimensions than META_IDX treat as variable
-        # if fewer dimensions, eliminate with warning logger
-        missing = set(META_IDX).difference(_ds[_var].dims)
-        var_idx = set(_ds[_var].dims).difference(set(META_IDX))
-        
-        if not var_idx:
-            if not missing:
-                _meta.append(_var)
-            elif missing:
-                logger.warning("{} eliminated due to NOT having the following index {}".format(_var, missing))
-        else:
+        # if exactly as in IAMC_IDX is a variable        
+        if set(_ds[_var].dims) == set(META_IDX):
+            _meta.append(_var)
+        elif set(_ds[_var].dims) == set(NETCDF_IDX):    
             # if year-based data, convert into wide-format table
             if is_year_based:
                 _tmp = _ds[_var].to_dataframe().pivot_table(index=['model', 'scenario', 'region'], columns='time', values=_var).reset_index(drop=False)
@@ -2919,7 +2913,9 @@ def read_netcdf(path):
             _tmp['unit'] = _ds[_var].unit
             _tmp = _tmp.reindex(columns=_list_cols)
             _full_df = pd.concat([_full_df, _tmp])
-    
+        else:
+            raise TypeError("Cannot define {}, different indices from META_IDX and IAMC_IDX.".format(_var))
+
     # remove index name as 'time' and reset index to number the whole dataset
     _full_df = _full_df.rename_axis(None, axis=1).reset_index(drop=True)
     _full_df = IamDataFrame(_full_df)
