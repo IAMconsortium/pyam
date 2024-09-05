@@ -9,6 +9,7 @@ from pyam.testing import assert_iamframe_equal
 from pyam.utils import META_IDX
 
 from .conftest import META_DF, TEST_DATA_DIR
+from pyam.core import read_netcdf
 
 try:
     import xlrd  # noqa: F401
@@ -256,10 +257,9 @@ def test_io_datapackage(test_df, tmpdir):
     assert_iamframe_equal(test_df, import_df)
 
 def test_io_netcdf(test_df, tmpdir):
-    # # add column to `meta` and write to datapackage
-    # test_df.set_meta(["a", "b"], "string")
-    # test_df.to_datapackage(file)
-
+    # add column to `meta` and write to datapackage
+    test_df.set_meta(["a", "b"], "string")
+    
     # read from csv assert that IamDataFrame instances are equal
     file = Path(tmpdir) / "test_df.nc"
     import_df = read_netcdf(file)

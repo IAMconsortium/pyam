@@ -2871,7 +2871,7 @@ def read_netcdf(path):
     """
     
     _ds = xr.open_dataset(path)
-    _list_cols = ['model', 'scenario', 'region', 'variable', 'unit']
+    _list_cols = IAMC_IDX.copy()
     _list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
     _meta = []
     
