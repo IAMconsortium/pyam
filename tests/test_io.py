@@ -257,10 +257,6 @@ def test_io_datapackage(test_df, tmpdir):
     assert_iamframe_equal(test_df, import_df)
 
 def test_io_netcdf(test_df, tmpdir):
-    # add column to `meta` and write to datapackage
-    test_df.set_meta(["a", "b"], "string")
-    
-    # read from csv assert that IamDataFrame instances are equal
     file = Path(tmpdir) / "test_df.nc"
     import_df = read_netcdf(file)
     assert_iamframe_equal(test_df, import_df)
