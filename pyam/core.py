@@ -2876,14 +2876,8 @@ def read_netcdf(path):
     _list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
     _meta = []
     
-    # Check if the time coordinate is year-based in the range of 1900--2100, or timeseries
-    def is_year_valid(_x):
-        if isinstance(_x, (int, np.integer)):
-            return all([_x >= 1900, _x <= 2100])
-        else: 
-            return False 
-    
-    is_year_based = all(is_year_valid(x) for x in _ds.coords['time'].values)
+    # Check if the time coordinate is years (integers) or date time-format
+    is_year_based = all(isinstance(x, (int, np.integer)) for x in _ds.coords['time'].values)
     is_datetime = all(isinstance(x, (dt.date, dt.time, np.datetime64)) for x in _ds.coords['time'].values)
 
     # Check if the xarray dataset has the correct coordinates, then get column names
