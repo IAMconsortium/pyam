@@ -2911,13 +2911,9 @@ def read_netcdf(path):
             raise TypeError("Cannot define {}, different indices from META_IDX and IAMC_IDX.".format(_var))
 
     # remove index name as 'time' and reset index to number the whole dataset
-    _full_df = _full_df.rename_axis(None, axis=1).reset_index(drop=True)
-    _full_df = IamDataFrame(_full_df)
-
-    # add meta indicators in IamDataFrame.meta
-    if _meta:
-        _full_df.meta = _ds[_meta].to_dataframe()
-
-    return _full_df
+    return IamDataFrame(
+        _full_df.rename_axis(None, axis=1).reset_index(drop=True),
+        meta=_ds[_meta].to_dataframe() if _meta else None,
+    )
 
 
