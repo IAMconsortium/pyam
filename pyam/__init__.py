@@ -20,6 +20,7 @@ from pyam.testing import assert_iamframe_equal
 from pyam.unfccc import read_unfccc
 from pyam.utils import IAMC_IDX
 from pyam.worldbank import read_worldbank
+from pyam.netcdf import read_netcdf
 
 try:
     __version__ = version("pyam-iamc")

@@ -8,8 +8,6 @@ from tempfile import TemporaryDirectory
 
 import ixmp4
 import numpy as np
-import xarray as xr
-import datetime as dt
 import pandas as pd
 from pandas.api.types import is_integer
 
@@ -2855,65 +2853,3 @@ def read_datapackage(path, data="data", meta="meta"):
         df.meta = _meta.set_index(META_IDX)
 
     return df
-
-
-def read_netcdf(path):
-    """Read timeseries data and meta-indicators from aggregated netCDF (intermediate from Euro Calliope netCDF)
-
-    Parameters
-    ----------
-    path : string or path object to the netcdf file
-
-    output
-    ----------
-    IamDataFrame
-    
-    """
-    
-    _ds = xr.open_dataset(path)
-    NETCDF_IDX = ['time', 'model', 'scenario', 'region']
-    _list_cols = IAMC_IDX.copy()
-    _list_variables = [i for i in _ds.to_dict()['data_vars'].keys()]
-    _meta = []
-    
-    # Check if the time coordinate is years (integers) or date time-format
-    is_year_based = all(isinstance(x, (int, np.integer)) for x in _ds.coords['time'].values)
-    is_datetime = all(isinstance(x, (dt.date, dt.time, np.datetime64)) for x in _ds.coords['time'].values)
-
-    # Check if the xarray dataset has the correct coordinates, then get column names
-    if is_year_based:
-        _list_cols.extend(_ds.coords['time'].values.tolist())
-    elif is_datetime:
-        _list_cols.extend(['time', 'value'])
-    else:
-        raise TypeError("Time coordinate needs to be integer between 1900 and 2100 (year-based) or datetime (timeseries), neither was given.")
-    
-    # read `data` table
-    _full_df = pd.DataFrame()
-    for _var in _list_variables:
-        # Check dimensions, if exactly as in META_IDX is a meta indicator
-        # if exactly as in IAMC_IDX is a variable        
-        if set(_ds[_var].dims) == set(META_IDX):
-            _meta.append(_var)
-        elif set(_ds[_var].dims) == set(NETCDF_IDX):    
-            # if year-based data, convert into wide-format table
-            if is_year_based:
-                _tmp = _ds[_var].to_dataframe().pivot_table(index=['model', 'scenario', 'region'], columns='time', values=_var).reset_index(drop=False)
-            # if timeseries, convert into long-format table
-            elif is_datetime:
-                _tmp = _ds[_var].to_dataframe().reset_index(drop=False).rename(columns={_var: "value"})
-            
-            _tmp['variable'] = _ds[_var].long_name
-            _tmp['unit'] = _ds[_var].unit
-            _tmp = _tmp.reindex(columns=_list_cols)
-            _full_df = pd.concat([_full_df, _tmp])
-        else:
-            raise TypeError("Cannot define {}, different indices from META_IDX and IAMC_IDX.".format(_var))
-
-    # remove index name as 'time' and reset index to number the whole dataset
-    return IamDataFrame(
-        _full_df.rename_axis(None, axis=1).reset_index(drop=True),
-        meta=_ds[_meta].to_dataframe() if _meta else None,
-    )
-
-

@@ -87,6 +87,7 @@ optional = true
 [tool.poetry.group.optional_io_formats.dependencies]
 datapackage = ">=1.15.2"
 xlrd = ">=2.0.1"
+xarray = ">=2024.6.0"
 
 [tool.poetry.group.optional_plotting]
 optional = true
