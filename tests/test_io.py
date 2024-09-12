@@ -7,9 +7,9 @@ import pytest
 from pyam import IamDataFrame, read_datapackage
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import META_IDX
+from pyam.netcdf import read_netcdf
 
 from .conftest import META_DF, TEST_DATA_DIR
-from pyam.core import read_netcdf
 
 try:
     import xlrd  # noqa: F401
@@ -256,8 +256,8 @@ def test_io_datapackage(test_df, tmpdir):
     import_df = read_datapackage(file)
     assert_iamframe_equal(test_df, import_df)
 
+
 def test_io_netcdf(test_df, tmpdir):
     file = Path(tmpdir) / "test_df.nc"
     import_df = read_netcdf(file)
     assert_iamframe_equal(test_df, import_df)
-    
