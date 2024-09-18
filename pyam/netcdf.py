@@ -1,19 +1,15 @@
 import numpy as np
 import datetime as dt
 import pandas as pd
-import xarray as xr
-
+try:
+    import xarray as xr
+except ImportError:
+    import pip
+    pip.main(['install', '--user', 'xarray'])
+    import xarray as xr
+    
 from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, IAMC_IDX
-
-# try:
-#     from datapackage import Package
-
-#     HAS_DATAPACKAGE = True
-# except ImportError:
-#     Package = None
-#     HAS_DATAPACKAGE = False
-
 
 def read_netcdf(path):
     """Read timeseries or year-based data and meta-indicators from aggregated netCDF
