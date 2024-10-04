@@ -269,7 +269,7 @@ def test_load_meta_exclude(test_pd_df):
     """Initializing from xlsx where 'meta' has an exclude columns (pyam < 2.0)"""
     obs = IamDataFrame(TEST_DATA_DIR / "exclude_meta_sheet.xlsx")
     exp = IamDataFrame(test_pd_df)
-    exp.exclude[0] = True
+    exp.exclude.iloc[0] = True
     assert_iamframe_equal(obs, exp)
 
 
