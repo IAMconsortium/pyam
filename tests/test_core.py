@@ -92,6 +92,7 @@ def test_init_df_with_duplicates_raises(test_df):
 def test_init_df_with_illegal_values_raises(test_pd_df, illegal_value):
     # values that cannot be cast to float should raise a value error and be specified by
     # index for user
+    test_pd_df[2005] = test_pd_df[2005].astype(object)
     test_pd_df.loc[0, 2005] = illegal_value
     msg = (
         f'.*string "{illegal_value}" in `data`:'
