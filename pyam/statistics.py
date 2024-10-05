@@ -290,6 +290,7 @@ def format_rows(
     count = max(
         [i for i in row.loc[(slice(None), slice(None), "count")] if not np.isnan(i)]
     )
+    ret = ret.astype(object)
     ret.loc[("count", "")] = (f"{count:.0f}") if count > 1 else ""
 
     # set upper and lower for the range

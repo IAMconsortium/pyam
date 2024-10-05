@@ -989,6 +989,7 @@ class IamDataFrame:
 
         # update meta dataframe
         self._new_meta_column(name)
+        self.meta[name] = self.meta[name].astype(object)
         self.meta.loc[idx, name] = value
         msg = "{} scenario{} categorized as `{}: {}`"
         logger.info(msg.format(len(idx), "" if len(idx) == 1 else "s", name, value))
