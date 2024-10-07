@@ -1,5 +1,6 @@
 # Next release
 
+- [#880](https://github.com/IAMconsortium/pyam/pull/880) Use `pd.Series.iloc[pos]` for forward-compatibility
 - [#877](https://github.com/IAMconsortium/pyam/pull/xxx) Support `engine` and other `pd.ExcelFile` keywords.
 
 # Release v2.2.4
