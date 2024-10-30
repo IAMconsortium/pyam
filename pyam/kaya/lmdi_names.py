@@ -1,0 +1,7 @@
+Pop_LMDI = "Population (LMDI)"
+GNP_per_P_LMDI = "GNP/P (LMDI)"
+FE_per_GNP_LMDI = "FE/GNP (LMDI)"
+PEdeq_per_FE_LMDI = "PEDEq/FE (LMDI)"
+PEFF_per_PEDEq_LMDI = "PEFF/PEDEq (LMDI)"
+TFC_per_PEFF_LMDI = "TFC/PEFF (LMDI)"
+NFC_per_TFC_LMDI = "NFC/TFC (LMDI)"
