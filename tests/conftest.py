@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from httpx import ConnectError
+from ixmp4.conf.base import PlatformInfo
 from ixmp4.core import Platform
 from ixmp4.data.backend import SqliteTestBackend
 
@@ -267,10 +268,19 @@ def plot_stackplot_df():
 
 @pytest.fixture(scope="function")
 def test_platform():
-    platform = Platform(_backend=SqliteTestBackend())
+    sqlite = SqliteTestBackend(
+        PlatformInfo(name="sqlite-test", dsn="sqlite:///:memory:")
+    )
+    sqlite.setup()
+
+    platform = Platform(_backend=sqlite)
     platform.regions.create(name="World", hierarchy="common")
     platform.units.create(name="EJ/yr")
+
     yield platform
+
+    sqlite.close()
+    sqlite.teardown()
 
 
 @pytest.fixture(scope="session")
