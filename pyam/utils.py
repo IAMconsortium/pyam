@@ -105,11 +105,9 @@ def get_excel_file_with_kwargs(path, **kwargs):
     instance along with the remaining keyword arguments (which presumably
     will be used for other purposes by the calling function).
     """
-    EXCEL_FILE_KWS = ('engine', 'storage_options', 'engine_kwargs')
+    EXCEL_FILE_KWS = ("engine", "storage_options", "engine_kwargs")
     kwargs = kwargs.copy()
-    excel_file_kwargs = {
-        k: kwargs.pop(k) for k in EXCEL_FILE_KWS if k in kwargs
-    }
+    excel_file_kwargs = {k: kwargs.pop(k) for k in EXCEL_FILE_KWS if k in kwargs}
     # TODO remove when bumping minimum pandas dependency to >= 2.2
     if "engine_kwargs" in excel_file_kwargs and packaging.version.parse(
         importlib.metadata.version("pandas")

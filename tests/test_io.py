@@ -21,6 +21,7 @@ except ModuleNotFoundError:  # pragma: no cover
 
 try:
     import python_calamine  # noqa: F401
+
     has_calamine = True
 except ModuleNotFoundError:  # pragma: no cover
     has_calamine = False
@@ -127,9 +128,9 @@ def test_read_xls(test_df_year):
 
 
 @pytest.mark.skipif(
-        packaging.version.parse(importlib.metadata.version("pandas")) \
-          < packaging.version.parse("2.2.0"),
-        reason="pandas < 2.2.0 has inconsistent support for `engine_kwargs`",
+    packaging.version.parse(importlib.metadata.version("pandas"))
+    < packaging.version.parse("2.2.0"),
+    reason="pandas < 2.2.0 has inconsistent support for `engine_kwargs`",
 )
 def test_read_xlsx_kwargs(test_df_year):
     # Test that kwargs to `IamDataFrame.__init__` are passed to `pd.read_excel`
@@ -152,8 +153,8 @@ def test_read_xlsx_kwargs(test_df_year):
 
 @pytest.mark.skipif(not has_calamine, reason="Package 'python_calamine' not installed.")
 @pytest.mark.skipif(
-    packaging.version.parse(importlib.metadata.version("pandas")) \
-      < packaging.version.parse("2.2.0"),
+    packaging.version.parse(importlib.metadata.version("pandas"))
+    < packaging.version.parse("2.2.0"),
     reason="`engine='calamine' requires pandas >= 2.2.0",
 )
 def test_read_xlsx_calamine(test_df_year):
