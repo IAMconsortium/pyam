@@ -23,8 +23,9 @@ Timeseries data coordinates
 - Any *column* of the :attr:`IamDataFrame.coordinates <pyam.IamDataFrame.coordinates>`
   ('**region**', '**variable**', '**unit**'): string or list of strings
 - '**measurand**': a tuple (or list of tuples) of '*variable*' and '*unit*'
-- '**level**': the "depth" of entries in the '*variable*' column (number of '|')
-  (excluding the strings in the '*variable*' argument, if given)
+- '**depth**': the "depth" of entries in the '*variable*' column (number of '|')
+- '**level**': the "depth" of entries in the '*variable*' column (number of '|'),
+  excluding the strings in the '*variable*' argument (if given)
 - '**year**': takes an integer (int/:class:`numpy.int64`), a list of integers or
   a range. Note that the last year of a range is not included,
   so ``range(2010, 2015)`` is interpreted as ``[2010, ..., 2014]``

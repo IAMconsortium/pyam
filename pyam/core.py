@@ -1905,7 +1905,7 @@ class IamDataFrame:
         if not inplace:
             return ret
 
-    def _apply_filters(self, level=None, **filters):  # noqa: C901
+    def _apply_filters(self, level=None, depth=None, **filters):  # noqa: C901
         """Determine rows to keep in data for given set of filters
 
         Parameters
@@ -1917,6 +1917,9 @@ class IamDataFrame:
         """
         regexp = filters.pop("regexp", False)
         keep = np.ones(len(self), dtype=bool)
+
+        if level is not None and depth is not None:
+            raise ValueError("Filter by `level` and `depth` not supported")
 
         if "variable" in filters and "measurand" in filters:
             raise ValueError("Filter by `variable` and `measurand` not supported")
@@ -2003,10 +2006,13 @@ class IamDataFrame:
             keep = np.logical_and(keep, keep_col)
 
         if level is not None and not ("variable" in filters or "measurand" in filters):
-            # if level and variable/measurand is given, level-filter is applied there
+            # if level is given without variable/measurand, it is equivalent to depth
+            depth = level
+
+        if depth is not None:
             col = "variable"
             lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
-            matches = find_depth(lvl_index, level=level)
+            matches = find_depth(lvl_index, level=depth)
             keep_col = get_keep_col(lvl_codes, matches)
 
             keep = np.logical_and(keep, keep_col)

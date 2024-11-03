@@ -1,7 +1,8 @@
 # Next release
 
+- [#886](https://github.com/IAMconsortium/pyam/pull/886) Implement filtering by variable `depth`
 - [#880](https://github.com/IAMconsortium/pyam/pull/880) Use `pd.Series.iloc[pos]` for forward-compatibility
-- [#877](https://github.com/IAMconsortium/pyam/pull/xxx) Support `engine` and other `pd.ExcelFile` keywords.
+- [#877](https://github.com/IAMconsortium/pyam/pull/877) Support `engine` and other `pd.ExcelFile` keywords.
 
 # Release v2.2.4
 
@@ -109,9 +110,11 @@ method. This feature is now implemented via the **nomenclature.RegionProcessor**
 - [#773](https://github.com/IAMconsortium/pyam/pull/773) Remove `map_regions()` and default mappings csv
 - [#772](https://github.com/IAMconsortium/pyam/pull/772) Show all missing rows for `require_data()`
 - [#771](https://github.com/IAMconsortium/pyam/pull/771) Refactor to start a separate validation module
-- [#766](https://github.com/IAMconsortium/pyam/pull/766) Use **ixmp4** for credentials to access a Scenario Explorer database
+- [#766](https://github.com/IAMconsortium/pyam/pull/766) Use **ixmp4** for credentials to access a Scenario Explorer
+  database
 - [#764](https://github.com/IAMconsortium/pyam/pull/764) Clean-up exposing internal methods and attributes
-- [#763](https://github.com/IAMconsortium/pyam/pull/763) Implement a fix against carrying over unused levels when initializing from an indexed pandas object
+- [#763](https://github.com/IAMconsortium/pyam/pull/763) Implement a fix against carrying over unused levels when
+  initializing from an indexed pandas object
 - [#759](https://github.com/IAMconsortium/pyam/pull/759) Excise "exclude" column from meta and add a own attribute
 - [#747](https://github.com/IAMconsortium/pyam/pull/747) Drop support for Python 3.7
 
@@ -172,10 +175,12 @@ Bump minimum version of **pandas** to v1.2.0 to support automatic engine selecti
 ## Individual updates
 
 - [#715](https://github.com/IAMconsortium/pyam/pull/715) Add a `require_data()` method
-- [#713](https://github.com/IAMconsortium/pyam/pull/713) Informative error when using lists for filter by level, `level` now a forbidden column.
+- [#713](https://github.com/IAMconsortium/pyam/pull/713) Informative error when using lists for filter by level, `level`
+  now a forbidden column.
 - [#709](https://github.com/IAMconsortium/pyam/pull/709) Hotfix ops to support `fillna=0`
 - [#708](https://github.com/IAMconsortium/pyam/pull/708) Remove 'xls' as by-default-supported file format
-- [#686](https://github.com/IAMconsortium/pyam/pull/686) Add support for (weighted) quantile timeseries as `df.compute.quantiles()` with a [tutorial](https://pyam-iamc.readthedocs.io/en/stable/tutorials/quantiles.html)
+- [#686](https://github.com/IAMconsortium/pyam/pull/686) Add support for (weighted) quantile timeseries as
+  `df.compute.quantiles()` with a [tutorial](https://pyam-iamc.readthedocs.io/en/stable/tutorials/quantiles.html)
 
 # Release v1.6.0
 
@@ -193,15 +198,18 @@ dependency for better performance.
 ## Individual updates
 
 - [#702](https://github.com/IAMconsortium/pyam/pull/702) Migrate `compute_bias()` to `compute` module
-- [#701](https://github.com/IAMconsortium/pyam/pull/701) Add **xlsxwriter** as dependency to improve `to_excel()` performance
-- [#699](https://github.com/IAMconsortium/pyam/pull/699) Add filter options to IIASA API `index()`, `meta()` and `properties()` methods
+- [#701](https://github.com/IAMconsortium/pyam/pull/701) Add **xlsxwriter** as dependency to improve `to_excel()`
+  performance
+- [#699](https://github.com/IAMconsortium/pyam/pull/699) Add filter options to IIASA API `index()`, `meta()` and
+  `properties()` methods
 - [#697](https://github.com/IAMconsortium/pyam/pull/697) Add warning if IIASA API returns empty result
 - [#696](https://github.com/IAMconsortium/pyam/pull/696) Added ability to load preferentially from a local cache
 - [#695](https://github.com/IAMconsortium/pyam/pull/695) Remove unused meta levels during initialization
 - [#688](https://github.com/IAMconsortium/pyam/pull/688) Remove ixmp as optional dependency
 - [#684](https://github.com/IAMconsortium/pyam/pull/684) Use new IIASA-manager API with token refresh
 - [#679](https://github.com/IAMconsortium/pyam/pull/679) `set_meta()` now supports pandas.DataFrame as an argument
-- [#674](https://github.com/IAMconsortium/pyam/pull/674) Support filtering data by model-scenario pairs with the `index` argument to `filter()` and `slice()`
+- [#674](https://github.com/IAMconsortium/pyam/pull/674) Support filtering data by model-scenario pairs with the `index`
+  argument to `filter()` and `slice()`
 
 # Release v1.5.0
 
@@ -213,7 +221,8 @@ class that allows faster filtering and inspection of an **IamDataFrame**.
 ## Individual updates
 
 - [#668](https://github.com/IAMconsortium/pyam/pull/668) Allow renaming of empty IamDataFrame objects
-- [#665](https://github.com/IAMconsortium/pyam/pull/665) Provide better support for IamDataFrame objects with non-standard index dimensions
+- [#665](https://github.com/IAMconsortium/pyam/pull/665) Provide better support for IamDataFrame objects with
+  non-standard index dimensions
 - [#659](https://github.com/IAMconsortium/pyam/pull/659) Add an `offset` method
 - [#657](https://github.com/IAMconsortium/pyam/pull/657) Add an `IamSlice` class
 
@@ -242,7 +251,8 @@ an empty **IamDataFrame**. Previously, this raised an error.
 
 ## Individual updates
 
-- [#651](https://github.com/IAMconsortium/pyam/pull/651) Pin `pint<=0.18` as a quickfix for a regression in the latest release
+- [#651](https://github.com/IAMconsortium/pyam/pull/651) Pin `pint<=0.18` as a quickfix for a regression in the latest
+  release
 - [#650](https://github.com/IAMconsortium/pyam/pull/650) Add IPCC AR6 WGIII colors to PYAM_COLORS
 - [#647](https://github.com/IAMconsortium/pyam/pull/647) Pin `unfccc-di-api` to latest release
 - [#634](https://github.com/IAMconsortium/pyam/pull/634) Better error message when initializing with invisible columns
@@ -263,13 +273,15 @@ pandas [v1.4.0](https://pandas.pydata.org/docs/whatsnew/v1.4.0.html).
 
 ## Individual updates
 
-- [#608](https://github.com/IAMconsortium/pyam/pull/608) The method `assert_iamframe_equals()` passes if an all-nan-col is present
+- [#608](https://github.com/IAMconsortium/pyam/pull/608) The method `assert_iamframe_equals()` passes if an all-nan-col
+  is present
 - [#604](https://github.com/IAMconsortium/pyam/pull/604) Add an annualized-growth-rate method
 - [#602](https://github.com/IAMconsortium/pyam/pull/602) Add a `compute` module/accessor and a learning-rate method
 - [#600](https://github.com/IAMconsortium/pyam/pull/600) Add a `diff()` method
 - [#592](https://github.com/IAMconsortium/pyam/pull/592) Fix for running in jupyter-lab notebooks
 - [#590](https://github.com/IAMconsortium/pyam/pull/590) Update expected figures of plotting tests to use matplotlib 3.5
-- [#586](https://github.com/IAMconsortium/pyam/pull/586) Improve error reporting for non-numeric data in any value column
+- [#586](https://github.com/IAMconsortium/pyam/pull/586) Improve error reporting for non-numeric data in any value
+  column
 
 # Release v1.2.0
 
@@ -287,10 +299,12 @@ was added as a dependency.
 
 ## Individual updates
 
-- [#585](https://github.com/IAMconsortium/pyam/pull/585) Include revisions to the ORE manuscript source code following acceptance/publication
+- [#585](https://github.com/IAMconsortium/pyam/pull/585) Include revisions to the ORE manuscript source code following
+  acceptance/publication
 - [#583](https://github.com/IAMconsortium/pyam/pull/583) Add profiler module for performance benchmarking
 - [#579](https://github.com/IAMconsortium/pyam/pull/579) Increase performance of IamDataFrame initialization
-- [#572](https://github.com/IAMconsortium/pyam/pull/572) Unpinned the requirements for xlrd and added openpyxl as a requirement to ensure ongoing support of both `.xlsx` and `.xls` files out of the box
+- [#572](https://github.com/IAMconsortium/pyam/pull/572) Unpinned the requirements for xlrd and added openpyxl as a
+  requirement to ensure ongoing support of both `.xlsx` and `.xls` files out of the box
 
 # Release v1.1.0
 
