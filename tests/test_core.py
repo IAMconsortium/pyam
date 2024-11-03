@@ -431,8 +431,29 @@ def test_filter_empty_df():
     assert len(obs) == 0
 
 
-def test_variable_and_measurand_raises(test_df):
-    pytest.raises(ValueError, test_df.filter, variable="foo", measurand=("foo", "bar"))
+def test_filter_variable_and_measurand_raises(test_df):
+    with pytest.raises(ValueError, match="Filter by `variable` and `measurand` not"):
+        test_df.filter(variable="foo", measurand=("foo", "bar"))
+
+
+def test_filter_level_and_depth_raises(test_df):
+    with pytest.raises(ValueError, match="Filter by `level` and `depth` not"):
+        test_df.filter(level=1, depth=2)
+
+
+@pytest.mark.parametrize(
+    "filter_args",
+    (dict(variable="*rimary*C*"), dict(measurand=("*rimary*C*", "EJ/*"))),
+)
+def test_filter_variable_and_level(test_df, filter_args):
+    obs = test_df.filter(**filter_args, level=0).variable
+    assert obs == ["Primary Energy|Coal"]
+
+    obs = test_df.filter(**filter_args, level="0+").variable
+    assert obs == ["Primary Energy|Coal"]
+
+    obs = test_df.filter(**filter_args, level=1).variable
+    assert obs == []
 
 
 @pytest.mark.parametrize(
@@ -440,10 +461,13 @@ def test_variable_and_measurand_raises(test_df):
     (dict(variable="*rimary*C*"), dict(measurand=("*rimary*C*", "EJ/*"))),
 )
 def test_filter_variable_and_depth(test_df, filter_args):
-    obs = test_df.filter(**filter_args, level=0).variable
+    obs = test_df.filter(**filter_args, depth=1).variable
     assert obs == ["Primary Energy|Coal"]
 
-    obs = test_df.filter(**filter_args, level=1).variable
+    obs = test_df.filter(**filter_args, depth="0+").variable
+    assert obs == ["Primary Energy|Coal"]
+
+    obs = test_df.filter(**filter_args, depth=0).variable
     assert obs == []
 
 
@@ -460,18 +484,30 @@ def test_filter_measurand_list(test_df):
     assert obs.scenario == ["scen_b"]
 
 
-def test_variable_depth_0_keep_false(test_df):
-    obs = test_df.filter(level=0, keep=False).variable
+@pytest.mark.parametrize(
+    "filter_name",
+    ("level", "depth"),
+)
+def test_variable_depth_0_keep_false(test_df, filter_name):
+    obs = test_df.filter(**{filter_name: 0}, keep=False).variable
     assert obs == ["Primary Energy|Coal"]
 
 
-def test_variable_depth_raises(test_df):
-    pytest.raises(ValueError, test_df.filter, level="1/")
+@pytest.mark.parametrize(
+    "filter_name",
+    ("level", "depth"),
+)
+def test_variable_depth_raises(test_df, filter_name):
+    pytest.raises(ValueError, test_df.filter, **{filter_name: "1/"})
 
 
-def test_variable_depth_with_list_raises(test_df):
-    pytest.raises(ValueError, test_df.filter, level=["1", "2"])
-    pytest.raises(ValueError, test_df.filter, level=[1, 2])
+@pytest.mark.parametrize(
+    "filter_name",
+    ("level", "depth"),
+)
+def test_variable_depth_with_list_raises(test_df, filter_name):
+    pytest.raises(ValueError, test_df.filter, **{filter_name: ["1", "2"]})
+    pytest.raises(ValueError, test_df.filter, **{filter_name: [1, 2]})
 
 
 def test_timeseries(test_df):
