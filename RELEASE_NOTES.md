@@ -1,4 +1,10 @@
-# Next release
+# Release v2.3.0
+
+## Highlights
+
+This release includes a new option to filter by variable `depth`.
+
+## Individual updates
 
 - [#886](https://github.com/IAMconsortium/pyam/pull/886) Implement filtering by variable `depth`
 - [#880](https://github.com/IAMconsortium/pyam/pull/880) Use `pd.Series.iloc[pos]` for forward-compatibility
