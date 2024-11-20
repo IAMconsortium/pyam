@@ -20,7 +20,7 @@ def read_netcdf(path):
     path : :class:`pathlib.Path` or file-like object
         Scenario data file in netCDF format.
 
-    output
+    Returns
     ----------
     IamDataFrame with meta indicators if available
 
