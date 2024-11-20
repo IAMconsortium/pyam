@@ -17,7 +17,8 @@ def read_netcdf(path):
 
     Parameters
     ----------
-    path : string or path object to the netCDF file
+    path : :class:`pathlib.Path` or file-like object
+        Scenario data file in netCDF format.
 
     output
     ----------
