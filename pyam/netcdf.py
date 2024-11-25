@@ -12,8 +12,7 @@ from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, IAMC_IDX
 
 def read_netcdf(path):
-    """Read timeseries or year-based data and meta-indicators from aggregated netCDF
-    (intermediate from Euro Calliope netCDF)
+    """Read timeseries or year-based data and meta-indicators from netCDF
 
     Parameters
     ----------
