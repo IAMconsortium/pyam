@@ -1,15 +1,16 @@
 import numpy as np
 import datetime as dt
 import pandas as pd
+
 try:
     import xarray as xr
 except ImportError:
-    import pip
-    pip.main(['install', '--user', 'xarray'])
-    import xarray as xr
-    
+    print(
+        "Xarray is required, to install run 'pip.main(['install', '--user', 'xarray'])' "
+    )
 from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, IAMC_IDX
+
 
 def read_netcdf(path):
     """Read timeseries or year-based data and meta-indicators from netCDF
@@ -50,14 +51,15 @@ def read_netcdf(path):
         )
 
     # read `data` table
-    _full_df = pd.DataFrame()
+    dfs = []
     for _var in _list_variables:
         # Check dimensions, if exactly as in META_IDX is a meta indicator
         # if exactly as in IAMC_IDX is a variable
         if set(_ds[_var].dims) == set(META_IDX):
             _meta.append(_var)
         elif set(_ds[_var].dims) == set(NETCDF_IDX):
-            # if year-based data, convert into wide-format table
+            # convert the data into the IamDataframe format
+            # if year-based data, get the time coordinate as "year"
             if is_year_based:
                 _tmp = (
                     _ds[_var]
@@ -65,7 +67,7 @@ def read_netcdf(path):
                     .reset_index(drop=False)
                     .rename(columns={"time": "year", _var: "value"})
                 )
-            # if timeseries, convert into long-format table
+            # if timeseries, keep the time coordinate as "time"
             elif is_datetime:
                 _tmp = (
                     _ds[_var]
@@ -76,15 +78,14 @@ def read_netcdf(path):
 
             _tmp["variable"] = _ds[_var].long_name
             _tmp["unit"] = _ds[_var].unit
-            _tmp = _tmp.reindex(columns=_list_cols)
-            _full_df = pd.concat([_full_df, _tmp])
+            dfs.append(_tmp)
         else:
             raise TypeError(
                 f"Cannot define {_var}, different indices from META_IDX and IAMC_IDX."
             )
+    _full_df = pd.concat(dfs)
 
-    # remove index name as 'time' and reset index to number the whole dataset
     return IamDataFrame(
-        _full_df.rename_axis(None, axis=1).reset_index(drop=True),
+        _full_df.reset_index(drop=True),
         meta=_ds[_meta].to_dataframe() if _meta else None,
     )
