@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import logging
 
 from pyam import IamDataFrame
 from pyam.kaya import input_variable_names, kaya_variable_names
@@ -78,12 +79,10 @@ def test_kaya_variables(append):
 
     if append:
         obs = TEST_DF.copy()
-        obs.compute.kaya_variables(
-            scenarios=[("model_a", "scen_a", "World")], append=True
-        )
+        obs.compute.kaya_variables(append=True)
         assert_iamframe_equal(TEST_DF.append(EXP_DF_FOR_APPEND), obs)
     else:
-        obs = TEST_DF.compute.kaya_variables(scenarios=[("model_a", "scen_a", "World")])
+        obs = TEST_DF.compute.kaya_variables()
         assert_iamframe_equal(EXP_DF, obs)
 
 
@@ -98,7 +97,7 @@ def test_kaya_variables_none_when_input_variables_missing(append):
         # select subset of required input variables
         (
             obs.filter(variable=input_variable_names.POPULATION).compute.kaya_variables(
-                scenarios=[("model_a", "scen_a", "World")], append=True
+                append=True
             )
         )
         # assert that no data was added
@@ -106,7 +105,7 @@ def test_kaya_variables_none_when_input_variables_missing(append):
     else:
         obs = TEST_DF.filter(
             variable=input_variable_names.POPULATION
-        ).compute.kaya_variables(scenarios=[("model_a", "scen_a", "World")])
+        ).compute.kaya_variables()
         assert obs is None
 
 
@@ -114,6 +113,23 @@ def test_calling_kaya_variables_multiple_times():
     """Test calling the method a second time has no effect"""
 
     obs = TEST_DF.copy()
-    obs.compute.kaya_variables(scenarios=[("model_a", "scen_a", "World")], append=True)
-    obs.compute.kaya_variables(scenarios=[("model_a", "scen_a", "World")], append=True)
+    obs.compute.kaya_variables(append=True)
+    obs.compute.kaya_variables(append=True)
     assert_iamframe_equal(TEST_DF.append(EXP_DF_FOR_APPEND), obs)
+
+
+def test_kaya_variables_logs_missing_variables(caplog):
+    """Test that missing variables are correctly logged"""
+    # Create test data with only population
+    df_no_pop = TEST_DF.filter(variable=input_variable_names.POPULATION, keep=False)
+
+    with caplog.at_level(logging.INFO):
+        df_no_pop.compute.kaya_variables()
+
+    # Check that the log message contains expected information
+    assert (
+        "Variables missing for model: model_a, scenario: scen_a, region: World"
+        in caplog.text
+    )
+
+    assert input_variable_names.POPULATION in caplog.text

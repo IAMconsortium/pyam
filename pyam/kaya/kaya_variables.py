@@ -1,55 +1,98 @@
 import logging
-from functools import reduce
+import warnings
 
+import pyam
 from pyam.kaya import input_variable_names, kaya_variable_names
 
 logger = logging.getLogger(__name__)
 
-input_variable_list = [
+required_input_variables = [
     vars(input_variable_names)[variable_name]
     for variable_name in dir(input_variable_names)
     if not variable_name.startswith("__")
 ]
 
 
-def kaya_variables(input_data, scenarios):
+def kaya_variables(input_data):
+    if _is_input_data_incomplete(input_data):
+        return None
+
+    kaya_variables = pyam.concat(
+        [
+            _calc_pop(input_data),
+            _calc_gdp(input_data),
+            _calc_fe(input_data),
+            _calc_pe(input_data),
+            _calc_pe_ff(input_data),
+            _calc_tfc(input_data),
+            _calc_nfc(input_data),
+        ]
+    )
+    return kaya_variables
+
+
+def _is_input_data_incomplete(input_data):
     # copy data so we don't create side effects
     # in particular, require_data will change the "exclude" series
     input_data = input_data.copy()
-    validated_input_data = _validate_input_data(input_data)
-    if validated_input_data.empty:
-        return None
-    kaya_variable_frames = []
-    for scenario in scenarios:
-        input = validated_input_data.filter(
-            model=scenario[0], scenario=scenario[1], region=scenario[2]
+    # Get all unique model/scenario/region combinations
+    scenario_model_region = input_data.data[
+        ["model", "scenario", "region"]
+    ].drop_duplicates()
+
+    # Check each combination
+    for _, row in scenario_model_region.iterrows():
+        single_combination = input_data.filter(
+            model=row["model"], scenario=row["scenario"], region=row["region"]
         )
-        if input.empty:
-            break
-        kaya_variable_frames.append(_calc_pop(input))
-        kaya_variable_frames.append(_calc_gdp(input))
-        kaya_variable_frames.append(_calc_fe(input))
-        kaya_variable_frames.append(_calc_pe(input))
-        kaya_variable_frames.append(_calc_pe_ff(input))
-        kaya_variable_frames.append(_calc_tfc(input))
-        kaya_variable_frames.append(_calc_nfc(input))
 
-    if len(kaya_variable_frames) == 0:
-        return None
-    # append all the IamDataFrames into one
-    return reduce(lambda x, y: x.append(y), kaya_variable_frames)
+        # Get variables present for this combination
+        single_combination_variables = set(single_combination.data["variable"].unique())
+        # special case for GDP: either form is acceptable, so don't check for either
+        # as long as one is present
+        required_variables_set = make_required_variables_set(
+            single_combination_variables
+        )
+        # Check if any required variables are missing
+        missing_variables = set(required_variables_set) - single_combination_variables
 
+        if missing_variables is not None:
+            logger.info(
+                f"Variables missing for model: {row['model']}, scenario: {row['scenario']}, region: {row['region']}:"
+                f"\n{missing_variables}"
+            )
 
-def _validate_input_data(input_data):
-    missing_variables = input_data.require_data(
-        variable=input_variable_list, exclude_on_fail=True
+    # special case for GDP: either form is acceptable, so don't check for either
+    # as long as one is present
+    required_variables_set = make_required_variables_set(
+        set(input_data.data["variable"].unique())
     )
-    if missing_variables is not None:
-        logger.info(
-            f"These variables are missing from the \
-            scenarios in input_data:\n{missing_variables}"
+    # exclude model/scenario combinations that have missing variables, disregarding region
+    # even if all variables are not present for a region, arithmetic operations
+    # will return an empty dataframe, not throw an error, so it is safe to proceed
+    input_data.require_data(variable=required_input_variables, exclude_on_fail=True)
+    # supress warning about empty dataframe if filtering excludes all scenarios
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return input_data.filter(exclude=False).empty
+
+
+def make_required_variables_set(input_variables):
+    required_variables_set = set(required_input_variables)
+    if not _missing_gdp(input_variables):
+        # either form of GDP is acceptable, so don't check for both
+        # as long as one is present
+        return required_variables_set - set(
+            [input_variable_names.GDP_PPP, input_variable_names.GDP_MER]
         )
-    return input_data.filter(exclude=False)
+    return required_variables_set
+
+
+def _missing_gdp(input_variables):
+    return (
+        input_variable_names.GDP_PPP in input_variables
+        or input_variable_names.GDP_MER in input_variables
+    )
 
 
 def _calc_pop(input_data):
