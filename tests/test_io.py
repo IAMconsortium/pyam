@@ -257,7 +257,7 @@ def test_io_datapackage(test_df, tmpdir):
     assert_iamframe_equal(test_df, import_df)
 
 
-def test_io_netcdf(test_df, tmpdir):
-    file = Path(tmpdir) / "test_df.nc"
+def test_io_netcdf(test_df_year):
+    file = Path(TEST_DATA_DIR / "test_df.nc")
     import_df = read_netcdf(file)
-    assert_iamframe_equal(test_df, import_df)
+    assert_iamframe_equal(test_df_year, import_df)
