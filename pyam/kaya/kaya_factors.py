@@ -76,6 +76,6 @@ def _calc_nfc_per_tfc(input_data):
         kaya_variable_names.NFC,
         kaya_variable_names.TFC,
         kaya_factor_names.NFC_per_TFC,
-        ignore_units=True,
+        ignore_units="",
         append=False,
-    ).rename(unit={"unknown": ""})
+    )  # .rename(unit={"unknown": ""})

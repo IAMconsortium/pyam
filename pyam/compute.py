@@ -252,8 +252,7 @@ class IamComputeAccessor:
         _compute_bias(self._df, name, method, axis)
 
     def kaya_variables(self, append=False):
-        """Create the set of variables needed to compute Kaya factors
-        for the Kaya Decomposition Analysis.
+        """Create the set of variables needed to compute Kaya factors.
 
         Parameters
         ----------
@@ -309,8 +308,7 @@ class IamComputeAccessor:
         return kaya_variables_frame
 
     def kaya_factors(self, append=False):
-        """Compute the Kaya factors needed for the
-        Kaya Decomposition Analysis.
+        """Compute the factors for the Kaya Decomposition Analysis
 
         Parameters
         ----------
