@@ -15,7 +15,6 @@ required_input_variables = [
 
 def kaya_variables(input_data):
     if _is_input_data_incomplete(input_data):
-        print("returning NONE")
         return None
 
     kaya_variables = pyam.concat(

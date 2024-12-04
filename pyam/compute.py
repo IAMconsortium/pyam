@@ -297,8 +297,7 @@ class IamComputeAccessor:
 
         """
 
-        kaya_variables_frame = kaya_variables.kaya_variables(
-            self._df)
+        kaya_variables_frame = kaya_variables.kaya_variables(self._df)
         if kaya_variables_frame is None:
             return None
         if append:
@@ -309,14 +308,12 @@ class IamComputeAccessor:
 
         return kaya_variables_frame
 
-    def kaya_factors(self, scenarios, append=False):
+    def kaya_factors(self, append=False):
         """Compute the Kaya factors needed for the
         Kaya Decomposition Analysis.
 
         Parameters
         ----------
-        scenarios : iterable of tuples (model, scenario, region)
-            The (model, scenario, region) combinations to be included.
         append : bool, optional
             Whether to append computed timeseries data to this instance.
 
@@ -332,9 +329,7 @@ class IamComputeAccessor:
 
         .. code-block:: python
 
-            df.compute.kaya_factors(scenarios=[("model_a", "scenario_a", "region_a"),
-                                                 ("model_b", "scenario_b", "region_b")],
-                                                 append=True)
+            df.compute.kaya_factors(append=True)
 
         The IamDataFrame must contain the following variables, otherwise the method
         will return None:
@@ -358,13 +353,10 @@ class IamComputeAccessor:
             - Carbon Sequestration|CCS|Biomass|Industrial Processes
 
         """
-        valid_scenarios = _validate_kaya_scenario_args(scenarios=scenarios)
-        if valid_scenarios is None:
-            return None
         kaya_variables = self.kaya_variables(append=False)
         if kaya_variables is None:
             return None
-        kaya_factors_frame = kaya_factors.kaya_factors(kaya_variables, valid_scenarios)
+        kaya_factors_frame = kaya_factors.kaya_factors(kaya_variables)
         if kaya_factors_frame is None:
             return None
         if append:
@@ -400,9 +392,11 @@ class IamComputeAccessor:
 
         .. code-block:: python
 
-            df.compute.kaya_lmdi(ref_scenario=("model_a", "scenario_a", "region_a"),
-                                 int_scenario=("model_b", "scenario_b", "region_b"),
-                                 append=True)
+            df.compute.kaya_lmdi(
+                ref_scenario=("model_a", "scenario_a", "region_a"),
+                int_scenario=("model_b", "scenario_b", "region_b"),
+                append=True,
+            )
 
         The IamDataFrame must contain the following variables, otherwise the method
         will return None:

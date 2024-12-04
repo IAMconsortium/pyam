@@ -83,12 +83,10 @@ def test_kaya_factors(append):
 
     if append:
         obs = TEST_DF.copy()
-        obs.compute.kaya_factors(
-            scenarios=[("model_a", "scen_a", "World")], append=True
-        )
+        obs.compute.kaya_factors(append=True)
         assert_iamframe_equal(TEST_DF.append(EXP_DF_FOR_APPEND), obs)
     else:
-        obs = TEST_DF.compute.kaya_factors(scenarios=[("model_a", "scen_a", "World")])
+        obs = TEST_DF.compute.kaya_factors()
         assert_iamframe_equal(EXP_DF, obs)
 
 
@@ -103,7 +101,7 @@ def test_kaya_variables_none_when_input_variables_missing(append):
         # select subset of required input variables
         (
             obs.filter(variable=input_variable_names.POPULATION).compute.kaya_factors(
-                scenarios=[("model_a", "scen_a", "World")], append=True
+                append=True
             )
         )
         # assert that no data was added
@@ -111,7 +109,7 @@ def test_kaya_variables_none_when_input_variables_missing(append):
     else:
         obs = TEST_DF.filter(
             variable=input_variable_names.POPULATION
-        ).compute.kaya_factors(scenarios=[("model_a", "scen_a", "World")])
+        ).compute.kaya_factors()
         assert obs is None
 
 
@@ -119,6 +117,6 @@ def test_calling_kaya_factors_multiple_times():
     """Test calling the method a second time has no effect"""
 
     obs = TEST_DF.copy()
-    obs.compute.kaya_factors(scenarios=[("model_a", "scen_a", "World")], append=True)
-    obs.compute.kaya_factors(scenarios=[("model_a", "scen_a", "World")], append=True)
+    obs.compute.kaya_factors(append=True)
+    obs.compute.kaya_factors(append=True)
     assert_iamframe_equal(TEST_DF.append(EXP_DF_FOR_APPEND), obs)

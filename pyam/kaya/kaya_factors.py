@@ -1,30 +1,22 @@
-from functools import reduce
-
+import pyam
 from pyam.kaya import input_variable_names, kaya_factor_names, kaya_variable_names
 
 
-def kaya_factors(kaya_variables_frame, scenarios):
-    kaya_factors_frames = []
-    for scenario in scenarios:
-        input = kaya_variables_frame.filter(
-            model=scenario[0], scenario=scenario[1], region=scenario[2]
-        )
-        if input.empty:
-            break
-        kaya_factors_frames.append(_calc_gnp_per_p(input))
-        kaya_factors_frames.append(_calc_fe_per_gnp(input))
-        kaya_factors_frames.append(_calc_pedeq_per_fe(input))
-        kaya_factors_frames.append(_calc_peff_per_pedeq(input))
-        kaya_factors_frames.append(_calc_tfc_per_peff(input))
-        kaya_factors_frames.append(_calc_nfc_per_tfc(input))
-        kaya_factors_frames.append(
-            input.filter(
+def kaya_factors(kaya_variables_frame):
+    kaya_factors = pyam.concat(
+        [
+            _calc_gnp_per_p(kaya_variables_frame),
+            _calc_fe_per_gnp(kaya_variables_frame),
+            _calc_pedeq_per_fe(kaya_variables_frame),
+            _calc_peff_per_pedeq(kaya_variables_frame),
+            _calc_tfc_per_peff(kaya_variables_frame),
+            _calc_nfc_per_tfc(kaya_variables_frame),
+            kaya_variables_frame.filter(
                 variable=[kaya_variable_names.TFC, input_variable_names.POPULATION]
-            )
-        )
-    if len(kaya_factors_frames) == 0:
-        return None
-    return reduce(lambda x, y: x.append(y), kaya_factors_frames)
+            ),
+        ]
+    )
+    return kaya_factors
 
 
 def _calc_gnp_per_p(input_data):
