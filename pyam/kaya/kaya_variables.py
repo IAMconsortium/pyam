@@ -15,6 +15,7 @@ required_input_variables = [
 
 def kaya_variables(input_data):
     if _is_input_data_incomplete(input_data):
+        print("returning NONE")
         return None
 
     kaya_variables = pyam.concat(
@@ -55,8 +56,7 @@ def _is_input_data_incomplete(input_data):
         )
         # Check if any required variables are missing
         missing_variables = set(required_variables_set) - single_combination_variables
-
-        if missing_variables is not None:
+        if missing_variables:
             logger.info(
                 f"Variables missing for model: {row['model']}, scenario: {row['scenario']}, region: {row['region']}:"
                 f"\n{missing_variables}"
@@ -70,7 +70,7 @@ def _is_input_data_incomplete(input_data):
     # exclude model/scenario combinations that have missing variables, disregarding region
     # even if all variables are not present for a region, arithmetic operations
     # will return an empty dataframe, not throw an error, so it is safe to proceed
-    input_data.require_data(variable=required_input_variables, exclude_on_fail=True)
+    input_data.require_data(variable=list(required_variables_set), exclude_on_fail=True)
     # supress warning about empty dataframe if filtering excludes all scenarios
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -79,7 +79,7 @@ def _is_input_data_incomplete(input_data):
 
 def make_required_variables_set(input_variables):
     required_variables_set = set(required_input_variables)
-    if not _missing_gdp(input_variables):
+    if _has_at_least_one_gdp(input_variables):
         # either form of GDP is acceptable, so don't check for both
         # as long as one is present
         return required_variables_set - set(
@@ -88,7 +88,7 @@ def make_required_variables_set(input_variables):
     return required_variables_set
 
 
-def _missing_gdp(input_variables):
+def _has_at_least_one_gdp(input_variables):
     return (
         input_variable_names.GDP_PPP in input_variables
         or input_variable_names.GDP_MER in input_variables

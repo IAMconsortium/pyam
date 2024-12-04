@@ -133,3 +133,36 @@ def test_kaya_variables_logs_missing_variables(caplog):
     )
 
     assert input_variable_names.POPULATION in caplog.text
+
+
+def test_kaya_variables_uses_gdp_mer_fallback():
+    """Test that kaya_variables uses GDP_MER when GDP_PPP is not available"""
+    # Create test data without GDP_PPP
+    df_no_gdp_ppp = TEST_DF.filter(variable=input_variable_names.GDP_PPP, keep=False)
+
+    # Create expected result without GDP_MER instead of GDP_PPP
+    exp_no_gdp_ppp = EXP_DF.filter(
+        variable=input_variable_names.GDP_PPP, keep=False
+    ).append(TEST_DF.filter(variable=input_variable_names.GDP_MER))
+
+    # Compute kaya variables
+    obs = df_no_gdp_ppp.compute.kaya_variables()
+
+    # Verify results match expected
+    assert_iamframe_equal(exp_no_gdp_ppp, obs)
+
+
+def test_kaya_variables_returns_none_when_no_gdp_available():
+    """Test that kaya_variables returns None both
+    GDP_MER and GDP_PPP are unavailable"""
+    # Create test data without GDP_PPP
+    df_no_gdp = TEST_DF.filter(
+        variable=[input_variable_names.GDP_PPP, input_variable_names.GDP_MER],
+        keep=False,
+    )
+
+    # Compute kaya variables
+    obs = df_no_gdp.compute.kaya_variables()
+
+    # Verify results match expected
+    assert obs is None
