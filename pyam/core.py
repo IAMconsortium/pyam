@@ -815,7 +815,9 @@ class IamDataFrame:
                 )
             s = s.droplevel(self.extra_cols)
 
-        return s.unstack(level=self.time_col).rename_axis(None, axis=1)
+        return (
+            s.unstack(level=self.time_col).sort_index(axis=1).rename_axis(None, axis=1)
+        )
 
     def set_meta(self, meta, name=None, index=None):  # noqa: C901
         """Add meta indicators as pandas.Series, list or value (int/float/str)

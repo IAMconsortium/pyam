@@ -525,15 +525,41 @@ def test_variable_depth_with_list_raises(test_df, filter_name):
     pytest.raises(ValueError, test_df.filter, **{filter_name: [1, 2]})
 
 
-def test_timeseries(test_df):
-    """Assert that the timeseries is shown as expected"""
+@pytest.mark.parametrize("unsort", [True])
+def test_timeseries(test_df, unsort):
+    """Assert that the timeseries is shown as expected even from unordered data"""
     exp = TEST_DF.set_index(IAMC_IDX)
+
+    if unsort:
+        # revert order of _data, then check that the index and columns are sorted anyway
+        data = test_df.data
+        if test_df.time_col == "time":
+            time = test_df.time
+            data.time = data.time.replace(
+                dict([(year, time[i]) for i, year in enumerate([2005, 2010])])
+            )
+        test_df = IamDataFrame(data.iloc[[5, 4, 3, 2, 1, 0]])
+        assert list(test_df.data.scenario.unique()) == ["scen_b", "scen_a"]
+        if test_df.time_col == "year":
+            time = test_df.data.year.unique()
+        else:
+            time = test_df.data.time.unique()
+        assert time[0] > time[1]
 
     if test_df.time_col == "time":
         exp.columns = test_df.time
         exp.columns.name = None
 
     obs = test_df.timeseries()
+    pdt.assert_frame_equal(obs, exp, check_column_type=False)
+
+
+def test_timeseries_wide_unsorted(test_pd_df):
+    """Assert that the timeseries is shown as expected even from unordered data"""
+
+    # for some reason, `unstack` behaves differently if columns or rows are not sorted
+    exp = test_pd_df.set_index(IAMC_IDX)
+    obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]).timeseries()
     pdt.assert_frame_equal(obs, exp, check_column_type=False)
 
 
