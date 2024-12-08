@@ -603,7 +603,7 @@ class IamDataFrame:
 
         # merge extra columns in `data`
         ret.extra_cols += [i for i in other.extra_cols if i not in ret.extra_cols]
-        ret._data = _data.sort_index()
+        ret._data = _data
         ret._set_attributes()
 
         if not inplace:
