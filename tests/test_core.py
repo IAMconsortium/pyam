@@ -11,6 +11,8 @@ from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
 from pyam.utils import IAMC_IDX, META_IDX
 
+from .conftest import TEST_DF
+
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
         ["model_a", "scen_a", "region_1", 1],
@@ -524,17 +526,15 @@ def test_variable_depth_with_list_raises(test_df, filter_name):
 
 
 def test_timeseries(test_df):
-    dct = {
-        "model": ["model_a"] * 2,
-        "scenario": ["scen_a"] * 2,
-        "years": [2005, 2010],
-        "value": [1, 6],
-    }
-    exp = pd.DataFrame(dct).pivot_table(
-        index=["model", "scenario"], columns=["years"], values="value"
-    )
-    obs = test_df.filter(scenario="scen_a", variable="Primary Energy").timeseries()
-    npt.assert_array_equal(obs, exp)
+    """Assert that the timeseries is shown as expected"""
+    exp = TEST_DF.set_index(IAMC_IDX)
+
+    if test_df.time_col == "time":
+        exp.columns = test_df.time
+        exp.columns.name = None
+
+    obs = test_df.timeseries()
+    pdt.assert_frame_equal(obs, exp, check_column_type=False)
 
 
 def test_timeseries_empty_raises(test_df_year):
