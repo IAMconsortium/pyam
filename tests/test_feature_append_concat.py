@@ -188,7 +188,29 @@ def test_concat_all_pd_dataframe(test_df):
     npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
 
 
-def test_append(test_df):
+@pytest.mark.parametrize("inplace", (True, False))
+def test_append_data_not_sorted(test_df_year, inplace):
+    """Appending timeseries data does not sort"""
+
+    columns = IAMC_IDX + list(test_df_year.columns[[6, 5]])
+    unsorted_data = test_df_year.iloc[[2, 1]][columns]
+    df = IamDataFrame(unsorted_data)
+
+    if inplace:
+        obs = df.copy()
+        obs.append(test_df_year.iloc[[0]], inplace=True)
+    else:
+        obs = df.append(test_df_year.iloc[[0]])
+        # assert that original object was not modified
+        assert len(df._data) == 4
+
+    # `data` is not sorted
+    assert obs.data.scenario.unique() == ["scen_b", "scen_a"]
+    assert obs.data.year.unique() == [2010, 2005]
+    assert not obs._data.index.is_monotonic_increasing
+
+
+def test_append_meta(test_df):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
     test_df.set_meta([0, 1], name="col1")

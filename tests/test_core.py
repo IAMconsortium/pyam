@@ -42,7 +42,7 @@ df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 
 
 @pytest.mark.parametrize("index", (None, META_IDX, ["model"]))
-def test_init_df(test_pd_df, index):
+def test_init_df_with_non_default_index(test_pd_df, index):
     """Casting to IamDataFrame and returning as `timeseries()` yields original frame"""
 
     # set a value to `nan` to check that timeseries columns are ordered correctly
@@ -52,6 +52,19 @@ def test_init_df(test_pd_df, index):
     df = test_pd_df.copy() if index is None else test_pd_df.set_index(index)
     obs = IamDataFrame(df).timeseries()
     pdt.assert_frame_equal(obs, test_pd_df.set_index(IAMC_IDX), check_column_type=False)
+
+
+def test_init_df_unsorted(test_pd_df):
+    """Casting unsorted timeseries data does not sort on init"""
+
+    columns = IAMC_IDX + list(test_pd_df.columns[[6, 5]])
+    unsorted_data = test_pd_df.iloc[[2, 0, 1]][columns]
+    df = IamDataFrame(unsorted_data)
+
+    # `data` is not sorted
+    assert list(df.data.scenario.unique()) == ["scen_b", "scen_a"]
+    assert list(df.data.year.unique()) == [2010, 2005]
+    assert not df._data.index.is_monotonic_increasing
 
 
 def test_init_from_iamdf(test_df_year):
