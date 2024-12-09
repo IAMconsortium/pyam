@@ -85,7 +85,7 @@ def read_netcdf(path):
             raise TypeError(
                 f"Cannot define {_var}, different indices from META_IDX and IAMC_IDX."
             )
-    _full_df = pd.concat(dfs).reset_index(drop=True)
+    data = pd.concat(_data).reset_index(drop=True)
 
     return IamDataFrame(
         _full_df,
