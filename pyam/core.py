@@ -603,7 +603,7 @@ class IamDataFrame:
 
         # merge extra columns in `data`
         ret.extra_cols += [i for i in other.extra_cols if i not in ret.extra_cols]
-        ret._data = _data.sort_index()
+        ret._data = _data
         ret._set_attributes()
 
         if not inplace:
@@ -805,17 +805,19 @@ class IamDataFrame:
             reducing to IAMC-index yields an index with duplicates
         """
         if self.empty:
-            raise ValueError("This IamDataFrame is empty!")
+            raise ValueError("This IamDataFrame is empty.")
 
         s = self._data
         if iamc_index:
             if self.time_col == "time":
                 raise ValueError(
-                    "Cannot use `iamc_index=True` with 'datetime' time-domain!"
+                    "Cannot use `iamc_index=True` with 'datetime' time-domain."
                 )
             s = s.droplevel(self.extra_cols)
 
-        return s.unstack(level=self.time_col).rename_axis(None, axis=1)
+        return (
+            s.unstack(level=self.time_col).sort_index(axis=1).rename_axis(None, axis=1)
+        )
 
     def set_meta(self, meta, name=None, index=None):  # noqa: C901
         """Add meta indicators as pandas.Series, list or value (int/float/str)

@@ -433,7 +433,7 @@ def format_data(df, index, **kwargs):  # noqa: C901
     if df.empty:
         logger.warning("Formatted data is empty.")
 
-    return df.sort_index(), index, time_col, extra_cols
+    return df, index, time_col, extra_cols
 
 
 def _validate_complete_index(df):
