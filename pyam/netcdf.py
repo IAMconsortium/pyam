@@ -4,7 +4,7 @@ import pandas as pd
 
 try:
     import xarray as xr
-    
+
     HAS_XARRAY = True
 except ModuleNotFoundError:
     xr = None
@@ -31,7 +31,6 @@ def read_netcdf(path):
     _ds = xr.open_dataset(path)
     NETCDF_IDX = ["time", "model", "scenario", "region"]
     _list_variables = [i for i in _ds.to_dict()["data_vars"].keys()]
-    _meta = []
 
     # Check if the time coordinate is years (integers) or date time-format
     is_year_based = all(
@@ -49,11 +48,13 @@ def read_netcdf(path):
         _list_cols = IAMC_IDX + ["time", "value"]
     else:
         raise TypeError(
-            "Time coordinates can year (integer) or datetime format, found: " + ds.coords["time"]
+            "Time coordinates can year (integer) or datetime format, found: "
+            + ds.coords["time"]
         )
 
     # read `data` table
     _data = []
+    _meta = []
     for _var in _list_variables:
         # Check dimensions, if exactly as in META_IDX is a meta indicator
         # if exactly as in IAMC_IDX is a variable
@@ -61,33 +62,27 @@ def read_netcdf(path):
             _meta.append(_var)
         elif set(_ds[_var].dims) == set(NETCDF_IDX):
             # convert the data into the IamDataframe format
-            # if year-based data, get the time coordinate as "year"
-            if is_year_based:
-                _tmp = (
-                    _ds[_var]
-                    .to_dataframe()
-                    .reset_index(drop=False)
-                    .rename(columns={"time": "year", _var: "value"})
-                )
-            # if timeseries, keep the time coordinate as "time"
-            elif is_datetime:
-                _tmp = (
-                    _ds[_var]
-                    .to_dataframe()
-                    .reset_index(drop=False)
-                    .rename(columns={_var: "value"})
-                )
-
+            _tmp = (
+                _ds[_var]
+                .to_dataframe()
+                .rename(columns={_var: "value"})
+                .reset_index(drop=False)
+            )
             _tmp["variable"] = _ds[_var].long_name
             _tmp["unit"] = _ds[_var].unit
-            dfs.append(_tmp)
+            print(_tmp)
+            _data.append(_tmp)
         else:
             raise TypeError(
                 f"Cannot define {_var}, different indices from META_IDX and IAMC_IDX."
             )
     data = pd.concat(_data).reset_index(drop=True)
+    # if year-based data, get the time coordinate as "year"
+    # if timeseries, keep the time coordinate as "time"
+    if is_year_based:
+        data = data.rename(columns={"time": "year"})
 
     return IamDataFrame(
-        _full_df,
+        data,
         meta=_ds[_meta].to_dataframe() if _meta else None,
     )
