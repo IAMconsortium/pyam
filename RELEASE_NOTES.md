@@ -1,3 +1,9 @@
+# Next release
+
+The next release must be bumped to v3.0.0.
+
+- [#893](https://github.com/IAMconsortium/pyam/pull/893) No sorting of timeseries data on initialization or append
+
 # Release v2.3.0
 
 ## Highlights
