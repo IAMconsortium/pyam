@@ -448,11 +448,6 @@ def _validate_complete_index(df):
         )
 
 
-def sort_data(data, cols):
-    """Sort data rows and order columns by cols"""
-    return data.sort_values(cols)[cols + ["value"]].reset_index(drop=True)
-
-
 def merge_meta(left, right, ignore_conflict=False):
     """Merge two `meta` tables; raise if values are in conflict (optional)
 

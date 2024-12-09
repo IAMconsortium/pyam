@@ -1,7 +1,8 @@
 import pandas as pd
 import pytest
+from pandas import testing as pdt
 
-from pyam import IamDataFrame, compare
+from pyam import IamDataFrame
 
 # when making any updates to this file,
 # please also update the `data_table_formats` tutorial notebook!
@@ -28,9 +29,7 @@ def test_cast_from_value_col(test_df_year):
     df = IamDataFrame(
         df_with_value_cols, value=["Primary Energy", "Primary Energy|Coal"]
     )
-
-    assert compare(test_df_year, df).empty
-    pd.testing.assert_frame_equal(df.data, test_df_year.data, check_like=True)
+    pdt.assert_series_equal(df._data, test_df_year._data, check_like=True)
 
 
 def test_cast_from_value_col_and_args(test_df_year):
@@ -57,9 +56,7 @@ def test_cast_from_value_col_and_args(test_df_year):
         region="iso",
         value=["Primary Energy", "Primary Energy|Coal"],
     )
-
-    assert compare(test_df_year, df).empty
-    pd.testing.assert_frame_equal(df.data, test_df_year.data, check_like=True)
+    pdt.assert_series_equal(df._data, test_df_year._data, check_like=True)
 
 
 def test_cast_with_model_arg_raises():
@@ -85,8 +82,7 @@ def test_cast_with_model_arg(test_df):
     df.rename(columns={"model": "foo"}, inplace=True)
 
     df = IamDataFrame(df, model="foo")
-    assert compare(test_df, df).empty
-    pd.testing.assert_frame_equal(df.data, test_df.data)
+    pdt.assert_series_equal(df._data, test_df._data, check_like=True)
 
 
 def test_cast_by_column_concat(test_df_year):
@@ -99,30 +95,28 @@ def test_cast_by_column_concat(test_df_year):
         columns=["scenario", "region", "var_1", "var_2", "unit", 2005, 2010],
     )
 
-    df = IamDataFrame(df, model="model_a", variable=["var_1", "var_2"])
-
-    assert compare(test_df_year, df).empty
-    pd.testing.assert_frame_equal(df.data, test_df_year.data, check_like=True)
+    obs = IamDataFrame(df, model="model_a", variable=["var_1", "var_2"])
+    pdt.assert_series_equal(obs._data, test_df_year._data, check_like=True)
 
 
 def test_cast_with_variable_and_value(test_df):
     pe_df = test_df.filter(variable="Primary Energy")
-    df = pe_df.data.rename(columns={"value": "lvl"}).drop("variable", axis=1)
+    data = pe_df.data.rename(columns={"value": "lvl"}).drop("variable", axis=1)
 
-    df = IamDataFrame(df, variable="Primary Energy", value="lvl")
-
-    assert compare(pe_df, df).empty
-    pd.testing.assert_frame_equal(df.data, pe_df.data.reset_index(drop=True))
+    obs = IamDataFrame(data, variable="Primary Energy", value="lvl")
+    pdt.assert_series_equal(obs._data, pe_df._data, check_like=True)
 
 
 def test_cast_from_r_df(test_pd_df):
     df = test_pd_df.copy()
-    # last two columns are years
+    # last two columns are years but saved as X2005 as written by R
     df.columns = list(df.columns[:-2]) + [f"X{c}" for c in df.columns[-2:]]
-    obs = IamDataFrame(df)
-    exp = IamDataFrame(test_pd_df)
-    assert compare(obs, exp).empty
-    pd.testing.assert_frame_equal(obs.data, exp.data)
+
+    pdt.assert_series_equal(
+        IamDataFrame(df)._data,
+        IamDataFrame(test_pd_df)._data,
+        check_like=True
+    )
 
 
 def test_cast_from_r_df_err(test_pd_df):
