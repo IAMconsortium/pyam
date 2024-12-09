@@ -349,7 +349,6 @@ class IamComputeAccessor:
             - Carbon Sequestration|CCS|Fossil|Industrial Processes
             - Carbon Sequestration|CCS|Biomass|Energy
             - Carbon Sequestration|CCS|Biomass|Industrial Processes
-
         """
         kaya_variables = self.kaya_variables(append=False)
         if kaya_variables is None:
@@ -430,7 +429,6 @@ class IamComputeAccessor:
             model_a::model_a	scen_a::scen_b	World::World	PEFF/PEDEq (LMDI)	unknown	2010	0.000000
             model_a::model_a	scen_a::scen_b	World::World	Population (LMDI)	unknown	2010	0.000000
             model_a::model_a	scen_a::scen_b	World::World	TFC/PEFF (LMDI)	    unknown	2010	4.853221
-
         """
         valid_ref_and_int_scenarios = _validate_kaya_scenario_args(
             scenarios=[ref_scenario, int_scenario]

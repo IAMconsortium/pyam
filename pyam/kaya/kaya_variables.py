@@ -57,8 +57,10 @@ def _is_input_data_incomplete(input_data):
         missing_variables = set(required_variables_set) - single_combination_variables
         if missing_variables:
             logger.info(
-                f"Variables missing for model: {row['model']}, scenario: {row['scenario']}, region: {row['region']}:"
-                f"\n{missing_variables}"
+                f"""Variables missing for
+                model: {row['model']},
+                scenario: {row['scenario']},
+                region: {row['region']}\nMissing variables: {missing_variables}"""
             )
 
     # special case for GDP: either form is acceptable, so don't check for either
@@ -66,9 +68,10 @@ def _is_input_data_incomplete(input_data):
     required_variables_set = make_required_variables_set(
         set(input_data.data["variable"].unique())
     )
-    # exclude model/scenario combinations that have missing variables, disregarding region
-    # even if all variables are not present for a region, arithmetic operations
-    # will return an empty dataframe, not throw an error, so it is safe to proceed
+    # exclude model/scenario combinations that have missing variables,
+    # disregarding region. even if all variables are not present for a region,
+    # arithmetic operations will return an empty dataframe,
+    # not throw an error, so it is safe to proceed
     input_data.require_data(variable=list(required_variables_set), exclude_on_fail=True)
     # supress warning about empty dataframe if filtering excludes all scenarios
     with warnings.catch_warnings():

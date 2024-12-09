@@ -121,10 +121,9 @@ def test_kaya_variables_logs_missing_variables(caplog):
         df_no_pop.compute.kaya_variables()
 
     # Check that the log message contains expected information
-    assert (
-        "Variables missing for model: model_a, scenario: scen_a, region: World"
-        in caplog.text
-    )
+    assert "model: model_a" in caplog.text
+    assert "scenario: scen_a" in caplog.text
+    assert "region: World" in caplog.text
 
     assert "Population" in caplog.text
 
