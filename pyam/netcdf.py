@@ -4,10 +4,11 @@ import pandas as pd
 
 try:
     import xarray as xr
-except ImportError:
-    print(
-        "Xarray is required, to install run 'pip.main(['install', '--user', 'xarray'])' "
-    )
+    
+    HAS_XARRAY = True
+except ModuleNotFoundError:
+    xr = None
+    HAS_XARRAY = False
 from pyam.core import IamDataFrame
 from pyam.utils import META_IDX, IAMC_IDX
 
