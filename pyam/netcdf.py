@@ -26,7 +26,8 @@ def read_netcdf(path):
     IamDataFrame with meta indicators if available
 
     """
-
+    if not HAS_XARRAY:
+        raise ModuleNotFoundError("Reading netcdf files requires 'xarray'")
     _ds = xr.open_dataset(path)
     NETCDF_IDX = ["time", "model", "scenario", "region"]
     _list_variables = [i for i in _ds.to_dict()["data_vars"].keys()]
