@@ -805,13 +805,13 @@ class IamDataFrame:
             reducing to IAMC-index yields an index with duplicates
         """
         if self.empty:
-            raise ValueError("This IamDataFrame is empty!")
+            raise ValueError("This IamDataFrame is empty.")
 
         s = self._data
         if iamc_index:
             if self.time_col == "time":
                 raise ValueError(
-                    "Cannot use `iamc_index=True` with 'datetime' time-domain!"
+                    "Cannot use `iamc_index=True` with 'datetime' time-domain."
                 )
             s = s.droplevel(self.extra_cols)
 
