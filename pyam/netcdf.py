@@ -53,7 +53,7 @@ def read_netcdf(path):
         )
 
     # read `data` table
-    dfs = []
+    _data = []
     for _var in _list_variables:
         # Check dimensions, if exactly as in META_IDX is a meta indicator
         # if exactly as in IAMC_IDX is a variable
