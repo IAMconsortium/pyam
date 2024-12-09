@@ -566,13 +566,13 @@ def test_timeseries_wide_unsorted(test_pd_df):
 def test_timeseries_empty_raises(test_df_year):
     """Calling `timeseries()` on an empty IamDataFrame raises"""
     _df = test_df_year.filter(model="foo")
-    with pytest.raises(ValueError, match="This IamDataFrame is empty!"):
+    with pytest.raises(ValueError, match="This IamDataFrame is empty."):
         _df.timeseries()
 
 
 def test_timeseries_time_iamc_raises(test_df_time):
     """Calling `timeseries(iamc_index=True)` on a continuous-time IamDataFrame raises"""
-    match = "Cannot use `iamc_index=True` with 'datetime' time-domain!"
+    match = "Cannot use `iamc_index=True` with 'datetime' time-domain."
     with pytest.raises(ValueError, match=match):
         test_df_time.timeseries(iamc_index=True)
 
