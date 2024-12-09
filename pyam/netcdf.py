@@ -49,7 +49,7 @@ def read_netcdf(path):
         _list_cols = IAMC_IDX + ["time", "value"]
     else:
         raise TypeError(
-            "Time coordinate needs to be integer (year-based) or datetime (timeseries), neither was given."
+            "Time coordinates can year (integer) or datetime format, found: " + ds.coords["time"]
         )
 
     # read `data` table
