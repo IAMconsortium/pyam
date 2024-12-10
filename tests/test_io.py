@@ -9,6 +9,7 @@ import pytest
 from pyam import IamDataFrame, read_datapackage
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import META_IDX
+from pyam.netcdf import read_netcdf
 
 from .conftest import META_DF, TEST_DATA_DIR
 
@@ -304,3 +305,11 @@ def test_io_datapackage(test_df, tmpdir):
     # read from csv assert that IamDataFrame instances are equal
     import_df = read_datapackage(file)
     assert_iamframe_equal(test_df, import_df)
+
+
+def test_io_netcdf(test_df_year):
+    file = Path(TEST_DATA_DIR / "test_df.nc")
+    import_df = read_netcdf(file)
+    # temporarily fix for np.nan being converted to 'nan' when saving netcdf file
+    import_df.meta.string[1] = np.nan
+    assert_iamframe_equal(test_df_year, import_df)
