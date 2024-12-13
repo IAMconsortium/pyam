@@ -23,7 +23,7 @@ def read_netcdf(path):
 
     Returns
     ----------
-    IamDataFrame with meta indicators if available
+    :class:`IamDataFrame`
 
     """
     if not HAS_XARRAY:
