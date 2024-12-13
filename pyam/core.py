@@ -31,7 +31,9 @@ from pyam.aggregation import (
 from pyam.compute import IamComputeAccessor
 from pyam.filter import (
     datetime_match,
+    filter_by_col,
     filter_by_dt_arg,
+    filter_by_measurand,
     filter_by_time_domain,
     filter_by_year,
 )
@@ -57,6 +59,7 @@ from pyam.utils import (
     ILLEGAL_COLS,
     META_IDX,
     format_data,
+    get_excel_file_with_kwargs,
     is_list_like,
     make_index,
     merge_exclude,
@@ -195,7 +198,7 @@ class IamDataFrame:
 
         # if initializing from xlsx, try to load `meta` table from file
         if meta_sheet and isinstance(data, Path) and data.suffix in [".xlsx", ".xls"]:
-            excel_file = pd.ExcelFile(data)
+            excel_file, kwargs = get_excel_file_with_kwargs(data, **kwargs)
             if meta_sheet in excel_file.sheet_names:
                 self.load_meta(excel_file, sheet_name=meta_sheet, ignore_conflict=True)
 
@@ -697,7 +700,7 @@ class IamDataFrame:
         # replace underlying data object
         # TODO naming time_col could be done in timeseries()
         df.columns.name = ret.time_col
-        df = df.stack()  # long-data to pd.Series
+        df = df.stack(future_stack=True).dropna()  # wide data to pd.Series
         df.name = "value"
         ret._data = df.sort_index()
         ret._set_attributes()
@@ -791,8 +794,8 @@ class IamDataFrame:
         Parameters
         ----------
         iamc_index : bool, optional
-            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns
+            If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
+            else, use all 'data' columns.
 
         Raises
         ------
@@ -1840,31 +1843,12 @@ class IamDataFrame:
         keep : bool, optional
             Keep all scenarios satisfying the filters (if *True*) or the inverse.
         **kwargs
-            Arguments for filtering. See the "Notes".
+            Arguments for filtering. Read more about the `available filter options
+            <https://pyam-iamc.readthedocs.io/en/stable/api/filtering.html>`_.
 
         Returns
         -------
         :class:`pyam.slice.IamSlice`
-
-        Notes
-        -----
-        The following arguments are available for filtering:
-
-         - 'model', 'scenario', 'region', 'variable', 'unit':
-           string or list of strings, where `*` can be used as a wildcard
-         - 'meta' columns: mapping of column name to allowed values
-         - 'exclude': values of :attr:`exclude`
-         - 'index': list of model, scenario 2-tuples or :class:`pandas.MultiIndex`
-         - 'level': the "depth" of entries in the variable column (number of '|')
-           (excluding the strings given in the 'variable' argument)
-         - 'year': takes an integer (int/np.int64), a list of integers or
-           a range. Note that the last year of a range is not included,
-           so `range(2010, 2015)` is interpreted as `[2010, ..., 2014]`
-         - 'time_domain': can be "year" or "datetime"
-         - arguments for filtering by `datetime.datetime` or np.datetime64
-           ('month', 'hour', 'time')
-         - 'regexp=True' disables pseudo-regexp syntax in `pattern_match()`
-
         """
 
         _keep = self._apply_filters(**kwargs)
@@ -1886,7 +1870,12 @@ class IamDataFrame:
         inplace : bool, optional
             If *True*, do operation inplace and return *None*.
         **kwargs
-            Passed to :meth:`slice`.
+            Arguments for filtering. Read more about the `available filter options
+            <https://pyam-iamc.readthedocs.io/en/stable/api/filtering.html>`_.
+
+        Returns
+        -------
+        :class:`pyam.IamDataFrame` or **None**
         """
 
         # downselect `data` rows and clean up index
@@ -1916,7 +1905,7 @@ class IamDataFrame:
         if not inplace:
             return ret
 
-    def _apply_filters(self, level=None, **filters):  # noqa: C901
+    def _apply_filters(self, level=None, depth=None, **filters):  # noqa: C901
         """Determine rows to keep in data for given set of filters
 
         Parameters
@@ -1928,6 +1917,12 @@ class IamDataFrame:
         """
         regexp = filters.pop("regexp", False)
         keep = np.ones(len(self), dtype=bool)
+
+        if level is not None and depth is not None:
+            raise ValueError("Filter by `level` and `depth` not supported")
+
+        if "variable" in filters and "measurand" in filters:
+            raise ValueError("Filter by `variable` and `measurand` not supported")
 
         # filter by columns and list of values
         for col, values in filters.items():
@@ -1998,28 +1993,26 @@ class IamDataFrame:
 
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
-            elif col in self.dimensions:
-                levels, codes = get_index_levels_codes(self._data, col)
+            elif col == "measurand":
+                keep_col = filter_by_measurand(self._data, values, regexp, level)
 
-                matches = pattern_match(
-                    levels,
-                    values,
-                    regexp=regexp,
-                    level=level if col == "variable" else None,
-                    has_nan=True,
-                    return_codes=True,
-                )
-                keep_col = get_keep_col(codes, matches)
+            elif col in self.dimensions:
+                _level = level if col == "variable" else None
+                keep_col = filter_by_col(self._data, col, values, regexp, _level)
 
             else:
-                raise ValueError(f"Filter by `{col}` not supported!")
+                raise ValueError(f"Filter by `{col}` not supported")
 
             keep = np.logical_and(keep, keep_col)
 
-        if level is not None and "variable" not in filters:
+        if level is not None and not ("variable" in filters or "measurand" in filters):
+            # if level is given without variable/measurand, it is equivalent to depth
+            depth = level
+
+        if depth is not None:
             col = "variable"
             lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
-            matches = find_depth(lvl_index, level=level)
+            matches = find_depth(lvl_index, level=depth)
             keep_col = get_keep_col(lvl_codes, matches)
 
             keep = np.logical_and(keep, keep_col)

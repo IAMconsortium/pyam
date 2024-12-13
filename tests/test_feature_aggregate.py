@@ -324,7 +324,7 @@ def test_aggregate_region_with_negative_weights(simple_df, caplog):
 
     # dropping negative weights works as expected
     neg_weights_df = simple_df.copy()
-    neg_weights_df._data[18] = -6
+    neg_weights_df._data.iloc[18] = -6
     exp = simple_df.filter(variable=v, region="World", year=2010)
     assert_iamframe_equal(neg_weights_df.aggregate_region(v, weight=w), exp)
 
@@ -338,7 +338,7 @@ def test_aggregate_region_with_negative_weights(simple_df, caplog):
 
     # *not* dropping negative weights works as expected
     exp = simple_df.filter(variable=v, region="World")
-    exp._data[0] = -8
+    exp._data.iloc[0] = -8
     assert_iamframe_equal(
         neg_weights_df.aggregate_region(v, weight=w, drop_negative_weights=False), exp
     )

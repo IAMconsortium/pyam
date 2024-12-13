@@ -19,7 +19,7 @@ to be the same version.
 pytest --mpl-generate-path=expected_figs test_plotting.py
 ```
 
-## Running tests
+## Running Tests
 
 ```
 pytest --mpl

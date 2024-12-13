@@ -1,11 +1,14 @@
+import importlib.metadata
 import itertools
 import logging
 import re
 import string
+import warnings
 from pathlib import Path
 
 import dateutil
 import numpy as np
+import packaging.version
 import pandas as pd
 from pandas.api.types import is_list_like
 
@@ -27,7 +30,7 @@ LONG_IDX = IAMC_IDX + ["year"]
 REQUIRED_COLS = ["region", "variable", "unit"]
 
 # illegal terms for data/meta column names to prevent attribute conflicts
-ILLEGAL_COLS = ["data", "meta", "level", "exclude", ""]
+ILLEGAL_COLS = ["data", "meta", "level", "exclude", "measurand", ""]
 
 # dictionary to translate column count to Excel column names
 NUMERIC_TO_STR = dict(
@@ -82,7 +85,7 @@ def write_sheet(writer, name, df, index=False):
     """
     if index:
         df = df.reset_index()
-    df.to_excel(writer, name, index=False)
+    df.to_excel(writer, sheet_name=name, index=False)
     for i, col in enumerate(df.columns):
         if df.dtypes[col].name.startswith(("float", "int")):
             width = len(str(col)) + 2
@@ -94,13 +97,36 @@ def write_sheet(writer, name, df, index=False):
         writer.sheets[name].set_column(i, i, width)  # assumes xlsxwriter as engine
 
 
+def get_excel_file_with_kwargs(path, **kwargs):
+    """Return a `pandas.ExcelFile` and a dict of unused kwargs.
+
+    When reading an Excel file, this function finds keyword arguments that
+    should be passed to `pandas.ExcelFile`, and returns a `pandas.ExcelFile`
+    instance along with the remaining keyword arguments (which presumably
+    will be used for other purposes by the calling function).
+    """
+    EXCEL_FILE_KWS = ("engine", "storage_options", "engine_kwargs")
+    kwargs = kwargs.copy()
+    excel_file_kwargs = {k: kwargs.pop(k) for k in EXCEL_FILE_KWS if k in kwargs}
+    # TODO remove when bumping minimum pandas dependency to >= 2.2
+    if "engine_kwargs" in excel_file_kwargs and packaging.version.parse(
+        importlib.metadata.version("pandas")
+    ) < packaging.version.parse("2.2.0"):
+        warnings.warn(
+            "pandas < 2.2.0 has inconsistent support for `engine_kwargs`. "
+            "Using it is likely to result in an exception."
+        )
+    return pd.ExcelFile(path, **excel_file_kwargs), kwargs
+
+
 def read_pandas(path, sheet_name=["data*", "Data*"], *args, **kwargs):
     """Read a file and return a pandas.DataFrame"""
 
     if isinstance(path, Path) and path.suffix == ".csv":
         return pd.read_csv(path, *args, **kwargs)
 
-    with pd.ExcelFile(path) as xl:
+    xlfile, kwargs = get_excel_file_with_kwargs(path, **kwargs)
+    with xlfile as xl:
         # reading multiple sheets
         sheet_names = pd.Series(xl.sheet_names)
         if len(sheet_names) > 1:
@@ -315,7 +341,7 @@ def _format_data_to_series(df, index):
         df = (
             df.set_index(index + REQUIRED_COLS + extra_cols)
             .rename_axis(columns=time_col)
-            .stack(dropna=True)
+            .stack()
             .rename("value")
             .reorder_levels(idx_order)
         )
@@ -420,11 +446,6 @@ def _validate_complete_index(df):
         raise_data_error(
             f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
         )
-
-
-def sort_data(data, cols):
-    """Sort data rows and order columns by cols"""
-    return data.sort_values(cols)[cols + ["value"]].reset_index(drop=True)
 
 
 def merge_meta(left, right, ignore_conflict=False):

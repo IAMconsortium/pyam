@@ -46,7 +46,7 @@ python = ">=3.10, <3.13"
 iam-units = ">=2020.4.21"
 ixmp4 = ">=0.9.0"
 matplotlib = ">=3.6.0"
-numpy = ">=1.26.0, <2.0"
+numpy = ">=1.26.0"
 openpyxl = ">=3.1.2"
 pandas = ">=2.1.2"
 Pint = ">=0.13"
@@ -117,6 +117,12 @@ optional = true
 [tool.poetry.group.unfccc.dependencies]
 unfccc_di_api = ">=3.0.1"
 
+[tool.poetry.group.calamine]
+optional = true
+
+[tool.poetry.group.calamine.dependencies]
+python-calamine = ">=0.2.3"
+
 [build-system]
 build-backend = "poetry_dynamic_versioning.backend"
 requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning"]
@@ -124,6 +130,7 @@ requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning"]
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
+    "RELEASE_NOTES.md",
     ".git",
     ".ipynb_checkpoints",
     ".mypy_cache",

@@ -23,7 +23,7 @@ Reading from an |ixmp4| platform
 --------------------------------
 
 The |pyam| package provides a simple interface to read timeseries data and meta
-indicators from local or remote |ixmp4| platform instancs.
+indicators from local or remote |ixmp4| platform instances.
 
 .. autofunction:: read_ixmp4
 
