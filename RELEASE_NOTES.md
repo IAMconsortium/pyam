@@ -1,7 +1,7 @@
 # Next Release
 
 - [#879](https://github.com/IAMconsortium/pyam/pull/879) Add `read_netcdf()` function
-=======
+
 # Release v2.3.0
 
 ## Highlights
@@ -18,7 +18,6 @@ This release includes a new option to filter by variable `depth`.
 
 Support filtering by a `measurand` argument with tuples of variable and units
 and improve the `filter()` documentation.
->>>>>>> main
 
 # Release v2.2.3
 
