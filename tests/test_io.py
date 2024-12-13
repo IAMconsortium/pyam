@@ -258,8 +258,7 @@ def test_io_datapackage(test_df, tmpdir):
 
 
 def test_io_netcdf(test_df_year):
-    file = Path(TEST_DATA_DIR / "test_df.nc")
-    import_df = read_netcdf(file)
+    obs = read_netcdf(TEST_DATA_DIR / "test_df.nc")
     # temporarily fix for np.nan being converted to 'nan' when saving netcdf file
-    import_df.meta.string[1] = np.nan
-    assert_iamframe_equal(test_df_year, import_df)
+    obs[1] = np.nan
+    assert_iamframe_equal(obs, test_df_year)
