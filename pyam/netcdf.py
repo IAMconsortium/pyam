@@ -14,7 +14,7 @@ from pyam.utils import META_IDX, IAMC_IDX
 
 
 def read_netcdf(path):
-    """Read timeseries or year-based data and meta-indicators from netCDF
+    """Read timeseries data and meta indicators from a netCDF file
 
     Parameters
     ----------
