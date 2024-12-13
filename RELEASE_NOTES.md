@@ -1,8 +1,10 @@
+# Next Release
+
+- [#879](https://github.com/IAMconsortium/pyam/pull/879) Add `read_netcdf()` function
+
 # Release v2.2.3
 
 Bump **ixmp4** minimum dependency to latest version and pin **numpy** to <2.0.
-
-- (#879)[https://github.com/IAMconsortium/pyam/pull/879] Add read_netcdf() function
 
 # Release v2.2.2
 
