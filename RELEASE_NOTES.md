@@ -2,6 +2,8 @@
 
 Bump **ixmp4** minimum dependency to latest version and pin **numpy** to <2.0.
 
+- (#879)[https://github.com/IAMconsortium/pyam/pull/879] Add read_netcdf() function
+
 # Release v2.2.2
 
 Patch release to correctly handle regexp-characters (`[]{}?^`) in `filter()`
@@ -26,7 +28,6 @@ Bumped minimum version of pandas and numpy to fit **ixmp4**'s requirement.
 
 ## Individual updates
 
-- (#879)[https://github.com/IAMconsortium/pyam/pull/879] Add read_netcdf() function
 - [#838](https://github.com/IAMconsortium/pyam/pull/838) Support filters when reading from an ixmp4 platform
 - [#837](https://github.com/IAMconsortium/pyam/pull/837) Support filters as direct keyword arguments for `categorize()`
   similar to `validate()` signature (see [#804](https://github.com/IAMconsortium/pyam/pull/804))
