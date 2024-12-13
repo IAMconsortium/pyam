@@ -84,5 +84,5 @@ def read_netcdf(path):
 
     return IamDataFrame(
         data,
-        meta=_ds[_meta].to_dataframe() if _meta else None,
+        meta=_ds[_meta].to_dataframe().replace("nan", np.nan) if _meta else None,
     )
