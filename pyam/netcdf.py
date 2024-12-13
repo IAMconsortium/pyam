@@ -70,7 +70,6 @@ def read_netcdf(path):
             )
             _tmp["variable"] = _ds[_var].long_name
             _tmp["unit"] = _ds[_var].unit
-            print(_tmp)
             _data.append(_tmp)
         else:
             raise TypeError(
