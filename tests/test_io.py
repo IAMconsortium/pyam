@@ -7,9 +7,9 @@ import pandas as pd
 import pytest
 
 from pyam import IamDataFrame, read_datapackage
+from pyam.netcdf import read_netcdf
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import META_IDX
-from pyam.netcdf import read_netcdf
 
 from .conftest import META_DF, TEST_DATA_DIR
 

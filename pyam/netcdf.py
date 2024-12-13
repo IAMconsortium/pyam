@@ -1,5 +1,6 @@
-import numpy as np
 import datetime as dt
+
+import numpy as np
 import pandas as pd
 
 try:
@@ -10,7 +11,7 @@ except ModuleNotFoundError:
     xr = None
     HAS_XARRAY = False
 from pyam.core import IamDataFrame
-from pyam.utils import META_IDX, IAMC_IDX
+from pyam.utils import IAMC_IDX, META_IDX
 
 
 def read_netcdf(path):
@@ -49,7 +50,7 @@ def read_netcdf(path):
     else:
         raise TypeError(
             "Time coordinates can year (integer) or datetime format, found: "
-            + ds.coords["time"]
+            + _ds.coords["time"]
         )
 
     # read `data` table
