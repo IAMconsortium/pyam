@@ -204,10 +204,12 @@ def test_append_data_not_sorted(test_pd_df, inplace):
         # assert that original object was not modified
         assert len(df._data) == 4
 
-    # `data` is not sorted
-    assert list(obs.data.scenario.unique()) == ["scen_b", "scen_a"]
-    assert list(obs.data.year.unique()) == [2010, 2005]
-    assert not obs._data.index.is_monotonic_increasing
+    # `data` is not sorted, only applies to pandas >= 2.2
+    # TODO remove this if-statement when dropping support for pandas < 2.2
+    if pd.__version__ >= "2.2":
+        assert list(obs.data.scenario.unique()) == ["scen_b", "scen_a"]
+        assert list(obs.data.year.unique()) == [2010, 2005]
+        assert not obs._data.index.is_monotonic_increasing
 
 
 def test_append_meta(test_df):
