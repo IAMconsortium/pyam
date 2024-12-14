@@ -525,7 +525,7 @@ def test_variable_depth_with_list_raises(test_df, filter_name):
     pytest.raises(ValueError, test_df.filter, **{filter_name: [1, 2]})
 
 
-@pytest.mark.parametrize("unsort", [True])
+@pytest.mark.parametrize("unsort", [False, True])
 def test_timeseries(test_df, unsort):
     """Assert that the timeseries is shown as expected even from unordered data"""
     exp = TEST_DF.set_index(IAMC_IDX)
@@ -539,11 +539,13 @@ def test_timeseries(test_df, unsort):
                 dict([(year, time[i]) for i, year in enumerate([2005, 2010])])
             )
         test_df = IamDataFrame(data.iloc[[5, 4, 3, 2, 1, 0]])
-        assert list(test_df.data.scenario.unique()) == ["scen_b", "scen_a"]
+        # check that `data` is not sorted internally
+        unsorted_data = test_df.data
+        assert list(unsorted_data.scenario.unique()) == ["scen_b", "scen_a"]
         if test_df.time_col == "year":
-            time = test_df.data.year.unique()
+            time = unsorted_data.year.unique()
         else:
-            time = test_df.data.time.unique()
+            time = unsorted_data.time.unique()
         assert time[0] > time[1]
 
     if test_df.time_col == "time":
