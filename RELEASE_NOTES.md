@@ -1,3 +1,7 @@
+# Next Release
+
+- [#879](https://github.com/IAMconsortium/pyam/pull/879) Add `read_netcdf()` function
+
 # Release v2.3.0
 
 ## Highlights
