@@ -113,9 +113,7 @@ def test_cast_from_r_df(test_pd_df):
     df.columns = list(df.columns[:-2]) + [f"X{c}" for c in df.columns[-2:]]
 
     pdt.assert_series_equal(
-        IamDataFrame(df)._data,
-        IamDataFrame(test_pd_df)._data,
-        check_like=True
+        IamDataFrame(df)._data, IamDataFrame(test_pd_df)._data, check_like=True
     )
 
 

@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from pyam import IamDataFrame, read_datapackage
+from pyam.netcdf import read_netcdf
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import META_IDX
 
@@ -304,3 +305,8 @@ def test_io_datapackage(test_df, tmpdir):
     # read from csv assert that IamDataFrame instances are equal
     import_df = read_datapackage(file)
     assert_iamframe_equal(test_df, import_df)
+
+
+def test_io_netcdf(test_df_year):
+    obs = read_netcdf(TEST_DATA_DIR / "test_df.nc")
+    assert_iamframe_equal(obs, test_df_year)
