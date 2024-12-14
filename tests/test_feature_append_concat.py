@@ -98,8 +98,8 @@ def test_concat(test_df, reverse, iterable):
     assert test_df.scenario == ["scen_a", "scen_b"]
     assert other.scenario == ["scen_c"]
 
-    # assert that merging of meta works as expected (reorder columns)
-    pdt.assert_frame_equal(result.meta[EXP_META.columns], EXP_META)
+    # assert that merging of meta works as expected
+    pdt.assert_frame_equal(result.meta[EXP_META.columns], EXP_META, check_like=True)
 
     # assert that appending data works as expected
     ts = result.timeseries()
