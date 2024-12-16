@@ -92,18 +92,21 @@ def test_concat(test_df, reverse, iterable):
     if iterable:
         dfs = iter(dfs)
 
-    result = concat(dfs)
+    obs = concat(dfs)
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
     assert other.scenario == ["scen_c"]
 
     # assert that merging of meta works as expected
-    pdt.assert_frame_equal(result.meta[EXP_META.columns], EXP_META, check_like=True)
+    pdt.assert_frame_equal(obs.meta, EXP_META, check_like=True)
 
     # assert that appending data works as expected
-    ts = result.timeseries()
-    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+    ts = obs.timeseries().sort_index()
+    pdt.assert_frame_equal(
+        ts.iloc[2:3].droplevel("scenario"),
+        ts.iloc[3:4].droplevel("scenario"),
+    )
 
 
 def test_concat_non_default_index():
@@ -158,9 +161,9 @@ def test_concat_with_pd_dataframe(test_df, reverse):
 
     # merge with only the timeseries `data` DataFrame of `other`
     if reverse:
-        result = concat([other.data, test_df])
+        obs = concat([other.data, test_df])
     else:
-        result = concat([test_df, other.data])
+        obs = concat([test_df, other.data])
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
@@ -168,11 +171,14 @@ def test_concat_with_pd_dataframe(test_df, reverse):
     # assert that merging meta from `other` is ignored
     exp_meta = META_DF.copy()
     exp_meta.loc[("model_a", "scen_c"), "number"] = np.nan
-    pdt.assert_frame_equal(result.meta, exp_meta[META_COLS])
+    pdt.assert_frame_equal(obs.meta, exp_meta[META_COLS])
 
     # assert that appending data works as expected
-    ts = result.timeseries()
-    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+    ts = obs.timeseries().sort_index()
+    pdt.assert_frame_equal(
+        ts.iloc[2:3].droplevel("scenario"),
+        ts.iloc[3:4].droplevel("scenario"),
+    )
 
 
 def test_concat_all_pd_dataframe(test_df):
@@ -181,11 +187,14 @@ def test_concat_all_pd_dataframe(test_df):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
     # merge only the timeseries `data` DataFrame of both items
-    result = concat([test_df.data, other.data])
+    obs = concat([test_df.data, other.data])
 
     # assert that appending data works as expected
-    ts = result.timeseries()
-    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+    ts = obs.timeseries().sort_index()
+    pdt.assert_frame_equal(
+        ts.iloc[2:3].droplevel("scenario"),
+        ts.iloc[3:4].droplevel("scenario"),
+    )
 
 
 @pytest.mark.parametrize("inplace", (True, False))

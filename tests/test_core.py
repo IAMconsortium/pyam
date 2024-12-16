@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -48,7 +48,7 @@ def test_init_df_with_non_default_index(test_pd_df, index):
     """Casting to IamDataFrame and returning as `timeseries()` yields original frame"""
 
     # set a value to `nan` to check that timeseries columns are ordered correctly
-    test_pd_df.loc[0, test_pd_df.columns[5]] = np.nan
+    test_pd_df.loc[0, 2010] = np.nan
 
     # any number of columns can be set as index
     df = test_pd_df.copy() if index is None else test_pd_df.set_index(index)
@@ -130,12 +130,12 @@ def test_init_df_with_na_scenario(test_pd_df):
 def test_init_df_with_float_cols(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.0, 2010: 2010.0})
     obs = IamDataFrame(_test_df).timeseries().reset_index()
-    pd.testing.assert_series_equal(obs[2005], test_pd_df[2005])
+    pdt.assert_series_equal(obs[2005], test_pd_df[2005])
 
 
 def test_init_df_from_timeseries(test_df):
     df = IamDataFrame(test_df.timeseries())
-    pd.testing.assert_frame_equal(df.timeseries(), test_df.timeseries())
+    pdt.assert_frame_equal(df.timeseries(), test_df.timeseries())
 
 
 def test_init_df_from_timeseries_unused_levels(test_df):
@@ -164,7 +164,7 @@ def test_init_df_with_extra_col(test_pd_df):
     # check that timeseries data is as expected
     obs = df.timeseries().reset_index()
     exp = tdf[obs.columns]  # get the columns into the right order
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_init_df_with_meta_with_index(test_pd_df):
@@ -172,7 +172,7 @@ def test_init_df_with_meta_with_index(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=META_DF)
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -181,7 +181,7 @@ def test_init_df_with_meta_no_index(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=META_DF.reset_index())
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -200,7 +200,7 @@ def test_init_df_with_meta_key_value(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=meta_df)
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]], check_dtype=False)
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]], check_dtype=False)
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -391,7 +391,7 @@ def test_index(test_df_year):
     exp = pd.MultiIndex.from_arrays(
         [["model_a"] * 2, ["scen_a", "scen_b"]], names=["model", "scenario"]
     )
-    pd.testing.assert_index_equal(test_df_year.index, exp)
+    pdt.assert_index_equal(test_df_year.index, exp)
 
 
 def test_index_attributes(test_df):
@@ -526,8 +526,8 @@ def test_variable_depth_with_list_raises(test_df, filter_name):
 
 
 @pytest.mark.parametrize("unsort", [False, True])
-def test_timeseries(test_df, unsort):
-    """Assert that the timeseries is shown as expected even from unordered data"""
+def test_timeseries_long(test_df, unsort):
+    """Assert that timeseries is shown as expected from (unsorted) long data"""
     exp = TEST_DF.set_index(IAMC_IDX)
 
     if unsort:
@@ -553,15 +553,32 @@ def test_timeseries(test_df, unsort):
         exp.columns.name = None
 
     obs = test_df.timeseries()
-    pdt.assert_frame_equal(obs, exp, check_column_type=False)
+    pdt.assert_frame_equal(obs, exp, check_like=True, check_column_type=False)
 
 
-def test_timeseries_wide_unsorted(test_pd_df):
-    """Assert that the timeseries is shown as expected even from unordered data"""
+@pytest.mark.parametrize("unsort", [False, True])
+def test_timeseries_wide(test_pd_df, unsort):
+    """Assert that timeseries is shown as expected from (unsorted) wide data"""
 
     # for some reason, `unstack` behaves differently if columns or rows are not sorted
     exp = test_pd_df.set_index(IAMC_IDX)
-    obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]).timeseries()
+
+    if unsort:
+        obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]).timeseries()
+    else:
+        obs = IamDataFrame(test_pd_df).timeseries()
+    pdt.assert_frame_equal(obs, exp, check_column_type=False)
+
+
+def test_timeseries_mixed_time_domain(test_pd_df):
+    """Assert that timeseries is shown as expected from mixed time-domain data"""
+    test_pd_df = test_pd_df.rename(columns={2005: "2010-01-01 00:00"})
+    exp = (
+        test_pd_df.set_index(IAMC_IDX)[[2010, "2010-01-01 00:00"]]
+        .rename(columns={"2010-01-01 00:00": datetime(2010, 1, 1, 0, 0)})
+    )
+
+    obs = IamDataFrame(test_pd_df).timeseries()
     pdt.assert_frame_equal(obs, exp, check_column_type=False)
 
 
@@ -582,11 +599,11 @@ def test_timeseries_time_iamc_raises(test_df_time):
 def test_timeseries_to_iamc_index(test_pd_df, test_df_year):
     """Reducing timeseries() of an IamDataFrame with extra-columns to IAMC-index"""
     test_pd_df["foo"] = "bar"
-    exta_col_df = IamDataFrame(test_pd_df)
-    assert exta_col_df.extra_cols == ["foo"]
+    extra_col_df = IamDataFrame(test_pd_df)
+    assert extra_col_df.extra_cols == ["foo"]
 
     # assert that reducing to IAMC-columns (dropping extra-columns) with timeseries()
-    obs = exta_col_df.timeseries(iamc_index=True)
+    obs = extra_col_df.timeseries(iamc_index=True)
     exp = test_df_year.timeseries()
     pdt.assert_frame_equal(obs, exp)
 
@@ -596,13 +613,14 @@ def test_timeseries_to_iamc_index_duplicated_raises(test_pd_df):
     test_pd_df = pd.concat([test_pd_df, test_pd_df])
     # adding an extra-col creates a unique index
     test_pd_df["foo"] = ["bar", "bar", "bar", "baz", "baz", "baz"]
-    exta_col_df = IamDataFrame(test_pd_df)
-    assert exta_col_df.extra_cols == ["foo"]
+
+    extra_col_df = IamDataFrame(test_pd_df)
+    assert extra_col_df.extra_cols == ["foo"]
 
     # dropping the extra-column by setting `iamc_index=True` creates duplicated index
-    match = "Index contains duplicate entries, cannot reshape"
+    match = "Dropping non-IAMC-index causes duplicated index"
     with pytest.raises(ValueError, match=match):
-        exta_col_df.timeseries(iamc_index=True)
+        extra_col_df.timeseries(iamc_index=True)
 
 
 def test_pivot_table(test_df):
@@ -635,7 +653,7 @@ def test_filter_meta_index(test_df):
     exp = pd.MultiIndex(
         levels=[["model_a"], ["scen_b"]], codes=[[0], [0]], names=["model", "scenario"]
     )
-    pd.testing.assert_index_equal(obs, exp)
+    pdt.assert_index_equal(obs, exp)
 
 
 def test_meta_idx(test_df):
@@ -668,7 +686,7 @@ def test_pd_filter_by_meta(test_df):
     exp["boolean"] = True
     exp["integer"] = 0
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_filter_by_meta_no_index(test_df):
@@ -684,7 +702,7 @@ def test_pd_filter_by_meta_no_index(test_df):
     exp["boolean"] = True
     exp["int"] = 0
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_filter_by_meta_nonmatching_index(test_df):
@@ -697,7 +715,7 @@ def test_pd_filter_by_meta_nonmatching_index(test_df):
     exp = data.iloc[2:3].copy()
     exp["string"] = "b"
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_join_by_meta_nonmatching_index(test_df):
@@ -710,7 +728,7 @@ def test_pd_join_by_meta_nonmatching_index(test_df):
     exp = data.copy()
     exp["string"] = [np.nan, np.nan, "b"]
 
-    pd.testing.assert_frame_equal(obs.sort_index(level=1), exp)
+    pdt.assert_frame_equal(obs.sort_index(level=1), exp)
 
 
 def test_normalize(test_df):
@@ -720,10 +738,10 @@ def test_normalize(test_df):
     if "year" in test_df.data:
         obs = test_df.normalize(year=2005).data.reset_index(drop=True)
     else:
-        obs = test_df.normalize(time=datetime.datetime(2005, 6, 17)).data.reset_index(
+        obs = test_df.normalize(time=datetime(2005, 6, 17)).data.reset_index(
             drop=True
         )
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_normalize_not_time(test_df):
@@ -742,9 +760,9 @@ def test_offset(test_df, padding):
         obs = test_df.offset(year=2005, **kwargs).data.reset_index(drop=True)
     else:
         obs = test_df.offset(
-            time=datetime.datetime(2005, 6, 17), **kwargs
+            time=datetime(2005, 6, 17), **kwargs
         ).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_offset_not_time(test_df):

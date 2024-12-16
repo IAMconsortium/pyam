@@ -43,7 +43,7 @@ def test_cast_from_value_col_and_args(test_df_year):
         ],
         columns=[
             "scenario",
-            "iso",
+            "node",
             "unit",
             "year",
             "Primary Energy",
@@ -53,7 +53,7 @@ def test_cast_from_value_col_and_args(test_df_year):
     df = IamDataFrame(
         df_with_value_cols,
         model="model_a",
-        region="iso",
+        region="node",
         value=["Primary Energy", "Primary Energy|Coal"],
     )
     pdt.assert_series_equal(df._data, test_df_year._data, check_like=True)

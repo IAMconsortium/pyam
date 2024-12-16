@@ -58,6 +58,7 @@ from pyam.utils import (
     IAMC_IDX,
     ILLEGAL_COLS,
     META_IDX,
+    compare_year_time,
     format_data,
     get_excel_file_with_kwargs,
     is_list_like,
@@ -702,7 +703,7 @@ class IamDataFrame:
         df.columns.name = ret.time_col
         df = df.stack(future_stack=True).dropna()  # wide data to pd.Series
         df.name = "value"
-        ret._data = df.sort_index()
+        ret._data = df
         ret._set_attributes()
 
         if not inplace:
@@ -794,8 +795,8 @@ class IamDataFrame:
         Parameters
         ----------
         iamc_index : bool, optional
-            If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns.
+            If True, return only IAMC-index `['model', 'scenario', 'region', 'variable',
+            'unit']`; else, use all 'data' columns.
 
         Raises
         ------
@@ -813,10 +814,16 @@ class IamDataFrame:
                 raise ValueError(
                     "Cannot use `iamc_index=True` with 'datetime' time-domain."
                 )
-            s = s.droplevel(self.extra_cols)
+            s = self._data.droplevel(self.extra_cols)
+            if s.index.has_duplicates:
+                raise ValueError("Dropping non-IAMC-index causes duplicated index.")
 
         return (
-            s.unstack(level=self.time_col).sort_index(axis=1).rename_axis(None, axis=1)
+            s.unstack(level=self.time_col)
+            .rename_axis(None, axis=1)
+            .sort_index(
+                axis=1, key=compare_year_time if self.time_domain == "mixed" else None
+            )
         )
 
     def set_meta(self, meta, name=None, index=None):  # noqa: C901
