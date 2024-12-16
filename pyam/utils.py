@@ -609,7 +609,9 @@ compare_year_time = lambda x: pd.Index(
     [
         # set year lower than first timestep of that year (2010 < 2010-01-01 00:00)
         datetime(time, 1, 1, 0, 0, 0) - timedelta(0, 0.01)
-        if isinstance(time, int) else time for time in x
+        if isinstance(time, int)
+        else time
+        for time in x
     ]
 )
 

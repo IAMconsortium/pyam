@@ -703,7 +703,7 @@ class IamDataFrame:
         df.columns.name = ret.time_col
         df = df.stack(future_stack=True).dropna()  # wide data to pd.Series
         df.name = "value"
-        ret._data = df.sort_index()
+        ret._data = df
         ret._set_attributes()
 
         if not inplace:
@@ -816,12 +816,10 @@ class IamDataFrame:
                 )
             s = self._data.droplevel(self.extra_cols)
             if s.index.has_duplicates:
-                raise ValueError(
-                    "Dropping non-IAMC-index causes duplicated index."
-                )
+                raise ValueError("Dropping non-IAMC-index causes duplicated index.")
 
         return (
-            s.unstack(level=self.time_col, sort=False)
+            s.unstack(level=self.time_col)
             .rename_axis(None, axis=1)
             .sort_index(
                 axis=1, key=compare_year_time if self.time_domain == "mixed" else None

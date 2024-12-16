@@ -564,8 +564,7 @@ def test_timeseries_wide(test_pd_df, unsort):
     exp = test_pd_df.set_index(IAMC_IDX)
 
     if unsort:
-        obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]
-        ).timeseries()
+        obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]).timeseries()
     else:
         obs = IamDataFrame(test_pd_df).timeseries()
     pdt.assert_frame_equal(obs, exp, check_column_type=False)

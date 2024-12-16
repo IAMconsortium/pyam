@@ -375,9 +375,7 @@ def test_lazy_read(tmpdir):
     assert df.model == ["model_a"]
     # This is read from the file, so the filter is not applied.
     df2 = lazy_read_iiasa(tmp_file, TEST_API)
-    assert (
-        df.data.sort_values(by=IAMC_IDX).reset_index(drop=True).equals(df2.data)
-    )
+    assert df.data.sort_values(by=IAMC_IDX).reset_index(drop=True).equals(df2.data)
     # If requesting with an inconsistent filter, get nothing back. Strings and filters
     # work interchangably.
     tmp_file = str(tmp_file)
