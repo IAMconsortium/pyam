@@ -130,12 +130,12 @@ def test_init_df_with_na_scenario(test_pd_df):
 def test_init_df_with_float_cols(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.0, 2010: 2010.0})
     obs = IamDataFrame(_test_df).timeseries().reset_index()
-    pd.testing.assert_series_equal(obs[2005], test_pd_df[2005])
+    pdt.assert_series_equal(obs[2005], test_pd_df[2005])
 
 
 def test_init_df_from_timeseries(test_df):
     df = IamDataFrame(test_df.timeseries())
-    pd.testing.assert_frame_equal(df.timeseries(), test_df.timeseries())
+    pdt.assert_frame_equal(df.timeseries(), test_df.timeseries())
 
 
 def test_init_df_from_timeseries_unused_levels(test_df):
@@ -164,7 +164,7 @@ def test_init_df_with_extra_col(test_pd_df):
     # check that timeseries data is as expected
     obs = df.timeseries().reset_index()
     exp = tdf[obs.columns]  # get the columns into the right order
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_init_df_with_meta_with_index(test_pd_df):
@@ -172,7 +172,7 @@ def test_init_df_with_meta_with_index(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=META_DF)
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -181,7 +181,7 @@ def test_init_df_with_meta_no_index(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=META_DF.reset_index())
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -200,7 +200,7 @@ def test_init_df_with_meta_key_value(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=meta_df)
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]], check_dtype=False)
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]], check_dtype=False)
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -391,7 +391,7 @@ def test_index(test_df_year):
     exp = pd.MultiIndex.from_arrays(
         [["model_a"] * 2, ["scen_a", "scen_b"]], names=["model", "scenario"]
     )
-    pd.testing.assert_index_equal(test_df_year.index, exp)
+    pdt.assert_index_equal(test_df_year.index, exp)
 
 
 def test_index_attributes(test_df):
@@ -641,7 +641,7 @@ def test_filter_meta_index(test_df):
     exp = pd.MultiIndex(
         levels=[["model_a"], ["scen_b"]], codes=[[0], [0]], names=["model", "scenario"]
     )
-    pd.testing.assert_index_equal(obs, exp)
+    pdt.assert_index_equal(obs, exp)
 
 
 def test_meta_idx(test_df):
@@ -674,7 +674,7 @@ def test_pd_filter_by_meta(test_df):
     exp["boolean"] = True
     exp["integer"] = 0
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_filter_by_meta_no_index(test_df):
@@ -690,7 +690,7 @@ def test_pd_filter_by_meta_no_index(test_df):
     exp["boolean"] = True
     exp["int"] = 0
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_filter_by_meta_nonmatching_index(test_df):
@@ -703,7 +703,7 @@ def test_pd_filter_by_meta_nonmatching_index(test_df):
     exp = data.iloc[2:3].copy()
     exp["string"] = "b"
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_join_by_meta_nonmatching_index(test_df):
@@ -716,7 +716,7 @@ def test_pd_join_by_meta_nonmatching_index(test_df):
     exp = data.copy()
     exp["string"] = [np.nan, np.nan, "b"]
 
-    pd.testing.assert_frame_equal(obs.sort_index(level=1), exp)
+    pdt.assert_frame_equal(obs.sort_index(level=1), exp)
 
 
 def test_normalize(test_df):
@@ -729,7 +729,7 @@ def test_normalize(test_df):
         obs = test_df.normalize(time=datetime.datetime(2005, 6, 17)).data.reset_index(
             drop=True
         )
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_normalize_not_time(test_df):
@@ -750,7 +750,7 @@ def test_offset(test_df, padding):
         obs = test_df.offset(
             time=datetime.datetime(2005, 6, 17), **kwargs
         ).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_offset_not_time(test_df):
