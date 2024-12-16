@@ -426,6 +426,28 @@ class IamDataFrame:
             return pd.DataFrame([], columns=self.dimensions + ["value"])
         return self._data.reset_index()
 
+    def sort_data(self, inplace=False):
+        """Sort timeseries data by index and coordinates
+
+        Parameters
+        ----------
+        inplace : bool, optional
+            If True, do operation inplace and return None.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or None
+            The modified :class:`IamDataFrame` or None if `inplace=True`.
+        """
+        ret = self.copy() if not inplace else self
+        ret._data.sort_index(
+            key=compare_year_time if ret.time_col == "year" else None,
+            inplace=inplace,
+        )
+        ret._set_attributes()
+        if not inplace:
+            return ret
+
     def get_data_column(self, column):
         """Return a `column` from the timeseries data in long format
 
