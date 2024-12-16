@@ -11,6 +11,8 @@ from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
 from pyam.utils import IAMC_IDX, META_IDX
 
+from .conftest import TEST_DF
+
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
         ["model_a", "scen_a", "region_1", 1],
@@ -42,7 +44,7 @@ df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 
 
 @pytest.mark.parametrize("index", (None, META_IDX, ["model"]))
-def test_init_df(test_pd_df, index):
+def test_init_df_with_non_default_index(test_pd_df, index):
     """Casting to IamDataFrame and returning as `timeseries()` yields original frame"""
 
     # set a value to `nan` to check that timeseries columns are ordered correctly
@@ -52,6 +54,19 @@ def test_init_df(test_pd_df, index):
     df = test_pd_df.copy() if index is None else test_pd_df.set_index(index)
     obs = IamDataFrame(df).timeseries()
     pdt.assert_frame_equal(obs, test_pd_df.set_index(IAMC_IDX), check_column_type=False)
+
+
+def test_init_df_unsorted(test_pd_df):
+    """Casting unsorted timeseries data does not sort on init"""
+
+    columns = IAMC_IDX + list(test_pd_df.columns[[6, 5]])
+    unsorted_data = test_pd_df.iloc[[2, 0, 1]][columns]
+    df = IamDataFrame(unsorted_data)
+
+    # `data` is not sorted
+    assert list(df.data.scenario.unique()) == ["scen_b", "scen_a"]
+    assert list(df.data.year.unique()) == [2010, 2005]
+    assert not df._data.index.is_monotonic_increasing
 
 
 def test_init_from_iamdf(test_df_year):
@@ -510,30 +525,56 @@ def test_variable_depth_with_list_raises(test_df, filter_name):
     pytest.raises(ValueError, test_df.filter, **{filter_name: [1, 2]})
 
 
-def test_timeseries(test_df):
-    dct = {
-        "model": ["model_a"] * 2,
-        "scenario": ["scen_a"] * 2,
-        "years": [2005, 2010],
-        "value": [1, 6],
-    }
-    exp = pd.DataFrame(dct).pivot_table(
-        index=["model", "scenario"], columns=["years"], values="value"
-    )
-    obs = test_df.filter(scenario="scen_a", variable="Primary Energy").timeseries()
-    npt.assert_array_equal(obs, exp)
+@pytest.mark.parametrize("unsort", [False, True])
+def test_timeseries(test_df, unsort):
+    """Assert that the timeseries is shown as expected even from unordered data"""
+    exp = TEST_DF.set_index(IAMC_IDX)
+
+    if unsort:
+        # revert order of _data, then check that the index and columns are sorted anyway
+        data = test_df.data
+        if test_df.time_col == "time":
+            time = test_df.time
+            data.time = data.time.replace(
+                dict([(year, time[i]) for i, year in enumerate([2005, 2010])])
+            )
+        test_df = IamDataFrame(data.iloc[[5, 4, 3, 2, 1, 0]])
+        # check that `data` is not sorted internally
+        unsorted_data = test_df.data
+        assert list(unsorted_data.scenario.unique()) == ["scen_b", "scen_a"]
+        if test_df.time_col == "year":
+            time = unsorted_data.year.unique()
+        else:
+            time = unsorted_data.time.unique()
+        assert time[0] > time[1]
+
+    if test_df.time_col == "time":
+        exp.columns = test_df.time
+        exp.columns.name = None
+
+    obs = test_df.timeseries()
+    pdt.assert_frame_equal(obs, exp, check_column_type=False)
+
+
+def test_timeseries_wide_unsorted(test_pd_df):
+    """Assert that the timeseries is shown as expected even from unordered data"""
+
+    # for some reason, `unstack` behaves differently if columns or rows are not sorted
+    exp = test_pd_df.set_index(IAMC_IDX)
+    obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]).timeseries()
+    pdt.assert_frame_equal(obs, exp, check_column_type=False)
 
 
 def test_timeseries_empty_raises(test_df_year):
     """Calling `timeseries()` on an empty IamDataFrame raises"""
     _df = test_df_year.filter(model="foo")
-    with pytest.raises(ValueError, match="This IamDataFrame is empty!"):
+    with pytest.raises(ValueError, match="This IamDataFrame is empty."):
         _df.timeseries()
 
 
 def test_timeseries_time_iamc_raises(test_df_time):
     """Calling `timeseries(iamc_index=True)` on a continuous-time IamDataFrame raises"""
-    match = "Cannot use `iamc_index=True` with 'datetime' time-domain!"
+    match = "Cannot use `iamc_index=True` with 'datetime' time-domain."
     with pytest.raises(ValueError, match=match):
         test_df_time.timeseries(iamc_index=True)
 

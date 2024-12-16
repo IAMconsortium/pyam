@@ -11,7 +11,7 @@ from ixmp4.core.exceptions import InvalidCredentials
 
 from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa
 from pyam.testing import assert_iamframe_equal
-from pyam.utils import META_IDX
+from pyam.utils import IAMC_IDX, META_IDX
 
 from .conftest import IIASA_UNAVAILABLE, META_COLS, TEST_API, TEST_API_NAME
 
@@ -375,7 +375,9 @@ def test_lazy_read(tmpdir):
     assert df.model == ["model_a"]
     # This is read from the file, so the filter is not applied.
     df2 = lazy_read_iiasa(tmp_file, TEST_API)
-    assert df.data.equals(df2.data)
+    assert (
+        df.data.sort_values(by=IAMC_IDX).reset_index(drop=True).equals(df2.data)
+    )
     # If requesting with an inconsistent filter, get nothing back. Strings and filters
     # work interchangably.
     tmp_file = str(tmp_file)
