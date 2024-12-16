@@ -26,12 +26,17 @@ def read_netcdf(path):
         Scenario data file in netCDF format.
 
     Returns
-    ----------
+    -------
     :class:`IamDataFrame`
 
     See Also
     --------
     pyam.IamDataFrame.to_netcdf
+    Notes
+    -----
+    Read the `pyam-netcdf docs <https://pyam-iamc.readthedocs.io/en/stable/api/io.html>`_
+    for more information on the expected file format structure.
+
     """
     from pyam import IamDataFrame
 
