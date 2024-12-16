@@ -795,8 +795,8 @@ class IamDataFrame:
         Parameters
         ----------
         iamc_index : bool, optional
-            If True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns.
+            If True, return only IAMC-index `['model', 'scenario', 'region', 'variable',
+            'unit']`; else, use all 'data' columns.
 
         Raises
         ------
