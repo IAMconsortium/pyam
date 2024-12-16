@@ -817,7 +817,7 @@ class IamDataFrame:
             s = self._data.droplevel(self.extra_cols)
             if s.index.has_duplicates:
                 raise ValueError(
-                    "Data with IAMC-index has duplicated index, use `iamc_index=False`"
+                    "Dropping non-IAMC-index causes duplicated index."
                 )
 
         return (

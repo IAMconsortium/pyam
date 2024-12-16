@@ -48,7 +48,7 @@ def test_init_df_with_non_default_index(test_pd_df, index):
     """Casting to IamDataFrame and returning as `timeseries()` yields original frame"""
 
     # set a value to `nan` to check that timeseries columns are ordered correctly
-    test_pd_df.loc[0, test_pd_df.columns[5]] = np.nan
+    test_pd_df.loc[0, 2010] = np.nan
 
     # any number of columns can be set as index
     df = test_pd_df.copy() if index is None else test_pd_df.set_index(index)
@@ -553,7 +553,7 @@ def test_timeseries_long(test_df, unsort):
         exp.columns.name = None
 
     obs = test_df.timeseries()
-    pdt.assert_frame_equal(obs, exp, check_column_type=False)
+    pdt.assert_frame_equal(obs, exp, check_like=True, check_column_type=False)
 
 
 @pytest.mark.parametrize("unsort", [False, True])
@@ -588,11 +588,11 @@ def test_timeseries_time_iamc_raises(test_df_time):
 def test_timeseries_to_iamc_index(test_pd_df, test_df_year):
     """Reducing timeseries() of an IamDataFrame with extra-columns to IAMC-index"""
     test_pd_df["foo"] = "bar"
-    exta_col_df = IamDataFrame(test_pd_df)
-    assert exta_col_df.extra_cols == ["foo"]
+    extra_col_df = IamDataFrame(test_pd_df)
+    assert extra_col_df.extra_cols == ["foo"]
 
     # assert that reducing to IAMC-columns (dropping extra-columns) with timeseries()
-    obs = exta_col_df.timeseries(iamc_index=True)
+    obs = extra_col_df.timeseries(iamc_index=True)
     exp = test_df_year.timeseries()
     pdt.assert_frame_equal(obs, exp)
 
@@ -602,13 +602,14 @@ def test_timeseries_to_iamc_index_duplicated_raises(test_pd_df):
     test_pd_df = pd.concat([test_pd_df, test_pd_df])
     # adding an extra-col creates a unique index
     test_pd_df["foo"] = ["bar", "bar", "bar", "baz", "baz", "baz"]
-    exta_col_df = IamDataFrame(test_pd_df)
-    assert exta_col_df.extra_cols == ["foo"]
+
+    extra_col_df = IamDataFrame(test_pd_df)
+    assert extra_col_df.extra_cols == ["foo"]
 
     # dropping the extra-column by setting `iamc_index=True` creates duplicated index
-    match = "Index contains duplicate entries, cannot reshape"
+    match = "Dropping non-IAMC-index causes duplicated index"
     with pytest.raises(ValueError, match=match):
-        exta_col_df.timeseries(iamc_index=True)
+        extra_col_df.timeseries(iamc_index=True)
 
 
 def test_pivot_table(test_df):

@@ -92,18 +92,22 @@ def test_concat(test_df, reverse, iterable):
     if iterable:
         dfs = iter(dfs)
 
-    result = concat(dfs)
+    obs = concat(dfs)
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
     assert other.scenario == ["scen_c"]
 
     # assert that merging of meta works as expected
-    pdt.assert_frame_equal(result.meta[EXP_META.columns], EXP_META, check_like=True)
+    pdt.assert_frame_equal(obs.meta, EXP_META, check_like=True)
 
     # assert that appending data works as expected
-    ts = result.timeseries()
-    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+    ts = obs.timeseries()
+    print(ts)
+    pdt.assert_frame_equal(
+        ts.iloc[0:1].droplevel("scenario"),
+        ts.iloc[3:].droplevel("scenario")
+    )
 
 
 def test_concat_non_default_index():
