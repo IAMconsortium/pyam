@@ -442,7 +442,7 @@ class IamDataFrame:
         ret = self.copy() if not inplace else self
         ret._data.sort_index(
             key=compare_year_time if ret.time_col == "year" else None,
-            inplace=inplace,
+            inplace=True,
         )
         ret._set_attributes()
         if not inplace:
