@@ -58,6 +58,7 @@ from pyam.utils import (
     IAMC_IDX,
     ILLEGAL_COLS,
     META_IDX,
+    compare_year_time,
     format_data,
     get_excel_file_with_kwargs,
     is_list_like,
@@ -813,10 +814,18 @@ class IamDataFrame:
                 raise ValueError(
                     "Cannot use `iamc_index=True` with 'datetime' time-domain."
                 )
-            s = s.droplevel(self.extra_cols)
+            s = self._data.droplevel(self.extra_cols)
+            if s.index.has_duplicates:
+                raise ValueError(
+                    "Data with IAMC-index has duplicated index, use `iamc_index=False`"
+                )
 
         return (
-            s.unstack(level=self.time_col).sort_index(axis=1).rename_axis(None, axis=1)
+            s.unstack(level=self.time_col, sort=False)
+            .rename_axis(None, axis=1)
+            .sort_index(
+                axis=1, key=compare_year_time if self.time_domain == "mixed" else None
+            )
         )
 
     def set_meta(self, meta, name=None, index=None):  # noqa: C901
