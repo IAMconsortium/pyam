@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -570,6 +570,18 @@ def test_timeseries_wide(test_pd_df, unsort):
     pdt.assert_frame_equal(obs, exp, check_column_type=False)
 
 
+def test_timeseries_mixed_time_domain(test_pd_df):
+    """Assert that timeseries is shown as expected from mixed time-domain data"""
+    test_pd_df = test_pd_df.rename(columns={2005: "2010-01-01 00:00"})
+    exp = (
+        test_pd_df.set_index(IAMC_IDX)[[2010, "2010-01-01 00:00"]]
+        .rename(columns={"2010-01-01 00:00": datetime(2010, 1, 1, 0, 0)})
+    )
+
+    obs = IamDataFrame(test_pd_df).timeseries()
+    pdt.assert_frame_equal(obs, exp, check_column_type=False)
+
+
 def test_timeseries_empty_raises(test_df_year):
     """Calling `timeseries()` on an empty IamDataFrame raises"""
     _df = test_df_year.filter(model="foo")
@@ -726,7 +738,7 @@ def test_normalize(test_df):
     if "year" in test_df.data:
         obs = test_df.normalize(year=2005).data.reset_index(drop=True)
     else:
-        obs = test_df.normalize(time=datetime.datetime(2005, 6, 17)).data.reset_index(
+        obs = test_df.normalize(time=datetime(2005, 6, 17)).data.reset_index(
             drop=True
         )
     pdt.assert_frame_equal(obs, exp)
@@ -748,7 +760,7 @@ def test_offset(test_df, padding):
         obs = test_df.offset(year=2005, **kwargs).data.reset_index(drop=True)
     else:
         obs = test_df.offset(
-            time=datetime.datetime(2005, 6, 17), **kwargs
+            time=datetime(2005, 6, 17), **kwargs
         ).data.reset_index(drop=True)
     pdt.assert_frame_equal(obs, exp)
 
