@@ -526,8 +526,8 @@ def test_variable_depth_with_list_raises(test_df, filter_name):
 
 
 @pytest.mark.parametrize("unsort", [False, True])
-def test_timeseries(test_df, unsort):
-    """Assert that the timeseries is shown as expected even from unordered data"""
+def test_timeseries_long(test_df, unsort):
+    """Assert that timeseries is shown as expected from (unsorted) long data"""
     exp = TEST_DF.set_index(IAMC_IDX)
 
     if unsort:
@@ -556,12 +556,18 @@ def test_timeseries(test_df, unsort):
     pdt.assert_frame_equal(obs, exp, check_column_type=False)
 
 
-def test_timeseries_wide_unsorted(test_pd_df):
-    """Assert that the timeseries is shown as expected even from unordered data"""
+@pytest.mark.parametrize("unsort", [False, True])
+def test_timeseries_wide(test_pd_df, unsort):
+    """Assert that timeseries is shown as expected from (unsorted) wide data"""
 
     # for some reason, `unstack` behaves differently if columns or rows are not sorted
     exp = test_pd_df.set_index(IAMC_IDX)
-    obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]).timeseries()
+
+    if unsort:
+        obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]
+        ).timeseries()
+    else:
+        obs = IamDataFrame(test_pd_df).timeseries()
     pdt.assert_frame_equal(obs, exp, check_column_type=False)
 
 
