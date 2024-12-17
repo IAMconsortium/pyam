@@ -2,6 +2,7 @@
 
 The next release must be bumped to v3.0.0.
 
+- [#896](https://github.com/IAMconsortium/pyam/pull/896) Add `sort_data()` method
 - [#896](https://github.com/IAMconsortium/pyam/pull/896) Sort columns of `timeseries()` with mixed time domain
 - [#893](https://github.com/IAMconsortium/pyam/pull/893) No sorting of timeseries data on initialization or append
 - [#879](https://github.com/IAMconsortium/pyam/pull/879) Add `read_netcdf()` function
