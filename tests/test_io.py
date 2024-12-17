@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from pyam import IamDataFrame, read_datapackage
-from pyam.netcdf import read_netcdf
+from pyam.netcdf import read_netcdf, to_netcdf, NETCDF_IDX
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import META_IDX
 
@@ -308,5 +308,8 @@ def test_io_datapackage(test_df, tmpdir):
 
 
 def test_io_netcdf(test_df_year):
-    obs = read_netcdf(TEST_DATA_DIR / "test_df.nc")
+    # write to netcdf
+    exp = to_netcdf(test_df_year)
+    # then read from netcdf to IamDataFrame
+    obs = read_netcdf(exp)
     assert_iamframe_equal(obs, test_df_year)
