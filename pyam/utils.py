@@ -606,13 +606,15 @@ def print_list(x, n):
 
 # utility method to compare years (as integer) and datetime for index-sorting
 def compare_year_time(x):
-    return pd.Index([
-        # set year lower than first timestep of that year (2010 < 2010-01-01 00:00)
-        datetime(time, 1, 1, 0, 0, 0) - timedelta(0, 0.01)
-        if isinstance(time, int)
-        else time
-        for time in x
-    ])
+    return pd.Index(
+        [
+            # set year lower than first timestep of that year (2010 < 2010-01-01 00:00)
+            datetime(time, 1, 1, 0, 0, 0) - timedelta(0, 0.01)
+            if isinstance(time, int)
+            else time
+            for time in x
+        ]
+    )
 
 
 def to_time(x):

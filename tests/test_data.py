@@ -49,4 +49,3 @@ def test_data_sort_mixed_time_domain(test_df_year, inplace):
     else:
         obs = df.sort_data()
     pdt.assert_frame_equal(obs.data, mixed_data)
-
