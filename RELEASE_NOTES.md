@@ -2,6 +2,7 @@
 
 The next release must be bumped to v3.0.0.
 
+- [#900](https://github.com/IAMconsortium/pyam/pull/900) fix ChainedAssignmentError, refactoring
 - [#896](https://github.com/IAMconsortium/pyam/pull/896) Add `sort_data()` method
 - [#896](https://github.com/IAMconsortium/pyam/pull/896) Sort columns of `timeseries()` with mixed time domain
 - [#893](https://github.com/IAMconsortium/pyam/pull/893) No sorting of timeseries data on initialization or append
