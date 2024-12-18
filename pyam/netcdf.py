@@ -92,7 +92,7 @@ def read_netcdf(path):
     )
 
 
-def to_xarray(data_series : pd.Series, meta: pd.DataFrame):
+def to_xarray(data_series: pd.Series, meta: pd.DataFrame):
     """Convert timeseries data and meta indicators to an xarray Dataset
 
     Returns
@@ -130,4 +130,5 @@ def to_xarray(data_series : pd.Series, meta: pd.DataFrame):
             dims=META_IDX,
             name=meta_indicator,
         )
+
     return dataset
