@@ -124,6 +124,7 @@ def to_xarray(data_series : pd.Series, meta: pd.DataFrame):
 
     # add meta indicators as data-variables
     for meta_indicator, meta_data in meta.items():
+        meta_data = meta_data.replace(np.nan, "nan")
         dataset[meta_indicator] = xr.DataArray(
             meta_data.to_xarray(),
             dims=META_IDX,
