@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
+from pyam.netcdf import to_xarray
+
 try:
     from datapackage import Package
 
@@ -2513,7 +2515,7 @@ class IamDataFrame:
         Parameters
         ----------
         path : string or path object
-            any valid string path or :class:`pathlib.Path`
+            Any valid string path or :class:`pathlib.Path`.
         """
         if not HAS_DATAPACKAGE:
             raise ImportError("Required package `datapackage` not found!")
@@ -2532,6 +2534,26 @@ class IamDataFrame:
 
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
+
+    def to_netcdf(self, path):
+        """Write object to a NetCDF file
+
+        Parameters
+        ----------
+        path : string or path object
+            Any valid string path or :class:`pathlib.Path`.
+        """
+        self.to_xarray().to_netcdf(path)
+
+    def to_xarray(self):
+        """Convert object to an :class:`xarray.Dataset`
+
+        Returns
+        -------
+        :class:`xarray.Dataset`
+        """
+        df = swap_year_for_time(self) if self.time_domain == "year" else self
+        return to_xarray(df._data, df.meta)
 
     def load_meta(self, path, sheet_name="meta", ignore_conflict=False, **kwargs):
         """Load 'meta' indicators from file
