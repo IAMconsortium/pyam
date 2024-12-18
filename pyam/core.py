@@ -2542,6 +2542,10 @@ class IamDataFrame:
         ----------
         path : string or path object
             Any valid string path or :class:`pathlib.Path`.
+
+        See Also
+        --------
+        pyam.read_netcdf
         """
         self.to_xarray().to_netcdf(path)
 

@@ -29,6 +29,9 @@ def read_netcdf(path):
     ----------
     :class:`IamDataFrame`
 
+    See Also
+    --------
+    pyam.IamDataFrame.to_netcdf
     """
     from pyam import IamDataFrame
 
