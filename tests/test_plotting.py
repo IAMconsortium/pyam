@@ -172,7 +172,7 @@ def test_line_color_fill_between_interpolate(plot_df):
     ]
     df.loc[len(df) + 1] = newdata
     columns_ = ['model', 'scenario', 'region', 'variable', 'unit', 'year']
-    df = df.drop_duplicates(subset=columns_)
+    df = df.drop_duplicates(subset=columns_).reset_index(drop=True)
     df = pyam.IamDataFrame(df)
     df.plot(ax=ax, color="model", fill_between=True, legend=True)
     return fig
