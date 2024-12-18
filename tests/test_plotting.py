@@ -139,7 +139,7 @@ def test_line_color_fill_between(plot_df):
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_color_fill_between_interpolate(plot_df):
     # designed to create the sawtooth behavior at a midpoint with missing data
-    df = pyam.IamDataFrame(plot_df.data.copy())
+    df = plot_df.data.copy()
     fig, ax = plt.subplots(figsize=(8, 8))
     newdata = [
         "test_model1",
@@ -150,7 +150,7 @@ def test_line_color_fill_between_interpolate(plot_df):
         2010,
         3.50,
     ]
-    df.data.loc[len(df.data) - 1] = newdata
+    df.loc[len(df) - 1] = newdata
     newdata = [
         "test_model1",
         "test_scenario1",
@@ -160,7 +160,7 @@ def test_line_color_fill_between_interpolate(plot_df):
         2012,
         3.50,
     ]
-    df.data.loc[len(df.data)] = newdata
+    df.loc[len(df)] = newdata
     newdata = [
         "test_model1",
         "test_scenario1",
@@ -170,7 +170,10 @@ def test_line_color_fill_between_interpolate(plot_df):
         2015,
         3.50,
     ]
-    df.data.loc[len(df.data) + 1] = newdata
+    df.loc[len(df) + 1] = newdata
+    columns_ = ['model', 'scenario', 'region', 'variable', 'unit', 'year']
+    df = df.drop_duplicates(subset=columns_)
+    df = pyam.IamDataFrame(df)
     df.plot(ax=ax, color="model", fill_between=True, legend=True)
     return fig
 
