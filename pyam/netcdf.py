@@ -32,6 +32,7 @@ def read_netcdf(path):
     See Also
     --------
     pyam.IamDataFrame.to_netcdf
+
     Notes
     -----
     Read the `pyam-netcdf docs <https://pyam-iamc.readthedocs.io/en/stable/api/io.html>`_
