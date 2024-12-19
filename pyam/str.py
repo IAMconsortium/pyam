@@ -11,7 +11,7 @@ def concat_with_pipe(x, *args, cols=None):
     """Concatenate a list or pandas.Series using ``|``, drop None or numpy.nan"""
     if args:
         # Guard against legacy-errors when adding `*args` (#778)
-        # TODO: deprecated, remove for release >= 3.0
+        # TODO: deprecated, remove for release >= 3.1
         for i in args:
             if is_list_like(i):
                 raise DeprecationWarning(f"Please use `cols={i}`.")

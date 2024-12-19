@@ -1,6 +1,12 @@
-# Next release
+# Release v3.0.0
 
-The next release must be bumped to v3.0.0.
+## Highlights
+
+- Implement reading and writing of **netcdf** files
+- Remove automated sorting of timeseries data for performance improvement
+- Add support Python 3.13
+
+## Individual updates
 
 - [#901](https://github.com/IAMconsortium/pyam/pull/901) Add support for Python 3.13
 - [#899](https://github.com/IAMconsortium/pyam/pull/899) Add `to_netcdf()` method
