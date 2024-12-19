@@ -330,6 +330,7 @@ intersphinx_mapping = {
     "nomenclature": ("https://nomenclature-iamc.readthedocs.io/en/stable", None),
     "ixmp4": ("https://docs.ece.iiasa.ac.at/projects/ixmp4/en/stable", None),
     "wbdata": ("https://wbdata.readthedocs.io/en/stable/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/", None),
 }
 
 # Set up the plotting gallery with plotly scraper
