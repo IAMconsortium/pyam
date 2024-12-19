@@ -2,6 +2,7 @@
 
 The next release must be bumped to v3.0.0.
 
+- [#901](https://github.com/IAMconsortium/pyam/pull/901) Add support for Python 3.13
 - [#899](https://github.com/IAMconsortium/pyam/pull/899) Add `to_netcdf()` method
 - [#896](https://github.com/IAMconsortium/pyam/pull/896) Add `sort_data()` method
 - [#896](https://github.com/IAMconsortium/pyam/pull/896) Sort columns of `timeseries()` with mixed time domain

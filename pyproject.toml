@@ -42,7 +42,7 @@ classifiers = [
 # in our minimum-reqs test in the file ./.github/workflows/pytest-dependency.yml
 # Please also add a section "Dependency changes" to the release notes
 [tool.poetry.dependencies]
-python = ">=3.10, <3.13"
+python = ">=3.10, <3.14"
 iam-units = ">=2020.4.21"
 ixmp4 = ">=0.9.0"
 matplotlib = ">=3.6.0"
