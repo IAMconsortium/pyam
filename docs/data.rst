@@ -41,6 +41,8 @@ using the IAMC data format.
 
 .. _`CD-LINKS`: https://www.cd-links.org
 
+.. _pyam_data_model:
+
 The pyam data model
 -------------------
 

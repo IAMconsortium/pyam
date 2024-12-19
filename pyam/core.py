@@ -2546,6 +2546,12 @@ class IamDataFrame:
         See Also
         --------
         pyam.read_netcdf
+
+        Notes
+        -----
+        Read the `pyam-netcdf docs <https://pyam-iamc.readthedocs.io/en/stable/api/io.html>`_
+        for more information on the expected file format structure.
+
         """
         self.to_xarray().to_netcdf(path)
 

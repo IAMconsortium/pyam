@@ -24,7 +24,7 @@ Release v\ |version|.
 .. |ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json
    :target: https://github.com/astral-sh/ruff
 
-.. |python| image:: https://img.shields.io/badge/python-≥3.10,<3.13-blue?logo=python&logoColor=white
+.. |python| image:: https://img.shields.io/badge/python-≥3.10,<3.14-blue?logo=python&logoColor=white
    :target: https://github.com/IAMconsortium/pyam
 
 .. |pytest| image:: https://img.shields.io/github/actions/workflow/status/iamconsortium/pyam/pytest.yml?logo=GitHub&label=pytest
