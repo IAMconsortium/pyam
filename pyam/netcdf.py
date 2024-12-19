@@ -3,6 +3,8 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
+from pyam.index import get_index_levels
+
 try:
     import xarray as xr
 
@@ -10,8 +12,9 @@ try:
 except ModuleNotFoundError:
     xr = None
     HAS_XARRAY = False
-from pyam.core import IamDataFrame
 from pyam.utils import IAMC_IDX, META_IDX
+
+NETCDF_IDX = ["time", "model", "scenario", "region"]
 
 
 def read_netcdf(path):
@@ -26,11 +29,15 @@ def read_netcdf(path):
     ----------
     :class:`IamDataFrame`
 
+    See Also
+    --------
+    pyam.IamDataFrame.to_netcdf
     """
+    from pyam import IamDataFrame
+
     if not HAS_XARRAY:
-        raise ModuleNotFoundError("Reading netcdf files requires 'xarray'")
+        raise ModuleNotFoundError("Reading netcdf files requires 'xarray'.")
     _ds = xr.open_dataset(path)
-    NETCDF_IDX = ["time", "model", "scenario", "region"]
     _list_variables = [i for i in _ds.to_dict()["data_vars"].keys()]
 
     # Check if the time coordinate is years (integers) or date time-format
@@ -86,3 +93,45 @@ def read_netcdf(path):
         data,
         meta=_ds[_meta].to_dataframe().replace("nan", np.nan) if _meta else None,
     )
+
+
+def to_xarray(data_series: pd.Series, meta: pd.DataFrame):
+    """Convert timeseries data and meta indicators to an xarray Dataset
+
+    Returns
+    -------
+    :class:`xarray.Dataset`
+
+    """
+    if not HAS_XARRAY:
+        raise ModuleNotFoundError("Converting to xarray requires 'xarray'.")
+
+    dataset = xr.Dataset()
+
+    # add timeseries data-variables
+    for variable, _variable_data in data_series.groupby("variable"):
+        unit = get_index_levels(_variable_data, "unit")
+
+        if len(unit) > 1:
+            raise ValueError(
+                "Cannot write to xarray for non-unique units in '" + variable + "'."
+            )
+
+        dataset[variable] = xr.DataArray(
+            _variable_data.droplevel(["variable", "unit"]).to_xarray(),
+        )
+        dataset[variable].attrs = {
+            "unit": unit[0],
+            "long_name": variable,
+        }
+
+    # add meta indicators as data-variables
+    for meta_indicator, meta_data in meta.items():
+        meta_data = meta_data.replace(np.nan, "nan")
+        dataset[meta_indicator] = xr.DataArray(
+            meta_data.to_xarray(),
+            dims=META_IDX,
+            name=meta_indicator,
+        )
+
+    return dataset
