@@ -83,7 +83,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
         and fillna is None
         and len(_unit_kwds["a"]) == 1
         and len(_unit_kwds["b"]) == 1
-        and registry.Unit(_unit_kwds["a"][0]) == registry.Unit(_unit_kwds["b"][0])
+        and _unit_kwds["a"][0] == _unit_kwds["b"][0]
     ):
         # activate ignore-units feature
         ignore_units = _unit_kwds["a"][0] if method in [add, subtract] else ""
