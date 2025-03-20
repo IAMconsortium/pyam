@@ -34,30 +34,30 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python",
 ]
+# NOTE TO DEVS
+# If you change a minimum version below, please explicitly implement the change
+# in our minimum-reqs test in the file ./.github/workflows/pytest-dependency.yml
+# Please also add a section "Dependency changes" to the release notes
+dependencies = [
+    "iam-units>=2020.4.21",
+    "ixmp4>=0.9.0",
+    "matplotlib>=3.6.0",
+    "numpy>=1.26.0",
+    "openpyxl>=3.1.2",
+    "pandas>=2.1.2",
+    "Pint>=0.13",
+    "PyYAML>=6.0.1",
+    "scipy>=1.10.0",
+    "seaborn>=0.11",
+    "requests>2.27.1",
+    "wquantiles>=0.6",
+    "XlsxWriter>=3.0.3",
+]
 
 [tool.poetry]
 version = "0.0.0"
 documentation = "https://pyam-iamc.readthedocs.io"
 packages = [{ include = "pyam" }]
-
-# NOTE TO DEVS
-# If you change a minimum version below, please explicitly implement the change
-# in our minimum-reqs test in the file ./.github/workflows/pytest-dependency.yml
-# Please also add a section "Dependency changes" to the release notes
-[tool.poetry.dependencies]
-iam-units = ">=2020.4.21"
-ixmp4 = ">=0.9.0"
-matplotlib = ">=3.6.0"
-numpy = ">=1.26.0"
-openpyxl = ">=3.1.2"
-pandas = ">=2.1.2"
-Pint = ">=0.13"
-PyYAML = ">=6.0.1"
-scipy = ">=1.10.0"
-seaborn = ">=0.11"
-requests = ">2.27.1"
-wquantiles = ">=0.6"
-XlsxWriter = ">=3.0.3"
 
 [tool.poetry.group.dev]
 optional = true
