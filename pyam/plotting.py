@@ -19,13 +19,7 @@ from pyam.logging import raise_data_error
 from pyam.run_control import run_control
 from pyam.str import is_str
 from pyam.timeseries import cross_threshold
-from pyam.utils import (
-    IAMC_IDX,
-    META_IDX,
-    SORT_IDX,
-    YEAR_IDX,
-    to_list,
-)
+from pyam.utils import IAMC_IDX, META_IDX, SORT_IDX, YEAR_IDX, to_list
 
 logger = logging.getLogger(__name__)
 
@@ -711,7 +705,7 @@ def box(df, y="value", x=None, by=None, legend=True, title=None, ax=None, **kwar
             # TODO this only works if all categories are defined in run_control
             palette = rc["color"][by]
             df[by] = df[by].astype("category")
-            df[by].cat.set_categories(list(palette), inplace=True)
+            df[by] = df[by].cat.set_categories(list(palette))
             kwargs["palette"] = palette
         else:
             df.sort_values(by, inplace=True)
