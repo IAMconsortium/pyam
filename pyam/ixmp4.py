@@ -1,9 +1,13 @@
 import logging
 
 import ixmp4
+import numpy as np
 import pandas as pd
 from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
+from ixmp4.data.abstract import DataPoint
+
+from pyam.index import get_index_levels_codes
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +120,27 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         _df = df.filter(model=model, scenario=scenario)
 
         run = platform.runs.create(model=model, scenario=scenario)
-        run.iamc.add(_df.data)
+
+        if df.time_domain == "year":
+              run.iamc.add(_df.data)
+        else:
+            levels, codes = get_index_levels_codes(_df._data, "time")
+            year_rows = np.isin(
+                codes,
+                [i for (i, label) in enumerate(levels) if isinstance(label, int)],
+            )
+            data = _df.data.reset_index()
+            if any(year_rows):
+                run.iamc.add(
+                    data[year_rows].rename(columns={"time": "step_year"}),
+                    type=DataPoint.Type.ANNUAL,
+                )
+            if any(~year_rows):
+                run.iamc.add(
+                    data[~year_rows].rename(columns={"time": "step_datetime"}),
+                    type=DataPoint.Type.DATETIME,
+                )
+
         if not meta.empty:
             run.meta = dict(meta.loc[(model, scenario)])
         run.set_as_default()
