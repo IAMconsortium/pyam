@@ -30,15 +30,15 @@ def test_ixmp4_subannual_not_implemented(test_platform, test_df_year):
         pyam.IamDataFrame(data).to_ixmp4(platform=test_platform)
 
 
-def test_ixmp4_integration(test_platform, test_df_year):
+def test_ixmp4_integration(test_platform, test_df):
     """Write an IamDataFrame to the platform"""
 
     # test writing to platform
-    test_df_year.to_ixmp4(platform=test_platform)
+    test_df.to_ixmp4(platform=test_platform)
 
     # read only default scenarios (runs) - version number added as meta indicator
     obs = read_ixmp4(platform=test_platform)
-    exp = test_df_year.copy()
+    exp = test_df.copy()
     exp.set_meta(1, "version")  # add version number added from ixmp4
     assert_iamframe_equal(exp, obs)
 
@@ -49,9 +49,9 @@ def test_ixmp4_integration(test_platform, test_df_year):
 
     # read all scenarios (runs) - version number used as additional index dimension
     obs = read_ixmp4(platform=test_platform, default_only=False)
-    data = test_df_year.data
+    data = test_df.data
     data["version"] = 1
-    meta = test_df_year.meta.reset_index()
+    meta = test_df.meta.reset_index()
     meta["version"] = 1
     exp = pyam.IamDataFrame(data, meta=meta, index=["model", "scenario", "version"])
     pyam.assert_iamframe_equal(exp, obs)
