@@ -79,8 +79,10 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
     df : pyam.IamDataFrame
         The IamDataFrame instance with scenario data
     """
-    if df.time_domain != "year":
-        raise NotImplementedError("Only time_domain='year' is supported for now.")
+    if df.extra_cols:
+        raise NotImplementedError(
+            "Only data with standard IAMC columns can be written to an ixmp4 platform."
+        )
 
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)

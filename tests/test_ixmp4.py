@@ -21,11 +21,13 @@ def test_to_ixmp4_missing_unit_raises(test_platform, test_df_year):
         test_df_year.to_ixmp4(platform=test_platform)
 
 
-def test_ixmp4_time_not_implemented(test_platform, test_df):
-    """Writing an IamDataFrame with datetime-data is not implemented"""
-    if test_df.time_domain != "year":
-        with pytest.raises(NotImplementedError):
-            test_df.to_ixmp4(platform=test_platform)
+def test_ixmp4_subannual_not_implemented(test_platform, test_df_year):
+    """Writing an IamDataFrame with subannual timeslices is not implemented"""
+
+    data = test_df_year.data
+    data["subannual"] = "summer-day"
+    with pytest.raises(NotImplementedError):
+        pyam.IamDataFrame(data).to_ixmp4(platform=test_platform)
 
 
 def test_ixmp4_integration(test_platform, test_df_year):
