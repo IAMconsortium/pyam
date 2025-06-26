@@ -4,6 +4,7 @@ import logging
 import re
 import string
 import warnings
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import dateutil
@@ -105,11 +106,9 @@ def get_excel_file_with_kwargs(path, **kwargs):
     instance along with the remaining keyword arguments (which presumably
     will be used for other purposes by the calling function).
     """
-    EXCEL_FILE_KWS = ('engine', 'storage_options', 'engine_kwargs')
+    EXCEL_FILE_KWS = ("engine", "storage_options", "engine_kwargs")
     kwargs = kwargs.copy()
-    excel_file_kwargs = {
-        k: kwargs.pop(k) for k in EXCEL_FILE_KWS if k in kwargs
-    }
+    excel_file_kwargs = {k: kwargs.pop(k) for k in EXCEL_FILE_KWS if k in kwargs}
     # TODO remove when bumping minimum pandas dependency to >= 2.2
     if "engine_kwargs" in excel_file_kwargs and packaging.version.parse(
         importlib.metadata.version("pandas")
@@ -435,7 +434,7 @@ def format_data(df, index, **kwargs):  # noqa: C901
     if df.empty:
         logger.warning("Formatted data is empty.")
 
-    return df.sort_index(), index, time_col, extra_cols
+    return df, index, time_col, extra_cols
 
 
 def _validate_complete_index(df):
@@ -448,11 +447,6 @@ def _validate_complete_index(df):
         raise_data_error(
             f"Empty cells in `data` (columns: '{cols}')", df.loc[null_rows]
         )
-
-
-def sort_data(data, cols):
-    """Sort data rows and order columns by cols"""
-    return data.sort_values(cols)[cols + ["value"]].reset_index(drop=True)
 
 
 def merge_meta(left, right, ignore_conflict=False):
@@ -608,6 +602,19 @@ def print_list(x, n):
             break
 
     return lst + count
+
+
+# utility method to compare years (as integer) and datetime for index-sorting
+def compare_year_time(x):
+    return pd.Index(
+        [
+            # set year lower than first timestep of that year (2010 < 2010-01-01 00:00)
+            datetime(time, 1, 1, 0, 0, 0) - timedelta(0, 0.01)
+            if isinstance(time, int)
+            else time
+            for time in x
+        ]
+    )
 
 
 def to_time(x):

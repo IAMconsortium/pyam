@@ -1,34 +1,32 @@
-[tool.poetry]
+[project]
 name = "pyam-iamc"
-version = "0.0.0"
 description = "Analysis & visualization of integrated-assessment scenarios"
 authors = [
-    "Matthew Gidden <gidden@iiasa.ac.at>",
-    "Daniel Huppmann <huppmann@iiasa.ac.at>",
-    "Zebedee Nicholls <znicholls@unknown.com>",
-    "Nikolay Kushin <zikolach@unknown.com>",
-    "Robin Lamboll <Rlamboll@unknown.com>",
-    "Oliver Fricko <fricko@iiasa.ac.at>",
-    "Jonas Hörsch <coroa@unknown.com>",
-    "Paul Natsuo Kishimoto <kishimot@iiasa.ac.at>",
-    "Thorsten Burandt <tburandt@unknown.com>",
-    "Ross Ursino <rossursino@unknown.com>",
-    "Maik Budzinski <mabudz@unknown.com>",
-    "Jarmo Kikstra <kikstra@iiasa.ac.at>",
-    "Michael Pimmer <fonfon@unknown.com>",
-    "Patrick Jürgens <pjuergens@unknown.com>",
-    "Florian Maczek <maczek@iiasa.ac.at>",
-    "Laura Wienpahl <LauWien@unknown.com>",
-    "Philip Hackstock <hackstock@iiasa.ac.at>",
-    "Pietro Monticone <pitmonticone@unknown.com>",
-    "Edward Byers <byers@iiasa.ac.at>",
-    "Fridolin Glatter <glatter@iiasa.ac.at>",
+    { name = "Matthew Gidden", email = "gidden@iiasa.ac.at" },
+    { name = "Daniel Huppmann", email = "huppmann@iiasa.ac.at" },
+    { name = "Zebedee Nicholls", email = "znicholls@unknown.com" },
+    { name = "Nikolay Kushin", email = "zikolach@unknown.com" },
+    { name = "Robin Lamboll", email = "Rlamboll@unknown.com" },
+    { name = "Oliver Fricko", email = "fricko@iiasa.ac.at" },
+    { name = "Jonas Hörsch", email = "coroa@unknown.com" },
+    { name = "Paul Natsuo Kishimoto", email = "kishimot@iiasa.ac.at" },
+    { name = "Thorsten Burandt", email = "tburandt@unknown.com" },
+    { name = "Ross Ursino", email = "rossursino@unknown.com" },
+    { name = "Maik Budzinski", email = "mabudz@unknown.com" },
+    { name = "Jarmo Kikstra", email = "kikstra@iiasa.ac.at" },
+    { name = "Michael Pimmer", email = "fonfon@unknown.com" },
+    { name = "Patrick Jürgens", email = "pjuergens@unknown.com" },
+    { name = "Florian Maczek", email = "maczek@iiasa.ac.at" },
+    { name = "Laura Wienpahl", email = "LauWien@unknown.com" },
+    { name = "Philip Hackstock", email = "hackstock@iiasa.ac.at" },
+    { name = "Pietro Monticone", email = "pitmonticone@unknown.com" },
+    { name = "Edward Byers", email = "byers@iiasa.ac.at" },
+    { name = "Fridolin Glatter", email = "glatter@iiasa.ac.at" },
 ]
 license = "Apache-2.0"
 readme = "README.md"
-packages = [{ include = "pyam" }]
+requires-python = ">=3.10, <3.14"
 repository = "https://github.com/IAMconsortium/pyam"
-documentation = "https://pyam-iamc.readthedocs.io"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
@@ -36,26 +34,31 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python",
 ]
-
 # NOTE TO DEVS
 # If you change a minimum version below, please explicitly implement the change
 # in our minimum-reqs test in the file ./.github/workflows/pytest-dependency.yml
 # Please also add a section "Dependency changes" to the release notes
-[tool.poetry.dependencies]
-python = ">=3.10, <3.13"
-iam-units = ">=2020.4.21"
-ixmp4 = ">=0.9.0"
-matplotlib = ">=3.6.0"
-numpy = ">=1.26.0"
-openpyxl = ">=3.1.2"
-pandas = ">=2.1.2"
-Pint = ">=0.13"
-PyYAML = ">=6.0.1"
-scipy = ">=1.10.0"
-seaborn = ">=0.11"
-requests = ">2.27.1"
-wquantiles = ">=0.6"
-XlsxWriter = ">=3.0.3"
+dependencies = [
+    "iam-units>=2020.4.21",
+    "ixmp4>=0.9.0",
+    "matplotlib>=3.6.0",
+    "numpy>=1.26.0",
+    "openpyxl>=3.1.2",
+    "pandas>=2.1.2",
+    "Pint>=0.13",
+    "PyYAML>=6.0.1",
+    "scipy>=1.10.0",
+    "seaborn>=0.11",
+    "requests>2.27.1",
+    "wquantiles>=0.6",
+    "XlsxWriter>=3.0.3",
+]
+
+[tool.poetry]
+version = "0.0.0"
+documentation = "https://pyam-iamc.readthedocs.io"
+packages = [{ include = "pyam" }]
+requires-poetry = ">=2.0,<3.0" 
 
 [tool.poetry.group.dev]
 optional = true
@@ -87,6 +90,7 @@ optional = true
 [tool.poetry.group.optional_io_formats.dependencies]
 datapackage = ">=1.15.2"
 xlrd = ">=2.0.1"
+xarray = ">=2024.6.0"
 
 [tool.poetry.group.optional_plotting]
 optional = true
@@ -123,8 +127,8 @@ optional = true
 python-calamine = ">=0.2.3"
 
 [build-system]
+requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
-requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning"]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
@@ -172,6 +176,9 @@ docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
+
+[tool.poetry.requires-plugins]
+poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
 
 [tool.poetry-dynamic-versioning]
 enable = true

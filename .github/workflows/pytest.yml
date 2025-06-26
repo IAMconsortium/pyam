@@ -22,6 +22,11 @@ jobs:
           - '3.10'
           - '3.11'
           - '3.12'
+          - '3.13'
+        # exclude Windows and 3.13 due to recurring segfault
+        exclude:
+          - os: windows-latest
+            python-version: 3.13
 
       fail-fast: false
 
@@ -47,6 +52,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
+          version: 2.1.2
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
@@ -64,20 +70,22 @@ jobs:
       #  install your project
       #------------------------
       - name: Install library
-        run: poetry install --no-interaction --with calamine,dev,optional_io_formats,optional_plotting,tutorials,wbdata
+        run: |
+          poetry self add "poetry-dynamic-versioning[plugin]" && 
+          poetry install --no-interaction --with calamine,dev,optional_io_formats,optional_plotting,tutorials,wbdata
 
       # run tests without Matplotlib & CodeCode tests on earlier Python versions
       - name: Test with pytest
-        if: ${{ matrix.python-version != '3.12' }}
+        if: ${{ matrix.python-version != '3.13' }}
         run: poetry run pytest tests
 
       # run tests with Matplotlib & CodeCov on latest Python version
       - name: Test with pytest including Matplotlib & Codecov
-        if: ${{ matrix.python-version == '3.12' }}
+        if: ${{ matrix.python-version == '3.13' }}
         run: poetry run pytest tests --mpl --cov=./ --cov-report=xml
 
       - name: Upload coverage report to Codecov
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13' }}
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml

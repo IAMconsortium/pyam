@@ -40,10 +40,10 @@ jobs:
         run: |
           poetry add iam-units@2020.4.21 --lock
           poetry add matplotlib@3.6.0 --lock
-          poetry add numpy@1.26.0 --lock
+          poetry add numpy@1.26.2 --lock
           poetry add pandas@2.1.2 --lock
           poetry add pint@0.13 --lock
-          poetry add xlrd@2.0.1 --optional --lock
+          poetry add xlrd@2.0.1 --lock --group optional_io_formats
           poetry add xlsxwriter@3.0.3 --lock
 
       #------------------------------------
@@ -61,7 +61,9 @@ jobs:
       #------------------------------------------------
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with calamine,dev,optional_io_formats,optional_plotting,tutorials --no-root
+        run: |
+          poetry self add "poetry-dynamic-versioning[plugin]" &&
+          poetry install --no-interaction --with calamine,dev,optional_io_formats,optional_plotting,tutorials --no-root
 
       #------------------------
       #  install root project

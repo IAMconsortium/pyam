@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 
 from pyam import IamDataFrame, read_datapackage
+from pyam.netcdf import read_netcdf
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import META_IDX
 
@@ -21,6 +22,7 @@ except ModuleNotFoundError:  # pragma: no cover
 
 try:
     import python_calamine  # noqa: F401
+
     has_calamine = True
 except ModuleNotFoundError:  # pragma: no cover
     has_calamine = False
@@ -127,9 +129,9 @@ def test_read_xls(test_df_year):
 
 
 @pytest.mark.skipif(
-        packaging.version.parse(importlib.metadata.version("pandas")) \
-          < packaging.version.parse("2.2.0"),
-        reason="pandas < 2.2.0 has inconsistent support for `engine_kwargs`",
+    packaging.version.parse(importlib.metadata.version("pandas"))
+    < packaging.version.parse("2.2.0"),
+    reason="pandas < 2.2.0 has inconsistent support for `engine_kwargs`",
 )
 def test_read_xlsx_kwargs(test_df_year):
     # Test that kwargs to `IamDataFrame.__init__` are passed to `pd.read_excel`
@@ -152,8 +154,8 @@ def test_read_xlsx_kwargs(test_df_year):
 
 @pytest.mark.skipif(not has_calamine, reason="Package 'python_calamine' not installed.")
 @pytest.mark.skipif(
-    packaging.version.parse(importlib.metadata.version("pandas")) \
-      < packaging.version.parse("2.2.0"),
+    packaging.version.parse(importlib.metadata.version("pandas"))
+    < packaging.version.parse("2.2.0"),
     reason="`engine='calamine' requires pandas >= 2.2.0",
 )
 def test_read_xlsx_calamine(test_df_year):
@@ -303,3 +305,9 @@ def test_io_datapackage(test_df, tmpdir):
     # read from csv assert that IamDataFrame instances are equal
     import_df = read_datapackage(file)
     assert_iamframe_equal(test_df, import_df)
+
+
+def test_io_netcdf(test_df, tmpdir):
+    file = Path(tmpdir) / "foo.nc"
+    test_df.to_netcdf(file)
+    assert_iamframe_equal(read_netcdf(file), test_df)

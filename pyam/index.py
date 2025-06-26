@@ -4,6 +4,11 @@ import pandas as pd
 from pyam.logging import raise_data_error
 
 
+def get_index_level_number(index, level):
+    """Return the number of a specific level"""
+    return index._get_level_number(level)
+
+
 def get_index_levels(index, level):
     """Return the labels for a specific level"""
 
@@ -11,7 +16,7 @@ def get_index_levels(index, level):
         index = index.index  # assume that the arg `index` is a pd.DataFrame
 
     if isinstance(index, pd.MultiIndex):
-        return list(index.levels[index._get_level_number(level)])
+        return list(index.levels[get_index_level_number(index, level)])
 
     # if index is one-dimensional, make sure that the "level" is the name
     if index.name != level:
@@ -21,7 +26,7 @@ def get_index_levels(index, level):
 
 def get_index_levels_codes(df, level):
     """Return the category-values and codes for a specific level"""
-    n = df.index._get_level_number(level)
+    n = get_index_level_number(df.index, level)
     return df.index.levels[n], df.index.codes[n]
 
 
@@ -44,7 +49,7 @@ def replace_index_values(df, name, mapping, rows=None):
     """Replace one or several category-values at a specific level (for specific rows)"""
     index = df if isinstance(df, pd.Index) else df.index
 
-    n = index._get_level_number(name)
+    n = get_index_level_number(index, name)
 
     # if replacing level values with a filter (by rows)
     if rows is not None and not all(rows):
@@ -78,11 +83,9 @@ def replace_index_values(df, name, mapping, rows=None):
 def replace_index_labels(index, name, labels):
     """Replace the labels for a specific level"""
 
-    order = index.names
-    n = index._get_level_number(name)
+    n = get_index_level_number(index, name)
     codes = index.codes[n]
-
-    return append_index_level(index.droplevel(n), codes, labels, name, order)
+    return append_index_level(index.droplevel(n), codes, labels, name, index.names)
 
 
 def append_index_col(index, values, name, order=False):

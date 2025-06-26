@@ -581,7 +581,7 @@ class Connection:
 
 
 def _new_default_api(kwargs):
-    # TODO: argument `default` is deprecated, remove this warning for release >= 3.0
+    # TODO: argument `default` is deprecated, remove this warning for release >= 3.1
     raise DeprecationWarning(
         "The argument `default` is deprecated, use `default_only` instead."
     )

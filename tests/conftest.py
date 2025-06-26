@@ -1,4 +1,5 @@
 # has to go first for environment setup reasons
+
 import matplotlib
 
 matplotlib.use("agg")
@@ -10,6 +11,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from httpx import ConnectError
+from ixmp4.conf.base import PlatformInfo
 from ixmp4.core import Platform
 from ixmp4.data.backend import SqliteTestBackend
 
@@ -26,11 +28,9 @@ except ConnectError:  # pragma: no cover
 TEST_API = "integration-test"
 TEST_API_NAME = "IXSE_INTEGRATION_TEST"
 
-
 here = Path(__file__).parent
 IMAGE_BASELINE_DIR = here / "expected_figs"
 TEST_DATA_DIR = here / "data"
-
 
 TEST_YEARS = [2005, 2010]
 TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
@@ -41,7 +41,6 @@ TEST_TIME_MIXED = [2005, datetime(2010, 7, 21)]
 DTS_MAPPING = {2005: TEST_DTS[0], 2010: TEST_DTS[1]}
 
 EXP_DATETIME_INDEX = pd.DatetimeIndex(["2005-06-17T00:00:00"], name="time")
-
 
 TEST_DF = pd.DataFrame(
     [
@@ -60,7 +59,6 @@ META_DF = pd.DataFrame(
     ],
     columns=META_IDX + META_COLS,
 )
-
 
 FULL_FEATURE_DF = pd.DataFrame(
     [
@@ -93,7 +91,6 @@ FULL_FEATURE_DF = pd.DataFrame(
     columns=["region", "variable", "unit"] + TEST_YEARS,
 )
 
-
 img = ["IMAGE", "a_scenario"]
 msg = ["MESSAGE-GLOBIOM", "a_scenario"]
 
@@ -109,7 +106,6 @@ REG_DF = pd.DataFrame(
     columns=IAMC_IDX + TEST_YEARS,
 )
 
-
 RECURSIVE_DF = pd.DataFrame(
     [
         ["Secondary Energy|Electricity", "EJ/yr", 5, 19.0],
@@ -120,7 +116,6 @@ RECURSIVE_DF = pd.DataFrame(
     ],
     columns=["variable", "unit"] + TEST_YEARS,
 )
-
 
 TEST_STACKPLOT_DF = pd.DataFrame(
     [
@@ -267,10 +262,19 @@ def plot_stackplot_df():
 
 @pytest.fixture(scope="function")
 def test_platform():
-    platform = Platform(_backend=SqliteTestBackend())
+    sqlite = SqliteTestBackend(
+        PlatformInfo(name="sqlite-test", dsn="sqlite:///:memory:")
+    )
+    sqlite.setup()
+
+    platform = Platform(_backend=sqlite)
     platform.regions.create(name="World", hierarchy="common")
     platform.units.create(name="EJ/yr")
+
     yield platform
+
+    sqlite.close()
+    sqlite.teardown()
 
 
 @pytest.fixture(scope="session")

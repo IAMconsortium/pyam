@@ -5,7 +5,7 @@ from pyam.index import append_index_col
 from pyam.logging import raise_data_error
 
 
-def swap_time_for_year(df, inplace, subannual=False):
+def swap_time_for_year(df, inplace=False, subannual=False):
     """Internal implementation to swap 'time' domain to 'year' (as int)"""
     if not df.time_col == "time":
         raise ValueError("Time domain must be datetime to use this method")
@@ -49,7 +49,7 @@ def swap_time_for_year(df, inplace, subannual=False):
         return ret
 
 
-def swap_year_for_time(df, inplace):
+def swap_year_for_time(df, inplace=False):
     """Internal implementation to swap 'year' domain to 'time' (as datetime)"""
 
     if not df.time_col == "year":

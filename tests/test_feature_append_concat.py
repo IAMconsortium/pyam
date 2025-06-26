@@ -92,18 +92,21 @@ def test_concat(test_df, reverse, iterable):
     if iterable:
         dfs = iter(dfs)
 
-    result = concat(dfs)
+    obs = concat(dfs)
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
     assert other.scenario == ["scen_c"]
 
-    # assert that merging of meta works as expected (reorder columns)
-    pdt.assert_frame_equal(result.meta[EXP_META.columns], EXP_META)
+    # assert that merging of meta works as expected
+    pdt.assert_frame_equal(obs.meta, EXP_META, check_like=True)
 
     # assert that appending data works as expected
-    ts = result.timeseries()
-    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+    ts = obs.timeseries().sort_index()
+    pdt.assert_frame_equal(
+        ts.iloc[2:3].droplevel("scenario"),
+        ts.iloc[3:4].droplevel("scenario"),
+    )
 
 
 def test_concat_non_default_index():
@@ -158,9 +161,9 @@ def test_concat_with_pd_dataframe(test_df, reverse):
 
     # merge with only the timeseries `data` DataFrame of `other`
     if reverse:
-        result = concat([other.data, test_df])
+        obs = concat([other.data, test_df])
     else:
-        result = concat([test_df, other.data])
+        obs = concat([test_df, other.data])
 
     # check that the original object is not updated
     assert test_df.scenario == ["scen_a", "scen_b"]
@@ -168,11 +171,14 @@ def test_concat_with_pd_dataframe(test_df, reverse):
     # assert that merging meta from `other` is ignored
     exp_meta = META_DF.copy()
     exp_meta.loc[("model_a", "scen_c"), "number"] = np.nan
-    pdt.assert_frame_equal(result.meta, exp_meta[META_COLS])
+    pdt.assert_frame_equal(obs.meta, exp_meta[META_COLS])
 
     # assert that appending data works as expected
-    ts = result.timeseries()
-    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+    ts = obs.timeseries().sort_index()
+    pdt.assert_frame_equal(
+        ts.iloc[2:3].droplevel("scenario"),
+        ts.iloc[3:4].droplevel("scenario"),
+    )
 
 
 def test_concat_all_pd_dataframe(test_df):
@@ -181,14 +187,41 @@ def test_concat_all_pd_dataframe(test_df):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
     # merge only the timeseries `data` DataFrame of both items
-    result = concat([test_df.data, other.data])
+    obs = concat([test_df.data, other.data])
 
     # assert that appending data works as expected
-    ts = result.timeseries()
-    npt.assert_array_equal(ts.iloc[2].values, ts.iloc[3].values)
+    ts = obs.timeseries().sort_index()
+    pdt.assert_frame_equal(
+        ts.iloc[2:3].droplevel("scenario"),
+        ts.iloc[3:4].droplevel("scenario"),
+    )
 
 
-def test_append(test_df):
+@pytest.mark.parametrize("inplace", (True, False))
+def test_append_data_not_sorted(test_pd_df, inplace):
+    """Appending timeseries data does not sort"""
+
+    columns = IAMC_IDX + list(test_pd_df.columns[[6, 5]])
+    unsorted_data = test_pd_df.iloc[[2, 1]][columns]
+    df = IamDataFrame(unsorted_data)
+
+    if inplace:
+        obs = df.copy()
+        obs.append(test_pd_df.iloc[[0]], inplace=True)
+    else:
+        obs = df.append(test_pd_df.iloc[[0]])
+        # assert that original object was not modified
+        assert len(df._data) == 4
+
+    # `data` is not sorted, only applies to pandas >= 2.2
+    # TODO remove this if-statement when dropping support for pandas < 2.2
+    if pd.__version__ >= "2.2":
+        assert list(obs.data.scenario.unique()) == ["scen_b", "scen_a"]
+        assert list(obs.data.year.unique()) == [2010, 2005]
+        assert not obs._data.index.is_monotonic_increasing
+
+
+def test_append_meta(test_df):
     other = test_df.filter(scenario="scen_b").rename({"scenario": {"scen_b": "scen_c"}})
 
     test_df.set_meta([0, 1], name="col1")

@@ -145,7 +145,7 @@ def test_aggregate_skip_intermediate(recursive_df):
     # make the data inconsistent, check (and then skip) validation
 
     recursive_df._data.iloc[0] = recursive_df._data.iloc[0] + 2
-    recursive_df._data.iloc[3] = recursive_df._data.iloc[3] + 2
+    recursive_df._data.iloc[2] = recursive_df._data.iloc[2] + 2
 
     # create object without variables to be aggregated, but with intermediate variables
     v = "Secondary Energy|Electricity"
@@ -324,7 +324,7 @@ def test_aggregate_region_with_negative_weights(simple_df, caplog):
 
     # dropping negative weights works as expected
     neg_weights_df = simple_df.copy()
-    neg_weights_df._data.iloc[18] = -6
+    neg_weights_df._data.iloc[26] = -6
     exp = simple_df.filter(variable=v, region="World", year=2010)
     assert_iamframe_equal(neg_weights_df.aggregate_region(v, weight=w), exp)
 

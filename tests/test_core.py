@@ -1,5 +1,5 @@
-import datetime
 import logging
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,8 @@ from pandas import testing as pdt
 from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
 from pyam.utils import IAMC_IDX, META_IDX
+
+from .conftest import TEST_DF
 
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
@@ -42,16 +44,29 @@ df_empty = pd.DataFrame([], columns=IAMC_IDX + [2005, 2010])
 
 
 @pytest.mark.parametrize("index", (None, META_IDX, ["model"]))
-def test_init_df(test_pd_df, index):
+def test_init_df_with_non_default_index(test_pd_df, index):
     """Casting to IamDataFrame and returning as `timeseries()` yields original frame"""
 
     # set a value to `nan` to check that timeseries columns are ordered correctly
-    test_pd_df.loc[0, test_pd_df.columns[5]] = np.nan
+    test_pd_df.loc[0, 2010] = np.nan
 
     # any number of columns can be set as index
     df = test_pd_df.copy() if index is None else test_pd_df.set_index(index)
     obs = IamDataFrame(df).timeseries()
     pdt.assert_frame_equal(obs, test_pd_df.set_index(IAMC_IDX), check_column_type=False)
+
+
+def test_init_df_unsorted(test_pd_df):
+    """Casting unsorted timeseries data does not sort on init"""
+
+    columns = IAMC_IDX + list(test_pd_df.columns[[6, 5]])
+    unsorted_data = test_pd_df.iloc[[2, 0, 1]][columns]
+    df = IamDataFrame(unsorted_data)
+
+    # `data` is not sorted
+    assert list(df.data.scenario.unique()) == ["scen_b", "scen_a"]
+    assert list(df.data.year.unique()) == [2010, 2005]
+    assert not df._data.index.is_monotonic_increasing
 
 
 def test_init_from_iamdf(test_df_year):
@@ -115,12 +130,12 @@ def test_init_df_with_na_scenario(test_pd_df):
 def test_init_df_with_float_cols(test_pd_df):
     _test_df = test_pd_df.rename(columns={2005: 2005.0, 2010: 2010.0})
     obs = IamDataFrame(_test_df).timeseries().reset_index()
-    pd.testing.assert_series_equal(obs[2005], test_pd_df[2005])
+    pdt.assert_series_equal(obs[2005], test_pd_df[2005])
 
 
 def test_init_df_from_timeseries(test_df):
     df = IamDataFrame(test_df.timeseries())
-    pd.testing.assert_frame_equal(df.timeseries(), test_df.timeseries())
+    pdt.assert_frame_equal(df.timeseries(), test_df.timeseries())
 
 
 def test_init_df_from_timeseries_unused_levels(test_df):
@@ -149,7 +164,7 @@ def test_init_df_with_extra_col(test_pd_df):
     # check that timeseries data is as expected
     obs = df.timeseries().reset_index()
     exp = tdf[obs.columns]  # get the columns into the right order
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_init_df_with_meta_with_index(test_pd_df):
@@ -157,7 +172,7 @@ def test_init_df_with_meta_with_index(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=META_DF)
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -166,7 +181,7 @@ def test_init_df_with_meta_no_index(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=META_DF.reset_index())
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]])
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -185,7 +200,7 @@ def test_init_df_with_meta_key_value(test_pd_df):
     df = IamDataFrame(test_pd_df, meta=meta_df)
 
     # check that scenario not existing in data is removed during initialization
-    pd.testing.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]], check_dtype=False)
+    pdt.assert_frame_equal(df.meta, META_DF.iloc[[0, 1]], check_dtype=False)
     assert df.scenario == ["scen_a", "scen_b"]
 
 
@@ -376,7 +391,7 @@ def test_index(test_df_year):
     exp = pd.MultiIndex.from_arrays(
         [["model_a"] * 2, ["scen_a", "scen_b"]], names=["model", "scenario"]
     )
-    pd.testing.assert_index_equal(test_df_year.index, exp)
+    pdt.assert_index_equal(test_df_year.index, exp)
 
 
 def test_index_attributes(test_df):
@@ -431,8 +446,29 @@ def test_filter_empty_df():
     assert len(obs) == 0
 
 
-def test_variable_and_measurand_raises(test_df):
-    pytest.raises(ValueError, test_df.filter, variable="foo", measurand=("foo", "bar"))
+def test_filter_variable_and_measurand_raises(test_df):
+    with pytest.raises(ValueError, match="Filter by `variable` and `measurand` not"):
+        test_df.filter(variable="foo", measurand=("foo", "bar"))
+
+
+def test_filter_level_and_depth_raises(test_df):
+    with pytest.raises(ValueError, match="Filter by `level` and `depth` not"):
+        test_df.filter(level=1, depth=2)
+
+
+@pytest.mark.parametrize(
+    "filter_args",
+    (dict(variable="*rimary*C*"), dict(measurand=("*rimary*C*", "EJ/*"))),
+)
+def test_filter_variable_and_level(test_df, filter_args):
+    obs = test_df.filter(**filter_args, level=0).variable
+    assert obs == ["Primary Energy|Coal"]
+
+    obs = test_df.filter(**filter_args, level="0+").variable
+    assert obs == ["Primary Energy|Coal"]
+
+    obs = test_df.filter(**filter_args, level=1).variable
+    assert obs == []
 
 
 @pytest.mark.parametrize(
@@ -440,10 +476,13 @@ def test_variable_and_measurand_raises(test_df):
     (dict(variable="*rimary*C*"), dict(measurand=("*rimary*C*", "EJ/*"))),
 )
 def test_filter_variable_and_depth(test_df, filter_args):
-    obs = test_df.filter(**filter_args, level=0).variable
+    obs = test_df.filter(**filter_args, depth=1).variable
     assert obs == ["Primary Energy|Coal"]
 
-    obs = test_df.filter(**filter_args, level=1).variable
+    obs = test_df.filter(**filter_args, depth="0+").variable
+    assert obs == ["Primary Energy|Coal"]
+
+    obs = test_df.filter(**filter_args, depth=0).variable
     assert obs == []
 
 
@@ -460,44 +499,98 @@ def test_filter_measurand_list(test_df):
     assert obs.scenario == ["scen_b"]
 
 
-def test_variable_depth_0_keep_false(test_df):
-    obs = test_df.filter(level=0, keep=False).variable
+@pytest.mark.parametrize(
+    "filter_name",
+    ("level", "depth"),
+)
+def test_variable_depth_0_keep_false(test_df, filter_name):
+    obs = test_df.filter(**{filter_name: 0}, keep=False).variable
     assert obs == ["Primary Energy|Coal"]
 
 
-def test_variable_depth_raises(test_df):
-    pytest.raises(ValueError, test_df.filter, level="1/")
+@pytest.mark.parametrize(
+    "filter_name",
+    ("level", "depth"),
+)
+def test_variable_depth_raises(test_df, filter_name):
+    pytest.raises(ValueError, test_df.filter, **{filter_name: "1/"})
 
 
-def test_variable_depth_with_list_raises(test_df):
-    pytest.raises(ValueError, test_df.filter, level=["1", "2"])
-    pytest.raises(ValueError, test_df.filter, level=[1, 2])
+@pytest.mark.parametrize(
+    "filter_name",
+    ("level", "depth"),
+)
+def test_variable_depth_with_list_raises(test_df, filter_name):
+    pytest.raises(ValueError, test_df.filter, **{filter_name: ["1", "2"]})
+    pytest.raises(ValueError, test_df.filter, **{filter_name: [1, 2]})
 
 
-def test_timeseries(test_df):
-    dct = {
-        "model": ["model_a"] * 2,
-        "scenario": ["scen_a"] * 2,
-        "years": [2005, 2010],
-        "value": [1, 6],
-    }
-    exp = pd.DataFrame(dct).pivot_table(
-        index=["model", "scenario"], columns=["years"], values="value"
+@pytest.mark.parametrize("unsort", [False, True])
+def test_timeseries_long(test_df, unsort):
+    """Assert that timeseries is shown as expected from (unsorted) long data"""
+    exp = TEST_DF.set_index(IAMC_IDX)
+
+    if unsort:
+        # revert order of _data, then check that the index and columns are sorted anyway
+        data = test_df.data
+        if test_df.time_col == "time":
+            time = test_df.time
+            data.time = data.time.replace(
+                dict([(year, time[i]) for i, year in enumerate([2005, 2010])])
+            )
+        test_df = IamDataFrame(data.iloc[[5, 4, 3, 2, 1, 0]])
+        # check that `data` is not sorted internally
+        unsorted_data = test_df.data
+        assert list(unsorted_data.scenario.unique()) == ["scen_b", "scen_a"]
+        if test_df.time_col == "year":
+            time = unsorted_data.year.unique()
+        else:
+            time = unsorted_data.time.unique()
+        assert time[0] > time[1]
+
+    if test_df.time_col == "time":
+        exp.columns = test_df.time
+        exp.columns.name = None
+
+    obs = test_df.timeseries()
+    pdt.assert_frame_equal(obs, exp, check_like=True, check_column_type=False)
+
+
+@pytest.mark.parametrize("unsort", [False, True])
+def test_timeseries_wide(test_pd_df, unsort):
+    """Assert that timeseries is shown as expected from (unsorted) wide data"""
+
+    # for some reason, `unstack` behaves differently if columns or rows are not sorted
+    exp = test_pd_df.set_index(IAMC_IDX)
+
+    if unsort:
+        obs = IamDataFrame(test_pd_df[IAMC_IDX + [2010, 2005]]).timeseries()
+    else:
+        obs = IamDataFrame(test_pd_df).timeseries()
+    pdt.assert_frame_equal(obs, exp, check_column_type=False)
+
+
+def test_timeseries_mixed_time_domain(test_pd_df):
+    """Assert that timeseries is shown as expected from mixed time-domain data"""
+    test_pd_df = test_pd_df.rename(columns={2005: "2010-01-01 00:00"})
+    exp = test_pd_df.set_index(IAMC_IDX)[[2010, "2010-01-01 00:00"]].rename(
+        columns={"2010-01-01 00:00": datetime(2010, 1, 1, 0, 0)}
     )
-    obs = test_df.filter(scenario="scen_a", variable="Primary Energy").timeseries()
-    npt.assert_array_equal(obs, exp)
+
+    obs = IamDataFrame(test_pd_df).timeseries()
+    pdt.assert_frame_equal(obs, exp, check_column_type=False)
 
 
 def test_timeseries_empty_raises(test_df_year):
     """Calling `timeseries()` on an empty IamDataFrame raises"""
     _df = test_df_year.filter(model="foo")
-    with pytest.raises(ValueError, match="This IamDataFrame is empty!"):
+    with pytest.raises(ValueError, match="This IamDataFrame is empty."):
         _df.timeseries()
 
 
 def test_timeseries_time_iamc_raises(test_df_time):
     """Calling `timeseries(iamc_index=True)` on a continuous-time IamDataFrame raises"""
-    match = "Cannot use `iamc_index=True` with 'datetime' time-domain!"
+    match = "Cannot use `iamc_index=True` with 'datetime' time-domain."
     with pytest.raises(ValueError, match=match):
         test_df_time.timeseries(iamc_index=True)
 
@@ -505,11 +598,11 @@ def test_timeseries_time_iamc_raises(test_df_time):
 def test_timeseries_to_iamc_index(test_pd_df, test_df_year):
     """Reducing timeseries() of an IamDataFrame with extra-columns to IAMC-index"""
     test_pd_df["foo"] = "bar"
-    exta_col_df = IamDataFrame(test_pd_df)
-    assert exta_col_df.extra_cols == ["foo"]
+    extra_col_df = IamDataFrame(test_pd_df)
+    assert extra_col_df.extra_cols == ["foo"]
 
     # assert that reducing to IAMC-columns (dropping extra-columns) with timeseries()
-    obs = exta_col_df.timeseries(iamc_index=True)
+    obs = extra_col_df.timeseries(iamc_index=True)
     exp = test_df_year.timeseries()
     pdt.assert_frame_equal(obs, exp)
 
@@ -519,13 +612,14 @@ def test_timeseries_to_iamc_index_duplicated_raises(test_pd_df):
     test_pd_df = pd.concat([test_pd_df, test_pd_df])
     # adding an extra-col creates a unique index
     test_pd_df["foo"] = ["bar", "bar", "bar", "baz", "baz", "baz"]
-    exta_col_df = IamDataFrame(test_pd_df)
-    assert exta_col_df.extra_cols == ["foo"]
+
+    extra_col_df = IamDataFrame(test_pd_df)
+    assert extra_col_df.extra_cols == ["foo"]
 
     # dropping the extra-column by setting `iamc_index=True` creates duplicated index
-    match = "Index contains duplicate entries, cannot reshape"
+    match = "Dropping non-IAMC-index causes duplicated index"
     with pytest.raises(ValueError, match=match):
-        exta_col_df.timeseries(iamc_index=True)
+        extra_col_df.timeseries(iamc_index=True)
 
 
 def test_pivot_table(test_df):
@@ -558,7 +652,7 @@ def test_filter_meta_index(test_df):
     exp = pd.MultiIndex(
         levels=[["model_a"], ["scen_b"]], codes=[[0], [0]], names=["model", "scenario"]
     )
-    pd.testing.assert_index_equal(obs, exp)
+    pdt.assert_index_equal(obs, exp)
 
 
 def test_meta_idx(test_df):
@@ -591,7 +685,7 @@ def test_pd_filter_by_meta(test_df):
     exp["boolean"] = True
     exp["integer"] = 0
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_filter_by_meta_no_index(test_df):
@@ -607,7 +701,7 @@ def test_pd_filter_by_meta_no_index(test_df):
     exp["boolean"] = True
     exp["int"] = 0
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_filter_by_meta_nonmatching_index(test_df):
@@ -620,7 +714,7 @@ def test_pd_filter_by_meta_nonmatching_index(test_df):
     exp = data.iloc[2:3].copy()
     exp["string"] = "b"
 
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_pd_join_by_meta_nonmatching_index(test_df):
@@ -633,7 +727,7 @@ def test_pd_join_by_meta_nonmatching_index(test_df):
     exp = data.copy()
     exp["string"] = [np.nan, np.nan, "b"]
 
-    pd.testing.assert_frame_equal(obs.sort_index(level=1), exp)
+    pdt.assert_frame_equal(obs.sort_index(level=1), exp)
 
 
 def test_normalize(test_df):
@@ -643,10 +737,8 @@ def test_normalize(test_df):
     if "year" in test_df.data:
         obs = test_df.normalize(year=2005).data.reset_index(drop=True)
     else:
-        obs = test_df.normalize(time=datetime.datetime(2005, 6, 17)).data.reset_index(
-            drop=True
-        )
-    pd.testing.assert_frame_equal(obs, exp)
+        obs = test_df.normalize(time=datetime(2005, 6, 17)).data.reset_index(drop=True)
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_normalize_not_time(test_df):
@@ -664,10 +756,10 @@ def test_offset(test_df, padding):
     if "year" in test_df.data:
         obs = test_df.offset(year=2005, **kwargs).data.reset_index(drop=True)
     else:
-        obs = test_df.offset(
-            time=datetime.datetime(2005, 6, 17), **kwargs
-        ).data.reset_index(drop=True)
-    pd.testing.assert_frame_equal(obs, exp)
+        obs = test_df.offset(time=datetime(2005, 6, 17), **kwargs).data.reset_index(
+            drop=True
+        )
+    pdt.assert_frame_equal(obs, exp)
 
 
 def test_offset_not_time(test_df):

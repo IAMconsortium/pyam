@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
+from pyam.netcdf import to_xarray
+
 try:
     from datapackage import Package
 
@@ -58,6 +60,7 @@ from pyam.utils import (
     IAMC_IDX,
     ILLEGAL_COLS,
     META_IDX,
+    compare_year_time,
     format_data,
     get_excel_file_with_kwargs,
     is_list_like,
@@ -425,6 +428,28 @@ class IamDataFrame:
             return pd.DataFrame([], columns=self.dimensions + ["value"])
         return self._data.reset_index()
 
+    def sort_data(self, inplace=False):
+        """Sort timeseries data by index and coordinates
+
+        Parameters
+        ----------
+        inplace : bool, optional
+            If True, do operation inplace and return None.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or None
+            The modified :class:`IamDataFrame` or None if `inplace=True`.
+        """
+        ret = self.copy() if not inplace else self
+        ret._data.sort_index(
+            key=compare_year_time if ret.time_col == "year" else None,
+            inplace=True,
+        )
+        ret._set_attributes()
+        if not inplace:
+            return ret
+
     def get_data_column(self, column):
         """Return a `column` from the timeseries data in long format
 
@@ -603,7 +628,7 @@ class IamDataFrame:
 
         # merge extra columns in `data`
         ret.extra_cols += [i for i in other.extra_cols if i not in ret.extra_cols]
-        ret._data = _data.sort_index()
+        ret._data = _data
         ret._set_attributes()
 
         if not inplace:
@@ -702,7 +727,7 @@ class IamDataFrame:
         df.columns.name = ret.time_col
         df = df.stack(future_stack=True).dropna()  # wide data to pd.Series
         df.name = "value"
-        ret._data = df.sort_index()
+        ret._data = df
         ret._set_attributes()
 
         if not inplace:
@@ -794,8 +819,8 @@ class IamDataFrame:
         Parameters
         ----------
         iamc_index : bool, optional
-            if True, use `['model', 'scenario', 'region', 'variable', 'unit']`;
-            else, use all 'data' columns
+            If True, return only IAMC-index `['model', 'scenario', 'region', 'variable',
+            'unit']`; else, use all 'data' columns.
 
         Raises
         ------
@@ -805,17 +830,25 @@ class IamDataFrame:
             reducing to IAMC-index yields an index with duplicates
         """
         if self.empty:
-            raise ValueError("This IamDataFrame is empty!")
+            raise ValueError("This IamDataFrame is empty.")
 
         s = self._data
         if iamc_index:
             if self.time_col == "time":
                 raise ValueError(
-                    "Cannot use `iamc_index=True` with 'datetime' time-domain!"
+                    "Cannot use `iamc_index=True` with 'datetime' time-domain."
                 )
-            s = s.droplevel(self.extra_cols)
+            s = self._data.droplevel(self.extra_cols)
+            if s.index.has_duplicates:
+                raise ValueError("Dropping non-IAMC-index causes duplicated index.")
 
-        return s.unstack(level=self.time_col).rename_axis(None, axis=1)
+        return (
+            s.unstack(level=self.time_col)
+            .rename_axis(None, axis=1)
+            .sort_index(
+                axis=1, key=compare_year_time if self.time_domain == "mixed" else None
+            )
+        )
 
     def set_meta(self, meta, name=None, index=None):  # noqa: C901
         """Add meta indicators as pandas.Series, list or value (int/float/str)
@@ -1905,7 +1938,7 @@ class IamDataFrame:
         if not inplace:
             return ret
 
-    def _apply_filters(self, level=None, **filters):  # noqa: C901
+    def _apply_filters(self, level=None, depth=None, **filters):  # noqa: C901
         """Determine rows to keep in data for given set of filters
 
         Parameters
@@ -1917,6 +1950,9 @@ class IamDataFrame:
         """
         regexp = filters.pop("regexp", False)
         keep = np.ones(len(self), dtype=bool)
+
+        if level is not None and depth is not None:
+            raise ValueError("Filter by `level` and `depth` not supported")
 
         if "variable" in filters and "measurand" in filters:
             raise ValueError("Filter by `variable` and `measurand` not supported")
@@ -2003,10 +2039,13 @@ class IamDataFrame:
             keep = np.logical_and(keep, keep_col)
 
         if level is not None and not ("variable" in filters or "measurand" in filters):
-            # if level and variable/measurand is given, level-filter is applied there
+            # if level is given without variable/measurand, it is equivalent to depth
+            depth = level
+
+        if depth is not None:
             col = "variable"
             lvl_index, lvl_codes = get_index_levels_codes(self._data, col)
-            matches = find_depth(lvl_index, level=level)
+            matches = find_depth(lvl_index, level=depth)
             keep_col = get_keep_col(lvl_codes, matches)
 
             keep = np.logical_and(keep, keep_col)
@@ -2476,7 +2515,7 @@ class IamDataFrame:
         Parameters
         ----------
         path : string or path object
-            any valid string path or :class:`pathlib.Path`
+            Any valid string path or :class:`pathlib.Path`.
         """
         if not HAS_DATAPACKAGE:
             raise ImportError("Required package `datapackage` not found!")
@@ -2495,6 +2534,36 @@ class IamDataFrame:
 
         # return the package (needs to reloaded because `tmp` was deleted)
         return Package(path)
+
+    def to_netcdf(self, path):
+        """Write object to a NetCDF file
+
+        Parameters
+        ----------
+        path : string or path object
+            Any valid string path or :class:`pathlib.Path`.
+
+        See Also
+        --------
+        pyam.read_netcdf
+
+        Notes
+        -----
+        Read the `pyam-netcdf docs <https://pyam-iamc.readthedocs.io/en/stable/api/io.html>`_
+        for more information on the expected file format structure.
+
+        """
+        self.to_xarray().to_netcdf(path)
+
+    def to_xarray(self):
+        """Convert object to an :class:`xarray.Dataset`
+
+        Returns
+        -------
+        :class:`xarray.Dataset`
+        """
+        df = swap_year_for_time(self) if self.time_domain == "year" else self
+        return to_xarray(df._data, df.meta)
 
     def load_meta(self, path, sheet_name="meta", ignore_conflict=False, **kwargs):
         """Load 'meta' indicators from file
