@@ -2,7 +2,7 @@ import pyam
 from pyam.kaya import input_variable_names, kaya_factor_names, kaya_variable_names
 
 
-def kaya_factors(kaya_variables_frame):
+def compute_kaya_factors(kaya_variables_frame):
     kaya_factors = pyam.concat(
         [
             _calc_gnp_per_p(kaya_variables_frame),

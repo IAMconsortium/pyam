@@ -113,3 +113,35 @@ def test_calling_kaya_factors_multiple_times():
     obs.compute.kaya_factors(append=True)
     obs.compute.kaya_factors(append=True)
     assert_iamframe_equal(TEST_DF.append(EXP_DF_FOR_APPEND), obs)
+
+def test_kaya_factors_uses_gdp_mer_fallback():
+    """Test that kaya_factors uses GDP_MER when GDP_PPP is not available"""
+    # Create test data without GDP_PPP
+    df_no_gdp_ppp = TEST_DF.filter(variable="GDP|PPP", keep=False)
+
+    # Create expected result using GDP|MER instead of GDP|PPP for calculations
+    exp_no_gdp_ppp = IamDataFrame(
+        pd.DataFrame(
+            [   # 8 EJ / 5 billion USD = 1.6
+                ["FE/GNP", "EJ / USD / billion", 1.6],
+                # 5 billion USD / 1000 million = 0.005
+                ["GNP/P", "USD * billion / million / a", 0.005],
+                ["NFC/TFC", "", 0.833333],
+                ["PEDEq/FE", "", 1.250000],
+                ["PEFF/PEDEq", "", 0.900000],
+                ["TFC/PEFF", "Mt CO2/EJ", 1.333333],
+                ["Population", "million", 1000],
+                ["Total Fossil Carbon", "Mt CO2/yr", 12.0],
+            ],
+            columns=["variable", "unit", 2010],
+        ),
+        model="model_a",
+        scenario="scen_a",
+        region="World",
+    )
+
+    # Compute kaya factors
+    obs = df_no_gdp_ppp.compute.kaya_factors()
+
+    # Verify results match expected
+    assert_iamframe_equal(exp_no_gdp_ppp, obs)

@@ -296,7 +296,7 @@ class IamComputeAccessor:
 
         """
 
-        kaya_variables_frame = kaya_variables.kaya_variables(self._df)
+        kaya_variables_frame = kaya_variables.compute_kaya_variables(self._df)
         if kaya_variables_frame is None:
             return None
         if append:
@@ -353,7 +353,7 @@ class IamComputeAccessor:
         kaya_variables = self.kaya_variables(append=False)
         if kaya_variables is None:
             return None
-        kaya_factors_frame = kaya_factors.kaya_factors(kaya_variables)
+        kaya_factors_frame = kaya_factors.compute_kaya_factors(kaya_variables)
         if kaya_factors_frame is None:
             return None
         if append:
