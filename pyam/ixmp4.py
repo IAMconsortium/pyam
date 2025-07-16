@@ -94,19 +94,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
-    # TODO: implement try-except to roll back changes if any error writing to platform
-    # depends on https://github.com/iiasa/ixmp4/issues/29
-    # quickfix: ensure that units and regions exist before writing
-    for dimension, values, model in [
-        ("regions", df.region, RegionModel),
-        ("units", df.unit, UnitModel),
-    ]:
-        platform_values = getattr(platform, dimension).tabulate().name.values
-        if missing := set(values).difference(platform_values):
-            raise model.NotFound(
-                ", ".join(missing)
-                + f". Use `Platform.{dimension}.create()` to add missing elements."
-            )
+    _validate_dimensions(platform, df)
 
     # The "version" meta-indicator, added when reading from an ixmp4 platform,
     # should not be written to the platform
@@ -135,3 +123,17 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         if not meta.empty:
             run.meta = dict(meta.loc[(model, scenario)])
         run.set_as_default()
+
+
+def _validate_dimensions(platform, df):
+    """Ensure that all regions and units in the DataFrame exist in the platform"""
+    for dimension, values, model in [
+        ("regions", df.region, RegionModel),
+        ("units", df.unit, UnitModel),
+    ]:
+        platform_values = getattr(platform, dimension).tabulate().name.values
+        if missing := set(values).difference(platform_values):
+            raise model.NotFound(
+                ", ".join(missing)
+                + f". Use `Platform.{dimension}.create()` to add missing elements."
+            )
