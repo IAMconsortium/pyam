@@ -88,6 +88,12 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
             "Only data with standard IAMC columns can be written to an ixmp4 platform."
         )
 
+    if df.time_domain not in ["year", "datetime"]:
+        raise NotImplementedError(
+            "Only data with time domain 'year' or 'datetime' can be written to an ixmp4"
+            " platform."
+        )
+
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
