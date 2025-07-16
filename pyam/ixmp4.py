@@ -122,7 +122,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         run = platform.runs.create(model=model, scenario=scenario)
 
         if df.time_domain == "year":
-              run.iamc.add(_df.data)
+            run.iamc.add(_df.data)
         else:
             levels, codes = get_index_levels_codes(_df._data, "time")
             year_rows = np.isin(
