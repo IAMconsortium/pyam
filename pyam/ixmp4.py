@@ -126,7 +126,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
 
         if df.time_domain == "year":
             run.iamc.add(_df.data)
-        else:
+        elif df.time_domain == "datetime":
             run.iamc.add(
                 _df.data.rename(columns={"time": "step_datetime"}),
                 type=DataPoint.Type.DATETIME,
