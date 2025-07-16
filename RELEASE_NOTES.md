@@ -1,3 +1,7 @@
+# Next release
+
+- [#912](https://github.com/IAMconsortium/pyam/pull/912) Support writing datetime-domain data to an **ixmp4** plazform
+
 # Release v3.0.0
 
 ## Highlights
