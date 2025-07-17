@@ -53,12 +53,13 @@ dependencies = [
     "wquantiles>=0.6",
     "XlsxWriter>=3.0.3",
 ]
+dynamic = ["version"]
 
 [tool.poetry]
-version = "0.0.0"
 documentation = "https://pyam-iamc.readthedocs.io"
 packages = [{ include = "pyam" }]
 requires-poetry = ">=2.0,<3.0" 
+version = "0.0.0"
 
 [tool.poetry.group.dev]
 optional = true
@@ -127,7 +128,7 @@ optional = true
 python-calamine = ">=0.2.3"
 
 [build-system]
-requires = ["poetry-core>=1.2.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
 build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.ruff]
