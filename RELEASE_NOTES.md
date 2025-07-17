@@ -1,6 +1,7 @@
 # Next release
 
-- [#912](https://github.com/IAMconsortium/pyam/pull/912) Support writing datetime-domain data to an **ixmp4** plazform
+- [#914](https://github.com/IAMconsortium/pyam/pull/914) Fix dynamic versioning
+- [#912](https://github.com/IAMconsortium/pyam/pull/912) Support writing datetime-domain data to an **ixmp4** platform
 
 # Release v3.0.0
 
