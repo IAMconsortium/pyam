@@ -21,22 +21,31 @@ def test_to_ixmp4_missing_unit_raises(test_platform, test_df_year):
         test_df_year.to_ixmp4(platform=test_platform)
 
 
-def test_ixmp4_time_not_implemented(test_platform, test_df):
-    """Writing an IamDataFrame with datetime-data is not implemented"""
-    if test_df.time_domain != "year":
-        with pytest.raises(NotImplementedError):
-            test_df.to_ixmp4(platform=test_platform)
+def test_ixmp4_subannual_not_implemented(test_platform, test_df_year):
+    """Writing an IamDataFrame with subannual timeslices is not implemented"""
+
+    data = test_df_year.data
+    data["subannual"] = "summer-day"
+    with pytest.raises(NotImplementedError):
+        pyam.IamDataFrame(data).to_ixmp4(platform=test_platform)
 
 
-def test_ixmp4_integration(test_platform, test_df_year):
+def test_ixmp4_mixed_time_domain_not_implemented(test_platform, test_df_mixed):
+    """Writing an IamDataFrame with mixed time domain is not implemented"""
+
+    with pytest.raises(NotImplementedError, match="Only data with time domain 'year'"):
+        test_df_mixed.to_ixmp4(platform=test_platform)
+
+
+def test_ixmp4_integration(test_platform, test_df):
     """Write an IamDataFrame to the platform"""
 
     # test writing to platform
-    test_df_year.to_ixmp4(platform=test_platform)
+    test_df.to_ixmp4(platform=test_platform)
 
     # read only default scenarios (runs) - version number added as meta indicator
     obs = read_ixmp4(platform=test_platform)
-    exp = test_df_year.copy()
+    exp = test_df.copy()
     exp.set_meta(1, "version")  # add version number added from ixmp4
     assert_iamframe_equal(exp, obs)
 
@@ -47,9 +56,9 @@ def test_ixmp4_integration(test_platform, test_df_year):
 
     # read all scenarios (runs) - version number used as additional index dimension
     obs = read_ixmp4(platform=test_platform, default_only=False)
-    data = test_df_year.data
+    data = test_df.data
     data["version"] = 1
-    meta = test_df_year.meta.reset_index()
+    meta = test_df.meta.reset_index()
     meta["version"] = 1
     exp = pyam.IamDataFrame(data, meta=meta, index=["model", "scenario", "version"])
     pyam.assert_iamframe_equal(exp, obs)

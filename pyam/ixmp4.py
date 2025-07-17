@@ -4,6 +4,7 @@ import ixmp4
 import pandas as pd
 from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
+from ixmp4.data.abstract import DataPoint
 
 logger = logging.getLogger(__name__)
 
@@ -79,25 +80,21 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
     df : pyam.IamDataFrame
         The IamDataFrame instance with scenario data
     """
-    if df.time_domain != "year":
-        raise NotImplementedError("Only time_domain='year' is supported for now.")
+    if df.extra_cols:
+        raise NotImplementedError(
+            "Only data with standard IAMC columns can be written to an ixmp4 platform."
+        )
+
+    if df.time_domain not in ["year", "datetime"]:
+        raise NotImplementedError(
+            "Only data with time domain 'year' or 'datetime' can be written to an ixmp4"
+            " platform."
+        )
 
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
-    # TODO: implement try-except to roll back changes if any error writing to platform
-    # depends on https://github.com/iiasa/ixmp4/issues/29
-    # quickfix: ensure that units and regions exist before writing
-    for dimension, values, model in [
-        ("regions", df.region, RegionModel),
-        ("units", df.unit, UnitModel),
-    ]:
-        platform_values = getattr(platform, dimension).tabulate().name.values
-        if missing := set(values).difference(platform_values):
-            raise model.NotFound(
-                ", ".join(missing)
-                + f". Use `Platform.{dimension}.create()` to add missing elements."
-            )
+    _validate_dimensions(platform, df)
 
     # The "version" meta-indicator, added when reading from an ixmp4 platform,
     # should not be written to the platform
@@ -114,7 +111,29 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         _df = df.filter(model=model, scenario=scenario)
 
         run = platform.runs.create(model=model, scenario=scenario)
-        run.iamc.add(_df.data)
+
+        if df.time_domain == "year":
+            run.iamc.add(_df.data)
+        elif df.time_domain == "datetime":
+            run.iamc.add(
+                _df.data.rename(columns={"time": "step_datetime"}),
+                type=DataPoint.Type.DATETIME,
+            )
+
         if not meta.empty:
             run.meta = dict(meta.loc[(model, scenario)])
         run.set_as_default()
+
+
+def _validate_dimensions(platform, df):
+    """Ensure that all regions and units in the DataFrame exist in the platform"""
+    for dimension, values, model in [
+        ("regions", df.region, RegionModel),
+        ("units", df.unit, UnitModel),
+    ]:
+        platform_values = getattr(platform, dimension).tabulate().name.values
+        if missing := set(values).difference(platform_values):
+            raise model.NotFound(
+                ", ".join(missing)
+                + f". Use `Platform.{dimension}.create()` to add missing elements."
+            )
