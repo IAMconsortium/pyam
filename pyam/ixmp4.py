@@ -112,17 +112,18 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
 
         run = platform.runs.create(model=model, scenario=scenario)
 
-        if df.time_domain == "year":
-            run.iamc.add(_df.data)
-        elif df.time_domain == "datetime":
-            run.iamc.add(
-                _df.data.rename(columns={"time": "step_datetime"}),
-                type=DataPoint.Type.DATETIME,
-            )
+        with run.transact("Import run"):
+            if df.time_domain == "year":
+                run.iamc.add(_df.data)
+            elif df.time_domain == "datetime":
+                run.iamc.add(
+                    _df.data.rename(columns={"time": "step_datetime"}),
+                    type=DataPoint.Type.DATETIME,
+                )
 
-        if not meta.empty:
-            run.meta = dict(meta.loc[(model, scenario)])
-        run.set_as_default()
+            if not meta.empty:
+                run.meta = dict(meta.loc[(model, scenario)])
+            run.set_as_default()
 
 
 def _validate_dimensions(platform, df):
