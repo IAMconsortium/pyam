@@ -2399,7 +2399,11 @@ class IamDataFrame:
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
 
-    def to_ixmp4(self, platform: ixmp4.Platform, checkpoint_message: str="Import via pyam"):
+    def to_ixmp4(
+        self,
+        platform: ixmp4.Platform,
+        checkpoint_message: str = "Import run from pyam",
+    ):
         """Save all scenarios as new default runs in an ixmp4 platform database instance
 
         Parameters
