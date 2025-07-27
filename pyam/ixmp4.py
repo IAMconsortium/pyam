@@ -70,7 +70,7 @@ def read_ixmp4(
     return IamDataFrame(data, meta=meta, index=index)
 
 
-def write_to_ixmp4(platform: ixmp4.Platform | str, df):
+def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
     """Save all scenarios as new default runs in an ixmp4 platform database instance
 
     Parameters
@@ -79,6 +79,8 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
         The ixmp4 platform database instance to which the scenario data is saved
     df : pyam.IamDataFrame
         The IamDataFrame instance with scenario data
+    checkpoint_message : str
+        The message for the ixmp4 checkpoint (similar to a commit message).
     """
     if df.extra_cols:
         raise NotImplementedError(
@@ -112,7 +114,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df):
 
         run = platform.runs.create(model=model, scenario=scenario)
 
-        with run.transact("Import run"):
+        with run.transact(checkpoint_message):
             if df.time_domain == "year":
                 run.iamc.add(_df.data)
             elif df.time_domain == "datetime":
