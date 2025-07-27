@@ -2399,15 +2399,21 @@ class IamDataFrame:
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
 
-    def to_ixmp4(self, platform: ixmp4.Platform):
+    def to_ixmp4(
+        self,
+        platform: ixmp4.Platform,
+        checkpoint_message: str = "Import run from pyam",
+    ):
         """Save all scenarios as new default runs in an ixmp4 platform database instance
 
         Parameters
         ----------
         platform : :class:`ixmp4.Platform` or str
-            The ixmp4 platform database instance to which the scenario data is saved
+            The ixmp4 platform database instance to which the scenario data is saved.
+        checkpoint_message : str
+            The message for the ixmp4 checkpoint (similar to a commit message).
         """
-        write_to_ixmp4(platform, self)
+        write_to_ixmp4(platform, self, checkpoint_message)
 
     def _to_file_format(self, iamc_index):
         """Return a dataframe suitable for writing to a file"""
