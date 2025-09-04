@@ -47,14 +47,6 @@ NUMERIC_TO_STR = dict(
     )
 )
 
-KNOWN_FUNCS = {
-    "min": np.min,
-    "max": np.max,
-    "avg": np.mean,
-    "mean": np.mean,
-    "sum": "sum",
-}
-
 
 def to_list(x):
     """Return x as a list"""

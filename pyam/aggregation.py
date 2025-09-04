@@ -8,7 +8,7 @@ from pyam._compare import _compare
 from pyam.index import replace_index_values
 from pyam.logging import adjust_log_level, format_log_message
 from pyam.str import find_depth, is_str, reduce_hierarchy
-from pyam.utils import KNOWN_FUNCS, is_list_like, to_list
+from pyam.utils import is_list_like, to_list
 
 logger = logging.getLogger(__name__)
 
@@ -187,7 +187,7 @@ def _aggregate_time(df, variable, column, value, components, method="sum"):
             df.filter(**filter_args)
             .data.pivot_table(index=index, columns=column)
             .value.rename_axis(None, axis=1)
-            .apply(_get_method_func(method), axis=1)
+            .apply(method, axis=1)
         ],
         names=[column] + index,
         keys=[value],
@@ -206,7 +206,7 @@ def _group_and_agg(df, by, method="sum"):
     """Group-by & aggregate `pd.Series` by index names on `by`"""
     cols = df.index.names.difference(to_list(by))
     # pick aggregator func (default: sum)
-    return df.groupby(cols).agg(_get_method_func(method))
+    return df.groupby(cols).agg(method)
 
 
 def _agg_weight(data, weight, method, drop_negative_weights):
@@ -254,15 +254,3 @@ def _agg_weight(data, weight, method, drop_negative_weights):
     return (data * weight).groupby(col1).apply(
         pd.Series.sum, skipna=False
     ) / weight.groupby(col2).sum()
-
-
-def _get_method_func(method):
-    """Translate a string to a known method"""
-    if not is_str(method):
-        return method
-
-    if method in KNOWN_FUNCS:
-        return KNOWN_FUNCS[method]
-
-    # raise error if `method` is a string but not in dict of known methods
-    raise ValueError(f"Unknown method: {method}")
