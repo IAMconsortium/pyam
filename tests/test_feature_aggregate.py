@@ -185,7 +185,7 @@ def test_aggregate_empty(test_df, variable, append, caplog):
 
 def test_aggregate_unknown_method(simple_df):
     """Check that using unknown string as method raises an error"""
-    pytest.raises(ValueError, simple_df.aggregate, "Primary Energy", method="foo")
+    pytest.raises(AttributeError, simple_df.aggregate, "Primary Energy", method="foo")
 
 
 def test_aggregate_components_as_dict(simple_df):
@@ -442,7 +442,7 @@ def test_aggregate_region_empty(test_df, variable, append, caplog):
 def test_aggregate_region_unknown_method(simple_df):
     # using unknown string as method raises an error
     v = "Emissions|CO2"
-    pytest.raises(ValueError, simple_df.aggregate_region, v, method="foo")
+    pytest.raises(AttributeError, simple_df.aggregate_region, v, method="foo")
 
 
 @pytest.mark.parametrize(
