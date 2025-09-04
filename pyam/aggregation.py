@@ -187,7 +187,7 @@ def _aggregate_time(df, variable, column, value, components, method="sum"):
             df.filter(**filter_args)
             .data.pivot_table(index=index, columns=column)
             .value.rename_axis(None, axis=1)
-            .apply(_get_method_func(method), axis=1)
+            .apply(method, axis=1)
         ],
         names=[column] + index,
         keys=[value],
@@ -206,7 +206,7 @@ def _group_and_agg(df, by, method="sum"):
     """Group-by & aggregate `pd.Series` by index names on `by`"""
     cols = df.index.names.difference(to_list(by))
     # pick aggregator func (default: sum)
-    return df.groupby(cols).agg(_get_method_func(method))
+    return df.groupby(cols).agg(method)
 
 
 def _agg_weight(data, weight, method, drop_negative_weights):
