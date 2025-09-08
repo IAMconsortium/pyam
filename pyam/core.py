@@ -400,7 +400,7 @@ class IamDataFrame:
                 zip(self.get_data_column("variable"), self.get_data_column("unit")),
                 columns=["variable", "unit"],
             )
-            .groupby("variable")
+            .groupby("variable")[["unit"]]
             .apply(lambda u: list_or_str(u.unit))
             .to_dict()
         )
