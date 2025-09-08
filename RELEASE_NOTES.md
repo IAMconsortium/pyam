@@ -6,6 +6,7 @@ Bumped minimum version of **ixmp4** to 0.11.1 for compatbility with versioning a
 
 ## Individual updates
 
+- [#920](https://github.com/IAMconsortium/pyam/pull/920) Fix pandas `DataFrameGroupBy.apply` warning
 - [#918](https://github.com/IAMconsortium/pyam/pull/918) Address pandas groupby warning
 - [#915](https://github.com/IAMconsortium/pyam/pull/915) Implement `run.transact()` and bump requirements to ixmp4 >0.11
 - [#914](https://github.com/IAMconsortium/pyam/pull/914) Fix dynamic versioning
