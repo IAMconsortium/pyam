@@ -1,4 +1,5 @@
 import pandas.testing as pdt
+from pytest import raises
 
 from pyam import IamDataFrame
 
@@ -48,3 +49,13 @@ def assert_iamframe_equal(
         left.exclude,
         right.exclude,
     )
+
+
+def assert_iamframe_not_equal(
+    left: IamDataFrame,
+    right: IamDataFrame,
+    ignore_meta: bool = False,
+    **kwargs,
+) -> None:
+    with raises(AssertionError):
+        assert_iamframe_equal(left, right, ignore_meta=ignore_meta, **kwargs)
