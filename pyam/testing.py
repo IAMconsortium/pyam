@@ -8,7 +8,7 @@ from . import compare
 def assert_iamframe_equal(
     left: IamDataFrame,
     right: IamDataFrame,
-    ignore_meta: bool = False,
+    check_meta: bool = True,
     **kwargs,
 ) -> None:
     """Check that left and right IamDataFrame instances are equal.
