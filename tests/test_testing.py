@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pyam.testing import assert_iamframe_equal
+from pyam.testing import assert_iamframe_equal, assert_iamframe_not_equal
 
 
 def test_equal_meta_nan_col(test_df_year):
@@ -26,3 +26,8 @@ def test_equal_meta_different(test_df_year):
     # assert that checking meta does raise an error
     with pytest.raises(AssertionError):
         assert_iamframe_equal(test_df_year, df, check_meta=True)
+
+
+def test_df_not_equal(test_df_year, test_df_time):
+    assert_iamframe_not_equal(test_df_year, test_df_time, check_meta=False)
+    assert_iamframe_not_equal(test_df_year, test_df_time, check_meta=True)
