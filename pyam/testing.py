@@ -54,8 +54,8 @@ def assert_iamframe_equal(
 def assert_iamframe_not_equal(
     left: IamDataFrame,
     right: IamDataFrame,
-    ignore_meta: bool = False,
+    check_meta: bool = True,
     **kwargs,
 ) -> None:
     with raises(AssertionError):
-        assert_iamframe_equal(left, right, ignore_meta=ignore_meta, **kwargs)
+        assert_iamframe_equal(left, right, check_meta=check_meta, **kwargs)
