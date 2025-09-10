@@ -6,6 +6,7 @@ Bumped minimum version of **ixmp4** to 0.11.1 for compatbility with versioning a
 
 ## Individual updates
 
+- [#924](https://github.com/IAMconsortium/pyam/pull/924) Add assert_iamframe_not_equal
 - [#922](https://github.com/IAMconsortium/pyam/pull/922) Make comparing meta optional in assert_iamframe_equal
 - [#920](https://github.com/IAMconsortium/pyam/pull/920) Fix pandas `DataFrameGroupBy.apply` warning
 - [#918](https://github.com/IAMconsortium/pyam/pull/918) Address pandas groupby warning
