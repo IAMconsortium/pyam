@@ -1,9 +1,16 @@
 import pandas.testing as pdt
 
+from pyam import IamDataFrame
+
 from . import compare
 
 
-def assert_iamframe_equal(left, right, **kwargs):
+def assert_iamframe_equal(
+    left: IamDataFrame,
+    right: IamDataFrame,
+    ignore_meta: bool = False,
+    **kwargs,
+) -> None:
     """Check that left and right IamDataFrame instances are equal.
 
     Parameters
@@ -26,13 +33,14 @@ def assert_iamframe_equal(left, right, **kwargs):
         msg = "IamDataFrame.data are different: \n {}"
         raise AssertionError(msg.format(diff.head()))
 
-    pdt.assert_frame_equal(
-        left.meta.dropna(axis="columns", how="all"),
-        right.meta.dropna(axis="columns", how="all"),
-        check_column_type=False,
-        check_dtype=False,
-        check_like=True,
-    )
+    if not ignore_meta:
+        pdt.assert_frame_equal(
+            left.meta.dropna(axis="columns", how="all"),
+            right.meta.dropna(axis="columns", how="all"),
+            check_column_type=False,
+            check_dtype=False,
+            check_like=True,
+        )
 
     pdt.assert_series_equal(
         left.exclude,
