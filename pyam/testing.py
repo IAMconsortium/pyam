@@ -18,7 +18,7 @@ def assert_iamframe_equal(
     left, right : :class:`IamDataFrame`
         Two IamDataFrame instances to be compared.
     check_meta: bool
-        If set to true, only the timeseries values will be compared, default False
+        Whether to check that the `meta` indicators are identical.
     **kwargs
         Passed to :meth:`IamDataFrame.compare`, comparing the `data` objects.
 
