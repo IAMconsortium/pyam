@@ -22,7 +22,7 @@ def test_equal_meta_different(test_df_year):
     )  # add a column of np.nan's to `meta`
 
     # assert that ignoring meta does not raise an error
-    assert_iamframe_equal(test_df_year, df, ignore_meta=True)
-    # assert that not ignoring meta does raise an error
+    assert_iamframe_equal(test_df_year, df, check_meta=False)
+    # assert that checking meta does raise an error
     with pytest.raises(AssertionError):
-        assert_iamframe_equal(test_df_year, df, ignore_meta=False)
+        assert_iamframe_equal(test_df_year, df, check_meta=True)

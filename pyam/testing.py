@@ -17,7 +17,7 @@ def assert_iamframe_equal(
     ----------
     left, right : :class:`IamDataFrame`
         Two IamDataFrame instances to be compared.
-    ignore_meta: bool
+    check_meta: bool
         If set to true, only the timeseries values will be compared, default False
     **kwargs
         Passed to :meth:`IamDataFrame.compare`, comparing the `data` objects.
@@ -35,7 +35,7 @@ def assert_iamframe_equal(
         msg = "IamDataFrame.data are different: \n {}"
         raise AssertionError(msg.format(diff.head()))
 
-    if not ignore_meta:
+    if check_meta:
         pdt.assert_frame_equal(
             left.meta.dropna(axis="columns", how="all"),
             right.meta.dropna(axis="columns", how="all"),
