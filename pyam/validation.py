@@ -3,7 +3,7 @@ import logging
 
 import pandas as pd
 
-from pyam.logging import deprecation_warning
+from pyam.exceptions import deprecation_warning
 from pyam.utils import META_IDX, make_index, s
 
 logger = logging.getLogger(__name__)

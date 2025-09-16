@@ -13,9 +13,9 @@ import seaborn as sns
 # pandas-dev listserv, we should try to ask if matplotlib would make it a
 # standard feature in their library
 from pyam._style import _get_standard_colors
+from pyam.exceptions import raise_data_error
 from pyam.figures import sankey
 from pyam.index import get_index_levels
-from pyam.logging import raise_data_error
 from pyam.run_control import run_control
 from pyam.str import is_str
 from pyam.timeseries import cross_threshold

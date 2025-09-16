@@ -1,20 +1,12 @@
-import json
 import warnings
 from contextlib import contextmanager
-from logging import config, getLogger
+from logging import getLogger
 from pathlib import Path
 
 import pandas as pd
 
 here = Path(__file__).parent
 logger = getLogger(__name__)
-
-
-def configure_logging():
-    """Configure logging"""
-    logging_config = here / "logging.json"
-    with open(logging_config) as file:
-        config.dictConfig(json.load(file))
 
 
 @contextmanager

@@ -13,8 +13,8 @@ import packaging.version
 import pandas as pd
 from pandas.api.types import is_list_like
 
+from pyam.exceptions import raise_data_error
 from pyam.index import get_index_levels, replace_index_labels
-from pyam.logging import raise_data_error
 from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
 
 logger = logging.getLogger(__name__)

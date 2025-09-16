@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from pyam.logging import raise_data_error
+from pyam.exceptions import raise_data_error
 
 
 def get_index_level_number(index, level):

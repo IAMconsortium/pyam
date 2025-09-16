@@ -1,8 +1,8 @@
 import dateutil
 import pandas as pd
 
+from pyam.exceptions import raise_data_error
 from pyam.index import append_index_col
-from pyam.logging import raise_data_error
 
 
 def swap_time_for_year(df, inplace=False, subannual=False):

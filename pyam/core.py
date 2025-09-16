@@ -31,6 +31,7 @@ from pyam.aggregation import (
     _group_and_agg,
 )
 from pyam.compute import IamComputeAccessor
+from pyam.exceptions import deprecation_warning, format_log_message, raise_data_error
 from pyam.filter import (
     datetime_match,
     filter_by_col,
@@ -48,7 +49,6 @@ from pyam.index import (
     verify_index_integrity,
 )
 from pyam.ixmp4 import write_to_ixmp4
-from pyam.logging import deprecation_warning, format_log_message, raise_data_error
 from pyam.plotting import PlotAccessor
 from pyam.run_control import run_control
 from pyam.slice import IamSlice
