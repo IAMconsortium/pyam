@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 
 from pyam._compare import _compare
+from pyam.exceptions import adjust_log_level, format_log_message
 from pyam.index import replace_index_values
-from pyam.logging import adjust_log_level, format_log_message
 from pyam.str import find_depth, is_str, reduce_hierarchy
 from pyam.utils import is_list_like, to_list
 
