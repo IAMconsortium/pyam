@@ -1,3 +1,4 @@
+import logging
 from importlib.metadata import PackageNotFoundError, version
 
 from pyam.core import (
@@ -13,7 +14,6 @@ from pyam.core import (
 )
 from pyam.iiasa import lazy_read_iiasa, read_iiasa
 from pyam.ixmp4 import read_ixmp4
-from pyam.logging import configure_logging
 from pyam.netcdf import read_netcdf
 from pyam.run_control import run_control
 from pyam.statistics import Statistics
@@ -28,5 +28,7 @@ try:
 except PackageNotFoundError:
     __version__ = version("pyam")
 
-# Set up logging consistent with the ixmp4 "production" logging configuration
-configure_logging()
+# set logger to INFO if not configured before importing the package
+logger = logging.getLogger("pyam")
+if logger.level == logging.NOTSET:
+    logger.setLevel(logging.INFO)
