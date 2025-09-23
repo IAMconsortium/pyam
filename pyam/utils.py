@@ -4,6 +4,7 @@ import logging
 import re
 import string
 import warnings
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -46,6 +47,17 @@ NUMERIC_TO_STR = dict(
         ],
     )
 )
+
+
+@contextmanager
+def adjust_log_level(logger="pyam", level="ERROR"):
+    """Context manager to change loglevel"""
+    if isinstance(logger, str):
+        logger = logging.getLogger(logger)
+    old_level = logger.getEffectiveLevel()
+    logger.setLevel(level)
+    yield
+    logger.setLevel(old_level)
 
 
 def to_list(x):
