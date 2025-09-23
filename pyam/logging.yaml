@@ -1,0 +1,18 @@
+version: 1
+disable_existing_loggers: false
+formatters:
+  generic:
+    format: "[%(levelname)s] %(asctime)s - %(name)s: %(message)s"
+    datefmt: "%H:%M:%S"
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: NOTSET
+    formatter: generic
+root:
+  level: WARNING
+  handlers:
+    - console
+loggers:
+  pyam:
+    level: INFO
