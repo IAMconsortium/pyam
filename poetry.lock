@@ -1747,14 +1747,14 @@ files = [
 
 [[package]]
 name = "ixmp4"
-version = "0.11.1"
+version = "0.13.0"
 description = "a data warehouse for scenario analysis"
 optional = false
 python-versions = "<3.14,>=3.10"
 groups = ["main"]
 files = [
-    {file = "ixmp4-0.11.1-py3-none-any.whl", hash = "sha256:c4033554c58ba5fa19cdf3159b3925520de9af37003d96027c2a709590b9841b"},
-    {file = "ixmp4-0.11.1.tar.gz", hash = "sha256:8197ce437cbf32784ca6ae588eb09a17074e2c201c187bb14b3bbfe91a30ce19"},
+    {file = "ixmp4-0.13.0-py3-none-any.whl", hash = "sha256:faf58677770a6b185ead7fa19e97bfc855430d7cd798524c1e28f16970d1e079"},
+    {file = "ixmp4-0.13.0.tar.gz", hash = "sha256:3d4905f3cb895b76088333baea358803eed197318a573fd3f4240fb8cfa92c70"},
 ]
 
 [package.dependencies]
@@ -1771,7 +1771,6 @@ PyJWT = ">=2.4.0"
 python-dotenv = ">=1.0.1"
 rich = ">=13.5.2"
 SQLAlchemy = {version = ">=2.0.22", extras = ["mypy"]}
-sqlalchemy-continuum = ">=1.4.2"
 SQLAlchemy-Utils = ">=0.41.0"
 toml = ">=0.10.2"
 typer = ">=0.9.0"
@@ -4908,29 +4907,6 @@ pymysql = ["pymysql"]
 sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
-name = "sqlalchemy-continuum"
-version = "1.4.2"
-description = "Versioning and auditing extension for SQLAlchemy."
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "SQLAlchemy_Continuum-1.4.2-py3-none-any.whl", hash = "sha256:154588d79deb8b1683b5f39c130e6f0ad793c0b2f27e8c210565c23fb6fe74de"},
-    {file = "sqlalchemy_continuum-1.4.2.tar.gz", hash = "sha256:0fd2be79f718eda47c2206879d92ec4ebf1889364637b3caf3ee5d34bd19c8e3"},
-]
-
-[package.dependencies]
-SQLAlchemy = ">=1.4.0"
-SQLAlchemy-Utils = ">=0.41.2"
-
-[package.extras]
-flask = ["Flask (>=0.9)"]
-flask-login = ["Flask-Login (>=0.2.9)"]
-flask-sqlalchemy = ["Flask-SQLAlchemy (>=1.0)"]
-i18n = ["SQLAlchemy-i18n (>=0.8.4,!=1.1.0)"]
-test = ["Flask (>=0.9)", "Flask-Login (>=0.2.9)", "Flask-SQLAlchemy (>=1.0)", "PyMySQL (>=0.8.0)", "SQLAlchemy-i18n (>=0.8.4,!=1.1.0)", "psycopg2 (>=2.4.6)", "pytest (>=2.3.5)"]
-
-[[package]]
 name = "sqlalchemy-utils"
 version = "0.41.2"
 description = "Various utility functions for SQLAlchemy."
@@ -5479,4 +5455,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <3.14"
-content-hash = "031c387a7378ec2a4169e9128bfce52e96944cd9169b6f2ab5235c0664ec2460"
+content-hash = "fe2c89d29ebe37ca273de4752b3c3eaa8de83b474c5dd64b48218f004f479282"

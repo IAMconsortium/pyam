@@ -2,7 +2,8 @@
 
 ## Dependency changes
 
-Bumped minimum version of **ixmp4** to 0.11.1 for compatbility with versioning and log.
+Bumped minimum version of **ixmp4** to 0.13.0 for compatbility with versioning
+and database transactions.
 
 ## Individual updates
 
