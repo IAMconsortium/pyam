@@ -37,7 +37,7 @@ def _aggregate(df, variable, components=None, method="sum"):
         components = components or df._variable_components(variable)
 
         if not len(components):
-            logger.info(msg.format(variable))
+            logger.warning(msg.format(variable))
             return
 
         for c in components:
@@ -48,7 +48,7 @@ def _aggregate(df, variable, components=None, method="sum"):
         for v in variable if is_list_like(variable) else [variable]:
             _components = df._variable_components(v)
             if not len(_components):
-                logger.info(msg.format(v))
+                logger.warning(msg.format(v))
                 continue
 
             for c in _components:
@@ -122,7 +122,7 @@ def _aggregate_region(
         subregions = subregions or df._all_other_regions(region, [variable, weight])
 
     if not len(subregions):
-        logger.info(
+        logger.warning(
             f"Cannot aggregate variable '{variable}' to '{region}' "
             "because it does not exist in any subregion."
         )
