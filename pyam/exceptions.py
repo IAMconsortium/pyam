@@ -1,31 +1,11 @@
-import json
 import warnings
-from contextlib import contextmanager
-from logging import config, getLogger
+from logging import getLogger
 from pathlib import Path
 
 import pandas as pd
 
 here = Path(__file__).parent
 logger = getLogger(__name__)
-
-
-def configure_logging():
-    """Configure logging"""
-    logging_config = here / "logging.json"
-    with open(logging_config) as file:
-        config.dictConfig(json.load(file))
-
-
-@contextmanager
-def adjust_log_level(logger="pyam", level="ERROR"):
-    """Context manager to change log level"""
-    if isinstance(logger, str):
-        logger = getLogger(logger)
-    old_level = logger.getEffectiveLevel()
-    logger.setLevel(level)
-    yield
-    logger.setLevel(old_level)
 
 
 def deprecation_warning(msg, item="This method", stacklevel=3):

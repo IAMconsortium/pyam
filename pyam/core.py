@@ -31,6 +31,7 @@ from pyam.aggregation import (
     _group_and_agg,
 )
 from pyam.compute import IamComputeAccessor
+from pyam.exceptions import deprecation_warning, format_log_message, raise_data_error
 from pyam.filter import (
     datetime_match,
     filter_by_col,
@@ -48,7 +49,6 @@ from pyam.index import (
     verify_index_integrity,
 )
 from pyam.ixmp4 import write_to_ixmp4
-from pyam.logging import deprecation_warning, format_log_message, raise_data_error
 from pyam.plotting import PlotAccessor
 from pyam.run_control import run_control
 from pyam.slice import IamSlice
@@ -1671,7 +1671,9 @@ class IamDataFrame:
         # filter and groupby data, use `pd.Series.align` for matching index
         rows = self._apply_filters(region=region, variable=variable)
         if not rows.any():
-            logger.info(f"Variable '{variable}' does not exist in region '{region}'.")
+            logger.warning(
+                f"Variable '{variable}' does not exist in region '{region}'."
+            )
             return
 
         df_region, df_subregions = _group_and_agg(self._data[rows], "region").align(
@@ -1684,7 +1686,7 @@ class IamDataFrame:
         # if region and subregions don't match, return inconsistent data
         if sum(rows):
             msg = "`{}` - {} of {} rows are not aggregates of subregions"
-            logger.info(msg.format(variable, sum(rows), len(df_region)))
+            logger.warning(msg.format(variable, sum(rows), len(df_region)))
 
             if exclude_on_fail:
                 _exclude_on_fail(self, _meta_idx(df_region[rows].reset_index()))

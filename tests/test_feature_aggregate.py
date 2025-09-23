@@ -180,7 +180,7 @@ def test_aggregate_empty(test_df, variable, append, caplog):
 
     msg = f"Cannot aggregate variable '{variable}' because it has no components."
     idx = caplog.messages.index(msg)
-    assert caplog.records[idx].levelname == "INFO"
+    assert caplog.records[idx].levelname == "WARNING"
 
 
 def test_aggregate_unknown_method(simple_df):
@@ -233,7 +233,7 @@ def test_check_aggregate_region_log(simple_df, caplog):
     )
     msg = "Variable 'Primary Energy' does not exist in region 'World'."
     idx = caplog.messages.index(msg)
-    assert caplog.records[idx].levelname == "INFO"
+    assert caplog.records[idx].levelname == "WARNING"
 
 
 @pytest.mark.parametrize(
@@ -436,7 +436,7 @@ def test_aggregate_region_empty(test_df, variable, append, caplog):
         "because it does not exist in any subregion."
     )
     idx = caplog.messages.index(msg)
-    assert caplog.records[idx].levelname == "INFO"
+    assert caplog.records[idx].levelname == "WARNING"
 
 
 def test_aggregate_region_unknown_method(simple_df):

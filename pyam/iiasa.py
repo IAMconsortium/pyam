@@ -18,8 +18,8 @@ from ixmp4.conf.auth import ManagerAuth
 from requests.auth import AuthBase
 
 from pyam.core import IamDataFrame
+from pyam.exceptions import deprecation_warning
 from pyam.ixmp4 import read_ixmp4
-from pyam.logging import deprecation_warning
 from pyam.str import is_str
 from pyam.utils import (
     IAMC_IDX,

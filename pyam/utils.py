@@ -4,6 +4,7 @@ import logging
 import re
 import string
 import warnings
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -13,8 +14,8 @@ import packaging.version
 import pandas as pd
 from pandas.api.types import is_list_like
 
+from pyam.exceptions import raise_data_error
 from pyam.index import get_index_levels, replace_index_labels
-from pyam.logging import raise_data_error
 from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
 
 logger = logging.getLogger(__name__)
@@ -46,6 +47,17 @@ NUMERIC_TO_STR = dict(
         ],
     )
 )
+
+
+@contextmanager
+def adjust_log_level(logger="pyam", level="ERROR"):
+    """Context manager to change loglevel"""
+    if isinstance(logger, str):
+        logger = logging.getLogger(logger)
+    old_level = logger.getEffectiveLevel()
+    logger.setLevel(level)
+    yield
+    logger.setLevel(old_level)
 
 
 def to_list(x):
