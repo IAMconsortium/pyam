@@ -1100,11 +1100,6 @@ class IamDataFrame:
                 _exclude_on_fail(self, missing_required.droplevel(list(required)))
             return missing_required.to_frame(index=False)
 
-    def require_variable(self, *args, **kwargs):
-        """This method is deprecated, use :meth:`IamDataFrame.require_data()`."""
-        # TODO: deprecated, remove for release >= 3.0
-        raise DeprecationWarning("Use `df.require_data()` instead.")
-
     def validate(
         self,
         criteria: dict = None,
