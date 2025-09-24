@@ -1,4 +1,9 @@
-# Next release
+# Release v3.1.0
+
+## Highlights
+
+This release implements integration with the latest **ixmp4** version including support
+for datetime-format timeseries, versioning and database transactions.
 
 ## Dependency changes
 
