@@ -1,3 +1,7 @@
+# Next Release
+
+- [#907](https://github.com/IAMconsortium/pyam/pull/907) Add fast route for operations with non-SI units
+
 # Release v3.1.0
 
 ## Highlights
