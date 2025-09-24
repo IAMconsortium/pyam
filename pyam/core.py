@@ -31,7 +31,7 @@ from pyam.aggregation import (
     _group_and_agg,
 )
 from pyam.compute import IamComputeAccessor
-from pyam.exceptions import deprecation_warning, format_log_message, raise_data_error
+from pyam.exceptions import format_log_message, raise_data_error
 from pyam.filter import (
     datetime_match,
     filter_by_col,
@@ -957,10 +957,9 @@ class IamDataFrame:
         self,
         name,
         value,
-        criteria: dict = None,
         *,
-        upper_bound: float = None,
-        lower_bound: float = None,
+        upper_bound: float | None = None,
+        lower_bound: float | None = None,
         color=None,
         marker=None,
         linestyle=None,
@@ -974,9 +973,6 @@ class IamDataFrame:
             Name of the meta indicator.
         value : str
             Value of the meta indicator.
-        criteria : dict, optional, deprecated
-           This option is deprecated; dictionary with variable keys and validation
-           mappings ('up' and 'lo' for respective bounds, 'year' for years).
         upper_bound, lower_bound : float, optional
             Upper and lower bounds for validation criteria of timeseries :attr:`data`.
         color : str, optional
@@ -1005,7 +1001,6 @@ class IamDataFrame:
         # find all data that satisfies the validation criteria
         # TODO: if validate returned an empty index, this check would be easier
         not_valid = self.validate(
-            criteria=criteria,
             upper_bound=upper_bound,
             lower_bound=lower_bound,
             **kwargs,
@@ -1100,17 +1095,11 @@ class IamDataFrame:
                 _exclude_on_fail(self, missing_required.droplevel(list(required)))
             return missing_required.to_frame(index=False)
 
-    def require_variable(self, *args, **kwargs):
-        """This method is deprecated, use :meth:`IamDataFrame.require_data()`."""
-        # TODO: deprecated, remove for release >= 3.0
-        raise DeprecationWarning("Use `df.require_data()` instead.")
-
     def validate(
         self,
-        criteria: dict = None,
         *,
-        upper_bound: float = None,
-        lower_bound: float = None,
+        upper_bound: float | None = None,
+        lower_bound: float | None = None,
         exclude_on_fail: bool = False,
         **kwargs,
     ) -> pd.DataFrame:
@@ -1126,9 +1115,6 @@ class IamDataFrame:
         ----------
         upper_bound, lower_bound : float, optional
             Upper and lower bounds for validation criteria of timeseries :attr:`data`.
-        criteria : dict, optional, deprecated
-           This option is deprecated; dictionary with variable keys and validation
-           mappings ('up' and 'lo' for respective bounds, 'year' for years).
         exclude_on_fail : bool, optional
             If True, set :attr:`exclude` = *True* for all scenarios that do not satisfy
             the criteria.
@@ -1146,7 +1132,6 @@ class IamDataFrame:
         """
         return _validate(
             self,
-            criteria=criteria,
             upper_bound=upper_bound,
             lower_bound=lower_bound,
             exclude_on_fail=exclude_on_fail,
@@ -2649,69 +2634,6 @@ def _meta_idx(data):
 def _empty_iamframe(index):
     """Return an empty IamDataFrame with the correct index columns"""
     return IamDataFrame(pd.DataFrame([], columns=index))
-
-
-def validate(df, criteria={}, exclude_on_fail=False, **kwargs):
-    """This method is deprecated, use :meth:`IamDataFrame.validate()` instead."""
-    # TODO: method is deprecated, remove for release >= 3.0
-    deprecation_warning("Use `IamDataFrame.validate()` instead.")
-    fdf = df.filter(**kwargs)
-    if len(fdf.data) > 0:
-        vdf = fdf.validate(criteria=criteria, exclude_on_fail=exclude_on_fail)
-        df._exclude |= fdf._exclude  # update if any excluded
-        return vdf
-
-
-def require_variable(*args, **kwargs):
-    """This method is deprecated, use :meth:`IamDataFrame.require_data()` instead."""
-    # TODO: deprecated, remove for release >= 3.0
-    raise DeprecationWarning("Use `IamDataFrame.require_data()` instead.")
-
-
-def categorize(
-    df, name, value, criteria, color=None, marker=None, linestyle=None, **kwargs
-):
-    """This method is deprecated, use :meth:`IamDataFrame.categorize()` instead."""
-    # TODO: method is deprecated, remove for release >= 3.0
-    deprecation_warning("Use `IamDataFrame.categorize()` instead.")
-    fdf = df.filter(**kwargs)
-    fdf.categorize(
-        name=name,
-        value=value,
-        criteria=criteria,
-        color=color,
-        marker=marker,
-        linestyle=linestyle,
-    )
-
-    # update meta indicators
-    if name in df.meta:
-        df.meta[name].update(fdf.meta[name])
-    else:
-        df.meta[name] = fdf.meta[name]
-
-
-def check_aggregate(
-    df, variable, components=None, exclude_on_fail=False, multiplier=1, **kwargs
-):
-    """Check whether the timeseries values match the aggregation of sub-categories
-
-    Parameters
-    ----------
-    df : IamDataFrame
-    **kwargs
-        Passed to :meth:`IamDataFrame.filter`
-    """
-    fdf = df.filter(**kwargs)
-    if len(fdf.data) > 0:
-        vdf = fdf.check_aggregate(
-            variable=variable,
-            components=components,
-            exclude_on_fail=exclude_on_fail,
-            multiplier=multiplier,
-        )
-        df._exclude |= fdf._exclude  # update if any excluded
-        return vdf
 
 
 def filter_by_meta(data, df, join_meta=False, **kwargs):

@@ -1,11 +1,11 @@
+import logging
 import warnings
-from logging import getLogger
 from pathlib import Path
 
 import pandas as pd
 
 here = Path(__file__).parent
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def deprecation_warning(msg, item="This method", stacklevel=3):

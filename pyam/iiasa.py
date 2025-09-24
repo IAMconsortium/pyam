@@ -54,10 +54,6 @@ def platforms() -> None:
     tabulate_manager_platforms(ixmp4.conf.settings.manager.list_platforms())
 
 
-def set_config(*args, **kwargs):
-    raise DeprecationWarning(f"This method is deprecated. {IXMP4_LOGIN}.")
-
-
 def _read_config(file):
     """Read username and password for IIASA API connection from file"""
     with open(file) as stream:

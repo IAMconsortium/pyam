@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pyam import IamDataFrame, check_aggregate
+from pyam import IamDataFrame
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import IAMC_IDX
 
@@ -77,25 +77,6 @@ def test_check_aggregate(simple_df):
     ).check_aggregate("Primary Energy")
     exp = pd.DataFrame([[12.0, 3.0], [15.0, 5.0]])
     np.testing.assert_array_equal(obs.values, exp.values)
-
-
-def test_check_aggregate_top_level(simple_df):
-    # assert that `check_aggregate` returns None for full data
-    assert check_aggregate(simple_df, variable="Primary Energy", year=2005) is None
-
-    # duplicate scenario, assert `check_aggregate` returns non-matching data
-    _df = simple_df.rename(scenario={"scen_a": "foo"}, append=True).filter(
-        scenario="foo", variable="Primary Energy|Coal", keep=False
-    )
-
-    obs = check_aggregate(
-        _df, variable="Primary Energy", year=2005, exclude_on_fail=True
-    )
-    exp = pd.DataFrame([[12.0, 3.0], [8.0, 2.0], [4.0, 1.0]])
-    np.testing.assert_array_equal(obs.values, exp.values)
-
-    # assert that scenario `foo` has correctly been assigned as `exclude=True`
-    np.testing.assert_array_equal(_df.exclude, [True, False])
 
 
 @pytest.mark.parametrize(

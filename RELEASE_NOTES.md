@@ -1,8 +1,14 @@
-# Next release
+# Release v3.1.0
+
+## Highlights
+
+This release implements integration with the latest **ixmp4** version including support
+for datetime-format timeseries, versioning and database transactions.
 
 ## Dependency changes
 
-Bumped minimum version of **ixmp4** to 0.11.1 for compatbility with versioning and log.
+Bumped minimum version of **ixmp4** to 0.13.0 for compatibility with versioning
+and database transactions.
 
 ## Individual updates
 

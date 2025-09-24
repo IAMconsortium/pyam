@@ -506,10 +506,10 @@ def test_scatter(plot_df):
 def test_scatter_variables_with_meta_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.categorize(
-        "foo", "a", criteria={"Primary Energy": {"up": 5, "year": 2010}}, color="blue"
+        "foo", "a", variable="Primary Energy", year=2010, upper_bound=5, color="blue"
     )
     plot_df.categorize(
-        "foo", "b", criteria={"Primary Energy": {"lo": 5, "year": 2010}}, color="red"
+        "foo", "b", variable="Primary Energy", year=2010, lower_bound=5, color="red"
     )
     plot_df.plot.scatter(
         ax=ax, x="Primary Energy", y="Primary Energy|Coal", color="foo"
