@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 
-from pyam import IamDataFrame, categorize, validate
+from pyam import IamDataFrame
 from pyam.utils import IAMC_IDX
 
 from .conftest import TEST_YEARS
@@ -227,17 +227,6 @@ def test_validate_multiple_criteria(test_df):
     assert list(test_df.exclude) == [True, False]
 
 
-def test_validate_top_level(test_df):
-    obs = validate(
-        test_df,
-        criteria={"Primary Energy": {"up": 6}},
-        exclude_on_fail=True,
-        variable="Primary Energy",
-    )
-    pdt.assert_frame_equal(obs, test_df.data[5:6].reset_index(drop=True))
-    assert list(test_df.exclude) == [False, True]
-
-
 # include args for deprecated legacy signature
 @pytest.mark.parametrize(
     "args",
@@ -268,24 +257,5 @@ def test_category_match(test_df, args):
     exp = pd.DataFrame(dct).set_index(["model", "scenario"])["category"]
 
     test_df.categorize("category", "foo", **args)
-    obs = test_df["category"]
-    pd.testing.assert_series_equal(obs, exp)
-
-
-def test_category_top_level(test_df):
-    dct = {
-        "model": ["model_a", "model_a"],
-        "scenario": ["scen_a", "scen_b"],
-        "category": ["foo", None],
-    }
-    exp = pd.DataFrame(dct).set_index(["model", "scenario"])["category"]
-
-    categorize(
-        test_df,
-        "category",
-        "foo",
-        criteria={"Primary Energy": {"up": 6, "year": 2010}},
-        variable="Primary Energy",
-    )
     obs = test_df["category"]
     pd.testing.assert_series_equal(obs, exp)
