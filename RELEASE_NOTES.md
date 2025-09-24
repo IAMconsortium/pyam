@@ -7,7 +7,7 @@ for datetime-format timeseries, versioning and database transactions.
 
 ## Dependency changes
 
-Bumped minimum version of **ixmp4** to 0.13.0 for compatbility with versioning
+Bumped minimum version of **ixmp4** to 0.13.0 for compatibility with versioning
 and database transactions.
 
 ## Individual updates

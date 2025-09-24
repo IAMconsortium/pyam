@@ -27,7 +27,7 @@
     6. Confirm that the release is published on https://test.pypi.org/project/pyam-iamc/
         - The package can be downloaded, installed and run
         - The README is rendered correctly
-    7. If there are any problems, fix the issues and repeat from step 5,
+    7. If there are any problems, fix the issues and repeat from step 4,
        bumping the release candidate number
     8. If successful, merge the candidate PR into `main` and then delete the branch
 2. Switch to the updated main branch: `git checkout main` and `git pull upstream main`
