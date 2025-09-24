@@ -7,14 +7,10 @@ import yaml
 
 from pyam.core import (
     IamDataFrame,
-    categorize,
-    check_aggregate,
     compare,
     concat,
     filter_by_meta,
     read_datapackage,
-    require_variable,
-    validate,
 )
 from pyam.iiasa import lazy_read_iiasa, read_iiasa
 from pyam.ixmp4 import read_ixmp4
