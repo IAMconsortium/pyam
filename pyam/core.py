@@ -957,10 +957,9 @@ class IamDataFrame:
         self,
         name,
         value,
-        criteria: dict = None,
         *,
-        upper_bound: float = None,
-        lower_bound: float = None,
+        upper_bound: float | None = None,
+        lower_bound: float | None = None,
         color=None,
         marker=None,
         linestyle=None,
@@ -974,9 +973,6 @@ class IamDataFrame:
             Name of the meta indicator.
         value : str
             Value of the meta indicator.
-        criteria : dict, optional, deprecated
-           This option is deprecated; dictionary with variable keys and validation
-           mappings ('up' and 'lo' for respective bounds, 'year' for years).
         upper_bound, lower_bound : float, optional
             Upper and lower bounds for validation criteria of timeseries :attr:`data`.
         color : str, optional
@@ -1005,7 +1001,6 @@ class IamDataFrame:
         # find all data that satisfies the validation criteria
         # TODO: if validate returned an empty index, this check would be easier
         not_valid = self.validate(
-            criteria=criteria,
             upper_bound=upper_bound,
             lower_bound=lower_bound,
             **kwargs,
@@ -1102,10 +1097,9 @@ class IamDataFrame:
 
     def validate(
         self,
-        criteria: dict = None,
         *,
-        upper_bound: float = None,
-        lower_bound: float = None,
+        upper_bound: float | None = None,
+        lower_bound: float | None = None,
         exclude_on_fail: bool = False,
         **kwargs,
     ) -> pd.DataFrame:
@@ -1121,9 +1115,6 @@ class IamDataFrame:
         ----------
         upper_bound, lower_bound : float, optional
             Upper and lower bounds for validation criteria of timeseries :attr:`data`.
-        criteria : dict, optional, deprecated
-           This option is deprecated; dictionary with variable keys and validation
-           mappings ('up' and 'lo' for respective bounds, 'year' for years).
         exclude_on_fail : bool, optional
             If True, set :attr:`exclude` = *True* for all scenarios that do not satisfy
             the criteria.
@@ -1141,7 +1132,6 @@ class IamDataFrame:
         """
         return _validate(
             self,
-            criteria=criteria,
             upper_bound=upper_bound,
             lower_bound=lower_bound,
             exclude_on_fail=exclude_on_fail,
