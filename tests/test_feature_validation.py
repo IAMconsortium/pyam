@@ -82,14 +82,18 @@ def test_validate_none(test_df, args):
 
 
 def test_validate_pass(test_df):
-    obs = test_df.validate(variable="Primary Energy", upper_bound=10, exclude_on_fail=True)
+    obs = test_df.validate(
+        variable="Primary Energy", upper_bound=10, exclude_on_fail=True
+    )
     assert obs is None
     assert list(test_df.exclude) == [False, False]  # none excluded
 
 
 def test_validate_nonexisting(test_df):
     # checking that a scenario with no relevant value does not fail validation
-    obs = test_df.validate(variable="Primary Energy|Coal", upper_bound=2, exclude_on_fail=True)
+    obs = test_df.validate(
+        variable="Primary Energy|Coal", upper_bound=2, exclude_on_fail=True
+    )
     # checking that the return-type is correct
     pdt.assert_frame_equal(obs, test_df.data[3:4].reset_index(drop=True))
     # scenario with failed validation excluded, scenario with no value passes

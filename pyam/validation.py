@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 def _validate(df, upper_bound, lower_bound, exclude_on_fail, **kwargs):  # noqa: C901
-
     _df = df._data[df.slice(**kwargs)]
     if _df.empty:
         logger.warning("No data matches filters, skipping validation.")

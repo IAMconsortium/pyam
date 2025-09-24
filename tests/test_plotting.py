@@ -504,7 +504,6 @@ def test_scatter(plot_df):
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_scatter_variables_with_meta_color(plot_df):
-
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.categorize(
         "foo", "a", variable="Primary Energy", year=2010, upper_bound=5, color="blue"

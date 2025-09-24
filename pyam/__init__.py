@@ -43,4 +43,3 @@ try:
 # the pyam package is distributed under different names on pypi and conda
 except PackageNotFoundError:
     __version__ = version("pyam")
-
