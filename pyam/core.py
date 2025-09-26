@@ -60,6 +60,7 @@ from pyam.utils import (
     IAMC_IDX,
     ILLEGAL_COLS,
     META_IDX,
+    adjust_log_level,
     compare_year_time,
     format_data,
     get_excel_file_with_kwargs,
@@ -999,12 +1000,13 @@ class IamDataFrame:
                 run_control().update({kind: {name: {value: arg}}})
 
         # find all data that satisfies the validation criteria
-        # TODO: if validate returned an empty index, this check would be easier
-        not_valid = self.validate(
-            upper_bound=upper_bound,
-            lower_bound=lower_bound,
-            **kwargs,
-        )
+        with adjust_log_level(logger="pyam.validation", level="ERROR"):
+            not_valid = self.validate(
+                upper_bound=upper_bound,
+                lower_bound=lower_bound,
+                **kwargs,
+            )
+
         # assign scenarios that satisfy criteria to the category
         if not_valid is None:
             category_index = self.index
