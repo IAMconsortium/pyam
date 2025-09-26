@@ -1,3 +1,8 @@
+# Next Release
+
+- [#930](https://github.com/IAMconsortium/pyam/pull/930) Fix the `categorize()` method
+  if invalid datapoints exceed the number of scenarios
+
 # Release v3.1.0
 
 ## Highlights
