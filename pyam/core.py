@@ -73,6 +73,7 @@ from pyam.utils import (
     read_file,
     read_pandas,
     remove_from_list,
+    s,
     to_list,
     write_sheet,
 )
@@ -1009,20 +1010,23 @@ class IamDataFrame:
 
         # assign scenarios that satisfy criteria to the category
         if not_valid is None:
-            category_index = self.index
+            cat_index = self.index
         else:
             not_valid_index = not_valid.set_index(self.index.names).index.unique()
             if len(not_valid_index) < len(self.index):
-                category_index = self.index.difference(not_valid_index)
+                cat_index = self.index.difference(not_valid_index)
             else:
-                logger.info("No scenarios satisfy the criteria")
+                logger.info(
+                    f"No scenarios satisfy the criteria for category `{name}: {value}`"
+                )
                 return
 
         # update meta indicators
         self._new_meta_column(name)
-        self.meta.loc[category_index, name] = value
-        msg = "{} scenario{} categorized as `{}: {}`"
-        logger.info(msg.format(len(category_index), "" if len(category_index) == 1 else "s", name, value))
+        self.meta.loc[cat_index, name] = value
+        logger.info(
+            f"{len(cat_index)} scenario{s(cat_index)} categorized as `{name}: {value}`"
+        )
 
     def _new_meta_column(self, name):
         """Add a column to meta if it doesn't exist, set value to nan"""
