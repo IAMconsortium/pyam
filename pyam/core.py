@@ -1005,21 +1005,22 @@ class IamDataFrame:
             lower_bound=lower_bound,
             **kwargs,
         )
+        # assign scenarios that satisfy criteria to the category
         if not_valid is None:
-            idx = self.index
-        elif len(not_valid) < len(self.index):
-            idx = self.index.difference(
-                not_valid.set_index(["model", "scenario"]).index.unique()
-            )
+            category_index = self.index
         else:
-            logger.info("No scenarios satisfy the criteria")
-            return
+            not_valid_index = not_valid.set_index(self.index.names).index.unique()
+            if len(not_valid_index) < len(self.index):
+                category_index = self.index.difference(not_valid_index)
+            else:
+                logger.info("No scenarios satisfy the criteria")
+                return
 
-        # update meta dataframe
+        # update meta indicators
         self._new_meta_column(name)
-        self.meta.loc[idx, name] = value
+        self.meta.loc[category_index, name] = value
         msg = "{} scenario{} categorized as `{}: {}`"
-        logger.info(msg.format(len(idx), "" if len(idx) == 1 else "s", name, value))
+        logger.info(msg.format(len(category_index), "" if len(category_index) == 1 else "s", name, value))
 
     def _new_meta_column(self, name):
         """Add a column to meta if it doesn't exist, set value to nan"""
