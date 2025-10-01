@@ -175,13 +175,26 @@ def test_category_match(test_df):
     }
     exp = pd.DataFrame(dct).set_index(["model", "scenario"])["category"]
 
-    if test_df.time_domain == "year":
-        # make sure scen_b is out of bounds with multiple datapoints
-        # see https://github.com/IAMconsortium/pyam/issues/929
-        test_df._data.loc[
-            ("model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2005)
-        ] = 6.5
-
     test_df.categorize("category", "foo", variable="Primary Energy", upper_bound=6)
     obs = test_df["category"]
+    pdt.assert_series_equal(obs, exp)
+
+
+def test_category_match_multiple_datapoints(test_df_year):
+    # guard against regression of https://github.com/IAMconsortium/pyam/issues/929
+
+    dct = {
+        "model": ["model_a", "model_a"],
+        "scenario": ["scen_a", "scen_b"],
+        "category": ["foo", None],
+    }
+    exp = pd.DataFrame(dct).set_index(["model", "scenario"])["category"]
+
+    # make sure scen_b is out of bounds with multiple datapoints
+    test_df_year._data.loc[
+        ("model_a", "scen_b", "World", "Primary Energy", "EJ/yr", 2005)
+    ] = 6.5
+
+    test_df_year.categorize("category", "foo", variable="Primary Energy", upper_bound=6)
+    obs = test_df_year["category"]
     pdt.assert_series_equal(obs, exp)
