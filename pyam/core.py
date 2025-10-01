@@ -1000,7 +1000,7 @@ class IamDataFrame:
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
 
-        # find all data that satisfies the validation criteria
+        # find all datapoints that do not satisfy the validation criteria
         with adjust_log_level(logger="pyam.validation", level="ERROR"):
             not_valid = self.validate(
                 upper_bound=upper_bound,
@@ -1008,23 +1008,26 @@ class IamDataFrame:
                 **kwargs,
             )
 
-        # assign scenarios that satisfy criteria to the category
+        # if no datapoints are invalid, assign all scenarios to the category
         if not_valid is None:
-            cat_index = self.index
+            category_index = self.index
+
+        # if some datapoints are invalid, create the index of invalid scenarios
         else:
             not_valid_index = not_valid.set_index(self.index.names).index.unique()
-            if len(not_valid_index) < len(self.index):
-                cat_index = self.index.difference(not_valid_index)
-            else:
+            # if all scenarios have invalid datapoints, do not assign to the category
+            if len(not_valid_index) == len(self.index):
                 logger.info(
                     f"No scenarios satisfy the criteria for category `{name}: {value}`"
                 )
                 return
+            # otherwise, assign scenarios without invalid datapoints to the category
+            category_index = self.index.difference(not_valid_index)
 
         # update meta indicators
         self._new_meta_column(name)
-        self.meta.loc[cat_index, name] = value
-        n = len(cat_index)
+        self.meta.loc[category_index, name] = value
+        n = len(category_index)
         logger.info(f"{n} scenario{s(n)} categorized as `{name}: {value}`")
 
     def _new_meta_column(self, name):
