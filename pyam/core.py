@@ -60,6 +60,7 @@ from pyam.utils import (
     IAMC_IDX,
     ILLEGAL_COLS,
     META_IDX,
+    adjust_log_level,
     compare_year_time,
     format_data,
     get_excel_file_with_kwargs,
@@ -72,6 +73,7 @@ from pyam.utils import (
     read_file,
     read_pandas,
     remove_from_list,
+    s,
     to_list,
     write_sheet,
 )
@@ -998,28 +1000,35 @@ class IamDataFrame:
             if arg:
                 run_control().update({kind: {name: {value: arg}}})
 
-        # find all data that satisfies the validation criteria
-        # TODO: if validate returned an empty index, this check would be easier
-        not_valid = self.validate(
-            upper_bound=upper_bound,
-            lower_bound=lower_bound,
-            **kwargs,
-        )
-        if not_valid is None:
-            idx = self.index
-        elif len(not_valid) < len(self.index):
-            idx = self.index.difference(
-                not_valid.set_index(["model", "scenario"]).index.unique()
+        # find all datapoints that do not satisfy the validation criteria
+        with adjust_log_level(logger="pyam.validation", level="ERROR"):
+            not_valid = self.validate(
+                upper_bound=upper_bound,
+                lower_bound=lower_bound,
+                **kwargs,
             )
-        else:
-            logger.info("No scenarios satisfy the criteria")
-            return
 
-        # update meta dataframe
+        # if no datapoints are invalid, assign all scenarios to the category
+        if not_valid is None:
+            category_index = self.index
+
+        # if some datapoints are invalid, create the index of invalid scenarios
+        else:
+            not_valid_index = not_valid.set_index(self.index.names).index.unique()
+            # if all scenarios have invalid datapoints, do not assign to the category
+            if len(not_valid_index) == len(self.index):
+                logger.info(
+                    f"No scenarios satisfy the criteria for category `{name}: {value}`"
+                )
+                return
+            # otherwise, assign scenarios without invalid datapoints to the category
+            category_index = self.index.difference(not_valid_index)
+
+        # update meta indicators
         self._new_meta_column(name)
-        self.meta.loc[idx, name] = value
-        msg = "{} scenario{} categorized as `{}: {}`"
-        logger.info(msg.format(len(idx), "" if len(idx) == 1 else "s", name, value))
+        self.meta.loc[category_index, name] = value
+        n = len(category_index)
+        logger.info(f"{n} scenario{s(n)} categorized as `{name}: {value}`")
 
     def _new_meta_column(self, name):
         """Add a column to meta if it doesn't exist, set value to nan"""
