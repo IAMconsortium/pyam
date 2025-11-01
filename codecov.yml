@@ -7,7 +7,3 @@ coverage:
     patch:
       default:
         informational: true
-
-ignore:
-  - pyam/_version.py
-  - versioneer.py
