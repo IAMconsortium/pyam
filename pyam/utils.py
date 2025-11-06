@@ -425,6 +425,12 @@ def format_data(df, index, **kwargs):  # noqa: C901
         short_error = short_error_regex.search(str(e)).group()
         raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
 
+    # check for infinite values
+    inf_rows = np.isinf(df)
+    if inf_rows.any():
+        raise_data_error(
+            "Infinite values in `data`", df[inf_rows].index.to_frame(index=False)
+        )
     # format the time-column
     _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
     df.index = replace_index_labels(df.index, time_col, _time)
