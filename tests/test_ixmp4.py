@@ -3,7 +3,7 @@ from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
 
 import pyam
-from pyam import read_ixmp4
+from pyam import read_ixmp4, read_ixmp4_run
 from pyam.testing import assert_iamframe_equal
 
 
@@ -109,3 +109,19 @@ def test_ixmp4_reserved_columns(test_platform, test_df_year, drop_meta):
 
     # version is included when reading again from the platform
     assert_iamframe_equal(test_df_year, pyam.read_ixmp4(test_platform))
+
+
+def test_ixmp4_read_run(test_platform, test_df):
+    """Initialize an IamDataFrame from an ixmp4 run"""
+
+    # write to platform
+    test_df.to_ixmp4(platform=test_platform)
+
+    # get a run and cast to an IamDataFrame
+    run = test_platform.runs.get("model_a", "scen_a")
+    obs = read_ixmp4_run(run)
+
+    # assert that the returned object and the original IamDataFrame are equal
+    exp = test_df.filter(scenario="scen_a")
+    exp.set_meta(1, "version")  # the IamDataFrame read from ixmp4 includes the version
+    pyam.assert_iamframe_equal(exp, obs)

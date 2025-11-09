@@ -13,7 +13,7 @@ from pyam.core import (
     read_datapackage,
 )
 from pyam.iiasa import lazy_read_iiasa, read_iiasa
-from pyam.ixmp4 import read_ixmp4
+from pyam.ixmp4 import read_ixmp4, read_ixmp4_run
 from pyam.netcdf import read_netcdf
 from pyam.run_control import run_control
 from pyam.statistics import Statistics
