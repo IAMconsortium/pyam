@@ -357,6 +357,30 @@ def _format_data_to_series(df, index):
     return df, time_col, extra_cols
 
 
+def _check_data(df, time_col):
+    """Validate data series for infinite values, duplicates, and emptiness"""
+
+    # check for infinite values
+    inf_rows = np.isinf(df)
+    if inf_rows.any():
+        raise_data_error(
+            "Infinite values in `data`", df[inf_rows].index.to_frame(index=False)
+        )
+
+    # check for duplicate rows
+    rows = df.index.duplicated()
+    if any(rows):
+        raise_data_error(
+            "Duplicate rows in `data`", df[rows].index.to_frame(index=False)
+        )
+
+    # check if data is empty
+    if df.empty:
+        logger.warning("Formatted data is empty.")
+
+    return df
+
+
 def format_data(df, index, **kwargs):  # noqa: C901
     """Convert a pandas.Dataframe or pandas.Series to the required format"""
 
@@ -425,24 +449,12 @@ def format_data(df, index, **kwargs):  # noqa: C901
         short_error = short_error_regex.search(str(e)).group()
         raise_data_error(f"{short_error} in `data`", df.iloc[[row_nr]])
 
-    # check for infinite values
-    inf_rows = np.isinf(df)
-    if inf_rows.any():
-        raise_data_error(
-            "Infinite values in `data`", df[inf_rows].index.to_frame(index=False)
-        )
     # format the time-column
     _time = [to_time(i) for i in get_index_levels(df.index, time_col)]
     df.index = replace_index_labels(df.index, time_col, _time)
 
-    rows = df.index.duplicated()
-    if any(rows):
-        raise_data_error(
-            "Duplicate rows in `data`", df[rows].index.to_frame(index=False)
-        )
-    del rows
-    if df.empty:
-        logger.warning("Formatted data is empty.")
+    # perform data validation checks
+    df = _check_data(df, time_col)
 
     return df, index, time_col, extra_cols
 
