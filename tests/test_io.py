@@ -172,8 +172,7 @@ def test_read_xlsx_calamine(test_df_year):
 def test_init_df_with_inf_raises(test_pd_df):
     # infinite values raise expected error
     test_pd_df.loc[1, 2005] = np.inf
-    match = "Infinite values in `data`:"
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(ValueError, match="Infinite values in `data`:\n.*\n.*2005"):
         IamDataFrame(test_pd_df)
 
 
