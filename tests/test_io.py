@@ -169,6 +169,13 @@ def test_read_xlsx_calamine(test_df_year):
     assert_iamframe_equal(import_df, test_df_year)
 
 
+def test_init_df_with_inf_raises(test_pd_df):
+    # infinite values raise expected error
+    test_pd_df.loc[1, 2005] = np.inf
+    with pytest.raises(ValueError, match="Infinite values in `data`:\n.*\n.*2005"):
+        IamDataFrame(test_pd_df)
+
+
 def test_init_df_with_na_unit(test_pd_df, tmpdir):
     # missing values in the unit column are replaced by an empty string
     test_pd_df.loc[1, "unit"] = np.nan
