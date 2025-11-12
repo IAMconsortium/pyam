@@ -120,16 +120,17 @@ def test_add_variable_ignore_units(test_df_year, arg, df_func, fillna, append):
 @pytest.mark.parametrize("append", (False, True))
 def test_add_variable_non_si_unit(test_df_year, append):
     df = test_df_year.rename(unit={"EJ/yr": "foo"})
+
     exp = df_ops_variable(operator.add, "Sum", unit="foo", meta=test_df_year.meta)
-    args = ("Primary Energy", "Primary Energy|Coal", "Sum")
 
     if append:
         obs = df.copy()
-        obs.add(*args, append=True)
-        assert_iamframe_equal(df.append(exp), obs)
+        obs.add("Primary Energy", "Primary Energy|Coal", "Sum", append=True)
+        exp = df.append(exp)
     else:
-        obs = df.add(*args)
-        assert_iamframe_equal(exp, obs)
+        obs = df.add("Primary Energy", "Primary Energy|Coal", "Sum")
+
+    assert_iamframe_equal(exp, obs)
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -219,16 +220,17 @@ def test_subtract_variable_ignore_units(test_df_year, arg, df_func, fillna, appe
 @pytest.mark.parametrize("append", (False, True))
 def test_subtract_variable_non_si_unit_unit(test_df_year, append):
     df = test_df_year.rename(unit={"EJ/yr": "foo"})
+
     exp = df_ops_variable(operator.sub, "Diff", unit="foo", meta=test_df_year.meta)
-    args = ("Primary Energy", "Primary Energy|Coal", "Diff")
 
     if append:
         obs = df.copy()
-        obs.subtract(*args, append=True)
-        assert_iamframe_equal(df.append(exp), obs)
+        obs.subtract("Primary Energy", "Primary Energy|Coal", "Diff", append=True)
+        exp = df.append(exp)
     else:
-        obs = df.subtract(*args)
-        assert_iamframe_equal(exp, obs)
+        obs = df.subtract("Primary Energy", "Primary Energy|Coal", "Diff")
+
+    assert_iamframe_equal(exp, obs)
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -399,16 +401,17 @@ def test_divide_variable_ignore_units(test_df_year, arg, df_func, fillna, append
 @pytest.mark.parametrize("append", (False, True))
 def test_divide_variable_non_si_unit_unit(test_df_year, append):
     df = test_df_year.rename(unit={"EJ/yr": "foo"})
+
     exp = df_ops_variable(operator.truediv, "Ratio", unit="", meta=test_df_year.meta)
-    args = ("Primary Energy", "Primary Energy|Coal", "Ratio")
 
     if append:
         obs = df.copy()
-        obs.divide(*args, append=True)
-        assert_iamframe_equal(df.append(exp), obs)
+        obs.divide("Primary Energy", "Primary Energy|Coal", "Ratio", append=True)
+        exp = df.append(exp)
     else:
-        obs = df.divide(*args)
-        assert_iamframe_equal(exp, obs)
+        obs = df.divide("Primary Energy", "Primary Energy|Coal", "Ratio")
+
+    assert_iamframe_equal(exp, obs)
 
 
 @pytest.mark.parametrize("append", (False, True))
