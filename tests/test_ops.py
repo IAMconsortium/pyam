@@ -351,7 +351,6 @@ def test_divide_variable(test_df_year, arg, df_func, expected_unit, append):
 
     exp = df_func(operator.truediv, "Ratio", unit=expected_unit, meta=test_df_year.meta)
 
-    args = ("Primary Energy", arg, "Ratio")
     if append:
         obs = test_df_year.copy()
         obs.divide("Primary Energy", arg, "Ratio", append=True)
