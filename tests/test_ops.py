@@ -161,8 +161,14 @@ def test_subtract_variable(test_df_year, arg, df_func, fillna, append, ignore_un
             inplace=True,
         )
 
-    unit = "EJ/yr" if ignore_units is False else ignore_units
-    exp = df_func(operator.sub, "Diff", unit=unit, meta=test_df_year.meta)
+    if ignore_units:
+        expected_unit = ignore_units
+    elif isinstance(arg, registry.Quantity):
+        expected_unit = "EJ / a"
+    else:
+        expected_unit = "EJ/yr"
+
+    exp = df_func(operator.sub, "Diff", unit=expected_unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Diff")
     kwds = dict(ignore_units=ignore_units, fillna=fillna)
