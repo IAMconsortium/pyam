@@ -102,7 +102,7 @@ def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
 
 
 @pytest.mark.parametrize("append", (False, True))
-def test_add_scenario_non_si_unit(test_df_year, append):
+def test_add_variable_non_si_unit(test_df_year, append):
     df = test_df_year.rename(unit={"EJ/yr": "foo"})
     exp = df_ops_variable(operator.add, "Sum", unit="foo", meta=test_df_year.meta)
     args = ("Primary Energy", "Primary Energy|Coal", "Sum")
@@ -186,7 +186,7 @@ def test_subtract_variable(test_df_year, arg, df_func, fillna, append, ignore_un
 
 
 @pytest.mark.parametrize("append", (False, True))
-def test_subtract_scenario_non_si_unit_unit(test_df_year, append):
+def test_subtract_variable_non_si_unit_unit(test_df_year, append):
     df = test_df_year.rename(unit={"EJ/yr": "foo"})
     exp = df_ops_variable(operator.sub, "Diff", unit="foo", meta=test_df_year.meta)
     args = ("Primary Energy", "Primary Energy|Coal", "Diff")
