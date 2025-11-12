@@ -56,49 +56,65 @@ def test_add_raises(test_df_year):
 
 
 @pytest.mark.parametrize(
-    "arg, df_func, fillna, ignore_units",
+    "variable, df_func, expected_unit",
     (
-        ("Primary Energy|Coal", df_ops_variable, None, False),
-        ("Primary Energy|Coal", df_ops_fillna_0, 0, "foo"),
-        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
-        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
-        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
-        (2, df_ops_variable_number, None, "foo"),
+        ("Primary Energy|Coal", df_ops_variable, "EJ/yr"),
+        # pint changes the unit into its standard format
+        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, "EJ / a"),
     ),
 )
 @pytest.mark.parametrize("append", (False, True))
-def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
-    """Verify that in-dataframe addition works on the default `variable` axis"""
+def test_add_variable(test_df_year, variable, df_func, expected_unit, append):
+    """Check that in-dataframe addition works on the default `variable` axis"""
 
-    # change one unit to make ignore-units strictly necessary
-    if ignore_units:
-        test_df_year.rename(
-            variable={"Primary Energy": "Primary Energy"},
-            unit={"EJ/yr": "custom_unit"},
-            inplace=True,
-        )
-
-    if ignore_units:
-        expected_unit = ignore_units
-    elif isinstance(arg, registry.Quantity):
-        expected_unit = "EJ / a"
-    else:
-        expected_unit = "EJ/yr"
     exp = df_func(operator.add, "Sum", unit=expected_unit, meta=test_df_year.meta)
 
-    args = ("Primary Energy", arg, "Sum")
-    kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.add(*args, **kwds, append=True)
-        assert_iamframe_equal(test_df_year.append(exp), obs)
+        obs.add("Primary Energy", variable, "Sum", append=True)
+        exp = test_df_year.append(exp)
+    else:
+        obs = test_df_year.add("Primary Energy", variable, "Sum")
+
+    assert_iamframe_equal(exp, obs)
+
+
+@pytest.mark.parametrize(
+    "arg, df_func, fillna",
+    (
+        ("Primary Energy|Coal", df_ops_fillna_0, 0),
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}),
+        ("Primary Energy|Coal", df_ops_variable_default, 5),
+        (2, df_ops_variable_number, None),
+    ),
+)
+@pytest.mark.parametrize("append", (False, True))
+def test_add_variable_ignore_units(test_df_year, arg, df_func, fillna, append):
+    """Check that in-dataframe addition works with ignore_units"""
+
+    # change one unit to make ignore_units strictly necessary
+    test_df_year.rename(
+        variable={"Primary Energy": "Primary Energy"},
+        unit={"EJ/yr": "custom_unit"},
+        inplace=True,
+    )
+
+    exp = df_func(operator.add, "Sum", unit="foo", meta=test_df_year.meta)
+
+    args = ("Primary Energy", arg, "Sum")
+    if append:
+        obs = test_df_year.copy()
+        obs.add(*args, ignore_units="foo", fillna=fillna, append=True)
+        exp = test_df_year.append(exp)
     else:
         # check that incompatible units raise the expected error
-        if ignore_units:
-            with pytest.raises(pint.UndefinedUnitError):
-                test_df_year.add(*args, fillna=fillna, ignore_units=False)
-        obs = test_df_year.add(*args, **kwds)
-        assert_iamframe_equal(exp, obs)
+        with pytest.raises(pint.UndefinedUnitError):
+            test_df_year.add(*args, fillna=fillna)
+
+        # using ignore_units works as expected
+        obs = test_df_year.add(*args, ignore_units="foo", fillna=fillna)
+
+    assert_iamframe_equal(exp, obs)
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -140,49 +156,64 @@ def test_add_scenario(test_df_year, append):
 
 
 @pytest.mark.parametrize(
-    "arg, df_func, fillna, ignore_units",
+    "arg, df_func, expected_unit",
     (
-        ("Primary Energy|Coal", df_ops_variable, None, False),
-        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
-        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
-        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
-        (2, df_ops_variable_number, None, "foo"),
+        ("Primary Energy|Coal", df_ops_variable, "EJ/yr"),
+        # pint changes the unit into its standard format
+        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, "EJ / a"),
     ),
 )
 @pytest.mark.parametrize("append", (False, True))
-def test_subtract_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
-    """Verify that in-dataframe subtraction works on the default `variable` axis"""
-
-    # change one unit to make ignore-units strictly necessary
-    if ignore_units:
-        test_df_year.rename(
-            variable={"Primary Energy": "Primary Energy"},
-            unit={"EJ/yr": "custom_unit"},
-            inplace=True,
-        )
-
-    if ignore_units:
-        expected_unit = ignore_units
-    elif isinstance(arg, registry.Quantity):
-        expected_unit = "EJ / a"
-    else:
-        expected_unit = "EJ/yr"
+def test_subtract_variable(test_df_year, arg, df_func, expected_unit, append):
+    """Check that in-dataframe subtraction works on the default `variable` axis"""
 
     exp = df_func(operator.sub, "Diff", unit=expected_unit, meta=test_df_year.meta)
 
-    args = ("Primary Energy", arg, "Diff")
-    kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.subtract(*args, **kwds, append=True)
-        assert_iamframe_equal(test_df_year.append(exp), obs)
+        obs.subtract("Primary Energy", arg, "Diff", append=True)
+        exp = test_df_year.append(exp)
+    else:
+        obs = test_df_year.subtract("Primary Energy", arg, "Diff")
+
+    assert_iamframe_equal(exp, obs)
+
+
+@pytest.mark.parametrize(
+    "arg, df_func, fillna",
+    (
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}),
+        ("Primary Energy|Coal", df_ops_variable_default, 5),
+        (2, df_ops_variable_number, None),
+    ),
+)
+@pytest.mark.parametrize("append", (False, True))
+def test_subtract_variable_ignore_units(test_df_year, arg, df_func, fillna, append):
+    """Check that in-dataframe subtraction works witgh ignore_units"""
+
+    # change one unit to make ignore-units strictly necessary
+    test_df_year.rename(
+        variable={"Primary Energy": "Primary Energy"},
+        unit={"EJ/yr": "custom_unit"},
+        inplace=True,
+    )
+
+    exp = df_func(operator.sub, "Diff", unit="foo", meta=test_df_year.meta)
+
+    args = ("Primary Energy", arg, "Diff")
+    if append:
+        obs = test_df_year.copy()
+        obs.subtract(*args, ignore_units="foo", fillna=fillna, append=True)
+        exp = test_df_year.append(exp)
     else:
         # check that incompatible units raise the expected error
-        if ignore_units:
-            with pytest.raises(pint.UndefinedUnitError):
-                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+        with pytest.raises(pint.UndefinedUnitError):
+            test_df_year.add(*args, fillna=fillna)
 
-        assert_iamframe_equal(exp, test_df_year.subtract(*args, **kwds))
+        # using ignore_units works as expected
+        obs = test_df_year.subtract(*args, ignore_units="foo", fillna=fillna)
+
+    assert_iamframe_equal(exp, obs)
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -198,7 +229,6 @@ def test_subtract_variable_non_si_unit_unit(test_df_year, append):
     else:
         obs = df.subtract(*args)
         assert_iamframe_equal(exp, obs)
-
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -225,44 +255,61 @@ def test_subtract_scenario(test_df_year, append):
 
 
 @pytest.mark.parametrize(
-    "arg, df_func, fillna, ignore_units",
+    "arg, df_func, expected_unit",
     (
-        ("Primary Energy|Coal", df_ops_variable, None, False),
-        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
-        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
-        # note that multiplying with pint reformats the unit
-        (2, df_ops_variable_number, None, False),
+        ("Primary Energy|Coal", df_ops_variable, "EJ ** 2 / a ** 2"),
+        (2, df_ops_variable_number, "EJ / a"),
     ),
 )
 @pytest.mark.parametrize("append", (False, True))
-def test_multiply_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
-    """Verify that in-dataframe addition works on the default `variable` axis"""
+def test_multiply_variable(test_df_year, arg, df_func, expected_unit, append):
+    """Check that in-dataframe addition works on the default `variable` axis"""
 
-    if ignore_units:
-        # change one unit to make ignore-units strictly necessary
-        test_df_year.rename(
-            variable={"Primary Energy": "Primary Energy"},
-            unit={"EJ/yr": "custom_unit"},
-            inplace=True,
-        )
-        unit = ignore_units
-    else:
-        unit = "EJ / a" if isinstance(arg, int) else "EJ ** 2 / a ** 2"
-    exp = df_func(operator.mul, "Prod", unit=unit, meta=test_df_year.meta)
+    exp = df_func(operator.mul, "Prod", unit=expected_unit, meta=test_df_year.meta)
 
-    args = ("Primary Energy", arg, "Prod")
-    kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.multiply(*args, **kwds, append=True)
-        assert_iamframe_equal(test_df_year.append(exp), obs)
+        obs.multiply("Primary Energy", arg, "Prod", append=True)
+        exp = test_df_year.append(exp)
+    else:
+        obs = test_df_year.multiply("Primary Energy", arg, "Prod")
+
+    assert_iamframe_equal(exp, obs)
+
+
+@pytest.mark.parametrize(
+    "arg, df_func, fillna",
+    (
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}),
+        ("Primary Energy|Coal", df_ops_variable_default, 5),
+    ),
+)
+@pytest.mark.parametrize("append", (False, True))
+def test_multiply_variable_ignore_units(test_df_year, arg, df_func, fillna, append):
+    """Check that in-dataframe addition works with ignore_units"""
+
+    # change one unit to make ignore_units strictly necessary
+    test_df_year.rename(
+        variable={"Primary Energy": "Primary Energy"},
+        unit={"EJ/yr": "custom_unit"},
+        inplace=True,
+    )
+
+    exp = df_func(operator.mul, "Prod", unit="foo", meta=test_df_year.meta)
+
+    args = ("Primary Energy", arg, "Prod")
+    if append:
+        obs = test_df_year.copy()
+        obs.multiply(*args, ignore_units="foo", fillna=fillna, append=True)
+        exp = test_df_year.append(exp)
     else:
         # check that incompatible units raise the expected error
-        if ignore_units:
-            with pytest.raises(pint.UndefinedUnitError):
-                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+        with pytest.raises(pint.UndefinedUnitError):
+            test_df_year.add(*args, fillna=fillna)
 
-        assert_iamframe_equal(exp, test_df_year.multiply(*args, **kwds))
+        obs = test_df_year.multiply(*args, ignore_units="foo", fillna=fillna)
+
+    assert_iamframe_equal(exp, obs)
 
 
 @pytest.mark.parametrize("append", (False, True))
@@ -289,45 +336,64 @@ def test_multiply_scenario(test_df_year, append):
 
 
 @pytest.mark.parametrize(
-    "arg, df_func, fillna, ignore_units",
+    "arg, df_func, expected_unit",
     (
-        ("Primary Energy|Coal", df_ops_variable, None, False),
-        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}, "foo"),
-        ("Primary Energy|Coal", df_ops_variable_default, 5, "foo"),
-        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, None, False),
-        (2, df_ops_variable_number, None, False),
+        ("Primary Energy|Coal", df_ops_variable, ""),
+        (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, ""),
+        (2, df_ops_variable_number, "EJ / a"),
     ),
 )
 @pytest.mark.parametrize("append", (False, True))
-def test_divide_variable(test_df_year, arg, df_func, fillna, append, ignore_units):
-    """Verify that in-dataframe addition works on the default `variable` axis"""
+def test_divide_variable(test_df_year, arg, df_func, expected_unit, append):
+    """Check that in-dataframe addition works on the default `variable` axis"""
 
-    # note that dividing with pint reformats the unit
-    if ignore_units:
-        # change one unit to make ignore-units strictly necessary
-        test_df_year.rename(
-            variable={"Primary Energy": "Primary Energy"},
-            unit={"EJ/yr": "custom_unit"},
-            inplace=True,
-        )
-        unit = ignore_units
-    else:
-        unit = "EJ / a" if isinstance(arg, int) else ""
-    exp = df_func(operator.truediv, "Ratio", unit=unit, meta=test_df_year.meta)
+    exp = df_func(operator.truediv, "Ratio", unit=expected_unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Ratio")
-    kwds = dict(ignore_units=ignore_units, fillna=fillna)
     if append:
         obs = test_df_year.copy()
-        obs.divide(*args, **kwds, append=True)
-        assert_iamframe_equal(test_df_year.append(exp), obs)
+        obs.divide("Primary Energy", arg, "Ratio", append=True)
+        exp = test_df_year.append(exp)
+    else:
+        obs = test_df_year.divide("Primary Energy", arg, "Ratio")
+
+    assert_iamframe_equal(exp, obs)
+
+
+@pytest.mark.parametrize(
+    "arg, df_func, fillna",
+    (
+        ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}),
+        ("Primary Energy|Coal", df_ops_variable_default, 5),
+    ),
+)
+@pytest.mark.parametrize("append", (False, True))
+def test_divide_variable_ignore_units(test_df_year, arg, df_func, fillna, append):
+    """Check that in-dataframe addition works with ignore_units"""
+
+    # change one unit to make ignore_units strictly necessary
+    test_df_year.rename(
+        variable={"Primary Energy": "Primary Energy"},
+        unit={"EJ/yr": "custom_unit"},
+        inplace=True,
+    )
+
+    exp = df_func(operator.truediv, "Ratio", unit="foo", meta=test_df_year.meta)
+
+    args = ("Primary Energy", arg, "Ratio")
+    if append:
+        obs = test_df_year.copy()
+        obs.divide(*args, ignore_units="foo", fillna=fillna, append=True)
+        exp = test_df_year.append(exp)
     else:
         # check that incompatible units raise the expected error
-        if ignore_units:
-            with pytest.raises(pint.UndefinedUnitError):
-                test_df_year.add(*args, fillna=fillna, ignore_units=False)
+        with pytest.raises(pint.UndefinedUnitError):
+            test_df_year.add(*args, fillna=fillna)
 
-        assert_iamframe_equal(exp, test_df_year.divide(*args, **kwds))
+        # using ignore_units works as expected
+        obs = test_df_year.divide(*args, ignore_units="foo", fillna=fillna)
+
+    assert_iamframe_equal(exp, obs)
 
 
 @pytest.mark.parametrize("append", (False, True))
