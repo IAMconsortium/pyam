@@ -78,8 +78,13 @@ def test_add_variable(test_df_year, arg, df_func, fillna, ignore_units, append):
             inplace=True,
         )
 
-    unit = "EJ/yr" if ignore_units is False else ignore_units
-    exp = df_func(operator.add, "Sum", unit=unit, meta=test_df_year.meta)
+    if ignore_units:
+        expected_unit = ignore_units
+    elif isinstance(arg, registry.Quantity):
+        expected_unit = "EJ / a"
+    else:
+        expected_unit = "EJ/yr"
+    exp = df_func(operator.add, "Sum", unit=expected_unit, meta=test_df_year.meta)
 
     args = ("Primary Energy", arg, "Sum")
     kwds = dict(ignore_units=ignore_units, fillna=fillna)
