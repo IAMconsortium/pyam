@@ -61,7 +61,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
 
     cols = [d for d in df.dimensions if d != axis]
 
-    # replace args and and kwds with values of `df._data` if applicable
+    # replace args and kwds with values of `df._data` if applicable
     # _data_args and _data_kwds track if an argument was replaced by `df._data` values
     n = len(args)
     _args, _data_args, _units_args = [None] * n, [False] * n, [None] * n
@@ -71,7 +71,7 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
         )
 
     _data_kwds, _unit_kwds = {}, {}
-    for i, (key, value) in enumerate(kwds.items()):
+    for key, value in kwds.items():
         kwds[key], _unit_kwds[key], _data_kwds[key] = _get_values(
             df, axis, value, cols, key
         )
