@@ -2,6 +2,7 @@
 
 - [#930](https://github.com/IAMconsortium/pyam/pull/930) Fix the `categorize()` method
   if invalid datapoints exceed the number of scenarios
+- [#907](https://github.com/IAMconsortium/pyam/pull/907) Add fast route for operations with non-SI units
 
 # Release v3.1.0
 
