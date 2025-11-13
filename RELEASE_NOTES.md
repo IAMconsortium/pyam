@@ -1,5 +1,14 @@
-# Next Release
+# Release v3.2.0
 
+## Highlights
+
+This release fixes an issue in the `categorize()` method, adds a check against infinite
+values in timeseries data, and simplifies the behavior of binary operations (addition,
+subtraction, division) with non-SI units.
+
+## Individual updates
+
+- [#937](https://github.com/IAMconsortium/pyam/pull/937) Check for infinite values timeseries
 - [#930](https://github.com/IAMconsortium/pyam/pull/930) Fix the `categorize()` method
   if invalid datapoints exceed the number of scenarios
 - [#907](https://github.com/IAMconsortium/pyam/pull/907) Add fast route for operations with non-SI units
