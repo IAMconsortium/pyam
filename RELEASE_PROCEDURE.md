@@ -33,17 +33,17 @@
 2. Switch to the updated main branch: `git checkout main` and `git pull upstream main`
 3. Tag the release number: `git tag v<release version>`, e.g., `git tag v1.2.0`
 4. Push the tag upstream: `git push upstream --tags`
-5. Make a new release on Github
+5. Make a new release on GitHub
     - Make sure that you choose the tag name defined above
     - Copy the release summary from `RELEASE_NOTES.md` into the description box
 6. Confirm that the "publish" workflow passes
    https://github.com/IAMconsortium/pyam/actions/workflows/publish.yml
 7. Confirm that the release is published on https://www.pypi.org/project/pyam-iamc/
 8. Update on `conda-forge`
-    - A PR should automatically be opened by the bot after the Github release
+    - A PR should automatically be opened by the bot after the GitHub release
     - Confirm that any new dependencies are included,
       change the minimum dependency version if necessary
-      (compare to ./.github/workflows/pytest-depedency.yml)
+      (compare to ./.github/workflows/pytest-legacy.yml)
     - Merge the PR
     - Check that the new version is available on https://anaconda.org/conda-forge/pyam
 9. Confirm that the doc pages are updated on https://pyam-iamc.readthedocs.io/
@@ -52,7 +52,7 @@
 10. Add a new first line "# Next Release" in `RELEASE_NOTES.md` and commit to `main`
 11. Announce it to our community
     - The mailing list (https://pyam.groups.io) - copy the rendered HTML
-      from the Github release and use the subject line `#release v<release version>`
+      from the GitHub release and use the subject line `#release v<release version>`
     - The Slack channel
     - Social media using the tag `#pyam_iamc`
 
