@@ -57,7 +57,7 @@ class IamComputeAccessor:
         b_unit = self._df.filter(**{axis: b}).unit
         for arg, _unit in (("a", a_unit), ("b", b_unit)):
             if len(_unit) > 1:
-                raise ValueError(f"Units of `{arg}` not unique: {", ".join(_unit)}")
+                raise ValueError(f"Units of `{arg}` not unique: {', '.join(_unit)}")
         if a_unit != b_unit:
             raise ValueError(f"Mismatching units: '{a_unit[0]}' != '{b_unit[0]}'")
 
