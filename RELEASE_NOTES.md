@@ -1,5 +1,7 @@
 # Next Release
 
+- [#941](https://github.com/IAMconsortium/pyam/pull/941) Add a `compute.share()` method
+
 # Release v3.2.0
 
 ## Highlights
