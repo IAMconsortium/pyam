@@ -1,6 +1,10 @@
 pyam: analysis & visualization <br /> of integrated-assessment and macro-energy scenarios
 =========================================================================================
 
+Copyright 2017-2025 IIASA and the pyam developer team  
+The **pyam** package is licensed under the Apache License, Version 2.0 (the "License");
+see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
+
 [![license](https://img.shields.io/badge/license-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
 [![conda](https://img.shields.io/conda/vn/conda-forge/pyam?logo=anaconda)](https://anaconda.org/conda-forge/pyam)
@@ -170,13 +174,4 @@ in the IPCC SR15 and the Horizon 2020 CRESCENDO project.
 *pyam: a Python package for the analysis and visualization of models of the interaction
 of climate, human, and environmental systems.*
 **Journal of Open Source Software (JOSS)**, 4(33):1095, 2019.
-doi: [10.21105/joss.01095](https://doi.org/10.21105/joss.01095).
-
-License
--------
-
-Copyright 2017-2024 IIASA and the pyam developer team
-
-The **pyam** package is licensed
-under the Apache License, Version 2.0 (the "License");  
-see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
+> doi: [10.21105/joss.01095](https://doi.org/10.21105/joss.01095).
