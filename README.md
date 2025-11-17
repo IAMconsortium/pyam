@@ -2,7 +2,7 @@ pyam: analysis & visualization <br /> of integrated-assessment and macro-energy 
 =========================================================================================
 
 Copyright 2017-2025 IIASA and the pyam developer team  
-The **pyam** package is licensed under the Apache License, Version 2.0 (the "License");
+Licensed under the Apache License, Version 2.0;
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
 [![license](https://img.shields.io/badge/license-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
