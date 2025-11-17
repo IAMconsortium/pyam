@@ -5,6 +5,7 @@ import pandas as pd
 import wquantiles
 
 from pyam._debiasing import _compute_bias
+from pyam._ops import _op_data
 from pyam.index import replace_index_values
 from pyam.timeseries import growth_rate
 from pyam.utils import remove_from_list
@@ -25,6 +26,55 @@ class IamComputeAccessor:
 
     def __init__(self, df):
         self._df = df
+
+    def share(self, a, b, name, axis="variable", append=False):
+        """Compute the share of timeseries data `a` relative to `b` along an `axis`
+
+        This function computes `(a / b) * 100` and assigns the unit '%'. If `a` or `b`
+        are lists, the method applies
+        :meth:`pandas.groupby().sum() <pandas.core.groupby.GroupBy.sum>` on each group.
+        If either `a` or `b` are not defined for a row and `fillna` is not specified,
+        no value is computed for that row.
+
+        Parameters
+        ----------
+        a, b : str or list of str
+            Numerator and denominator for the computation.
+        name : str
+            Name of the computed timeseries data on the `axis`.
+        axis : str, optional
+            Axis along which to compute.
+        append : bool, optional
+            Whether to append aggregated timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+        """
+        # check that units are valid to compute shares
+        a_unit = self._df.filter(**{axis: a}).unit
+        b_unit = self._df.filter(**{axis: b}).unit
+        for arg, _unit in (("a", a_unit), ("b", b_unit)):
+            if len(_unit) > 1:
+                raise ValueError(f"Units of `{arg}` not unique: {', '.join(_unit)}")
+        if a_unit != b_unit:
+            raise ValueError(f"Mismatching units: '{a_unit[0]}' != '{b_unit[0]}'")
+
+        # compute the share by dividing "a / b" and multiplying by 100
+        _value = _op_data(
+            self._df,
+            name,
+            "divide",
+            a=a,
+            b=b,
+            axis=axis,
+            ignore_units="%",
+        )
+        _value = _value * 100
+
+        # append to `self` or return as `IamDataFrame`
+        return self._df._finalize(_value, append=append)
 
     def quantiles(
         self, quantiles, weights=None, level=["model", "scenario"], append=False

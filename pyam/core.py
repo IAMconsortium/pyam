@@ -2244,7 +2244,7 @@ class IamDataFrame:
         Parameters
         ----------
         a, b : str, list of str or a number
-            Items to be used for the division.
+            Numerator and denomanitor for the computation.
         name : str
             Name of the computed timeseries data on the `axis`.
         axis : str, optional
