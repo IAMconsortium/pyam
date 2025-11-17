@@ -28,7 +28,7 @@ class IamComputeAccessor:
         self._df = df
 
     def share(self, a, b, name, axis="variable", append=False):
-        """Compute the share of timeseries data `a` and `b` along an `axis`
+        """Compute the share of timeseries data `a` relative to `b` along an `axis`
 
         This function computes `(a / b) * 100` and assigns the unit '%'. If `a` or `b`
         are lists, the method applies
@@ -38,7 +38,7 @@ class IamComputeAccessor:
 
         Parameters
         ----------
-        a, b : str, list of str or a number
+        a, b : str or list of str
             Numerator and denominator for the computation.
         name : str
             Name of the computed timeseries data on the `axis`.
