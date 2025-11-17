@@ -1,6 +1,10 @@
 pyam: analysis & visualization <br /> of integrated-assessment and macro-energy scenarios
 =========================================================================================
 
+Copyright 2017-2025 IIASA and the pyam developer team  
+Licensed under the Apache License, Version 2.0;
+see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
+
 [![license](https://img.shields.io/badge/license-Apache%202.0-black)](https://github.com/IAMconsortium/pyam/blob/main/LICENSE)
 [![pypi](https://img.shields.io/pypi/v/pyam-iamc.svg)](https://pypi.python.org/pypi/pyam-iamc/)
 [![conda](https://img.shields.io/conda/vn/conda-forge/pyam?logo=anaconda)](https://anaconda.org/conda-forge/pyam)
@@ -25,7 +29,7 @@ Overview and scope
 ------------------
 
 The open-source Python package **pyam** provides a suite of tools and functions
-for analyzing and visualizing input data (i.e., assumptions/parametrization) 
+for analyzing and visualizing input data (i.e., assumptions/parametrization)
 and results (model output) of integrated-assessment models,
 macro-energy scenarios, energy systems analysis, and sectoral studies.
 
@@ -33,11 +37,11 @@ The comprehensive **documentation** is hosted on [Read the Docs](https://pyam-ia
 
 ### Key features
 
- - Simple analysis of scenario timeseries data with an interface similar in feel & style
-   to the widely used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
- - Advanced visualization and plotting functions
-   (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
- - Scripted validation and processing of scenario data and results
+- Simple analysis of scenario timeseries data with an interface similar in feel & style
+  to the widely used [pandas.DataFrame](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html)
+- Advanced visualization and plotting functions
+  (see the [gallery](https://pyam-iamc.readthedocs.io/en/stable/gallery/index.html))
+- Scripted validation and processing of scenario data and results
 
 ### Timeseries types & data formats
 
@@ -59,10 +63,10 @@ from the [CD-LINKS](https://www.cd-links.org) project*
 #### Subannual time resolution
 
 The package also supports timeseries data with a *sub-annual time resolution*:
- - Continuous-time data using the Python [datetime format](https://docs.python.org/3/library/datetime.html)
- - "Representative timeslices" (e.g., "winter-night", "summer-day")
-   using the pyam *extra-columns* feature 
-   
+
+- Continuous-time data using the Python [datetime format](https://docs.python.org/3/library/datetime.html)
+- "Representative timeslices" (e.g., "winter-night", "summer-day")
+  using the pyam *extra-columns* feature
 
 [Read the docs](https://pyam-iamc.readthedocs.io/en/stable/data.html)
 for more information about the pyam data model
@@ -80,6 +84,7 @@ Installation
 https://pypi.org/project/pyam-iamc/
 
 Please install using
+
 ```
 pip install pyam-iamc
 ```
@@ -89,6 +94,7 @@ pip install pyam-iamc
 https://anaconda.org/conda-forge/pyam
 
 Please install using
+
 ```
 conda install pyam
 ```
@@ -134,7 +140,7 @@ by Matthew Gidden ([@gidden](https://github.com/gidden))
 and Daniel Huppmann ([@danielhuppmann](https://github.com/danielhuppmann/)).
 See the complete [list of contributors](AUTHORS.rst).
 
-The core maintenance of the package is done by 
+The core maintenance of the package is done by
 the *Scenario Services & Scientific Software* research theme
 at the IIASA Energy, Climate, and Enviroment program.
 Visit https://software.ece.iiasa.ac.at for more information.
@@ -154,12 +160,12 @@ of the GitHub repository.
 Published to mark the first major release of the **pyam** package.
 
 > Daniel Huppmann, Matthew Gidden, Zebedee Nicholls, Jonas Hörsch, Robin Lamboll,
-Paul Natsuo Kishimoto, Thorsten Burandt, Oliver Fricko, Edward Byers, Jarmo Kikstra,
-Maarten Brinkerink, Maik Budzinski, Florian Maczek, Sebastian Zwickl-Bernhard,
-Lara Welder, Erik Francisco Alvarez Quispe, and Christopher J. Smith.
+> Paul Natsuo Kishimoto, Thorsten Burandt, Oliver Fricko, Edward Byers, Jarmo Kikstra,
+> Maarten Brinkerink, Maik Budzinski, Florian Maczek, Sebastian Zwickl-Bernhard,
+> Lara Welder, Erik Francisco Alvarez Quispe, and Christopher J. Smith.
 *pyam: Analysis and visualisation of integrated assessment and macro-energy scenarios.*
 **Open Research Europe**, 2021.
-doi: [10.12688/openreseurope.13633.2](https://doi.org/10.12688/openreseurope.13633.2)
+> doi: [10.12688/openreseurope.13633.2](https://doi.org/10.12688/openreseurope.13633.2)
 
 ### Release v0.1.2 (November 2018)
 
@@ -170,13 +176,4 @@ in the IPCC SR15 and the Horizon 2020 CRESCENDO project.
 *pyam: a Python package for the analysis and visualization of models of the interaction
 of climate, human, and environmental systems.*
 **Journal of Open Source Software (JOSS)**, 4(33):1095, 2019.
-doi: [10.21105/joss.01095](https://doi.org/10.21105/joss.01095).
-
-License
--------
-
-Copyright 2017-2024 IIASA and the pyam developer team
-
-The **pyam** package is licensed
-under the Apache License, Version 2.0 (the "License");  
-see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
+> doi: [10.21105/joss.01095](https://doi.org/10.21105/joss.01095).
