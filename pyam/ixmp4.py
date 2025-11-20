@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 def read_ixmp4(
     platform: ixmp4.Platform | str,
+    *,
     default_only: bool = True,
     model: str | list[str] | None = None,
     scenario: str | list[str] | None = None,
@@ -70,7 +71,7 @@ def read_ixmp4(
     return IamDataFrame(data, meta=meta, index=index)
 
 
-def read_ixmp4_run(
+def read_run(
     run: ixmp4.Run,
     region: str | list[str] | None = None,
     variable: str | list[str] | None = None,

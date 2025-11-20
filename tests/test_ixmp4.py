@@ -3,7 +3,8 @@ from ixmp4.core.region import RegionModel
 from ixmp4.core.unit import UnitModel
 
 import pyam
-from pyam import read_ixmp4, read_ixmp4_run
+from pyam import read_ixmp4
+from pyam.ixmp4 import read_run
 from pyam.testing import assert_iamframe_equal
 
 
@@ -119,7 +120,7 @@ def test_ixmp4_read_run(test_platform, test_df):
 
     # get a run and cast to an IamDataFrame
     run = test_platform.runs.get("model_a", "scen_a")
-    obs = read_ixmp4_run(run)
+    obs = read_run(run)
 
     # assert that the returned object and the original IamDataFrame are equal
     exp = test_df.filter(scenario="scen_a")
