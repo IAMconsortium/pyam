@@ -1,6 +1,8 @@
 # Next Release
 
 - [#941](https://github.com/IAMconsortium/pyam/pull/941) Add a `compute.share()` method
+- [#938](https://github.com/IAMconsortium/pyam/pull/938) Add a function to initialize an IamDataFrame from an *
+  *ixmp4.Run**
 
 # Release v3.2.0
 

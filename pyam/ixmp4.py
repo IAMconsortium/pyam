@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 def read_ixmp4(
     platform: ixmp4.Platform | str,
+    *,
     default_only: bool = True,
     model: str | list[str] | None = None,
     scenario: str | list[str] | None = None,
@@ -68,6 +69,48 @@ def read_ixmp4(
         index = ["model", "scenario", "version"]
 
     return IamDataFrame(data, meta=meta, index=index)
+
+
+def read_run(
+    run: ixmp4.Run,
+    region: str | list[str] | None = None,
+    variable: str | list[str] | None = None,
+    unit: str | list[str] | None = None,
+    year: int | list[int] | None = None,
+):
+    """Return timeseries data and meta indicatos from an ixmp4 run as IamDataFrame
+
+    Parameters
+    ----------
+    run : :class:`ixmp4.Run`
+        An ixmp4 run instance from which to read timeseries data and meta indicators
+    region, variable, unit : str or list of str, optional
+        Filter timeseries data by these dimensions.
+    year : int or list of int, optional
+        Filter timeseries data by time domain.
+    """
+    from pyam import IamDataFrame
+
+    if year is not None:
+        raise NotImplementedError("Filter by 'year' not implemented in ixmp4.")
+
+    meta = pd.DataFrame.from_dict(run.meta, orient="index").T
+    meta.index = pd.MultiIndex.from_tuples(
+        [(run.model.name, run.scenario.name)],
+        name=["model", "scenario"]
+    )
+    meta["version"] = run.version
+
+    return IamDataFrame(
+        data=run.iamc.tabulate(
+            region=region,
+            variable=variable,
+            unit=unit,
+        ),
+        meta=meta,
+        model=run.model.name,
+        scenario=run.scenario.name,
+    )
 
 
 def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
