@@ -4,9 +4,11 @@ import math
 import pandas as pd
 import wquantiles
 
+import pyam
 from pyam._debiasing import _compute_bias
 from pyam._ops import _op_data
 from pyam.index import replace_index_values
+from pyam.kaya import kaya_factors, kaya_variables
 from pyam.timeseries import growth_rate
 from pyam.utils import remove_from_list
 
@@ -298,6 +300,127 @@ class IamComputeAccessor:
 
         """
         _compute_bias(self._df, name, method, axis)
+
+    def kaya_variables(self, append=False):
+        """Create the set of variables needed to compute Kaya factors.
+
+        Parameters
+        ----------
+        append : bool, optional
+            Whether to append computed timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+
+        Notes
+        -----
+
+        Example of calling the method:
+
+        .. code-block:: python
+
+            df.compute.kaya_variables(append=True)
+
+        The IamDataFrame must contain the following variables, otherwise the method
+        will return None:
+        .. list-table::
+            - Required Variables
+            - Population
+            - GDP (MER or PPP)
+            - Final Energy
+            - Primary Energy
+            - Primary Energy|Coal
+            - Primary Energy|Oil
+            - Primary Energy|Gas
+            - Emissions|CO2|Industrial Processes
+            - Emissions|CO2|Carbon Capture and Storage
+            - Emissions|CO2|Carbon Capture and Storage|Biomass
+            - Emissions|CO2|Fossil Fuels and Industry
+            - Emissions|CO2|AFOLU
+            - Carbon Sequestration|CCS|Fossil|Energy
+            - Carbon Sequestration|CCS|Fossil|Industrial Processes
+            - Carbon Sequestration|CCS|Biomass|Energy
+            - Carbon Sequestration|CCS|Biomass|Industrial Processes
+
+        """
+
+        kaya_variables_frame = kaya_variables.compute_kaya_variables(self._df)
+        if kaya_variables_frame is None:
+            return None
+        if append:
+            self._df.append(
+                _find_non_duplicate_rows(self._df, kaya_variables_frame), inplace=True
+            )
+            return None
+
+        return kaya_variables_frame
+
+    def kaya_factors(self, append=False):
+        """Compute the factors for the Kaya Decomposition Analysis
+
+        Parameters
+        ----------
+        append : bool, optional
+            Whether to append computed timeseries data to this instance.
+
+        Returns
+        -------
+        :class:`IamDataFrame` or **None**
+            Computed timeseries data or None if `append=True`.
+
+        Notes
+        -----
+
+        Example of calling the method:
+
+        .. code-block:: python
+
+            df.compute.kaya_factors(append=True)
+
+        The IamDataFrame must contain the following variables, otherwise the method
+        will return None:
+        .. list-table::
+            - Required Variables
+            - Population
+            - GDP (MER or PPP)
+            - Final Energy
+            - Primary Energy
+            - Primary Energy|Coal
+            - Primary Energy|Oil
+            - Primary Energy|Gas
+            - Emissions|CO2|Industrial Processes
+            - Emissions|CO2|Carbon Capture and Storage
+            - Emissions|CO2|Carbon Capture and Storage|Biomass
+            - Emissions|CO2|Fossil Fuels and Industry
+            - Emissions|CO2|AFOLU
+            - Carbon Sequestration|CCS|Fossil|Energy
+            - Carbon Sequestration|CCS|Fossil|Industrial Processes
+            - Carbon Sequestration|CCS|Biomass|Energy
+            - Carbon Sequestration|CCS|Biomass|Industrial Processes
+        """
+        kaya_variables = self.kaya_variables(append=False)
+        if kaya_variables is None:
+            return None
+        kaya_factors_frame = kaya_factors.compute_kaya_factors(kaya_variables)
+        if kaya_factors_frame is None:
+            return None
+        if append:
+            self._df.append(
+                _find_non_duplicate_rows(self._df, kaya_factors_frame), inplace=True
+            )
+        return kaya_factors_frame
+
+
+def _find_non_duplicate_rows(original_df, variables_to_add):
+    variables_for_append = pyam.IamDataFrame(
+        variables_to_add.as_pandas(meta_cols=False)
+        .merge(original_df.as_pandas(meta_cols=False), how="left", indicator=True)
+        .query('_merge=="left_only"')
+        .drop(columns="_merge")
+    )
+    return variables_for_append
 
 
 def _compute_learning_rate(x, performance, experience):

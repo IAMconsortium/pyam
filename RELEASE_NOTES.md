@@ -51,6 +51,7 @@ and database transactions.
 
 ## Individual updates
 
+- [#875](https://github.com/IAMconsortium/pyam/pull/875) Add methods to the `compute` module implementing Kaya decomposition analysis.
 - [#901](https://github.com/IAMconsortium/pyam/pull/901) Add support for Python 3.13
 - [#899](https://github.com/IAMconsortium/pyam/pull/899) Add `to_netcdf()` method
 - [#896](https://github.com/IAMconsortium/pyam/pull/896) Add `sort_data()` method
