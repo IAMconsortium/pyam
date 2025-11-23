@@ -129,7 +129,8 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
     if not isinstance(result, pd.Series):
         msg = f"Value returned by `{method.__name__}` cannot be cast to an IamDataFrame"
         raise ValueError(f"{msg}: {result}")
-    print(method)
+
+    # remove any inf-values from the results
     if method == divide:
         inf_values = ~np.isinf(result)
         if any(inf_values):
