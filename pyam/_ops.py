@@ -1,3 +1,4 @@
+import logging
 import operator
 
 import numpy as np
@@ -7,6 +8,8 @@ from pint import Quantity
 
 from pyam.index import append_index_level, get_index_levels, replace_index_values
 from pyam.utils import to_list
+
+logger = logging.getLogger(__name__)
 
 
 # these functions have to be defined explicitly to allow calling them with keyword args
@@ -126,7 +129,14 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
     if not isinstance(result, pd.Series):
         msg = f"Value returned by `{method.__name__}` cannot be cast to an IamDataFrame"
         raise ValueError(f"{msg}: {result}")
-    result = result[~np.isinf(result)]
+    print(method)
+    if method == divide:
+        inf_values = ~np.isinf(result)
+        if any(inf_values):
+            logger.warning(
+                f"Computation yields {len(inf_values)} inf-values, dropped from result."
+            )
+            result = result[~np.isinf(result)]
 
 
     # separate pint quantities into numerical value and unit (as index)
