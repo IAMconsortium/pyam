@@ -1,5 +1,6 @@
 import operator
 
+import numpy as np
 import pandas as pd
 from iam_units import registry
 from pint import Quantity
@@ -125,6 +126,8 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
     if not isinstance(result, pd.Series):
         msg = f"Value returned by `{method.__name__}` cannot be cast to an IamDataFrame"
         raise ValueError(f"{msg}: {result}")
+    result = result[~np.isinf(result)]
+
 
     # separate pint quantities into numerical value and unit (as index)
     if ignore_units is False:
