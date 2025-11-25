@@ -5,8 +5,8 @@ import pandas as pd
 import wquantiles
 
 from pyam._debiasing import _compute_bias
-from pyam._ops import _op_data
 from pyam.index import replace_index_values
+from pyam.operations import apply_ops
 from pyam.timeseries import growth_rate
 from pyam.utils import remove_from_list
 
@@ -62,7 +62,7 @@ class IamComputeAccessor:
             raise ValueError(f"Mismatching units: '{a_unit[0]}' != '{b_unit[0]}'")
 
         # compute the share by dividing "a / b" and multiplying by 100
-        _value = _op_data(
+        _value = apply_ops(
             self._df,
             name,
             "divide",

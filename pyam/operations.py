@@ -66,7 +66,7 @@ KNOWN_OPS = {
 }
 
 
-def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, **kwds):  # noqa: C901
+def apply_ops(df, name, method, axis, fillna=None, args=(), ignore_units=False, **kwds):  # noqa: C901
     """Internal implementation of numerical operations on timeseries"""
 
     if axis not in df.dimensions:

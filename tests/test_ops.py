@@ -6,7 +6,7 @@ import pytest
 from iam_units import registry
 
 from pyam import IamDataFrame
-from pyam._ops import _op_data
+from pyam.operations import apply_ops
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import IAMC_IDX
 
@@ -507,13 +507,13 @@ def test_apply_variable(test_df_year, append):
 def test_ops_unknown_axis(test_df_year):
     """Using an unknown axis raises an error"""
     with pytest.raises(ValueError, match="Unknown axis: foo"):
-        _op_data(test_df_year, "_", "_", "foo")
+        apply_ops(test_df_year, "_", "_", "foo")
 
 
 def test_ops_unknown_method(test_df_year):
     """Using an unknown method raises an error"""
     with pytest.raises(ValueError, match="Unknown method: foo"):
-        _op_data(test_df_year, "_", "foo", "variable")
+        apply_ops(test_df_year, "_", "foo", "variable")
 
 
 @pytest.mark.parametrize("periods, year", (({}, 2010), ({"periods": -1}, 2005)))

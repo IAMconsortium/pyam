@@ -22,7 +22,6 @@ except ImportError:
     HAS_DATAPACKAGE = False
 
 from pyam._compare import _compare
-from pyam._ops import _op_data
 from pyam.aggregation import (
     _aggregate,
     _aggregate_recursive,
@@ -49,6 +48,7 @@ from pyam.index import (
     verify_index_integrity,
 )
 from pyam.ixmp4 import write_to_ixmp4
+from pyam.operations import apply_ops
 from pyam.plotting import PlotAccessor
 from pyam.run_control import run_control
 from pyam.slice import IamSlice
@@ -2115,7 +2115,7 @@ class IamDataFrame:
         For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
-        _value = _op_data(self, name, "add", **kwds, a=a, b=b)
+        _value = apply_ops(self, name, "add", **kwds, a=a, b=b)
 
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
@@ -2171,7 +2171,7 @@ class IamDataFrame:
         For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
-        _value = _op_data(self, name, "subtract", **kwds, a=a, b=b)
+        _value = apply_ops(self, name, "subtract", **kwds, a=a, b=b)
 
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
@@ -2226,7 +2226,7 @@ class IamDataFrame:
         For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
-        _value = _op_data(self, name, "multiply", **kwds, a=a, b=b)
+        _value = apply_ops(self, name, "multiply", **kwds, a=a, b=b)
 
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
@@ -2281,7 +2281,7 @@ class IamDataFrame:
         For example, the unit :code:`EJ/yr` may be reformatted to :code:`EJ / a`.
         """
         kwds = dict(axis=axis, fillna=fillna, ignore_units=ignore_units)
-        _value = _op_data(self, name, "divide", **kwds, a=a, b=b)
+        _value = apply_ops(self, name, "divide", **kwds, a=a, b=b)
 
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_value, append=append)
@@ -2338,7 +2338,7 @@ class IamDataFrame:
         """
 
         return self._finalize(
-            _op_data(self, name, func, axis=axis, fillna=fillna, args=args, **kwargs),
+            apply_ops(self, name, func, axis=axis, fillna=fillna, args=args, **kwargs),
             append=append,
         )
 
