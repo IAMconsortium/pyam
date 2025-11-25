@@ -1,11 +1,11 @@
 import logging
 import operator
 
-import numpy as np
 import pandas as pd
 from iam_units import registry
 from pint import Quantity
 
+from pyam.exceptions import format_log_message
 from pyam.index import append_index_level, get_index_levels, replace_index_values
 from pyam.utils import to_list
 
@@ -26,6 +26,20 @@ def multiply(a, b):
 
 
 def divide(a, b):
+    if isinstance(b, Quantity) and b == 0:
+        raise ZeroDivisionError
+    if isinstance(b, pd.Series):
+        # remove any zeros from the denominator
+        zeroes = b == 0
+        if any(zeroes):
+            logger.warning(
+                format_log_message(
+                    "Division by zero dropped from result",
+                    b[zeroes].index,
+                )
+            )
+            b = b[~zeroes]
+
     return operator.truediv(*_make_series(a, b))
 
 
@@ -129,16 +143,6 @@ def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, *
     if not isinstance(result, pd.Series):
         msg = f"Value returned by `{method.__name__}` cannot be cast to an IamDataFrame"
         raise ValueError(f"{msg}: {result}")
-
-    # remove any inf-values from the results
-    if method == divide:
-        inf_values = ~np.isinf(result)
-        if any(inf_values):
-            logger.warning(
-                f"Computation yields {len(inf_values)} inf-values, dropped from result."
-            )
-            result = result[~np.isinf(result)]
-
 
     # separate pint quantities into numerical value and unit (as index)
     if ignore_units is False:
