@@ -362,6 +362,43 @@ def test_divide_variable(test_df_year, arg, df_func, expected_unit, append):
 
 
 @pytest.mark.parametrize(
+    "value", (0, 0., registry.Quantity(0, "EJ/yr"))
+)
+def test_divide_by_zero_raises(test_df_year, value):
+    """Check that division by zero (as single value) raises an error"""
+    with pytest.raises(ZeroDivisionError):
+        test_df_year.divide("Primary Energy", value, "Ratio")
+
+
+@pytest.mark.parametrize("append", (False, True))
+def test_divide_by_zero_drop_null(test_df_year, append, caplog):
+    """Check that division by zero in a series removes zeroes and writes to log"""
+
+    exp = df_ops_variable(operator.truediv, "Ratio", unit="", meta=test_df_year.meta)
+    exp.filter(year=2005, inplace=True)
+
+    test_df_year._data.loc["model_a", "scen_a", "World", "Primary Energy|Coal", "EJ/yr", 2010] = 0
+
+    if append:
+        obs = test_df_year.copy()
+        obs.divide("Primary Energy", "Primary Energy|Coal", "Ratio", append=True)
+        exp = test_df_year.append(exp)
+    else:
+        obs = test_df_year.divide("Primary Energy", "Primary Energy|Coal", "Ratio")
+
+    assert_iamframe_equal(exp, obs)
+
+    msg = (
+        "Division by zero dropped from result:\n"
+        "     model scenario region  year\n"
+        "0  model_a   scen_a  World  2010"
+    )
+    idx = caplog.messages.index(msg)
+    assert caplog.records[idx].levelname == "WARNING"
+
+
+
+@pytest.mark.parametrize(
     "arg, df_func, fillna",
     (
         ("Primary Energy|Coal", df_ops_variable_default, {"c": 7, "b": 5}),
