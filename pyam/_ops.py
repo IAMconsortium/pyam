@@ -26,7 +26,9 @@ def multiply(a, b):
 
 
 def divide(a, b):
-    if isinstance(b, Quantity) and b == 0:
+    if isinstance(b, (int, float)) and b == 0:
+        raise ZeroDivisionError
+    if isinstance(b, Quantity) and b.magnitude == 0:
         raise ZeroDivisionError
     if isinstance(b, pd.Series):
         # remove any zeros from the denominator
