@@ -389,7 +389,7 @@ def test_divide_by_zero_drop_null(test_df_year, append, caplog):
     assert_iamframe_equal(exp, obs)
 
     msg = (
-        "Division by zero dropped from result:\n"
+        "Dropped 1 datapoints to avoid division by zero:\n"
         "     model scenario region  year\n"
         "0  model_a   scen_a  World  2010"
     )

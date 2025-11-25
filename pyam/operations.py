@@ -36,7 +36,7 @@ def divide(a, b):
         if any(zeroes):
             logger.warning(
                 format_log_message(
-                    "Division by zero dropped from result",
+                    f"Dropped {sum(zeroes)} datapoints to avoid division by zero",
                     b[zeroes].index,
                 )
             )
