@@ -1,11 +1,15 @@
+import logging
 import operator
 
 import pandas as pd
 from iam_units import registry
 from pint import Quantity
 
+from pyam.exceptions import format_log_message
 from pyam.index import append_index_level, get_index_levels, replace_index_values
 from pyam.utils import to_list
+
+logger = logging.getLogger(__name__)
 
 
 # these functions have to be defined explicitly to allow calling them with keyword args
@@ -22,6 +26,22 @@ def multiply(a, b):
 
 
 def divide(a, b):
+    if isinstance(b, (int, float)) and b == 0:
+        raise ZeroDivisionError
+    if isinstance(b, Quantity) and b.magnitude == 0:
+        raise ZeroDivisionError
+    if isinstance(b, pd.Series):
+        # remove any zeros from the denominator
+        zeroes = b == 0
+        if any(zeroes):
+            logger.warning(
+                format_log_message(
+                    f"Dropped {sum(zeroes)} datapoints to avoid division by zero",
+                    b[zeroes].index,
+                )
+            )
+            b = b[~zeroes]
+
     return operator.truediv(*_make_series(a, b))
 
 
@@ -46,7 +66,7 @@ KNOWN_OPS = {
 }
 
 
-def _op_data(df, name, method, axis, fillna=None, args=(), ignore_units=False, **kwds):  # noqa: C901
+def apply_ops(df, name, method, axis, fillna=None, args=(), ignore_units=False, **kwds):  # noqa: C901
     """Internal implementation of numerical operations on timeseries"""
 
     if axis not in df.dimensions:

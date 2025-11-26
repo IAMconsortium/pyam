@@ -1,5 +1,6 @@
 # Next Release
 
+- [#943](https://github.com/IAMconsortium/pyam/pull/943) Improved handling for division by zero
 - [#941](https://github.com/IAMconsortium/pyam/pull/941) Add a `compute.share()` method
 - [#938](https://github.com/IAMconsortium/pyam/pull/938) Add a function to initialize an IamDataFrame from an *
   *ixmp4.Run**
