@@ -168,7 +168,7 @@ class Connection:
             self.connect(name)
 
         if self.auth.user is not None:
-            logger.info(f"You are connected as user `{self.auth.user}`")
+            logger.info(f"You are connected as user '{self.auth.user}'")
         else:
             logger.info("You are connected as an anonymous user")
 

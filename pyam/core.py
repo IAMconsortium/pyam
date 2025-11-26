@@ -372,7 +372,7 @@ class IamDataFrame:
         if name in self.meta.index.names:
             return get_index_levels(self.meta, name)
         # in case of non-standard meta.index.names
-        raise KeyError(f"Index `{name}` does not exist!")
+        raise KeyError("Index dimension not found: " + name)
 
     @property
     def region(self):

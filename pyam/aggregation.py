@@ -65,7 +65,7 @@ def _aggregate_recursive(df, variable, recursive):
 
     # downselect to components of `variable`, initialize list for aggregated (new) data
     # keep variable at highest level if it exists
-    _df = df.filter(variable=[variable, f"{variable}|*"])
+    _df = df.filter(variable=[variable, variable + "|*"])
     data_list = []
 
     # iterate over variables (bottom-up) and aggregate all components up to `variable`
@@ -86,8 +86,10 @@ def _aggregate_recursive(df, variable, recursive):
         if recursive != "skip-validate" and not _overlap.empty:
             conflict = _compare(_data_self, _data_agg[_overlap], "self", "aggregate")
             if not conflict.empty:
-                msg = "Aggregated values are inconsistent with existing data:"
-                raise ValueError(f"{msg}\n{conflict}")
+                raise ValueError(
+                    "Aggregated values are inconsistent with existing data:\n"
+                    + str(conflict)
+                )
 
         # append aggregated values that are not already in data
         _df.append(_data_agg[_new], inplace=True)

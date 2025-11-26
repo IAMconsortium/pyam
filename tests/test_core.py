@@ -238,7 +238,7 @@ def test_init_df_with_custom_index(test_pd_df):
     # check that index attributes were set correctly and that df.model fails
     assert df.source == ["model_a"]
     assert df.version == [1, 2, 3]
-    with pytest.raises(KeyError, match="Index `model` does not exist!"):
+    with pytest.raises(KeyError, match="Index dimension not found: model"):
         df.model
 
 
@@ -264,7 +264,7 @@ def test_init_with_illegal_column(test_pd_df, illegal):
     test_pd_df[illegal] = "foo"
 
     # check that initialising an instance with an illegal column name raises
-    msg = f"Illegal columns for timeseries data: '{illegal}'"
+    msg = f"Illegal columns for timeseries data: {illegal}"
     with pytest.raises(ValueError, match=msg):
         IamDataFrame(test_pd_df)
 
