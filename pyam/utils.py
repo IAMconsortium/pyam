@@ -267,8 +267,9 @@ def _intuit_column_groups(df, index, include_index=False):  # noqa: C901
     conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
     if conflict_cols:
         _args = ", ".join([f"<alternative_column_name>='{i}'" for i in conflict_cols])
+        conflict_cols_str = ", ".join(conflict_cols)
         raise ValueError(
-            f"Illegal columns for timeseries data: '{"', '".join(conflict_cols)}'\n"
+            f"Illegal columns for timeseries data: {conflict_cols_str}\n"
             f"Use `IamDataFrame(..., {_args})` to rename at initialization."
         )
 
