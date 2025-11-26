@@ -1018,7 +1018,7 @@ class IamDataFrame:
             # if all scenarios have invalid datapoints, do not assign to the category
             if len(not_valid_index) == len(self.index):
                 logger.info(
-                    f"No scenarios satisfy the criteria for category `{name}: {value}`"
+                    f"No scenarios satisfy the criteria for category `{name}={value}`"
                 )
                 return
             # otherwise, assign scenarios without invalid datapoints to the category
@@ -1028,12 +1028,12 @@ class IamDataFrame:
         self._new_meta_column(name)
         self.meta.loc[category_index, name] = value
         n = len(category_index)
-        logger.info(f"{format_n(n, 'scenario')} categorized as '{name}': {value}")
+        logger.info(f"{format_n(n, 'scenario')} categorized as `{name}={value}`")
 
     def _new_meta_column(self, name):
         """Add a column to meta if it doesn't exist, set value to nan"""
         if name is None:
-            raise ValueError(f"Cannot add a meta column {name}")
+            raise ValueError("Cannot add an unnamed meta column.")
         if name not in self.meta:
             self.meta[name] = np.nan
 

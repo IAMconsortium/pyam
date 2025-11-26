@@ -525,7 +525,7 @@ def merge_exclude(left, right, ignore_conflict=False):
             else:
                 raise_data_error(
                     (
-                        "Conflict when merging `exclude` for the following ",
+                        "Conflict when merging `exclude` for the following scenarios",
                         format_n(len(conflict), "scenario"),
                     ),
                     conflict,
