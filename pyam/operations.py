@@ -37,7 +37,7 @@ def divide(a, b):
             logger.warning(
                 format_log_message(
                     "Dropped "
-                    + format_n("datapoint", sum(zeroes))
+                    + format_n(sum(zeroes), "datapoint")
                     + " to avoid division by zero",
                     b[zeroes].index,
                 )

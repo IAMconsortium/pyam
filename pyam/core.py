@@ -1028,7 +1028,7 @@ class IamDataFrame:
         self._new_meta_column(name)
         self.meta.loc[category_index, name] = value
         n = len(category_index)
-        logger.info(f"{format_n("scenario", n)} categorized as '{name}': {value}")
+        logger.info(f"{format_n(n, 'scenario')} categorized as '{name}': {value}")
 
     def _new_meta_column(self, name):
         """Add a column to meta if it doesn't exist, set value to nan"""
