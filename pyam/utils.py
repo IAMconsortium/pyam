@@ -524,7 +524,7 @@ def merge_exclude(left, right, ignore_conflict=False):
                 raise_data_error(
                     (
                         "Conflict when merging `exclude` for the following ",
-                        format_s(len(conflict), "scenario"),
+                        format_n("scenario", len(conflict)),
                     ),
                     conflict,
                 )
@@ -680,5 +680,5 @@ def to_int(x, index=False):
         return _x
 
 
-def format_s(n, string):
+def format_n(string, n):
     return f"{n} {string}{'s' if n!=1 else ''}"

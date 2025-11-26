@@ -7,7 +7,7 @@ from pint import Quantity
 
 from pyam.exceptions import format_log_message
 from pyam.index import append_index_level, get_index_levels, replace_index_values
-from pyam.utils import format_s, to_list
+from pyam.utils import format_n, to_list
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ def divide(a, b):
             logger.warning(
                 format_log_message(
                     "Dropped "
-                    + format_s(sum(zeroes), "datapoint")
+                    + format_n("datapoint", sum(zeroes))
                     + " to avoid division by zero",
                     b[zeroes].index,
                 )
