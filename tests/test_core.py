@@ -264,7 +264,7 @@ def test_init_with_illegal_column(test_pd_df, illegal):
     test_pd_df[illegal] = "foo"
 
     # check that initialising an instance with an illegal column name raises
-    msg = f"Illegal column for timeseries data: '{illegal}'"
+    msg = f"Illegal columns for timeseries data: '{illegal}'"
     with pytest.raises(ValueError, match=msg):
         IamDataFrame(test_pd_df)
 

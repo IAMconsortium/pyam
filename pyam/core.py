@@ -63,6 +63,7 @@ from pyam.utils import (
     adjust_log_level,
     compare_year_time,
     format_data,
+    format_s,
     get_excel_file_with_kwargs,
     is_list_like,
     make_index,
@@ -73,7 +74,6 @@ from pyam.utils import (
     read_file,
     read_pandas,
     remove_from_list,
-    s,
     to_list,
     write_sheet,
 )
@@ -1028,7 +1028,7 @@ class IamDataFrame:
         self._new_meta_column(name)
         self.meta.loc[category_index, name] = value
         n = len(category_index)
-        logger.info(f"{n} scenario{s(n)} categorized as `{name}: {value}`")
+        logger.info(f"{format_s(n, "scenario")} categorized as '{name}': {value}")
 
     def _new_meta_column(self, name):
         """Add a column to meta if it doesn't exist, set value to nan"""

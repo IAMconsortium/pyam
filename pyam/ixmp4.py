@@ -96,8 +96,7 @@ def read_run(
 
     meta = pd.DataFrame.from_dict(run.meta, orient="index").T
     meta.index = pd.MultiIndex.from_tuples(
-        [(run.model.name, run.scenario.name)],
-        name=["model", "scenario"]
+        [(run.model.name, run.scenario.name)], name=["model", "scenario"]
     )
     meta["version"] = run.version
 
