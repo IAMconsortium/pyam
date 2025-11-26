@@ -119,6 +119,7 @@ def test_add_variable_ignore_units(test_df_year, arg, df_func, fillna, append):
 
 @pytest.mark.parametrize("append", (False, True))
 def test_add_variable_non_si_unit(test_df_year, append):
+    """Check that in-dataframe addition works with non-SI-units"""
     df = test_df_year.rename(unit={"EJ/yr": "foo"})
 
     exp = df_ops_variable(operator.add, "Sum", unit="foo", meta=test_df_year.meta)
@@ -135,7 +136,7 @@ def test_add_variable_non_si_unit(test_df_year, append):
 
 @pytest.mark.parametrize("append", (False, True))
 def test_add_scenario(test_df_year, append):
-    """Verify that in-dataframe addition works on a custom axis (`scenario`)"""
+    """Check that in-dataframe addition works on a custom axis (`scenario`)"""
 
     v = ("scen_a", "scen_b", "scen_sum")
     exp = IamDataFrame(
@@ -218,7 +219,8 @@ def test_subtract_variable_ignore_units(test_df_year, arg, df_func, fillna, appe
 
 
 @pytest.mark.parametrize("append", (False, True))
-def test_subtract_variable_non_si_unit_unit(test_df_year, append):
+def test_subtract_variable_non_si_unit(test_df_year, append):
+    """Check that in-dataframe addition works with non-SI units"""
     df = test_df_year.rename(unit={"EJ/yr": "foo"})
 
     exp = df_ops_variable(operator.sub, "Diff", unit="foo", meta=test_df_year.meta)
@@ -235,7 +237,7 @@ def test_subtract_variable_non_si_unit_unit(test_df_year, append):
 
 @pytest.mark.parametrize("append", (False, True))
 def test_subtract_scenario(test_df_year, append):
-    """Verify that in-dataframe subtraction works on a custom axis (`scenario`)"""
+    """Check that in-dataframe subtraction works on a custom axis (`scenario`)"""
 
     v = ("scen_a", "scen_b", "scen_diff")
     exp = IamDataFrame(
@@ -265,7 +267,7 @@ def test_subtract_scenario(test_df_year, append):
 )
 @pytest.mark.parametrize("append", (False, True))
 def test_multiply_variable(test_df_year, arg, df_func, expected_unit, append):
-    """Check that in-dataframe addition works on the default `variable` axis"""
+    """Check that in-dataframe multiplication works on the default `variable` axis"""
 
     exp = df_func(operator.mul, "Prod", unit=expected_unit, meta=test_df_year.meta)
 
@@ -316,7 +318,7 @@ def test_multiply_variable_ignore_units(test_df_year, arg, df_func, fillna, appe
 
 @pytest.mark.parametrize("append", (False, True))
 def test_multiply_scenario(test_df_year, append):
-    """Verify that in-dataframe addition works on a custom axis (`scenario`)"""
+    """Check that in-dataframe multiplication works on a custom axis (`scenario`)"""
 
     v = ("scen_a", "scen_b", "scen_product")
     exp = IamDataFrame(
@@ -347,7 +349,7 @@ def test_multiply_scenario(test_df_year, append):
 )
 @pytest.mark.parametrize("append", (False, True))
 def test_divide_variable(test_df_year, arg, df_func, expected_unit, append):
-    """Check that in-dataframe addition works on the default `variable` axis"""
+    """Check that in-dataframe division works on the default `variable` axis"""
 
     exp = df_func(operator.truediv, "Ratio", unit=expected_unit, meta=test_df_year.meta)
 
@@ -369,7 +371,7 @@ def test_divide_by_zero_raises(test_df_year, value):
 
 
 @pytest.mark.parametrize("append", (False, True))
-def test_divide_by_zero_drop_null(test_df_year, append, caplog):
+def test_divide_by_zero_drop_zero(test_df_year, append, caplog):
     """Check that division by zero in a series removes zeroes and writes to log"""
 
     exp = df_ops_variable(operator.truediv, "Ratio", unit="", meta=test_df_year.meta)
@@ -406,7 +408,7 @@ def test_divide_by_zero_drop_null(test_df_year, append, caplog):
 )
 @pytest.mark.parametrize("append", (False, True))
 def test_divide_variable_ignore_units(test_df_year, arg, df_func, fillna, append):
-    """Check that in-dataframe addition works with ignore_units"""
+    """Check that in-dataframe division works with ignore_units"""
 
     # change one unit to make ignore_units strictly necessary
     test_df_year.rename(
@@ -435,6 +437,7 @@ def test_divide_variable_ignore_units(test_df_year, arg, df_func, fillna, append
 
 @pytest.mark.parametrize("append", (False, True))
 def test_divide_variable_non_si_unit_unit(test_df_year, append):
+    """Check that in-dataframe addition works with non-SI units"""
     df = test_df_year.rename(unit={"EJ/yr": "foo"})
 
     exp = df_ops_variable(operator.truediv, "Ratio", unit="", meta=test_df_year.meta)
@@ -451,7 +454,7 @@ def test_divide_variable_non_si_unit_unit(test_df_year, append):
 
 @pytest.mark.parametrize("append", (False, True))
 def test_divide_scenario(test_df_year, append):
-    """Verify that in-dataframe addition works on a custom axis (`scenario`)"""
+    """Check that in-dataframe division works on a custom axis (`scenario`)"""
 
     v = ("scen_a", "scen_b", "scen_ratio")
     exp = IamDataFrame(
@@ -474,7 +477,7 @@ def test_divide_scenario(test_df_year, append):
 
 @pytest.mark.parametrize("append", (False, True))
 def test_apply_variable(test_df_year, append):
-    """Verify that in-dataframe apply works on the default `variable` axis"""
+    """Check that in-dataframe `apply` works on the default `variable` axis"""
 
     def custom_func(a, b, c, d):
         return a * b + c * d
