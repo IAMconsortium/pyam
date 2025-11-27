@@ -23,7 +23,7 @@ def _get_standard_colors(  # noqa: C901
             cmap = colormap
             colormap = plt.get_cmap(colormap)
             if colormap is None:
-                raise ValueError(f"Colormap {cmap} is not recognized")
+                raise ValueError(f"Colormap '{cmap}' is not recognized.")
         colors = [colormap(num) for num in np.linspace(0, 1, num=num_colors)]
     elif color is not None:
         if colormap is not None:

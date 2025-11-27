@@ -2,7 +2,7 @@ import logging
 
 import pandas as pd
 
-from pyam.utils import make_index, s
+from pyam.utils import format_n, make_index
 
 logger = logging.getLogger(__name__)
 
@@ -88,5 +88,6 @@ def _exclude_on_fail(df, index):
     df.exclude[index] = True
     n = len(index)
     logger.info(
-        f"{n} scenario{s(n)} failed validation and will be set as `exclude=True`."
+        format_n(n, "scenario")
+        + " failed validation and will be set as `exclude=True`."
     )

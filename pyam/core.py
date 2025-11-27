@@ -63,6 +63,7 @@ from pyam.utils import (
     adjust_log_level,
     compare_year_time,
     format_data,
+    format_n,
     get_excel_file_with_kwargs,
     is_list_like,
     make_index,
@@ -73,7 +74,6 @@ from pyam.utils import (
     read_file,
     read_pandas,
     remove_from_list,
-    s,
     to_list,
     write_sheet,
 )
@@ -372,7 +372,7 @@ class IamDataFrame:
         if name in self.meta.index.names:
             return get_index_levels(self.meta, name)
         # in case of non-standard meta.index.names
-        raise KeyError(f"Index `{name}` does not exist!")
+        raise KeyError("Index dimension not found: " + name)
 
     @property
     def region(self):
@@ -1018,7 +1018,7 @@ class IamDataFrame:
             # if all scenarios have invalid datapoints, do not assign to the category
             if len(not_valid_index) == len(self.index):
                 logger.info(
-                    f"No scenarios satisfy the criteria for category `{name}: {value}`"
+                    f"No scenarios satisfy the criteria for category `{name}={value}`"
                 )
                 return
             # otherwise, assign scenarios without invalid datapoints to the category
@@ -1028,12 +1028,12 @@ class IamDataFrame:
         self._new_meta_column(name)
         self.meta.loc[category_index, name] = value
         n = len(category_index)
-        logger.info(f"{n} scenario{s(n)} categorized as `{name}: {value}`")
+        logger.info(f"{format_n(n, 'scenario')} categorized as `{name}={value}`")
 
     def _new_meta_column(self, name):
         """Add a column to meta if it doesn't exist, set value to nan"""
         if name is None:
-            raise ValueError(f"Cannot add a meta column {name}")
+            raise ValueError("Cannot add an unnamed meta column.")
         if name not in self.meta:
             self.meta[name] = np.nan
 

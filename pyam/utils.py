@@ -266,11 +266,10 @@ def _intuit_column_groups(df, index, include_index=False):  # noqa: C901
     # check that there is no column in the timeseries data with reserved/illegal names
     conflict_cols = [i for i in existing_cols if i in ILLEGAL_COLS]
     if conflict_cols:
-        sep = "', '"
-        _cols = f"'{sep.join(conflict_cols)}'"
         _args = ", ".join([f"<alternative_column_name>='{i}'" for i in conflict_cols])
+        conflict_cols_str = ", ".join(conflict_cols)
         raise ValueError(
-            f"Illegal column{s(len(conflict_cols))} for timeseries data: {_cols}\n"
+            f"Illegal columns for timeseries data: {conflict_cols_str}\n"
             f"Use `IamDataFrame(..., {_args})` to rename at initialization."
         )
 
@@ -282,7 +281,8 @@ def _intuit_column_groups(df, index, include_index=False):  # noqa: C901
     missing_required_col = [c for c in REQUIRED_COLS if c not in existing_cols]
     if missing_required_col:
         raise ValueError(
-            f"Missing required columns in timeseries data: {missing_required_col}"
+            "Missing required columns in timeseries data: "
+            ", ".join.missing_required_col
         )
 
     # check whether data in wide format (standard IAMC) or long format (`value` column)
@@ -520,12 +520,14 @@ def merge_exclude(left, right, ignore_conflict=False):
     if not sect.empty:
         conflict = left[sect][left[sect] != right[sect]].index
         if not conflict.empty:
-            n = len(conflict)
             if ignore_conflict:
-                logger.warning(f"Ignoring conflict{s(n)} in `exclude` attribute.")
+                logger.warning("Ignoring conflicts in `exclude` attribute.")
             else:
                 raise_data_error(
-                    f"Conflict when merging `exclude` for the following scenario{s(n)}",
+                    (
+                        "Conflict when merging `exclude` for the following scenarios",
+                        format_n(len(conflict), "scenario"),
+                    ),
                     conflict,
                 )
     return pd.concat([left, right.loc[diff]], sort=False)
@@ -680,6 +682,5 @@ def to_int(x, index=False):
         return _x
 
 
-def s(n):
-    """Return an s if n!=1 for nicer formatting of log messages"""
-    return "s" if n != 1 else ""
+def format_n(n: int, name: str):
+    return f"{n} {name}{'s' if n!=1 else ''}"
