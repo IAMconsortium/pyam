@@ -39,10 +39,8 @@ def update_run_control(update):
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot(plot_df):
-    _plot_df = copy.deepcopy(plot_df)
-    _plot_df.set_meta(meta=[np.nan] * 4, name="test")
     fig, ax = plt.subplots(figsize=(8, 8))
-    _plot_df.plot(ax=ax, legend=True)
+    plot_df.plot(ax=ax, legend=True)
     return fig
 
 
