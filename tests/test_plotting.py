@@ -105,6 +105,22 @@ def test_line_color(plot_df):
 
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_by_meta(plot_df):
+    plot_df.meta["category"] = ["foo", "bar", "bar", "baz"]
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.plot(ax=ax, color="category", legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_by_meta_with_na(plot_df):
+    plot_df.meta["category"] = ["foo", "bar", "bar", np.nan]
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.plot(ax=ax, color="category", legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_PYAM_COLORS(plot_df):
     # add a family of lines for each color in plotting.PYAM_COLORS separated by
     # a small offset
