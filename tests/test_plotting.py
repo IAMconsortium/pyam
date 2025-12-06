@@ -39,10 +39,8 @@ def update_run_control(update):
 
 @pytest.mark.mpl_image_compare(**MPL_KWARGS)
 def test_line_plot(plot_df):
-    _plot_df = copy.deepcopy(plot_df)
-    _plot_df.set_meta(meta=[np.nan] * 4, name="test")
     fig, ax = plt.subplots(figsize=(8, 8))
-    _plot_df.plot(ax=ax, legend=True)
+    plot_df.plot(ax=ax, legend=True)
     return fig
 
 
@@ -101,6 +99,22 @@ def test_line_plot_label_color(plot_df):
 def test_line_color(plot_df):
     fig, ax = plt.subplots(figsize=(8, 8))
     plot_df.plot(ax=ax, color="model", legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_by_meta(plot_df):
+    plot_df.meta["category"] = ["foo", "bar", "bar", "baz"]
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.plot(ax=ax, color="category", legend=True)
+    return fig
+
+
+@pytest.mark.mpl_image_compare(**MPL_KWARGS)
+def test_line_color_by_meta_with_na(plot_df):
+    plot_df.meta["category"] = ["foo", "bar", "bar", np.nan]
+    fig, ax = plt.subplots(figsize=(8, 8))
+    plot_df.plot(ax=ax, color="category", legend=True)
     return fig
 
 
