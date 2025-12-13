@@ -1003,7 +1003,11 @@ def line(  # noqa: C901
     # cast to DataFrame if necessary
     if not isinstance(df, pd.DataFrame):
         meta_col_args = dict(color=color, marker=marker, linestyle=linestyle)
-        df = df.as_pandas(meta_cols=mpl_args_to_meta_cols(df, **meta_col_args))
+        meta_cols = mpl_args_to_meta_cols(df, **meta_col_args)
+        df = df.as_pandas(meta_cols=meta_cols)
+        # replace np.nan by string "n/a" for proper styling
+        for col in meta_cols:
+            df[col] = df[col].fillna("n/a")
 
     # pivot data if asked for explicit variable name
     variables = df["variable"].unique()
