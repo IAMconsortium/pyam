@@ -1007,7 +1007,7 @@ def line(  # noqa: C901
         df = df.as_pandas(meta_cols=meta_cols)
         # replace np.nan by string "n/a" for proper styling
         for col in meta_cols:
-            df[col].fillna("n/a", inplace=True)
+            df[col] = df[col].fillna("n/a")
 
     # pivot data if asked for explicit variable name
     variables = df["variable"].unique()
