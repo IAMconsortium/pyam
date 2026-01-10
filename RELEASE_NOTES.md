@@ -4,8 +4,8 @@
 - [#944](https://github.com/IAMconsortium/pyam/pull/944) Refactor to a `format_n()` function for nice log messages
 - [#943](https://github.com/IAMconsortium/pyam/pull/943) Improved handling for division by zero
 - [#941](https://github.com/IAMconsortium/pyam/pull/941) Add a `compute.share()` method
-- [#938](https://github.com/IAMconsortium/pyam/pull/938) Add a function to initialize an IamDataFrame from an *
-  *ixmp4.Run**
+- [#938](https://github.com/IAMconsortium/pyam/pull/938) Add a function to initialize an IamDataFrame from an **ixmp4.Run**
+- [#950](https://github.com/IAMconsortium/pyam/pull/950) Add a useful error message on empty query result from an **ixmp4.Platform**
 
 # Release v3.2.0
 

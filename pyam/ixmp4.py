@@ -42,17 +42,23 @@ def read_ixmp4(
     meta_filters = dict(
         run=dict(default_only=default_only, model=model, scenario=scenario)
     )
-    iamc_filters = dict(
-        run=dict(default_only=default_only),
-        model=model,
-        scenario=scenario,
-        region=region,
-        variable=variable,
-        unit=unit,
-        year=year,
-    )
+    iamc_filters = dict(run=dict(default_only=default_only))
+    for key, value in (
+        ("model", model),
+        ("scenario", scenario),
+        ("region", region),
+        ("variable", variable),
+        ("unit", unit),
+        ("year", year),
+    ):
+        if value is not None:
+            iamc_filters[key] = value
+
     data = platform.iamc.tabulate(**iamc_filters)
     meta = platform.meta.tabulate(**meta_filters)
+
+    if data.empty:
+        raise ValueError("No scenario data with filters " + str(iamc_filters))
 
     # if default-only, simplify to standard IAMC index, add `version` as meta indicator
     if default_only:

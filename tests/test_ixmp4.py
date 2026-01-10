@@ -112,6 +112,11 @@ def test_ixmp4_reserved_columns(test_platform, test_df_year, drop_meta):
     assert_iamframe_equal(test_df_year, pyam.read_ixmp4(test_platform))
 
 
+def test_ixmp4_empty_result(test_platform):
+    with pytest.raises(ValueError, match=r"No scenario data with filters \{.*'foo'\}"):
+        read_ixmp4(test_platform, variable="foo")
+
+
 def test_ixmp4_read_run(test_platform, test_df):
     """Initialize an IamDataFrame from an ixmp4 run"""
 
