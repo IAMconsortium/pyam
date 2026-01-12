@@ -211,7 +211,7 @@ class Statistics:
         if self.stats is None:
             self.stats = _stats
         else:
-            self.stats = _stats.combine_first(self.stats)
+            self.stats = _stats.combine_first(self.stats, sort=False)
 
     def reindex(self, copy=True):
         """Reindex the summary statistics dataframe"""
