@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
+from pyam.emissions import SPECIES_UNIT_MAPPING, aggregate_kyoto_gases
 from pyam.netcdf import to_xarray
 
 try:
@@ -1863,6 +1864,26 @@ class IamDataFrame:
                     if c in _df.columns
                 ]
             ]
+
+    def aggregate_kyoto_gases(self, *, metric: str, append: bool = False):
+        """Compute the aggregate Kyoto gases from a set of species using a GWP metric
+
+        metric: str
+            A global warming potential (GWP) metric supported by :mod:`iam_units`,
+            e.g. 'AR6GWP100'.
+        append : bool, optional
+            Append the aggregate emissions timeseries to `self` and return None,
+            else return aggregated emissions timeseries as new :class:`IamDataFrame`.
+
+        See Also
+        --------
+        pyam.IamDataFrame.convert_unit
+
+        """
+        data = concat(aggregate_kyoto_gases(self, metric)).aggregate(
+            f"Emissions|Kyoto Gases [{metric}]", components=SPECIES_UNIT_MAPPING.keys()
+        )
+        return self._finalize(data, append=append)
 
     def slice(self, *, keep=True, **kwargs):
         """Return a (filtered) slice object of the IamDataFrame timeseries data index
