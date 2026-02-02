@@ -21,7 +21,7 @@ SPECIES_UNIT_MAPPING = {
 }
 
 
-def aggregate_kyoto_gases(df: "IamDataFrame", metric: str):
+def aggregate_kyoto_gases(df, metric: str):
     """Internal implementation of the `aggregate_kyoto_gases` function"""
 
     missing = df.require_data(variable=REQUIRED_SPECIES)
