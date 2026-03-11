@@ -1,5 +1,6 @@
 # Next Release
 
+- [#952](https://github.com/IAMconsortium/pyam/pull/952) Add an `aggregate_kyoto_gases()` method
 - [#946](https://github.com/IAMconsortium/pyam/pull/946) Handle plot-styling by meta indicators with `np.nan`
 - [#944](https://github.com/IAMconsortium/pyam/pull/944) Refactor to a `format_n()` function for nice log messages
 - [#943](https://github.com/IAMconsortium/pyam/pull/943) Improved handling for division by zero
