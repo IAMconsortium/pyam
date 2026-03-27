@@ -1,7 +1,7 @@
 pyam: analysis & visualization <br /> of integrated-assessment and macro-energy scenarios
 =========================================================================================
 
-Copyright 2017-2025 IIASA and the pyam developer team  
+Copyright 2017-2026 IIASA and the pyam developer team  
 Licensed under the Apache License, Version 2.0;
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
@@ -12,7 +12,7 @@ see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
 <!-- replace python version by dynamic reference to pypi once Python versions are configured there -->
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![python](https://img.shields.io/badge/python-≥3.10,<3.14-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
+[![python](https://img.shields.io/badge/python-≥3.10,<3.15-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
 [![pytest](https://img.shields.io/github/actions/workflow/status/iamconsortium/pyam/pytest.yml?logo=GitHub&label=pytest)](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml)
 [![ReadTheDocs](https://readthedocs.org/projects/pyam-iamc/badge/?version=latest)](https://pyam-iamc.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
@@ -57,7 +57,7 @@ a timeseries format for *yearly data* developed and used by the
 | ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
 
 *An illustration of the IAMC template using a scenario
-from the [CD-LINKS](https://www.cd-links.org) project*  
+from the [CD-LINKS](https://www.cd-links.org) project*    
 *via the The [IAMC 1.5°C Scenario Explorer](https://data.ece.iiasa.ac.at/iamc-1.5c-explorer)*
 
 #### Subannual time resolution
