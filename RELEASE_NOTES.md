@@ -1,4 +1,12 @@
-# Next Release
+# Release v3.3.0
+
+## Highlights
+
+- New method to compute shares of a timeseries indicator relative to a reference
+- Improved integration with **ixmp4**
+- Support for Python 3.14 and updated dependencies
+
+## Individual updates
 
 - [#961](https://github.com/IAMconsortium/pyam/pull/961) Support Python 3.14 and bump dependencies
 - [#946](https://github.com/IAMconsortium/pyam/pull/946) Handle plot-styling by meta indicators with `np.nan`
