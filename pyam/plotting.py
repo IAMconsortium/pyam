@@ -227,7 +227,7 @@ def assign_style_props(df, color=None, marker=None, linestyle=None, cmap=None):
         values = list(d.values())
         # find if any colors in our properties corresponds with special colors
         # we know about
-        overlap_idx = np.in1d(values, list(PYAM_COLORS.keys()))
+        overlap_idx = np.isin(values, list(PYAM_COLORS.keys()))
         if overlap_idx.any():  # some exist in our special set
             keys = np.array(list(d.keys()))[overlap_idx]
             values = np.array(values)[overlap_idx]
