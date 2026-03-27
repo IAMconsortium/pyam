@@ -43,7 +43,7 @@ jobs:
           poetry add matplotlib-inline@0.1.7 --lock
           poetry add numpy@1.26.2 --lock
           poetry add pandas@2.1.2 --lock
-          poetry add pint@0.13 --lock
+          poetry add pint@0.16 --lock
           poetry add xlrd@2.0.1 --lock --group optional_io_formats
           poetry add xlsxwriter@3.0.3 --lock
 
