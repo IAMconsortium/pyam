@@ -1,7 +1,7 @@
 pyam: analysis & visualization <br /> of integrated-assessment and macro-energy scenarios
 =========================================================================================
 
-Copyright 2017-2026 IIASA and the pyam developer team
+Copyright 2017-2026 IIASA and the pyam developer team  
 Licensed under the Apache License, Version 2.0;
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
@@ -57,7 +57,7 @@ a timeseries format for *yearly data* developed and used by the
 | ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
 
 *An illustration of the IAMC template using a scenario
-from the [CD-LINKS](https://www.cd-links.org) project*
+from the [CD-LINKS](https://www.cd-links.org) project*    
 *via the The [IAMC 1.5°C Scenario Explorer](https://data.ece.iiasa.ac.at/iamc-1.5c-explorer)*
 
 #### Subannual time resolution
