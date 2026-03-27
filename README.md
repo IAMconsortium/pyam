@@ -1,7 +1,7 @@
 pyam: analysis & visualization <br /> of integrated-assessment and macro-energy scenarios
 =========================================================================================
 
-Copyright 2017-2025 IIASA and the pyam developer team
+Copyright 2017-2026 IIASA and the pyam developer team
 Licensed under the Apache License, Version 2.0;
 see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
