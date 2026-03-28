@@ -1,5 +1,7 @@
 # Next Release
 
+- [#952](https://github.com/IAMconsortium/pyam/pull/952) Add an `aggregate_kyoto_gases()` method
+
 # Release v3.3.0
 
 ## Highlights
