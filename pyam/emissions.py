@@ -2,22 +2,32 @@ from pyam.exceptions import raise_data_error
 
 REQUIRED_SPECIES = ["Emissions|CO2", "Emissions|CH4", "Emissions|N2O"]
 
-SPECIES_UNIT_MAPPING = {
-    "Emissions|CO2": "Mt CO2/yr",
-    "Emissions|CH4": "Mt CH4/yr",
-    "Emissions|N2O": "kt N2O/yr",
-    "Emissions|SF6": "kt SF6/yr",
-    "Emissions|C2F6": "kt C2F6/yr",
-    "Emissions|C6F14": "kt C6F14/yr",
-    "Emissions|CF4": "kt CF4/yr",
-    "Emissions|HFC|HFC125": "kt HFC125/yr",
-    "Emissions|HFC|HFC134a": "kt HFC134a/yr",
-    "Emissions|HFC|HFC143a": "kt HFC143a/yr",
-    "Emissions|HFC|HFC227ea": "kt HFC227ea/yr",
-    "Emissions|HFC|HFC23": "kt HFC23/yr",
-    "Emissions|HFC|HFC32": "kt HFC32/yr",
-    # inconsistent notation between iam-units and common-definitions
-    #    "Emissions|HFC|HFC43-10": "kt HFC43-10/yr",
+ALL_KYOTO_SPECIES = {
+    "Emissions|CO2",
+    "Emissions|CH4",
+    "Emissions|N2O",
+    "Emissions|HFC125",
+    "Emissions|HFC134a",
+    "Emissions|HFC143a",
+    "Emissions|HFC152a",
+    "Emissions|HFC227ea",
+    "Emissions|HFC23",
+    "Emissions|HFC236fa",
+    "Emissions|HFC245fa",
+    "Emissions|HFC32",
+    "Emissions|HFC365mfc",
+    "Emissions|HFC4310mee",
+    "Emissions|NF3",
+    "Emissions|SF6",
+    "Emissions|C2F6",
+    "Emissions|C3F8",
+    "Emissions|C4F10",
+    "Emissions|C5F12",
+    "Emissions|C6F14",
+    "Emissions|C7F16",
+    "Emissions|C8F18",
+    "Emissions|CF4",
+    "Emissions|cC4F8",
 }
 
 
