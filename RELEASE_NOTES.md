@@ -25,6 +25,8 @@ instead of printing a list.
 
 - [#970](https://github.com/IAMconsortium/pyam/pull/970) Fixes for ixmp4 v0.15.x
 
+- [#952](https://github.com/IAMconsortium/pyam/pull/952) Add an `aggregate_kyoto_gases()` method
+
 # Release v3.3.0
 
 ## Highlights
