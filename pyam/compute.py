@@ -77,7 +77,8 @@ class IamComputeAccessor:
         return self._df._finalize(_value, append=append)
 
     def quantiles(
-        self, quantiles, weights=None, level=["model", "scenario"], append=False
+        self, quantiles, weights=None, level=["model", "scenario"], drop_zeros=False,
+        append=False
     ):
         """Compute the optionally weighted quantiles of data grouped by `level`.
 
@@ -96,6 +97,8 @@ class IamComputeAccessor:
             Series indexed by `level`
         level : collection, optional
             The index columns to compute quantiles over
+        drop_zeros : bool, optional
+            Whether to drop data rows if all elements are 0
         append : bool, optional
             Whether to append computed timeseries data to this instance.
 
@@ -124,6 +127,8 @@ class IamComputeAccessor:
             raise ValueError("weights pd.Series must have name 'weight'")
 
         df = self_df.timeseries()
+        if drop_zeros:
+            df = df[~(df == 0).all(axis=1)]
         model = (
             "Quantiles" if weights is None else "Weighted Quantiles"
         )  # can make this a kwarg
