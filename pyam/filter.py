@@ -27,12 +27,12 @@ def filter_by_col(data, col, values, regexp, level=None):
 
 
 def filter_by_measurand(data, values, regexp, level=None):
-    variable, unit = values
-    if is_str(variable) and is_str(unit):
+    if len(values) == 2 and is_str(values[0]) and is_str(values[1]):
         return np.logical_and(
-            filter_by_col(data, "variable", variable, regexp, level),
-            filter_by_col(data, "unit", unit, regexp),
+            filter_by_col(data, "variable", values[0], regexp, level),
+            filter_by_col(data, "unit", values[1], regexp),
         )
+
     # values is an iterable of measurands
     keep_col = np.zeros(len(data), dtype=bool)
     for measurand in values:
