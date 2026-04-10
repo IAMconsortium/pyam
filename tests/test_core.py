@@ -492,7 +492,9 @@ def test_filter_measurand_list(test_df):
     data.loc[5, "unit"] = "bar"
     df = IamDataFrame(data)
 
-    obs = df.filter(measurand=(("foo", "EJ/yr"), ("Primary Energy", "bar")))
+    obs = df.filter(
+        measurand=(("foo", "EJ/yr"), ("Primary Energy", "bar"), ("foo", "baz"))
+    )
 
     assert set(obs.variable) == {"Primary Energy", "foo"}
     assert set(obs.unit) == {"EJ/yr", "bar"}
