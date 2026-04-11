@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
-from pyam.emissions import SPECIES_UNIT_MAPPING, aggregate_kyoto_gases
+from pyam.emissions import aggregate_kyoto_ghg
 from pyam.netcdf import to_xarray
 
 try:
@@ -1881,10 +1881,15 @@ class IamDataFrame:
         pyam.IamDataFrame.convert_unit
 
         """
-        data = concat(aggregate_kyoto_gases(self, metric)).aggregate(
-            f"Emissions|Kyoto Gases [{metric}]", components=SPECIES_UNIT_MAPPING.keys()
+        return self._finalize(
+            aggregate_kyoto_ghg(
+                self,
+                metric,
+                f"Emissions|Kyoto Gases [{metric}]",
+                "Mt CO2-equiv/yr",
+            ),
+            append=append,
         )
-        return self._finalize(data, append=append)
 
     def slice(self, *, keep=True, **kwargs):
         """Return a (filtered) slice object of the IamDataFrame timeseries data index

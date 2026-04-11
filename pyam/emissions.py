@@ -1,22 +1,24 @@
+from pyam.aggregation import aggregate_data
 from pyam.exceptions import raise_data_error
 
-REQUIRED_SPECIES = ["Emissions|CO2", "Emissions|CH4", "Emissions|N2O"]
+REQUIRED_KYOTO_SPECIES = ["Emissions|CO2", "Emissions|CH4", "Emissions|N2O"]
+
 
 ALL_KYOTO_SPECIES = {
     "Emissions|CO2",
     "Emissions|CH4",
     "Emissions|N2O",
-    "Emissions|HFC125",
-    "Emissions|HFC134a",
-    "Emissions|HFC143a",
-    "Emissions|HFC152a",
-    "Emissions|HFC227ea",
-    "Emissions|HFC23",
-    "Emissions|HFC236fa",
-    "Emissions|HFC245fa",
-    "Emissions|HFC32",
-    "Emissions|HFC365mfc",
-    "Emissions|HFC4310mee",
+    "Emissions|HFC|HFC125",
+    "Emissions|HFC|HFC134a",
+    "Emissions|HFC|HFC143a",
+    "Emissions|HFC|HFC152a",
+    "Emissions|HFC|HFC227ea",
+    "Emissions|HFC|HFC23",
+    "Emissions|HFC|HFC236fa",
+    "Emissions|HFC|HFC245fa",
+    "Emissions|HFC|HFC32",
+    "Emissions|HFC|HFC365mfc",
+    "Emissions|HFC|HFC4310mee",
     "Emissions|NF3",
     "Emissions|SF6",
     "Emissions|C2F6",
@@ -31,20 +33,18 @@ ALL_KYOTO_SPECIES = {
 }
 
 
-def aggregate_kyoto_gases(df, metric: str):
-    """Internal implementation of the `aggregate_kyoto_gases` function"""
+def aggregate_kyoto_ghg(df, metric: str, target_variable: str, target_unit: str):
+    """Internal implementation of the `aggregate_kyoto_ghg` function"""
 
-    missing = df.require_data(variable=REQUIRED_SPECIES)
+    _df = df.filter(variable=ALL_KYOTO_SPECIES)
+
+    missing = _df.require_data(variable=REQUIRED_KYOTO_SPECIES)
     if missing is not None:
-        raise_data_error("Missing species for aggregation", missing)
+        raise_data_error(
+            "Missing emission species required for Kyoto GHG aggregation", missing
+        )
 
-    df_list = list()
-    for species, unit in SPECIES_UNIT_MAPPING.items():
-        if species in df.variable:
-            df_list.append(
-                df.filter(variable=species).convert_unit(
-                    unit, "Mt CO2-equiv/yr", context=metric
-                )
-            )
+    for unit in _df.unit:
+        _df.convert_unit(unit, target_unit, context=metric, inplace=True)
 
-    return df_list
+    return aggregate_data(_df, target_variable, components=_df.variable)
