@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer
 
+from pyam.emissions import aggregate_kyoto_ghg
 from pyam.netcdf import to_xarray
 
 try:
@@ -23,11 +24,11 @@ except ImportError:
 
 from pyam._compare import _compare
 from pyam.aggregation import (
-    _aggregate,
     _aggregate_recursive,
     _aggregate_region,
     _aggregate_time,
     _group_and_agg,
+    aggregate_data,
 )
 from pyam.compute import IamComputeAccessor
 from pyam.exceptions import format_log_message, raise_data_error
@@ -246,6 +247,7 @@ class IamDataFrame:
         else:
             if data is None or data.empty:
                 return _empty_iamframe(self.dimensions + ["value"])
+
             return IamDataFrame(data, meta=self.meta, **args)
 
     def __getitem__(self, key):
@@ -1459,7 +1461,7 @@ class IamDataFrame:
                 _aggregate_recursive(self, variable, recursive), meta=self.meta
             )
         else:
-            _df = _aggregate(self, variable, components=components, method=method)
+            _df = aggregate_data(self, variable, components=components, method=method)
 
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_df, append=append)
@@ -1499,7 +1501,7 @@ class IamDataFrame:
 
         """
         # compute aggregate from components, return None if no components
-        df_components = _aggregate(self, variable, components, method)
+        df_components = aggregate_data(self, variable, components, method)
         if df_components is None:
             return
 
@@ -1863,6 +1865,31 @@ class IamDataFrame:
                     if c in _df.columns
                 ]
             ]
+
+    def aggregate_kyoto_ghg(self, *, metric: str, append: bool = False):
+        """Compute the aggregate Kyoto gases from a set of species using a GWP metric
+
+        metric: str
+            A global warming potential (GWP) metric supported by :mod:`iam_units`,
+            e.g. 'AR6GWP100'.
+        append : bool, optional
+            Append the aggregate emissions timeseries to `self` and return None,
+            else return aggregated emissions timeseries as new :class:`IamDataFrame`.
+
+        See Also
+        --------
+        pyam.IamDataFrame.convert_unit
+
+        """
+        return self._finalize(
+            aggregate_kyoto_ghg(
+                self,
+                metric,
+                f"Emissions|Kyoto Gases [{metric}]",
+                "Mt CO2-equiv/yr",
+            ),
+            append=append,
+        )
 
     def slice(self, *, keep=True, **kwargs):
         """Return a (filtered) slice object of the IamDataFrame timeseries data index
