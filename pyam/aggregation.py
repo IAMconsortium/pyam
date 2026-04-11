@@ -13,7 +13,7 @@ from pyam.utils import adjust_log_level, is_list_like, to_list
 logger = logging.getLogger(__name__)
 
 
-def _aggregate(df, variable, components=None, method="sum"):
+def aggregate_data(df, variable, components=None, method="sum"):
     """Internal implementation of the `aggregate` function"""
 
     if components is not None:
@@ -74,7 +74,7 @@ def _aggregate_recursive(df, variable, recursive):
         var_list = {reduce_hierarchy(v, -1) for v in components}
 
         # a temporary dataframe allows to distinguish between full data and new data
-        _data_agg = _aggregate(_df, variable=var_list)
+        _data_agg = aggregate_data(_df, variable=var_list)
 
         # check if data for intermediate variables already exists
         with adjust_log_level("pyam.core"):

@@ -24,11 +24,11 @@ except ImportError:
 
 from pyam._compare import _compare
 from pyam.aggregation import (
-    _aggregate,
     _aggregate_recursive,
     _aggregate_region,
     _aggregate_time,
     _group_and_agg,
+    aggregate_data,
 )
 from pyam.compute import IamComputeAccessor
 from pyam.exceptions import format_log_message, raise_data_error
@@ -247,6 +247,7 @@ class IamDataFrame:
         else:
             if data is None or data.empty:
                 return _empty_iamframe(self.dimensions + ["value"])
+
             return IamDataFrame(data, meta=self.meta, **args)
 
     def __getitem__(self, key):
@@ -1460,7 +1461,7 @@ class IamDataFrame:
                 _aggregate_recursive(self, variable, recursive), meta=self.meta
             )
         else:
-            _df = _aggregate(self, variable, components=components, method=method)
+            _df = aggregate_data(self, variable, components=components, method=method)
 
         # append to `self` or return as `IamDataFrame`
         return self._finalize(_df, append=append)
@@ -1500,7 +1501,7 @@ class IamDataFrame:
 
         """
         # compute aggregate from components, return None if no components
-        df_components = _aggregate(self, variable, components, method)
+        df_components = aggregate_data(self, variable, components, method)
         if df_components is None:
             return
 
@@ -1865,7 +1866,7 @@ class IamDataFrame:
                 ]
             ]
 
-    def aggregate_kyoto_gases(self, *, metric: str, append: bool = False):
+    def aggregate_kyoto_ghg(self, *, metric: str, append: bool = False):
         """Compute the aggregate Kyoto gases from a set of species using a GWP metric
 
         metric: str
