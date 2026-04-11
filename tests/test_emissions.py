@@ -42,10 +42,10 @@ def test_kyoto_ghg(append):
 
     if append:
         obs = df.copy()
-        obs.aggregate_kyoto_gases(metric="AR6GWP100", append=append)
+        obs.aggregate_kyoto_ghg(metric="AR6GWP100", append=append)
         exp = df.append(exp)
     else:
-        obs = df.aggregate_kyoto_gases(metric="AR6GWP100")
+        obs = df.aggregate_kyoto_ghg(metric="AR6GWP100")
 
     assert_iamframe_equal(exp, obs)
 
@@ -57,4 +57,4 @@ def test_kyoto_ghg_raises():
 
     match = "Missing species for aggregation:.* scenario_a  Emissions|CH4"
     with pytest.raises(ValueError, match=match):
-        df.aggregate_kyoto_gases(metric="AR6GWP100")
+        df.aggregate_kyoto_ghg(metric="AR6GWP100")
