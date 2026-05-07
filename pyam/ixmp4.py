@@ -2,9 +2,9 @@ import logging
 
 import ixmp4
 import pandas as pd
-from ixmp4.core.region import RegionModel
-from ixmp4.core.unit import UnitModel
-from ixmp4.data.abstract import DataPoint
+from ixmp4.core.iamc import DataPoint
+from ixmp4.core.region import Region
+from ixmp4.core.unit import Unit
 
 logger = logging.getLogger(__name__)
 
@@ -100,9 +100,9 @@ def read_run(
     if year is not None:
         raise NotImplementedError("Filter by 'year' not implemented in ixmp4.")
 
-    meta = pd.DataFrame.from_dict(run.meta, orient="index").T
+    meta = pd.DataFrame.from_dict(dict(run.meta), orient="index").T
     meta.index = pd.MultiIndex.from_tuples(
-        [(run.model.name, run.scenario.name)], name=["model", "scenario"]
+        [(run.model.name, run.scenario.name)], names=["model", "scenario"]
     )
     meta["version"] = run.version
 
@@ -179,8 +179,8 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
 def _validate_dimensions(platform, df):
     """Ensure that all regions and units in the DataFrame exist in the platform"""
     for dimension, values, model in [
-        ("regions", df.region, RegionModel),
-        ("units", df.unit, UnitModel),
+        ("regions", df.region, Region),
+        ("units", df.unit, Unit),
     ]:
         platform_values = getattr(platform, dimension).tabulate().name.values
         if missing := set(values).difference(platform_values):

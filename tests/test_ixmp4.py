@@ -1,6 +1,6 @@
 import pytest
-from ixmp4.core.region import RegionModel
-from ixmp4.core.unit import UnitModel
+from ixmp4.core.region import Region
+from ixmp4.core.unit import Unit
 
 import pyam
 from pyam import read_ixmp4
@@ -11,14 +11,14 @@ from pyam.testing import assert_iamframe_equal
 def test_to_ixmp4_missing_region_raises(test_platform, test_df_year):
     """Writing to platform raises if region not defined"""
     test_df_year.rename(region={"World": "foo"}, inplace=True)
-    with pytest.raises(RegionModel.NotFound, match="foo. Use `Platform.regions."):
+    with pytest.raises(Region.NotFound, match="foo. Use `Platform.regions."):
         test_df_year.to_ixmp4(platform=test_platform)
 
 
 def test_to_ixmp4_missing_unit_raises(test_platform, test_df_year):
     """Writing to platform raises if unit not defined"""
     test_df_year.rename(unit={"EJ/yr": "foo"}, inplace=True)
-    with pytest.raises(UnitModel.NotFound, match="foo. Use `Platform.units."):
+    with pytest.raises(Unit.NotFound, match="foo. Use `Platform.units."):
         test_df_year.to_ixmp4(platform=test_platform)
 
 
