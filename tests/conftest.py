@@ -11,9 +11,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from httpx import ConnectError
-from ixmp4.conf.base import PlatformInfo
 from ixmp4.core import Platform
-from ixmp4.data.backend import SqliteTestBackend
+from ixmp4.db.models import get_metadata
+from ixmp4.transport import DirectTransport
 
 from pyam import IamDataFrame, iiasa
 from pyam.utils import IAMC_IDX, META_IDX
@@ -262,19 +262,18 @@ def plot_stackplot_df():
 
 @pytest.fixture(scope="function")
 def test_platform():
-    sqlite = SqliteTestBackend(
-        PlatformInfo(name="sqlite-test", dsn="sqlite:///:memory:")
-    )
-    sqlite.setup()
+    transport = DirectTransport.from_dsn("sqlite:///:memory:")
+    bind = transport.session.bind
+    meta = get_metadata()
+    meta.create_all(bind=bind, tables=meta.sorted_tables, checkfirst=True)
 
-    platform = Platform(_backend=sqlite)
+    platform = Platform(transport)
     platform.regions.create(name="World", hierarchy="common")
     platform.units.create(name="EJ/yr")
 
     yield platform
 
-    sqlite.close()
-    sqlite.teardown()
+    meta.drop_all(bind=bind, checkfirst=True)
 
 
 @pytest.fixture(scope="session")
