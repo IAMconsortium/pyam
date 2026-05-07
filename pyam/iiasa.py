@@ -13,8 +13,8 @@ import pandas as pd
 import requests
 import yaml
 from ixmp4.cli.platforms import tabulate_manager_platforms
-from ixmp4.conf import settings
 from ixmp4.conf.auth import ManagerAuth
+from ixmp4.conf.settings import Settings
 from requests.auth import AuthBase
 
 from pyam.core import IamDataFrame
@@ -51,14 +51,16 @@ def platforms() -> None:
     --------
     ixmp4.conf.settings.manager.list_platforms
     """
-    tabulate_manager_platforms(ixmp4.conf.settings.manager.list_platforms())
+    settings = Settings()
+    manager_platforms = settings.get_manager_platforms()
+    tabulate_manager_platforms(manager_platforms.list_platforms())
 
 
 def _read_config(file):
     """Read username and password for IIASA API connection from file"""
     with open(file) as stream:
         creds = yaml.safe_load(stream)
-
+    settings = Settings()
     return ManagerAuth(**creds, url=str(settings.manager_url))
 
 
