@@ -1868,14 +1868,14 @@ files = [
 
 [[package]]
 name = "ixmp4"
-version = "0.15.1"
+version = "0.15.2"
 description = "a data warehouse for scenario analysis"
 optional = false
 python-versions = "<3.15,>=3.10"
 groups = ["main"]
 files = [
-    {file = "ixmp4-0.15.1-py3-none-any.whl", hash = "sha256:0ce900b6546198e8a5da4e93dad1817265f7a32345f83ed5e0e43bbaa8f7d582"},
-    {file = "ixmp4-0.15.1.tar.gz", hash = "sha256:c5eb91fbc72e87dab0613a357723d0fdb1768032dd4ec4555998630fadfe0a1f"},
+    {file = "ixmp4-0.15.2-py3-none-any.whl", hash = "sha256:695d91c03914e396fcffd9b8443ca5e85e61e30ea88a8315bcb297f5aadb4b3f"},
+    {file = "ixmp4-0.15.2.tar.gz", hash = "sha256:3d577dfe97575e0b343941823896772790dc4b36f09598b855211d42b93b7ecd"},
 ]
 
 [package.dependencies]
@@ -6390,4 +6390,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10, <3.15"
-content-hash = "d657fee006ae4027792ec64388bc755ca6c3f00dc8c45787d4ba5a0bfa91714d"
+content-hash = "10cfd3602496a379c9c1436e4b5aae68b2caee726736363fa1d90bbff564c6a0"
