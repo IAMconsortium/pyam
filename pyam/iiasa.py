@@ -620,7 +620,7 @@ def read_iiasa(name, default_only=True, meta=True, creds=None, **kwargs):
     """
     settings = Settings()
     manager_platforms = settings.get_manager_platforms()
-    if name in [i.name for i in manager_platforms]:
+    if name in [i.name for i in manager_platforms.list_platforms()]:
         if meta is not True:
             raise NotImplementedError(
                 "Reading from ixmp4 platforms requires `meta=True`"
