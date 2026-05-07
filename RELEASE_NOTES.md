@@ -1,5 +1,9 @@
 # Next Release
 
+## Individual updates
+
+- [#970](https://github.com/IAMconsortium/pyam/pull/970) Fixes for ixmp4 v0.15.x
+
 # Release v3.3.0
 
 ## Highlights
@@ -169,7 +173,7 @@ Credentials to access the IIASA scenario database infrastructure should now be m
 using the **ixmp4** package
 (see [here](https://pyam-iamc.readthedocs.io/en/stable/api/iiasa.html)).
 
-The column *exclude* of the `meta` indicators was moved to a new attribute `exclude`.
+The column _exclude_ of the `meta` indicators was moved to a new attribute `exclude`.
 All validation methods are refactored such that the argument `exclude_on_fail` changes
 this new attribute (see PR [#759](https://github.com/IAMconsortium/pyam/pull/759)).
 
@@ -266,7 +270,7 @@ Bump minimum version of **pandas** to v1.2.0 to support automatic engine selecti
 
 ## Highlights
 
-- Improved performance for writing data to *xlsx*
+- Improved performance for writing data to _xlsx_
 - Support for filtering by model-scenario pairs with an `index` argument
 - Better integration with the IIASA Scenario Explorer database API
 
@@ -367,7 +371,7 @@ pandas [v1.4.0](https://pandas.pydata.org/docs/whatsnew/v1.4.0.html).
 
 ## Highlights
 
-- Update the source code of the manuscript in *Open Research Europe* to reflect changes
+- Update the source code of the manuscript in _Open Research Europe_ to reflect changes
   based on reviewer comments
 - Increase the performance of the IamDataFrame initialization
 - Add an experimental "profiler" module for performance benchmarking
