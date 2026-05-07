@@ -49,7 +49,7 @@ def platforms() -> None:
 
     See Also
     --------
-    ixmp4.conf.settings.manager.list_platforms
+    ixmp4.conf.platforms.ManagerPlatforms.list_platforms
     """
     settings = Settings()
     manager_platforms = settings.get_manager_platforms()
@@ -109,7 +109,10 @@ class SceSeAuth(AuthBase):
 
         # explicit token for anonymous login is not necessary for ixmp4 platforms
         # but is required for legacy Scenario Explorer databases
-        if self.auth.user.username == "@anonymous":
+        if (
+            getattr(self.auth, "user", None) is None
+            or self.auth.user.username == "@anonymous"
+        ):
             self._get_anonymous_token()
 
         else:
@@ -615,7 +618,9 @@ def read_iiasa(name, default_only=True, meta=True, creds=None, **kwargs):
     Credentials (username & password) are not required to access any public |ixmp4|
     or Scenario Explorer database (i.e., with Guest login).
     """
-    if name in [i.name for i in ixmp4.conf.settings.manager.list_platforms()]:
+    settings = Settings()
+    manager_platforms = settings.get_manager_platforms()
+    if name in [i.name for i in manager_platforms]:
         if meta is not True:
             raise NotImplementedError(
                 "Reading from ixmp4 platforms requires `meta=True`"
