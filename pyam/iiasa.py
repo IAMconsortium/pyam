@@ -91,7 +91,9 @@ class SceSeAuth(AuthBase):
                 )
                 self.auth = _read_config(DEFAULT_IIASA_CREDS)
             else:
-                self.auth = ixmp4.conf.settings.default_auth
+                settings = Settings()
+                cred_dict = settings.get_credentials().get("default")
+                self.auth = settings.get_client_auth(cred_dict)
         elif isinstance(creds, Path) or is_str(creds):
             deprecation_warning(f"{IXMP4_LOGIN}.", "Using a pyam-credentials file")
             self.auth = _read_config(creds)
