@@ -7,7 +7,7 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 import yaml
-from ixmp4.core.exceptions import InvalidCredentials
+from toolkit.exceptions import InvalidCredentials
 
 from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa
 from pyam.testing import assert_iamframe_equal
