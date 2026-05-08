@@ -619,7 +619,7 @@ def read_iiasa(name, default_only=True, meta=True, creds=None, **kwargs):
     """
     settings = Settings()
     manager_platforms = settings.get_manager_platforms()
-    if name in [i.name for i in manager_platforms.list_platforms()]:
+    if name in [i.slug for i in manager_platforms.list_platforms()]:
         if meta is not True:
             raise NotImplementedError(
                 "Reading from ixmp4 platforms requires `meta=True`"
@@ -670,7 +670,7 @@ def lazy_read_iiasa(file, name, default_only=True, meta=True, creds=None, **kwar
     """
     settings = Settings()
     manager_platforms = settings.get_manager_platforms()
-    if name in [platform.name for platform in manager_platforms.list_platforms()]:
+    if name in [platform.slug for platform in manager_platforms.list_platforms()]:
         raise NotImplementedError(
             "The function `lazy_read_iiasa()` does not support ixmp4 platforms."
         )
