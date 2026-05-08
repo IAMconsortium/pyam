@@ -12,9 +12,9 @@ import pandas as pd
 import requests
 import yaml
 from ixmp4.cli.platforms import tabulate_manager_platforms
-from ixmp4.conf.auth import ManagerAuth
 from ixmp4.conf.settings import Settings
 from requests.auth import AuthBase
+from toolkit.client.auth import ManagerAuth, SelfSignedAuth
 
 from pyam.core import IamDataFrame
 from pyam.exceptions import deprecation_warning
@@ -69,6 +69,8 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
 
 
 class SceSeAuth(AuthBase):
+    auth: ManagerAuth | SelfSignedAuth | None = None
+
     def __init__(self, creds: str = None, auth_url: str = _AUTH_URL):
         """Connection to the Scenario Services manager service for authentication.
 
@@ -101,22 +103,20 @@ class SceSeAuth(AuthBase):
                 "Passing credentials as clear-text is not allowed. "
                 f"{IXMP4_LOGIN} instead."
             )
-
-        # self.auth is None if connection to manager service cannot be established
-        if self.auth is None:
-            raise httpx.ConnectError("No connection to IIASA manager service.")
-
         # explicit token for anonymous login is not necessary for ixmp4 platforms
         # but is required for legacy Scenario Explorer databases
-        if (
-            getattr(self.auth, "user", None) is None
-            or self.auth.user.username == "@anonymous"
-        ):
+        if self.auth is None:
             self._get_anonymous_token()
 
         else:
-            self.user = self.auth.user.username
-            self.access_token = self.auth.access_token
+            token_username = getattr(
+                self.auth.access_token.user, "username", "@unknown"
+            )
+            if token_username == "@anonymous":
+                self._get_anonymous_token()
+            else:
+                self.user = token_username
+                self.access_token = self.auth.access_token
 
     def _get_anonymous_token(self):
         r = self.client.get("/legacy/anonym/")
