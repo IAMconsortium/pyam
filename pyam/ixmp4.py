@@ -5,6 +5,9 @@ import pandas as pd
 from ixmp4.core.iamc import DataPoint
 from ixmp4.core.region import Region
 from ixmp4.core.unit import Unit
+from ixmp4.data.iamc.datapoint.filter import FacadeDataPointFilter
+from ixmp4.data.meta.filter import FacadeRunMetaEntryFilter
+from ixmp4.data.run.filter import FacadeRunFilter
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +41,15 @@ def read_ixmp4(
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
+    run_filters = FacadeRunFilter(default_only=default_only)
+    if model is not None:
+        run_filters["model"] = model
+    if scenario is not None:
+        run_filters["scenario"] = scenario
+
     # TODO This may have to be revised, see https://github.com/iiasa/ixmp4/issues/72
-    meta_filters = dict(
-        run=dict(default_only=default_only, model=model, scenario=scenario)
-    )
-    iamc_filters = dict(run=dict(default_only=default_only))
+    meta_filters = FacadeRunMetaEntryFilter(run=run_filters)
+    iamc_filters = FacadeDataPointFilter(run=dict(default_only=default_only))
     for key, value in (
         ("model", model),
         ("scenario", scenario),
@@ -97,8 +104,15 @@ def read_run(
     """
     from pyam import IamDataFrame
 
-    if year is not None:
-        raise NotImplementedError("Filter by 'year' not implemented in ixmp4.")
+    iamc_filters = FacadeDataPointFilter()
+    for key, value in (
+        ("region", region),
+        ("variable", variable),
+        ("unit", unit),
+        ("year", year),
+    ):
+        if value is not None:
+            iamc_filters[key] = value
 
     meta = pd.DataFrame.from_dict(dict(run.meta), orient="index").T
     meta.index = pd.MultiIndex.from_tuples(
@@ -107,11 +121,7 @@ def read_run(
     meta["version"] = run.version
 
     return IamDataFrame(
-        data=run.iamc.tabulate(
-            region=region,
-            variable=variable,
-            unit=unit,
-        ),
+        data=run.iamc.tabulate(**iamc_filters),
         meta=meta,
         model=run.model.name,
         scenario=run.scenario.name,

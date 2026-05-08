@@ -7,7 +7,7 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 import yaml
-from ixmp4.core.exceptions import InvalidCredentials
+from toolkit.exceptions import InvalidCredentials
 
 from pyam import IamDataFrame, iiasa, lazy_read_iiasa, read_iiasa
 from pyam.testing import assert_iamframe_equal
@@ -58,10 +58,9 @@ NON_DEFAULT_DF = pd.DataFrame(
 def test_platforms(capsys):
     # test that the function does not raise an error
     iiasa.platforms()
-    assert (
-        "public-test         public    This is a public ixmp4 test instance"
-        in capsys.readouterr().out
-    )
+    output = capsys.readouterr().out
+    assert "Public Testing Instance" in output
+    assert "This is a public ixmp4 test instance" in output
 
 
 def test_unknown_conn():
@@ -89,7 +88,7 @@ def test_conn_nonexisting_creds_file():
 @pytest.mark.parametrize(
     "creds, error, match",
     [
-        (dict(username="foo", password="bar"), InvalidCredentials, " rejected "),
+        (dict(username="foo", password="bar"), InvalidCredentials, "rejected"),
         (dict(username="user"), TypeError, "missing 1 required .* 'password'"),
     ],
 )

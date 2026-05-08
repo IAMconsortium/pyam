@@ -6,16 +6,15 @@ from io import StringIO
 from pathlib import Path
 
 import httpx
-import ixmp4
 import jwt
 import numpy as np
 import pandas as pd
 import requests
 import yaml
 from ixmp4.cli.platforms import tabulate_manager_platforms
-from ixmp4.conf.auth import ManagerAuth
 from ixmp4.conf.settings import Settings
 from requests.auth import AuthBase
+from toolkit.client.auth import ManagerAuth, SelfSignedAuth
 
 from pyam.core import IamDataFrame
 from pyam.exceptions import deprecation_warning
@@ -49,7 +48,7 @@ def platforms() -> None:
 
     See Also
     --------
-    ixmp4.conf.settings.manager.list_platforms
+    ixmp4.conf.platforms.ManagerPlatforms.list_platforms
     """
     settings = Settings()
     manager_platforms = settings.get_manager_platforms()
@@ -70,6 +69,8 @@ def _check_response(r, msg="Error connecting to IIASA database", error=RuntimeEr
 
 
 class SceSeAuth(AuthBase):
+    auth: ManagerAuth | SelfSignedAuth | None = None
+
     def __init__(self, creds: str = None, auth_url: str = _AUTH_URL):
         """Connection to the Scenario Services manager service for authentication.
 
@@ -91,7 +92,9 @@ class SceSeAuth(AuthBase):
                 )
                 self.auth = _read_config(DEFAULT_IIASA_CREDS)
             else:
-                self.auth = ixmp4.conf.settings.default_auth
+                settings = Settings()
+                cred_dict = settings.get_credentials().get("default")
+                self.auth = settings.get_client_auth(cred_dict)
         elif isinstance(creds, Path) or is_str(creds):
             deprecation_warning(f"{IXMP4_LOGIN}.", "Using a pyam-credentials file")
             self.auth = _read_config(creds)
@@ -100,19 +103,20 @@ class SceSeAuth(AuthBase):
                 "Passing credentials as clear-text is not allowed. "
                 f"{IXMP4_LOGIN} instead."
             )
-
-        # self.auth is None if connection to manager service cannot be established
-        if self.auth is None:
-            raise httpx.ConnectError("No connection to IIASA manager service.")
-
         # explicit token for anonymous login is not necessary for ixmp4 platforms
         # but is required for legacy Scenario Explorer databases
-        if self.auth.user.username == "@anonymous":
+        if self.auth is None:
             self._get_anonymous_token()
 
         else:
-            self.user = self.auth.user.username
-            self.access_token = self.auth.access_token
+            token_username = getattr(
+                self.auth.access_token.user, "username", "@unknown"
+            )
+            if token_username == "@anonymous":
+                self._get_anonymous_token()
+            else:
+                self.user = token_username
+                self.access_token = self.auth.access_token
 
     def _get_anonymous_token(self):
         r = self.client.get("/legacy/anonym/")
@@ -613,7 +617,9 @@ def read_iiasa(name, default_only=True, meta=True, creds=None, **kwargs):
     Credentials (username & password) are not required to access any public |ixmp4|
     or Scenario Explorer database (i.e., with Guest login).
     """
-    if name in [i.name for i in ixmp4.conf.settings.manager.list_platforms()]:
+    settings = Settings()
+    manager_platforms = settings.get_manager_platforms()
+    if name in [i.name for i in manager_platforms.list_platforms()]:
         if meta is not True:
             raise NotImplementedError(
                 "Reading from ixmp4 platforms requires `meta=True`"
@@ -662,9 +668,9 @@ def lazy_read_iiasa(file, name, default_only=True, meta=True, creds=None, **kwar
     Credentials (username & password) are not required to access any public |ixmp4|
     or Scenario Explorer database (i.e., with Guest login).
     """
-    if name in [
-        platform.name for platform in ixmp4.conf.settings.manager.list_platforms()
-    ]:
+    settings = Settings()
+    manager_platforms = settings.get_manager_platforms()
+    if name in [platform.name for platform in manager_platforms.list_platforms()]:
         raise NotImplementedError(
             "The function `lazy_read_iiasa()` does not support ixmp4 platforms."
         )
