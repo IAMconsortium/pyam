@@ -2,7 +2,7 @@
 
 ## Individual updates
 
-- [#970](https://github.com/IAMconsortium/pyam/pull/972) Fix ixmp4 platform lookup via read_iiasa
+- [#972](https://github.com/IAMconsortium/pyam/pull/972) Fix ixmp4 platform lookup via read_iiasa
 
 # Release v3.3.1
 
