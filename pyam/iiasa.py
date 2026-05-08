@@ -6,7 +6,6 @@ from io import StringIO
 from pathlib import Path
 
 import httpx
-import ixmp4
 import jwt
 import numpy as np
 import pandas as pd
@@ -669,9 +668,9 @@ def lazy_read_iiasa(file, name, default_only=True, meta=True, creds=None, **kwar
     Credentials (username & password) are not required to access any public |ixmp4|
     or Scenario Explorer database (i.e., with Guest login).
     """
-    if name in [
-        platform.name for platform in ixmp4.conf.settings.manager.list_platforms()
-    ]:
+    settings = Settings()
+    manager_platforms = settings.get_manager_platforms()
+    if name in [platform.name for platform in manager_platforms.list_platforms()]:
         raise NotImplementedError(
             "The function `lazy_read_iiasa()` does not support ixmp4 platforms."
         )
