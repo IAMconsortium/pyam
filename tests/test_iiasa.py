@@ -89,7 +89,7 @@ def test_conn_nonexisting_creds_file():
 @pytest.mark.parametrize(
     "creds, error, match",
     [
-        (dict(username="foo", password="bar"), InvalidCredentials, " rejected "),
+        (dict(username="foo", password="bar"), InvalidCredentials, "rejected"),
         (dict(username="user"), TypeError, "missing 1 required .* 'password'"),
     ],
 )
