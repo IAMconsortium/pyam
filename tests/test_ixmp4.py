@@ -6,7 +6,7 @@ from ixmp4.core.region import Region
 from ixmp4.core.unit import Unit
 
 import pyam
-from pyam import read_ixmp4
+from pyam import iiasa, read_ixmp4
 from pyam.ixmp4 import read_run
 from pyam.testing import assert_iamframe_equal
 
@@ -181,3 +181,105 @@ def test_write_to_ixmp4_string_platform(test_platform, test_df_year):
     obs = read_ixmp4(platform=test_platform)
     test_df_year.set_meta(1, "version")
     pyam.assert_iamframe_equal(test_df_year, obs)
+
+
+class _PlatformInfo:
+    def __init__(self, slug, name):
+        self.slug = slug
+        self.name = name
+
+
+class _ManagerPlatforms:
+    def __init__(self, platforms):
+        self._platforms = platforms
+
+    def list_platforms(self):
+        return self._platforms
+
+
+class _Settings:
+    def __init__(self, platforms):
+        self._manager_platforms = _ManagerPlatforms(platforms)
+
+    def get_manager_platforms(self):
+        return self._manager_platforms
+
+
+def test_read_iiasa_ixmp4_lookup_by_slug(monkeypatch):
+    """read_iiasa should identify ixmp4 platforms via platform slug."""
+
+    monkeypatch.setattr(
+        iiasa,
+        "Settings",
+        lambda: _Settings([_PlatformInfo(slug="my-platform", name="My Platform")]),
+    )
+
+    calls = {}
+
+    def _read_ixmp4(platform, default_only=True, **kwargs):
+        calls["platform"] = platform
+        calls["default_only"] = default_only
+        calls["kwargs"] = kwargs
+        return "ixmp4-result"
+
+    monkeypatch.setattr(iiasa, "read_ixmp4", _read_ixmp4)
+
+    class _Connection:
+        def __init__(self, *args, **kwargs):
+            pytest.fail("Connection path should not be used for ixmp4 platform slug")
+
+    monkeypatch.setattr(iiasa, "Connection", _Connection)
+
+    obs = iiasa.read_iiasa(
+        "my-platform", default_only=False, meta=True, variable="Primary Energy"
+    )
+
+    assert obs == "ixmp4-result"
+    assert calls == {
+        "platform": "my-platform",
+        "default_only": False,
+        "kwargs": {"variable": "Primary Energy"},
+    }
+
+
+def test_read_iiasa_does_not_match_platform_name(monkeypatch):
+    """Platform matching should not use display name; only slug is valid."""
+
+    monkeypatch.setattr(
+        iiasa,
+        "Settings",
+        lambda: _Settings([_PlatformInfo(slug="my-platform", name="My Platform")]),
+    )
+
+    def _read_ixmp4(*args, **kwargs):
+        pytest.fail("ixmp4 path should not be used when only platform name matches")
+
+    monkeypatch.setattr(iiasa, "read_ixmp4", _read_ixmp4)
+
+    calls = {}
+
+    class _Connection:
+        def __init__(self, name, creds):
+            calls["name"] = name
+            calls["creds"] = creds
+
+        def query(self, default_only=True, meta=True, **kwargs):
+            calls["default_only"] = default_only
+            calls["meta"] = meta
+            calls["kwargs"] = kwargs
+            return "legacy-result"
+
+    monkeypatch.setattr(iiasa, "Connection", _Connection)
+
+    obs = iiasa.read_iiasa(
+        "My Platform", default_only=False, meta=False, creds="foo", model="bar"
+    )
+
+    assert obs == "legacy-result"
+    assert calls == {
+        "name": "My Platform",
+        "creds": "foo",
+        "default_only": False,
+        "meta": False,
+        "kwargs": {"model": "bar"},
+    }
