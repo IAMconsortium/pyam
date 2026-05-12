@@ -4,6 +4,7 @@ import os.path
 from functools import lru_cache
 from io import StringIO
 from pathlib import Path
+from typing import cast
 
 import httpx
 import jwt
@@ -83,6 +84,7 @@ class SceSeAuth(AuthBase):
             Url of the authentication service
         """
         self.client = httpx.Client(base_url=auth_url, timeout=10.0, http2=True)
+        settings = Settings()
 
         if creds is None:
             if DEFAULT_IIASA_CREDS.exists():
@@ -92,7 +94,6 @@ class SceSeAuth(AuthBase):
                 )
                 self.auth = _read_config(DEFAULT_IIASA_CREDS)
             else:
-                settings = Settings()
                 cred_dict = settings.get_credentials().get("default")
                 self.auth = settings.get_client_auth(cred_dict)
         elif isinstance(creds, Path) or is_str(creds):
@@ -116,7 +117,20 @@ class SceSeAuth(AuthBase):
                 self._get_anonymous_token()
             else:
                 self.user = token_username
-                self.access_token = self.auth.access_token
+                self.access_token = self._token_from_auth_flow()
+
+    def _token_from_auth_flow(self) -> str:
+        if self.auth is None:
+            raise RuntimeError("Cannot build auth token with anonymous auth.")
+
+        request = httpx.Request("GET", "https://auth.invalid/")
+        request = next(self.auth.auth_flow(request))
+        authorization = request.headers.get("Authorization")
+
+        if not authorization or not authorization.startswith("Bearer "):
+            raise ValueError("Authentication flow did not provide a valid token.")
+
+        return cast(str, authorization.removeprefix("Bearer "))
 
     def _get_anonymous_token(self):
         r = self.client.get("/legacy/anonym/")
@@ -125,18 +139,17 @@ class SceSeAuth(AuthBase):
         self.user, self.access_token = None, r.json()
 
     def __call__(self):
-        try:
-            # raises jwt.ExpiredSignatureError if token is expired
-            jwt.decode(
-                self.access_token,
-                options={"verify_signature": False, "verify_exp": True},
-            )
-        except jwt.ExpiredSignatureError:
-            if self.auth.user.username == "@anonymous":
+        if self.auth is not None and self.user is not None:
+            self.access_token = self._token_from_auth_flow()
+        else:
+            try:
+                # raises jwt.ExpiredSignatureError if token is expired
+                jwt.decode(
+                    self.access_token,
+                    options={"verify_signature": False, "verify_exp": True},
+                )
+            except jwt.ExpiredSignatureError:
                 self._get_anonymous_token()
-            else:
-                self.auth.refresh_or_reobtain_jwt()
-                self.access_token = self.auth.access_token
 
         return {"Authorization": "Bearer " + self.access_token}
 
