@@ -305,7 +305,7 @@ class IamDataFrame:
 
         # concatenate list of (head of) meta indicators and levels/values
         def print_meta_row(m, t, lst):
-            _lst = print_list(lst, n - len(m) - len(t) - 7)
+            _lst = print_list(lst, n - len(m) - len(str(t)) - 7)
             return f"   {m} ({t}) {_lst}"
 
         if len(self.meta.columns):

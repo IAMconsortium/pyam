@@ -284,7 +284,8 @@ def test_set_meta_with_column_conflict(test_df_year):
         test_df_year.set_meta(name="meta", meta="foo")
 
 
-def test_print(test_df_year):
+@pytest.mark.parametrize("intdtype", [("int64", None), ("Int64", pd.Int64Dtype())])
+def test_print(test_df_year, intdtype):
     """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
     exp = "\n".join(
         [
@@ -298,10 +299,13 @@ def test_print(test_df_year):
             "   unit     : EJ/yr (1)",
             "   year     : 2005, 2010 (2)",
             "Meta indicators:",
-            "   number (int64) 1, 2 (2)",
+            f"   number ({intdtype[0]}) 1, 2 (2)",
             "   string (object) foo, nan (2)",
         ]
     )
+    # pd.Int64Dtype doesn't have length, test against regression
+    if intdtype[1] is not None:
+        test_df_year.meta["number"] = test_df_year.meta["number"].astype(intdtype[1])
     obs = test_df_year.info()
     assert obs == exp
 
