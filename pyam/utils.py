@@ -281,8 +281,7 @@ def _intuit_column_groups(df, index, include_index=False):  # noqa: C901
     missing_required_col = [c for c in REQUIRED_COLS if c not in existing_cols]
     if missing_required_col:
         raise ValueError(
-            "Missing required columns in timeseries data: "
-            ", ".join.missing_required_col
+            "Missing required columns in timeseries data: , ".join.missing_required_col
         )
 
     # check whether data in wide format (standard IAMC) or long format (`value` column)
@@ -683,4 +682,4 @@ def to_int(x, index=False):
 
 
 def format_n(n: int, name: str):
-    return f"{n} {name}{'s' if n!=1 else ''}"
+    return f"{n} {name}{'s' if n != 1 else ''}"

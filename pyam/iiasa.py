@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 import requests
 import yaml
-from ixmp4.cli.platforms import tabulate_manager_platforms
 from ixmp4.conf.settings import Settings
 from requests.auth import AuthBase
 from toolkit.client.auth import ManagerAuth, SelfSignedAuth
@@ -57,7 +56,7 @@ def platforms() -> None:
     logger.info(f"Platforms accessible via {settings.manager_url}")
     return pd.DataFrame(
         [(p.name, p.slug, p.accessibility, p.notice or "") for p in platforms],
-        columns=["name", "slug", "accessibility", "notice"]
+        columns=["name", "slug", "accessibility", "notice"],
     )
 
 
