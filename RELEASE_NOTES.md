@@ -1,5 +1,10 @@
 # Next Release
 
+## API changes
+
+The function `pyam.iiasa.platforms()` returns a **pd.DataFrame** of accessible platforms
+instead of printing a list.
+
 ## Individual updates
 
 - [#975](https://github.com/IAMconsortium/pyam/pull/975) Clean-up for compatibility with latest **ixmp4**
