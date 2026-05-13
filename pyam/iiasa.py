@@ -48,7 +48,7 @@ def platforms() -> pd.DataFrame:
 
     See Also
     --------
-    ixmp4.settings.platforms.ManagerPlatforms.list_platforms
+    ixmp4.conf.platforms.ManagerPlatforms
     """
     settings = Settings()
     platforms = settings.get_manager_platforms().list_platforms()
