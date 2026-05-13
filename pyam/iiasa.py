@@ -49,11 +49,16 @@ def platforms() -> None:
 
     See Also
     --------
-    ixmp4.conf.platforms.ManagerPlatforms.list_platforms
+    ixmp4.settings.platforms.ManagerPlatforms.list_platforms
     """
     settings = Settings()
-    manager_platforms = settings.get_manager_platforms()
-    tabulate_manager_platforms(manager_platforms.list_platforms())
+    platforms = settings.get_manager_platforms().list_platforms()
+
+    logger.info(f"Platforms accessible via {settings.manager_url}")
+    return pd.DataFrame(
+        [(p.name, p.slug, p.accessibility, p.notice or "") for p in platforms],
+        columns=["name", "slug", "accessibility", "notice"]
+    )
 
 
 def _read_config(file):
