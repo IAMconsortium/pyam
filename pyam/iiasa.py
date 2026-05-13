@@ -43,7 +43,7 @@ IXMP4_LOGIN = "Please run `ixmp4 login <username>` in a console"
 DEFAULT_IIASA_CREDS = Path("~").expanduser() / ".local" / "pyam" / "iiasa.yaml"
 
 
-def platforms() -> None:
+def platforms() -> pd.DataFrame:
     """Print a list of available ixmp4 platforms hosted by IIASA
 
     See Also

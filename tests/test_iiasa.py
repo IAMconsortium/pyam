@@ -56,11 +56,11 @@ NON_DEFAULT_DF = pd.DataFrame(
 
 
 def test_platforms(capsys):
-    # test that the function does not raise an error
-    iiasa.platforms()
-    output = capsys.readouterr().out
-    assert "Public Testing Instance" in output
-    assert "This is a public ixmp4 test instance" in output
+    # ensure that the `platforms()` yields a dataframe and includes the public-test platform
+    platforms = iiasa.platforms()
+    assert "Public Testing Instance" in platforms.name.values
+    assert "public-test" in platforms.slug.values
+    assert "This is a public ixmp4 test instance." in platforms.notice.values
 
 
 def test_unknown_conn():
