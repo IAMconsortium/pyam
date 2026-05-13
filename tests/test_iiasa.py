@@ -56,7 +56,7 @@ NON_DEFAULT_DF = pd.DataFrame(
 
 
 def test_platforms(capsys):
-    # ensure that the `platforms()` yields a dataframe and includes the public-test platform
+    # ensure that `platforms()` yields a dataframe and includes the public-test platform
     platforms = iiasa.platforms()
     assert "Public Testing Instance" in platforms.name.values
     assert "public-test" in platforms.slug.values
