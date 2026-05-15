@@ -1,4 +1,8 @@
-# Next Release
+# Release v3.3.2
+
+## Highlights
+
+- More fixes for ixmp4 v0.15.x
 
 ## API changes
 
