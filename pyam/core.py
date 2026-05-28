@@ -1869,6 +1869,10 @@ class IamDataFrame:
     def aggregate_kyoto_ghg(self, *, metric: str, append: bool = False):
         """Compute the aggregate Kyoto gases from a set of species using a GWP metric
 
+        This method aggregates Kyoto gases following the variable template from
+        `common-definitons <https://github.com/iamconsortium/common-definitions>`_.
+        Emissions of CO2, CH4 and N2O are required.
+
         metric: str
             A global warming potential (GWP) metric supported by :mod:`iam_units`,
             e.g. 'AR6GWP100'.
@@ -1884,6 +1888,7 @@ class IamDataFrame:
         See Also
         --------
         pyam.IamDataFrame.convert_unit
+        pyam.emissions.ALL_KYOTO_SPECIES
 
         """
         return self._finalize(

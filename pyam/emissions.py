@@ -4,6 +4,8 @@ from pyam.exceptions import raise_data_error
 
 REQUIRED_KYOTO_SPECIES = ["Emissions|CO2", "Emissions|CH4", "Emissions|N2O"]
 
+# Variable names follow https://github.com/iamconsortium/common-definitions
+# from https://github.com/iiasa/emissions_harmonization_historical/blob/190affcf0caf71daeac395a45dd7c39846acbaec/notebooks/5194_post-process-emissions.py#L81
 ALL_KYOTO_SPECIES = [
     # required variables
     "Emissions|CO2",
@@ -35,7 +37,7 @@ ALL_KYOTO_SPECIES = [
     "Emissions|HFC|HFC365mfc",
 ]
 
-SYNOMYMS_KYOTO_GHG = {
+SYNOMYMS_KYOTO_SPECIES = {
     "Emissions|HFC|HFC4310mee": "Emissions|HFC|HFC43-10",
     "Emissions|HFC|HFC4310": "Emissions|HFC|HFC43-10",
 }
@@ -45,8 +47,8 @@ def aggregate_kyoto_ghg(df, metric: str, target_variable: str, target_unit: str)
     """Internal implementation of the `aggregate_kyoto_ghg` function"""
 
     # Filter and rename the synonyms (this will raise an error if both variables are given)
-    _df = df.filter(variable=ALL_KYOTO_SPECIES + list(SYNOMYMS_KYOTO_GHG)).rename(
-        variable=SYNOMYMS_KYOTO_GHG
+    _df = df.filter(variable=ALL_KYOTO_SPECIES + list(SYNOMYMS_KYOTO_SPECIES)).rename(
+        variable=SYNOMYMS_KYOTO_SPECIES
     )
 
     # Check that all required variables are present
