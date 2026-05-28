@@ -32,8 +32,13 @@ def convert_unit(
     # Convert using a pint.UnitRegistry; default the one from iam_units
     registry = registry or iam_units.registry
 
-    # Make versions without -equiv
-    _current, _to = (i.replace("-equiv", "") for i in [current, to])
+    # Make versions without -equiv, special handling for different notations of HFC4310
+    _current, _to = (
+        i.replace("-equiv", "")
+        .replace("HFC43-10", "HFC4310")
+        .replace("HFC4310", "HFC4310mee")
+        for i in [current, to]
+    )
     # Pair of (magnitude, unit)
     qty = [ret._data.loc[where].values, _current]
 

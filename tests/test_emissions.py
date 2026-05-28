@@ -17,6 +17,7 @@ EMISSIONS_SPECIES_DATA = pd.DataFrame(
         ["Emissions|HFC|HFC143a", "kt HFC143a/yr", 40.59, 23.61, 6.87],
         ["Emissions|HFC|HFC23", "kt HFC23/yr", 7.13, 4.24, 1.55],
         ["Emissions|HFC|HFC32", "kt HFC32/yr", 61.18, 35.55, 10.29],
+        ["Emissions|HFC|HFC43-10", "kt HFC43-10/yr", 6.41, 7.32, 8.23],
     ],
     columns=["variable", "unit", 2020, 2025, 2030],
 )
@@ -27,19 +28,29 @@ EXP_GHG_DATA = pd.DataFrame(
         [
             "Emissions|Kyoto Gases [AR6GWP100]",
             "Mt CO2-equiv/yr",
-            58938.34,
-            44284.49,
-            33666.64,
+            58948.32,
+            44296.02,
+            33679.55,
         ]
     ],
     columns=["variable", "unit", 2020, 2025, 2030],
 )
 
 
-@pytest.mark.parametrize("append", ((False, True)))
-def test_kyoto_ghg(append):
+# test for different notation of HFC4310
+@pytest.mark.parametrize(
+    "hfc4310",
+    (
+        None,
+        dict(variable={"Emissions|HFC|HFC43-10": "Emissions|HFC|HFC4310"}),
+        dict(unit={"kt HFC43-10/yr": "kt HFC4310/yr"}),
+    ),
+)
+@pytest.mark.parametrize("append", (False, True))
+def test_kyoto_ghg(hfc4310, append):
     df_args = dict(model="model_a", scenario="scenario_a", region="World")
     df = IamDataFrame(EMISSIONS_SPECIES_DATA, **df_args)
+    df.rename(hfc4310, inplace=True)
     exp = IamDataFrame(EXP_GHG_DATA, **df_args)
 
     if append:
