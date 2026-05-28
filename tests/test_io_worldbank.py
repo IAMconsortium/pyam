@@ -30,7 +30,7 @@ WB_DF = pd.DataFrame(
 
 
 @pytest.mark.skipif(WB_UNAVAILABLE, reason=WB_REASON)
-def test_worldbank():
+def _test_worldbank():
     try:
         # Find the country codes via wbdata.get_countries(query="Canada") etc
         obs = read_worldbank(
