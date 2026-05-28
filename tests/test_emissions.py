@@ -63,11 +63,26 @@ def test_kyoto_ghg(hfc4310, append):
     assert_iamframe_equal(exp, obs)
 
 
-def test_kyoto_ghg_raises():
+def test_kyoto_ghg_missing_species_raises():
     df_args = dict(model="model_a", scenario="scenario_a", region="World")
     df = IamDataFrame(EMISSIONS_SPECIES_DATA, **df_args)
     df.filter(variable="Emissions|CH4", keep=False, inplace=True)
 
     match = "Missing species for aggregation:.* scenario_a  Emissions|CH4"
+    with pytest.raises(ValueError, match=match):
+        df.aggregate_kyoto_ghg(metric="AR6GWP100")
+
+
+def test_kyoto_duplicate_hfc4310_raises():
+    df_args = dict(model="model_a", scenario="scenario_a", region="World")
+    df = IamDataFrame(EMISSIONS_SPECIES_DATA, **df_args)
+
+    rename_mapping = {"Emissions|HFC|HFC43-10": "Emissions|HFC|HFC4310mee"}
+    df.append(
+        df.filter(variable=list(rename_mapping)).rename(variable=rename_mapping),
+        inplace=True,
+    )
+
+    match = "Conflicting data rows after renaming:.* Emissions|HFC|HFC43-10"
     with pytest.raises(ValueError, match=match):
         df.aggregate_kyoto_ghg(metric="AR6GWP100")
