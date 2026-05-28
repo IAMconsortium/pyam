@@ -4,6 +4,7 @@ import pytest
 from pyam import IamDataFrame
 from pyam.testing import assert_iamframe_equal
 
+
 EMISSIONS_SPECIES_DATA = pd.DataFrame(
     [
         ["Emissions|CO2", "Mt CO2/yr", 42885.41, 33011.87, 24642.81],

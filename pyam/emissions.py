@@ -1,7 +1,6 @@
 from pyam.aggregation import aggregate_data
 from pyam.exceptions import raise_data_error
 
-
 REQUIRED_KYOTO_SPECIES = ["Emissions|CO2", "Emissions|CH4", "Emissions|N2O"]
 
 # Variable names follow https://github.com/iamconsortium/common-definitions
@@ -46,7 +45,7 @@ SYNOMYMS_KYOTO_SPECIES = {
 def aggregate_kyoto_ghg(df, metric: str, target_variable: str, target_unit: str):
     """Internal implementation of the `aggregate_kyoto_ghg` function"""
 
-    # Filter and rename the synonyms (this will raise an error if both variables are given)
+    # Filter and rename the synonyms (this will raise an error if synonyms are given)
     _df = df.filter(variable=ALL_KYOTO_SPECIES + list(SYNOMYMS_KYOTO_SPECIES)).rename(
         variable=SYNOMYMS_KYOTO_SPECIES
     )
