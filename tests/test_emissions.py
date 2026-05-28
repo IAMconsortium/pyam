@@ -7,6 +7,8 @@ from pyam.testing import assert_iamframe_equal
 EMISSIONS_SPECIES_DATA = pd.DataFrame(
     [
         ["Emissions|CO2", "Mt CO2/yr", 42885.41, 33011.87, 24642.81],
+        # the following line must be ignored by the aggregation
+        ["Emissions|CO2|Energy", "Mt CO2/yr", 32885.41, 23011.87, 14642.81],
         ["Emissions|CH4", "Mt CH4/yr", 413.63, 287.42, 233.97],
         ["Emissions|N2O", "kt N2O/yr", 11623.95, 9005.23, 8177.40],
         ["Emissions|SF6", "kt SF6/yr", 8.01, 5.26, 2.60],
