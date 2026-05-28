@@ -1876,6 +1876,11 @@ class IamDataFrame:
             Append the aggregate emissions timeseries to `self` and return None,
             else return aggregated emissions timeseries as new :class:`IamDataFrame`.
 
+        Raises
+        ------
+        ValueError
+            If any of the required species CO2, CH4 and N2O are missing.
+
         See Also
         --------
         pyam.IamDataFrame.convert_unit
