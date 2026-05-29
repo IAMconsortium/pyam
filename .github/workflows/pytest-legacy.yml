@@ -38,7 +38,7 @@ jobs:
         # Please also add a section "Dependency changes" to the release notes
         # Don't install packages, just update lock file to see if a cache exists
         run: |
-          poetry add iam-units@2020.4.21 --lock
+          poetry add iam-units@2021.8.12 --lock
           poetry add matplotlib@3.6.0 --lock
           poetry add matplotlib-inline@0.1.7 --lock
           poetry add numpy@1.26.2 --lock
