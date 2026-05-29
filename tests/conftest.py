@@ -262,7 +262,9 @@ def plot_stackplot_df():
 
 @pytest.fixture(scope="function")
 def test_platform():
-    transport = DirectTransport.from_dsn("sqlite:///:memory:")
+    transport = DirectTransport.from_dsn(
+        "sqlite:///:memory:", check_alembic_version=False
+    )
     bind = transport.session.bind
     meta = get_metadata()
     meta.create_all(bind=bind, tables=meta.sorted_tables, checkfirst=True)
