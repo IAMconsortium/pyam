@@ -2,7 +2,6 @@ import logging
 
 import ixmp4
 import pandas as pd
-from ixmp4.core.iamc import DataPoint
 from ixmp4.core.region import Region
 from ixmp4.core.unit import Unit
 from ixmp4.data.iamc.datapoint.filter import FacadeDataPointFilter
