@@ -2437,7 +2437,7 @@ class IamDataFrame:
         platform: ixmp4.Platform,
         checkpoint_message: str = "Import run from pyam",
     ):
-        """Save all scenarios as new default runs in an ixmp4 platform database instance
+        """Save all scenarios as new default runs in an **ixmp4.Platform**  instance
 
         Parameters
         ----------
