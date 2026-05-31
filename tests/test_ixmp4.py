@@ -34,11 +34,17 @@ def test_ixmp4_subannual_not_implemented(test_platform, test_df_year):
         pyam.IamDataFrame(data).to_ixmp4(platform=test_platform)
 
 
-def test_ixmp4_mixed_time_domain_not_implemented(test_platform, test_df_mixed):
-    """Writing an IamDataFrame with mixed time domain is not implemented"""
+def test_ixmp4_mixed_time_domain(test_platform, test_df_mixed):
+    """Writing an IamDataFrame with mixed time domain to the platform"""
 
-    with pytest.raises(NotImplementedError, match="Only data with time domain 'year'"):
-        test_df_mixed.to_ixmp4(platform=test_platform)
+    # test writing to platform
+    test_df_mixed.to_ixmp4(platform=test_platform)
+
+    # read only default scenarios (runs) - version number added as meta indicator
+    obs = read_ixmp4(platform=test_platform)
+    exp = test_df_mixed.copy()
+    exp.set_meta(1, "version")  # add version number added from ixmp4
+    assert_iamframe_equal(exp, obs)
 
 
 def test_ixmp4_integration(test_platform, test_df):

@@ -145,12 +145,6 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
             "Only data with standard IAMC columns can be written to an ixmp4 platform."
         )
 
-    if df.time_domain not in ["year", "datetime"]:
-        raise NotImplementedError(
-            "Only data with time domain 'year' or 'datetime' can be written to an ixmp4"
-            " platform."
-        )
-
     if not isinstance(platform, ixmp4.Platform):
         platform = ixmp4.Platform(platform)
 
@@ -173,12 +167,20 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
         run = platform.runs.create(model=model, scenario=scenario)
 
         with run.transact(checkpoint_message):
-            if df.time_domain == "year":
-                run.iamc.add(_df.data)
-            elif df.time_domain == "datetime":
+            if _df.time_domain == "year":
+                run.iamc.add(_df.data.rename(columns={"year": "step_year"}))
+            elif _df.time_domain == "datetime":
+                run.iamc.add(_df.data.rename(columns={"time": "step_datetime"}))
+            elif _df.time_domain == "mixed":
                 run.iamc.add(
-                    _df.data.rename(columns={"time": "step_datetime"}),
-                    type=DataPoint.Type.DATETIME,
+                    _df.filter(time_domain="year").data.rename(
+                        columns={"time": "step_year"}
+                    )
+                )
+                run.iamc.add(
+                    _df.filter(time_domain="datetime").data.rename(
+                        columns={"time": "step_datetime"}
+                    )
                 )
 
             if not meta.empty:
