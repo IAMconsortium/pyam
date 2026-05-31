@@ -1,3 +1,8 @@
+# Next Release
+
+- [#978](https://github.com/IAMconsortium/pyam/pull/978) Support writing mixed time-domain to **ixmp4.Platform**
+- [#952](https://github.com/IAMconsortium/pyam/pull/952) Add an `aggregate_kyoto_gases()` method
+
 # Release v3.3.2
 
 ## Highlights
@@ -24,8 +29,6 @@ instead of printing a list.
 ## Individual updates
 
 - [#970](https://github.com/IAMconsortium/pyam/pull/970) Fixes for ixmp4 v0.15.x
-
-- [#952](https://github.com/IAMconsortium/pyam/pull/952) Add an `aggregate_kyoto_gases()` method
 
 # Release v3.3.0
 
