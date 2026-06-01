@@ -166,21 +166,13 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
         run = platform.runs.create(model=model, scenario=scenario)
 
         with run.transact(checkpoint_message):
-            if _df.time_domain == "year":
-                run.iamc.add(_df.data.rename(columns={"year": "step_year"}))
-            elif _df.time_domain == "datetime":
-                run.iamc.add(_df.data.rename(columns={"time": "step_datetime"}))
-            elif _df.time_domain == "mixed":
-                run.iamc.add(
-                    _df.filter(time_domain="year").data.rename(
-                        columns={"time": "step_year"}
-                    )
-                )
-                run.iamc.add(
-                    _df.filter(time_domain="datetime").data.rename(
-                        columns={"time": "step_datetime"}
-                    )
-                )
+            if _df.time_domain in ["year", "datetime"]:
+                run.iamc.add(_df.data)
+            # in "mixed" time domain, year and datetime values have to be added
+            # separately for correct column-renaming in ixmp4
+            else:
+                run.iamc.add(_df.filter(time_domain="year").data)
+                run.iamc.add(_df.filter(time_domain="datetime").data)
 
             if not meta.empty:
                 run.meta = dict(meta.loc[(model, scenario)])
