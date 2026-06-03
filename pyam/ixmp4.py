@@ -182,8 +182,11 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
                         run.iamc.add(_df_year.filter(subannual="").data)
                         run.iamc.add(_df_year.filter(subannual="", keep=False).data)
                         # remove subannual column for type-infering in ixmp4
-                        _df_datetime = _df.filter(time_domain="datetime").data
-                        run.iamc.add(_df_datetime.drop(columns=["subannual"]))
+                        run.iamc.add(
+                            _df.filter(time_domain="datetime").data.drop(
+                                columns=["subannual"]
+                            )
+                        )
                     else:
                         run.iamc.add(_df.filter(time_domain="year").data)
                         run.iamc.add(_df.filter(time_domain="datetime").data)
