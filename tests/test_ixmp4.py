@@ -51,7 +51,7 @@ def test_ixmp4_mixed_time_domain(test_platform, test_df_mixed):
 def test_ixmp4_mixed_time_domain_subannual(test_platform):
     TEST_DF = pd.DataFrame(
         [
-            [2005, 7, ""],
+            [2005, 7, None],
             ["2005-10-10", -2, None],
             [2005, 3, "summer-day"],
         ],
