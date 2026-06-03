@@ -175,25 +175,8 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
             else:
                 # silence the time-to-year column-renaming log message
                 with adjust_log_level():
-                    _df_year = _df.filter(time_domain="year")
-                    if "subannual" in _df_year.extra_cols:
-                        # import the yearly vs. subannual-categorical data separately
-                        # TODO revise handling of yearly values in mixed time domain
-                        run.iamc.add(
-                            _df_year.filter(subannual="*", keep=False).data.drop(
-                                columns=["subannual"]
-                            )
-                        )
-                        run.iamc.add(_df_year.filter(subannual="*").data)
-                        # remove subannual column for type-infering in ixmp4
-                        run.iamc.add(
-                            _df.filter(time_domain="datetime").data.drop(
-                                columns=["subannual"]
-                            )
-                        )
-                    else:
-                        run.iamc.add(_df.filter(time_domain="year").data)
-                        run.iamc.add(_df.filter(time_domain="datetime").data)
+                    run.iamc.add(_df.filter(time_domain="year").data)
+                run.iamc.add(_df.filter(time_domain="datetime").data)
 
             if not meta.empty:
                 run.meta = dict(meta.loc[(model, scenario)])
