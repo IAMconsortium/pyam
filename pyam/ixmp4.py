@@ -8,6 +8,8 @@ from ixmp4.data.iamc.datapoint.filter import FacadeDataPointFilter
 from ixmp4.data.meta.filter import FacadeRunMetaEntryFilter
 from ixmp4.data.run.filter import FacadeRunFilter
 
+from pyam.utils import adjust_log_level
+
 logger = logging.getLogger(__name__)
 
 
@@ -139,7 +141,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
     checkpoint_message : str
         The message for the ixmp4 checkpoint (similar to a commit message).
     """
-    if df.extra_cols:
+    if df.extra_cols and df.extra_cols != ["subannual"]:
         raise NotImplementedError(
             "Only data with standard IAMC columns can be written to an ixmp4 platform."
         )
@@ -157,7 +159,7 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
         )
         meta = df.meta.drop(columns="version")
     else:
-        meta = df.meta.copy()
+        meta = df.meta
 
     # Create runs and add IAMC timeseries data and meta indicators
     for model, scenario in df.index:
@@ -171,8 +173,20 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
             # in "mixed" time domain, year and datetime values have to be added
             # separately for correct column-renaming in ixmp4
             else:
-                run.iamc.add(_df.filter(time_domain="year").data)
-                run.iamc.add(_df.filter(time_domain="datetime").data)
+                # silence the time-to-year column-renaming log message
+                with adjust_log_level():
+                    _df_year = _df.filter(time_domain="year")
+                    if "subannual" in _df_year.extra_cols:
+                        # import the yearly vs. subannual-categorical data separately
+                        # TODO revise handling of yearly values in mixed time domain
+                        run.iamc.add(_df_year.filter(subannual="").data)
+                        run.iamc.add(_df_year.filter(subannual="", keep=False).data)
+                        # remove subannual column for type-infering in ixmp4
+                        _df_datetime = _df.filter(time_domain="datetime").data
+                        run.iamc.add(_df_datetime.drop(columns=["subannual"]))
+                    else:
+                        run.iamc.add(_df.filter(time_domain="year").data)
+                        run.iamc.add(_df.filter(time_domain="datetime").data)
 
             if not meta.empty:
                 run.meta = dict(meta.loc[(model, scenario)])
