@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import ixmp4 as ixmp4_module
+import pandas as pd
 import pytest
 from ixmp4.core.region import Region
 from ixmp4.core.unit import Unit
@@ -45,6 +46,34 @@ def test_ixmp4_mixed_time_domain(test_platform, test_df_mixed):
     exp = test_df_mixed.copy()
     exp.set_meta(1, "version")  # add version number added from ixmp4
     assert_iamframe_equal(exp, obs)
+
+
+def test_ixmp4_mixed_time_domain_subannual(test_platform):
+    TEST_DF = pd.DataFrame(
+        [
+            [2005, 7, ""],
+            ["2005-10-10", -2, None],
+            [2005, 3, "summer-day"],
+        ],
+        columns=["time", "value", "subannual"],
+    )
+
+    df = pyam.IamDataFrame(
+        TEST_DF,
+        model="model_a",
+        scenario="scen_a",
+        region="World",
+        variable="Primary Energy",
+        unit="EJ/yr",
+    )
+
+    # test writing to platform
+    df.to_ixmp4(platform=test_platform)
+
+    # read only default scenarios (runs) - version number added as meta indicator
+    obs = read_ixmp4(platform=test_platform)
+    df.set_meta(1, "version")  # add version number added from ixmp4
+    assert_iamframe_equal(df, obs)
 
 
 def test_ixmp4_integration(test_platform, test_df):
