@@ -460,7 +460,8 @@ def format_data(df, index, **kwargs):  # noqa: C901
 
 def _validate_complete_index(df):
     """Validate that there are no nan's in the (index) columns"""
-    null_cells = df.isnull()
+    # TODO: better handling of subannual=None for datetime time-domain
+    null_cells = df.drop(columns="subannual").isnull()
     null_rows = null_cells.any(axis=1)
     if null_rows.any():
         null_cols = null_cells.any()
