@@ -25,11 +25,11 @@ def test_to_ixmp4_missing_unit_raises(test_platform, test_df_year):
         test_df_year.to_ixmp4(platform=test_platform)
 
 
-def test_ixmp4_subannual_not_implemented(test_platform, test_df_year):
-    """Writing an IamDataFrame with subannual timeslices is not implemented"""
+def test_ixmp4_extra_cols_not_implemented(test_platform, test_df_year):
+    """Writing an IamDataFrame with extra-columns is not implemented"""
 
     data = test_df_year.data
-    data["subannual"] = "summer-day"
+    data["extra_column"] = "fof"
     with pytest.raises(NotImplementedError):
         pyam.IamDataFrame(data).to_ixmp4(platform=test_platform)
 
