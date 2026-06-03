@@ -75,6 +75,11 @@ def test_ixmp4_mixed_time_domain_subannual(test_platform):
     df.set_meta(1, "version")  # add version number added from ixmp4
     assert_iamframe_equal(df, obs)
 
+    # ensure that the correct types are written to the database
+    db_data = test_platform.backend.iamc.datapoints.tabulate()
+    for value, datapoint_type in [(7, "ANNUAL"), (-2, "DATETIME"), (3, "CATEGORICAL")]:
+        assert db_data[db_data.value == value].type.values[0] == datapoint_type
+
 
 def test_ixmp4_integration(test_platform, test_df):
     """Write an IamDataFrame to the platform"""
