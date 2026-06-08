@@ -27,11 +27,11 @@ def test_to_ixmp4_missing_unit_raises(test_platform, test_df_year):
 
 
 def test_ixmp4_extra_cols_not_implemented(test_platform, test_df_year):
-    """Writing an IamDataFrame with extra-columns is not implemented"""
+    """Writing an IamDataFrame with extra-columns (except subannual) not implemented"""
 
     data = test_df_year.data
-    data["extra_column"] = "fof"
-    with pytest.raises(NotImplementedError):
+    data["extra_column"] = "foo"
+    with pytest.raises(NotImplementedError, match="Invalid extra-columns: foo"):
         pyam.IamDataFrame(data).to_ixmp4(platform=test_platform)
 
 

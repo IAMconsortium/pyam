@@ -8,7 +8,7 @@ from ixmp4.data.iamc.datapoint.filter import FacadeDataPointFilter
 from ixmp4.data.meta.filter import FacadeRunMetaEntryFilter
 from ixmp4.data.run.filter import FacadeRunFilter
 
-from pyam.utils import adjust_log_level
+from pyam.utils import adjust_log_level, remove_from_list
 
 logger = logging.getLogger(__name__)
 
@@ -141,9 +141,9 @@ def write_to_ixmp4(platform: ixmp4.Platform | str, df, checkpoint_message: str):
     checkpoint_message : str
         The message for the ixmp4 checkpoint (similar to a commit message).
     """
-    if df.extra_cols and df.extra_cols != ["subannual"]:
+    if invalid_extra_cols := remove_from_list(df.extra_cols, ["subannual"]):
         raise NotImplementedError(
-            "Only data with standard IAMC columns can be written to an ixmp4 platform."
+            "Invalid extra-columns: " + ", ".join(invalid_extra_cols)
         )
 
     if not isinstance(platform, ixmp4.Platform):
