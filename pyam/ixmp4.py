@@ -8,7 +8,7 @@ from ixmp4.data.iamc.datapoint.filter import FacadeDataPointFilter
 from ixmp4.data.meta.filter import FacadeRunMetaEntryFilter
 from ixmp4.data.run.filter import FacadeRunFilter
 
-from pyam.utils import adjust_log_level, remove_from_list
+from pyam.utils import remove_from_list
 
 logger = logging.getLogger(__name__)
 
