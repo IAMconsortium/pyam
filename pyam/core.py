@@ -2076,7 +2076,7 @@ class IamDataFrame:
             elif col == "subannual" and isinstance(values, bool):
                 keep_col = filter_by_col(self._data, "subannual", "*", regexp=False)
                 # if filter is `subannual=False`, keep only where values are `None`
-                if not values:
+                if values is False:
                     keep_col = ~keep_col
 
             elif col == "measurand":
