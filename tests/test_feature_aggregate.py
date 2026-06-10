@@ -433,10 +433,18 @@ def test_aggregate_region_unknown_method(simple_df):
         ["Primary Energy", "Primary Energy|Coal"],
     ),
 )
-def test_aggregate_time(subannual_df, variable):
-    # check that `variable` is a a direct sum and matches given total
-    exp = subannual_df.filter(variable=variable, subannual=["year"])
-    assert_iamframe_equal(subannual_df.aggregate_time(variable), exp)
+# checks new (None) vs. legacy ("year") convention for yearly data in "subannual"
+@pytest.mark.parametrize("subannual_year", (None, "year"))
+def test_aggregate_time(subannual_df, variable, subannual_year):
+    # check that `variable` is a direct sum and matches given total
+
+    if subannual_year == "year":
+        subannual_df = IamDataFrame(subannual_df.data.fillna("year"))
+
+    assert_iamframe_equal(
+        subannual_df.filter(variable=variable, subannual=subannual_year or False),
+        subannual_df.aggregate_time(variable, value=subannual_year),
+    )
 
 
 def test_check_internal_consistency(simple_df):
