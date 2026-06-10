@@ -217,7 +217,7 @@ def subannual_df():
         return _data
 
     # primary energy is a direct sum across sub-annual timeslices
-    mapping = [("year", 1), ("winter", 0.7), ("summer", 0.3)]
+    mapping = [(None, 1), ("winter", 0.7), ("summer", 0.3)]
     lst = [add_subannual(_df.copy(), name, value) for name, value in mapping]
 
     df = IamDataFrame(model="model_a", scenario="scen_a", data=pd.concat(lst))
