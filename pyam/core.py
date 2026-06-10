@@ -1705,7 +1705,7 @@ class IamDataFrame:
     def aggregate_time(self, *args, **kwargs):
         """Aggregate timeseries data by subannual time resolution.
 
-        This  method is deprecated, please use :ref:`aggregate_subannual` instead.
+        This  method is deprecated, please use :func:`aggregate_subannual` instead.
         """
         if "column" in kwargs:
             raise NotImplementedError(
@@ -1721,8 +1721,8 @@ class IamDataFrame:
         self,
         variable: str | list[str],
         *,
-        value: None | str = None,
-        components: None | str | list[str] = None,
+        value: str | None = None,
+        components: str | list[str] | None = None,
         method: Callable | str = "sum",
         append: bool = False,
     ):
@@ -1734,7 +1734,7 @@ class IamDataFrame:
             Variable(s) to be aggregated
         value : str, optional
             Name of the aggregated timeslice (default `None` for yearly aggregate)
-        components : list of str
+        components : list of str, optional
             Subannual timeslices to be aggregated; defaults to all subannual
             timeslices other than `value`
         method : func or str, optional
