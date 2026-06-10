@@ -1,4 +1,10 @@
-# Next Release
+# Release v3.3.3
+
+## Highlights
+
+- New method to compute Kyoto-GHG from individual species by different GWP-metrics
+- Improved support for yearly, datetime and categorical "subannual" timeseries data
+- Integration with latest version of **ixmp4** database package
 
 ## API changes
 
