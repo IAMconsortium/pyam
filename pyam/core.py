@@ -2059,6 +2059,12 @@ class IamDataFrame:
 
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
+            elif col == "subannual" and isinstance(values, bool):
+                keep_col = filter_by_col(self._data, "subannual", "*", regexp=False)
+                # if filter is `subannual=False`, keep only where values are `None`
+                if not values:
+                    keep_col = ~keep_col
+
             elif col == "measurand":
                 keep_col = filter_by_measurand(self._data, values, regexp, level)
 
