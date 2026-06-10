@@ -1705,7 +1705,7 @@ class IamDataFrame:
         self,
         variable,
         column="subannual",
-        value="year",
+        value=None,
         components=None,
         method="sum",
         append=False,
