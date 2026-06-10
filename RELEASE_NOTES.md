@@ -1,5 +1,13 @@
 # Next Release
 
+## API changes
+
+- Change expected behavior of *subannual* column to use `None` for yearly data (instead of 'year')
+- Rename the method `aggregate_time()` to `aggregate_subannual()`
+
+## Individual updates
+
+- [#981](https://github.com/IAMconsortium/pyam/pull/981) Refactor implementation of subannual timeslices
 - [#979](https://github.com/IAMconsortium/pyam/pull/979) Support subannual (categorical) data with **ixmp4.Platform**
 - [#978](https://github.com/IAMconsortium/pyam/pull/978) Support writing mixed time-domain to **ixmp4.Platform**
 - [#952](https://github.com/IAMconsortium/pyam/pull/952) Add an `aggregate_kyoto_gases()` method
