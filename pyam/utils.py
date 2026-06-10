@@ -14,7 +14,7 @@ import packaging.version
 import pandas as pd
 from pandas.api.types import is_list_like
 
-from pyam.exceptions import raise_data_error
+from pyam.exceptions import raise_data_error, deprecation_warning
 from pyam.index import get_index_levels, replace_index_labels
 from pyam.str import concat_with_pipe, escape_regexp, find_depth, is_str
 
@@ -434,6 +434,16 @@ def format_data(df, index, **kwargs):  # noqa: C901
         # replace missing units by an empty string for user-friendly filtering
         if "unit" in df.columns:
             df = df.assign(unit=df["unit"].fillna(""))
+
+        # guard against legacy "subannual" values
+        if "subannual" in df.columns:
+            if legacy_subannual := [
+                i for i in df["subannual"].unique() if i in ["year", ""]
+            ]:
+                deprecation_warning(
+                    "Please use `None` instead.",
+                    "Using '" + "', '".join(legacy_subannual) + "' as subannual values",
+                )
 
         df, time_col, extra_cols = _format_data_to_series(df, index)
 
