@@ -106,6 +106,12 @@ def test_filter_day(test_df, test_day):
         pdt.assert_index_equal(obs.time, EXP_DATETIME_INDEX)
 
 
+def test_filter_subannual_bool(subannual_df):
+    # Check that filtering by `subannual` using bool works as expected
+    assert subannual_df.filter(subannual=True).subannual == ["summer", "winter"]
+    assert subannual_df.filter(subannual=False).subannual == []
+
+
 def test_filter_with_numpy_64_date_vals(test_df):
     dates = test_df[test_df.time_col].unique()
     res_0 = test_df.filter(**{test_df.time_col: dates[0]})
