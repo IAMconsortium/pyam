@@ -32,7 +32,7 @@ from pyam.aggregation import (
     aggregate_data,
 )
 from pyam.compute import IamComputeAccessor
-from pyam.exceptions import format_log_message, raise_data_error, deprecation_warning
+from pyam.exceptions import deprecation_warning, format_log_message, raise_data_error
 from pyam.filter import (
     datetime_match,
     filter_by_col,
