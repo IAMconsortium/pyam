@@ -952,10 +952,10 @@ class IamDataFrame:
             Passed to :meth:`slice` for downselected data
         """
         values = self._data[self.slice(**kwargs)]
-        if method is None and column is not "value":
+        if method is None and column != "value":
             values = values.reset_index(column)[column]
         elif method is not None:
-            if column is "value":
+            if column == "value":
                 values = values.groupby(self.index.names)
             else:
                 values = values.reset_index(column).groupby(self.index.names)[column]
