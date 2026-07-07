@@ -158,3 +158,11 @@ def test_set_meta_from_data_nonunique(test_df):
     pytest.raises(
         ValueError, test_df.set_meta_from_data, "fail", variable="Primary Energy"
     )
+
+
+def test_set_meta_from_data_method_other_column(test_df_year):
+    test_df_year.set_meta_from_data("foo", method="min", column="variable", on="value")
+    exp = pd.Series(
+        data=["Primary Energy|Coal", "Primary Energy"], index=EXP_IDX, name="foo"
+    )
+    pdt.assert_series_equal(test_df_year["foo"], exp)
