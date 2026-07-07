@@ -955,7 +955,11 @@ class IamDataFrame:
         if method is None and column is not "value":
             values = values.reset_index(column)[column]
         elif method is not None:
-            values = values.reset_index().groupby(META_IDX)[column].apply(method)
+            if column is "value":
+                values = values.groupby(self.index.names)
+            else:
+                values = values.reset_index(column).groupby(self.index.names)[column]
+            values = values.apply(method)
         self.set_meta(values, name)
 
     def categorize(
