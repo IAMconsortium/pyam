@@ -990,8 +990,17 @@ class IamDataFrame:
         """
         if on is not None:
 
+            @staticmethod
             def apply_method(x):
-                return x[x[on] == x[on].apply(method)][column].iloc[0]
+                if callable(method):
+                    value = x[x[on] == method(x[on])][column].unique()
+                else:
+                    value = x[x[on] == x[on].apply(method)][column].unique()
+
+                if len(value) > 1:
+                    logger.warning(f"Non-unique result from {method} on column {on}.")
+
+                return value[0]
 
             values = (
                 self._data[self.slice(**kwargs)]
