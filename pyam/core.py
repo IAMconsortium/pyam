@@ -936,27 +936,31 @@ class IamDataFrame:
         self.meta[name] = meta[name].combine_first(self.meta[name])
 
     def set_meta_from_data(self, name, method=None, column="value", **kwargs):
-        """Add meta indicators from downselected timeseries data of self
+        """Add meta indicators from downselected timeseries data
 
         Parameters
         ----------
         name : str
-            column name of the 'meta' table
+            Column name of the 'meta' table
         method : function, optional
-            method for aggregation
+            Method for aggregation
             (e.g., :func:`numpy.max <numpy.ndarray.max>`);
             required if downselected data do not yield unique values
         column : str, optional
-            the column from `data` to be used to derive the indicator
+            The column from `data` to be used to derive the indicator
         **kwargs
-            passed to :meth:`filter` for downselected data
+            Passed to :meth:`slice` for downselected data
         """
-        _data = self.filter(**kwargs).data
-        if method is None:
-            meta = _data.set_index(META_IDX)[column]
-        else:
-            meta = _data.groupby(META_IDX)[column].apply(method)
-        self.set_meta(meta, name)
+        values = self._data[self.slice(**kwargs)]
+        if method is None and column != "value":
+            values = values.reset_index(column)[column]
+        elif method is not None:
+            if column == "value":
+                values = values.groupby(self.index.names)
+            else:
+                values = values.reset_index(column).groupby(self.index.names)[column]
+            values = values.apply(method)
+        self.set_meta(values, name)
 
     def categorize(
         self,
