@@ -141,7 +141,7 @@ def test_set_meta_from_data_mean(test_df):
     pdt.assert_series_equal(test_df["pe_mean"], exp)
 
 
-def test_set_meta_from_data_method_other_column(test_df):
+def test_set_meta_from_data_method_non_default_column(test_df):
     if "year" in test_df.data.columns:
         col, value = "year", 2010
     else:
@@ -161,7 +161,7 @@ def test_set_meta_from_data_nonunique(test_df):
 
 
 @pytest.mark.parametrize("method", ("min", np.min))
-def test_set_meta_from_data_method_other_column(test_df_year, method):
+def test_set_meta_from_data_method_on_other_column(test_df_year, method):
     # get the variable that has the lowest data value for each scenario
     test_df_year.set_meta_from_data("foo", method=method, column="variable", on="value")
     exp = pd.Series(
