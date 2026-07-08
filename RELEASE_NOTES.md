@@ -1,3 +1,7 @@
+# Next Release
+
+- [#98](https://github.com/IAMconsortium/pyam/pull/986) Extend `set_meta_from_data()` to apply on different column
+
 # Release v3.3.3
 
 ## Highlights
