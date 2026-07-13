@@ -25,6 +25,7 @@ The following persons contributed to the development of the |pyam| package:
 - Fridolin Glatter `@glatterf42 <https://github.com/glatterf42>`_
 - Linh Ho `@linhho <https://github.com/LinhHo>`
 - Max Wolschlager `@meksor <https://github.com/meksor>`
+- `@JSap0914 <https://github.com/JSap0914>`_
 
 | The core maintenance of the |pyam| package is done by
   the *Scenario Services & Scientific Software* research theme

@@ -1,3 +1,10 @@
+# Next Release
+
+## Individual updates
+
+- [#984](https://github.com/IAMconsortium/pyam/issues/984) Highlight documentation
+  for computing derived timeseries data
+
 # Release v3.3.3
 
 ## Highlights

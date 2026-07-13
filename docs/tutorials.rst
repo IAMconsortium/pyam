@@ -16,6 +16,15 @@ The source code is available in the folder
 .. _`docs/tutorials`:
    https://github.com/IAMconsortium/pyam/tree/main/docs/tutorials
 
+Computing derived timeseries
+----------------------------
+
+To derive new timeseries from existing data, start with the
+:doc:`algebraic operations tutorial <tutorials/algebraic_operations>`, which
+covers adding, subtracting, multiplying and dividing data. For higher-level
+indicators such as shares, quantiles, growth rates and learning rates, see the
+:doc:`derived timeseries API <api/compute>`.
+
 .. toctree::
    :maxdepth: 1
 
