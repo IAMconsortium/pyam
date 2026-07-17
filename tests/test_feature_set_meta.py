@@ -167,4 +167,4 @@ def test_set_meta_from_data_method_on_other_column(test_df_year, method):
     exp = pd.Series(
         data=["Primary Energy|Coal", "Primary Energy"], index=EXP_IDX, name="foo"
     )
-    pdt.assert_series_equal(test_df_year["foo"], exp)
+    pdt.assert_series_equal(test_df_year.meta["foo"], exp)

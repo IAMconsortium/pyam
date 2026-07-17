@@ -941,15 +941,15 @@ class IamDataFrame:
         Parameters
         ----------
         name : str
-            Column name of the 'meta' table.
-        method : function, optional
+            Resulting column name in the 'meta' table.
+        method : function or str, optional
             Method for aggregation
             (e.g., :func:`numpy.max <numpy.ndarray.max>`);
             required if downselected data do not yield unique values.
         column : str, optional
             The column from `data` to be used to derive the indicator.
         on : str, optional
-            If given, apply the `method` on this column and use correspind value from
+            If given, apply the `method` on this column and use corresponding value from
             `column` as meta indicator.
         **kwargs
             Passed to :meth:`slice` for downselection of data.
