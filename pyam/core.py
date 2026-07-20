@@ -433,6 +433,11 @@ class IamDataFrame:
             return pd.DataFrame([], columns=self.dimensions + ["value"])
         return self._data.reset_index()
 
+    @property
+    def series(self):
+        """Return the timeseries data as an indexed :class:`pandas.Series`"""
+        return self._data
+
     def sort_data(self, inplace=False):
         """Sort timeseries data by index and coordinates
 
