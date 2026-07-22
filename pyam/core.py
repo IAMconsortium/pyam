@@ -436,7 +436,7 @@ class IamDataFrame:
     @property
     def series(self):
         """Return the timeseries data as an indexed :class:`pandas.Series`"""
-        return self._data
+        return self._data.copy()
 
     def sort_data(self, inplace=False):
         """Sort timeseries data by index and coordinates
