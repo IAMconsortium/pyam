@@ -332,6 +332,19 @@ def test_print_empty(test_df_year):
     assert obs == exp
 
 
+def test_pandas_types(test_df):
+
+    series = test_df.series
+    data = test_df.data
+
+    # assert that data and series yield the same result as different types
+    pdt.assert_frame_equal(series.reset_index(), data)
+
+    # check that `series` yields a copy and changes to not affect the IamDataFrame
+    series.iloc[0] = -2
+    pdt.assert_frame_equal(test_df.series.reset_index(), data)
+
+
 def test_as_pandas(test_df):
     # test that `as_pandas()` returns the right columns
     df = test_df.copy()
