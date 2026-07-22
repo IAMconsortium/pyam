@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from pyam import filter_by_meta
+from pyam.exceptions import deprecation_warning
 from pyam.str import is_str
 from pyam.utils import META_IDX, is_list_like
 
@@ -30,7 +31,12 @@ class Statistics:
     """
 
     def __init__(  # noqa: C901
-        self, df, groupby=None, filters=None, rows=False, percentiles=[0.25, 0.5, 0.75]
+        self,
+        df,
+        groupby=None,
+        filters=None,
+        rows=False,
+        percentiles=[0.05, 0.25, 0.5, 0.75, 0.95],
     ):
         self.df = df
         self.idx_depth = None
@@ -231,55 +237,97 @@ class Statistics:
             return ret
 
     def summarize(
-        self, center="mean", fullrange=None, interquartile=None, custom_format="{:.2f}"
+        self,
+        center="mean",
+        *,
+        limits=None,
+        range=None,
+        fullrange=None,
+        interquartile=None,
+        custom_format="{:.2f}",
     ):
         """Format the compiled statistics to a concise string output
 
         Parameters
         ----------
-        center : str, default `mean`
-            what to return as 'center' of the summary: `mean`, `50%`, `median`
-        fullrange : bool, default None
-            return full range of data if True or `fullrange`, `interquartile`
-            and `format_spec` are None
-        interquartile : bool, default None
-            return interquartile range if True
+        center : str, optional
+            The 'center' of the summary: 'mean', '50%', 'median'.
+        limits: str, optional
+            The upper and lower limits of the shown range: 'minmax', 'interquartile',
+            'p95', defaults to 'minmax'.
+        range : str, optional, deprecated
+            Previous name for the `limits` argument.
+        fullrange : bool, optional, deprecated
+            Return full range of data if True or `fullrange`, `interquartile`
+            and `format_spec` are None.
+        interquartile : bool, optional, deprecated
+            Return interquartile range if True
         custom_format : formatting specifications
         """
-        # call `reindex()` to reorder index and columns
+        # call `reindex()` to reorder index and columns before summarizing
         self.reindex(copy=False)
 
         center = "median" if center == "50%" else center
-        if fullrange is None and interquartile is None:
-            fullrange = True
-        return self.stats.apply(
+        # TODO: remove deprecated args for release >= 4.1, remove all code below
+        if fullrange is not None and interquartile is not None:
+            raise ValueError("Cannot use `interquartile` and `fullrange`.")
+
+        for arg, name, value in [
+            (fullrange, "fullrange", "minmax"),
+            (interquartile, "interquartile", "interquartile"),
+        ]:
+            if arg is not None:
+                if range is not None or limits is not None:
+                    raise ValueError(
+                        f"Cannot use `{name}` with `limits` or `range`, use `limits='{value}'` instead."
+                    )
+                deprecation_warning(
+                    "The argument `{name}` is deprecated",
+                    f"use `limits='{value}'` instead.",
+                )
+                limits = value
+
+        if range is not None:
+            if limits is not None:
+                raise ValueError(
+                    f"Cannot use `range` with `limits`, use `limits='{value}'` instead."
+                )
+            limits = range
+        if limits is None:
+            limits = "minmax"
+        # TODO remove all code up to here, set `limits='minmax'` as default
+        if limits not in ["minmax", "interquartile", "p95"]:
+            raise ValueError(f"Invalid argument for `limits`: {limits}")
+
+        summary = self.stats.apply(
             format_rows,
             center=center,
-            fullrange=fullrange,
-            interquartile=interquartile,
+            limits=limits,
             custom_format=custom_format,
             axis=1,
             raw=False,
         )
+        summary[("count", "")] = summary[("count", "")].map(int)
+        return summary
 
 
-# %% auxiliary functions
-
-
-def format_rows(
-    row, center, fullrange=None, interquartile=None, custom_format="{:.2f}"
-):
+def format_rows(row, center, limits, custom_format="{:.2f}"):
     """Format a row with `describe()` columns to a concise string"""
-    if (fullrange or 0) + (interquartile or 0) == 1:
-        legend = "{} ({})".format(
-            center, "max, min" if fullrange is True else "interquartile range"
-        )
 
-        row_index = row.index.droplevel(2).drop_duplicates()
-        ret_index = pd.MultiIndex.from_tuples([("count", "")]).append(row_index)
-        ret_index.names = [None, legend]
-    else:
-        raise ValueError("Use either fullrange or interquartile range.")
+    legend = center
+    if limits == "minmax":
+        legend += " (max, min)"
+        upper, lower = ("max", "min")
+    elif limits == "interquartile":
+        legend += " (p75, p25)"
+        upper, lower = ("75%", "25%")
+    elif limits == "p95":
+        legend += " (p95, p5)"
+        upper, lower = ("95%", "5%")
+
+    row_index = row.index.droplevel(2).drop_duplicates()
+    ret_index = pd.MultiIndex.from_tuples([("count", "")]).append(row_index)
+    ret_index.names = [None, legend]
 
     ret = pd.Series(index=ret_index, dtype=float)
 
@@ -290,10 +338,7 @@ def format_rows(
     count = max(
         [i for i in row.loc[(slice(None), slice(None), "count")] if not np.isnan(i)]
     )
-    ret.loc[("count", "")] = (f"{count:.0f}") if count > 1 else ""
-
-    # set upper and lower for the range
-    upper, lower = ("max", "min") if fullrange is True else ("75%", "25%")
+    ret.loc[("count", "")] = count
 
     # format `describe()` columns to string output
     for i in row_index:

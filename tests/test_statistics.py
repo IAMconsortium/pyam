@@ -97,7 +97,7 @@ def test_statistics_by_filter(plot_df):
     cols = pd.MultiIndex(
         levels=[["count", "primary", "coal"], ["", 2005]],
         codes=[[0, 1, 2], [0, 1, 1]],
-        names=[None, "mean (interquartile range)"],
+        names=[None, "mean (p75, p25)"],
     )
     exp = pd.DataFrame(
         data=["2", "0.85 (0.93, 0.77)", "0.42 (0.46, 0.39)"], index=cols, columns=idx
