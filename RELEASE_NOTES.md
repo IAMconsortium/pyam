@@ -3,7 +3,7 @@
 - [#989](https://github.com/IAMconsortium/pyam/pull/989) Add an `IamDataFrame.series` attribute to get timeseries data
   as **pd.Series**
 
-# Release v3.3.3
+# Release v3.4.0
 
 ## Highlights
 
