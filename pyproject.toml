@@ -41,8 +41,8 @@ classifiers = [
 dependencies = [
     "iam-units>=2021.8.12",
     "ixmp4>=0.16.4",
-    "matplotlib>=3.6.0",
-    "numpy>=1.26.0",
+    "matplotlib>=3.6.0, <3.11",
+    "numpy>=1.26.0, <2.5",
     "openpyxl>=3.1.2",
     "pandas>=2.1.2, <3.0.0",
     "Pint>=0.16",
@@ -53,13 +53,13 @@ dependencies = [
     "wquantiles>=0.6",
     "XlsxWriter>=3.0.3",
 ]
-dynamic = ["version"]
+dynamic = []
+version = "3.4.0.post3.dev0+603330e"
 
 [tool.poetry]
 documentation = "https://pyam-iamc.readthedocs.io"
 packages = [{ include = "pyam" }]
 requires-poetry = ">=2.0,<3.0"
-version = "0.0.0"
 
 [tool.poetry.group.dev]
 optional = true
@@ -183,6 +183,6 @@ max-complexity = 10
 poetry-dynamic-versioning = { version = ">=1.0.0,<2.0.0", extras = ["plugin"] }
 
 [tool.poetry-dynamic-versioning]
-enable = true
+enable = false
 style = "pep440"
 vcs = "git"
