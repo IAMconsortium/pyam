@@ -56,9 +56,9 @@ def test_statistics(plot_df):
     )
     exp = pd.DataFrame(
         data=[
-            ["2", "1 (2, 1)", "0 (0, 0)"],
-            ["2", "1 (1, 1)", "0 (0, 0)"],
-            ["2", "1 (1, 1)", "0 (0, 0)"],
+            [2, "1 (2, 1)", "0 (0, 0)"],
+            [2, "1 (1, 1)", "0 (0, 0)"],
+            [2, "1 (1, 1)", "0 (0, 0)"],
         ],
         index=idx,
         columns=cols,
@@ -72,7 +72,7 @@ def test_statistics_mismatching_groupby_index(plot_df):
         Statistics,
         df=plot_df,
         groupby={"category": ["b", "a"]},
-        filters=[(("test"), {"scenario": "test_scenario"})],
+        filters=[("test", {"scenario": "test_scenario"})],
     )
 
 
@@ -100,8 +100,9 @@ def test_statistics_by_filter(plot_df):
         names=[None, "mean (p75, p25)"],
     )
     exp = pd.DataFrame(
-        data=["2", "0.85 (0.93, 0.77)", "0.42 (0.46, 0.39)"], index=cols, columns=idx
+        data=[2, "0.85 (0.93, 0.77)", "0.42 (0.46, 0.39)"], index=cols, columns=idx
     ).T
+    exp[("count", "")] = exp[("count", "")].map(int)
     pd.testing.assert_frame_equal(obs, exp)
 
 
@@ -125,7 +126,7 @@ def test_statistics_with_rows(plot_df):
         names=[None, "median (max, min)"],
     )
     exp = pd.DataFrame(
-        data=[["2", "0.85 (1.00, 0.70)", ""], ["2", "", "0.42 (0.50, 0.35)"]],
+        data=[[2, "0.85 (1.00, 0.70)", ""], [2, "", "0.42 (0.50, 0.35)"]],
         index=idx,
         columns=cols,
     )
