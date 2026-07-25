@@ -241,7 +241,6 @@ class Statistics:
         center="mean",
         *,
         limits=None,
-        range=None,
         fullrange=None,
         interquartile=None,
         custom_format="{:.2f}",
@@ -251,53 +250,52 @@ class Statistics:
         Parameters
         ----------
         center : str, optional
-            The 'center' of the summary: 'mean', '50%', 'median'.
+            The 'center' of the summary: 'mean', 'median' (50th percentile).
         limits: str, optional
-            The upper and lower limits of the shown range: 'minmax', 'interquartile',
-            'p95', defaults to 'minmax'.
-        range : str, optional, deprecated
-            Previous name for the `limits` argument.
+            The upper and lower limits of the shown range: 'full range',
+            'interquartile', 'central 90%', defaults to 'full range'.
         fullrange : bool, optional, deprecated
             Return full range of data if True or `fullrange`, `interquartile`
             and `format_spec` are None.
         interquartile : bool, optional, deprecated
-            Return interquartile range if True
+            Return interquartile range if True.
         custom_format : formatting specifications
         """
         # call `reindex()` to reorder index and columns before summarizing
         self.reindex(copy=False)
 
-        center = "median" if center == "50%" else center
+        # TODO: deprecated, remove "50%" for release >= 4.1 to streamline signature
+        if center == "50%":
+            deprecation_warning(
+                "use `center='median'` instead.",
+                "Using `center='50%'",
+            )
+            center = "median"
+
         # TODO: remove deprecated args for release >= 4.1, remove all code below
         if fullrange is not None and interquartile is not None:
             raise ValueError("Cannot use `interquartile` and `fullrange`.")
 
         for arg, name, value in [
-            (fullrange, "fullrange", "minmax"),
+            (fullrange, "fullrange", "full range"),
             (interquartile, "interquartile", "interquartile"),
         ]:
             if arg is not None:
-                if range is not None or limits is not None:
+                if limits is not None:
                     raise ValueError(
-                        f"Cannot use `{name}` with `limits` or `range`, "
                         f"use `limits='{value}'` instead."
+                        f"Cannot use `{name}` with `limits`"
                     )
                 deprecation_warning(
-                    "The argument `{name}` is deprecated",
                     f"use `limits='{value}'` instead.",
+                    f"The argument `{name}`",
                 )
                 limits = value
 
-        if range is not None:
-            if limits is not None:
-                raise ValueError(
-                    f"Cannot use `range` with `limits`, use `limits='{value}'` instead."
-                )
-            limits = range
         if limits is None:
-            limits = "minmax"
-        # TODO remove all code up to here, set `limits='minmax'` as default
-        if limits not in ["minmax", "interquartile", "p95"]:
+            limits = "full range"
+        # TODO remove all code up to here, set `limits='full range'` as default
+        if limits not in ["full range", "interquartile", "central 90%"]:
             raise ValueError(f"Invalid argument for `limits`: {limits}")
 
         summary = self.stats.apply(
@@ -316,13 +314,13 @@ def format_rows(row, center, limits, custom_format="{:.2f}"):
     """Format a row with `describe()` columns to a concise string"""
 
     legend = center
-    if limits == "minmax":
+    if limits == "full range":
         legend += " (max, min)"
         upper, lower = ("max", "min")
     elif limits == "interquartile":
         legend += " (p75, p25)"
         upper, lower = ("75%", "25%")
-    elif limits == "p95":
+    elif limits == "central 90%":
         legend += " (p95, p5)"
         upper, lower = ("95%", "5%")
 
@@ -333,7 +331,6 @@ def format_rows(row, center, limits, custom_format="{:.2f}"):
     ret = pd.Series(index=ret_index, dtype=float)
 
     row = row.sort_index()
-    center = "50%" if center == "median" else center
 
     # get maximum of `count` and write to first entry of return series
     count = max(
@@ -342,6 +339,7 @@ def format_rows(row, center, limits, custom_format="{:.2f}"):
     ret.loc[("count", "")] = count
 
     # format `describe()` columns to string output
+    center = "50%" if center == "median" else center
     for i in row_index:
         x = row.loc[i]
         _count = x["count"]
@@ -352,7 +350,7 @@ def format_rows(row, center, limits, custom_format="{:.2f}"):
                 x[center], x[upper], x[lower]
             )
         elif _count == 1:
-            s = f"{custom_format}".format(x["50%"])
+            s = f"{custom_format}".format(x[center])
         # add count of this section as `[]` if different from count_max
         if 0 < _count < count:
             s += f" [{_count:.0f}]"

@@ -25,7 +25,7 @@ def stats_add_with_rows(stats, plot_df):
     # test describing as pd.DataFrame
     primary = plot_df.filter(variable="Primary Energy", year=2005).timeseries()
     stats.add(data=primary, header="primary", row="first")
-    # test describing as unamed pd.Series with `subheader` arg
+    # test describing as unnamed pd.Series with `subheader` arg
     coal = plot_df.filter(variable="Primary Energy|Coal").timeseries()[2010]
     coal.name = None
     stats.add(data=coal, header="coal", subheader=2005, row="another")
@@ -93,7 +93,6 @@ def test_statistics_mismatching_filters_depth(plot_df):
     "arg",
     (
         dict(interquartile=True),
-        dict(range="interquartile"),
         dict(limits="interquartile"),
     ),
 )
@@ -117,7 +116,7 @@ def test_statistics_by_filter(plot_df, arg):
 # TODO merge with previous test when removing deprecated range, interquartile, fullrange
 def test_statistics_with_limits(plot_df):
     stats = Statistics(df=plot_df, filters=[("test", {"scenario": "test_scenario"})])
-    obs = stats_add(stats, plot_df).summarize(limits="p95")
+    obs = stats_add(stats, plot_df).summarize(limits="central 90%")
 
     idx = pd.MultiIndex(levels=[["test"]], codes=[[0]])
     cols = pd.MultiIndex(
