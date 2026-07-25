@@ -89,9 +89,17 @@ def test_statistics_mismatching_filters_depth(plot_df):
     )
 
 
-def test_statistics_by_filter(plot_df):
+@pytest.mark.parametrize(
+    "arg",
+    (
+        dict(interquartile=True),
+        dict(range="interquartile"),
+        dict(limits="interquartile"),
+    ),
+)
+def test_statistics_by_filter(plot_df, arg):
     stats = Statistics(df=plot_df, filters=[("test", {"scenario": "test_scenario"})])
-    obs = stats_add(stats, plot_df).summarize(interquartile=True)
+    obs = stats_add(stats, plot_df).summarize(**arg)
 
     idx = pd.MultiIndex(levels=[["test"]], codes=[[0]])
     cols = pd.MultiIndex(
@@ -101,6 +109,24 @@ def test_statistics_by_filter(plot_df):
     )
     exp = pd.DataFrame(
         data=[2, "0.85 (0.93, 0.77)", "0.42 (0.46, 0.39)"], index=cols, columns=idx
+    ).T
+    exp[("count", "")] = exp[("count", "")].map(int)
+    pd.testing.assert_frame_equal(obs, exp)
+
+
+# TODO merge with previous test when removing deprecated args range, interquartile, minmax
+def test_statistics_with_limits(plot_df):
+    stats = Statistics(df=plot_df, filters=[("test", {"scenario": "test_scenario"})])
+    obs = stats_add(stats, plot_df).summarize(limits="p95")
+
+    idx = pd.MultiIndex(levels=[["test"]], codes=[[0]])
+    cols = pd.MultiIndex(
+        levels=[["count", "primary", "coal"], ["", 2005]],
+        codes=[[0, 1, 2], [0, 1, 1]],
+        names=[None, "mean (p95, p5)"],
+    )
+    exp = pd.DataFrame(
+        data=[2, "0.85 (0.98, 0.71)", "0.42 (0.49, 0.36)"], index=cols, columns=idx
     ).T
     exp[("count", "")] = exp[("count", "")].map(int)
     pd.testing.assert_frame_equal(obs, exp)
