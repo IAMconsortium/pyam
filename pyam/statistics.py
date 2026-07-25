@@ -274,7 +274,9 @@ class Statistics:
 
         # TODO: remove deprecated args for release >= 4.1, remove all code below
         if fullrange is not None and interquartile is not None:
-            raise ValueError("Cannot use `interquartile` and `fullrange`.")
+            raise ValueError(
+                "Cannot use `interquartile` and `fullrange`, use `limits` instead."
+            )
 
         for arg, name, value in [
             (fullrange, "fullrange", "full range"),
@@ -283,8 +285,8 @@ class Statistics:
             if arg is not None:
                 if limits is not None:
                     raise ValueError(
+                        f"Cannot use `{name}` with `limits`, "
                         f"use `limits='{value}'` instead."
-                        f"Cannot use `{name}` with `limits`"
                     )
                 deprecation_warning(
                     f"use `limits='{value}'` instead.",
