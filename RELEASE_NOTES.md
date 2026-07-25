@@ -1,5 +1,6 @@
 # Next release
 
+- [#991](https://github.com/IAMconsortium/pyam/pull/991) Add support for p95 ranges in the statistics summary
 - [#989](https://github.com/IAMconsortium/pyam/pull/989) Add an `IamDataFrame.series` attribute to get timeseries data
   as **pd.Series**
 
