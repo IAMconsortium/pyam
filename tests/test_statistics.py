@@ -114,7 +114,7 @@ def test_statistics_by_filter(plot_df, arg):
     pd.testing.assert_frame_equal(obs, exp)
 
 
-# TODO merge with previous test when removing deprecated args range, interquartile, minmax
+# TODO merge with previous test when removing deprecated range, interquartile, fullrange
 def test_statistics_with_limits(plot_df):
     stats = Statistics(df=plot_df, filters=[("test", {"scenario": "test_scenario"})])
     obs = stats_add(stats, plot_df).summarize(limits="p95")

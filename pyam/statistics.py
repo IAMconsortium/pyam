@@ -279,7 +279,8 @@ class Statistics:
             if arg is not None:
                 if range is not None or limits is not None:
                     raise ValueError(
-                        f"Cannot use `{name}` with `limits` or `range`, use `limits='{value}'` instead."
+                        f"Cannot use `{name}` with `limits` or `range`, "
+                        f"use `limits='{value}'` instead."
                     )
                 deprecation_warning(
                     "The argument `{name}` is deprecated",
