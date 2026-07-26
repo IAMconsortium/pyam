@@ -330,7 +330,7 @@ def format_rows(row, center, limits, custom_format="{:.2f}"):
     ret_index = pd.MultiIndex.from_tuples([("count", "")]).append(row_index)
     ret_index.names = [None, legend]
 
-    ret = pd.Series(index=ret_index, dtype=float)
+    ret = pd.Series(index=ret_index, dtype=object)
 
     row = row.sort_index()
 
