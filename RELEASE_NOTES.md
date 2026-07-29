@@ -8,6 +8,7 @@ values 'full range', 'interquartile' or 'central 90%'. The previous boolean argu
 
 ## Individual updates
 
+- [#993](https://github.com/IAMconsortium/pyam/pull/993) Mark `len(df)` as deprecated
 - [#991](https://github.com/IAMconsortium/pyam/pull/991) Support the central 90% as limits in the statistics summary
 - [#989](https://github.com/IAMconsortium/pyam/pull/989) Add an `IamDataFrame.series` attribute to get timeseries data
   as **pd.Series**
