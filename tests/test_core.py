@@ -460,7 +460,7 @@ def test_filter_empty_df():
     # test for issue seen in #254
     df = IamDataFrame(data=df_empty)
     obs = df.filter(variable="foo")
-    assert len(obs) == 0
+    assert len(obs.series) == 0
 
 
 def test_filter_variable_and_measurand_raises(test_df):
