@@ -76,6 +76,7 @@ def swap_year_for_time(df, inplace=False):
     ret.time_col = "time"
     ret._set_attributes()
     delattr(ret, "year")
+    delattr(ret, "subannual")
 
     if not inplace:
         return ret
