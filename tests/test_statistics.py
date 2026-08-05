@@ -25,7 +25,7 @@ def stats_add_with_rows(stats, plot_df):
     # test describing as pd.DataFrame
     primary = plot_df.filter(variable="Primary Energy", year=2005).timeseries()
     stats.add(data=primary, header="primary", row="first")
-    # test describing as unamed pd.Series with `subheader` arg
+    # test describing as unnamed pd.Series with `subheader` arg
     coal = plot_df.filter(variable="Primary Energy|Coal").timeseries()[2010]
     coal.name = None
     stats.add(data=coal, header="coal", subheader=2005, row="another")
@@ -56,9 +56,9 @@ def test_statistics(plot_df):
     )
     exp = pd.DataFrame(
         data=[
-            ["2", "1 (2, 1)", "0 (0, 0)"],
-            ["2", "1 (1, 1)", "0 (0, 0)"],
-            ["2", "1 (1, 1)", "0 (0, 0)"],
+            [2, "1 (2, 1)", "0 (0, 0)"],
+            [2, "1 (1, 1)", "0 (0, 0)"],
+            [2, "1 (1, 1)", "0 (0, 0)"],
         ],
         index=idx,
         columns=cols,
@@ -72,7 +72,7 @@ def test_statistics_mismatching_groupby_index(plot_df):
         Statistics,
         df=plot_df,
         groupby={"category": ["b", "a"]},
-        filters=[(("test"), {"scenario": "test_scenario"})],
+        filters=[("test", {"scenario": "test_scenario"})],
     )
 
 
@@ -89,19 +89,45 @@ def test_statistics_mismatching_filters_depth(plot_df):
     )
 
 
-def test_statistics_by_filter(plot_df):
+@pytest.mark.parametrize(
+    "arg",
+    (
+        dict(interquartile=True),
+        dict(limits="interquartile"),
+    ),
+)
+def test_statistics_by_filter(plot_df, arg):
     stats = Statistics(df=plot_df, filters=[("test", {"scenario": "test_scenario"})])
-    obs = stats_add(stats, plot_df).summarize(interquartile=True)
+    obs = stats_add(stats, plot_df).summarize(**arg)
 
     idx = pd.MultiIndex(levels=[["test"]], codes=[[0]])
     cols = pd.MultiIndex(
         levels=[["count", "primary", "coal"], ["", 2005]],
         codes=[[0, 1, 2], [0, 1, 1]],
-        names=[None, "mean (interquartile range)"],
+        names=[None, "mean (p75, p25)"],
     )
     exp = pd.DataFrame(
-        data=["2", "0.85 (0.93, 0.77)", "0.42 (0.46, 0.39)"], index=cols, columns=idx
+        data=[2, "0.85 (0.93, 0.77)", "0.42 (0.46, 0.39)"], index=cols, columns=idx
     ).T
+    exp[("count", "")] = exp[("count", "")].map(int)
+    pd.testing.assert_frame_equal(obs, exp)
+
+
+# TODO merge with previous test when removing deprecated range, interquartile, fullrange
+def test_statistics_with_limits(plot_df):
+    stats = Statistics(df=plot_df, filters=[("test", {"scenario": "test_scenario"})])
+    obs = stats_add(stats, plot_df).summarize(limits="central 90%")
+
+    idx = pd.MultiIndex(levels=[["test"]], codes=[[0]])
+    cols = pd.MultiIndex(
+        levels=[["count", "primary", "coal"], ["", 2005]],
+        codes=[[0, 1, 2], [0, 1, 1]],
+        names=[None, "mean (p95, p5)"],
+    )
+    exp = pd.DataFrame(
+        data=[2, "0.85 (0.98, 0.71)", "0.42 (0.49, 0.36)"], index=cols, columns=idx
+    ).T
+    exp[("count", "")] = exp[("count", "")].map(int)
     pd.testing.assert_frame_equal(obs, exp)
 
 
@@ -125,7 +151,7 @@ def test_statistics_with_rows(plot_df):
         names=[None, "median (max, min)"],
     )
     exp = pd.DataFrame(
-        data=[["2", "0.85 (1.00, 0.70)", ""], ["2", "", "0.42 (0.50, 0.35)"]],
+        data=[[2, "0.85 (1.00, 0.70)", ""], [2, "", "0.42 (0.50, 0.35)"]],
         index=idx,
         columns=cols,
     )

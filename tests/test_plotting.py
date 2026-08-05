@@ -362,7 +362,7 @@ def test_barplot_stacked_net_line(plot_df):
             y,
             v,
         ]
-        df.data.loc[len(df) + i] = newdata
+        df.data.loc[len(df.series) + i] = newdata
     df.filter(
         variable="Primary Energy|*",
         model="test_model1",

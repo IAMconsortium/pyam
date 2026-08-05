@@ -263,6 +263,12 @@ class IamDataFrame:
             return self.get_data_column(key)
 
     def __len__(self):
+        # TODO deprecate with release v4.0, return `len(df.index)`instead
+        deprecation_warning(
+            "Use `len(df.series)` instead. In the future, "
+            "`len(df)` will return `len(df.index)`.",
+            "The method `len()`",
+        )
         return len(self._data)
 
     def __repr__(self):
@@ -432,6 +438,11 @@ class IamDataFrame:
         if self.empty:  # reset_index fails on empty with `datetime` column
             return pd.DataFrame([], columns=self.dimensions + ["value"])
         return self._data.reset_index()
+
+    @property
+    def series(self):
+        """Return the timeseries data as an indexed :class:`pandas.Series`"""
+        return self._data.copy()
 
     def sort_data(self, inplace=False):
         """Sort timeseries data by index and coordinates
@@ -2060,7 +2071,7 @@ class IamDataFrame:
             but accepts `regexp: True` in the dictionary to use regexp directly
         """
         regexp = filters.pop("regexp", False)
-        keep = np.ones(len(self), dtype=bool)
+        keep = np.ones(len(self._data), dtype=bool)
 
         if level is not None and depth is not None:
             raise ValueError("Filter by `level` and `depth` not supported")
@@ -2114,7 +2125,7 @@ class IamDataFrame:
             elif col == "time_domain":
                 # fast-pass if `self` already has selected time-domain
                 if self.time_domain == values:
-                    keep_col = np.ones(len(self), dtype=bool)
+                    keep_col = np.ones(len(self._data), dtype=bool)
                 else:
                     levels, codes = get_index_levels_codes(self._data, self.time_col)
                     keep_col = filter_by_time_domain(values, levels, codes)
@@ -2126,14 +2137,14 @@ class IamDataFrame:
             elif col in ["month", "hour", "day"]:
                 if self.time_col != "time":
                     logger.error(f"Filter by `{col}` not supported with yearly data.")
-                    return np.zeros(len(self), dtype=bool)
+                    return np.zeros(len(self._data), dtype=bool)
 
                 keep_col = filter_by_dt_arg(col, values, self.get_data_column("time"))
 
             elif col == "time":
                 if self.time_col != "time":
                     logger.error(f"Filter by `{col}` not supported with yearly data.")
-                    return np.zeros(len(self), dtype=bool)
+                    return np.zeros(len(self._data), dtype=bool)
 
                 keep_col = datetime_match(self.get_data_column("time"), values)
 
