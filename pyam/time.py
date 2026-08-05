@@ -66,6 +66,7 @@ def swap_year_for_time(df, inplace=False):
         time = list(map(dateutil.parser.parse, [f"{y}-{s}" for y, s in time_values]))
         index = index.droplevel(["year", "subannual"])
         ret.extra_cols.remove("subannual")
+        delattr(ret, "subannual")
     else:
         time = index.get_level_values("year")
         index = index.droplevel(["year"])
@@ -76,7 +77,6 @@ def swap_year_for_time(df, inplace=False):
     ret.time_col = "time"
     ret._set_attributes()
     delattr(ret, "year")
-    delattr(ret, "subannual")
 
     if not inplace:
         return ret
