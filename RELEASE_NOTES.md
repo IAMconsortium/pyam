@@ -1,6 +1,13 @@
-# Next release
+# Release v3.5.0
+
+## Highlights
+
+Support the central 90% interval [p5-p95] as a limits setting in the statistics module.
 
 ## API changes
+
+The method `len(df)` is marked as deprecated. Use either `len(df.series)` for the number
+of datapoints or `len(df.index)` for the number of scenarios.
 
 The method `Statistics.summarize()` includes a new argument `limits` that can take the
 values 'full range', 'interquartile' or 'central 90%'. The previous boolean arguments

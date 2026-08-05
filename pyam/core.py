@@ -263,12 +263,9 @@ class IamDataFrame:
             return self.get_data_column(key)
 
     def __len__(self):
-        # TODO deprecate with release v4.0, return `len(df.index)`instead
-        deprecation_warning(
-            "Use `len(df.series)` instead. In the future, "
-            "`len(df)` will return `len(df.index)`.",
-            "The method `len()`",
-        )
+        # TODO deprecated, add DeprecationWarning with release v4.0 pointing to
+        # `len(df.series)` and `len(df.index)`
+        deprecation_warning("Use `len(df.series)` instead.", "The method `len()`")
         return len(self._data)
 
     def __repr__(self):
