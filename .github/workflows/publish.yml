@@ -25,21 +25,32 @@ jobs:
         with:
           python-version: "3.14"
 
-
       #------------------------------
       #  install & configure poetry
       #------------------------------
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.1.1
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
       - name: Install poetry dynamic versioning plugin
         run: poetry self add "poetry-dynamic-versioning[plugin]"
+
       - name: Build package
         run: poetry build
 
       #------------------------------
       #  publish to pypi
       #------------------------------
+
       - if: github.event_name == 'release'
         name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
       - if: github.event_name != 'release'
         name: Publish distribution to Test PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
