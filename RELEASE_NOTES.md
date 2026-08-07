@@ -19,6 +19,7 @@ values 'full range', 'interquartile' or 'central 90%'. The previous boolean argu
 - [#991](https://github.com/IAMconsortium/pyam/pull/991) Support the central 90% as limits in the statistics summary
 - [#989](https://github.com/IAMconsortium/pyam/pull/989) Add an `IamDataFrame.series` attribute to get timeseries data
   as **pd.Series**
+- [#986](https://github.com/IAMconsortium/pyam/pull/986) Extend `set_meta_from_data()` to apply on different column
 
 # Release v3.4.0
 
