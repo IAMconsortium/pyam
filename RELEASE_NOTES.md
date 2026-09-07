@@ -1,3 +1,7 @@
+# Next Release
+
+- [#999](https://github.com/IAMconsortium/pyam/pull/999) Support *+gcages** units in Kyoto-GHG aggregation
+
 # Release v3.5.0
 
 ## Highlights
