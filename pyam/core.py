@@ -1897,7 +1897,11 @@ class IamDataFrame:
 
         This method aggregates Kyoto gases following the variable template from
         `common-definitons <https://github.com/iamconsortium/common-definitions>`_.
-        Emissions of CO2, CH4 and N2O are required.
+        Emissions of CO2, CH4 and N2O are required. Alternatively, the naming convention
+        of the **gcages** package can also be used (i.e., *Emissions|HFC125* instead of
+        *Emissions|HFC|HFC125*). See the `gcages documentation`_ for details.
+
+        .. _`gcages documentation`: https://gcages.readthedocs.io/en/latest/tutorials/understanding-the-naming-conventions/#the-database
 
         metric: str
             A global warming potential (GWP) metric supported by :mod:`iam_units`,
