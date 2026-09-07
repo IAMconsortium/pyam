@@ -41,24 +41,42 @@ SYNOMYMS_KYOTO_SPECIES = {
     "Emissions|HFC|HFC4310": "Emissions|HFC|HFC43-10",
 }
 
+SYNONYMS_GCAGES_SPECIES = {
+    "Emissions|HFC125": "Emissions|HFC|HFC125",
+    "Emissions|HFC134a": "Emissions|HFC|HFC134a",
+    "Emissions|HFC143a": "Emissions|HFC|HFC143a",
+    "Emissions|HFC227ea": "Emissions|HFC|HFC227ea",
+    "Emissions|HFC23": "Emissions|HFC|HFC23",
+    "Emissions|HFC245fa": "Emissions|HFC|HFC245fa",
+    "Emissions|HFC32": "Emissions|HFC|HFC32",
+    "Emissions|HFC4310mee": "Emissions|HFC|HFC43-10",
+    "Emissions|HFC152a": "Emissions|HFC|HFC152a",
+    "Emissions|HFC236fa": "Emissions|HFC|HFC236fa",
+    "Emissions|HFC365mfc": "Emissions|HFC|HFC365mfc",
+}
+
 
 def aggregate_kyoto_ghg(df, metric: str, target_variable: str, target_unit: str):
     """Internal implementation of the `aggregate_kyoto_ghg` function"""
 
+    # check for GCAGES variable names and rename if present
+    if any([species in df.variable for species in SYNONYMS_GCAGES_SPECIES]):
+        df = df.rename(variable=SYNONYMS_GCAGES_SPECIES)
+
     # Filter and rename the synonyms (this will raise an error if synonyms are given)
-    _df = df.filter(variable=ALL_KYOTO_SPECIES + list(SYNOMYMS_KYOTO_SPECIES)).rename(
+    df = df.filter(variable=ALL_KYOTO_SPECIES + list(SYNOMYMS_KYOTO_SPECIES)).rename(
         variable=SYNOMYMS_KYOTO_SPECIES
     )
 
     # Check that all required variables are present
-    missing = _df.require_data(variable=REQUIRED_KYOTO_SPECIES)
+    missing = df.require_data(variable=REQUIRED_KYOTO_SPECIES)
     if missing is not None:
         raise_data_error(
             "Missing emission species required for Kyoto GHG aggregation", missing
         )
 
     # Convert units
-    for unit in _df.unit:
-        _df.convert_unit(unit, target_unit, context=metric, inplace=True)
+    for unit in df.unit:
+        df.convert_unit(unit, target_unit, context=metric, inplace=True)
 
-    return aggregate_data(_df, target_variable, components=_df.variable)
+    return aggregate_data(df, target_variable, components=df.variable)
