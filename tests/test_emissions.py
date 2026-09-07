@@ -42,6 +42,9 @@ EXP_GHG_DATA = pd.DataFrame(
     "hfc4310",
     (
         None,
+        # some variables reporting in gcages format
+        dict(variable={"Emissions|HFC|HFC125": "Emissions|HFC125"}),
+        # different naming convention and units for HFC4310
         dict(variable={"Emissions|HFC|HFC43-10": "Emissions|HFC|HFC4310"}),
         dict(unit={"kt HFC43-10/yr": "kt HFC4310/yr"}),
     ),
