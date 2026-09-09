@@ -943,31 +943,91 @@ class IamDataFrame:
         self._new_meta_column(name)
         self.meta[name] = meta[name].combine_first(self.meta[name])
 
-    def set_meta_from_data(self, name, method=None, column="value", **kwargs):
+    def set_meta_from_data(self, name, method=None, column="value", on=None, **kwargs):
         """Add meta indicators from downselected timeseries data
 
         Parameters
         ----------
         name : str
-            Column name of the 'meta' table
-        method : function, optional
+            Resulting column name in the 'meta' table.
+        method : function or str, optional
             Method for aggregation
             (e.g., :func:`numpy.max <numpy.ndarray.max>`);
-            required if downselected data do not yield unique values
+            required if downselected data do not yield unique values.
         column : str, optional
-            The column from `data` to be used to derive the indicator
+            The column from `data` to be used to derive the indicator.
+        on : str, optional
+            If given, apply the `method` on this column and use corresponding value from
+            `column` as meta indicator.
         **kwargs
-            Passed to :meth:`slice` for downselected data
+            Passed to :meth:`slice` for downselection of data.
+
+        Raises
+        ------
+        ValueError
+            If the resulting meta-indicators are not unique for each element
+            of the :attr:`index`.
+
+        Examples
+        --------
+        A simple use case for this method is to compute a meta-indicator for the peak
+        (maximum) temperature from annual temperature timeseries data for each scenario:
+
+        .. code:: python
+
+           df.set_meta_from_data(
+               name="Climate Assessment|Peak Warming [°C]",
+               method="max",
+               variable="Climate Assessment|Surface Temperature",
+           )
+
+        Alternatively, the *method* can be applied on a column *on* and the
+        corresponding value from the *column* is set as meta indicator. This can be
+        used to set the year when peak-temperature is reached as meta-indicator.
+
+        .. code:: python
+
+           df.set_meta_from_data(
+               name="Climate Assessment|Year of Peak Warming",
+               method="max",
+               column="value",
+               on="year",
+               variable="Climate Assessment|Surface Temperature",
+           )
+
         """
-        values = self._data[self.slice(**kwargs)]
-        if method is None and column != "value":
-            values = values.reset_index(column)[column]
-        elif method is not None:
-            if column == "value":
-                values = values.groupby(self.index.names)
-            else:
-                values = values.reset_index(column).groupby(self.index.names)[column]
-            values = values.apply(method)
+        if on is not None:
+
+            @staticmethod
+            def apply_method(x):
+                if callable(method):
+                    value = x[x[on] == method(x[on])][column].unique()
+                else:
+                    value = x[x[on] == x[on].apply(method)][column].unique()
+
+                if len(value) > 1:
+                    logger.warning(f"Non-unique result from {method} on column {on}.")
+
+                return value[0]
+
+            values = (
+                self._data[self.slice(**kwargs)]
+                .reset_index([col for col in [column, on] if col != "value"])
+                .groupby(self.index.names)
+                .apply(apply_method)
+            )
+        else:
+            values = self._data[self.slice(**kwargs)]
+            if method is None and column != "value":
+                values = values.reset_index(column)[column]
+            elif method is not None:
+                if column == "value":
+                    values = values.groupby(self.index.names)
+                else:
+                    values = values.reset_index(column).groupby(self.index.names)[
+                        column
+                    ]
+                values = values.apply(method)
         self.set_meta(values, name)
 
     def categorize(
