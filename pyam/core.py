@@ -940,8 +940,10 @@ class IamDataFrame:
         if not diff.empty:
             raise ValueError(f"Adding meta for non-existing scenarios:\n{diff}")
 
-        self._new_meta_column(name)
-        self.meta[name] = meta[name].combine_first(self.meta[name])
+        if name in self.meta.columns:
+            self.meta[name] = meta[name].combine_first(self.meta[name])
+        else:
+            self.meta[name] = meta[name]
 
     def set_meta_from_data(self, name, method=None, column="value", **kwargs):
         """Add meta indicators from downselected timeseries data
@@ -1040,17 +1042,9 @@ class IamDataFrame:
             category_index = self.index.difference(not_valid_index)
 
         # update meta indicators
-        self._new_meta_column(name)
         self.meta.loc[category_index, name] = value
         n = len(category_index)
         logger.info(f"{format_n(n, 'scenario')} categorized as `{name}={value}`")
-
-    def _new_meta_column(self, name):
-        """Add a column to meta if it doesn't exist, set value to nan"""
-        if name is None:
-            raise ValueError("Cannot add an unnamed meta column.")
-        if name not in self.meta:
-            self.meta[name] = np.nan
 
     def require_data(
         self, region=None, variable=None, unit=None, year=None, exclude_on_fail=False
