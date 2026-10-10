@@ -926,14 +926,17 @@ class IamDataFrame:
             raise ValueError("Index cannot be coerced to pd.MultiIndex")
 
         # raise error if index is not unique
-        if index.duplicated().any():
-            raise ValueError("Non-unique ['model', 'scenario'] index!")
+        duplicated = index.duplicated()
+        if duplicated.any():
+            raise_data_error("Duplicated index", index.to_frame()[duplicated])
 
         # create pd.Series from meta, index and name if provided
-        meta = pd.Series(data=meta, index=index, name=name)
-
-        # reduce index dimensions to model-scenario only
-        meta = meta.reset_index().reindex(columns=META_IDX + [name]).set_index(META_IDX)
+        meta = (
+            pd.Series(data=meta, index=index, name=name)
+            .reset_index()
+            .reindex(columns=META_IDX + [name])
+            .set_index(META_IDX)
+        )
 
         # check if trying to add model-scenario index not existing in self
         diff = meta.index.difference(self.meta.index)
