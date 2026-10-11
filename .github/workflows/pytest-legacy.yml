@@ -45,7 +45,7 @@ jobs:
           poetry add pandas@2.2.0 --lock
           poetry add pint@0.16 --lock
           poetry add xlrd@2.0.1 --lock --group optional_io_formats
-          poetry add xlsxwriter@3.0.3 --lock
+          poetry add xlsxwriter@3.0.5 --lock
           poetry add ixmp4@0.16.4 --lock
 
       #------------------------------------
