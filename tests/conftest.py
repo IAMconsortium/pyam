@@ -4,7 +4,6 @@ import matplotlib
 
 matplotlib.use("agg")
 
-from packaging.version import Version
 from datetime import datetime
 from pathlib import Path
 
@@ -15,6 +14,7 @@ from httpx import ConnectError
 from ixmp4.core import Platform
 from ixmp4.db.models import get_metadata
 from ixmp4.transport import DirectTransport
+from packaging.version import Version
 
 from pyam import IamDataFrame, iiasa
 from pyam.utils import IAMC_IDX, META_IDX
