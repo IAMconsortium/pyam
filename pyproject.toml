@@ -53,6 +53,7 @@ dependencies = [
     "wquantiles>=0.6",
     "XlsxWriter>=3.0.3",
     "ipykernel (>=7.4.0,<8.0.0)",
+    "packaging (>=26.3,<27.0)",
 ]
 dynamic = ["version"]
 
