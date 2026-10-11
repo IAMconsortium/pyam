@@ -285,7 +285,7 @@ def test_set_meta_with_column_conflict(test_df_year):
 
 
 @pytest.mark.parametrize(
-    "intdtype", [("(float64) 1.0, 2.0", None), ("(Int64) 1, 2", pd.Int64Dtype())]
+    "intdtype", [("(int64) 1, 2", None), ("(Int64) 1, 2", pd.Int64Dtype())]
 )
 def test_print(test_df_year, intdtype):
     """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
@@ -333,7 +333,7 @@ def test_print_empty(test_df_year):
             "   unit     : (0)",
             "   year     : (0)",
             "Meta indicators:",
-            "   number (float64) (0)",
+            "   number (int64) (0)",
             f"   string ({str_type}) (0)",
         ]
     )
