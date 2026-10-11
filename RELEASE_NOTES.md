@@ -1,5 +1,15 @@
 # Next Release
 
+## Dependency changes
+
+The latest release adds supports for **pandas** v3.x. Note that the new pandas version
+changes dtype-handling of DataFrames, so this may lead to stricter behavior when working
+with the **IamDataFrame.meta** frame (e.g., categorization, setting of meta indicators).
+
+The *minimum supported version of pandas* was bumped to 2.2.0 to simplify testing.
+
+## Individual updates
+
 - [#1004](https://github.com/IAMconsortium/pyam/pull/1004) Support **pandas** v3.x
 - [#999](https://github.com/IAMconsortium/pyam/pull/999) Support *+gcages** variable names in Kyoto-GHG aggregation
 
