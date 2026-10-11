@@ -46,6 +46,7 @@ jobs:
           poetry add pint@0.16 --lock
           poetry add xlrd@2.0.1 --lock --group optional_io_formats
           poetry add xlsxwriter@3.0.3 --lock
+          poetry add ixmp4@0.16.4 --lock
 
       #------------------------------------
       #  load cached venv if cache exists
