@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from pyam import Statistics
+from tests.conftest import PANDAS_V3
 
 
 def stats_add(stats, plot_df):
@@ -166,4 +167,7 @@ def test_statistics_with_percentiles(plot_df):
     )
     stats = stats_add(stats, plot_df)
     obs = set(stats.stats.columns.get_level_values(2))
-    assert obs == {"count", "mean", "std", "min", "5%", "50%", "95%", "max"}
+    if PANDAS_V3:
+        assert obs == {"count", "mean", "std", "min", "5%", "95%", "max"}
+    else:
+        assert obs == {"count", "mean", "std", "min", "5%", "50%", "95%", "max"}

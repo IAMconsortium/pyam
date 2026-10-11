@@ -4,6 +4,7 @@ import matplotlib
 
 matplotlib.use("agg")
 
+from packaging.version import Version
 from datetime import datetime
 from pathlib import Path
 
@@ -31,6 +32,9 @@ TEST_API_NAME = "IXSE_INTEGRATION_TEST"
 here = Path(__file__).parent
 IMAGE_BASELINE_DIR = here / "expected_figs"
 TEST_DATA_DIR = here / "data"
+
+# special handling of expected  results in tests depending on pandas version
+PANDAS_V3 = True if Version(pd.__version__) >= Version("3") else False
 
 TEST_YEARS = [2005, 2010]
 TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]
