@@ -105,7 +105,7 @@ def test_append_same_scenario(test_df):
     # assert that merging of meta works as expected
     exp = test_df.meta.copy()
     exp["col2"] = [np.nan, "b"]
-    pdt.assert_frame_equal(df.meta, exp)
+    pdt.assert_frame_equal(df.meta, exp[df.meta.columns])  # ensure order of columns
 
     # assert that appending data works as expected
     ts = df.timeseries()
