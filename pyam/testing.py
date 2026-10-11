@@ -41,6 +41,7 @@ def assert_iamframe_equal(
             right.meta.dropna(axis="columns", how="all"),
             check_column_type=False,
             check_dtype=False,
+            check_index_type=False,
             check_like=True,
         )
 

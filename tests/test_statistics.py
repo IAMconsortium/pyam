@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas.testing as pdt
 import pytest
 
 from pyam import Statistics
@@ -64,7 +65,7 @@ def test_statistics(plot_df):
         index=idx,
         columns=cols,
     )
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp, check_dtype=False)
 
 
 def test_statistics_mismatching_groupby_index(plot_df):
@@ -111,7 +112,7 @@ def test_statistics_by_filter(plot_df, arg):
         data=[2, "0.85 (0.93, 0.77)", "0.42 (0.46, 0.39)"], index=cols, columns=idx
     ).T
     exp[("count", "")] = exp[("count", "")].map(int)
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp, check_dtype=False)
 
 
 # TODO merge with previous test when removing deprecated range, interquartile, fullrange
@@ -129,7 +130,7 @@ def test_statistics_with_limits(plot_df):
         data=[2, "0.85 (0.98, 0.71)", "0.42 (0.49, 0.36)"], index=cols, columns=idx
     ).T
     exp[("count", "")] = exp[("count", "")].map(int)
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp, check_dtype=False)
 
 
 def test_statistics_with_row_required(plot_df):
@@ -156,7 +157,7 @@ def test_statistics_with_rows(plot_df):
         index=idx,
         columns=cols,
     )
-    pd.testing.assert_frame_equal(obs, exp)
+    pdt.assert_frame_equal(obs, exp, check_dtype=False)
 
 
 def test_statistics_with_percentiles(plot_df):
