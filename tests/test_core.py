@@ -11,7 +11,7 @@ from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
 from pyam.utils import IAMC_IDX, META_IDX
 
-from .conftest import TEST_DF, PANDAS_V3
+from .conftest import PANDAS_V3, TEST_DF
 
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
