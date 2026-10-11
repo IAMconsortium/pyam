@@ -34,7 +34,7 @@ here = Path(__file__).parent
 IMAGE_BASELINE_DIR = here / "expected_figs"
 TEST_DATA_DIR = here / "data"
 
-# special handling of expected  results in tests depending on pandas version
+# special handling of expected results in tests depending on pandas/pint versions
 PANDAS_V3 = True if Version(pd.__version__) >= Version("3") else False
 PINT_V26 = True if Version(pint.__version__) >= Version("0.26") else False
 
