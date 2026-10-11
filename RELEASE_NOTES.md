@@ -1,5 +1,6 @@
 # Next Release
 
+- [#1004](https://github.com/IAMconsortium/pyam/pull/1004) Support **pandas** v3.x
 - [#999](https://github.com/IAMconsortium/pyam/pull/999) Support *+gcages** variable names in Kyoto-GHG aggregation
 
 # Release v3.5.0
