@@ -8,6 +8,8 @@ with the **IamDataFrame.meta** frame (e.g., categorization, setting of meta indi
 
 The *minimum supported version of pandas* was bumped to 2.2.0 to simplify testing.
 
+Continuous integration of Python 3.10 was dropped because it has reached end of life.
+
 ## Individual updates
 
 - [#1004](https://github.com/IAMconsortium/pyam/pull/1004) Support **pandas** v3.x
