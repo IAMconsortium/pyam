@@ -1,7 +1,19 @@
 # Next Release
 
+## Dependency changes
+
+The latest release adds compatibility with **pandas** v3.x. Note that the new pandas
+version changes dtype-handling of DataFrames, so this may lead to stricter behavior when
+working with the **IamDataFrame.meta** frame (e.g., categorization, setting of meta
+indicators).
+
+The *minimum supported version* of pandas was bumped to 2.2.0 to simplify testing.
+
+Support of **Python 3.10** was dropped because it has reached end of life.
+
 ## Individual updates
 
+- [#1004](https://github.com/IAMconsortium/pyam/pull/1004) Support **pandas v3.x** and drop support for **Python 3.10**
 - [#1000](https://github.com/IAMconsortium/pyam/pull/1000) Improve performance of `aggregate_region()`, filtering and
   index creation
 - [#999](https://github.com/IAMconsortium/pyam/pull/999) Support *+gcages** variable names in Kyoto-GHG aggregation

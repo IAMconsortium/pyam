@@ -9,6 +9,7 @@ from pyam import IamDataFrame
 from pyam.operations import apply_ops
 from pyam.testing import assert_iamframe_equal
 from pyam.utils import IAMC_IDX
+from tests.conftest import PINT_V26
 
 DF_INDEX = ["scenario", 2005, 2010]
 # dictionary with common IamDataFrame args for all tests operating on variable
@@ -59,7 +60,7 @@ def test_add_raises(test_df_year):
     "variable, df_func, expected_unit",
     (
         ("Primary Energy|Coal", df_ops_variable, "EJ/yr"),
-        # pint changes the unit into its standard format
+        # pint < 26 changes the unit into its standard format
         (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, "EJ / a"),
     ),
 )
@@ -67,6 +68,7 @@ def test_add_raises(test_df_year):
 def test_add_variable(test_df_year, variable, df_func, expected_unit, append):
     """Check that in-dataframe addition works on the default `variable` axis"""
 
+    expected_unit = "EJ/yr" if PINT_V26 else expected_unit
     exp = df_func(operator.add, "Sum", unit=expected_unit, meta=test_df_year.meta)
 
     if append:
@@ -161,7 +163,7 @@ def test_add_scenario(test_df_year, append):
     "arg, df_func, expected_unit",
     (
         ("Primary Energy|Coal", df_ops_variable, "EJ/yr"),
-        # pint changes the unit into its standard format
+        # pint < 26 changes the unit into its standard format
         (registry.Quantity(2, "EJ/yr"), df_ops_variable_number, "EJ / a"),
     ),
 )
@@ -169,6 +171,7 @@ def test_add_scenario(test_df_year, append):
 def test_subtract_variable(test_df_year, arg, df_func, expected_unit, append):
     """Check that in-dataframe subtraction works on the default `variable` axis"""
 
+    expected_unit = "EJ/yr" if PINT_V26 else expected_unit
     exp = df_func(operator.sub, "Diff", unit=expected_unit, meta=test_df_year.meta)
 
     if append:

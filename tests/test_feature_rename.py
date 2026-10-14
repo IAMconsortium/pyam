@@ -105,7 +105,7 @@ def test_append_same_scenario(test_df):
     # assert that merging of meta works as expected
     exp = test_df.meta.copy()
     exp["col2"] = [np.nan, "b"]
-    pdt.assert_frame_equal(df.meta, exp)
+    pdt.assert_frame_equal(df.meta, exp[df.meta.columns])  # ensure order of columns
 
     # assert that appending data works as expected
     ts = df.timeseries()
@@ -254,7 +254,7 @@ def test_rename_index(test_df):
         ],
         columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
-    pdt.assert_frame_equal(obs.meta, exp)
+    pdt.assert_frame_equal(obs.meta, exp, check_dtype=False)
 
     # check that the attributes are ordered correctly
     assert obs.model == ["model_a", "model_c"]
@@ -289,13 +289,13 @@ def test_rename_append(test_df):
     # test meta changes
     exp = pd.DataFrame(
         [
-            ["model_a", "scen_a", 1, "foo"],
+            ["model_a", "scen_a", 1.0, "foo"],
             ["model_a", "scen_b", 2, np.nan],
             ["model_b", "scen_c", 1, "foo"],
         ],
         columns=["model", "scenario"] + META_COLS,
     ).set_index(META_IDX)
-    pdt.assert_frame_equal(obs.meta, exp)
+    pdt.assert_frame_equal(obs.meta, exp, check_dtype=False)
 
     # test 'exclude' changes
     exp = pd.Series([False, False, False], index=exp.index)

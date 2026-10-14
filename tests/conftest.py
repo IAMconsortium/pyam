@@ -1,6 +1,7 @@
 # has to go first for environment setup reasons
 
 import matplotlib
+import pint
 
 matplotlib.use("agg")
 
@@ -14,6 +15,7 @@ from httpx import ConnectError
 from ixmp4.core import Platform
 from ixmp4.db.models import get_metadata
 from ixmp4.transport import DirectTransport
+from packaging.version import Version
 
 from pyam import IamDataFrame, iiasa
 from pyam.utils import IAMC_IDX, META_IDX
@@ -31,6 +33,10 @@ TEST_API_NAME = "IXSE_INTEGRATION_TEST"
 here = Path(__file__).parent
 IMAGE_BASELINE_DIR = here / "expected_figs"
 TEST_DATA_DIR = here / "data"
+
+# special handling of expected results in tests depending on pandas/pint versions
+PANDAS_V3 = True if Version(pd.__version__) >= Version("3") else False
+PINT_V26 = True if Version(pint.__version__) >= Version("0.26") else False
 
 TEST_YEARS = [2005, 2010]
 TEST_DTS = [datetime(2005, 6, 17), datetime(2010, 7, 21)]

@@ -120,7 +120,7 @@ def test_set_meta_as_str_by_index(test_df):
     test_df.set_meta("foo", "meta_str", idx)
 
     exp = pd.Series(data=["foo", None], index=EXP_IDX, name="meta_str")
-    pdt.assert_series_equal(test_df["meta_str"], exp)
+    pdt.assert_series_equal(test_df["meta_str"], exp, check_dtype=False)
 
 
 def test_set_meta_from_data(test_df):

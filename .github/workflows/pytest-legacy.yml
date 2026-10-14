@@ -21,7 +21,7 @@ jobs:
         id: setup-python
         uses: actions/setup-python@v7
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       #------------------------------
       #  install & configure poetry
@@ -42,10 +42,11 @@ jobs:
           poetry add matplotlib@3.6.0 --lock
           poetry add matplotlib-inline@0.1.7 --lock
           poetry add numpy@1.26.2 --lock
-          poetry add pandas@2.1.2 --lock
+          poetry add pandas@2.2.0 --lock
           poetry add pint@0.16 --lock
           poetry add xlrd@2.0.1 --lock --group optional_io_formats
-          poetry add xlsxwriter@3.0.3 --lock
+          poetry add xlsxwriter@3.0.5 --lock
+          poetry add ixmp4@0.16.4 --lock
 
       #------------------------------------
       #  load cached venv if cache exists

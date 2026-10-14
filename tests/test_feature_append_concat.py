@@ -99,7 +99,7 @@ def test_concat(test_df, reverse, iterable):
     assert other.scenario == ["scen_c"]
 
     # assert that merging of meta works as expected
-    pdt.assert_frame_equal(obs.meta, EXP_META, check_like=True)
+    pdt.assert_frame_equal(obs.meta, EXP_META, check_like=True, check_dtype=False)
 
     # assert that appending data works as expected
     ts = obs.timeseries().sort_index()
@@ -171,7 +171,9 @@ def test_concat_with_pd_dataframe(test_df, reverse):
     # assert that merging meta from `other` is ignored
     exp_meta = META_DF.copy()
     exp_meta.loc[("model_a", "scen_c"), "number"] = np.nan
-    pdt.assert_frame_equal(obs.meta, exp_meta[META_COLS])
+    pdt.assert_frame_equal(
+        obs.meta, exp_meta[META_COLS], check_like=True, check_dtype=False
+    )
 
     # assert that appending data works as expected
     ts = obs.timeseries().sort_index()
@@ -236,7 +238,7 @@ def test_append_meta(test_df):
     assert test_df.scenario == ["scen_a", "scen_b"]
 
     # assert that merging of meta works as expected
-    pdt.assert_frame_equal(df.meta, EXP_META)
+    pdt.assert_frame_equal(df.meta, EXP_META, check_like=True, check_dtype=False)
 
     # assert that appending data works as expected
     ts = df.timeseries()
@@ -327,7 +329,7 @@ def test_append_same_scenario(test_df):
     # assert that merging of meta works as expected
     exp = test_df.meta.copy()
     exp["col2"] = [np.nan, "b"]
-    pd.testing.assert_frame_equal(df.meta, exp)
+    pd.testing.assert_frame_equal(df.meta, exp[df.meta.columns])  # ensure column order
 
     # assert that appending data works as expected
     ts = df.timeseries()

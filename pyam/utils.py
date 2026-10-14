@@ -489,36 +489,17 @@ def merge_meta(left, right, ignore_conflict=False):
     If conflicts are ignored, values in `left` take precedence over `right`.
     """
     left = left.copy()  # make a copy to not change the original object
-    diff = right.index.difference(left.index)
     sect = right.index.intersection(left.index)
 
-    # merge `right` into `left` for overlapping scenarios (`sect`)
-    if not sect.empty:
-        # if not ignored, check that overlapping `meta` columns are equal
-        if not ignore_conflict:
-            cols = [i for i in right.columns if i in left.columns]
-            if not left.loc[sect, cols].equals(right.loc[sect, cols]):
-                conflict_idx = (
-                    pd.concat([right.loc[sect, cols], left.loc[sect, cols]])
-                    .drop_duplicates()
-                    .index.drop_duplicates()
-                )
-                msg = "Conflict in `meta` for scenarios {}".format(
-                    [i for i in pd.DataFrame(index=conflict_idx).index]
-                )
-                raise ValueError(msg)
-        # merge new columns
-        cols = [i for i in right.columns if i not in left.columns]
-        left = left.merge(
-            right.loc[sect, cols], how="outer", left_index=True, right_index=True
-        )
+    # check that there are no merge conflicts
+    if not ignore_conflict and not sect.empty:
+        cols = list(set(right.columns).intersection(left.columns))
+        diff = left.loc[sect, cols].compare(right.loc[sect, cols])
+        if not diff.empty:
+            raise_data_error("Conflict merging `meta` for scenarios", diff)
 
-    # join `other.meta` for new scenarios (`diff`)
-    if not diff.empty:
-        left = pd.concat([left, right.loc[diff, :]], sort=False)
-
-    # remove any columns that are all-nan
-    return left.dropna(axis=1, how="all")
+    # combine and remove any columns that are all-nan
+    return left.combine_first(right).dropna(axis=1, how="all")
 
 
 def merge_exclude(left, right, ignore_conflict=False):
