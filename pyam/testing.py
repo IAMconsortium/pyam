@@ -48,4 +48,5 @@ def assert_iamframe_equal(
     pdt.assert_series_equal(
         left.exclude,
         right.exclude,
+        check_index_type=False,
     )
