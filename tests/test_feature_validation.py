@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pandas.testing as pdt
 import pytest
@@ -168,27 +169,15 @@ def test_category_no_match(test_df):
 
 
 def test_category_match(test_df):
-    dct = {
-        "model": ["model_a", "model_a"],
-        "scenario": ["scen_a", "scen_b"],
-        "category": ["foo", None],
-    }
-    exp = pd.DataFrame(dct).set_index(["model", "scenario"])["category"]
 
     test_df.categorize("category", "foo", variable="Primary Energy", upper_bound=6)
-    obs = test_df["category"]
-    pdt.assert_series_equal(obs, exp)
+    obs = test_df.meta["category"]
+    assert obs.loc[("model_a", "scen_a")] == "foo"
+    assert obs.loc[("model_a", "scen_b")] is np.nan
 
 
 def test_category_match_multiple_datapoints(test_df_year):
     # guard against regression of https://github.com/IAMconsortium/pyam/issues/929
-
-    dct = {
-        "model": ["model_a", "model_a"],
-        "scenario": ["scen_a", "scen_b"],
-        "category": ["foo", None],
-    }
-    exp = pd.DataFrame(dct).set_index(["model", "scenario"])["category"]
 
     # make sure scen_b is out of bounds with multiple datapoints
     test_df_year._data.loc[
@@ -196,5 +185,6 @@ def test_category_match_multiple_datapoints(test_df_year):
     ] = 6.5
 
     test_df_year.categorize("category", "foo", variable="Primary Energy", upper_bound=6)
-    obs = test_df_year["category"]
-    pdt.assert_series_equal(obs, exp)
+    obs = test_df_year.meta["category"]
+    assert obs.loc[("model_a", "scen_a")] == "foo"
+    assert obs.loc[("model_a", "scen_b")] is np.nan

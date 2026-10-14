@@ -11,7 +11,7 @@ from pyam import IamDataFrame, filter_by_meta
 from pyam.core import _meta_idx
 from pyam.utils import IAMC_IDX, META_IDX
 
-from .conftest import TEST_DF
+from .conftest import PANDAS_V3, TEST_DF
 
 df_filter_by_meta_matching_idx = pd.DataFrame(
     [
@@ -107,7 +107,7 @@ def test_init_df_with_duplicates_raises(test_df):
 def test_init_df_with_illegal_values_raises(test_pd_df, illegal_value):
     # values that cannot be cast to float should raise a value error and be specified by
     # index for user
-    test_pd_df.loc[0, 2005] = illegal_value
+    test_pd_df[2005] = [illegal_value, 1, 2]
     msg = (
         f'.*string "{illegal_value}" in `data`:'
         r"(\n.*){2}model_a.*scen_a.*World.*Primary Energy.*EJ/yr.*2005"
@@ -284,9 +284,14 @@ def test_set_meta_with_column_conflict(test_df_year):
         test_df_year.set_meta(name="meta", meta="foo")
 
 
-@pytest.mark.parametrize("intdtype", [("int64", None), ("Int64", pd.Int64Dtype())])
+@pytest.mark.parametrize(
+    "intdtype", [("(int64) 1, 2", None), ("(Int64) 1, 2", pd.Int64Dtype())]
+)
 def test_print(test_df_year, intdtype):
     """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
+
+    str_type = "str" if PANDAS_V3 else "object"
+
     exp = "\n".join(
         [
             "<class 'pyam.core.IamDataFrame'>",
@@ -299,19 +304,23 @@ def test_print(test_df_year, intdtype):
             "   unit     : EJ/yr (1)",
             "   year     : 2005, 2010 (2)",
             "Meta indicators:",
-            f"   number ({intdtype[0]}) 1, 2 (2)",
-            "   string (object) foo, nan (2)",
+            f"   number {intdtype[0]} (2)",
+            f"   string ({str_type}) foo, nan (2)",
         ]
     )
     # pd.Int64Dtype doesn't have length, test against regression
     if intdtype[1] is not None:
         test_df_year.meta["number"] = test_df_year.meta["number"].astype(intdtype[1])
+
     obs = test_df_year.info()
     assert obs == exp
 
 
 def test_print_empty(test_df_year):
     """Assert that `print(IamDataFrame)` (and `info()`) returns as expected"""
+
+    str_type = "str" if PANDAS_V3 else "object"
+
     exp = "\n".join(
         [
             "<class 'pyam.core.IamDataFrame'>",
@@ -325,7 +334,7 @@ def test_print_empty(test_df_year):
             "   year     : (0)",
             "Meta indicators:",
             "   number (int64) (0)",
-            "   string (object) (0)",
+            f"   string ({str_type}) (0)",
         ]
     )
     obs = test_df_year.filter(model="foo").info()

@@ -16,7 +16,7 @@ def _compare(
         how="outer",
         left_index=True,
         right_index=True,
-    )
+    ).dropna(axis=0, how="all")
     if drop_close:
         ret = ret[~np.isclose(ret[left_label], ret[right_label], **kwargs)]
     return ret

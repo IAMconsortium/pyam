@@ -12,7 +12,7 @@ see [LICENSE](LICENSE) and [NOTICE](NOTICE.md) for details.
 
 <!-- replace python version by dynamic reference to pypi once Python versions are configured there -->
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![python](https://img.shields.io/badge/python-≥3.10,<3.15-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
+[![python](https://img.shields.io/badge/python-≥3.11,<3.15-blue?logo=python&logoColor=white)](https://github.com/IAMconsortium/pyam)
 [![pytest](https://img.shields.io/github/actions/workflow/status/iamconsortium/pyam/pytest.yml?logo=GitHub&label=pytest)](https://github.com/IAMconsortium/pyam/actions/workflows/pytest.yml)
 [![ReadTheDocs](https://readthedocs.org/projects/pyam-iamc/badge/?version=latest)](https://pyam-iamc.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/IAMconsortium/pyam/branch/main/graph/badge.svg)](https://codecov.io/gh/IAMconsortium/pyam)
@@ -53,8 +53,8 @@ a timeseries format for *yearly data* developed and used by the
 
 | **model** | **scenario** | **region** | **variable**   | **unit** | **2005** | **2010** | **2015** |
 |-----------|--------------|------------|----------------|----------|----------|----------|----------|
-| MESSAGE   | CD-LINKS 400 | World      | Primary Energy | EJ/y     |    462.5 |    500.7 |      ... |
-| ...       | ...          | ...        | ...            | ...      |      ... |      ... |      ... |
+| MESSAGE   | CD-LINKS 400 | World      | Primary Energy | EJ/y     | 462.5    | 500.7    | ...      |
+| ...       | ...          | ...        | ...            | ...      | ...      | ...      | ...      |
 
 *An illustration of the IAMC template using a scenario
 from the [CD-LINKS](https://www.cd-links.org) project*    

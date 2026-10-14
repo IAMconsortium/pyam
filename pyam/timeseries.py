@@ -64,8 +64,8 @@ def cumulative(x, first_year, last_year):
     # make sure we're using integers
     to_int(x, index=True)
 
-    x[first_year] = fill_series(x, first_year)
-    x[last_year] = fill_series(x, last_year)
+    x.loc[first_year] = fill_series(x, first_year)
+    x.loc[last_year] = fill_series(x, last_year)
 
     years = [
         i for i in x.index if i >= first_year and i <= last_year and ~np.isnan(x[i])
