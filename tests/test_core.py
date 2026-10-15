@@ -152,6 +152,18 @@ def test_init_df_from_timeseries_unused_levels(test_df):
     assert df.variable == ["Primary Energy"]
 
 
+def test_init_df_with_unused_categories(test_pd_df):
+    # unused categories of categorical columns are not added to the index
+    test_pd_df["model"] = pd.Categorical(
+        test_pd_df["model"], categories=["model_a", "unused"]
+    )
+    df = IamDataFrame(test_pd_df)
+
+    assert df.model == ["model_a"]
+    assert list(df.index.levels[0]) == ["model_a"]
+    assert list(df.meta.index.levels[0]) == ["model_a"]
+
+
 def test_init_df_with_extra_col(test_pd_df):
     tdf = test_pd_df.copy()
 

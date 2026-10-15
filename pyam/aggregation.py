@@ -130,33 +130,35 @@ def _aggregate_region(
         )
         return
 
-    # compute aggregate over all subregions
-    subregion_df = df.filter(region=subregions)
-    rows = subregion_df._apply_filters(variable=variable)
+    # compute aggregate over all subregions, select rows without copying `df`
+    subregion_rows = df._apply_filters(region=subregions)
+    rows = subregion_rows & df._apply_filters(variable=variable)
     if weight is None:
         if drop_negative_weights is False:
             raise ValueError(
                 "Dropping negative weights can only be used with `weights`."
             )
 
-        _data = _group_and_agg(subregion_df._data[rows], "region", method=method)
+        _data = _group_and_agg(df._data[rows], "region", method=method)
     else:
-        weight_rows = subregion_df._apply_filters(variable=weight)
+        weight_rows = subregion_rows & df._apply_filters(variable=weight)
         _data = _agg_weight(
-            subregion_df._data[rows],
-            subregion_df._data[weight_rows],
+            df._data[rows],
+            df._data[weight_rows],
             method,
             drop_negative_weights,
         )
 
     # if not `components=False`, add components at the `region` level
     if components:
-        with adjust_log_level("pyam.core"):
-            region_df = df.filter(region=region)
+        region_rows = df._apply_filters(region=region)
 
         # if `True`, auto-detect `components` at the `region` level,
         # defaults to variables below `variable` only present in `region`
         if components is True:
+            with adjust_log_level("pyam.core"):
+                region_df = df.filter(region=region)
+                subregion_df = df.filter(region=subregions)
             level = dict(level=None)
             r_comps = region_df._variable_components(variable, **level)
             sr_comps = subregion_df._variable_components(variable, **level)
@@ -164,8 +166,8 @@ def _aggregate_region(
 
         if len(components):
             # rename all components to `variable` and aggregate
-            rows = region_df._apply_filters(variable=components)
-            _df = region_df._data[rows]
+            rows = region_rows & df._apply_filters(variable=components)
+            _df = df._data[rows]
             mapping = {c: variable for c in components}
             _df.index = replace_index_values(_df.index, "variable", mapping)
             _data = _data.add(_group_and_agg(_df, "region"), fill_value=0)
