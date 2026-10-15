@@ -1,4 +1,10 @@
-# Next Release
+# Release v3.0.0
+
+## Highlights
+
+- Implement compatibility with **pandas v3.x**
+- Improve performance for region-aggregation and other methods
+- Ensure consistency of GWP-GHG-conversion with **gcages**
 
 ## Dependency changes
 
