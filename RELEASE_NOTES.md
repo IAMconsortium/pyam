@@ -1,4 +1,4 @@
-# Release v3.0.0
+# Release v4.0.0
 
 ## Highlights
 
@@ -22,7 +22,7 @@ Support of **Python 3.10** was dropped because it has reached end of life.
 - [#1004](https://github.com/IAMconsortium/pyam/pull/1004) Support **pandas v3.x** and drop support for **Python 3.10**
 - [#1000](https://github.com/IAMconsortium/pyam/pull/1000) Improve performance of `aggregate_region()`, filtering and
   index creation
-- [#999](https://github.com/IAMconsortium/pyam/pull/999) Support *+gcages** variable names in Kyoto-GHG aggregation
+- [#999](https://github.com/IAMconsortium/pyam/pull/999) Support **gcages** variable names in Kyoto-GHG aggregation
 
 # Release v3.5.0
 
