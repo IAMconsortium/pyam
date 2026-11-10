@@ -19,6 +19,7 @@ Support of **Python 3.10** was dropped because it has reached end of life.
 
 ## Individual updates
 
+- [#1010](https://github.com/IAMconsortium/pyam/pull/1010) Add `.dropna` to `_format_data_to_series` - #1010⁠
 - [#1004](https://github.com/IAMconsortium/pyam/pull/1004) Support **pandas v3.x** and drop support for **Python 3.10**
 - [#1000](https://github.com/IAMconsortium/pyam/pull/1000) Improve performance of `aggregate_region()`, filtering and
   index creation
