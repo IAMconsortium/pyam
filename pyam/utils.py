@@ -346,6 +346,7 @@ def _format_data_to_series(df, index):
             df.set_index(index + REQUIRED_COLS + extra_cols)
             .rename_axis(columns=time_col)
             .stack()
+            .dropna()
             .rename("value")
             .reorder_levels(idx_order)
         )

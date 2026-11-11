@@ -26,6 +26,7 @@ The following persons contributed to the development of the |pyam| package:
 - Linh Ho `@linhho <https://github.com/LinhHo>`
 - Max Wolschlager `@meksor <https://github.com/meksor>`
 - Pino Mussak `@pmussak <https://github.com/pmussak>`_
+- David Almeida `@dc-almeida <https://github.com/dc-almeida>`_
 
 | The core maintenance of the |pyam| package is done by
   the *Scenario Services & Scientific Software* research theme

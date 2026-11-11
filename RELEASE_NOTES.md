@@ -1,3 +1,13 @@
+# Release v4.0.1
+
+## Highlights
+
+- Patching a utility function to restore pre-pandas 3.x behaviour
+
+## Individual updates
+
+- [#1010](https://github.com/IAMconsortium/pyam/pull/1010) Add `.dropna` to `_format_data_to_series`⁠
+
 # Release v4.0.0
 
 ## Highlights
