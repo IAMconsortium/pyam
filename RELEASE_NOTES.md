@@ -2,7 +2,7 @@
 
 ## Highlights
 
-- Patching a utility function to restore pre-pandas 3.x behaviour
+- Patching a utility function to restore pre-pandas 3.x behaviour that removes NA values
 
 ## Individual updates
 
