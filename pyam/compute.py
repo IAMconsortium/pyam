@@ -77,7 +77,13 @@ class IamComputeAccessor:
         return self._df._finalize(_value, append=append)
 
     def quantiles(
-        self, quantiles, weights=None, level=["model", "scenario"], append=False
+        self,
+        quantiles,
+        weights=None,
+        level=["model", "scenario"],
+        append=False,
+        model=None,
+        scenario=None,
     ):
         """Compute the optionally weighted quantiles of data grouped by `level`.
 
@@ -98,6 +104,13 @@ class IamComputeAccessor:
             The index columns to compute quantiles over
         append : bool, optional
             Whether to append computed timeseries data to this instance.
+        model : str, optional
+            Name of the *model* of the computed data. Defaults to "Quantiles" or
+            "Weighted Quantiles" (if `weights` are given).
+        scenario : callable, optional
+            Function that takes a quantile value and returns the *scenario* name of the
+            computed data for that quantile, e.g., ``lambda q: f"{q:.0%} quantile"``.
+            Defaults to :class:`str`, i.e., the quantile value as a string.
 
         Returns
         -------
@@ -124,9 +137,10 @@ class IamComputeAccessor:
             raise ValueError("weights pd.Series must have name 'weight'")
 
         df = self_df.timeseries()
-        model = (
-            "Quantiles" if weights is None else "Weighted Quantiles"
-        )  # can make this a kwarg
+        if model is None:
+            model = "Quantiles" if weights is None else "Weighted Quantiles"
+        if scenario is None:
+            scenario = str
 
         # get weights aligned with model/scenario in data
         if weights is None:
@@ -153,7 +167,7 @@ class IamComputeAccessor:
                 IamDataFrame(
                     data,
                     model=model,
-                    scenario=str(q),  # can make this a kwarg
+                    scenario=scenario(q),
                     **kwargs,
                 )
             )
