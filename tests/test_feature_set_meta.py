@@ -158,3 +158,11 @@ def test_set_meta_from_data_nonunique(test_df):
     pytest.raises(
         ValueError, test_df.set_meta_from_data, "fail", variable="Primary Energy"
     )
+
+
+def test_set_meta_from_data_nonunique_informative_error(test_df):
+    # the error message names the dimension(s) that are not unique
+    time_col = "year" if "year" in test_df.data.columns else "time"
+    match = rf"non-unique in \[.*'{time_col}'.*\].*filter.*`method`"
+    with pytest.raises(ValueError, match=match):
+        test_df.set_meta_from_data("fail", variable="Primary Energy")

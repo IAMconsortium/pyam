@@ -967,6 +967,22 @@ class IamDataFrame:
         values = self._data[self.slice(**kwargs)]
         if method is None and column != "value":
             values = values.reset_index(column)[column]
+        if method is None:
+            # raise an informative error if the downselected data is not unique
+            # with regard to the index of the meta table
+            extra_levels = [n for n in values.index.names if n not in self.index.names]
+            if values.index.droplevel(extra_levels).duplicated().any():
+                varying = [
+                    n
+                    for n in extra_levels
+                    if values.index.get_level_values(n).nunique() > 1
+                ]
+                raise ValueError(
+                    "The downselected data has multiple entries per "
+                    f"{self.index.names} (non-unique in {varying}). Use more "
+                    "arguments to filter the data to a single value per scenario, "
+                    "or pass a `method` to aggregate."
+                )
         elif method is not None:
             if column == "value":
                 values = values.groupby(self.index.names)
