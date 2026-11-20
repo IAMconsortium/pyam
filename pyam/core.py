@@ -1171,6 +1171,13 @@ class IamDataFrame:
         columns given in `mapping`. Renaming can only be applied to the `model`
         and `scenario` columns, or to other data coordinates simultaneously.
 
+        If several current names are mapped to the same target name (for example,
+        two *variables* that are both renamed to "Final Energy"), the renamed
+        timeseries data would have duplicate rows. By default, this raises a
+        :class:`ValueError`. With `check_duplicates=False`, the duplicate rows are
+        merged by **summing** their values. To aggregate timeseries data into a new
+        variable without renaming, use :meth:`aggregate`.
+
         Parameters
         ----------
         mapping : dict or kwargs
@@ -1196,6 +1203,21 @@ class IamDataFrame:
         -------
         :class:`IamDataFrame` or **None**
             Aggregated timeseries data as new object or None if `inplace=True`.
+
+        Examples
+        --------
+        Renaming two variables to the same name sums their values, but only if
+        `check_duplicates=False` is set explicitly:
+
+        .. code-block:: python
+
+            df.rename(
+                variable={
+                    "Final Energy|Electricity": "Final Energy",
+                    "Final Energy|Heat": "Final Energy",
+                },
+                check_duplicates=False,
+            )
         """
         # combine `mapping` arg and mapping kwargs, ensure no rename conflicts
         mapping = mapping or {}
